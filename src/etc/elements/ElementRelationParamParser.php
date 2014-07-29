@@ -128,7 +128,6 @@ class ElementRelationParamParser
 	/**
 	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
 	 *
-	 * @access private
 	 * @param mixed $relCriteria
 	 * @param DbCommand $query
 	 * @return mixed

@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Active Record base class.
  *
- * @abstract
  * @package craft.app.records
  */
 abstract class BaseRecord extends \CActiveRecord
@@ -46,7 +45,6 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Returns the name of the associated database table.
 	 *
-	 * @abstract
 	 * @return string
 	 */
 	abstract public function getTableName();
@@ -64,7 +62,6 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Defines this model's attributes.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -416,7 +413,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 	/**
 	 * Returns an instance of the specified model
-	 * @static
+	 *
 	 * @param string $class
 	 * @return \CActiveRecord|object The model instance
 	 */

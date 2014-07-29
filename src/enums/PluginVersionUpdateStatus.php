@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class PluginVersionUpdateStatus
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class PluginVersionUpdateStatus extends BaseEnum

@@ -233,7 +233,6 @@ class SystemSettingsController extends BaseController
 	/**
 	 * Returns the email settings from the post data.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEmailSettingsFromPost()

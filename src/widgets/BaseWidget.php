@@ -4,26 +4,21 @@ namespace Craft;
 /**
  * Widget base class.
  *
- * @abstract
- * @implements IWidget
  * @package craft.app.widgets
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {
 	/**
-	 * @access protected
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Widget';
 
 	/**
-	 * @access protected
 	 * @var bool Whether users should be able to select more than one of this widget type.
 	 */
 	protected $multi = true;
 
 	/**
-	 * @access protected
 	 * @var bool How many columns the widget should span, if there's enough room.
 	 */
 	protected $colspan = 1;

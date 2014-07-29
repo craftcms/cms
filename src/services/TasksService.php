@@ -490,7 +490,6 @@ class TasksService extends BaseApplicationComponent
 	/**
 	 * Returns a task by its ID.
 	 *
-	 * @access private
 	 * @param int $taskId
 	 * @return TaskRecord|null
 	 */

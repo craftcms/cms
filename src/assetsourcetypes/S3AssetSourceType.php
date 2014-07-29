@@ -6,7 +6,12 @@ craft()->requireEdition(Craft::Pro);
 /**
  * S3 source type class.
  *
- * @package craft.app.assetsourcetypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.assetsourcetypes
+ * @since     1.0
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
@@ -38,7 +43,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

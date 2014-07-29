@@ -763,7 +763,6 @@ class CategoriesService extends BaseApplicationComponent
 	/**
 	 * Populates a CategoryGroupModel with attributes from a CategoryGroupRecord.
 	 *
-	 * @access private
 	 * @param CategoryGroupRecord|null
 	 * @return CategoryGroupModel|null
 	 */
@@ -787,7 +786,6 @@ class CategoriesService extends BaseApplicationComponent
 	/**
 	 * Deletes categories, and their descendants.
 	 *
-	 * @access private
 	 * @param array $categories
 	 * @param bool $deleteDescendants
 	 * @return bool

@@ -794,7 +794,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Returns the Twig environment options
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getTwigOptions()
@@ -821,7 +820,6 @@ class TemplatesService extends BaseApplicationComponent
 	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder.
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
-	 * @access private
 	 * @param string $name
 	 * @throws \Twig_Error_Loader
 	 */
@@ -841,7 +839,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Searches for localized template files, and returns the first match if there is one.
 	 *
-	 * @access private
 	 * @param string $path
 	 * @return mixed
 	 */
@@ -902,7 +899,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Adds any plugin-supplied Twig extensions to a given Twig instance.
 	 *
-	 * @access private
 	 * @param \Twig_Environment $twig
 	 */
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
@@ -935,7 +931,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
 	 *
-	 * @access private
 	 * @param Event $event
 	 */
 	public function _onPluginsLoaded(Event $event)
@@ -949,7 +944,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Replaces textarea contents with a marker.
 	 *
-	 * @access private
 	 * @param array $matches
 	 * @return string
 	 */
@@ -963,7 +957,6 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Combines the JS in a buffer.
 	 *
-	 * @access   private
 	 * @param $js
 	 * @return string
 	 */

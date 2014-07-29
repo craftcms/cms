@@ -4,8 +4,6 @@ namespace Craft;
 /**
  * Plugin base class.
  *
- * @abstract
- * @implements IPlugin
  * @package craft.app.etc.plugins
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
@@ -14,7 +12,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	public $isEnabled = false;
 
 	/**
-	 * @access protected
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Plugin';
@@ -32,7 +29,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Returns the plugin’s version.
 	 *
-	 * @abstract
 	 * @return string
 	 */
 	abstract public function getVersion();
@@ -40,7 +36,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Returns the plugin developer's name.
 	 *
-	 * @abstract
 	 * @return string
 	 */
 	abstract public function getDeveloper();
@@ -48,7 +43,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Returns the plugin developer's URL.
 	 *
-	 * @abstract
 	 * @return string
 	 */
 	abstract public function getDeveloperUrl();
@@ -141,7 +135,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Returns the record classes provided by this plugin.
 	 *
-	 * @access protected
 	 * @param string|null $scenario The scenario to initialize the records with
 	 * @return array
 	 */

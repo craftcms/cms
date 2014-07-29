@@ -48,7 +48,6 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @access private
 	 * @param UserModel $user
 	 * @throws Exception
 	 * @return void
@@ -139,7 +138,6 @@ class UserIdentity extends \CUserIdentity
 	/**
 	 * Returns the proper Account Locked error code, based on the system's Invalid Login Mode
 	 *
-	 * @access private
 	 * @return int
 	 */
 	private function _getLockedAccountErrorCode()

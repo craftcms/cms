@@ -14,7 +14,6 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Stores the user identity.
 	 *
-	 * @access private
 	 * @var UserIdentity
 	 */
 	private $_identity;
@@ -22,7 +21,6 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Stores the current user model.
 	 *
-	 * @access private
 	 * @var UserModel
 	 */
 	private $_userModel;
@@ -42,18 +40,21 @@ class UserSessionService extends \CWebUser
 	 */
 	public function init()
 	{
-		craft()->getSession()->open();
+		if (!craft()->isConsole())
+		{
+			craft()->getSession()->open();
 
-		// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
-		$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
+			// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
+			$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
 
-		$rememberMe = craft()->request->getCookie('rememberMe') !== null ? true : false;
-		$seconds = $this->_getSessionDuration($rememberMe);
-		$this->authTimeout = $seconds;
+			$rememberMe = craft()->request->getCookie('rememberMe') !== null ? true : false;
+			$seconds = $this->_getSessionDuration($rememberMe);
+			$this->authTimeout = $seconds;
 
-		$this->updateAuthStatus();
+			$this->updateAuthStatus();
 
-		parent::init();
+			parent::init();
+		}
 	}
 
 	/**

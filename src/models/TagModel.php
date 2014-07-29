@@ -21,7 +21,6 @@ class TagModel extends BaseElementModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

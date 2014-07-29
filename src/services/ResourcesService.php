@@ -349,7 +349,6 @@ class ResourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @access private
 	 * @param $match
 	 * @return string
 	 */

@@ -4,14 +4,11 @@ namespace Craft;
 /**
  * Element type base class.
  *
- * @abstract
- * @implements IElementType
  * @package craft.app.elementtypes
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
 	/**
-	 * @access protected
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'ElementType';

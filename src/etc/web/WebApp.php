@@ -645,7 +645,6 @@ class WebApp extends \CWebApplication
 	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
-	 * @access private
 	 * @param string $componentId
 	 */
 	private function _attachEventListeners($componentId)
@@ -670,7 +669,6 @@ class WebApp extends \CWebApplication
 	/**
 	 * Processes resource requests.
 	 *
-	 * @access private
 	 * @throws HttpException
 	 */
 	private function _processResourceRequest()
@@ -711,7 +709,6 @@ class WebApp extends \CWebApplication
 	/**
 	 * Processes install requests.
 	 *
-	 * @access private
 	 * @throws HttpException
 	 */
 	private function _processInstallRequest()
@@ -754,7 +751,6 @@ class WebApp extends \CWebApplication
 	/**
 	 * Returns the target app language.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getTargetLanguage()
@@ -848,7 +844,6 @@ class WebApp extends \CWebApplication
 	/**
 	 * Processes action requests.
 	 *
-	 * @access private
 	 * @throws HttpException
 	 */
 	private function _processActionRequest()

@@ -9,7 +9,6 @@ namespace Craft;
 class PasswordModel extends BaseModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

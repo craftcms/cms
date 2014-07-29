@@ -998,7 +998,6 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Gets a user record by its ID.
 	 *
-	 * @access private
 	 * @param int $userId
 	 * @return UserRecord
 	 * @throws Exception
@@ -1018,7 +1017,6 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Sets a user record up for a new verification code without saving it.
 	 *
-	 * @access private
 	 * @param  UserRecord $userRecord
 	 * @return string
 	 */
@@ -1055,7 +1053,6 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Sets a user record up for a new password without saving it.
 	 *
-	 * @access private
 	 * @param UserModel $user
 	 * @param UserRecord $userRecord
 	 * @return bool

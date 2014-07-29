@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class BaseIO
  *
- * @abstract
  * @package craft.app.etc.io
  */
 abstract class BaseIO

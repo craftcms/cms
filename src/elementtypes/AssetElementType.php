@@ -346,7 +346,6 @@ class AssetElementType extends BaseElementType
 	/**
 	 * Transforms an asset folder tree into a source list.
 	 *
-	 * @access private
 	 * @param array $folders
 	 * @param bool  $includeNestedFolders
 	 * @return array
@@ -366,7 +365,6 @@ class AssetElementType extends BaseElementType
 	/**
 	 * Transforms an AssetFolderModel into a source info array.
 	 *
-	 * @access private
 	 * @param AssetFolderModel $folder
 	 * @param bool $includeNestedFolders
 	 * @return array

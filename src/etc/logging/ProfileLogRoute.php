@@ -9,7 +9,6 @@ namespace Craft;
 class ProfileLogRoute extends \CProfileLogRoute
 {
 	/**
-	 * @access protected
 	 * @param $view
 	 * @param $data
 	 * @return mixed

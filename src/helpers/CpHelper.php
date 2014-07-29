@@ -9,8 +9,6 @@ namespace Craft;
 class CpHelper
 {
 	/**
-	 * @static
-	 *
 	 * @param null $path
 	 * @param bool $fetch
 	 *

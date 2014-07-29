@@ -12,7 +12,6 @@ class MatrixBlockModel extends BaseElementModel
 	private $_owner;
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -156,7 +155,6 @@ class MatrixBlockModel extends BaseElementModel
 	/**
 	 * Returns the field context this element's content uses.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	public function getFieldContext()
@@ -167,7 +165,6 @@ class MatrixBlockModel extends BaseElementModel
 	/**
 	 * Returns the Matrix field.
 	 *
-	 * @access private
 	 * @return FieldModel
 	 */
 	private function _getField()

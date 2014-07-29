@@ -133,7 +133,6 @@ class DateFormatter extends \CDateFormatter
 	/**
 	 * Converts CLocale time format tokens to jQuery UI Datepicker date format tokens.
 	 *
-	 * @access private
 	 * @param string $token
 	 * @return string
 	 * @see http://api.jqueryui.com/datepicker/#utility-formatDate
@@ -171,7 +170,6 @@ class DateFormatter extends \CDateFormatter
 	/**
 	 * Converts CLocale date format tokens to PHP date() date format tokens.
 	 *
-	 * @access private
 	 * @param string $token
 	 * @return string
 	 * @see http://php.net/manual/en/function.date.php
@@ -209,7 +207,6 @@ class DateFormatter extends \CDateFormatter
 	/**
 	 * Converts CLocale time format tokens to PHP date() time format tokens.
 	 *
-	 * @access private
 	 * @param string $token
 	 * @return string
 	 * @see http://php.net/manual/en/function.date.php

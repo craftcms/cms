@@ -11,7 +11,6 @@ craft()->requireEdition(Craft::Client);
 class RebrandEmailModel extends BaseModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

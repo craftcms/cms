@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Query generator console command.
  *
- * @package craft.app.consolecommands
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.consolecommands
+ * @since     1.0
  */
 class QuerygenCommand extends BaseCommand
 {
@@ -186,7 +191,6 @@ class QuerygenCommand extends BaseCommand
 	/**
 	 * Returns a record instance by its class name.
 	 *
-	 * @access private
 	 * @param string $class
 	 * @return BaseRecord
 	 */
@@ -206,7 +210,6 @@ class QuerygenCommand extends BaseCommand
 	/**
 	 * A nicer version of var_export().
 	 *
-	 * @access private
 	 * @param mixed $var
 	 * @return string
 	 */

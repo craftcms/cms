@@ -4,8 +4,6 @@ namespace Craft;
 /**
  * Field type base class.
  *
- * @abstract
- * @implements IFieldType
  * @package craft.app.fieldtypes
  */
 abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
@@ -16,7 +14,6 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	public $element;
 
 	/**
-	 * @access protected
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'FieldType';
@@ -193,7 +190,6 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Returns whether this is the first time the element's content has been edited.
 	 *
-	 * @access protected
 	 * @return bool
 	 */
 	protected function isFresh()

@@ -29,7 +29,6 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -137,7 +136,6 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	/**
 	 * Returns a DbCommand object for selecing criteria that could be dropped by this task.
 	 *
-	 * @access private
 	 * @return DbCommand
 	 */
 	private function _getQuery()

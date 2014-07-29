@@ -122,7 +122,6 @@ class SystemSettingsService extends BaseApplicationComponent
 	/**
 	 * Returns a SystemSettings record by its category.
 	 *
-	 * @access private
 	 * @param string $category
 	 * @return mixed The SystemSettings record or false
 	 */

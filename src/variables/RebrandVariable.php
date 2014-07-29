@@ -50,7 +50,6 @@ class RebrandVariable
 	/**
 	 * Returns the path to the logo, or false if a logo hasn't been uploaded.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getLogoPath()

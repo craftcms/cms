@@ -11,19 +11,16 @@ class TagsFieldType extends BaseElementFieldType
 	private $_tagGroupId;
 
 	/**
-	 * @access protected
 	 * @var string $elementType The element type this field deals with.
 	 */
 	protected $elementType = 'Tag';
 
 	/**
-	 * @access protected
 	 * @var bool $allowMultipleSources Whether the field settings should allow multiple sources to be selected.
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @access protected
 	 * @var bool $allowLimit Whether to allow the Limit setting.
 	 */
 	protected $allowLimit = false;
@@ -67,7 +64,6 @@ class TagsFieldType extends BaseElementFieldType
 	/**
 	 * Returns the tag group associated with this field.
 	 *
-	 * @access private
 	 * @return TagGroupModel|null
 	 */
 	private function _getTagGroup()
@@ -83,7 +79,6 @@ class TagsFieldType extends BaseElementFieldType
 	/**
 	 * Returns the tag group ID this field is associated with.
 	 *
-	 * @access private
 	 * @return int|false
 	 */
 	private function _getTagGroupId()

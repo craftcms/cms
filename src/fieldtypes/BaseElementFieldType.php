@@ -4,31 +4,26 @@ namespace Craft;
 /**
  * Base element fieldtype class.
  *
- * @abstract
  * @package craft.app.fieldtypes
  */
 abstract class BaseElementFieldType extends BaseFieldType
 {
 	/**
-	 * @access protected
 	 * @var string $elementType The element type this field deals with.
 	 */
 	protected $elementType;
 
 	/**
-	 * @access protected
 	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
 	 */
 	protected $inputJsClass;
 
 	/**
-	 * @access protected
 	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
 	 */
 	protected $allowMultipleSources = true;
 
 	/**
-	 * @access protected
 	 * @var bool $allowLimit Whether to allow the Limit setting.
 	 */
 	protected $allowLimit = true;
@@ -40,7 +35,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $inputTemplate = '_includes/forms/elementSelect';
 
 	/**
-	 * @access protected
 	 * @var bool $sortable Whether the elements have a custom sort order.
 	 */
 	protected $sortable = true;
@@ -68,7 +62,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -253,7 +246,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns the label for the "Add" button.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getAddButtonLabel()
@@ -294,7 +286,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns the element type.
 	 *
-	 * @access protected
 	 * @return BaseElementType
 	 * @throws Exception
 	 */
@@ -313,7 +304,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns an array of variables that should be passed to the input template.
 	 *
-	 * @access protected
 	 * @param string $name
 	 * @param mixed  $criteria
 	 * @return array
@@ -354,7 +344,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function getInputSources()
@@ -374,7 +363,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function getInputSelectionCriteria()
@@ -385,7 +373,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns the locale that target elements should have.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getTargetLocale()
@@ -410,7 +397,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns the HTML for the Target Locale setting.
 	 *
-	 * @access protected
 	 * @return string|null
 	 */
 	protected function getTargetLocaleFieldHtml()

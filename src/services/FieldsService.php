@@ -947,7 +947,6 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Populates a field from its DB result.
 	 *
-	 * @access private
 	 * @param array $result
 	 * @return FieldModel
 	 */
@@ -964,7 +963,6 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Gets a field group record or creates a new one.
 	 *
-	 * @access private
 	 * @param FieldGroupModel $group
 	 * @throws Exception
 	 * @return FieldGroupRecord
@@ -991,8 +989,9 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Returns a field record for a given model.
 	 *
-	 * @access private
 	 * @param FieldModel $field
+	 *
+	 * @throws Exception
 	 * @return FieldRecord
 	 */
 	private function _getFieldRecord(FieldModel $field)

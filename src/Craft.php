@@ -2,9 +2,18 @@
 namespace Craft;
 
 /**
- * Class Craft
+ * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * @package craft.app
+ * It encapsulates {@link Yii} and ultimately {@link YiiBase}, which provides the actual implementation.
+ *
+ * It also defines the global craft() method, which is a wrapper for the Craft::app() singleton.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app
+ * @since     1.0
  */
 class Craft extends \Yii
 {
@@ -15,8 +24,6 @@ class Craft extends \Yii
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
-	 *
-	 * @static
 	 *
 	 * @return bool
 	 * @deprecated Deprecated in 1.3.
@@ -30,8 +37,6 @@ class Craft extends \Yii
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @static
-	 *
 	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function setIsInstalled()
@@ -42,8 +47,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns the installed Craft version.
-	 *
-	 * @static
 	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
@@ -57,8 +60,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft build.
 	 *
-	 * @static
-	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -70,8 +71,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns the installed Craft release date.
-	 *
-	 * @static
 	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
@@ -85,8 +84,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the Craft track.
 	 *
-	 * @static
-	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -98,8 +95,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns whether a package is included in this Craft build.
-	 *
-	 * @static
 	 *
 	 * @param string $packageName The name of the package to search for.
 	 *
@@ -115,8 +110,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the site name.
 	 *
-	 * @static
-	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -128,8 +121,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns the site URL.
-	 *
-	 * @static
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever is in the Site URL setting.
 	 *
@@ -145,8 +136,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the site UID.
 	 *
-	 * @static
-	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -158,8 +147,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns the system time zone.
-	 *
-	 * @static
 	 *
 	 * @return string
 	 * @deprecated Deprecated in 1.3.
@@ -173,8 +160,6 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is on.
 	 *
-	 * @static
-	 *
 	 * @return bool
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -186,8 +171,6 @@ class Craft extends \Yii
 
 	/**
 	 * Returns whether the system is in maintenance mode.
-	 *
-	 * @static
 	 *
 	 * @return bool
 	 * @deprecated Deprecated in 1.3.
@@ -201,8 +184,6 @@ class Craft extends \Yii
 	/**
 	 * Enables Maintenance Mode.
 	 *
-	 * @static
-	 *
 	 * @return bool
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -214,8 +195,6 @@ class Craft extends \Yii
 
 	/**
 	 * Disables Maintenance Mode.
-	 *
-	 * @static
 	 *
 	 * @return bool
 	 * @deprecated Deprecated in 1.3.
@@ -229,7 +208,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the info model, or just a particular attribute.
 	 *
-	 * @static
 	 * @param string|null $attribute The attribute to return information about.
 	 *
 	 * @throws Exception
@@ -260,8 +238,6 @@ class Craft extends \Yii
 	/**
 	 * Returns the Yii framework version.
 	 *
-	 * @static
-	 *
 	 * @return mixed
 	 * @deprecated Deprecated in 1.3.
 	 */
@@ -273,8 +249,6 @@ class Craft extends \Yii
 
 	/**
 	 * Displays a variable.
-	 *
-	 * @static
      *
 	 * @param mixed $target    The variable to be dumped.
 	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
@@ -287,8 +261,6 @@ class Craft extends \Yii
 
 	/**
 	 * Displays a variable and ends the request. (“Dump and die”)
-	 *
-	 * @static
      *
 	 * @param mixed $target    The variable to be dumped.
 	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
@@ -302,8 +274,6 @@ class Craft extends \Yii
 
 	/**
 	 * Takes a path alias and will import any files/folders that it contains.
-	 *
-	 * @static
 	 *
 	 * @param string $alias        The path alias to import.
 	 * @param bool   $forceInclude If set to true, Craft will require_once the file. Defaults to false.
@@ -375,8 +345,6 @@ class Craft extends \Yii
 	 * Translates a given message into the specified language. If the config setting 'translationDebugOutput'
 	 * is set, the the output will be wrapped in a pair of '@' to help diagnose any missing translations.
 	 *
-	 * @static
-	 *
 	 * @param string $message   The original source message.
 	 * @param array  $variables An associative array of key => value pairs to be applied to the message using <code>strtr</code>.
 	 * @param string $source    Defines which message source application component to use. Defaults to null,
@@ -403,7 +371,13 @@ class Craft extends \Yii
 		if (!craft()->getIsDbConnectionValid())
 		{
 			$source = 'en_us';
-			$language = craft()->getTranslatedBrowserLanguage();
+			$language = 'en_us';
+
+			// If it's a yiic/console app, just go with english.
+			if (!craft()->isConsole())
+			{
+				$language = craft()->getTranslatedBrowserLanguage();
+			}
 		}
 
 		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
@@ -417,8 +391,6 @@ class Craft extends \Yii
 
 	/**
 	 * Logs a message.  Messages logged by this method may be retrieved via {@link Logger::getLogs} and may be recorded in different media, such as file, email, database, using {@link LogRouter}.
-	 *
-	 * @static
 	 *
 	 * @param string $msg      The message to be logged.
 	 * @param string $level    The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or LogLevel::Error). Defaults to LogLevel::Info.
@@ -462,9 +434,6 @@ class Craft extends \Yii
 
 	/**
 	 * Imports a file into Craft's classMap.
-	 *
-	 * @static
-	 * @access private
 	 *
 	 * @param string $file The file to import.
 	 */

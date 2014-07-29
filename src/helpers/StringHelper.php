@@ -28,7 +28,6 @@ class StringHelper
 	/**
 	 * Converts an array to a string.
 	 *
-	 * @static
 	 * @param mixed  $arr
 	 * @param string $glue
 	 * @return string
@@ -53,7 +52,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @param $value
 	 * @return bool
 	 * @throws Exception
@@ -74,7 +72,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @param $value
 	 * @return bool
 	 * @throws Exception
@@ -85,7 +82,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @param int  $length
 	 * @param bool $extendedChars
 	 * @return string
@@ -123,7 +119,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @return string
 	 */
 	public static function UUID()
@@ -160,7 +155,6 @@ class StringHelper
 	}
 
 	/**
-	 * @static
 	 * @param $string
 	 * @return mixed
 	 */
@@ -180,7 +174,6 @@ class StringHelper
 	/**
 	 * Returns ASCII character mappings.
 	 *
-	 * @static
 	 * @return array
 	 */
 	public static function getAsciiCharMap()
@@ -212,7 +205,6 @@ class StringHelper
 	/**
 	 * Returns the asciiPunctuation array.
 	 *
-	 * @static
 	 * @return array
 	 */
 	public static function getAsciiPunctuation()
@@ -240,7 +232,6 @@ class StringHelper
 	/**
 	 * Converts extended ASCII characters to ASCII.
 	 *
-	 * @static
 	 * @param string $str
 	 * @return string
 	 */
@@ -282,7 +273,6 @@ class StringHelper
 	/**
 	 * Normalizes search keywords.
 	 *
-	 * @access private
 	 * @param string  $str The dirty keywords.
 	 * @param array  $ignore Ignore words to strip out.
 	 * @return string The cleansed keywords.
@@ -330,7 +320,6 @@ class StringHelper
 	/**
 	 * Runs a string through Markdown.
 	 *
-	 * @static
 	 * @param string $str
 	 * @return string
 	 */
@@ -348,7 +337,6 @@ class StringHelper
 	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
-	 * @static
 	 * @param      $string
 	 * @return bool|string
 	 */
@@ -387,7 +375,6 @@ class StringHelper
 	/**
 	 * Returns whether iconv is installed and not buggy.
 	 *
-	 * @static
 	 * @return bool
 	 */
 	public static function checkForIconv()
@@ -418,7 +405,6 @@ class StringHelper
 	/**
 	 * Checks if the given string is UTF-8 encoded.
 	 *
-	 * @static
 	 * @param $string The string to check.
 	 * @return bool
 	 */
@@ -430,7 +416,6 @@ class StringHelper
 	/**
 	 * Gets the current encoding of the given string.
 	 *
-	 * @static
 	 * @param $string
 	 * @return string
 	 */
@@ -465,8 +450,6 @@ class StringHelper
 	/**
 	 * Get array of chars to be used for conversion.
 	 *
-	 * @static
-	 * @access private
 	 * @return array
 	 */
 	private static function _getCharMap()
@@ -496,7 +479,6 @@ class StringHelper
 	/**
 	 * Custom alternative to chr().
 	 *
-	 * @static
 	 * @param int $int
 	 * @return string
 	 */

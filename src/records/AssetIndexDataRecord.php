@@ -17,7 +17,6 @@ class AssetIndexDataRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

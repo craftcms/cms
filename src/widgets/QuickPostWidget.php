@@ -25,7 +25,6 @@ class QuickPostWidget extends BaseWidget
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

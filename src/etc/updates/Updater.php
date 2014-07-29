@@ -298,7 +298,6 @@ class Updater
 	/**
 	 * Validates that the downloaded file MD5 the MD5 of the file from Elliott
 	 *
-	 * @access private
 	 * @param $downloadFilePath
 	 * @param $sourceMD5
 	 * @return bool
@@ -319,8 +318,6 @@ class Updater
 	/**
 	 * Unzip the downloaded update file into the temp package folder.
 	 *
-	 * @access private
-	 *
 	 * @param $downloadFilePath
 	 * @param $unzipFolder
 	 *
@@ -340,7 +337,6 @@ class Updater
 	/**
 	 * Checks to see if the files that we are about to update are writable by Craft.
 	 *
-	 * @access private
 	 * @param $unzipFolder
 	 * @return bool
 	 */
@@ -390,7 +386,6 @@ class Updater
 	 * Attempt to backup each of the update manifest files by copying them to a file with the same name with a .bak extension.
 	 * If there is an exception thrown, we attempt to roll back all of the changes.
 	 *
-	 * @access private
 	 * @param $unzipFolder
 	 * @return bool
 	 */

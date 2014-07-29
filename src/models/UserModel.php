@@ -28,7 +28,6 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -340,7 +339,6 @@ class UserModel extends BaseElementModel
 	/**
 	 * Populates a new user instance with a given set of attributes.
 	 *
-	 * @static
 	 * @param mixed $attributes
 	 * @return UserModel
 	 */

@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class LicenseKeyStatus
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class LicenseKeyStatus extends BaseEnum

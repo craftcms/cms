@@ -150,7 +150,6 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Gets a group's record.
 	 *
-	 * @access private
 	 * @param int $groupId
 	 * @return UserGroupRecord
 	 */
@@ -176,7 +175,6 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Throws a "No group exists" exception.
 	 *
-	 * @access private
 	 * @param int $groupId
 	 * @throws Exception
 	 */

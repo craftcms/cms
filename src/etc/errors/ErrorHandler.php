@@ -66,7 +66,6 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
 	 *
-	 * @access protected
 	 * @param Exception $exception the exception captured
 	 */
 	protected function handleException($exception)
@@ -145,7 +144,6 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Handles Twig syntax errors.
 	 *
-	 * @access protected
 	 * @param \Twig_Error $exception
 	 */
 	protected function handleTwigError(\Twig_Error $exception)
@@ -194,7 +192,6 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Handles DB connection errors.
 	 *
-	 * @access protected
 	 * @param DbConnectException $exception
 	 */
 	protected function handleDbConnectionError(DbConnectException $exception)

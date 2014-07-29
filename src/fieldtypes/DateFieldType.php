@@ -31,7 +31,6 @@ class DateFieldType extends BaseFieldType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

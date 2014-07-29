@@ -311,7 +311,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns the entry permissions for a given Single section.
 	 *
-	 * @access private
 	 * @param ScetinoModel $section
 	 * @return array
 	 */
@@ -345,7 +344,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns the entry permissions for a given Channel or Structure section.
 	 *
-	 * @access private
 	 * @param SectionModel $section
 	 * @return array
 	 */
@@ -396,7 +394,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns the global set permissions.
 	 *
-	 * @access private
 	 * @param array $globalSets
 	 * @return array
 	 */
@@ -417,8 +414,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns the category permissions.
 	 *
-	 * @access private
-	 * @param array $globalSets
+	 * @param $groups
 	 * @return array
 	 */
 	private function _getCategoryGroupPermissions($groups)
@@ -438,7 +434,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns the array source permissions.
 	 *
-	 * @access private
 	 * @param int $sourceId
 	 * @return array
 	 */
@@ -467,7 +462,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Filters out any orphaned permissions.
 	 *
-	 * @access private
 	 * @param array  $postedPermissions   The posted permissions.
 	 * @param array  $groupPermissions    Permissions the user is already assigned to via their group, if we're saving a user's permissions.
 	 * @return array $filteredPermissions The permissions we'll actually let them save.
@@ -490,7 +484,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Iterates through a group of permissions, returning the ones that were selected.
 	 *
-	 * @access private
 	 * @param array $permissionsGroup
 	 * @param array $postedPermissions
 	 * @param array $groupPermissions
@@ -520,7 +513,6 @@ class UserPermissionsService extends BaseApplicationComponent
 	/**
 	 * Returns a permission record based on its name. If a record doesn't exist, it will be created.
 	 *
-	 * @access private
 	 * @param string $permissionName
 	 * @return UserPermissionRecord
 	 */

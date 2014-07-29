@@ -11,7 +11,6 @@ class ModelHelper
 	/**
 	 * Default attribute configs
 	 *
-	 * @static
 	 * @var array
 	 */
 	public static $attributeTypeDefaults = array(
@@ -115,7 +114,6 @@ class ModelHelper
 	/**
 	 * Returns a number attribute config, taking the min, max, and number of decimal points into account.
 	 *
-	 * @static
 	 * @param number $min
 	 * @param number $max
 	 * @param int $decimals
@@ -173,8 +171,6 @@ class ModelHelper
 	/**
 	 * Integer column sizes
 	 *
-	 * @static
-	 * @access private
 	 * @var array
 	 */
 	private static $_intColumnSizes = array(
@@ -188,7 +184,6 @@ class ModelHelper
 	/**
 	 * Populates any default values that are defined for a model.
 	 *
-	 * @static
 	 * @param \CModel $model
 	 */
 	public static function populateAttributeDefaults(\CModel $model)
@@ -205,7 +200,6 @@ class ModelHelper
 	/**
 	 * Returns the rules array used by CModel.
 	 *
-	 * @static
 	 * @param \CModel $model
 	 * @return array
 	 */
@@ -471,7 +465,6 @@ class ModelHelper
 	/**
 	 * Returns the attribute labels.
 	 *
-	 * @static
 	 * @param \CModel $model
 	 * @return array
 	 */
@@ -493,7 +486,6 @@ class ModelHelper
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
-	 * @static
 	 * @param      $value
 	 * @param bool $jsonEncodeArrays
 	 * @internal param $storedValue
@@ -551,7 +543,6 @@ class ModelHelper
 	/**
 	 * Searches an array for any flattened models, and expands them back to models.
 	 *
-	 * @static
 	 * @param array $arr
 	 * @return array|BaseModel
 	 */
@@ -582,8 +573,6 @@ class ModelHelper
 	}
 
 	/**
-	 * @static
-	 * @access private
 	 * @var array
 	 */
 	private static $_comparisonOperators = array('==|=|!=|>=|>|<=|<');

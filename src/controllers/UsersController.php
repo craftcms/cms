@@ -1204,7 +1204,6 @@ class UsersController extends BaseController
 	/**
 	 * Throws a "no user exists" exception
 	 *
-	 * @access private
 	 * @param int $userId
 	 * @throws Exception
 	 */

@@ -471,7 +471,6 @@ class MatrixFieldType extends BaseFieldType
 	/**
 	 * Returns the settings model.
 	 *
-	 * @access protected
 	 * @return BaseModel
 	 */
 	protected function getSettingsModel()
@@ -522,7 +521,6 @@ class MatrixFieldType extends BaseFieldType
 	/**
 	 * Returns info about each field type for the configurator.
 	 *
-	 * @access private
 	 * @param string $name
 	 * @return array
 	 */

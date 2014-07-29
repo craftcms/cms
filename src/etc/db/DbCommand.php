@@ -9,7 +9,6 @@ namespace Craft;
 class DbCommand extends \CDbCommand
 {
 	/**
-	 * @access private
 	 * @var array Captures the joined tables
 	 */
 	private $_joinedTables;
@@ -644,7 +643,6 @@ class DbCommand extends \CDbCommand
 	/**
 	 * Adds a table to our record of joined tables.
 	 *
-	 * @access private
 	 * @param string $table The table name
 	 * @return bool
 	 */
@@ -673,7 +671,6 @@ class DbCommand extends \CDbCommand
 	 * Adds support for array('column' => 'value') conditional syntax.
 	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'), array('column2' => 'value2'))
 	 *
-	 * @access private
 	 * @param mixed $conditions
 	 * @param array &$params
 	 * @return mixed

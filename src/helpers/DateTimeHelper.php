@@ -17,7 +17,6 @@ class DateTimeHelper
 	}
 
 	/**
-	 * @static
 	 * @return int
 	 */
 	public static function currentTimeStamp()
@@ -27,7 +26,6 @@ class DateTimeHelper
 	}
 
 	/**
-	 * @static
 	 * @return string
 	 */
 	public static function currentTimeForDb()
@@ -71,7 +69,6 @@ class DateTimeHelper
 	}
 
 	/**
-	 * @static
 	 * @param int $seconds The number of seconds
 	 * @param bool $showSeconds Whether to output seconds or not
 	 * @return string

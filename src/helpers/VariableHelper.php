@@ -11,7 +11,6 @@ class VariableHelper
 	/**
 	 * Returns an array of variables for a given set of class instances.
 	 *
-	 * @static
 	 * @param array $instances
 	 * @param string $class
 	 * @return array

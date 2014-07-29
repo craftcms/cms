@@ -23,7 +23,6 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	/**
 	 * Returns the label for the Options setting.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getOptionsSettingsLabel()

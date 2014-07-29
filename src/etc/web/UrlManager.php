@@ -13,7 +13,6 @@ class UrlManager extends \CUrlManager
 
 	/**
 	 * @var array List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
-	 * @access private
 	 */
 	private $_routeVariables;
 
@@ -157,7 +156,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Sets the route.
 	 *
-	 * @access private
 	 * @param mixed $route
 	 */
 	private function _setRoute($route)
@@ -181,7 +179,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Normalizes a route.
 	 *
-	 * @access private
 	 * @param mixed $route
 	 * @return array
 	 */
@@ -211,7 +208,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with an element in the database.
 	 *
-	 * @access private
 	 * @param string $path
 	 * @return mixed
 	 */
@@ -246,7 +242,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with the registered URL routes.
 	 *
-	 * @access private
 	 * @param string $path
 	 * @return mixed
 	 */
@@ -309,7 +304,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with a set of given URL routes.
 	 *
-	 * @access private
 	 * @param string $path
 	 * @param array $routes
 	 * @return mixed
@@ -358,7 +352,6 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	private function _isPublicTemplatePath()

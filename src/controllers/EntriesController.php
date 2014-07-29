@@ -401,12 +401,13 @@ class EntriesController extends BaseEntriesController
 		// Permission enforcement
 		$this->enforceEditEntryPermissions($entry);
 		$userSessionService = craft()->userSession;
+		$currentUser = $userSessionService->getUser();
 
 		if ($entry->id)
 		{
 			// Is this another user's entry (and it's not a Single)?
 			if (
-				$entry->authorId != $userSessionService->getUser()->id &&
+				$entry->authorId != $currentUser->id &&
 				$entry->getSection()->type != SectionType::Single
 			)
 			{
@@ -424,7 +425,14 @@ class EntriesController extends BaseEntriesController
 		// Even more permission enforcement
 		if ($entry->enabled)
 		{
-			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			if ($entry->id)
+			{
+				$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			}
+			else if (!$currentUser->can('publishEntries:'.$entry->sectionId))
+			{
+				$entry->enabled = false;
+			}
 		}
 
 		// Save the entry (finally!)
@@ -625,7 +633,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Preps entry edit variables.
 	 *
-	 * @access private
 	 * @param array &$variables
 	 * @throws HttpException
 	 * @throws Exception
@@ -660,7 +667,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$variables['localeIds'])
 		{
-			throw new HttpException(404);
+			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this section’s locales.'));
 		}
 
 		if (empty($variables['localeId']))
@@ -777,7 +784,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Fetches or creates an EntryModel.
 	 *
-	 * @access private
 	 * @throws Exception
 	 * @return EntryModel
 	 */
@@ -812,7 +818,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Populates an EntryModel with post data.
 	 *
-	 * @access private
 	 * @param EntryModel $entry
 	 */
 	private function _populateEntryModel(EntryModel $entry)
@@ -838,7 +843,6 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Displays an entry.
 	 *
-	 * @access private
 	 * @throws HttpException
 	 * @param EntryModel $entry
 	 */

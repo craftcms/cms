@@ -203,7 +203,6 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves a content model to the database.
 	 *
-	 * @access private
 	 * @param ContentModel $content
 	 * @return bool
 	 */
@@ -265,7 +264,6 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Copies the new values of any non-translatable fields across the element's other locales.
 	 *
-	 * @access private
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content
 	 * @param FieldLayoutModel $fieldLayout
@@ -327,7 +325,6 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Updates the search indexes based on the new content values.
 	 *
-	 * @access private
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content
 	 * @param FieldLayoutModel $fieldLayout
@@ -377,7 +374,6 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Removes the column prefixes from a given row.
 	 *
-	 * @access private
 	 * @param array $row
 	 * @return array
 	 */

@@ -430,7 +430,6 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Returns the current request path, including a "site:" or "cp:" prefix.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getPath()

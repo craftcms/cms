@@ -9,7 +9,6 @@ namespace Craft;
 class EmailSettingsModel extends BaseModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

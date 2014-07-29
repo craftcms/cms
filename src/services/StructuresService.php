@@ -182,7 +182,6 @@ class StructuresService extends BaseApplicationComponent
 	/**
 	 * Returns a structure element record from given structure and element IDs.
 	 *
-	 * @access private
 	 * @param int $structureId
 	 * @param BaseElementModel $element
 	 * @return StructureElementRecord|null
@@ -203,7 +202,6 @@ class StructuresService extends BaseApplicationComponent
 	/**
 	 * Returns the root node for a given structure ID, or creates one if it doesn't exist.
 	 *
-	 * @access private
 	 * @param int $structureId
 	 * @return StructureElementRecord
 	 */
@@ -232,7 +230,6 @@ class StructuresService extends BaseApplicationComponent
 	/**
 	 * Updates a BaseElementModel with the new structure attributes from a StructureElementRecord.
 	 *
-	 * @access private
 	 * @param  int                    $structureId
 	 * @param  BaseElementModel       $element
 	 * @param  StructureElementRecord $targetElementRecord

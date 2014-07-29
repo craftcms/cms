@@ -13,8 +13,7 @@ class AppHelper
 	/**
 	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
 	 *
-	 * @static
-	 * @return bool
+\	 * @return bool
 	 */
 	public static function isPhpDevServer()
 	{

@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Element criteria model class.
  *
- * @implements \Countable
  * @package craft.app.models
  */
 class ElementCriteriaModel extends BaseModel implements \Countable
@@ -27,11 +26,11 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	function __construct($attributes, BaseElementType $elementType)
 	{
 		$this->_elementType = $elementType;
+
 		parent::__construct($attributes);
 	}
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -407,8 +406,6 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 	/**
 	 * Includes
-	 *
-	 * @access private
 	 */
 	private function _includeInTemplateCaches()
 	{

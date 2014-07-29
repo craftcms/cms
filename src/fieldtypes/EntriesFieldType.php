@@ -9,7 +9,6 @@ namespace Craft;
 class EntriesFieldType extends BaseElementFieldType
 {
 	/**
-	 * @access protected
 	 * @var string $elementType The element type this field deals with.
 	 */
 	protected $elementType = 'Entry';
@@ -17,7 +16,6 @@ class EntriesFieldType extends BaseElementFieldType
 	/**
 	 * Returns the label for the "Add" button.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getAddButtonLabel()

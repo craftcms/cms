@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Component template variable class
  *
- * @abstract
  * @package craft.app.validators
  */
 abstract class BaseComponentTypeVariable
@@ -74,7 +73,6 @@ abstract class BaseComponentTypeVariable
 	/**
 	 * Mass-populates instances of this class with a given set of models.
 	 *
-	 * @static
 	 * @param array $models
 	 * @return array
 	 */

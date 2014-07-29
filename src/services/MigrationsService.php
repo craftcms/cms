@@ -315,7 +315,6 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * Returns a DbCommand object prepped for retrieving migrations.
 	 *
-	 * @access private
 	 * @param string|null $plugin
 	 * @return DbCommand
 	 */

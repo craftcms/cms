@@ -24,7 +24,6 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -241,8 +240,6 @@ class RichTextFieldType extends BaseFieldType
 
 	/**
 	 * Includes the input resources.
-	 *
-	 * @access private
 	 */
 	private function _includeFieldResources()
 	{
@@ -276,7 +273,6 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Attempts to include a Redactor language file.
 	 *
-	 * @access private
 	 * @param string $lang
 	 * @return bool
 	 */

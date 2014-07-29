@@ -138,7 +138,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the tables as defined in the records.
 	 *
-	 * @access private
 	 * @param $records
 	 * @return void
 	 */
@@ -154,7 +153,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the foreign keys as defined in the records.
 	 *
-	 * @access private
 	 * @param $records
 	 */
 	private function _createForeignKeysFromRecords($records)
@@ -168,8 +166,6 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the content table.
-	 *
-	 * @access private
 	 */
 	private function _createContentTable()
 	{
@@ -190,8 +186,6 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the relations table.
-	 *
-	 * @access private
 	 */
 	private function _createRelationsTable()
 	{
@@ -216,8 +210,6 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the shunnedmessages table.
-	 *
-	 * @access private
 	 */
 	private function _createShunnedMessagesTable()
 	{
@@ -236,8 +228,6 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the searchindex table.
-	 *
-	 * @access private
 	 */
 	private function _createSearchIndexTable()
 	{
@@ -271,8 +261,6 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the template cache tables.
-	 *
-	 * @access private
 	 */
 	private function _createTemplateCacheTables()
 	{
@@ -318,7 +306,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Populates the info table with install and environment information.
 	 *
-	 * @access private
 	 * @param $inputs
 	 * @throws Exception
 	 */
@@ -479,7 +466,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Adds the initial locale to the database.
 	 *
-	 * @access private
 	 * @param string $locale
 	 */
 	private function _addLocale($locale)
@@ -492,7 +478,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Adds the initial user to the database.
 	 *
-	 * @access private
 	 * @param $inputs
 	 * @return UserModel
 	 * @throws Exception
@@ -522,7 +507,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Attempts to log in the given user.
 	 *
-	 * @access private
 	 * @param array $inputs
 	 */
 	private function _logUserIn($inputs)
@@ -542,7 +526,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Saves some default mail settings for the site.
 	 *
-	 * @access private
 	 * @param $email
 	 * @param $siteName
 	 */
@@ -569,7 +552,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates initial database content for the install.
 	 *
-	 * @access private
 	 * @param $inputs
 	 * @return null
 	 */
@@ -841,7 +823,6 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Get a flattened list of model errors
 	 *
-	 * @access private
 	 * @param array $errors
 	 * @return string
 	 */

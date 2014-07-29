@@ -9,7 +9,6 @@ namespace Craft;
 class WebLogRoute extends \CWebLogRoute
 {
 	/**
-	 * @access protected
 	 * @param $view
 	 * @param $data
 	 * @return mixed

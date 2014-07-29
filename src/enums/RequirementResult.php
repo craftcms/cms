@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class RequirementResult
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class RequirementResult extends BaseEnum

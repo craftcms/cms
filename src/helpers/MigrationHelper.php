@@ -16,8 +16,6 @@ class MigrationHelper
 
 	/**
 	 * Refreshes our record of everything.
-	 *
-	 * @static
 	 */
 	public static function refresh()
 	{
@@ -28,7 +26,6 @@ class MigrationHelper
 	/**
 	 * Drops a foreign key if it exists.
 	 *
-	 * @static
 	 * @param string $tableName
 	 * @param array $columns
 	 */
@@ -50,7 +47,6 @@ class MigrationHelper
 	/**
 	 * Drops an index if it exists.
 	 *
-	 * @static
 	 * @param string $tableName
 	 * @param array $columns
 	 * @param bool $unique
@@ -74,7 +70,6 @@ class MigrationHelper
 	 * Renames a table, while also updating its index and FK names,
 	 * as well as any other FK names pointing to the table.
 	 *
-	 * @static
 	 * @param string $oldName
 	 * @param string $newName
 	 */
@@ -114,7 +109,6 @@ class MigrationHelper
 	/**
 	 * Renames a column, while also updating any index and FK names that use the column.
 	 *
-	 * @static
 	 * @param string $tableName
 	 * @param string $oldName
 	 * @param string $newName
@@ -197,7 +191,6 @@ class MigrationHelper
 	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId',
 	 * and updates the names of any FK's in other tables.
 	 *
-	 * @static
 	 * @param string     $table       The existing table name used to store records of this element.
 	 * @param string     $elementType The element type handle (e.g. "Entry", "Asset", etc.).
 	 * @param bool       $hasContent  Whether this element type has content.
@@ -314,7 +307,6 @@ class MigrationHelper
 	/**
 	 * Returns info about all of the tables.
 	 *
-	 * @static
 	 * @return array
 	 */
 	public static function getTables()
@@ -330,7 +322,6 @@ class MigrationHelper
 	/**
 	 * Returns info about a given table.
 	 *
-	 * @static
 	 * @param string $table
 	 * @return object|null
 	 */
@@ -347,7 +338,6 @@ class MigrationHelper
 	/**
 	 * Returns a list of all the foreign keys that point to a given table/column.
 	 *
-	 * @static
 	 * @param string $table  The table the foreign keys should point to.
 	 * @param string $column The column the foreign keys should point to. Defaults to 'id'.
 	 * @return array         A list of the foreign keys pointing to that table/column.
@@ -390,7 +380,6 @@ class MigrationHelper
 	/**
 	 * Drops all the foreign keys on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function dropAllForeignKeysOnTable($table)
@@ -404,7 +393,6 @@ class MigrationHelper
 	/**
 	 * Drops a foreign key.
 	 *
-	 * @static
 	 * @param object $fk
 	 */
 	public static function dropForeignKey($fk)
@@ -416,7 +404,6 @@ class MigrationHelper
 	/**
 	 * Drops all the indexes on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function dropAllIndexesOnTable($table)
@@ -430,7 +417,6 @@ class MigrationHelper
 	/**
 	 * Drops all the unique indexes on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function dropAllUniqueIndexesOnTable($table)
@@ -447,7 +433,6 @@ class MigrationHelper
 	/**
 	 * Drops an index.
 	 *
-	 * @static
 	 * @param object $index
 	 */
 	public static function dropIndex($index)
@@ -459,7 +444,6 @@ class MigrationHelper
 	/**
 	 * Restores all the indexes on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function restoreAllIndexesOnTable($table)
@@ -473,7 +457,6 @@ class MigrationHelper
 	/**
 	 * Restores all the unique indexes on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function restoreAllUniqueIndexesOnTable($table)
@@ -490,8 +473,7 @@ class MigrationHelper
 	/**
 	 * Restores an index.
 	 *
-	 * @static
-	 * @param object $fk
+	 * @param object $index
 	 */
 	public static function restoreIndex($index)
 	{
@@ -504,7 +486,6 @@ class MigrationHelper
 	/**
 	 * Restores all the foreign keys on a table.
 	 *
-	 * @static
 	 * @param object $table
 	 */
 	public static function restoreAllForeignKeysOnTable($table)
@@ -518,7 +499,6 @@ class MigrationHelper
 	/**
 	 * Restores a foreign key.
 	 *
-	 * @static
 	 * @param object $fk
 	 */
 	public static function restoreForeignKey($fk)
@@ -532,8 +512,6 @@ class MigrationHelper
 	/**
 	 * Returns the length of the table prefix.
 	 *
-	 * @static
-	 * @access private
 	 * @return string
 	 */
 	private static function _getTablePrefixLength()
@@ -548,9 +526,6 @@ class MigrationHelper
 
 	/**
 	 * Records all the foreign keys and indexes for each table.
-	 *
-	 * @static
-	 * @access private
 	 */
 	private static function _analyzeTables()
 	{
@@ -568,8 +543,6 @@ class MigrationHelper
 	/**
 	 * Records all the foreign keys and indexes for a given table.
 	 *
-	 * @static
-	 * @access private
 	 * @param string $table
 	 */
 	private static function _analyzeTable($table)

@@ -118,7 +118,6 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Returns all email message keys.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getAllMessageKeys()
@@ -131,7 +130,6 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Returns the source locale for a message by its key.
 	 *
-	 * @access private
 	 * @param string $key
 	 * @return string|null
 	 */
@@ -147,8 +145,6 @@ class EmailMessagesService extends BaseApplicationComponent
 
 	/**
 	 * Sets all of the email message keys and source locales.
-	 *
-	 * @access private
 	 */
 	private function _setAllMessageKeysAndLocales()
 	{
@@ -179,10 +175,11 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Translates an email message string.
 	 *
-	 * @access private
 	 * @param string $key
 	 * @param string $part
 	 * @param string $localeId
+	 *
+	 * @return null|string
 	 */
 	private function _translateMessageString($key, $part, $localeId)
 	{
@@ -207,7 +204,6 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Gets a message record by its key.
 	 *
-	 * @access private
 	 * @param string $key
 	 * @param string|null $localeId
 	 * @return EmailMessageRecord

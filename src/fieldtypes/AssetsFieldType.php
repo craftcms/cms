@@ -9,13 +9,11 @@ namespace Craft;
 class AssetsFieldType extends BaseElementFieldType
 {
 	/**
-	 * @access protected
 	 * @var string $elementType The element type this field deals with.
 	 */
 	protected $elementType = 'Asset';
 
 	/**
-	 * @access protected
 	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
 	 */
 	protected $inputJsClass = 'Craft.AssetSelectInput';
@@ -36,7 +34,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Returns the label for the "Add" button.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getAddButtonLabel()
@@ -47,7 +44,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()
@@ -278,7 +274,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
-	 * @access protected
 	 * @return array
 	 * @throws Exception
 	 */
@@ -318,7 +313,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function getInputSelectionCriteria()
@@ -337,7 +331,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
-	 * @access private
 	 * @param int $sourceId
 	 * @param string $subpath
 	 * @return mixed
@@ -419,7 +412,6 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Create a subfolder in a folder by it's name.
 	 *
-	 * @access private
 	 * @param $currentFolder
 	 * @param $folderName
 	 * @return mixed|null

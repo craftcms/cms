@@ -15,7 +15,6 @@ class AssetOperationResponseModel extends BaseModel
 	private $_data = array();
 
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

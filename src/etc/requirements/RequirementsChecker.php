@@ -63,7 +63,6 @@ class RequirementsChecker extends \CComponent
 	}
 
 	/**
-	 * @access private
 	 * @return string
 	 */
 	private function _calculateServerInfo()

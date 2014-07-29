@@ -14,7 +14,6 @@ class ComponentsService extends BaseApplicationComponent
 	public $types;
 
 	/**
-	 * @access private
 	 * @var array The internal list of components
 	 */
 	private $_components;
@@ -240,7 +239,6 @@ class ComponentsService extends BaseApplicationComponent
 	/**
 	 * Throws a "no component type exists" exception.
 	 *
-	 * @access private
 	 * @param string $type
 	 * @throws Exception
 	 */

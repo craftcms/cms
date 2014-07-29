@@ -11,7 +11,6 @@ class UploadedFile extends \CUploadedFile
 	/**
 	 * Returns an instance of the specified uploaded file.
 	 *
-	 * @static
 	 * @param string $name
 	 * @return \CUploadedFile|null
 	 */
@@ -51,8 +50,6 @@ class UploadedFile extends \CUploadedFile
 	 *
 	 * ex: fields.assetsField => fields[assetsField]
 	 *
-	 * @static
-	 * @access private
 	 * @param string $name
 	 * @return string
 	 */

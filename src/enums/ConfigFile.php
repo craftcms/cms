@@ -4,7 +4,6 @@ namespace Craft;
 /**
  * Class ConfigFile
  *
- * @abstract
  * @package craft.app.enums
  */
 abstract class ConfigFile extends BaseEnum

@@ -9,7 +9,6 @@ namespace Craft;
 class InfoModel extends BaseModel
 {
 	/**
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineAttributes()

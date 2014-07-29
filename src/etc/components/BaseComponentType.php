@@ -4,20 +4,16 @@ namespace Craft;
 /**
  * Base component base class.
  *
- * @abstract
- * @implements IComponentType
  * @package craft.app.etc.components
  */
 abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
 {
 	/**
-	 * @access protected
 	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
 	protected $componentType;
 
 	/**
-	 * @access private
 	 * @var string The component's class handle.
 	 */
 	private $_classHandle;
