@@ -1,7 +1,7 @@
 {% set static = static is defined ? static : false %}
 {% set element = element is defined ? element : null %}
 
-{% set value = (element ? attribute(element, field.handle) : null) %}
+{% set value = (element ? element.getFieldValue(field.handle) : null) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set fieldtype = craft.fields.populateFieldType(field, element) %}
 {% set instructions = (not static ? field.instructions|t : null) %}
@@ -19,6 +19,7 @@
 {% if instructions or input %}
 	{% include "_includes/forms/field" with {
 		label: field.name|t|e,
+		locale: field.translatable ? (locale is defined ? locale : (element ? element.locale : craft.locale)),
 		required: (not static ? required : false),
 		instructions: instructions,
 		id: field.handle,

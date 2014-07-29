@@ -204,6 +204,7 @@ class CategoryElementType extends BaseElementType
 		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label' => Craft::t('Title'),
+				'locale' => $element->locale,
 				'id' => 'title',
 				'name' => 'title',
 				'value' => $element->getContent()->title,
@@ -217,6 +218,7 @@ class CategoryElementType extends BaseElementType
 		$html .= craft()->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label' => Craft::t('Slug'),
+				'locale' => $element->locale,
 				'id' => 'slug',
 				'name' => 'slug',
 				'value' => $element->slug,

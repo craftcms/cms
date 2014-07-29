@@ -10,6 +10,7 @@ abstract class BaseElementModel extends BaseModel
 {
 	protected $elementType;
 
+	private $_fieldsByHandle;
 	private $_contentPostLocation;
 	private $_rawPostContent;
 	private $_content;
@@ -666,11 +667,9 @@ abstract class BaseElementModel extends BaseModel
 		catch (\Exception $e)
 		{
 			// Is $name a field handle?
-			$field = $this->getFieldByHandle($name);
-
-			if ($field)
+			if ($this->getFieldByHandle($name))
 			{
-				return $this->_getPreppedContentForField($field);
+				return $this->getFieldValue($name);
 			}
 
 			// Fine, throw the exception
@@ -867,6 +866,49 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the prepped content for a given field.
+	 *
+	 * @param string $fieldHandle
+	 * @return mixed
+	 */
+	public function getFieldValue($fieldHandle)
+	{
+		if (!isset($this->_preppedContent) || !array_key_exists($fieldHandle, $this->_preppedContent))
+		{
+			$field = $this->getFieldByHandle($fieldHandle);
+
+			if (!$field)
+			{
+				throw new Exception(Craft::t('No field exists with the handle “{handle}”', array('handle' => $fieldHandle)));
+			}
+
+			$content = $this->getContent();
+
+			if (isset($content->$fieldHandle))
+			{
+				$value = $content->$fieldHandle;
+			}
+			else
+			{
+				$value = null;
+			}
+
+			// Give the field type a chance to prep the value for use
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$fieldType->element = $this;
+				$value = $fieldType->prepValue($value);
+			}
+
+			$this->_preppedContent[$field->handle] = $value;
+		}
+
+		return $this->_preppedContent[$field->handle];
+	}
+
+	/**
 	 * Returns the name of the table this element's content is stored in.
 	 *
 	 * @return string
@@ -940,16 +982,19 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	protected function getFieldByHandle($handle)
 	{
-		$contentService = craft()->content;
+		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
+		{
+			$contentService = craft()->content;
 
-		$originalFieldContext = $contentService->fieldContext;
-		$contentService->fieldContext = $this->getFieldContext();
+			$originalFieldContext = $contentService->fieldContext;
+			$contentService->fieldContext = $this->getFieldContext();
 
-		$field = craft()->fields->getFieldByHandle($handle);
+			$this->_fieldsByHandle[$handle] = craft()->fields->getFieldByHandle($handle);
 
-		$contentService->fieldContext = $originalFieldContext;
+			$contentService->fieldContext = $originalFieldContext;
+		}
 
-		return $field;
+		return $this->_fieldsByHandle[$handle];
 	}
 
 	/**
@@ -981,42 +1026,5 @@ abstract class BaseElementModel extends BaseModel
 				return $criteria->first();
 			}
 		}
-	}
-
-	/**
-	 * Returns the prepped content for a given field.
-	 *
-	 * @param FieldModel $field
-	 * @return mixed
-	 */
-	private function _getPreppedContentForField(FieldModel $field)
-	{
-		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
-		{
-			$content = $this->getContent();
-			$fieldHandle = $field->handle;
-
-			if (isset($content->$fieldHandle))
-			{
-				$value = $content->$fieldHandle;
-			}
-			else
-			{
-				$value = null;
-			}
-
-			// Give the field type a chance to prep the value for use
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$fieldType->element = $this;
-				$value = $fieldType->prepValue($value);
-			}
-
-			$this->_preppedContent[$field->handle] = $value;
-		}
-
-		return $this->_preppedContent[$field->handle];
 	}
 }
