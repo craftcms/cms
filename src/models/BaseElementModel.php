@@ -10,6 +10,7 @@ abstract class BaseElementModel extends BaseModel
 {
 	protected $elementType;
 
+	private $_fieldsByHandle;
 	private $_contentPostLocation;
 	private $_rawPostContent;
 	private $_content;
@@ -940,16 +941,19 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	protected function getFieldByHandle($handle)
 	{
-		$contentService = craft()->content;
+		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
+		{
+			$contentService = craft()->content;
 
-		$originalFieldContext = $contentService->fieldContext;
-		$contentService->fieldContext = $this->getFieldContext();
+			$originalFieldContext = $contentService->fieldContext;
+			$contentService->fieldContext = $this->getFieldContext();
 
-		$field = craft()->fields->getFieldByHandle($handle);
+			$this->_fieldsByHandle[$handle] = craft()->fields->getFieldByHandle($handle);
 
-		$contentService->fieldContext = $originalFieldContext;
+			$contentService->fieldContext = $originalFieldContext;
+		}
 
-		return $field;
+		return $this->_fieldsByHandle[$handle];
 	}
 
 	/**
