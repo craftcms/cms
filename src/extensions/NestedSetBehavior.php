@@ -4,9 +4,10 @@
  * Provides nested set functionality for a model.
  *
  * @version 1.06
- * @author Alexander Kochetov <creocoder@gmail.com>
- * @link https://github.com/yiiext/nested-set-behavior
+ * @author  Alexander Kochetov <creocoder@gmail.com>
+ * @link    https://github.com/yiiext/nested-set-behavior
  * @package craft.app.extensions
+ * @since   1.0
  */
 class NestedSetBehavior extends CActiveRecordBehavior
 {

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Will validate that the given attribute is a valid URL format.
  *
- * @package craft.app.validators
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.validators
+ * @since     1.0
  */
 class UrlFormatValidator extends \CValidator
 {

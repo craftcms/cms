@@ -6,7 +6,12 @@ namespace Craft;
  *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
- * @package craft.app.etc.templating.twigextensions
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.templating.twigextensions
+ * @since     1.0
  */
 class Switch_TokenParser extends \Twig_TokenParser
 {

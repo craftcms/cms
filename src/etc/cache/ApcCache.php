@@ -7,7 +7,12 @@ namespace Craft;
  * The caching is based on {@link http://www.php.net/apc APC}.
  * To use this application component, the APC PHP extension must be loaded.
  *
- * @package craft.app.etc.cache
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.cache
+ * @since     1.0
  */
 class ApcCache extends \CApcCache
 {

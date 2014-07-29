@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Element type base class.
  *
- * @package craft.app.elementtypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     1.0
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {

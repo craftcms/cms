@@ -14,7 +14,12 @@ namespace Craft;
  *
  * The minimum required redis version is 2.0.0.
  *
- * @package craft.app.etc.cache
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.cache
+ * @since     1.0
  */
 class RedisCache extends \CRedisCache
 {

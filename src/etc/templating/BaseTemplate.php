@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Base Twig template class.
  *
- * @package craft.app.etc.templating
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.templating
+ * @since     1.0
  */
 abstract class BaseTemplate extends \Twig_Template
 {

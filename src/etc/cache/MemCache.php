@@ -13,7 +13,12 @@ namespace Craft;
  * MemCache can also be used with {@link http://pecl.php.net/package/memcached memcached}.
  * To do so, set useMemcached to be true.
  *
- * @package craft.app.etc.cache
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.cache
+ * @since     1.0
  */
 class MemCache extends \CMemCache
 {

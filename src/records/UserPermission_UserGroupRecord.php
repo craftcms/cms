@@ -6,7 +6,12 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Class UserPermission_UserGroupRecord
  *
- * @package craft.app.records
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class UserPermission_UserGroupRecord extends BaseRecord
 {

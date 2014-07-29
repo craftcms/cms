@@ -94,7 +94,7 @@ class AppController extends BaseController
 	}
 
 	/**
-	 * Returns the editon upgrade modal.
+	 * Returns the edition upgrade modal.
 	 */
 	public function actionGetUpgradeModal()
 	{

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Find and Replace tool
  *
- * @package craft.app.tools
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.tools
+ * @since     1.0
  */
 class FindAndReplaceTool extends BaseTool
 {
