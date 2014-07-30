@@ -226,9 +226,11 @@
 									</div>
 								{% endif %}
 
-								{% block content %}
-									{{ content is defined ? content }}
-								{% endblock %}
+								<div class="body">
+									{% block content %}
+										{{ content is defined ? content }}
+									{% endblock %}
+								</div>
 
 								{% if hasHelp %}
 									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>
