@@ -13,9 +13,12 @@ namespace Craft;
  */
 class BaseApplicationComponent extends \CApplicationComponent
 {
-	// For consistency!
 	/**
-	 * @return bool
+	 * Checks if this application component has been initialized yet, or not.
+	 *
+	 * Craft is overriding this for consistency.
+	 *
+     * @return boolean Whether this application component has been initialized (i.e., {@link init()} has been invoked).
 	 */
 	public function isInitialized()
 	{

@@ -13,6 +13,14 @@ namespace Craft;
  */
 class UpdateController extends BaseController
 {
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
 	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
 	// -------------------------------------------
@@ -20,7 +28,9 @@ class UpdateController extends BaseController
 	// -------------------------------------------
 
 	/**
-	 * Returns the available updates
+	 * Returns the available updates.
+	 *
+	 * @return void
 	 */
 	public function actionGetAvailableUpdates()
 	{
@@ -50,6 +60,8 @@ class UpdateController extends BaseController
 
 	/**
 	 * Returns the update info JSON.
+	 *
+	 * @return void
 	 */
 	public function actionGetUpdates()
 	{
@@ -131,7 +143,7 @@ class UpdateController extends BaseController
 	// -------------------------------------------
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionPrepare()
 	{
@@ -176,7 +188,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionProcessDownload()
 	{
@@ -205,7 +217,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionBackupFiles()
 	{
@@ -232,7 +244,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionUpdateFiles()
 	{
@@ -259,7 +271,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionBackupDatabase()
 	{
@@ -306,7 +318,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionUpdateDatabase()
 	{
@@ -347,6 +359,8 @@ class UpdateController extends BaseController
 
 	/**
 	 * Performs maintenance and clean up tasks after an update.
+	 *
+	 * @return void
 	 */
 	public function actionCleanUp()
 	{
@@ -399,7 +413,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionRollback()
 	{
@@ -445,6 +460,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * @param $data
+	 *
 	 * @return bool
 	 */
 	private function _isManualUpdate($data)
@@ -459,6 +475,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * @param $data
+	 *
 	 * @return string
 	 */
 	private function _getFixedHandle($data)

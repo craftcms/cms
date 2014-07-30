@@ -15,6 +15,8 @@ class TasksController extends BaseController
 {
 	/**
 	 * Runs any pending tasks.
+	 *
+	 * @return void
 	 */
 	public function actionRunPendingTasks()
 	{
@@ -42,6 +44,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns the completion percentage for the running task.
+	 *
+	 * @return void
 	 */
 	public function actionGetRunningTaskInfo()
 	{
@@ -61,6 +65,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Re-runs a failed task.
+	 *
+	 * @return void
 	 */
 	public function actionRerunTask()
 	{
@@ -88,6 +94,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Deletes a task.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteTask()
 	{
@@ -103,6 +111,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns info about all the tasks.
+	 *
+	 * @return void
 	 */
 	public function actionGetTaskInfo()
 	{
@@ -122,6 +132,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns info about the currently running task, if there is one.
+	 *
+	 * @return void
 	 */
 	private function _returnRunningTaskInfo()
 	{

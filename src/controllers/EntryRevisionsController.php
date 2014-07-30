@@ -17,6 +17,9 @@ class EntryRevisionsController extends BaseEntriesController
 {
 	/**
 	 * Saves a draft, or creates a new one.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionSaveDraft()
 	{
@@ -99,6 +102,9 @@ class EntryRevisionsController extends BaseEntriesController
 
 	/**
 	 * Renames a draft.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionUpdateDraftMeta()
 	{
@@ -136,6 +142,9 @@ class EntryRevisionsController extends BaseEntriesController
 
 	/**
 	 * Deletes a draft.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionDeleteDraft()
 	{
@@ -161,6 +170,9 @@ class EntryRevisionsController extends BaseEntriesController
 
 	/**
 	 * Publish a draft.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionPublishDraft()
 	{
@@ -244,6 +256,9 @@ class EntryRevisionsController extends BaseEntriesController
 
 	/**
 	 * Reverts an entry to a version.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionRevertEntryToVersion()
 	{
@@ -308,6 +323,8 @@ class EntryRevisionsController extends BaseEntriesController
 	 * Sets a draft's attributes from the post data.
 	 *
 	 * @param EntryDraftModel $draft
+	 *
+	 * @return void
 	 */
 	private function _setDraftAttributesFromPost(EntryDraftModel $draft)
 	{

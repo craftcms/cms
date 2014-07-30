@@ -24,6 +24,7 @@ class TasksService extends BaseApplicationComponent
 	 * @param string|null $description
 	 * @param array|null  $settings
 	 * @param int|null    $parentId
+	 *
 	 * @throws \Exception
 	 * @return TaskModel
 	 */

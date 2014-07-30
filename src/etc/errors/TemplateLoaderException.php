@@ -13,10 +13,15 @@ namespace Craft;
  */
 class TemplateLoaderException extends \Twig_Error_Loader
 {
+	/**
+	 * @var string
+	 */
 	public $template;
 
 	/**
 	 * @param string $template
+	 *
+	 * @return TemplateLoaderException
 	 */
 	function __construct($template)
 	{

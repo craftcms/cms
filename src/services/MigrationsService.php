@@ -166,6 +166,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @param       $class
 	 * @param  null $plugin
+	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
@@ -292,8 +293,9 @@ class MigrationsService extends BaseApplicationComponent
 
 	/**
 	 * @param null $plugin
-	 * @return string
+	 *
 	 * @throws Exception
+	 * @return string
 	 */
 	public function getMigrationPath($plugin = null)
 	{

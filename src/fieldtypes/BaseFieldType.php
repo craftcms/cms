@@ -156,7 +156,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
-	 * @return null|false
+	 * @return void|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{

@@ -17,6 +17,8 @@ class HttpException extends \CHttpException
 	 * @param      $status
 	 * @param null $message
 	 * @param int  $code
+	 *
+	 * @return HttpException
 	 */
 	function __construct($status = '', $message = null, $code = 0)
 	{

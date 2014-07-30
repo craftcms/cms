@@ -255,6 +255,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Enables a plugin.
 	 *
 	 * @param $handle
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -288,6 +289,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Disables a plugin.
 	 *
 	 * @param $handle
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -321,8 +323,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Installs a plugin.
 	 *
 	 * @param $handle
-	 * @throws Exception
-	 * @throws \Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function installPlugin($handle)
@@ -385,8 +387,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Uninstalls a plugin by removing it's record from the database, deleting it's tables and foreign keys and running the plugin's uninstall method if it exists.
 	 *
 	 * @param $handle
-	 * @throws Exception
-	 * @throws \Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function uninstallPlugin($handle)
@@ -675,6 +677,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Throws a "no plugin exists" exception.
 	 *
 	 * @param string $handle
+	 *
 	 * @throws Exception
 	 */
 	private function _noPluginExists($handle)
@@ -707,6 +710,7 @@ class PluginsService extends BaseApplicationComponent
 	 *
 	 * @param $pluginId
 	 * @param $pluginHandle
+	 *
 	 * @throws Exception
 	 */
 	private function _savePluginMigrations($pluginId, $pluginHandle)
@@ -748,6 +752,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Registers any services provided by a plugin.
 	 *
 	 * @param array $classes
+	 *
 	 * @throws Exception
 	 * @return void
 	 */

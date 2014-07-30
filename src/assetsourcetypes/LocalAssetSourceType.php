@@ -13,6 +13,9 @@ namespace Craft;
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
+	/**
+	 * @var bool
+	 */
 	protected $_isSourceLocal = true;
 
 	/**
@@ -54,6 +57,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -69,6 +73,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
+	 *
 	 * @return array
 	 */
 	public function startIndex($sessionId)
@@ -144,7 +149,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get the file system path for upload source.
 	 *
-	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType = null
+	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType
+	 *
 	 * @return string
 	 */
 	protected function _getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
@@ -159,6 +165,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sessionId
 	 * @param $offset
+	 *
 	 * @return mixed
 	 */
 	public function processIndex($sessionId, $offset)
@@ -208,8 +215,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param $filePath
 	 * @param $fileName
-	 * @return AssetOperationResponseModel
+	 *
 	 * @throws Exception
+	 * @return AssetOperationResponseModel
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
@@ -270,7 +278,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $fileName
+	 * @param                  $fileName
+	 *
 	 * @return string
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
@@ -308,7 +317,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformLocation
+	 * @param string         $transformLocation
+	 *
 	 * @return mixed
 	 */
 	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
@@ -327,8 +337,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param $handle
-	 * @param $sourceImage
+	 * @param                $handle
+	 * @param                $sourceImage
+	 *
 	 * @return mixed
 	 */
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
@@ -340,7 +351,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Get the image source path with the optional handle name.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $handle
+	 * @param string         $handle
+	 *
 	 * @return mixed
 	 */
 	public function getImageSourcePath(AssetFileModel $fileModel, $handle = '')
@@ -352,7 +364,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Get the local path for an image, optionally with a size handle.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformLocation
+	 * @param string         $transformLocation
+	 *
 	 * @return string
 	 */
 	private function _getImageServerPath(AssetFileModel $fileModel, $transformLocation = '')
@@ -372,6 +385,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Make a local copy of the file and return the path to it.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return mixed
 	 */
 
@@ -388,6 +402,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Get a file's system path.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return string
 	 */
 	private function _getFileSystemPath(AssetFileModel $file)
@@ -401,7 +416,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Delete just the source file for an Assets File.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $filename
+	 * @param                  $filename
+	 *
 	 * @return void
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
@@ -413,6 +429,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return void
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
@@ -428,10 +445,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Move a file in source.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
-	 * @param string $fileName
-	 * @param bool $overwrite if True, will overwrite target destination
+	 * @param string           $fileName
+	 * @param bool             $overwrite    If true, will overwrite target destination.
+	 *
 	 * @return mixed
 	 */
 	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
@@ -491,7 +509,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Return TRUE if a physical folder exists.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
@@ -503,7 +522,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Create a physical folder, return TRUE on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -519,7 +539,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Rename a source folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $newName
+	 * @param                  $newName
+	 *
 	 * @return boolean
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
@@ -532,7 +553,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -544,6 +567,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Determines if a file can be moved internally from original source.
 	 *
 	 * @param BaseAssetSourceType $originalSource
+	 *
 	 * @return mixed
 	 */
 	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
@@ -555,8 +579,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Copy a transform for a file from source location to target location.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $source
-	 * @param $target
+	 * @param                $source
+	 * @param                $target
+	 *
 	 * @return mixed
 	 */
 	public function copyTransform(AssetFileModel $file, $source, $target)
@@ -570,7 +595,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Return true if a transform exists at the location for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $location
+	 * @param                $location
+	 *
 	 * @return mixed
 	 */
 	public function transformExists(AssetFileModel $file, $location)

@@ -382,6 +382,7 @@ class FieldsService extends BaseApplicationComponent
 	 *
 	 * @param FieldModel $field
 	 * @param bool $validate
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -531,6 +532,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field.
 	 *
 	 * @param FieldModel $field
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -969,6 +971,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Gets a field group record or creates a new one.
 	 *
 	 * @param FieldGroupModel $group
+	 *
 	 * @throws Exception
 	 * @return FieldGroupRecord
 	 */

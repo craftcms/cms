@@ -25,7 +25,6 @@ namespace Craft;
  * @package   craft.app.enums
  * @since     1.0
  */
-
 abstract class ColumnType extends BaseEnum
 {
 	const PK           = 'pk';

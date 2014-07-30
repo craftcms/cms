@@ -137,6 +137,7 @@ class TagsService extends BaseApplicationComponent
 	 * Saves a tag group.
 	 *
 	 * @param TagGroupModel $tagGroup
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -224,6 +225,7 @@ class TagsService extends BaseApplicationComponent
 	 * Deletes a tag group by its ID.
 	 *
 	 * @param int $tagGroupId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -296,7 +298,8 @@ class TagsService extends BaseApplicationComponent
 	 * Saves a tag.
 	 *
 	 * @param TagModel $tag
-	 * @throws Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function saveTag(TagModel $tag)

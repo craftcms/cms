@@ -16,6 +16,7 @@ class HeaderHelper
 {
 	/**
 	 * @param $extension
+	 *
 	 * @throws Exception
 	 */
 	public static function setContentTypeByExtension($extension)

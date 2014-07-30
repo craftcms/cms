@@ -13,11 +13,20 @@ namespace Craft;
  */
 class FileCache extends \CFileCache
 {
+	/**
+	 * @var bool
+	 */
 	private $_gced = false;
+
+	/**
+	 * @var
+	 */
 	private $_originalKey;
 
 	/**
 	 * Override so we can set a custom file cache path.
+	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -37,7 +46,8 @@ class FileCache extends \CFileCache
 	 * @param  mixed            $value       The value to be cached
 	 * @param  integer          $expire      The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
-	 * @return boolean                       True if the value is successfully stored into cache, false otherwise
+	 *
+	 * @return boolean True if the value is successfully stored into cache, false otherwise
 	 */
 	public function set($id, $value, $expire = null, $dependency = null)
 	{
@@ -54,7 +64,8 @@ class FileCache extends \CFileCache
 	 * @param  mixed             $value      The value to be cached
 	 * @param  integer           $expire     The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
-	 * @return boolean                       True if the value is successfully stored into cache, false otherwise
+	 *
+	 * @return boolean True if the value is successfully stored into cache, false otherwise
 	 */
 	public function add($id, $value, $expire = null, $dependency = null)
 	{
@@ -69,7 +80,8 @@ class FileCache extends \CFileCache
 	 * @param  string  $key    The key identifying the value to be cached
 	 * @param  string  $value  The value to be cached
 	 * @param  integer $expire The number of seconds in which the cached value will expire. 0 means never expire.
-	 * @return boolean true    If the value is successfully stored into cache, false otherwise
+	 *
+	 * @return boolean true If the value is successfully stored into cache, false otherwise
 	 */
 	protected function setValue($key, $value, $expire)
 	{

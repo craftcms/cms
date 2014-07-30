@@ -101,8 +101,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Saves an asset transform.
 	 *
 	 * @param AssetTransformModel $transform
-	 * @return bool
+	 *
 	 * @throws Exception
+	 * @return bool
 	 */
 	public function saveTransform(AssetTransformModel $transform)
 	{
@@ -163,6 +164,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Deletes an asset transform by it's id.
 	 *
 	 * @param int $transformId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -304,8 +306,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get a transform URL by the transform index model.
 	 *
 	 * @param AssetTransformIndexModel $transformIndexModel
-	 * @return string
+	 *
 	 * @throws Exception
+	 * @return string
 	 */
 	public function ensureTransformUrlByIndexModel(AssetTransformIndexModel $transformIndexModel)
 	{
@@ -457,8 +460,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Normalize a transform from handle or a set of properties to an AssetTransformModel.
 	 *
 	 * @param mixed $transform
-	 * @return AssetTransformModel|null
+	 *
 	 * @throws Exception
+	 * @return AssetTransformModel|null
 	 */
 	public function normalizeTransform($transform)
 	{
@@ -734,8 +738,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get a local image source to use for transforms.
 	 *
 	 * @param $fileModel
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	public function getLocalImageSource($fileModel)
 	{

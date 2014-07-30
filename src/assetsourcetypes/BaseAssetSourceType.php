@@ -120,8 +120,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param string           $filePath The filePath of the file to insert.
 	 * @param string           $fileName The fileName of the file to insert.
 	 *
-	 * @return AssetOperationResponseModel
 	 * @throws Exception
+	 * @return AssetOperationResponseModel
 	 */
 	abstract protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
 
@@ -228,8 +228,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFolderModel $folder The assetFolderModel where the file should be uploaded to.
 	 *
-	 * @return object
 	 * @throws Exception
+	 * @return object
 	 */
 	public function uploadFile(AssetFolderModel $folder)
 	{
@@ -483,6 +483,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $oldFile     The assetFileModel representing the original file.
 	 * @param AssetFileModel $replaceWith The assetFileModel representing the new file.
+	 *
+	 * @return void
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
@@ -560,6 +562,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Finalize an outgoing transfer for a file.
 	 *
 	 * @param AssetFileModel $file The assetFileModel representing the file that will have any created images deleted.
+	 *
+	 * @return void
 	 */
 	public function deleteCreatedImages(AssetFileModel $file)
 	{
@@ -573,8 +577,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $parentFolder The assetFolderModel representing the folder to create.
 	 * @param string           $folderName   The name of the folder to create.
 	 *
-	 * @return AssetOperationResponseModel
 	 * @throws Exception
+	 * @return AssetOperationResponseModel
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
@@ -995,6 +999,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Delete all the generated images for this file.
 	 *
 	 * @param AssetFileModel $file The assetFileModel representing the file to delete any generated thumbnails for.
+	 *
+	 * @return void
 	 */
 	protected function _deleteGeneratedThumbnails(AssetFileModel $file)
 	{
@@ -1012,6 +1018,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Delete transform-related data for file.
 	 *
 	 * @param AssetFileModel $file The assetFileModel that represents the file to delete any transformed data for.
+	 *
+	 * @return void
 	 */
 	protected function _deleteTransformData(AssetFileModel $file)
 	{
@@ -1066,6 +1074,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param mixed            $changedData  Any data that changed during the mirroring operation.
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	private function _mirrorStructure(AssetFolderModel $newLocation, AssetFolderModel $sourceFolder, &$changedData)
 	{

@@ -14,18 +14,24 @@ namespace Craft;
 class ToolsController extends BaseController
 {
 	/**
-	 * Init
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
-		// All tool actions require an admin
+		// All tool actions require an admin.
 		craft()->userSession->requireAdmin();
 
+		// Any actions here require all we can get.
 		craft()->config->maxPowerCaptain();
 	}
 
 	/**
 	 * Performs a tool's action.
+	 *
+	 * @return void
 	 */
 	public function actionPerformAction()
 	{
@@ -42,6 +48,8 @@ class ToolsController extends BaseController
 
 	/**
 	 * Returns a database backup zip file to the browser.
+	 *
+	 * @return void
 	 */
 	public function actionDownloadBackupFile()
 	{

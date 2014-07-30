@@ -13,11 +13,22 @@ namespace Craft;
  */
 class FieldLayoutBehavior extends BaseBehavior
 {
+	/**
+	 * @var
+	 */
 	private $_fieldLayout;
+
+	/**
+	 * @var
+	 */
 	private $_elementType;
 
 	/**
 	 * Constructor
+	 *
+	 * @param $elementType
+	 *
+	 * @return \Craft\FieldLayoutBehavior
 	 */
 	public function __construct($elementType)
 	{
@@ -52,6 +63,8 @@ class FieldLayoutBehavior extends BaseBehavior
 	 * Sets the owner's field layout.
 	 *
 	 * @param FieldLayoutModel $fieldLayout
+	 *
+	 * @return void
 	 */
 	public function setFieldLayout(FieldLayoutModel $fieldLayout)
 	{

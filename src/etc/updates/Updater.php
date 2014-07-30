@@ -60,6 +60,7 @@ class Updater
 
 	/**
 	 * @param $md5
+	 *
 	 * @throws Exception
 	 * @return array
 	 */
@@ -118,6 +119,7 @@ class Updater
 
 	/**
 	 * @param $uid
+	 *
 	 * @throws Exception
 	 */
 	public function backupFiles($uid)
@@ -134,6 +136,7 @@ class Updater
 
 	/**
 	 * @param $uid
+	 *
 	 * @throws \Exception
 	 */
 	public function updateFiles($uid)
@@ -154,6 +157,7 @@ class Updater
 
 	/**
 	 * @return bool
+	 *
 	 * @throws Exception
 	 */
 	public function backupDatabase()
@@ -171,6 +175,7 @@ class Updater
 
 	/**
 	 * @param null $plugin
+	 *
 	 * @throws Exception
 	 */
 	public function updateDatabase($plugin = null)
@@ -206,6 +211,7 @@ class Updater
 
 	/**
 	 * @param $uid
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -451,8 +457,9 @@ class Updater
 
 	/**
 	 * @param $unzipFolder
-	 * @return array
+	 *
 	 * @throws Exception
+	 * @return array
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{

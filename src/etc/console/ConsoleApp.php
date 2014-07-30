@@ -16,7 +16,9 @@ class ConsoleApp extends \CConsoleApplication
 	public $componentAliases;
 
 	/**
+	 * Initializes the console app by creating the command runner.
 	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -70,6 +72,8 @@ class ConsoleApp extends \CConsoleApplication
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
+	 *
+	 * @return void
 	 */
 	public function on($event, $handler)
 	{

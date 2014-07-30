@@ -54,6 +54,7 @@ class UserIdentity extends \CUserIdentity
 
 	/**
 	 * @param UserModel $user
+	 *
 	 * @throws Exception
 	 * @return void
 	 */

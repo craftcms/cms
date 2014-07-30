@@ -188,6 +188,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Reorders widgets.
 	 *
 	 * @param array $widgetIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -315,6 +316,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Throws a "No widget exists" exception.
 	 *
 	 * @param int $widgetId
+	 *
 	 * @throws Exception
 	 */
 	private function _noWidgetExists($widgetId)

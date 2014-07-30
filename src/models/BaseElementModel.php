@@ -658,6 +658,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Getter
 	 *
 	 * @param string $name
+	 *
 	 * @throws \Exception
 	 * @return mixed
 	 */

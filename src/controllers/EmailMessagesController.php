@@ -16,7 +16,9 @@ craft()->requireEdition(Craft::Client);
 class EmailMessagesController extends BaseController
 {
 	/**
-	 * Saves an email message
+	 * Saves an email message.
+	 *
+	 * @return void
 	 */
 	public function actionSaveMessage()
 	{

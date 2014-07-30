@@ -24,9 +24,12 @@ namespace Craft;
 class RedisCache extends \CRedisCache
 {
 	/**
-	 * We override this because the parent is explicitly checking for null in the password.
+	 * Establishes a connection to the redis server.  It does nothing if the connection has already been established.
+	 *
+	 * Craft overrides this from Yii because the parent is explicitly checking for null in the password.
 	 *
 	 * @throws \CException
+	 * @return void
 	 */
 	protected function connect()
 	{

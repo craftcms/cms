@@ -72,6 +72,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Prepare the S3 connection for requests to this bucket.
 	 *
 	 * @param $settings
+	 *
+	 * @return void
 	 */
 	private function _prepareForRequests($settings = null)
 	{
@@ -93,8 +95,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $keyId
 	 * @param $secret
-	 * @return array
+	 *
 	 * @throws Exception
+	 * @return array
 	 */
 	public static function getBucketList($keyId, $secret)
 	{
@@ -127,6 +130,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
+	 *
 	 * @return array
 	 */
 	public function startIndex($sessionId)
@@ -229,6 +233,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sessionId
 	 * @param $offset
+	 *
 	 * @return mixed
 	 */
 	public function processIndex($sessionId, $offset)
@@ -283,10 +288,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Insert a file from path in folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $filePath
-	 * @param $fileName
-	 * @return AssetFileModel
+	 * @param                  $filePath
+	 * @param                  $fileName
+	 *
 	 * @throws Exception
+	 * @return AssetFileModel
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
@@ -326,6 +332,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get the image source path with the optional handle name.
 	 *
 	 * @param AssetFileModel $fileModel
+	 *
 	 * @return mixed
 	 */
 	public function getImageSourcePath(AssetFileModel $fileModel)
@@ -337,7 +344,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformLocation
+	 * @param string         $transformLocation
+	 *
 	 * @return mixed
 	 */
 	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
@@ -359,8 +367,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	* Put an image transform for the File and handle using the provided path to the source image.
 	*
 	* @param AssetFileModel $fileModel
-	* @param $handle
-	* @param $sourceImage
+	* @param                $handle
+	* @param                $sourceImage
+	 *
 	* @return mixed
 	*/
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
@@ -375,7 +384,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $fileName
+	 * @param                  $fileName
+	 *
 	 * @return mixed
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
@@ -407,6 +417,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Make a local copy of the file and return the path to it.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return mixed
 	 */
 
@@ -424,7 +435,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $settings source settings to use
+	 * @param                $settings Source settings to use
+	 *
 	 * @return string
 	 */
 	private function _getGCPath(AssetFileModel $file, $settings = null)
@@ -437,7 +449,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Delete just the source file for an Assets File.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $filename
+	 * @param                  $filename
+	 *
 	 * @return void
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
@@ -450,6 +463,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return void
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
@@ -469,10 +483,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Move a file in source.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
-	 * @param string $fileName
-	 * @param bool $overwrite if True, will overwrite target destination
+	 * @param string           $fileName
+	 * @param bool             $overwrite If True, will overwrite target destination.
+	 *
 	 * @return mixed
 	 */
 	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
@@ -552,7 +567,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Return TRUE if a physical folder exists.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
@@ -566,7 +582,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Create a physical folder, return TRUE on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -579,7 +596,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Rename a source folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $newName
+	 * @param                  $newName
+	 *
 	 * @return boolean
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
@@ -607,6 +625,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -627,6 +646,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Determines if a file can be moved internally from original source.
 	 *
 	 * @param BaseAssetSourceType $originalSource
+	 *
 	 * @return mixed
 	 */
 	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
@@ -648,8 +668,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Copy a transform for a file from source location to target location.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $source
-	 * @param $target
+	 * @param                $source
+	 * @param                $target
+	 *
 	 * @return mixed
 	 */
 	public function copyTransform(AssetFileModel $file, $source, $target)
@@ -663,7 +684,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings to use, if null, will use current settings
+	 * @param object|null $settings The settings to use.  If null, will use current settings.
+	 *
 	 * @return string
 	 */
 	private function _getPathPrefix($settings = null)
@@ -685,7 +707,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Return true if a transform exists at the location for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $location
+	 * @param                $location
+	 *
 	 * @return mixed
 	 */
 	public function transformExists(AssetFileModel $file, $location)
@@ -721,6 +744,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param $bucket
 	 * @param $uriPath
 	 * @param $permissions
+	 *
 	 * @return bool
 	 */
 	protected function _putObject($filePath, $bucket, $uriPath, $permissions)

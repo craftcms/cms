@@ -15,6 +15,8 @@ class TagsController extends BaseController
 {
 	/**
 	 * Tag settings index.
+	 *
+	 * @return void
 	 */
 	public function actionIndex()
 	{
@@ -31,6 +33,9 @@ class TagsController extends BaseController
 	 * Edit a tag group.
 	 *
 	 * @param array $variables
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditTagGroup(array $variables = array())
 	{
@@ -76,6 +81,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Save a tag group.
+	 *
+	 * @return void
 	 */
 	public function actionSaveTagGroup()
 	{
@@ -113,6 +120,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Deletes a tag group.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteTagGroup()
 	{
@@ -128,6 +137,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Searches for tags.
+	 *
+	 * @return void
 	 */
 	public function actionSearchForTags()
 	{
@@ -190,6 +201,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Creates a new tag.
+	 *
+	 * @return void
 	 */
 	public function actionCreateTag()
 	{

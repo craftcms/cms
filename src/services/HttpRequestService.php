@@ -258,6 +258,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -293,6 +294,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -335,6 +337,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -450,6 +453,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string     $content
 	 * @param array|null $options
 	 * @param bool|null  $terminate
+	 *
 	 * @throws HttpException
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)

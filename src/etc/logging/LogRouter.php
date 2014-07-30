@@ -15,6 +15,8 @@ class LogRouter extends \CLogRouter
 {
 	/**
 	 * @param $route
+	 *
+	 * @return void
 	 */
 	public function addRoute($route)
 	{
@@ -28,6 +30,8 @@ class LogRouter extends \CLogRouter
 	 * Removes a route from the LogRouter by class name.
 	 *
 	 * @param $class
+	 *
+	 * @return void
 	 */
 	public function removeRoute($class)
 	{

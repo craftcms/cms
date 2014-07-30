@@ -62,7 +62,8 @@ class MatrixBlockElementType extends BaseElementType
 	/**
 	 * Returns the content table name that should be joined in for an elements query.
 	 *
-	 * @param ElementCriteriaModel
+	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return string
 	 */
 	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
@@ -90,7 +91,8 @@ class MatrixBlockElementType extends BaseElementType
 	/**
 	 * Returns the field column names that should be selected from the content table.
 	 *
-	 * @param ElementCriteriaModel
+	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
@@ -118,8 +120,9 @@ class MatrixBlockElementType extends BaseElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)

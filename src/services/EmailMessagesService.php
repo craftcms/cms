@@ -184,7 +184,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * @param string $part
 	 * @param string $localeId
 	 *
-	 * @return null|string
+	 * @return void|string
 	 */
 	private function _translateMessageString($key, $part, $localeId)
 	{

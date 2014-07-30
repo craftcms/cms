@@ -53,7 +53,7 @@ class UpdatesVariable
 	}
 
 	/**
-	 * @return null|string
+	 * @return void|string
 	 */
 	public function getManualUpdateDisplayName()
 	{
@@ -61,7 +61,7 @@ class UpdatesVariable
 	}
 
 	/**
-	 * @return null|string
+	 * @return void|string
 	 */
 	public function getManualUpdateHandle()
 	{
@@ -70,7 +70,7 @@ class UpdatesVariable
 
 	/**
 	 * @param $type
-	 * @return null|string
+	 * @return void|string
 	 */
 	private function _getManualUpdateInfo($type)
 	{

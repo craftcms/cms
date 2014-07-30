@@ -42,6 +42,8 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 * Sets the setting values.
 	 *
 	 * @param array|BaseModel $values
+	 *
+	 * @return void
 	 */
 	public function setSettings($values)
 	{
@@ -72,6 +74,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)

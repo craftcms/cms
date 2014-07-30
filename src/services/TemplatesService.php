@@ -826,6 +826,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
 	 * @param string $name
+	 *
 	 * @throws \Twig_Error_Loader
 	 */
 	private function _validateTemplateName($name)

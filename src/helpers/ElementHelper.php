@@ -64,6 +64,7 @@ class ElementHelper
 	 * tweaking its slug if necessary to ensure it's unique.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @throws Exception
 	 */
 	public static function setUniqueUri(BaseElementModel $element)

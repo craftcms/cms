@@ -13,12 +13,23 @@ namespace Craft;
  */
 class RequirementsChecker extends \CComponent
 {
+	/**
+	 * @var
+	 */
 	private $_requirements;
+
+	/**
+	 * @var
+	 */
 	private $_result;
+
+	/**
+	 * @var
+	 */
 	private $_serverInfo;
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function run()
 	{

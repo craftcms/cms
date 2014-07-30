@@ -59,6 +59,7 @@ class AssetFileModel extends BaseElementModel
 	 * Magic getter
 	 *
 	 * @param string $name
+	 *
 	 * @throws \Exception
 	 * @return mixed
 	 */
@@ -322,7 +323,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @param $dimension 'height' or 'width'
 	 * @param $transform
-	 * @return null|float|mixed
+	 * @return void|float|mixed
 	 */
 	private function _getDimension($dimension, $transform)
 	{

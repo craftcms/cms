@@ -53,6 +53,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
+	 *
 	 * @throws HttpException
 	 * @return string
 	 */
@@ -267,6 +268,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * Sends a resource back to the browser.
 	 *
 	 * @param string $path
+	 *
 	 * @throws HttpException
 	 */
 	public function sendResource($path)

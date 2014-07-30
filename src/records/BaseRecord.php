@@ -117,7 +117,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Prepares the model's attribute values to be saved to the database.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function prepAttributesForSave()
 	{
@@ -155,7 +155,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Return the attribute values to the formats we want to work with in the code.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function prepAttributesForUse()
 	{

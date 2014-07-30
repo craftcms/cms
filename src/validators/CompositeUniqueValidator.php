@@ -18,6 +18,7 @@ class CompositeUniqueValidator extends \CValidator
 	/**
 	 * @param \CModel $object
 	 * @param string  $attribute
+	 *
 	 * @throws Exception
 	 */
 	protected function validateAttribute($object, $attribute)

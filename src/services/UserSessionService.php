@@ -222,6 +222,7 @@ class UserSessionService extends \CWebUser
 	 * Requires that the current user has a given permission, otherwise a 403 exception is thrown.
 	 *
 	 * @param string $permissionName
+	 *
 	 * @throws HttpException
 	 */
 	public function requirePermission($permissionName)
@@ -299,6 +300,7 @@ class UserSessionService extends \CWebUser
 	 * @param \IUserIdentity $username
 	 * @param int            $password
 	 * @param bool           $rememberMe
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -437,6 +439,7 @@ class UserSessionService extends \CWebUser
 	 * Logs a user in for impersonation.
 	 *
 	 * @param \IUserIdentity $userId
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -501,7 +504,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @param $errorCode
 	 * @param $loginName
-	 * @return null|string
+	 * @return void|string
 	 */
 	public function getLoginErrorMessage($errorCode, $loginName)
 	{
@@ -624,7 +627,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @return null
+	 * @return void
 	 */
 	public function wasSessionRestoredFromCookie()
 	{

@@ -21,8 +21,9 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param mixed $attributes
-	 * @return ElementCriteriaModel
+	 *
 	 * @throws Exception
+	 * @return ElementCriteriaModel
 	 */
 	public function getCriteria($type, $attributes = null)
 	{
@@ -797,8 +798,8 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
 	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it will depend on whether the element is enabled or not.
-	 * @throws Exception
-	 * @throws \Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $validateContent = null)

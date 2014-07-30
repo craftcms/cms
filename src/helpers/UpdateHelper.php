@@ -213,6 +213,7 @@ class UpdateHelper
 	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
 	 *
 	 * @param $manifestDataPath
+	 *
 	 * @throws Exception
 	 * @return array
 	 */

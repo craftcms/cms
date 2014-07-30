@@ -13,11 +13,26 @@ namespace Craft;
  */
 class TemplatesController extends BaseController
 {
-	// Any permissions not covered in actionRender() should be handled by the templates
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * Any permissions not covered in actionRender() should be handled byt the templates.
+	 *
+	 * @var bool
+	 */
 	public $allowAnonymous = true;
 
 	/**
 	 * Renders a template.
+	 *
+	 * @param       $template
+	 * @param array $variables
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionRender($template, array $variables = array())
 	{
@@ -34,6 +49,8 @@ class TemplatesController extends BaseController
 
 	/**
 	 * Shows the 'offline' template.
+	 *
+	 * @return void
 	 */
 	public function actionOffline()
 	{
@@ -50,6 +67,8 @@ class TemplatesController extends BaseController
 
 	/**
 	 * Renders the Manual Update notification template.
+	 *
+	 * @return void
 	 */
 	public function actionManualUpdateNotification()
 	{
@@ -58,6 +77,8 @@ class TemplatesController extends BaseController
 
 	/**
 	 * Renders the Manual Update template.
+	 *
+	 * @return void
 	 */
 	public function actionManualUpdate()
 	{
@@ -66,6 +87,10 @@ class TemplatesController extends BaseController
 		));
 	}
 
+	/**
+	 * @throws Exception
+	 * @return void
+	 */
 	public function actionRequirementsCheck()
 	{
 		// Run the requirements checker
@@ -106,6 +131,9 @@ class TemplatesController extends BaseController
 
 	/**
 	 * Renders an error template.
+	 *
+	 * @throws \Exception
+	 * @return void
 	 */
 	public function actionRenderError()
 	{

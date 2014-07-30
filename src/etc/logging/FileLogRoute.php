@@ -14,7 +14,9 @@ namespace Craft;
 class FileLogRoute extends \CFileLogRoute
 {
 	/**
+	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
 	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -29,7 +31,9 @@ class FileLogRoute extends \CFileLogRoute
 	/**
 	 * Saves log messages in files.
 	 *
-	 * @param array $logs list of log messages
+	 * @param array $logs The list of log messages
+	 *
+	 * @return void
 	 */
 	protected function processLogs($logs)
 	{
@@ -132,7 +136,7 @@ class FileLogRoute extends \CFileLogRoute
 	 * @param  integer $time     The message timestamp
 	 * @param  bool    $force    Whether the message was forced or not
 	 *
-	 * @return string            formatted message
+	 * @return string            The formatted message
 	 */
 	protected function formatLogMessageWithForce($message, $level, $category, $time, $force)
 	{

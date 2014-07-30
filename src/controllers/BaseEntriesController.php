@@ -17,6 +17,8 @@ abstract class BaseEntriesController extends BaseController
 	 * Enforces all Edit Entry permissions.
 	 *
 	 * @param EntryModel $entry
+	 *
+	 * @return void
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)
 	{

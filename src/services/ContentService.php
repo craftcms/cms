@@ -97,6 +97,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param bool             $validate           Whether the element's content should be validated first.
 	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the element's other locales.
 	 * @return bool                                Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the element and its content model.
+	 *
 	 * @throws Exception
 	 */
 	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)

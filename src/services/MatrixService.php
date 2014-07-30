@@ -619,6 +619,7 @@ class MatrixService extends BaseApplicationComponent
 	 *
 	 * @param MatrixBlockModel $block
 	 * @param bool             $validate
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -703,6 +704,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Saves a Matrix field.
 	 *
 	 * @param MatrixFieldType $fieldType
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -853,6 +855,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns a block type record by its ID or creates a new one.
 	 *
 	 * @param  MatrixBlockTypeModel $blockType
+	 *
 	 * @throws Exception
 	 * @return MatrixBlockTypeRecord
 	 */
@@ -884,6 +887,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns a block record by its ID or creates a new one.
 	 *
 	 * @param  MatrixBlockModel $block
+	 *
 	 * @throws Exception
 	 * @return MatrixBlockRecord
 	 */

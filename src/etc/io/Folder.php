@@ -13,11 +13,20 @@ namespace Craft;
  */
 class Folder extends BaseIO
 {
+	/**
+	 * @var
+	 */
 	private $_size;
+
+	/**
+	 * @var bool
+	 */
 	private $_isEmpty;
 
 	/**
 	 * @param $path
+	 *
+	 * @return Folder
 	 */
 	public function __construct($path)
 	{
@@ -39,7 +48,7 @@ class Folder extends BaseIO
 	}
 
 	/**
-	 * @return mixed
+	 * @return bool
 	 */
 	public function isEmpty()
 	{
@@ -54,6 +63,7 @@ class Folder extends BaseIO
 	/**
 	 * @param $recursive
 	 * @param $filter
+	 *
 	 * @return mixed
 	 */
 	public function getContents($recursive, $filter)
@@ -63,6 +73,7 @@ class Folder extends BaseIO
 
 	/**
 	 * @param $destination
+	 *
 	 * @return bool
 	 */
 	public function copy($destination)
@@ -77,6 +88,7 @@ class Folder extends BaseIO
 
 	/**
 	 * @param bool $suppressErrors
+	 *
 	 * @return bool
 	 */
 	public function clear($suppressErrors = false)

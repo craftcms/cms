@@ -15,10 +15,17 @@ namespace Craft;
  */
 class SearchQueryTermGroup
 {
+	/**
+	 * @var array
+	 */
 	public $terms;
 
 	/**
 	 * Constructor
+	 *
+	 * @param array $terms
+	 *
+	 * @return SearchQueryTermGroup
 	 */
 	function __construct($terms = array())
 	{

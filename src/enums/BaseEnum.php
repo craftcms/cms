@@ -14,11 +14,15 @@ namespace Craft;
  */
 abstract class BaseEnum
 {
+	/**
+	 * @var null
+	 */
 	private static $_constants = null;
 
 	/**
 	 * @param      $name
 	 * @param bool $strict
+	 *
 	 * @return bool
 	 */
 	public static function isValidName($name, $strict = false)
@@ -37,6 +41,7 @@ abstract class BaseEnum
 	/**
 	 * @param      $value
 	 * @param bool $strict
+	 *
 	 * @return bool
 	 */
 	public static function isValidValue($value, $strict = false)
@@ -46,7 +51,7 @@ abstract class BaseEnum
 	}
 
 	/**
-	 * @return null
+	 * @return array|null
 	 */
 	private static function _getConstants()
 	{

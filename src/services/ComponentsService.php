@@ -245,6 +245,7 @@ class ComponentsService extends BaseApplicationComponent
 	 * Throws a "no component type exists" exception.
 	 *
 	 * @param string $type
+	 *
 	 * @throws Exception
 	 */
 	private function _noComponentTypeExists($type)

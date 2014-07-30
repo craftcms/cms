@@ -90,6 +90,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Saves the record for an asset.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -273,8 +274,9 @@ class AssetsService extends BaseApplicationComponent
 	 * Get the users Folder model.
 	 *
 	 * @param UserModel $userModel
-	 * @return AssetFolderModel|null
+	 *
 	 * @throws Exception
+	 * @return AssetFolderModel|null
 	 */
 	public function getUserFolder(UserModel $userModel = null)
 	{
@@ -367,6 +369,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $folderId
 	 * @param $newName
+	 *
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
@@ -432,8 +435,9 @@ class AssetsService extends BaseApplicationComponent
 	 * Deletes a folder by its ID.
 	 *
 	 * @param int $folderId
-	 * @return AssetOperationResponseModel
+	 *
 	 * @throws Exception
+	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFolderById($folderId)
 	{
@@ -719,8 +723,9 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $folderId
 	 * @param string $filename if this is a rename operation
 	 * @param array $actions actions to take in case of a conflict.
-	 * @return bool|AssetOperationResponseModel
+	 *
 	 * @throws Exception
+	 * @return bool|AssetOperationResponseModel
 	 */
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
@@ -1100,6 +1105,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $folderIds
 	 * @param $permission
+	 *
 	 * @throws Exception
 	 */
 	public function checkPermissionByFolderIds($folderIds, $permission)
@@ -1128,6 +1134,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $fileIds
 	 * @param $permission
+	 *
 	 * @throws Exception
 	 */
 	public function checkPermissionByFileIds($fileIds, $permission)

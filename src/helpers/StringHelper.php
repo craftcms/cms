@@ -58,8 +58,9 @@ class StringHelper
 
 	/**
 	 * @param $value
-	 * @return bool
+	 *
 	 * @throws Exception
+	 * @return bool
 	 */
 	public static function isNullOrEmpty($value)
 	{
@@ -78,8 +79,9 @@ class StringHelper
 
 	/**
 	 * @param $value
-	 * @return bool
+	 *
 	 * @throws Exception
+	 * @return bool
 	 */
 	public static function isNotNullOrEmpty($value)
 	{

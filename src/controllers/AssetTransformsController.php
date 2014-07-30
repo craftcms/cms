@@ -30,6 +30,7 @@ class AssetTransformsController extends BaseController
 	 * Edit an asset transform.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
 	 */
 	public function actionEditTransform(array $variables = array())

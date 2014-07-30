@@ -1546,8 +1546,9 @@ class IOHelper
 	 * @param        $errFile
 	 * @param        $errLine
 	 * @param  array $errContext
-	 * @return bool
+	 *
 	 * @throws ErrorException
+	 * @return bool
 	 */
 	public function handleError($errNo, $errStr, $errFile, $errLine, array $errContext)
 	{

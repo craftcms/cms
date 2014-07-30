@@ -291,8 +291,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Returns the element type.
 	 *
-	 * @return BaseElementType
 	 * @throws Exception
+	 * @return BaseElementType
 	 */
 	protected function getElementType()
 	{

@@ -13,10 +13,20 @@ namespace Craft;
  */
 class UsersController extends BaseController
 {
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
 	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
 
 	/**
 	 * Displays the login template, and handles login post requests.
+	 *
+	 * @return void
 	 */
 	public function actionLogin()
 	{
@@ -98,6 +108,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Logs a user in for impersonation.  Requires you to be an administrator.
+	 *
+	 * @return void
 	 */
 	public function actionImpersonate()
 	{
@@ -128,7 +140,7 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function actionLogout()
 	{
@@ -138,6 +150,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Sends a Forgot Password email.
+	 *
+	 * @return void
 	 */
 	public function actionForgotPassword()
 	{
@@ -196,8 +210,8 @@ class UsersController extends BaseController
 	/**
 	 * Sets a user's password once they've verified they have access to their email.
 	 *
-	 * @throws HttpException
-	 * @throws Exception
+	 * @throws HttpException|Exception
+	 * @return void
 	 */
 	public function actionSetPassword()
 	{
@@ -286,8 +300,8 @@ class UsersController extends BaseController
 	/**
 	 * Validate that a user has access to an email address.
 	 *
-	 * @throws HttpException
-	 * @throws Exception
+	 * @throws HttpException|Exception
+	 * @return void
 	 */
 	public function actionValidate()
 	{
@@ -412,6 +426,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Manually activates a user account.  Only admins have access.
+	 *
+	 * @return void
 	 */
 	public function actionActivateUser()
 	{
@@ -441,9 +457,11 @@ class UsersController extends BaseController
 	/**
 	 * Edit a user account.
 	 *
-	 * @param array $variables
+	 * @param array       $variables
 	 * @param string|null $account
+	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditUser(array $variables = array(), $account = null)
 	{
@@ -595,6 +613,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Registers a new user, or saves an existing user's account settings.
+	 *
+	 * @throws HttpException|Exception
+	 * @return void
 	 */
 	public function actionSaveUser()
 	{
@@ -802,6 +823,8 @@ class UsersController extends BaseController
 	/**
 	 * Saves a user's profile.
 	 *
+	 * @return void
+	 *
 	 * @deprecated Deprecated in 2.0.
 	 */
 	public function actionSaveProfile()
@@ -812,6 +835,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Upload a user photo.
+	 *
+	 * @return void
 	 */
 	public function actionUploadUserPhoto()
 	{
@@ -886,6 +911,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Crop user photo.
+	 *
+	 * @return void
 	 */
 	public function actionCropUserPhoto()
 	{
@@ -952,6 +979,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Delete all the photos for current user.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteUserPhoto()
 	{
@@ -981,6 +1010,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Sends a new activation email to a user.
+	 *
+	 * @return void
 	 */
 	public function actionSendActivationEmail()
 	{
@@ -1009,6 +1040,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Unlocks a user, bypassing the cooldown phase.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionUnlockUser()
 	{
@@ -1040,6 +1074,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Suspends a user.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionSuspendUser()
 	{
@@ -1071,6 +1108,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Deletes a user.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionDeleteUser()
 	{
@@ -1104,6 +1144,9 @@ class UsersController extends BaseController
 
 	/**
 	 * Unsuspends a user.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionUnsuspendUser()
 	{
@@ -1135,6 +1178,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Saves the asset field layout.
+	 *
+	 * @return void
 	 */
 	public function actionSaveFieldLayout()
 	{
@@ -1183,6 +1228,8 @@ class UsersController extends BaseController
 
 	/**
 	 * @param $user
+	 *
+	 * @return void
 	 */
 	private function _processSetPasswordPath($user)
 	{
@@ -1210,7 +1257,9 @@ class UsersController extends BaseController
 	 * Throws a "no user exists" exception
 	 *
 	 * @param int $userId
+	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	private function _noUserExists($userId)
 	{
@@ -1219,6 +1268,7 @@ class UsersController extends BaseController
 
 	/**
 	 * @param $userId
+	 *
 	 * @return void
 	 */
 	private function _assignDefaultGroupToUser($userId)
@@ -1234,6 +1284,8 @@ class UsersController extends BaseController
 
 	/**
 	 * @param $user
+	 *
+	 * @return void
 	 */
 	private function _processUserPhoto($user)
 	{
@@ -1262,7 +1314,13 @@ class UsersController extends BaseController
 		}
 	}
 
-	public function _processUserGroupsPermissions($user, $currentUser)
+	/**
+	 * @param $user
+	 * @param $currentUser
+	 *
+	 * @return void
+	 */
+	private function _processUserGroupsPermissions($user, $currentUser)
 	{
 		// Save any user groups
 		if (craft()->getEdition() == Craft::Pro && $currentUser->can('assignUserPermissions'))

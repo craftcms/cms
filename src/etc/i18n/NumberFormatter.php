@@ -18,6 +18,7 @@ class NumberFormatter extends \CNumberFormatter
 	 *
 	 * @param mixed $value
 	 * @param bool  $withGroupSymbol
+	 *
 	 * @return string
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
@@ -69,10 +70,11 @@ class NumberFormatter extends \CNumberFormatter
 	/**
 	 * Formats a number using the currency format defined in the locale.
 	 *
-	 * @param mixed   $value
+	 * @param mixed  $value
 	 * @param string $currency
 	 * @param bool   $stripZeroCents
-	 * @return string the formatting result.
+	 *
+	 * @return string The formatted result.
 	 */
 	public function formatCurrency($value, $currency, $stripZeroCents = false)
 	{

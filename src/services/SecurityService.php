@@ -35,10 +35,11 @@ class SecurityService extends \CSecurityManager
 	/**
 	 * Hashes a given password with the blowfish encryption algorithm.
 	 *
-	 * @param      $string        The string to hash
-	 * @param bool $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 * @param string $string        The string to hash
+	 * @param bool   $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 *
 	 * @throws Exception
-	 * @return string             The hash.
+	 * @return string The hash.
 	 */
 	public function hashPassword($string, $validateHash = false)
 	{

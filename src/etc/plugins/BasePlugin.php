@@ -13,11 +13,18 @@ namespace Craft;
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
+	/**
+	 * @var bool
+	 */
 	public $isInstalled = false;
+
+	/**
+	 * @var bool
+	 */
 	public $isEnabled = false;
 
 	/**
-	 * @var string The type of component this is
+	 * @var string The type of component this is.
 	 */
 	protected $componentType = 'Plugin';
 
@@ -57,8 +64,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 *
 	 * A full URL is not required -- you can simply return "pluginname/settings".
 	 *
-	 * If this is left blank, a simple settings page will be provided,
-	 * filled with whatever getSettingsHtml() returns.
+	 * If this is left blank, a simple settings page will be provided, filled with whatever getSettingsHtml() returns.
 	 *
 	 * @return string|null
 	 */
@@ -78,6 +84,8 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 
 	/**
 	 * Creates any tables defined by the plugin's records.
+	 *
+	 * @return void
 	 */
 	public function createTables()
 	{
@@ -98,6 +106,8 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 
 	/**
 	 * Drops any tables defined by the plugin's records.
+	 *
+	 * @return void
 	 */
 	public function dropTables()
 	{
@@ -118,29 +128,39 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 
 	/**
 	 * Perform any actions after the plugin has been installed.
+	 *
+	 * @return void
 	 */
 	public function onAfterInstall()
 	{
+
 	}
 
 	/**
 	 * Perform any actions before the plugin has been installed.
+	 *
+	 * @return void
 	 */
 	public function onBeforeInstall()
 	{
+
 	}
 
 	/**
 	 * Perform any actions before the plugin gets uninstalled.
+	 *
+	 * @return void
 	 */
 	public function onBeforeUninstall()
 	{
+
 	}
 
 	/**
 	 * Returns the record classes provided by this plugin.
 	 *
-	 * @param string|null $scenario The scenario to initialize the records with
+	 * @param string|null $scenario The scenario to initialize the records with.
+	 *
 	 * @return array
 	 */
 	public function getRecords($scenario = null)
@@ -163,9 +183,10 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * A wrapper for logging with plugins.
 	 *
-	 * @param        $msg
+	 * @param string $msg
 	 * @param string $level
-	 * @param bool   $force
+	 *
+	 * @param bool $force
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false)
 	{

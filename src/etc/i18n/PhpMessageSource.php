@@ -13,16 +13,25 @@ namespace Craft;
  */
 class PhpMessageSource extends \CPhpMessageSource
 {
+	/**
+	 * @var boolean Whether to force message translation when the source and target languages are the same.
+	 *              Yii defaults this to false, meaning translation is only performed when source and target languages are different,
+	 *              but Craft defaults it to true.
+	 */
 	public $forceTranslation = true;
 
+	/**
+	 * @var
+	 */
 	private $_translations;
 
 	/**
 	 * Loads the message translation for the specified language and category.
 	 *
-	 * @param string $category the message category
-	 * @param string $language the target locale
-	 * @return array the loaded messages
+	 * @param string $category The message category
+	 * @param string $language The target locale
+	 *
+	 * @return array The loaded messages
 	 */
 	protected function loadMessages($category, $language)
 	{
@@ -105,6 +114,7 @@ class PhpMessageSource extends \CPhpMessageSource
 
 	/**
 	 * @param $localeId
+	 *
 	 * @return array
 	 */
 	private function _processFrameworkData($localeId)

@@ -82,6 +82,7 @@ class EntryElementType extends BaseElementType
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -167,6 +168,7 @@ class EntryElementType extends BaseElementType
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
@@ -199,7 +201,8 @@ class EntryElementType extends BaseElementType
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
@@ -260,7 +263,8 @@ class EntryElementType extends BaseElementType
 	 * Returns the element query condition for a custom status criteria.
 	 *
 	 * @param DbCommand $query
-	 * @param string $status
+	 * @param string    $status
+	 *
 	 * @return string|false
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
@@ -303,8 +307,9 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -497,6 +502,7 @@ class EntryElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)
@@ -508,6 +514,7 @@ class EntryElementType extends BaseElementType
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return string
 	 */
 	public function getEditorHtml(BaseElementModel $element)
@@ -531,7 +538,8 @@ class EntryElementType extends BaseElementType
 	/**
 	 * Routes the request when the URI matches an element.
 	 *
-	 * @param BaseElementModel
+	 * @param BaseElementModel $element
+	 *
 	 * @return mixed Can be false if no special action should be taken,
 	 *               a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
@@ -566,6 +574,8 @@ class EntryElementType extends BaseElementType
 	 *
 	 * @param BaseElementModel $element
 	 * @param int $structureId
+	 *
+	 * @return void
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{

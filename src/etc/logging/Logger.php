@@ -14,14 +14,15 @@ namespace Craft;
 class Logger extends \CLogger
 {
 	/**
-	 * Logs a message.
-	 * Messages logged by this method may be retrieved back via {@link getLogs}.
+	 * Logs a message. Messages logged by this method may be retrieved back via {@link getLogs}.
 	 *
 	 * @param string $message  The message to be logged
 	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error'). It is case-insensitive.
 	 * @param bool   $force    Whether for force the message to be logged regardless of category or level
 	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
 	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
+	 *
+	 * @return void
 	 */
 	public function log($message, $level = 'info', $force = false, $category = 'application', $plugin = null)
 	{
@@ -56,13 +57,15 @@ class Logger extends \CLogger
 	 * @param array|string $categories category filter
 	 * @param array        $except
 	 *
-	 * @return array list of messages. Each array element represents one message
+	 * @return array The list of messages. Each array element represents one message
 	 * with the following structure:
-	 * array(
-	 *   [0] => message (string)
-	 *   [1] => level (string)
-	 *   [2] => category (string)
-	 *   [3] => timestamp (float, obtained by microtime(true));
+	 *
+	 *     array(
+	 *        [0] => message (string)
+	 *        [1] => level (string)
+	 *        [2] => category (string)
+	 *        [3] => timestamp (float, obtained by microtime(true)
+	 *     );
 	 */
 	public function getLogs($levels = '', $categories = array(), $except = array())
 	{
@@ -104,8 +107,9 @@ class Logger extends \CLogger
 	/**
 	 * Filter function used by {@link getLogs}
 	 *
-	 * @param array $value element to be filtered
-	 * @return boolean true if valid log, false if not.
+	 * @param array $value The element to be filtered
+	 *
+	 * @return bool true if valid log, false if not.
 	 */
 	protected function filterByCategory($value)
 	{
@@ -115,9 +119,10 @@ class Logger extends \CLogger
 	/**
 	 * Filter function used to filter included and excluded categories
 	 *
-	 * @param array $value element to be filtered
-	 * @param integer index of the values array to be used for check
-	 * @return boolean true if valid timing entry, false if not.
+	 * @param array $value The element to be filtered
+	 * @param int   $index The index of the values array to be used for check
+	 *
+	 * @return bool true if valid timing entry, false if not.
 	 */
 	protected function filterAllCategories($value, $index)
 	{
@@ -149,7 +154,8 @@ class Logger extends \CLogger
 	/**
 	 * Filter function used by {@link getLogs}
 	 *
-	 * @param array $value element to be filtered
+	 * @param array $value The element to be filtered
+	 *
 	 * @return boolean true if valid log, false if not.
 	 */
 	protected function filterByLevel($value)

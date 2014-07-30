@@ -251,6 +251,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Saves a section.
 	 *
 	 * @param SectionModel $section
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -688,6 +689,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Deletes a section by its ID.
 	 *
 	 * @param int $sectionId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	*/
@@ -834,6 +836,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Saves an entry type.
 	 *
 	 * @param EntryTypeModel $entryType
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -924,6 +927,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Reorders entry types.
 	 *
 	 * @param array $entryTypeIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -962,6 +966,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Deletes an entry type(s) by its ID.
 	 *
 	 * @param int|array $entryTypeId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	*/

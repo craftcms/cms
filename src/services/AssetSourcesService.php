@@ -277,8 +277,9 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Saves an asset source.
 	 *
 	 * @param AssetSourceModel $source
-	 * @return bool
+	 *
 	 * @throws \Exception
+	 * @return bool
 	 */
 	public function saveSource(AssetSourceModel $source)
 	{
@@ -388,6 +389,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Reorders asset sources.
 	 *
 	 * @param array $sourceIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -426,6 +428,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Deletes an asset source by its ID.
 	 *
 	 * @param int $sourceId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

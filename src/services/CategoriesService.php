@@ -219,6 +219,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Saves a category group.
 	 *
 	 * @param CategoryGroupModel $group
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -480,6 +481,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Deletes a category group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -552,7 +554,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Saves a category.
 	 *
 	 * @param CategoryModel $category
-	 * @throws Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function saveCategory(CategoryModel $category)
@@ -636,8 +639,9 @@ class CategoriesService extends BaseApplicationComponent
 
 	/**
 	 * Deletes a category(s).
+	 *
 	 * @param CategoryModel|array $categories
-	 * @param bool $deleteDescendants
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

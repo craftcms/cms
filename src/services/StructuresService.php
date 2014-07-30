@@ -37,6 +37,7 @@ class StructuresService extends BaseApplicationComponent
 	 * Saves a structure
 	 *
 	 * @param StructureModel $structure
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -241,6 +242,7 @@ class StructuresService extends BaseApplicationComponent
 	 * @param  string                 $insertAction
 	 * @param  string                 $updateAction
 	 * @param  string                 $mode
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

@@ -83,7 +83,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Get a data item.
 	 *
 	 * @param $name
-	 * @return null
+	 * @return void
 	 */
 	public function getDataItem($name)
 	{

@@ -13,8 +13,14 @@ namespace Craft;
  */
 class QuerygenCommand extends BaseCommand
 {
+	/**
+	 * @var string
+	 */
 	public $defaultAction = 'all';
 
+	/**
+	 * @param $args
+	 */
 	public function actionAll($args)
 	{
 		$this->actionCreateTableForRecord($args);
@@ -23,6 +29,10 @@ class QuerygenCommand extends BaseCommand
 
 	/**
 	 * Returns the PHP code to create a new table from a given record.
+	 *
+	 * @param $args
+	 *
+	 * @return int
 	 */
 	public function actionCreateTableForRecord($args)
 	{
@@ -131,6 +141,10 @@ class QuerygenCommand extends BaseCommand
 
 	/**
 	 * Returns the PHP code to add foreign keys to a table for a given record.
+	 *
+	 * @param $args
+	 *
+	 * @return int
 	 */
 	public function actionAddForeignKeysForRecord($args)
 	{
@@ -192,6 +206,7 @@ class QuerygenCommand extends BaseCommand
 	 * Returns a record instance by its class name.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseRecord
 	 */
 	private function _getRecord($class)
@@ -211,6 +226,7 @@ class QuerygenCommand extends BaseCommand
 	 * A nicer version of var_export().
 	 *
 	 * @param mixed $var
+	 *
 	 * @return string
 	 */
 	private function _varExport($var)

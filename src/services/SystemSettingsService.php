@@ -48,7 +48,7 @@ class SystemSettingsService extends BaseApplicationComponent
 	 * Return the DateTime for when the category was last updated.
 	 *
 	 * @param $category
-	 * @return null|DateTime
+	 * @return void|DateTime
 	 */
 	public function getCategoryTimeUpdated($category)
 	{

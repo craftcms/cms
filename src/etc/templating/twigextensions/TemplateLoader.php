@@ -28,8 +28,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	 * Gets the source code of a template.
 	 *
 	 * @param  string $name The name of the template to load, or a StringTemplate object.
+	 *
 	 * @throws Exception
-	 * @return string       The template source code.
+	 * @return string The template source code.
 	 */
 	public function getSource($name)
 	{

@@ -29,6 +29,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -226,7 +227,9 @@ class EntriesService extends BaseApplicationComponent
 
 	/**
 	 * Deletes an entry(s).
+	 *
 	 * @param EntryModel|array $entries
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

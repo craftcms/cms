@@ -218,6 +218,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Saves a global set.
 	 *
 	 * @param GlobalSetModel $globalSet
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -302,6 +303,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Deletes a global set by its ID.
 	 *
 	 * @param int $setId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	*/

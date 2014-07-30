@@ -19,6 +19,7 @@ class RelationsService extends BaseApplicationComponent
 	 * @param FieldModel $field
 	 * @param BaseElementModel $source
 	 * @param array $targetIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

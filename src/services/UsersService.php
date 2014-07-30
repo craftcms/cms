@@ -151,6 +151,7 @@ class UsersService extends BaseApplicationComponent
 	 * Saves an existing user, or registers a new one.
 	 *
 	 * @param  UserModel $user The user to save.
+	 *
 	 * @throws \Exception
 	 * @return bool true or false, depending on if the save was successful or not.
 	 */
@@ -364,8 +365,9 @@ class UsersService extends BaseApplicationComponent
 	 * @param $fileName
 	 * @param Image $image
 	 * @param UserModel $user
-	 * @return bool
+	 *
 	 * @throws \Exception
+	 * @return bool
 	 */
 	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
@@ -673,6 +675,7 @@ class UsersService extends BaseApplicationComponent
 	 * Deletes a user.
 	 *
 	 * @param UserModel $user
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -1004,8 +1007,9 @@ class UsersService extends BaseApplicationComponent
 	 * Gets a user record by its ID.
 	 *
 	 * @param int $userId
-	 * @return UserRecord
+	 *
 	 * @throws Exception
+	 * @return UserRecord
 	 */
 	private function _getUserRecordById($userId)
 	{

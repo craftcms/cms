@@ -181,6 +181,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Throws a "No group exists" exception.
 	 *
 	 * @param int $groupId
+	 *
 	 * @throws Exception
 	 */
 	private function _noGroupExists($groupId)

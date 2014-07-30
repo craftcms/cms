@@ -279,8 +279,8 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
-	 * @return array
 	 * @throws Exception
+	 * @return array
 	 */
 	protected function getInputSources()
 	{
@@ -338,8 +338,9 @@ class AssetsFieldType extends BaseElementFieldType
 	 *
 	 * @param int $sourceId
 	 * @param string $subpath
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
@@ -474,8 +475,9 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
 	 *
 	 * @param $settings
-	 * @return mixed|null
+	 *
 	 * @throws Exception
+	 * @return mixed|null
 	 */
 	private function _determineUploadFolderId($settings)
 	{

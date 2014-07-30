@@ -13,11 +13,34 @@ namespace Craft;
  */
 class Et
 {
+	/**
+	 * @var string
+	 */
 	private $_endpoint;
+
+	/**
+	 * @var int
+	 */
 	private $_timeout;
+
+	/**
+	 * @var EtModel
+	 */
 	private $_model;
+
+	/**
+	 * @var bool
+	 */
 	private $_allowRedirects = true;
+
+	/**
+	 * @var string
+	 */
 	private $_userAgent;
+
+	/**
+	 * @var string
+	 */
 	private $_destinationFileName;
 
 	/**
@@ -44,6 +67,7 @@ class Et
 	 * Whether or not to follow redirects on the request.  Defaults to true.
 	 *
 	 * @param $allowRedirects
+	 *
 	 * @return void
 	 */
 	public function setAllowRedirects($allowRedirects)
@@ -61,6 +85,7 @@ class Et
 
 	/**
 	 * @param $destinationFileName
+	 *
 	 * @return void
 	 */
 	public function setDestinationFileName($destinationFileName)
@@ -72,6 +97,8 @@ class Et
 	 * @param     $endpoint
 	 * @param int $timeout
 	 * @param int $connectTimeout
+	 *
+	 * @return Et
 	 */
 	function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
@@ -106,7 +133,11 @@ class Et
 	}
 
 	/**
-	 * Sets Custom Data on the EtModel.
+	 * Sets custom data on the EtModel.
+	 *
+	 * @param $data
+	 *
+	 * @return void
 	 */
 	public function setData($data)
 	{
@@ -240,7 +271,7 @@ class Et
 	}
 
 	/**
-	 * @return null|string
+	 * @return void|string
 	 */
 	private function _getLicenseKey()
 	{
@@ -256,6 +287,7 @@ class Et
 
 	/**
 	 * @param $key
+	 *
 	 * @return bool
 	 * @throws Exception|EtException
 	 */
@@ -290,6 +322,6 @@ class Et
 	 */
 	private function _isConfigFolderWritable()
 	{
-	 return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
+		return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
 	}
 }

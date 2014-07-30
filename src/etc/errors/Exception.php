@@ -16,6 +16,8 @@ class Exception extends \CException
 	/**
 	 * @param     $message
 	 * @param int $code
+	 *
+	 * @return Exception
 	 */
 	function __construct($message, $code = 0)
 	{

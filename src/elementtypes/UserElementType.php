@@ -63,6 +63,7 @@ class UserElementType extends BaseElementType
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -105,6 +106,7 @@ class UserElementType extends BaseElementType
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
@@ -132,15 +134,14 @@ class UserElementType extends BaseElementType
 		}
 
 		return $attributes;
-
-		return $attributes;
 	}
 
 	/**
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
@@ -210,7 +211,8 @@ class UserElementType extends BaseElementType
 	 * Returns the element query condition for a custom status criteria.
 	 *
 	 * @param DbCommand $query
-	 * @param string $status
+	 * @param string    $status
+	 *
 	 * @return string|false
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
@@ -221,8 +223,9 @@ class UserElementType extends BaseElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -368,6 +371,7 @@ class UserElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)
@@ -377,6 +381,7 @@ class UserElementType extends BaseElementType
 
 	/**
 	 * @param $groupIds
+	 *
 	 * @return array
 	 */
 	private function _getUserIdsByGroupIds($groupIds)

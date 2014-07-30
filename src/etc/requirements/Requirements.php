@@ -13,6 +13,9 @@ namespace Craft;
  */
 class Requirements
 {
+	/**
+	 * @return array
+	 */
 	public static function getRequirements()
 	{
 		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
@@ -196,11 +199,34 @@ class Requirements
  */
 class Requirement extends \CComponent
 {
+	/**
+	 * @var null|string
+	 */
 	private $_name;
+
+	/**
+	 * @var bool|null
+	 */
 	private $_condition;
+
+	/**
+	 * @var null|string
+	 */
 	private $_requiredBy;
+
+	/**
+	 * @var null|string
+	 */
 	private $_notes;
+
+	/**
+	 * @var bool|null
+	 */
 	private $_required;
+
+	/**
+	 * @var
+	 */
 	private $_result;
 
 	/**
@@ -211,6 +237,8 @@ class Requirement extends \CComponent
 	 * @param bool|null   $required
 	 * @param string|null $requiredBy
 	 * @param string|null $notes
+	 *
+	 * @return Requirement
 	 */
 	function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
 	{
@@ -272,7 +300,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return null
+	 * @return void
 	 */
 	public function getRequiredBy()
 	{
@@ -280,7 +308,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return null
+	 * @return void
 	 */
 	public function getNotes()
 	{
@@ -298,7 +326,7 @@ class PhpVersionRequirement extends Requirement
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
 
 	/**
-	 *
+	 * @return PhpVersionRequirement
 	 */
 	function __construct()
 	{
@@ -311,7 +339,7 @@ class PhpVersionRequirement extends Requirement
 	}
 
 	/**
-	 * @return null
+	 * @return void
 	 */
 	public function getNotes()
 	{

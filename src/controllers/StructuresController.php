@@ -15,6 +15,10 @@ class StructuresController extends BaseController
 {
 	/**
 	 * Moves an element within a structure.
+	 *
+	 * @param array $variables
+	 *
+	 * @return void
 	 */
 	public function actionMoveElement(array $variables = array())
 	{

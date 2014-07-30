@@ -16,6 +16,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 	/**
 	 * @param $view
 	 * @param $data
+	 *
 	 * @return mixed
 	 */
 	protected function render($view, $data)

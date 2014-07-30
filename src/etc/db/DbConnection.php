@@ -14,7 +14,15 @@ namespace Craft;
 class DbConnection extends \CDbConnection
 {
 	/**
+	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
+	 * This method is required by {@link IApplicationComponent} and is invoked by Craft when the `craft()-db` is first used.
+	 *
+	 * This method does it's best to make sure it can connect to the database with the supplied credentials and configurations and
+	 * gracefully handle the cases where it can't.
+	 *
+	 * @throws DbConnectException
+	 * @return void
 	 */
 	public function init()
 	{
@@ -77,6 +85,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * @param null $query
+	 *
 	 * @return DbCommand
 	 */
 	public function createCommand($query = null)
@@ -101,6 +110,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * @param $name
+	 *
 	 * @return string
 	 */
 	public function quoteDatabaseName($name)
@@ -111,8 +121,9 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns whether a table exists.
 	 *
-	 * @param string $table
-	 * @param bool $refresh
+	 * @param string      $table
+	 * @param bool|null   $refresh
+	 *
 	 * @return bool
 	 */
 	public function tableExists($table, $refresh = null)
@@ -130,9 +141,10 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Checks if a column exists in a table.
 	 *
-	 * @param string $table
-	 * @param string $column
-	 * @param bool $refresh
+	 * @param string    $table
+	 * @param string    $column
+	 * @param bool|null $refresh
+	 *
 	 * @return bool
 	 */
 	public function columnExists($table, $column, $refresh = null)
@@ -154,14 +166,6 @@ class DbConnection extends \CDbConnection
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isDbConnectionValid()
-	{
-		return $this->_isDbConnectionValid;
 	}
 
 	/**

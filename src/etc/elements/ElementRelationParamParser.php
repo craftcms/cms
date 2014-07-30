@@ -13,14 +13,35 @@ namespace Craft;
  */
 class ElementRelationParamParser
 {
+	/**
+	 * @var int
+	 */
 	private $_joinSourceMatrixBlocksCount;
+
+	/**
+	 * @var int
+	 */
 	private $_joinTargetMatrixBlocksCount;
+
+	/**
+	 * @var int
+	 */
 	private $_joinSourcesCount;
+
+	/**
+	 * @var int
+	 */
 	private $_joinTargetsCount;
+
+	/**
+	 * @var int
+	 */
 	private $_sourceLocaleParamCount;
 
 	/**
 	 * Constructor
+	 *
+	 * @return ElementRelationParamParser
 	 */
 	function __construct()
 	{
@@ -34,8 +55,9 @@ class ElementRelationParamParser
 	/**
 	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
 	 *
-	 * @param mixed $relatedTo
+	 * @param mixed     $relatedTo
 	 * @param DbCommand $query
+	 *
 	 * @return mixed
 	 */
 	public function parseRelationParam($relatedTo, DbCommand $query)
@@ -133,8 +155,9 @@ class ElementRelationParamParser
 	/**
 	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
 	 *
-	 * @param mixed $relCriteria
+	 * @param mixed     $relCriteria
 	 * @param DbCommand $query
+	 *
 	 * @return mixed
 	 */
 	private function _subparseRelationParam($relCriteria, DbCommand $query)
@@ -197,7 +220,7 @@ class ElementRelationParamParser
 
 		if (!empty($relCriteria['field']))
 		{
-			// Loop through all of the fields in this rel critelia,
+			// Loop through all of the fields in this rel criteria,
 			// create the Matrix-specific conditions right away
 			// and save the normal field IDs for later
 			$fields = ArrayHelper::stringToArray($relCriteria['field']);

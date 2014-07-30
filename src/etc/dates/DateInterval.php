@@ -106,6 +106,7 @@ class DateInterval extends \DateInterval
 	 * Returns the total number of seconds in the interval.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The number of seconds.
 	 */
 	public function toSeconds(\DateInterval $interval = null)
@@ -149,6 +150,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval specification.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The interval specification.
 	 */
 	public function toSpec(\DateInterval $interval = null)
@@ -188,6 +190,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval in a human-friendly string.
 	 *
 	 * @param bool $showSeconds
+	 *
 	 * @return string
 	 */
 	public function humanDuration($showSeconds = true)

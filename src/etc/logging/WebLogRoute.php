@@ -16,6 +16,7 @@ class WebLogRoute extends \CWebLogRoute
 	/**
 	 * @param $view
 	 * @param $data
+	 *
 	 * @return mixed
 	 */
 	protected function render($view, $data)

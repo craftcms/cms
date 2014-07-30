@@ -390,6 +390,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param      $handle
+	 *
 	 * @throws Exception
 	 * @return array
 	 */

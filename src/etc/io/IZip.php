@@ -16,6 +16,7 @@ interface IZip
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip
+	 *
 	 * @return mixed
 	 */
 	function zip($sourceFolder, $destZip);
@@ -23,6 +24,7 @@ interface IZip
 	/**
 	 * @param $sourceZip
 	 * @param $destFolder
+	 *
 	 * @return mixed
 	 */
 	function unzip($sourceZip, $destFolder);
@@ -32,6 +34,7 @@ interface IZip
 	 * @param      $filePath
 	 * @param      $basePath
 	 * @param null $pathPrefix
+	 *
 	 * @return mixed
 	 */
 	function add($sourceZip, $filePath, $basePath, $pathPrefix = null);

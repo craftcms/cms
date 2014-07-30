@@ -44,8 +44,9 @@ class EmailService extends BaseApplicationComponent
 	 * @param UserModel $user
 	 * @param string $key
 	 * @param array $variables
-	 * @return bool
+	 *
 	 * @throws Exception
+	 * @return bool
 	 */
 	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
@@ -157,6 +158,7 @@ class EmailService extends BaseApplicationComponent
 	 * @param UserModel  $user
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -336,6 +338,7 @@ class EmailService extends BaseApplicationComponent
 	/**
 	 * @param $email
 	 * @param $emailSettings
+	 *
 	 * @throws Exception
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
