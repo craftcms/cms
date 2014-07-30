@@ -128,6 +128,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			this.progressBar.hideProgressBar();
 			this.$container.removeClass('uploading');
 		}
+
+		this.updateAddElementsBtn();
 	},
 
 	/**
