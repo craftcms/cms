@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class TemplatesService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class TemplatesService extends BaseApplicationComponent
 {
@@ -821,6 +826,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
 	 * @param string $name
+	 *
 	 * @throws \Twig_Error_Loader
 	 */
 	private function _validateTemplateName($name)

@@ -4,15 +4,23 @@ namespace Craft;
 /**
  * Element type base class.
  *
- * @package craft.app.elementtypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     1.0
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
 	/**
-	 * @var string The type of component this is
+	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
 	protected $componentType = 'ElementType';
 
+	/**
+	 * @var
+	 */
 	private $_sourcesByContext;
 
 
@@ -76,6 +84,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -86,8 +95,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Returns a source by its key and context.
 	 *
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $context
+	 *
 	 * @return array|null
 	 */
 	public function getSource($key, $context = null)
@@ -120,10 +130,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the element index HTML.
 	 *
 	 * @param ElementCriteriaModel $criteria
-	 * @param array $disabledElementIds
-	 * @param array $viewState
-	 * @param string|null $sourceKey
-	 * @param string|null $context
+	 * @param array                $disabledElementIds
+	 * @param array                $viewState
+	 * @param string|null          $sourceKey
+	 * @param string|null          $context
+	 *
 	 * @return string
 	 */
 	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
@@ -178,6 +189,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
@@ -189,7 +201,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
@@ -271,6 +284,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the content table name that should be joined in for an elements query.
 	 *
 	 * @param ElementCriteriaModel
+	 *
 	 * @return string
 	 */
 	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
@@ -282,6 +296,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the field column names that should be selected from the content table.
 	 *
 	 * @param ElementCriteriaModel
+	 *
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
@@ -310,7 +325,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the element query condition for a custom status criteria.
 	 *
 	 * @param DbCommand $query
-	 * @param string $status
+	 * @param string    $status
+	 *
 	 * @return string|false
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
@@ -320,9 +336,10 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
-	 * @return null|false
+	 *
+	 * @return void|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
@@ -334,6 +351,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return BaseModel
 	 */
 	public function populateElementModel($row)
@@ -344,6 +362,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return string
 	 */
 	public function getEditorHtml(BaseElementModel $element)
@@ -379,7 +398,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Saves a given element.
 	 *
 	 * @param BaseElementModel $element
-	 * @param array $params
+	 * @param array            $params
+	 *
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $params)
@@ -391,6 +411,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel
+	 *
 	 * @return mixed Can be false if no special action should be taken,
 	 *               a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
@@ -404,7 +425,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * Performs actions after an element has been moved within a structure.
 	 *
 	 * @param BaseElementModel $element
-	 * @param int $structureId
+	 * @param int              $structureId
+	 *
+	 * @return void
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
@@ -419,6 +442,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 *
 	 * @param array  $sources
 	 * @param string $key
+	 *
 	 * @return array|null
 	 */
 	private function _findSource($key, $sources)

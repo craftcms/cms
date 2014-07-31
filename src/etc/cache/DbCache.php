@@ -10,7 +10,12 @@ namespace Craft;
  * DbCache relies on {@link http://www.php.net/manual/en/ref.pdo.php PDO} to access database.
  * By default, it will use the database connection information stored in your craft/config/db.php file.
  *
- * @package craft.app.etc.cache
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.cache
+ * @since     2.0
  */
 class DbCache extends \CDbCache
 {

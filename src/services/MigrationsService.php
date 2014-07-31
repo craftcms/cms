@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class MigrationsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class MigrationsService extends BaseApplicationComponent
 {
@@ -161,6 +166,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @param       $class
 	 * @param  null $plugin
+	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
@@ -287,8 +293,9 @@ class MigrationsService extends BaseApplicationComponent
 
 	/**
 	 * @param null $plugin
-	 * @return string
+	 *
 	 * @throws Exception
+	 * @return string
 	 */
 	public function getMigrationPath($plugin = null)
 	{

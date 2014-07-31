@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Loads Craft templates into Twig.
  *
- * @package craft.app.etc.templating
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.templating.twigextensions
+ * @since     1.0
  */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
@@ -23,8 +28,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	 * Gets the source code of a template.
 	 *
 	 * @param  string $name The name of the template to load, or a StringTemplate object.
+	 *
 	 * @throws Exception
-	 * @return string       The template source code.
+	 * @return string The template source code.
 	 */
 	public function getSource($name)
 	{

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class DateTime
  *
- * @package craft.app.etc.dates
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.dates
+ * @since     1.0
  */
 class DateTime extends \DateTime
 {
@@ -15,11 +20,20 @@ class DateTime extends \DateTime
 	const DATEFIELD_12HOUR = 'Y-m-d h:i A';
 
 	/**
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->format(static::W3C_DATE);
+	}
+
+	/**
 	 * Creates a new \Craft\DateTime object (rather than \DateTime)
 	 *
 	 * @param string $format
 	 * @param string $time
 	 * @param mixed  $timezone The timezone the string is set in (defaults to UTC).
+	 *
 	 * @return DateTime
 	 */
 	public static function createFromFormat($format, $time, $timezone = null)
@@ -62,7 +76,9 @@ class DateTime extends \DateTime
 	 *  - Unix timestamps
 	 *
 	 * @param string|array $date
-	 * @param stirng|null  $timezone The PHP timezone identifier, if not specified in $date. Defaults to UTC. (See http://php.net/manual/en/timezones.php)
+	 * @param stirng|null  $timezone The PHP timezone identifier, if not specified in $date.
+	 *                               Defaults to UTC. (See {@link http://php.net/manual/en/timezones.php})
+	 *
 	 * @return DateTime|null|false
 	 */
 	public static function createFromString($date, $timezone = null)
@@ -181,16 +197,9 @@ class DateTime extends \DateTime
 	}
 
 	/**
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->format(static::W3C_DATE);
-	}
-
-	/**
 	 * @param string $format
 	 * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
+	 *
 	 * @return string
 	 */
 	function format($format, $timezone = null)
@@ -363,6 +372,7 @@ class DateTime extends \DateTime
 	/**
 	 * @param \DateTime $datetime2
 	 * @param bool      $absolute
+	 *
 	 * @return DateInterval
 	 */
 	public function diff($datetime2, $absolute = false)

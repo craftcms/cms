@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Service for image operations.
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ImagesService extends BaseApplicationComponent
 {
@@ -59,6 +64,7 @@ class ImagesService extends BaseApplicationComponent
 	 * Loads an image from a file system path.
 	 *
 	 * @param $path
+	 *
 	 * @throws \Exception
 	 * @return Image
 	 */

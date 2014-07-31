@@ -4,12 +4,28 @@ namespace Craft;
 /**
  * Class DbBackup
  *
- * @package craft.app.etc.db
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.db
+ * @since     1.0
  */
 class DbBackup
 {
+	/**
+	 * @var
+	 */
 	private $_constraints;
+
+	/**
+	 * @var
+	 */
 	private $_currentVersion;
+
+	/**
+	 * @var string
+	 */
 	private $_filePath;
 
 	/**
@@ -40,6 +56,7 @@ class DbBackup
 	 * @param $filePath
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	public function restore($filePath)
 	{
@@ -67,12 +84,19 @@ class DbBackup
 
 	/**
 	 * @param $value
+	 *
+	 * @return void
 	 */
 	public function trimValue(&$value)
 	{
 		$value = trim($value);
 	}
 
+	/**
+	 * @param array $sql
+	 *
+	 * @return array
+	 */
 	private function _buildSQLStatements($sql)
 	{
 		$statementArray = array();
@@ -108,7 +132,7 @@ class DbBackup
 	}
 
 	/**
-	 *
+	 * @return void
 	 */
 	private function _nukeDb()
 	{
@@ -136,7 +160,7 @@ class DbBackup
 	/**
 	 * Generate the foreign key constraints for all tables
 	 *
-	 * @return string
+	 * @return void
 	 */
 	private function _processConstraints()
 	{
@@ -182,7 +206,8 @@ class DbBackup
 
 	/**
 	 * Set sql file header
-	 * @return string
+	 *
+	 * @return void
 	 */
 	private function _processHeader()
 	{
@@ -199,7 +224,8 @@ class DbBackup
 
 	/**j
 	 * Set sql file footer
-	 * @return string
+	 *
+	 * @return void
 	 */
 	private function _processFooter()
 	{
@@ -211,7 +237,8 @@ class DbBackup
 	 * Create the SQL for a table dump
 	 *
 	 * @param $tableName
-	 * @return mixed
+	 *
+	 * @return void
 	 */
 	private function _processTable($tableName)
 	{

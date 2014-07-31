@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Handles field tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class FieldsController extends BaseController
 {
@@ -13,6 +18,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Saves a field group.
+	 *
+	 * @return void
 	 */
 	public function actionSaveGroup()
 	{
@@ -47,6 +54,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Deletes a field group.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteGroup()
 	{
@@ -68,6 +77,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Saves a field.
+	 *
+	 * @return void
 	 */
 	public function actionSaveField()
 	{
@@ -115,6 +126,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Deletes a field.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteField()
 	{

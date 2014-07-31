@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class SystemSettingsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class SystemSettingsService extends BaseApplicationComponent
 {
@@ -43,7 +48,7 @@ class SystemSettingsService extends BaseApplicationComponent
 	 * Return the DateTime for when the category was last updated.
 	 *
 	 * @param $category
-	 * @return null|DateTime
+	 * @return void|DateTime
 	 */
 	public function getCategoryTimeUpdated($category)
 	{

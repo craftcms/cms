@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class AssetSourcesService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class AssetSourcesService extends BaseApplicationComponent
 {
@@ -272,8 +277,9 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Saves an asset source.
 	 *
 	 * @param AssetSourceModel $source
-	 * @return bool
+	 *
 	 * @throws \Exception
+	 * @return bool
 	 */
 	public function saveSource(AssetSourceModel $source)
 	{
@@ -383,6 +389,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Reorders asset sources.
 	 *
 	 * @param array $sourceIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -421,6 +428,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Deletes an asset source by its ID.
 	 *
 	 * @param int $sourceId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

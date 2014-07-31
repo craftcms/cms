@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ResourcesService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ResourcesService extends BaseApplicationComponent
 {
@@ -48,6 +53,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
 	 * @param string $path
+	 *
 	 * @throws HttpException
 	 * @return string
 	 */
@@ -262,6 +268,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * Sends a resource back to the browser.
 	 *
 	 * @param string $path
+	 *
 	 * @throws HttpException
 	 */
 	public function sendResource($path)

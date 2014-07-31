@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class HttpRequestService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class HttpRequestService extends \CHttpRequest
 {
@@ -251,6 +256,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -286,6 +292,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -328,6 +335,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
 	 * @param $name
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -443,6 +451,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string     $content
 	 * @param array|null $options
 	 * @param bool|null  $terminate
+	 *
 	 * @throws HttpException
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)

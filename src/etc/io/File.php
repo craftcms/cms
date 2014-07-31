@@ -4,22 +4,64 @@ namespace Craft;
 /**
  * Class File
  *
- * @package craft.app.etc.io
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.io
+ * @since     1.0
  */
 class File extends BaseIO
 {
+	/**
+	 * @var string
+	 */
 	private $_baseName;
+
+	/**
+	 * @var string
+	 */
 	private $_fileName;
+
+	/**
+	 * @var string
+	 */
 	private $_extension;
+
+	/**
+	 * @var string
+	 */
 	private $_mimeType;
+
+	/**
+	 * @var
+	 */
 	private $_size;
+
+	/**
+	 * @var bool
+	 */
 	private $_isEmpty;
+
+	/**
+	 * @var
+	 */
 	private $_arrayContents;
+
+	/**
+	 * @var
+	 */
 	private $_stringContents;
+
+	/**
+	 * @var
+	 */
 	private $_md5;
 
 	/**
-	 * @param $path
+	 * @param string $path
+	 *
+	 * @return File
 	 */
 	public function __construct($path)
 	{
@@ -29,6 +71,7 @@ class File extends BaseIO
 
 	/**
 	 * @param bool $includeExtension
+	 *
 	 * @return mixed
 	 */
 	public function getFileName($includeExtension = true)
@@ -54,7 +97,7 @@ class File extends BaseIO
 	}
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
 	public function getExtension()
 	{
@@ -67,7 +110,7 @@ class File extends BaseIO
 	}
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
 	public function getMimeType()
 	{
@@ -93,7 +136,7 @@ class File extends BaseIO
 	}
 
 	/**
-	 * @return mixed
+	 * @return bool
 	 */
 	public function isEmpty()
 	{
@@ -107,6 +150,7 @@ class File extends BaseIO
 
 	/**
 	 * @param bool $array
+	 *
 	 * @return mixed
 	 */
 	public function getContents($array = false)
@@ -134,6 +178,7 @@ class File extends BaseIO
 	/**
 	 * @param $contents
 	 * @param $append
+	 *
 	 * @return bool
 	 */
 	public function write($contents, $append)
@@ -148,6 +193,7 @@ class File extends BaseIO
 
 	/**
 	 * @param $destination
+	 *
 	 * @return bool
 	 */
 	public function copy($destination)

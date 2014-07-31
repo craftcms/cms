@@ -4,12 +4,19 @@ namespace Craft;
 /**
  * Class DashboardController
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class DashboardController extends BaseController
 {
 	/**
 	 * Saves a widget.
+	 *
+	 * @return void
 	 */
 	public function actionSaveUserWidget()
 	{
@@ -39,6 +46,8 @@ class DashboardController extends BaseController
 
 	/**
 	 * Deletes a widget.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteUserWidget()
 	{
@@ -53,6 +62,8 @@ class DashboardController extends BaseController
 
 	/**
 	 * Reorders widgets.
+	 *
+	 * @return void
 	 */
 	public function actionReorderUserWidgets()
 	{
@@ -67,6 +78,8 @@ class DashboardController extends BaseController
 
 	/**
 	 * Returns the items for the Feed widget.
+	 *
+	 * @return void
 	 */
 	public function actionGetFeedItems()
 	{
@@ -94,6 +107,8 @@ class DashboardController extends BaseController
 
 	/**
 	 * Creates a new support ticket for the GetHelp widget.
+	 *
+	 * @return void
 	 */
 	public function actionSendSupportRequest()
 	{

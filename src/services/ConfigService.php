@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ConfigService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ConfigService extends BaseApplicationComponent
 {
@@ -99,7 +104,7 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param      $item
 	 * @param null $default
-	 * @return null
+	 * @return string
 	 * @deprecated Deprecated in 2.0.
 	 */
 	public function getDbItem($item, $default = null)

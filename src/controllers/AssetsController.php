@@ -13,10 +13,20 @@ namespace Craft;
  */
 class AssetsController extends BaseController
 {
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
 	protected $allowAnonymous = array('actionGenerateTransform');
 
 	/**
 	 * Upload a file
+	 *
+	 * @return void
 	 */
 	public function actionUploadFile()
 	{
@@ -50,6 +60,7 @@ class AssetsController extends BaseController
 	 * Uploads a file directly to a field for an entry.
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	public function actionExpressUpload()
 	{
@@ -62,9 +73,6 @@ class AssetsController extends BaseController
 			throw new Exception(Craft::t('The upload failed.'));
 		}
 
-		/**
-		 * @var AssetsFieldType
-		 */
 		$field = craft()->fields->populateFieldType(craft()->fields->getFieldById($fieldId));
 
 		if (!($field instanceof AssetsFieldType))
@@ -103,6 +111,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Create a folder.
+	 *
+	 * @return void
 	 */
 	public function actionCreateFolder()
 	{
@@ -127,6 +137,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Delete a folder.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteFolder()
 	{
@@ -150,6 +162,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Rename a folder
+	 *
+	 * @return void
 	 */
 	public function actionRenameFolder()
 	{
@@ -176,6 +190,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Delete a file or multiple files.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteFile()
 	{
@@ -198,6 +214,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Move a file or multiple files.
+	 *
+	 * @return void
 	 */
 	public function actionMoveFile()
 	{
@@ -224,6 +242,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Move a folder.
+	 *
+	 * @return void
 	 */
 	public function actionMoveFolder()
 	{
@@ -251,6 +271,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Generate a transform.
+	 *
+	 * @return void
 	 */
 	public function actionGenerateTransform()
 	{
@@ -290,6 +312,8 @@ class AssetsController extends BaseController
 
 	/**
 	 * Get information about available transforms.
+	 *
+	 * @return void
 	 */
 	public function actionGetTransformInfo()
 	{
@@ -308,10 +332,13 @@ class AssetsController extends BaseController
 	 * Check upload permissions.
 	 *
 	 * @param $folderId
+	 *
+	 * @return void
 	 */
 	private function _checkUploadPermissions($folderId)
 	{
 		$folder = craft()->assets->getFolderById($folderId);
+
 		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
 		if (!(is_object($folder) && is_null($folder->sourceId)))
 		{

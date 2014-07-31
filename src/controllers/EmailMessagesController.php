@@ -6,12 +6,19 @@ craft()->requireEdition(Craft::Client);
 /**
  * Handles email message tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class EmailMessagesController extends BaseController
 {
 	/**
-	 * Saves an email message
+	 * Saves an email message.
+	 *
+	 * @return void
 	 */
 	public function actionSaveMessage()
 	{

@@ -4,16 +4,30 @@ namespace Craft;
 /**
  * Class InstallController
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class InstallController extends BaseController
 {
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
 	protected $allowAnonymous = true;
 
 	/**
-	 * Init
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
@@ -25,7 +39,9 @@ class InstallController extends BaseController
 	}
 
 	/**
-	 * Index action
+	 * Index action.
+	 *
+	 * @return void
 	 */
 	public function actionIndex()
 	{
@@ -42,7 +58,9 @@ class InstallController extends BaseController
 	}
 
 	/**
-	 * Validates the user account credentials
+	 * Validates the user account credentials.
+	 *
+	 * @return void
 	 */
 	public function actionValidateAccount()
 	{
@@ -73,7 +91,9 @@ class InstallController extends BaseController
 	}
 
 	/**
-	 * Validates the site settings
+	 * Validates the site settings.
+	 *
+	 * @return void
 	 */
 	public function actionValidateSite()
 	{
@@ -97,7 +117,9 @@ class InstallController extends BaseController
 	}
 
 	/**
-	 * Install action
+	 * Install action.
+	 *
+	 * @return void
 	 */
 	public function actionInstall()
 	{

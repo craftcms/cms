@@ -9,10 +9,13 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
- * @since     1.0
+ * @since     2.0
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
+	/**
+	 * @var bool
+	 */
 	protected $_isSourceLocal = true;
 
 	const sourceName = "Temporary source";
@@ -42,6 +45,7 @@ class TempAssetSourceType extends LocalAssetSourceType
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -53,8 +57,9 @@ class TempAssetSourceType extends LocalAssetSourceType
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
-	 * @return array
+	 *
 	 * @throws Exception
+	 * @return array
 	 */
 	public function startIndex($sessionId)
 	{
@@ -66,8 +71,9 @@ class TempAssetSourceType extends LocalAssetSourceType
 	 *
 	 * @param $sessionId
 	 * @param $offset
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	public function processIndex($sessionId, $offset)
 	{

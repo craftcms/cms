@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Base Twig template class.
  *
- * @package craft.app.etc.templating
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.templating
+ * @since     2.0
  */
 abstract class BaseTemplate extends \Twig_Template
 {
@@ -18,9 +23,8 @@ abstract class BaseTemplate extends \Twig_Template
 	 * @param Boolean $isDefinedTest     Whether this is only a defined check
 	 * @param Boolean $ignoreStrictCheck Whether to ignore the strict attribute check or not
 	 *
-	 * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
-	 *
 	 * @throws \Twig_Error_Runtime if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
+	 * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
 	 */
 	protected function getAttribute($object, $item, array $arguments = array(), $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
 	{

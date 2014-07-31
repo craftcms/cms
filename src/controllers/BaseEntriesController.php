@@ -9,7 +9,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     1.0
+ * @since     2.1
  */
 abstract class BaseEntriesController extends BaseController
 {
@@ -17,6 +17,8 @@ abstract class BaseEntriesController extends BaseController
 	 * Enforces all Edit Entry permissions.
 	 *
 	 * @param EntryModel $entry
+	 *
+	 * @return void
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)
 	{

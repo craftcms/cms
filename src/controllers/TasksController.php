@@ -4,12 +4,19 @@ namespace Craft;
 /**
  * Handles task actions.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     2.0
  */
 class TasksController extends BaseController
 {
 	/**
 	 * Runs any pending tasks.
+	 *
+	 * @return void
 	 */
 	public function actionRunPendingTasks()
 	{
@@ -37,6 +44,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns the completion percentage for the running task.
+	 *
+	 * @return void
 	 */
 	public function actionGetRunningTaskInfo()
 	{
@@ -56,6 +65,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Re-runs a failed task.
+	 *
+	 * @return void
 	 */
 	public function actionRerunTask()
 	{
@@ -83,6 +94,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Deletes a task.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteTask()
 	{
@@ -98,6 +111,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns info about all the tasks.
+	 *
+	 * @return void
 	 */
 	public function actionGetTaskInfo()
 	{
@@ -117,6 +132,8 @@ class TasksController extends BaseController
 
 	/**
 	 * Returns info about the currently running task, if there is one.
+	 *
+	 * @return void
 	 */
 	private function _returnRunningTaskInfo()
 	{

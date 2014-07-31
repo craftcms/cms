@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class DashboardService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class DashboardService extends BaseApplicationComponent
 {
@@ -183,6 +188,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Reorders widgets.
 	 *
 	 * @param array $widgetIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -310,6 +316,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Throws a "No widget exists" exception.
 	 *
 	 * @param int $widgetId
+	 *
 	 * @throws Exception
 	 */
 	private function _noWidgetExists($widgetId)

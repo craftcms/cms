@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ComponentsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ComponentsService extends BaseApplicationComponent
 {
@@ -240,6 +245,7 @@ class ComponentsService extends BaseApplicationComponent
 	 * Throws a "no component type exists" exception.
 	 *
 	 * @param string $type
+	 *
 	 * @throws Exception
 	 */
 	private function _noComponentTypeExists($type)

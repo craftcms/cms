@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class GlobalsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class GlobalsService extends BaseApplicationComponent
 {
@@ -213,6 +218,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Saves a global set.
 	 *
 	 * @param GlobalSetModel $globalSet
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -297,6 +303,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Deletes a global set by its ID.
 	 *
 	 * @param int $setId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	*/

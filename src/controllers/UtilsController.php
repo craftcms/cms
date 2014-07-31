@@ -4,12 +4,20 @@ namespace Craft;
 /**
  * Handles utility related tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.3
  */
 class UtilsController extends BaseController
 {
 	/**
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
@@ -19,6 +27,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * Server info
+	 *
+	 * @return void
 	 */
 	public function actionServerInfo()
 	{
@@ -33,6 +43,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * PHP info
+	 *
+	 * @return void
 	 */
 	public function actionPhpInfo()
 	{
@@ -125,6 +137,10 @@ class UtilsController extends BaseController
 
 	/**
 	 * Logs
+	 *
+	 * @param array $variables
+	 *
+	 * @return void
 	 */
 	public function actionLogs(array $variables = array())
 	{
@@ -332,6 +348,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * Deprecation Errors
+	 *
+	 * @return void
 	 */
 	public function actionDeprecationErrors()
 	{
@@ -345,6 +363,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * View stack trace for a deprecator log entry.
+	 *
+	 * @return void
 	 */
 	public function actionGetDeprecationErrorTracesModal()
 	{
@@ -360,6 +380,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * Deletes all deprecation errors.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteAllDeprecationErrors()
 	{
@@ -372,6 +394,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * Deletes a deprecation error.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteDeprecationError()
 	{
@@ -386,6 +410,7 @@ class UtilsController extends BaseController
 
 	/**
 	 * @param $arrayToClean
+	 *
 	 * @return array
 	 */
 	private function _cleanUpArray($arrayToClean)
@@ -404,6 +429,7 @@ class UtilsController extends BaseController
 
 	/**
 	 * @param  $backTrace
+	 *
 	 * @return string
 	 */
 	private function _formatStackTrace($backTrace)
@@ -446,6 +472,8 @@ class UtilsController extends BaseController
 
 	/**
 	 * @param $arg
+	 *
+	 * @return void
 	 */
 	private function _getArg(&$arg)
 	{

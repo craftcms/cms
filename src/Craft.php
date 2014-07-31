@@ -279,7 +279,7 @@ class Craft extends \Yii
 	 * @param bool   $forceInclude If set to true, Craft will require_once the file. Defaults to false.
 	 *
 	 * @throws \Exception
-	 * @return string|void
+	 * @return string|null
 	 */
 	public static function import($alias, $forceInclude = false)
 	{

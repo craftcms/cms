@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class UrlManager
  *
- * @package craft.app.etc.web
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.web
+ * @since     1.0
  */
 class UrlManager extends \CUrlManager
 {
@@ -59,8 +64,9 @@ class UrlManager extends \CUrlManager
 	 * Routing candidates include actual template paths, elements with URIs, and registered URL routes.
 	 *
 	 * @param HttpRequestService $request
-	 * @return string The controller/action path.
+	 *
 	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
+	 * @return string The controller/action path.
 	 */
 	public function parseUrl($request)
 	{

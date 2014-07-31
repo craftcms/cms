@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Savable component type interface.
  *
- * @package craft.app.etc.components
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.components
+ * @since     1.0
  */
 interface ISavableComponentType extends IComponentType
 {
@@ -15,11 +20,14 @@ interface ISavableComponentType extends IComponentType
 
 	/**
 	 * @param array $values
+	 *
+	 * @return void
 	 */
 	public function setSettings($values);
 
 	/**
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings);

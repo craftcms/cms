@@ -4,24 +4,48 @@ namespace Craft;
 /**
  * Class Image
  *
- * @package craft.app.etc.io
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.io
+ * @since     1.0
  */
 class Image
 {
+	/**
+	 * @var string
+	 */
 	private $_imageSourcePath;
+
+	/**
+	 * @var string
+	 */
 	private $_extension;
+
+	/**
+	 * @var bool
+	 */
 	private $_isAnimatedGif = false;
+
+	/**
+	 * @var int
+	 */
 	private $_quality = 0;
 
 	/**
 	 * @var \Imagine\Image\ImageInterface
 	 */
 	private $_image;
+
 	/**
 	 * @var \Imagine\Image\ImagineInterface
 	 */
 	private $_instance;
 
+	/**
+	 * @return Image
+	 */
 	function __construct()
 	{
 		$extension = mb_strtolower(craft()->config->get('imageDriver'));
@@ -69,7 +93,7 @@ class Image
 	}
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
 	public function getExtension()
 	{
@@ -80,8 +104,9 @@ class Image
 	 * Loads an image from a file system path.
 	 *
 	 * @param string $path
-	 * @return Image
+	 *
 	 * @throws Exception
+	 * @return Image
 	 */
 	public function loadImage($path)
 	{
@@ -123,6 +148,7 @@ class Image
 	 * @param int $x2
 	 * @param int $y1
 	 * @param int $y2
+	 *
 	 * @return Image
 	 */
 	public function crop($x1, $x2, $y1, $y2)
@@ -158,9 +184,10 @@ class Image
 	/**
 	 * Scale the image to fit within the specified size.
 	 *
-	 * @param $targetWidth
-	 * @param $targetHeight
-	 * @param bool $scaleIfSmaller
+	 * @param int      $targetWidth
+	 * @param int|null $targetHeight
+	 * @param bool     $scaleIfSmaller
+	 *
 	 * @return Image
 	 */
 	public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
@@ -179,10 +206,11 @@ class Image
 	/**
 	 * Scale and crop image to exactly fit the specified size.
 	 *
-	 * @param        $targetWidth
-	 * @param        $targetHeight
-	 * @param bool   $scaleIfSmaller
-	 * @param string $cropPositions
+	 * @param int      $targetWidth
+	 * @param int|null $targetHeight
+	 * @param bool     $scaleIfSmaller
+	 * @param string   $cropPositions
+	 *
 	 * @return Image
 	 */
 	public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
@@ -271,8 +299,9 @@ class Image
 	/**
 	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.
 	 *
-	 * @param int $targetWidth
+	 * @param int      $targetWidth
 	 * @param int|null $targetHeight
+	 *
 	 * @return Image
 	 */
 	public function resize($targetWidth, $targetHeight = null)
@@ -306,7 +335,8 @@ class Image
 	/**
 	 * Set image quality.
 	 *
-	 * @param $quality
+	 * @param int $quality
+	 *
 	 * @return Image
 	 */
 	public function setQuality($quality)
@@ -317,6 +347,9 @@ class Image
 
 	/**
 	 * Saves the image to the target path.
+	 *
+	 * @param string $targetPath
+	 * @param bool   $sanitizeAndAutoQuality
 	 *
 	 * @param      $targetPath
 	 * @param bool $sanitizeAndAutoQuality
@@ -346,9 +379,10 @@ class Image
 
 	/**
 	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
+	 * @param int|string $width
 	 *
-	 * @param $width
-	 * @param $height
+	 * @param int|string $height
+	 *
 	 * @throws Exception
 	 */
 	private function _normalizeDimensions(&$width, &$height = null)
@@ -366,7 +400,14 @@ class Image
 	}
 
 	/**
+	 * @param     $tempFileName
+	 * @param     $originalSize
+	 * @param     $extension
+	 * @param     $minQuality
+	 * @param     $maxQuality
+	 * @param int $step
 	 *
+	 * @return bool
 	 */
 	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
@@ -425,7 +466,7 @@ class Image
 	/**
 	 * Get save options.
 	 *
-	 * @param null       $quality
+	 * @param int|null $quality
 	 * @return array
 	 */
 	private function _getSaveOptions($quality = null)

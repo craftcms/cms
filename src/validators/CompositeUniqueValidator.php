@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class CompositeUniqueValidator
  *
- * @package craft.app.validators
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.validators
+ * @since     1.0
  */
 class CompositeUniqueValidator extends \CValidator
 {
@@ -13,6 +18,7 @@ class CompositeUniqueValidator extends \CValidator
 	/**
 	 * @param \CModel $object
 	 * @param string  $attribute
+	 *
 	 * @throws Exception
 	 */
 	protected function validateAttribute($object, $attribute)

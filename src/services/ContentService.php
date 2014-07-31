@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ContentService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ContentService extends BaseApplicationComponent
 {
@@ -92,6 +97,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param bool             $validate           Whether the element's content should be validated first.
 	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the element's other locales.
 	 * @return bool                                Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the element and its content model.
+	 *
 	 * @throws Exception
 	 */
 	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)

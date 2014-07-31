@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class TasksService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     2.0
  */
 class TasksService extends BaseApplicationComponent
 {
@@ -19,6 +24,7 @@ class TasksService extends BaseApplicationComponent
 	 * @param string|null $description
 	 * @param array|null  $settings
 	 * @param int|null    $parentId
+	 *
 	 * @throws \Exception
 	 * @return TaskModel
 	 */

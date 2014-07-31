@@ -4,16 +4,48 @@ namespace Craft;
 /**
  * Class AppBehavior
  *
- * @package craft.app.etc.behaviors
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.bahaviors
+ * @since     1.2
  */
 class AppBehavior extends BaseBehavior
 {
+	/**
+	 * @var
+	 */
 	private $_isInstalled;
+
+	/**
+	 * @var
+	 */
 	private $_isLocalized;
+
+	/**
+	 * @var
+	 */
 	private $_info;
+
+	/**
+	 * @var
+	 */
 	private $_siteName;
+
+	/**
+	 * @var
+	 */
 	private $_siteUrl;
+
+	/**
+	 * @var bool
+	 */
 	private $_isDbConfigValid = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_isDbConnectionValid = false;
 
 	/**
@@ -54,6 +86,8 @@ class AppBehavior extends BaseBehavior
 
 	/**
 	 * Tells Craft that it's installed now.
+	 *
+	 * @return void
 	 */
 	public function setIsInstalled()
 	{
@@ -149,7 +183,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the edition Craft is actually licensed to run in.
 	 *
-	 * @return int|null
+	 * @return int|void
 	 */
 	public function getLicensedEdition()
 	{
@@ -164,7 +198,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the name of the edition Craft is actually licensed to run in.
 	 *
-	 * @return string|null
+	 * @return string|void
 	 */
 	public function getLicensedEditionName()
 	{
@@ -191,6 +225,7 @@ class AppBehavior extends BaseBehavior
 	 * Sets the Craft edition.
 	 *
 	 * @param int $edition
+	 *
 	 * @return bool
 	 */
 	public function setEdition($edition)
@@ -203,8 +238,9 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Requires that Craft is running an equal or better edition than what's passed in
 	 *
-	 * @param int $edition
+	 * @param int  $edition
 	 * @param bool $orBetter
+	 *
 	 * @throws Exception
 	 */
 	public function requireEdition($edition, $orBetter = true)
@@ -223,7 +259,7 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Returns whether Craft is elligible to be upgraded to a different edition.
+	 * Returns whether Craft is eligible to be upgraded to a different edition.
 	 *
 	 * @return bool
 	 */
@@ -249,7 +285,7 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
+	 * Returns whether Craft is running on a domain that is eligible to test out the editions.
 	 *
 	 * @return bool
 	 */
@@ -278,6 +314,7 @@ class AppBehavior extends BaseBehavior
 	 * Returns the site URL (with a trailing slash).
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever's in the Site URL setting.
+	 *
 	 * @return string
 	 */
 	public function getSiteUrl($protocol = null)
@@ -385,6 +422,7 @@ class AppBehavior extends BaseBehavior
 	 * Returns the info model, or just a particular attribute.
 	 *
 	 * @param string|null $attribute
+	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
@@ -426,6 +464,7 @@ class AppBehavior extends BaseBehavior
 	 * Updates the info row.
 	 *
 	 * @param InfoModel $info
+	 *
 	 * @return bool
 	 */
 	public function saveInfo(InfoModel $info)
@@ -471,6 +510,7 @@ class AppBehavior extends BaseBehavior
 	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
 	 *
 	 * @throws DbConnectException
+	 * @return void
 	 */
 	public function validateDbConfigFile()
 	{
@@ -478,12 +518,12 @@ class AppBehavior extends BaseBehavior
 		{
 			$messages = array();
 
-			$databaseServerName = craft()->config->getDbItem('server');
-			$databaseAuthName = craft()->config->getDbItem('user');
-			$databaseName = craft()->config->getDbItem('database');
-			$databasePort = craft()->config->getDbItem('port');
-			$databaseCharset = craft()->config->getDbItem('charset');
-			$databaseCollation = craft()->config->getDbItem('collation');
+			$databaseServerName = craft()->config->get('server', ConfigFile::Db);
+			$databaseAuthName = craft()->config->get('user', ConfigFile::Db);
+			$databaseName = craft()->config->get('database', ConfigFile::Db);
+			$databasePort = craft()->config->get('port', ConfigFile::Db);
+			$databaseCharset = craft()->config->get('charset', ConfigFile::Db);
+			$databaseCollation = craft()->config->get('collation', ConfigFile::Db);
 
 			if (StringHelper::isNullOrEmpty($databaseServerName))
 			{
@@ -553,7 +593,9 @@ class AppBehavior extends BaseBehavior
 	 * Returns whether a package is included in this Craft build.
 	 *
 	 * @param $packageName
+	 *
 	 * @return bool
+	 *
 	 * @deprecated Deprecated in 2.0
 	 */
 	public function hasPackage($packageName)
@@ -567,6 +609,7 @@ class AppBehavior extends BaseBehavior
 	 * Enables or disables Maintenance Mode
 	 *
 	 * @param bool $value
+	 *
 	 * @return bool
 	 */
 	private function _setMaintenanceMode($value)

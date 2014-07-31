@@ -6,12 +6,19 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Handles localization actions.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class LocalizationController extends BaseController
 {
 	/**
 	 * Adds a new a locale.
+	 *
+	 * @return void
 	 */
 	public function actionAddLocale()
 	{
@@ -25,6 +32,8 @@ class LocalizationController extends BaseController
 
 	/**
 	 * Saves the new locale order.
+	 *
+	 * @return void
 	 */
 	public function actionReorderLocales()
 	{
@@ -38,6 +47,8 @@ class LocalizationController extends BaseController
 
 	/**
 	 * Deletes a locale.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteLocale()
 	{

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Assets fieldtype.
  *
- * @package craft.app.fieldtypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.fieldtypes
+ * @since     1.0
  */
 class AssetsFieldType extends BaseElementFieldType
 {
@@ -274,8 +279,8 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
-	 * @return array
 	 * @throws Exception
+	 * @return array
 	 */
 	protected function getInputSources()
 	{
@@ -333,8 +338,9 @@ class AssetsFieldType extends BaseElementFieldType
 	 *
 	 * @param int $sourceId
 	 * @param string $subpath
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
@@ -469,8 +475,9 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
 	 *
 	 * @param $settings
-	 * @return mixed|null
+	 *
 	 * @throws Exception
+	 * @return mixed|null
 	 */
 	private function _determineUploadFolderId($settings)
 	{

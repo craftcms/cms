@@ -4,14 +4,21 @@ namespace Craft;
 /**
  * Class ConsoleApp
  *
- * @package craft.app.etc.console
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.console
+ * @since     1.0
  */
 class ConsoleApp extends \CConsoleApplication
 {
 	public $componentAliases;
 
 	/**
+	 * Initializes the console app by creating the command runner.
 	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -65,6 +72,8 @@ class ConsoleApp extends \CConsoleApplication
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
+	 *
+	 * @return void
 	 */
 	public function on($event, $handler)
 	{

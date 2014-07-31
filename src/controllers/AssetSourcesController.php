@@ -15,6 +15,8 @@ class AssetSourcesController extends BaseController
 {
 	/**
 	 * Shows the asset source list.
+	 *
+	 * @return void
 	 */
 	public function actionSourceIndex()
 	{
@@ -28,7 +30,9 @@ class AssetSourcesController extends BaseController
 	 * Edit an asset source.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditSource(array $variables = array())
 	{
@@ -90,6 +94,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Saves an asset source.
+	 *
+	 * @return void
 	 */
 	public function actionSaveSource()
 	{
@@ -149,6 +155,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Reorders asset sources.
+	 *
+	 * @return void
 	 */
 	public function actionReorderSources()
 	{
@@ -164,6 +172,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Deletes an asset source.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteSource()
 	{
@@ -180,6 +190,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Amazon S3 buckets.
+	 *
+	 * @return void
 	 */
 	public function actionGetS3Buckets()
 	{
@@ -201,6 +213,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Rackspace regions.
+	 *
+	 * @return void
 	 */
 	public function actionGetRackspaceRegions()
 	{
@@ -228,6 +242,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Rackspace containers.
+	 *
+	 * @return void
 	 */
 	public function actionGetRackspaceContainers()
 	{
@@ -256,6 +272,8 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Google Cloud Storage buckets.
+	 *
+	 * @return void
 	 */
 	public function actionGetGoogleCloudBuckets()
 	{

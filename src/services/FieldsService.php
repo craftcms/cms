@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class FieldsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class FieldsService extends BaseApplicationComponent
 {
@@ -377,6 +382,7 @@ class FieldsService extends BaseApplicationComponent
 	 *
 	 * @param FieldModel $field
 	 * @param bool $validate
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -526,6 +532,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field.
 	 *
 	 * @param FieldModel $field
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -964,6 +971,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Gets a field group record or creates a new one.
 	 *
 	 * @param FieldGroupModel $group
+	 *
 	 * @throws Exception
 	 * @return FieldGroupRecord
 	 */

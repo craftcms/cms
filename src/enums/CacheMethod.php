@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class CacheMethod
  *
- * @package craft.app.enums
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.enums
+ * @since     2.0
  */
 abstract class CacheMethod extends BaseEnum
 {

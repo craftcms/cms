@@ -4,12 +4,21 @@ namespace Craft;
 /**
  * Handles structure management tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     2.0
  */
 class StructuresController extends BaseController
 {
 	/**
 	 * Moves an element within a structure.
+	 *
+	 * @param array $variables
+	 *
+	 * @return void
 	 */
 	public function actionMoveElement(array $variables = array())
 	{

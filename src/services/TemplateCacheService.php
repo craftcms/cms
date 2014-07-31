@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class TemplateCacheService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     2.0
  */
 class TemplateCacheService extends BaseApplicationComponent
 {
@@ -112,6 +117,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 * @param string|null $duration
 	 * @param mixed|null  $expiration
 	 * @param string      $body
+	 *
 	 * @throws \Exception
 	 */
 	public function endTemplateCache($key, $global, $duration, $expiration, $body)

@@ -4,12 +4,20 @@ namespace Craft;
 /**
  * Handles settings from the control panel.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class SystemSettingsController extends BaseController
 {
 	/**
-	 * Init
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
@@ -19,6 +27,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Shows the settings index.
+	 *
+	 * @return void
 	 */
 	public function actionSettingsIndex()
 	{
@@ -41,6 +51,8 @@ class SystemSettingsController extends BaseController
 	 * Shows the general settings form.
 	 *
 	 * @param array $variables
+	 *
+	 * @return void
 	 */
 	public function actionGeneralSettings(array $variables = array())
 	{
@@ -96,6 +108,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Saves the general settings.
+	 *
+	 * @return void
 	 */
 	public function actionSaveGeneralSettings()
 	{
@@ -126,6 +140,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Saves the email settings.
+	 *
+	 * @return void
 	 */
 	public function actionSaveEmailSettings()
 	{
@@ -153,6 +169,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Tests the email settings.
+	 *
+	 * @return void
 	 */
 	public function actionTestEmailSettings()
 	{
@@ -184,7 +202,9 @@ class SystemSettingsController extends BaseController
 	 * Global Set edit form.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditGlobalSet(array $variables = array())
 	{

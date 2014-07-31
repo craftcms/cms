@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Number formatter class.
  *
- * @package craft.app.etc.i18n
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.i18n
+ * @since     1.3
  */
 class NumberFormatter extends \CNumberFormatter
 {
@@ -13,6 +18,7 @@ class NumberFormatter extends \CNumberFormatter
 	 *
 	 * @param mixed $value
 	 * @param bool  $withGroupSymbol
+	 *
 	 * @return string
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
@@ -64,10 +70,11 @@ class NumberFormatter extends \CNumberFormatter
 	/**
 	 * Formats a number using the currency format defined in the locale.
 	 *
-	 * @param mixed   $value
+	 * @param mixed  $value
 	 * @param string $currency
 	 * @param bool   $stripZeroCents
-	 * @return string the formatting result.
+	 *
+	 * @return string The formatted result.
 	 */
 	public function formatCurrency($value, $currency, $stripZeroCents = false)
 	{

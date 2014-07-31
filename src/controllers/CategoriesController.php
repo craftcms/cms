@@ -4,12 +4,19 @@ namespace Craft;
 /**
  * Class CategoriesController
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     2.0
  */
 class CategoriesController extends BaseController
 {
 	/**
 	 * Category groups index.
+	 *
+	 * @return void
 	 */
 	public function actionGroupIndex()
 	{
@@ -26,6 +33,9 @@ class CategoriesController extends BaseController
 	 * Edit a category group.
 	 *
 	 * @param array $variables
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditCategoryGroup(array $variables = array())
 	{
@@ -74,6 +84,8 @@ class CategoriesController extends BaseController
 
 	/**
 	 * Save a category group.
+	 *
+	 * @return void
 	 */
 	public function actionSaveGroup()
 	{
@@ -128,6 +140,8 @@ class CategoriesController extends BaseController
 
 	/**
 	 * Deletes a category group.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteCategoryGroup()
 	{
@@ -143,6 +157,8 @@ class CategoriesController extends BaseController
 
 	/**
 	 * Saves a category.
+	 *
+	 * @return void
 	 */
 	public function actionCreateCategory()
 	{
@@ -178,6 +194,9 @@ class CategoriesController extends BaseController
 
 	/**
 	 * Deletes a category.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionDeleteCategory()
 	{

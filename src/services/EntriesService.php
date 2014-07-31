@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class EntriesService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EntriesService extends BaseApplicationComponent
 {
@@ -24,6 +29,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -221,7 +227,9 @@ class EntriesService extends BaseApplicationComponent
 
 	/**
 	 * Deletes an entry(s).
+	 *
 	 * @param EntryModel|array $entries
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */

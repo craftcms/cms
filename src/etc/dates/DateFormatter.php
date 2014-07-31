@@ -4,15 +4,38 @@ namespace Craft;
 /**
  * DateFormatter class with functions for date/time-pickers.
  *
- * @package craft.app.etc.dates
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.dates
+ * @since     1.0
  */
 class DateFormatter extends \CDateFormatter
 {
+	/**
+	 * @var
+	 */
 	private $_datepickerCLocaleFormat;
+
+	/**
+	 * @var
+	 */
 	private $_datepickerJsFormat;
+
+	/**
+	 * @var
+	 */
 	private $_datepickerPhpFormat;
 
+	/**
+	 * @var
+	 */
 	private $_timepickerCLocaleFormat;
+
+	/**
+	 * @var
+	 */
 	private $_timepickerPhpFormat;
 
 	/**
@@ -97,8 +120,9 @@ class DateFormatter extends \CDateFormatter
 	 * Add support for DateTime objects.
 	 *
 	 * @param string|DateTime $timestamp
-	 * @param string $dateWidth
-	 * @param string $timeWidth
+	 * @param string          $dateWidth
+	 * @param string          $timeWidth
+	 *
 	 * @return string
 	 */
 	public function formatDateTime($timestamp, $dateWidth = 'medium', $timeWidth = 'medium')
@@ -112,8 +136,7 @@ class DateFormatter extends \CDateFormatter
 	}
 
 	/**
-	 * Returns the date format used by the datepicker.
-	 * Similar to 'short' except we want to use 4 digit years instead of 2.
+	 * Returns the date format used by the datepicker.  Similar to 'short' except we want to use 4 digit years instead of 2.
 	 *
 	 * @return string
 	 */
@@ -134,8 +157,9 @@ class DateFormatter extends \CDateFormatter
 	 * Converts CLocale time format tokens to jQuery UI Datepicker date format tokens.
 	 *
 	 * @param string $token
-	 * @return string
+	 *
 	 * @see http://api.jqueryui.com/datepicker/#utility-formatDate
+	 * @return string
 	 */
 	private function _getDatepickerJsToken($token)
 	{
@@ -171,8 +195,9 @@ class DateFormatter extends \CDateFormatter
 	 * Converts CLocale date format tokens to PHP date() date format tokens.
 	 *
 	 * @param string $token
-	 * @return string
+	 *
 	 * @see http://php.net/manual/en/function.date.php
+	 * @return string
 	 */
 	private function _getDatepickerPhpToken($token)
 	{
@@ -208,8 +233,9 @@ class DateFormatter extends \CDateFormatter
 	 * Converts CLocale time format tokens to PHP date() time format tokens.
 	 *
 	 * @param string $token
-	 * @return string
+	 *
 	 * @see http://php.net/manual/en/function.date.php
+	 * @return string
 	 */
 	private function _getTimepickerPhpToken($token)
 	{

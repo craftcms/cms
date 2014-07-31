@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class EmailService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EmailService extends BaseApplicationComponent
 {
@@ -39,8 +44,9 @@ class EmailService extends BaseApplicationComponent
 	 * @param UserModel $user
 	 * @param string $key
 	 * @param array $variables
-	 * @return bool
+	 *
 	 * @throws Exception
+	 * @return bool
 	 */
 	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
@@ -162,6 +168,7 @@ class EmailService extends BaseApplicationComponent
 	 * @param UserModel  $user
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
+	 *
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -348,6 +355,7 @@ class EmailService extends BaseApplicationComponent
 	/**
 	 * @param $email
 	 * @param $emailSettings
+	 *
 	 * @throws Exception
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)

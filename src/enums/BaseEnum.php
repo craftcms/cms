@@ -5,15 +5,24 @@ namespace Craft;
 /**
  * Class BaseEnum
  *
- * @package craft.app.enums
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.enums
+ * @since     2.0
  */
 abstract class BaseEnum
 {
+	/**
+	 * @var null
+	 */
 	private static $_constants = null;
 
 	/**
 	 * @param      $name
 	 * @param bool $strict
+	 *
 	 * @return bool
 	 */
 	public static function isValidName($name, $strict = false)
@@ -32,6 +41,7 @@ abstract class BaseEnum
 	/**
 	 * @param      $value
 	 * @param bool $strict
+	 *
 	 * @return bool
 	 */
 	public static function isValidValue($value, $strict = false)
@@ -41,7 +51,7 @@ abstract class BaseEnum
 	}
 
 	/**
-	 * @return null
+	 * @return array|null
 	 */
 	public static function getConstants()
 	{

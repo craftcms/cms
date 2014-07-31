@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ElementsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class ElementsService extends BaseApplicationComponent
 {
@@ -16,8 +21,9 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param mixed $attributes
-	 * @return ElementCriteriaModel
+	 *
 	 * @throws Exception
+	 * @return ElementCriteriaModel
 	 */
 	public function getCriteria($type, $attributes = null)
 	{
@@ -792,8 +798,8 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
 	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it will depend on whether the element is enabled or not.
-	 * @throws Exception
-	 * @throws \Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $validateContent = null)

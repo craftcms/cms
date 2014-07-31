@@ -4,17 +4,32 @@ namespace Craft;
 /**
  * Handles entry tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class EntriesController extends BaseEntriesController
 {
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
 	protected $allowAnonymous = array('actionViewSharedEntry');
 
 	/**
 	 * Edit an entry.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
@@ -331,7 +346,9 @@ class EntriesController extends BaseEntriesController
 	}
 
 	/**
+	 * Switches between two entry types.
 	 *
+	 * @return void
 	 */
 	public function actionSwitchEntryType()
 	{
@@ -360,6 +377,9 @@ class EntriesController extends BaseEntriesController
 
 	/**
 	 * Previews an entry.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionPreviewEntry()
 	{
@@ -391,6 +411,8 @@ class EntriesController extends BaseEntriesController
 
 	/**
 	 * Saves an entry.
+	 *
+	 * @return void
 	 */
 	public function actionSaveEntry()
 	{
@@ -483,6 +505,8 @@ class EntriesController extends BaseEntriesController
 
 	/**
 	 * Deletes an entry.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteEntry()
 	{
@@ -535,11 +559,13 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Redirects the client to a URL for viewing an entry/draft/version on the front end.
 	 *
-	 * @throws HttpException
 	 * @param mixed $entryId
 	 * @param mixed $locale
 	 * @param mixed $draftId
 	 * @param mixed $versionId
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -599,11 +625,13 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Shows an entry/draft/version based on a token.
 	 *
-	 * @throws HttpException
 	 * @param mixed $entryId
 	 * @param mixed $locale
 	 * @param mixed $draftId
 	 * @param mixed $versionId
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -634,8 +662,9 @@ class EntriesController extends BaseEntriesController
 	 * Preps entry edit variables.
 	 *
 	 * @param array &$variables
-	 * @throws HttpException
-	 * @throws Exception
+	 *
+	 * @throws HttpException|Exception
+	 * @return void
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
@@ -819,6 +848,8 @@ class EntriesController extends BaseEntriesController
 	 * Populates an EntryModel with post data.
 	 *
 	 * @param EntryModel $entry
+	 *
+	 * @return void
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
@@ -843,8 +874,10 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Displays an entry.
 	 *
-	 * @throws HttpException
 	 * @param EntryModel $entry
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	private function _showEntry(EntryModel $entry)
 	{

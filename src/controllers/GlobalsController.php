@@ -4,12 +4,19 @@ namespace Craft;
 /**
  * Handles global set management tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class GlobalsController extends BaseController
 {
 	/**
 	 * Saves a global set.
+	 *
+	 * @return void
 	 */
 	public function actionSaveSet()
 	{
@@ -54,6 +61,8 @@ class GlobalsController extends BaseController
 
 	/**
 	 * Deletes a global set.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteSet()
 	{
@@ -71,7 +80,9 @@ class GlobalsController extends BaseController
 	 * Edits a global set's content.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function actionEditContent(array $variables = array())
 	{
@@ -138,6 +149,9 @@ class GlobalsController extends BaseController
 
 	/**
 	 * Saves a global set's content.
+	 *
+	 * @throws Exception
+	 * @return void
 	 */
 	public function actionSaveContent()
 	{

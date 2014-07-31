@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class ElementHelper
  *
- * @package craft.app.helpers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     2.0
  */
 class ElementHelper
 {
@@ -59,6 +64,7 @@ class ElementHelper
 	 * tweaking its slug if necessary to ensure it's unique.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @throws Exception
 	 */
 	public static function setUniqueUri(BaseElementModel $element)

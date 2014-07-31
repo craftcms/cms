@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class DateInterval
  *
- * @package craft.app.etc.dates
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.dates
+ * @since     1.0
  */
 class DateInterval extends \DateInterval
 {
@@ -101,6 +106,7 @@ class DateInterval extends \DateInterval
 	 * Returns the total number of seconds in the interval.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The number of seconds.
 	 */
 	public function toSeconds(\DateInterval $interval = null)
@@ -144,6 +150,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval specification.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The interval specification.
 	 */
 	public function toSpec(\DateInterval $interval = null)
@@ -183,6 +190,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval in a human-friendly string.
 	 *
 	 * @param bool $showSeconds
+	 *
 	 * @return string
 	 */
 	public function humanDuration($showSeconds = true)

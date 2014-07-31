@@ -40,10 +40,18 @@ namespace Craft;
  *
  * @property array $error The error details. Null if there is no error.
  *
- * @package craft.app.etc.errors
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.errors
+ * @since     1.0
  */
 class ErrorHandler extends \CErrorHandler
 {
+	/**
+	 * @var
+	 */
 	private $_error;
 
 	/**
@@ -66,7 +74,9 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
 	 *
-	 * @param Exception $exception the exception captured
+	 * @param Exception $exception The exception captured.
+	 *
+	 * @return void
 	 */
 	protected function handleException($exception)
 	{
@@ -108,6 +118,8 @@ class ErrorHandler extends \CErrorHandler
 	 * Handles a PHP error.
 	 *
 	 * @param \CErrorEvent $event the PHP error event
+	 *
+	 * @return void
 	 */
 	protected function handleError($event)
 	{
@@ -145,6 +157,8 @@ class ErrorHandler extends \CErrorHandler
 	 * Handles Twig syntax errors.
 	 *
 	 * @param \Twig_Error $exception
+	 *
+	 * @return void
 	 */
 	protected function handleTwigError(\Twig_Error $exception)
 	{
@@ -193,6 +207,8 @@ class ErrorHandler extends \CErrorHandler
 	 * Handles DB connection errors.
 	 *
 	 * @param DbConnectException $exception
+	 *
+	 * @return void
 	 */
 	protected function handleDbConnectionError(DbConnectException $exception)
 	{
@@ -216,10 +232,9 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
-	 * Returns server version information.
-	 * If the application is in production mode, empty string is returned.
+	 * Returns server version information. If the site is in non-dev mode, an empty string is returned.
 	 *
-	 * @return string server version information. Empty if in production mode.
+	 * @return string The server version information. Empty if in non-dev mode.
 	 */
 	protected function getVersionInfo()
 	{

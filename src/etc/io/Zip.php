@@ -4,14 +4,20 @@ namespace Craft;
 /**
  * Class Zip
  *
- * @package craft.app.etc.io
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.io
+ * @since     1.0
  */
 class Zip
 {
 	/**
 	 * @param $source
 	 * @param $destZip
-	 * @return bool 'true' if the zip was successfully create, 'false' if not.
+	 *
+	 * @return bool 'true' if the zip was successfully created, 'false' if not.
 	 */
 	public static function compress($source, $destZip)
 	{
@@ -40,6 +46,7 @@ class Zip
 	/**
 	 * @param $srcZip
 	 * @param $destFolder
+	 *
 	 * @return bool
 	 */
 	public static function unzip($srcZip, $destFolder)
@@ -104,6 +111,7 @@ class Zip
 	 * @param      $pathToAdd
 	 * @param      $basePath
 	 * @param null $pathPrefix
+	 *
 	 * @return bool
 	 */
 	public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)

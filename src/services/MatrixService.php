@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class MatrixService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.3
  */
 class MatrixService extends BaseApplicationComponent
 {
@@ -614,6 +619,7 @@ class MatrixService extends BaseApplicationComponent
 	 *
 	 * @param MatrixBlockModel $block
 	 * @param bool             $validate
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -698,6 +704,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Saves a Matrix field.
 	 *
 	 * @param MatrixFieldType $fieldType
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -848,6 +855,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns a block type record by its ID or creates a new one.
 	 *
 	 * @param  MatrixBlockTypeModel $blockType
+	 *
 	 * @throws Exception
 	 * @return MatrixBlockTypeRecord
 	 */
@@ -879,6 +887,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns a block record by its ID or creates a new one.
 	 *
 	 * @param  MatrixBlockModel $block
+	 *
 	 * @throws Exception
 	 * @return MatrixBlockRecord
 	 */

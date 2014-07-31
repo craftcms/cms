@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * This model represents an Asset Operation Response.
  *
- * @package craft.app.models
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class AssetOperationResponseModel extends BaseModel
 {
@@ -78,7 +83,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Get a data item.
 	 *
 	 * @param $name
-	 * @return null
+	 * @return void
 	 */
 	public function getDataItem($name)
 	{

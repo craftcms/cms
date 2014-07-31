@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class InstallService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class InstallService extends BaseApplicationComponent
 {
@@ -14,8 +19,8 @@ class InstallService extends BaseApplicationComponent
 	 * Installs Craft!
 	 *
 	 * @param array $inputs
-	 * @throws Exception
-	 * @throws \Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return void
 	 */
 	public function run($inputs)
@@ -307,6 +312,7 @@ class InstallService extends BaseApplicationComponent
 	 * Populates the info table with install and environment information.
 	 *
 	 * @param $inputs
+	 *
 	 * @throws Exception
 	 */
 	private function _createAndPopulateInfoTable($inputs)
@@ -479,8 +485,9 @@ class InstallService extends BaseApplicationComponent
 	 * Adds the initial user to the database.
 	 *
 	 * @param $inputs
-	 * @return UserModel
+	 *
 	 * @throws Exception
+	 * @return UserModel
 	 */
 	private function _addUser($inputs)
 	{
@@ -553,7 +560,7 @@ class InstallService extends BaseApplicationComponent
 	 * Creates initial database content for the install.
 	 *
 	 * @param $inputs
-	 * @return null
+	 * @return void
 	 */
 	private function _createDefaultContent($inputs)
 	{

@@ -6,14 +6,26 @@ namespace Craft;
  *
  * Contains multiple SearchQueryTerm instances, each representing a term in the search query that was combined by "OR".
  *
- * @package craft.app.etc.search
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.search
+ * @since     1.0
  */
 class SearchQueryTermGroup
 {
+	/**
+	 * @var array
+	 */
 	public $terms;
 
 	/**
 	 * Constructor
+	 *
+	 * @param array $terms
+	 *
+	 * @return SearchQueryTermGroup
 	 */
 	function __construct($terms = array())
 	{

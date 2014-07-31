@@ -6,21 +6,31 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Handles user group tasks.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class UserSettingsController extends BaseController
 {
 	/**
-	 * Init
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
-		// All System Settings actions require an admin
+		// All user settings actions require an admin
 		craft()->userSession->requireAdmin();
 	}
 
 	/**
 	 * Saves a user group.
+	 *
+	 * @return void
 	 */
 	public function actionSaveGroup()
 	{
@@ -54,6 +64,8 @@ class UserSettingsController extends BaseController
 
 	/**
 	 * Deletes a user group.
+	 *
+	 * @return void
 	 */
 	public function actionDeleteGroup()
 	{
@@ -69,6 +81,8 @@ class UserSettingsController extends BaseController
 
 	/**
 	 * Saves the system user settings.
+	 *
+	 * @return void
 	 */
 	public function actionSaveUserSettings()
 	{

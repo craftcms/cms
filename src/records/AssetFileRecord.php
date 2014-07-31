@@ -6,7 +6,12 @@ namespace Craft;
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
- * @package craft.app.records
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class AssetFileRecord extends BaseRecord
 {

@@ -5,7 +5,12 @@ namespace Craft;
  * UserIdentity represents the data needed to identify a user.
  * It contains the authentication method that checks if the provided data can identity the user.
  *
- * @package craft.app.etc.users
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.users
+ * @since     1.0
  */
 class UserIdentity extends \CUserIdentity
 {
@@ -49,6 +54,7 @@ class UserIdentity extends \CUserIdentity
 
 	/**
 	 * @param UserModel $user
+	 *
 	 * @throws Exception
 	 * @return void
 	 */

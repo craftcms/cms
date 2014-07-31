@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class AssetFileModel
  *
- * @package craft.app.models
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class AssetFileModel extends BaseElementModel
 {
@@ -54,6 +59,7 @@ class AssetFileModel extends BaseElementModel
 	 * Magic getter
 	 *
 	 * @param string $name
+	 *
 	 * @throws \Exception
 	 * @return mixed
 	 */
@@ -317,7 +323,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @param $dimension 'height' or 'width'
 	 * @param $transform
-	 * @return null|float|mixed
+	 * @return void|float|mixed
 	 */
 	private function _getDimension($dimension, $transform)
 	{

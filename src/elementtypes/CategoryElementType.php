@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Category element type.
  *
- * @package craft.app.elementtypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     2.0
  */
 class CategoryElementType extends BaseElementType
 {
@@ -62,6 +67,7 @@ class CategoryElementType extends BaseElementType
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -96,10 +102,11 @@ class CategoryElementType extends BaseElementType
 	 * Returns the element index HTML.
 	 *
 	 * @param ElementCriteriaModel $criteria
-	 * @param array $disabledElementIds
-	 * @param array $viewState
-	 * @param string|null $sourceKey
-	 * @param string|null $context
+	 * @param array                $disabledElementIds
+	 * @param array                $viewState
+	 * @param string|null          $sourceKey
+	 * @param string|null          $context
+	 *
 	 * @return string
 	 */
 	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
@@ -132,6 +139,7 @@ class CategoryElementType extends BaseElementType
 	 * Returns the attributes that can be shown/sorted by in table views.
 	 *
 	 * @param string|null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
@@ -158,8 +166,9 @@ class CategoryElementType extends BaseElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -186,6 +195,7 @@ class CategoryElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)
@@ -197,6 +207,7 @@ class CategoryElementType extends BaseElementType
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return string
 	 */
 	public function getEditorHtml(BaseElementModel $element)
@@ -236,7 +247,8 @@ class CategoryElementType extends BaseElementType
 	 * Saves a given element.
 	 *
 	 * @param BaseElementModel $element
-	 * @param array $params
+	 * @param array            $params
+	 *
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $params)
@@ -253,6 +265,7 @@ class CategoryElementType extends BaseElementType
 	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel
+	 *
 	 * @return mixed Can be false if no special action should be taken,
 	 *               a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
@@ -282,7 +295,9 @@ class CategoryElementType extends BaseElementType
 	 * Performs actions after an element has been moved within a structure.
 	 *
 	 * @param BaseElementModel $element
-	 * @param int $structureId
+	 * @param int              $structureId
+	 *
+	 * @return void
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{

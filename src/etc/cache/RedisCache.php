@@ -14,14 +14,22 @@ namespace Craft;
  *
  * The minimum required redis version is 2.0.0.
  *
- * @package craft.app.etc.cache
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.cache
+ * @since     2.0
  */
 class RedisCache extends \CRedisCache
 {
 	/**
-	 * We override this because the parent is explicitly checking for null in the password.
+	 * Establishes a connection to the redis server.  It does nothing if the connection has already been established.
+	 *
+	 * Craft overrides this from Yii because the parent is explicitly checking for null in the password.
 	 *
 	 * @throws \CException
+	 * @return void
 	 */
 	protected function connect()
 	{

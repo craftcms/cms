@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class IOHelper
  *
- * @package craft.app.helpers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     1.0
  */
 class IOHelper
 {
@@ -1545,8 +1550,9 @@ class IOHelper
 	 * @param        $errFile
 	 * @param        $errLine
 	 * @param  array $errContext
-	 * @return bool
+	 *
 	 * @throws ErrorException
+	 * @return bool
 	 */
 	public function handleError($errNo, $errStr, $errFile, $errLine, array $errContext)
 	{

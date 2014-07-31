@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Override the default \CStatePersister so we can set a custom path at runtime for our state file.
  *
- * @package craft.app.etc.state
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.state
+ * @since     1.0
  */
 class StatePersister extends \CStatePersister
 {

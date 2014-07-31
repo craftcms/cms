@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class SecurityService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class SecurityService extends \CSecurityManager
 {
@@ -30,10 +35,11 @@ class SecurityService extends \CSecurityManager
 	/**
 	 * Hashes a given password with the blowfish encryption algorithm.
 	 *
-	 * @param      $string        The string to hash
-	 * @param bool $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 * @param string $string        The string to hash
+	 * @param bool   $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 *
 	 * @throws Exception
-	 * @return string             The hash.
+	 * @return string The hash.
 	 */
 	public function hashPassword($string, $validateHash = false)
 	{

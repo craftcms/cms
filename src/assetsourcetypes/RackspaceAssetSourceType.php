@@ -70,8 +70,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get container list.
 	 *
-	 * @return array
 	 * @throws Exception
+	 * @return array
 	 */
 	public function getContainerList()
 	{
@@ -117,8 +117,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Starts an indexing session.
 	 *
 	 * @param $sessionId
-	 * @return array
+	 *
 	 * @throws Exception
+	 * @return array
 	 */
 	public function startIndex($sessionId)
 	{
@@ -229,6 +230,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sessionId
 	 * @param $offset
+	 *
 	 * @return mixed
 	 */
 	public function processIndex($sessionId, $offset)
@@ -281,10 +283,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Insert a file from path in folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $filePath
-	 * @param $fileName
-	 * @return AssetFileModel
+	 * @param                  $filePath
+	 * @param                  $fileName
+	 *
 	 * @throws Exception
+	 * @return AssetFileModel
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
@@ -328,6 +331,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Get the image source path with the optional handle name.
 	 *
 	 * @param AssetFileModel $fileModel
+	 *
 	 * @return mixed
 	 */
 	public function getImageSourcePath(AssetFileModel $fileModel)
@@ -339,7 +343,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
-	 * @param string $transformLocation
+	 * @param string         $transformLocation
+	 *
 	 * @return mixed
 	 */
 	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
@@ -361,8 +366,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	* Put an image transform for the File and handle using the provided path to the source image.
 	*
 	* @param AssetFileModel $fileModel
-	* @param $handle
-	* @param $sourceImage
+	* @param                $handle
+	* @param                $sourceImage
+	 *
 	* @return mixed
 	*/
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
@@ -385,7 +391,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $fileName
+	 * @param                  $fileName
+	 *
 	 * @return mixed
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
@@ -424,6 +431,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Make a local copy of the file and return the path to it.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return mixed
 	 */
 
@@ -440,6 +448,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return string
 	 */
 	private function _getRackspacePath(AssetFileModel $file)
@@ -452,7 +461,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Delete just the source file for an Assets File.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $filename
+	 * @param                  $filename
+	 *
 	 * @return void
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
@@ -467,6 +477,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Delete all the generated image transforms for this file.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return void
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
@@ -483,10 +494,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Move a file in source.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
-	 * @param string $fileName
-	 * @param bool $overwrite if True, will overwrite target destination
+	 * @param string           $fileName
+	 * @param bool             $overwrite    If true, will overwrite target destination
+	 *
 	 * @return mixed
 	 */
 	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
@@ -554,6 +566,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return true if a folder exists on Rackspace.
 	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
+	 *
 	 * @param string $parentPath
 	 * @param $folderName
 	 * @return boolean
@@ -568,7 +583,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Create a folder on Rackspace, return true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param $folderName
+	 * @param                  $folderName
+	 *
 	 * @return boolean
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -588,7 +604,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Rename a source folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param $newName
+	 * @param                  $newName
+	 *
 	 * @return boolean
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
@@ -623,8 +640,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param $folderName
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
+	 *
 	 * @return bool
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
@@ -646,6 +664,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Determines if a file can be moved internally from original source.
 	 *
 	 * @param BaseAssetSourceType $originalSource
+	 *
 	 * @return mixed
 	 */
 	protected function canMoveFileFrom(BaseAssetSourceType $originalSource)
@@ -667,8 +686,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Copy a transform for a file from source location to target location.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $source
-	 * @param $target
+	 * @param                $source
+	 * @param                $target
+	 *
 	 * @return mixed
 	 */
 	public function copyTransform(AssetFileModel $file, $source, $target)
@@ -684,7 +704,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings to use, if null, will use current settings
+	 * @param object|null $settings The settings to use.  If null, will use the current settings.
 	 * @return string
 	 */
 	private function _getPathPrefix($settings = null)
@@ -706,7 +726,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Return true if a transform exists at the location for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $location
+	 * @param                $location
+	 *
 	 * @return mixed
 	 */
 	public function transformExists(AssetFileModel $file, $location)
@@ -728,6 +749,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Refresh a connection information and return authorization token.
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	private function _refreshConnectionInformation()
 	{
@@ -824,6 +846,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $headers
 	 * @param $curlOptions
 	 * @param $payload
+	 *
 	 * @return string
 	 */
 	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array(), $payload = "")
@@ -863,8 +886,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get object information by path
+	 * Get object information by path.
+	 *
 	 * @param $path
+	 *
 	 * @return bool|object
 	 */
 	private function _getObjectInfo($path)
@@ -886,13 +911,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Do an authenticated request against Rackspace severs.
 	 *
-	 * @param string $operationType operation type so we know which server to target
-	 * @param string $target URI target on the Rackspace server
-	 * @param string $method GET/POST/PUT/DELETE
-	 * @param array $headers array of headers. Authorization token will be appended to this before request.
-	 * @param array $curlOptions additional curl options to set.
-	 * @return string full response including headers.
+	 * @param string $operationType Operation type so we know which server to target
+	 * @param string $target        URI target on the Rackspace server
+	 * @param string $method        GET/POST/PUT/DELETE
+	 * @param array  $headers       Array of headers. Authorization token will be appended to this before request.
+	 * @param array  $curlOptions   Additional curl options to set.
+	 *
 	 * @throws Exception
+	 * @return string The full response including headers.
 	 */
 	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array(), $curlOptions = array())
 	{
@@ -991,6 +1017,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 	/**
 	 * Load Rackspace access data from DB.
+	 *
+	 * @return void
 	 */
 	private static function _loadAccessData()
 	{
@@ -998,17 +1026,19 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		foreach ($rows as $row)
 		{
 			static::$_accessStore[$row['connectionKey']] = array(
-															'token' => $row['token'],
-															'storageUrl' => $row['storageUrl'],
-															'cdnUrl' => $row['cdnUrl']);
+					'token' => $row['token'],
+					'storageUrl' => $row['storageUrl'],
+					'cdnUrl' => $row['cdnUrl']);
 		}
 	}
 
 	/**
-	 * Update or insert access data for a connetion key.
+	 * Update or insert access data for a connection key.
 	 *
 	 * @param $connectionKey
 	 * @param $data
+	 *
+	 * @return void
 	 */
 	private static function _updateAccessData($connectionKey, $data)
 	{
@@ -1034,6 +1064,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $response
 	 * @param $header
+	 *
 	 * @return mixed
 	 */
 	private static function _extractHeader($response, $header)
@@ -1048,6 +1079,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Extract the response form a response that has headers.
 	 *
 	 * @param $response
+	 *
 	 * @return string
 	 */
 	private static function _extractRequestResponse($response)
@@ -1059,6 +1091,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Log an unexpected response.
 	 *
 	 * @param $response
+	 *
+	 * @return void
 	 */
 	private static function _logUnexpectedResponse($response)
 	{
@@ -1070,6 +1104,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $path
 	 * @param $targetFile
+	 *
 	 * @return bool
 	 */
 	private function _downloadFile($path, $targetFile)
@@ -1091,6 +1126,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $targetUri
 	 * @param $sourceFile
+	 *
 	 * @return bool
 	 */
 	public function _uploadFile($targetUri, $sourceFile)
@@ -1119,8 +1155,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Get file list from Rackspace.
 	 *
 	 * @param $prefix
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	private function _getFileList($prefix = '')
 	{
@@ -1143,6 +1180,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Delete a file on Rackspace.
 	 *
 	 * @param $uriPath
+	 *
+	 * @return void
 	 */
 	private function _deleteObject($uriPath)
 	{
@@ -1153,6 +1192,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Purge a file from Akamai CDN
 	 *
 	 * @param $uriPath
+	 *
+	 * @return void
 	 */
 	private function _purgeObject($uriPath)
 	{
@@ -1164,6 +1205,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param $filename
+	 *
+	 * @return void
 	 */
 	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -1173,8 +1216,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 	/**
 	 * Copy a file on Rackspace.
+	 *
 	 * @param $sourceUri
 	 * @param $targetUri
+	 *
+	 * @return void
 	 */
 	private function _copyFile($sourceUri, $targetUri)
 	{
@@ -1187,6 +1233,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $container
 	 * @param $uri
+	 *
 	 * @return string
 	 */
 	private function _prepareRequestURI($container, $uri = '')
@@ -1210,6 +1257,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $username
 	 * @param $apiKey
 	 * @param $region
+	 *
 	 * @return string
 	 */
 	private function _getConnectionKey($username, $apiKey, $region)

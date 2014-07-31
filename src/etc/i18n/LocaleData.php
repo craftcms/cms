@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class LocaleData
  *
- * @package craft.app.etc.i18n
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.i18n
+ * @since     1.0
  */
 class LocaleData extends \CLocale
 {
@@ -13,6 +18,7 @@ class LocaleData extends \CLocale
 	 * this method to obtain an instance of the specified locale.
 	 *
 	 * @param  string $id The locale ID (e.g. en_US)
+	 *
 	 * @return LocaleData The locale instance
 	 */
 	public static function getInstance($id)
@@ -30,7 +36,13 @@ class LocaleData extends \CLocale
 	}
 
 	/**
-	 * Overriding getLanguage() from \CLocale because this is where we do want to chop off the territory half of a locale ID.
+	 * Converts a locale ID to a language ID.  Language ID consists of only the first group of letters before an underscore or dash.
+	 *
+	 * Craft overrides the parent method from {@link CLocale} because this is where we want to chop off the territory half of a locale ID.
+	 *
+	 * @param string $id The locale ID to be converted
+	 *
+	 * @return string The language ID
 	 */
 	public function getLanguage($id)
 	{
@@ -40,6 +52,7 @@ class LocaleData extends \CLocale
 
 	/**
 	 * @param $id
+	 *
 	 * @return bool
 	 */
 	public static function exists($id)

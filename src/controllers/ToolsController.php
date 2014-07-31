@@ -4,23 +4,34 @@ namespace Craft;
 /**
  * Handles tool actions.
  *
- * @package craft.app.controllers
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class ToolsController extends BaseController
 {
 	/**
-	 * Init
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function init()
 	{
-		// All tool actions require an admin
+		// All tool actions require an admin.
 		craft()->userSession->requireAdmin();
 
+		// Any actions here require all we can get.
 		craft()->config->maxPowerCaptain();
 	}
 
 	/**
 	 * Performs a tool's action.
+	 *
+	 * @return void
 	 */
 	public function actionPerformAction()
 	{
@@ -37,6 +48,8 @@ class ToolsController extends BaseController
 
 	/**
 	 * Returns a database backup zip file to the browser.
+	 *
+	 * @return void
 	 */
 	public function actionDownloadBackupFile()
 	{

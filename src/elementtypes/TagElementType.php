@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Tag element type.
  *
- * @package craft.app.elementtypes
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     1.1
  */
 class TagElementType extends BaseElementType
 {
@@ -42,6 +47,7 @@ class TagElementType extends BaseElementType
 	 * Returns this element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -72,6 +78,20 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
+	 * Returns the attributes that can be shown/sorted by in table views.
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array
+	 */
+	public function defineTableAttributes($source = null)
+	{
+		return array(
+			'name' => Craft::t('Name'),
+		);
+	}
+
+	/**
 	 * Defines any custom element criteria attributes for this element type.
 	 *
 	 * @return array
@@ -93,8 +113,9 @@ class TagElementType extends BaseElementType
 	/**
 	 * Modifies an element query targeting elements of this type.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -140,6 +161,7 @@ class TagElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)
@@ -151,6 +173,7 @@ class TagElementType extends BaseElementType
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return string
 	 */
 	public function getEditorHtml(BaseElementModel $element)
@@ -177,7 +200,8 @@ class TagElementType extends BaseElementType
 	 * Saves a given element.
 	 *
 	 * @param BaseElementModel $element
-	 * @param array $params
+	 * @param array            $params
+	 *
 	 * @return bool
 	 */
 	public function saveElement(BaseElementModel $element, $params)

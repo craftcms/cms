@@ -4,13 +4,19 @@ namespace Craft;
 /**
  * Class ConsoleCommandRunner
  *
- * @package craft.app.etc.console
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.console
+ * @since     1.0
  */
 class ConsoleCommandRunner extends \CConsoleCommandRunner
 {
 	/**
 	 * @param string $name command name (case-insensitive)
-	 * @return \CConsoleCommand the command object. Null if the name is invalid.
+	 *
+	 * @return \CConsoleCommand The command object. Null if the name is invalid.
 	 */
 	public function createCommand($name)
 	{
@@ -74,10 +80,11 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	}
 
 	/**
-	 * Adds commands from the specified command path.
-	 * If a command already exists, the new one will overwrite it.
+	 * Adds commands from the specified command path.  If a command already exists, the new one will overwrite it.
 	 *
-	 * @param string $path the alias of the folder containing the command class files.
+	 * @param string $path The alias of the folder containing the command class files.
+	 *
+	 * @return void
 	 */
 	public function addCommands($path)
 	{

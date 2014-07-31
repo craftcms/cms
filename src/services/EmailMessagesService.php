@@ -6,7 +6,12 @@ craft()->requireEdition(Craft::Client);
 /**
  * Class EmailMessagesService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EmailMessagesService extends BaseApplicationComponent
 {
@@ -179,7 +184,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * @param string $part
 	 * @param string $localeId
 	 *
-	 * @return null|string
+	 * @return void|string
 	 */
 	private function _translateMessageString($key, $part, $localeId)
 	{

@@ -64,6 +64,7 @@ abstract class BaseController extends \CController
 	 * @param array $variables     The variables that should be available to the template
 	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput
+	 *
 	 * @throws HttpException
 	 * @return mixed
 	 */
@@ -148,7 +149,9 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirects user to the login template if they're not logged in
+	 * Redirects user to the login template if they're not logged in.
+	 *
+	 * @return void
 	 */
 	public function requireLogin()
 	{
@@ -159,7 +162,10 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Requires the current user to be logged in as an admin
+	 * Requires the current user to be logged in as an admin.
+	 *
+	 * @throws HttpException
+	 * @return void
 	 */
 	public function requireAdmin()
 	{
@@ -173,6 +179,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't a POST request
 	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function requirePostRequest()
 	{
@@ -183,9 +190,10 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns a 400 if this isn't an Ajax request
+	 * Returns a 400 if this isn't an Ajax request.
 	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function requireAjaxRequest()
 	{
@@ -199,6 +207,7 @@ abstract class BaseController extends \CController
 	 * Requires the current request to include a token.
 	 *
 	 * @throws HttpException
+	 * @return void
 	 */
 	public function requireToken()
 	{
@@ -214,6 +223,8 @@ abstract class BaseController extends \CController
 	 * @param      $url
 	 * @param bool $terminate
 	 * @param int  $statusCode
+	 *
+	 * @return void
 	 */
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
@@ -232,6 +243,8 @@ abstract class BaseController extends \CController
 	 * Redirects to the URI specified in the POST.
 	 *
 	 * @param mixed $object Object containing properties that should be parsed for in the URL.
+	 *
+	 * @return void
 	 */
 	public function redirectToPostedUrl($object = null)
 	{
@@ -254,6 +267,8 @@ abstract class BaseController extends \CController
 	 * Respond with JSON
 	 *
 	 * @param array|null $var The array to JSON-encode and return
+	 *
+	 * @return void
 	 */
 	public function returnJson($var = array())
 	{
@@ -266,6 +281,8 @@ abstract class BaseController extends \CController
 	 * Respond with a JSON error message
 	 *
 	 * @param string $error The error message
+	 *
+	 * @return void
 	 */
 	public function returnErrorJson($error)
 	{
@@ -277,6 +294,7 @@ abstract class BaseController extends \CController
 	 * or as a bool that applies to all actions.
 	 *
 	 * @param \CAction $action
+	 *
 	 * @return bool
 	 */
 	public function beforeAction($action)

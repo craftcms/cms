@@ -4,12 +4,19 @@ namespace Craft;
 /**
  * Class LogRouter
  *
- * @package craft.app.etc.logging
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.etc.logging
+ * @since     1.0
  */
 class LogRouter extends \CLogRouter
 {
 	/**
 	 * @param $route
+	 *
+	 * @return void
 	 */
 	public function addRoute($route)
 	{
@@ -23,6 +30,8 @@ class LogRouter extends \CLogRouter
 	 * Removes a route from the LogRouter by class name.
 	 *
 	 * @param $class
+	 *
+	 * @return void
 	 */
 	public function removeRoute($class)
 	{

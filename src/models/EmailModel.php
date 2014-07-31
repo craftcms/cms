@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Email message model class.
  *
- * @package craft.app.models
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class EmailModel extends BaseModel
 {
@@ -60,6 +65,7 @@ class EmailModel extends BaseModel
 	 * @param string $name Overrides the attachment name.
 	 * @param string $encoding File encoding (see $Encoding).
 	 * @param string $type File extension (MIME) type.
+	 *
 	 * @throws phpmailerException
 	 * @return bool
 	 */

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Class TagsService
  *
- * @package craft.app.services
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.1
  */
 class TagsService extends BaseApplicationComponent
 {
@@ -132,6 +137,7 @@ class TagsService extends BaseApplicationComponent
 	 * Saves a tag group.
 	 *
 	 * @param TagGroupModel $tagGroup
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -219,6 +225,7 @@ class TagsService extends BaseApplicationComponent
 	 * Deletes a tag group by its ID.
 	 *
 	 * @param int $tagGroupId
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -291,7 +298,8 @@ class TagsService extends BaseApplicationComponent
 	 * Saves a tag.
 	 *
 	 * @param TagModel $tag
-	 * @throws Exception
+	 *
+	 * @throws Exception|\Exception
 	 * @return bool
 	 */
 	public function saveTag(TagModel $tag)

@@ -4,7 +4,12 @@ namespace Craft;
 /**
  * Active Record base class.
  *
- * @package craft.app.records
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @link      http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 abstract class BaseRecord extends \CActiveRecord
 {
@@ -112,7 +117,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Prepares the model's attribute values to be saved to the database.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function prepAttributesForSave()
 	{
@@ -150,7 +155,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Return the attribute values to the formats we want to work with in the code.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function prepAttributesForUse()
 	{
