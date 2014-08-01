@@ -7,13 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 abstract class BaseOptionsFieldType extends BaseFieldType
 {
+	/**
+	 * @var bool
+	 */
 	protected $multi = false;
+
+	/**
+	 * @var
+	 */
 	private $_options;
 
 	/**
@@ -60,8 +67,6 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			$options = array(array('label' => '', 'value' => ''));
 		}
 
-		$class = $this->getClassHandle();
-
 		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
 			array(
 				'label'        => $this->getOptionsSettingsLabel(),
@@ -95,6 +100,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -112,6 +118,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValue($value)
@@ -217,6 +224,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 * Returns an option's label by its value.
 	 *
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	protected function getOptionLabel($value)

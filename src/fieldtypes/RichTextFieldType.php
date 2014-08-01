@@ -7,13 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class RichTextFieldType extends BaseFieldType
 {
-	private static $_includedFieldResources = false;
+	/**
+	 * @var string
+	 */
 	private static $_redactorLang = 'en';
 
 	/**
@@ -82,6 +84,7 @@ class RichTextFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValue($value)
@@ -103,6 +106,7 @@ class RichTextFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -147,6 +151,7 @@ class RichTextFieldType extends BaseFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($value)
@@ -184,6 +189,7 @@ class RichTextFieldType extends BaseFieldType
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)
@@ -245,6 +251,8 @@ class RichTextFieldType extends BaseFieldType
 
 	/**
 	 * Includes the input resources.
+	 *
+	 * @return void
 	 */
 	private function _includeFieldResources()
 	{
@@ -279,6 +287,7 @@ class RichTextFieldType extends BaseFieldType
 	 * Attempts to include a Redactor language file.
 	 *
 	 * @param string $lang
+	 *
 	 * @return bool
 	 */
 	private function _includeRedactorLangFile($lang)

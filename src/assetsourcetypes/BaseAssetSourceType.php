@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
  * @since     1.0
  */
@@ -667,7 +667,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFolderModel $folder          The assetFolderModel representing the existing folder.
 	 * @param AssetFolderModel $newParentFolder The assetFolderModel representing the new parent folder.
-	 * @param boolean          $overwriteTarget If true, will overwrite folder, if needed
+	 * @param bool             $overwriteTarget If true, will overwrite folder, if needed
 	 *
 	 * @return AssetOperationResponseModel
 	 */

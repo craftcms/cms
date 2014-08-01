@@ -7,14 +7,12 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.3
  */
 class MatrixFieldType extends BaseFieldType
 {
-	private $_postedSettings;
-
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -79,6 +77,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -140,6 +139,8 @@ class MatrixFieldType extends BaseFieldType
 
 	/**
 	 * Performs any actions after a field is saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterSave()
 	{
@@ -148,6 +149,8 @@ class MatrixFieldType extends BaseFieldType
 
 	/**
 	 * Performs any actions before a field is deleted.
+	 *
+	 * @return void
 	 */
 	public function onBeforeDelete()
 	{
@@ -158,6 +161,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return ElementCriteriaModel|array
 	 */
 	public function prepValue($value)
@@ -198,6 +202,7 @@ class MatrixFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -238,6 +243,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $data
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($data)
@@ -351,6 +357,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Returns 'true' or any custom validation errors.
 	 *
 	 * @param array $blocks
+	 *
 	 * @return true|string|array
 	 */
 	public function validate($blocks)
@@ -396,10 +403,10 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getSearchKeywords($value)
@@ -440,6 +447,8 @@ class MatrixFieldType extends BaseFieldType
 
 	/**
 	 * Performs any additional actions after the element has been saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterElementSave()
 	{
@@ -450,6 +459,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)
@@ -527,6 +537,7 @@ class MatrixFieldType extends BaseFieldType
 	 * Returns info about each field type for the configurator.
 	 *
 	 * @param string $name
+	 *
 	 * @return array
 	 */
 	private function _getBlockTypeInfoForInput($name)

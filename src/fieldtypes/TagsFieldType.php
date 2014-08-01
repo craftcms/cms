@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.2
  */
 class TagsFieldType extends BaseElementFieldType
 {
+	/**
+	 * @var
+	 */
 	private $_tagGroupId;
 
 	/**
@@ -35,6 +38,7 @@ class TagsFieldType extends BaseElementFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $criteria)

@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     2.0
  */
@@ -29,8 +29,7 @@ class CategoriesFieldType extends BaseElementFieldType
 	protected $inputJsClass = 'Craft.CategorySelectInput';
 
 	/**
-	 * Template to use for field rendering
-	 * @var string
+	 * @var string Template to use for field rendering
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
@@ -41,6 +40,8 @@ class CategoriesFieldType extends BaseElementFieldType
 
 	/**
 	 * Performs any additional actions after the element has been saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterElementSave()
 	{
@@ -86,6 +87,7 @@ class CategoriesFieldType extends BaseElementFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return array
 	 */
 	protected function getInputTemplateVariables($name, $criteria)

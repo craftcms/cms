@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
@@ -24,9 +24,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	protected $componentType = 'FieldType';
 
 	/**
-	 * Returns the content attribute config.
-	 *
-	 * @return mixed
+	 * @return mixed Returns the content attribute config.
 	 */
 	public function defineContentAttribute()
 	{
@@ -35,6 +33,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 
 	/**
 	 * Performs any actions before a field is saved.
+	 *
+	 * @return void
 	 */
 	public function onBeforeSave()
 	{
@@ -42,6 +42,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 
 	/**
 	 * Performs any actions after a field is saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterSave()
 	{
@@ -49,6 +51,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 
 	/**
 	 * Performs any actions before a field is deleted.
+	 *
+	 * @return void
 	 */
 	public function onBeforeDelete()
 	{
@@ -56,6 +60,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 
 	/**
 	 * Performs any actions after a field is deleted.
+	 *
+	 * @return void
 	 */
 	public function onAfterDelete()
 	{
@@ -66,6 +72,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -77,6 +84,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)
@@ -93,6 +101,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($value)
@@ -114,6 +123,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * Returns 'true' or any custom validation errors.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return true|string|array
 	 */
 	public function validate($value)
@@ -123,16 +133,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 
 	/**
 	 * Performs any additional actions after the element has been saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterElementSave()
 	{
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getSearchKeywords($value)
@@ -144,6 +156,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValue($value)
@@ -156,6 +169,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
+	 *
 	 * @return void|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)

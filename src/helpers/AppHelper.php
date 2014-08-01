@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class AppHelper
 {
+	/**
+	 * @var null
+	 */
 	private static $_isPhpDevServer = null;
 
 	/**
@@ -51,6 +54,7 @@ class AppHelper
 	 * Returns the name of the given Craft edition.
 	 *
 	 * @param int $edition
+	 *
 	 * @return string
 	 */
 	public static function getEditionName($edition)
@@ -76,6 +80,7 @@ class AppHelper
 	 * Returns whether an edition is valid.
 	 *
 	 * @param mixed $edition
+	 *
 	 * @return bool
 	 */
 	public static function isValidEdition($edition)
@@ -86,7 +91,8 @@ class AppHelper
 	/**
 	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
 	 *
-	 * @param $value
+	 * @param string $value
+	 *
 	 * @return int
 	 */
 	public static function getByteValueFromPhpSizeString($value)

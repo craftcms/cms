@@ -7,14 +7,12 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     2.0
  */
 class CraftTwigExtension extends \Twig_Extension
 {
-	private $_classMethods;
-
 	/**
 	 * Returns the token parser instances to add to the existing list.
 	 *
@@ -90,6 +88,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 *
 	 * @param array $arr
 	 * @param mixed $exclude
+	 *
 	 * @return array
 	 */
 	public function withoutFilter($arr, $exclude)
@@ -113,9 +112,10 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Parses a string for refernece tags.
+	 * Parses a string for reference tags.
 	 *
 	 * @param string $str
+	 *
 	 * @return \Twig_Markup
 	 */
 	public function parseRefsFilter($str)
@@ -125,11 +125,12 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Replacecs Twig's |replace filter, adding support for passing in separate search and replace arrays.
+	 * Replaces Twig's |replace filter, adding support for passing in separate search and replace arrays.
 	 *
 	 * @param mixed $str
 	 * @param mixed $search
 	 * @param mixed $replace
+	 *
 	 * @return mixed
 	 */
 	public function replaceFilter($str, $search, $replace = null)
@@ -153,6 +154,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 * @param                   $date
 	 * @param null              $format
 	 * @param null              $timezone
+	 *
 	 * @return mixed|string
 	 */
 	public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null)
@@ -181,8 +183,9 @@ class CraftTwigExtension extends \Twig_Extension
 	/**
 	 * Groups an array by a common property.
 	 *
-	 * @param array $arr
+	 * @param array  $arr
 	 * @param string $item
+	 *
 	 * @return array
 	 */
 	public function groupFilter($arr, $item)
@@ -205,6 +208,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 *
 	 * @param mixed $haystack
 	 * @param mixed $needle
+	 *
 	 * @return int
 	 */
 	public function indexOfFilter($haystack, $needle)
@@ -245,6 +249,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 * Parses text through Markdown.
 	 *
 	 * @param string $str
+	 *
 	 * @return \Twig_Markup
 	 */
 	public function markdownFilter($str)
@@ -280,7 +285,7 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Returns getHeadHtml() wrapped in a Twig_Markup object.
+	 * Returns getHeadHtml() wrapped in a \Twig_Markup object.
 	 *
 	 * @return \Twig_Markup
 	 */
@@ -291,7 +296,7 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Returns getFootHtml() wrapped in a Twig_Markup object.
+	 * Returns getFootHtml() wrapped in a \Twig_Markup object.
 	 *
 	 * @return \Twig_Markup
 	 */
@@ -305,6 +310,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 * Shuffles an array.
 	 *
 	 * @param mixed $arr
+	 *
 	 * @return mixed
 	 */
 	public function shuffleFunction($arr)

@@ -7,14 +7,30 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     1.2
  */
 class Nav_Node extends \Twig_Node_For
 {
+	/**
+	 * @var NavItem_Node
+	 */
 	protected $navItemNode;
 
+	/**
+	 * @param \Twig_Node_Expression_AssignName $keyTarget
+	 * @param \Twig_Node_Expression_AssignName $valueTarget
+	 * @param \Twig_Node_Expression            $seq
+	 * @param \Twig_NodeInterface              $upperBody
+	 * @param \Twig_NodeInterface              $lowerBody
+	 * @param \Twig_NodeInterface              $indent
+	 * @param \Twig_NodeInterface              $outdent
+	 * @param null                             $lineno
+	 * @param null                             $tag
+	 *
+	 * @return \Craft\Nav_Node
+	 */
 	public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_NodeInterface $upperBody, \Twig_NodeInterface $lowerBody = null, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, $lineno, $tag = null)
 	{
 		$this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
@@ -27,6 +43,8 @@ class Nav_Node extends \Twig_Node_For
 	 * Compiles the node to PHP.
 	 *
 	 * @param \Twig_Compiler $compiler
+	 *
+	 * @return void
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

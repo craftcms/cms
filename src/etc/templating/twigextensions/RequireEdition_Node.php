@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     2.0
  */
@@ -15,6 +15,10 @@ class RequireEdition_Node extends \Twig_Node
 {
 	/**
 	 * Compiles a RequireEdition_Node into PHP.
+	 *
+	 * @param \Twig_Compiler $compiler
+	 *
+	 * @return void
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

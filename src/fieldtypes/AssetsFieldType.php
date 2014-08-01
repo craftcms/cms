@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
@@ -24,15 +24,12 @@ class AssetsFieldType extends BaseElementFieldType
 	protected $inputJsClass = 'Craft.AssetSelectInput';
 
 	/**
-	 * Template to use for field rendering
-	 * @var string
+	 * @var string Template to use for field rendering
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Assets/input';
 
 	/**
-	 * Uploaded files that failed validation.
-	 *
-	 * @var array
+	 * @var array Uploaded files that failed validation.
 	 */
 	private $_failedFiles = array();
 
@@ -109,6 +106,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($value)
@@ -174,6 +172,8 @@ class AssetsFieldType extends BaseElementFieldType
 
 	/**
 	 * Handle file moves between folders for dynamic single folder settings.
+	 *
+	 * @return void
 	 */
 	public function onAfterElementSave()
 	{
@@ -224,6 +224,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Returns 'true' or any custom validation errors.
 	 *
 	 * @param array $value
+	 *
 	 * @return true|string|array
 	 */
 	public function validate($value)
@@ -336,7 +337,7 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
-	 * @param int $sourceId
+	 * @param int    $sourceId
 	 * @param string $subpath
 	 *
 	 * @throws Exception
@@ -420,6 +421,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 *
 	 * @param $currentFolder
 	 * @param $folderName
+	 *
 	 * @return mixed|null
 	 */
 	private function _createSubFolder($currentFolder, $folderName)
@@ -451,6 +453,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Get a list of allowed extensions for a list of file kinds.
 	 *
 	 * @param array $allowedKinds
+	 *
 	 * @return array
 	 */
 	private function _getAllowedExtensions($allowedKinds)

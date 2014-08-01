@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
@@ -34,8 +34,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	protected $allowLimit = true;
 
 	/**
-	 * Template to use for field rendering
-	 * @var string
+	 * @var string Template to use for field rendering
 	 */
 	protected $inputTemplate = '_includes/forms/elementSelect';
 
@@ -118,11 +117,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the content attribute.
-	 *
-	 * Returns 'true' or any custom validation errors.
+	 * Validates the value beyond the checks that were assumed based on the content attribute.  Returns 'true' or any
+	 * custom validation errors.
 	 *
 	 * @param array $value
+	 *
 	 * @return true|string|array
 	 */
 	public function validate($value)
@@ -155,6 +154,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function prepValue($value)
@@ -208,6 +208,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $criteria)
@@ -217,10 +218,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
 	 *
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return string
 	 */
 	public function getSearchKeywords($criteria)
@@ -237,6 +238,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 	/**
 	 * Performs any additional actions after the element has been saved.
+	 *
+	 * @return void
 	 */
 	public function onAfterElementSave()
 	{
@@ -264,6 +267,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)
@@ -311,6 +315,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return array
 	 */
 	protected function getInputTemplateVariables($name, $criteria)

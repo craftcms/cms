@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
@@ -66,6 +66,7 @@ class NumberFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -86,6 +87,7 @@ class NumberFieldType extends BaseFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $data
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($data)

@@ -8,12 +8,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.users
  * @since     1.0
  */
 class UserIdentity extends \CUserIdentity
 {
+	/**
+	 * @var int
+	 */
 	private $_id;
 
 	const ERROR_ACCOUNT_LOCKED          = 50;
@@ -26,7 +29,7 @@ class UserIdentity extends \CUserIdentity
 	/**
 	 * Authenticates a user against the database.
 	 *
-	 * @return boolean whether authentication succeeds.
+	 * @return bool true, if authentication succeeds, false otherwise.
 	 */
 	public function authenticate()
 	{
@@ -45,7 +48,7 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @return mixed
+	 * @return int
 	 */
 	public function getId()
 	{
@@ -133,6 +136,8 @@ class UserIdentity extends \CUserIdentity
 
 	/**
 	 * @param $user
+	 *
+	 * @return void
 	 */
 	public function logUserIn($user)
 	{

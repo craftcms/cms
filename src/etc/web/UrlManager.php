@@ -7,13 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.web
  * @since     1.0
  */
 class UrlManager extends \CUrlManager
 {
+	/**
+	 * @var
+	 */
 	public $cpRoutes;
+
+	/**
+	 * @var
+	 */
 	public $pathParam;
 
 	/**
@@ -21,13 +28,28 @@ class UrlManager extends \CUrlManager
 	 */
 	private $_routeVariables;
 
+	/**
+	 * @var
+	 */
 	private $_routeAction;
+
+	/**
+	 * @var
+	 */
 	private $_routeParams;
+
+	/**
+	 * @var
+	 */
 	private $_matchedElement;
+
+	/**
+	 * @var
+	 */
 	private $_matchedElementRoute;
 
 	/**
-	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -53,6 +75,8 @@ class UrlManager extends \CUrlManager
 	 * Sets variables to be passed to the routed controllers action's $variables argument.
 	 *
 	 * @param array $variables
+	 *
+	 * @return void
 	 */
 	public function setRouteVariables($variables)
 	{
@@ -60,8 +84,8 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Determines which controller/action to route the request to.
-	 * Routing candidates include actual template paths, elements with URIs, and registered URL routes.
+	 * Determines which controller/action to route the request to.  Routing candidates include actual template paths,
+	 * elements with URIs, and registered URL routes.
 	 *
 	 * @param HttpRequestService $request
 	 *
@@ -163,6 +187,8 @@ class UrlManager extends \CUrlManager
 	 * Sets the route.
 	 *
 	 * @param mixed $route
+	 *
+	 * @return void
 	 */
 	private function _setRoute($route)
 	{
@@ -186,6 +212,7 @@ class UrlManager extends \CUrlManager
 	 * Normalizes a route.
 	 *
 	 * @param mixed $route
+	 *
 	 * @return array
 	 */
 	private function _normalizeRoute($route)
@@ -215,6 +242,7 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with an element in the database.
 	 *
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedElementRoute($path)
@@ -249,6 +277,7 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with the registered URL routes.
 	 *
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedUrlRoute($path)
@@ -311,7 +340,8 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with a set of given URL routes.
 	 *
 	 * @param string $path
-	 * @param array $routes
+	 * @param array  $routes
+	 *
 	 * @return mixed
 	 */
 	private function _matchUrlRoutes($path, $routes)

@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
@@ -18,6 +18,11 @@ class RichTextData extends \Twig_Markup
 
 	/**
 	 * Constructor
+	 *
+	 * @param string $content
+	 * @param string $charset
+	 *
+	 * @return RichTextData
 	 */
 	public function __construct($content, $charset)
 	{
@@ -64,6 +69,7 @@ class RichTextData extends \Twig_Markup
 	 * Returns a specific page.
 	 *
 	 * @param int $pageNumber
+	 *
 	 * @return string|null
 	 */
 	public function getPage($pageNumber)

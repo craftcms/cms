@@ -7,7 +7,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     1.0
  */
@@ -17,6 +17,7 @@ class Exit_TokenParser extends \Twig_TokenParser
 	 * Parses {% exit %} tags.
 	 *
 	 * @param \Twig_Token $token
+	 *
 	 * @return Exit_Node
 	 */
 	public function parse(\Twig_Token $token)

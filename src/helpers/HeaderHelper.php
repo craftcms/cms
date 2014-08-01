@@ -8,7 +8,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.3
  */
@@ -51,7 +51,8 @@ class HeaderHelper
 	/**
 	 * Tells the browser not to request this content again the next $sec seconds but use the browser cached content
 	 *
-	 * @param integer $seconds Time in seconds to hold in browser cache
+	 * @param int $seconds Time in seconds to hold in browser cache
+	 *
 	 * @return void
 	 */
 	public static function setExpires($seconds = 300)
@@ -100,7 +101,7 @@ class HeaderHelper
 	 * Forces a file download. Be sure to give the right extension.
 	 *
 	 * @param string  $fileName The name of the file when it's downloaded
-	 * @param integer $fileSize The size in bytes.
+	 * @param int     $fileSize The size in bytes.
 	 *
 	 * @return void
 	 */
@@ -128,7 +129,8 @@ class HeaderHelper
 	 * Tells the browser the length of the following content.  This mostly makes sense when using the download function
 	 * so the browser can calculate how many bytes are left during the process
 	 *
-	 * @param integer $sizeInBytes The content size in bytes
+	 * @param int $sizeInBytes The content size in bytes
+	 *
 	 * @return void
 	 */
 	public static function setLength($sizeInBytes)
