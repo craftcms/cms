@@ -178,30 +178,47 @@ class AssetsFieldType extends BaseElementFieldType
 	public function onAfterElementSave()
 	{
 		$handle = $this->model->handle;
-		$filesToMove = $this->element->getContent()->{$handle};
+		$elementFiles = $this->element->{$handle};
 
-		if (is_array($filesToMove) && count($filesToMove))
+		if (is_object($elementFiles))
+		{
+			$elementFiles = $elementFiles->find();
+		}
+
+		if (is_array($elementFiles) && count($elementFiles))
 		{
 
+			$fileIds = array();
+
+			foreach ($elementFiles as $elementFile)
+			{
+				$fileIds[] = $elementFile->id;
+			}
+
 			$settings = $this->getSettings();
+
 			if ($this->getSettings()->useSingleFolder)
 			{
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+
+				// Move all the files for single upload directories.
+				$filesToMove = $fileIds;
 			}
 			else
 			{
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
 
+				// Find the files with temp sources and just move those.
 				$criteria = array(
-					'id' => array_merge(array('in'), $filesToMove),
+					'id' => array_merge(array('in'), $fileIds),
 					'sourceId' => ':empty:'
 				);
 				$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 
-				$files = $criteria->find();
+				$filesInTempSource = $criteria->find();
 				$filesToMove = array();
 
-				foreach ($files as $file)
+				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
 				}
