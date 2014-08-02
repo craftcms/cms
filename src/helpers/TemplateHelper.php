@@ -15,6 +15,10 @@ class TemplateHelper
 {
 	/**
 	 * Paginates an ElementCriteriaModel instance.
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 *
+	 * @return array
 	 */
 	public static function paginateCriteria(ElementCriteriaModel $criteria)
 	{
@@ -61,6 +65,7 @@ class TemplateHelper
 	 * Returns a string wrapped in a \Twig_Markup object
 	 *
 	 * @param $value
+	 *
 	 * @return \Twig_Markup
 	 */
 	public static function getRaw($value)

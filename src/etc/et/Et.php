@@ -100,7 +100,7 @@ class Et
 	 *
 	 * @return Et
 	 */
-	function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
 		$endpoint .= craft()->config->get('endpointSuffix');
 

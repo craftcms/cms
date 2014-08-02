@@ -25,7 +25,7 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 	 *
 	 * @return IncludeResource_TokenParser
 	 */
-	function __construct($tag)
+	public function __construct($tag)
 	{
 		$this->_tag = $tag;
 	}

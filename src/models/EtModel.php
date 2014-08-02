@@ -69,8 +69,8 @@ class EtModel extends BaseModel
 		return $attributes;
 	}
 
-	/*
-	 *
+	/**
+	 * @return void
 	 */
 	public function decode()
 	{

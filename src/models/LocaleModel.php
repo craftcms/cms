@@ -19,7 +19,7 @@ class LocaleModel extends BaseApplicationComponent
 	/**
 	 * Use the ID as the string representation of locales.
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->_id;
 	}
@@ -27,7 +27,7 @@ class LocaleModel extends BaseApplicationComponent
 	/**
 	 * Constructor
 	 */
-	function __construct($id)
+	public function __construct($id)
 	{
 		$this->_id = $id;
 	}

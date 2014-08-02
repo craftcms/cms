@@ -13,10 +13,14 @@ namespace Craft;
  */
 class UpdateHelper
 {
+	/**
+	 * @var
+	 */
 	private static $_manifestData;
 
 	/**
 	 * @param $manifestData
+	 *
 	 * @return void
 	 */
 	public static function rollBackFileChanges($manifestData)
@@ -74,6 +78,7 @@ class UpdateHelper
 	/**
 	 * @param $manifestData
 	 * @param $sourceTempFolder
+	 *
 	 * @return bool
 	 */
 	public static function doFileUpdate($manifestData, $sourceTempFolder)
@@ -145,6 +150,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return bool
 	 */
 	public static function isManifestVersionInfoLine($line)
@@ -161,6 +167,7 @@ class UpdateHelper
 	 * Returns the local build number from the given manifest file.
 	 *
 	 * @param $manifestData
+	 *
 	 * @return bool|string
 	 */
 	public static function getLocalBuildFromManifest($manifestData)
@@ -180,6 +187,7 @@ class UpdateHelper
 	 * Returns the local version number from the given manifest file.
 	 *
 	 * @param $manifestData
+	 *
 	 * @return bool|string
 	 */
 	public static function getLocalVersionFromManifest($manifestData)
@@ -259,6 +267,7 @@ class UpdateHelper
 
 	/**
 	 * @param $uid
+	 *
 	 * @return string
 	 */
 	public static function getUnzipFolderFromUID($uid)
@@ -268,6 +277,7 @@ class UpdateHelper
 
 	/**
 	 * @param $uid
+	 *
 	 * @return string
 	 */
 	public static function getZipFileFromUID($uid)
@@ -277,6 +287,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return bool
 	 */
 	public static function isManifestLineAFolder($line)
@@ -291,6 +302,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return string
 	 */
 	public static function cleanManifestFolderLine($line)

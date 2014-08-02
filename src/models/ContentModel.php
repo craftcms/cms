@@ -13,7 +13,14 @@ namespace Craft;
  */
 class ContentModel extends BaseModel
 {
+	/**
+	 * @var
+	 */
 	private $_requiredFields;
+
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
 
 	/**
@@ -81,6 +88,8 @@ class ContentModel extends BaseModel
 	 * Sets the required fields.
 	 *
 	 * @param array $requiredFields
+	 *
+	 * @return void
 	 */
 	public function setRequiredFields($requiredFields)
 	{
@@ -108,7 +117,8 @@ class ContentModel extends BaseModel
 	 * Validates the custom fields.
 	 *
 	 * @param array|null $attributes
-	 * @param bool $clearErrors
+	 * @param bool       $clearErrors
+	 *
 	 * @return bool
 	 */
 	public function validate($attributes = null, $clearErrors = true)

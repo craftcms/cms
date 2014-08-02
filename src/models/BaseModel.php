@@ -13,19 +13,39 @@ namespace Craft;
  */
 abstract class BaseModel extends \CModel
 {
+	/**
+	 * @var
+	 */
 	private $_classHandle;
+
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
+
+	/**
+	 * @var
+	 */
 	private $_attributeNames;
+
+	/**
+	 * @var
+	 */
 	private $_attributes;
 
+	/**
+	 * @var string
+	 */
 	protected $classSuffix = 'Model';
 
 	/**
 	 * Constructor
 	 *
 	 * @param mixed $attributes
+	 *
+	 * @return BaseModel
 	 */
-	function __construct($attributes = null)
+	public function __construct($attributes = null)
 	{
 		ModelHelper::populateAttributeDefaults($this);
 		$this->setAttributes($attributes);
@@ -37,9 +57,10 @@ abstract class BaseModel extends \CModel
 	 * PHP getter magic method.
 	 *
 	 * @param string $name
+	 *
 	 * @return mixed
 	 */
-	function __get($name)
+	public function __get($name)
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
@@ -56,9 +77,10 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return mixed
 	 */
-	function __set($name, $value)
+	public function __set($name, $value)
 	{
 		if ($this->setAttribute($name, $value) === false)
 		{
@@ -70,10 +92,11 @@ abstract class BaseModel extends \CModel
 	 * Magic __call() method, used for chain-setting attribute values.
 	 *
 	 * @param string $name
-	 * @param array $arguments
+	 * @param array  $arguments
+	 *
 	 * @return BaseModel
 	 */
-	function __call($name, $arguments)
+	public function __call($name, $arguments)
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
@@ -100,9 +123,10 @@ abstract class BaseModel extends \CModel
 	 * Treats attributes defined by defineAttributes() as properties.
 	 *
 	 * @param string $name
+	 *
 	 * @return bool
 	 */
-	function __isset($name)
+	public function __isset($name)
 	{
 		if (parent::__isset($name) || in_array($name, $this->attributeNames()))
 		{
@@ -118,6 +142,7 @@ abstract class BaseModel extends \CModel
 	 * Treats attributes defined by defineAttributes() as array offsets.
 	 *
 	 * @param mixed $offset
+	 *
 	 * @return boolean
 	 */
 	public function offsetExists($offset)
@@ -230,7 +255,8 @@ abstract class BaseModel extends \CModel
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param bool $flattenValue
+	 * @param bool   $flattenValue
+	 *
 	 * @return mixed
 	 */
 	public function getAttribute($name, $flattenValue = false)
@@ -252,7 +278,8 @@ abstract class BaseModel extends \CModel
 	 * Sets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param mixed $value
+	 * @param mixed  $value
+	 *
 	 * @return bool
 	 */
 	public function setAttribute($name, $value)
@@ -327,6 +354,8 @@ abstract class BaseModel extends \CModel
 	 * Sets multiple attribute values at once.
 	 *
 	 * @param mixed $values
+	 *
+	 * @return void
 	 */
 	public function setAttributes($values)
 	{
@@ -368,6 +397,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
+	 *
 	 * @return bool
 	 */
 	public function validate($attributes = null, $clearErrors = true)
@@ -420,6 +450,7 @@ abstract class BaseModel extends \CModel
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @param mixed $values
+	 *
 	 * @return BaseModel
 	 */
 	public static function populateModel($values)
@@ -431,8 +462,9 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Mass-populates models based on an array of attribute arrays.
 	 *
-	 * @param array $data
+	 * @param array       $data
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public static function populateModels($data, $indexBy = null)

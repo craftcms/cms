@@ -21,7 +21,7 @@ class MatrixSettingsModel extends BaseModel
 	 *
 	 * @param FieldModel|null $matrixField
 	 */
-	function __construct(FieldModel $matrixField = null)
+	public function __construct(FieldModel $matrixField = null)
 	{
 		$this->_matrixField = $matrixField;
 	}

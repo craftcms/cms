@@ -13,6 +13,9 @@ namespace Craft;
  */
 class AssetSourceModel extends BaseComponentModel
 {
+	/**
+	 * @var
+	 */
 	private $_sourceType;
 
 	/**
@@ -20,7 +23,7 @@ class AssetSourceModel extends BaseComponentModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
 	}

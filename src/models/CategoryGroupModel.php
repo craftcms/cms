@@ -20,7 +20,7 @@ class CategoryGroupModel extends BaseModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
 	}
@@ -78,6 +78,8 @@ class CategoryGroupModel extends BaseModel
 	 * Sets the section's locale models.
 	 *
 	 * @param array $locales
+	 *
+	 * @return void
 	 */
 	public function setLocales($locales)
 	{

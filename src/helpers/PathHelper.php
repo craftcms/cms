@@ -17,6 +17,7 @@ class PathHelper
 	 * Ensures that a relative path never goes deeper than its root directory.
 	 *
 	 * @param string $path
+	 *
 	 * @return bool
 	 */
 	public static function ensurePathIsContained($path)

@@ -18,7 +18,7 @@ class SecurityService extends \CSecurityManager
 	/**
 	 *
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::init();
 		$this->_blowFishHashCost = craft()->config->get('blowfishHashCost');

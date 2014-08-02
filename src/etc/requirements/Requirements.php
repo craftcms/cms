@@ -240,7 +240,7 @@ class Requirement extends \CComponent
 	 *
 	 * @return Requirement
 	 */
-	function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
+	public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
 	{
 		$this->_name = $name;
 		$this->_condition = $condition;
@@ -328,7 +328,7 @@ class PhpVersionRequirement extends Requirement
 	/**
 	 * @return PhpVersionRequirement
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct(
 			Craft::t('PHP Version'),

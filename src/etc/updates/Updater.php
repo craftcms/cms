@@ -16,7 +16,7 @@ class Updater
 	/**
 	 * @return Updater
 	 */
-	function __construct()
+	public function __construct()
 	{
 		craft()->config->maxPowerCaptain();
 	}

@@ -22,7 +22,7 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->format(static::W3C_DATE);
 	}

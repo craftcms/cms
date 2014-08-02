@@ -20,7 +20,7 @@ class HttpException extends \CHttpException
 	 *
 	 * @return HttpException
 	 */
-	function __construct($status = '', $message = null, $code = 0)
+	public function __construct($status = '', $message = null, $code = 0)
 	{
 		$status = $status ? $status : '';
 		Craft::log(($status ? $status.' - ' : '').$message, LogLevel::Warning);

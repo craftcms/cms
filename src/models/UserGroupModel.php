@@ -20,7 +20,7 @@ class UserGroupModel extends BaseModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
 	}

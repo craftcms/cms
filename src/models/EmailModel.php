@@ -45,10 +45,11 @@ class EmailModel extends BaseModel
 	/**
 	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or binary data, such as a BLOB record from a database.
 	 *
-	 * @param string $string String attachment data.
+	 * @param string $string   String attachment data.
 	 * @param string $fileName Name of the attachment.
 	 * @param string $encoding File encoding
-	 * @param string $type File extension MIME type.
+	 * @param string $type     File extension MIME type.
+	 *
 	 * @return void
 	 */
 	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
@@ -61,10 +62,10 @@ class EmailModel extends BaseModel
 	/**
 	 * Adds an attachment from a path on the filesystem. Returns false if the file could not be found or accessed.
 	 *
-	 * @param string $path Path to the attachment.
-	 * @param string $name Overrides the attachment name.
+	 * @param string $path     Path to the attachment.
+	 * @param string $name     Overrides the attachment name.
 	 * @param string $encoding File encoding (see $Encoding).
-	 * @param string $type File extension (MIME) type.
+	 * @param string $type     File extension (MIME) type.
 	 *
 	 * @throws phpmailerException
 	 * @return bool

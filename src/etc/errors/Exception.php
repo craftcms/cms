@@ -19,7 +19,7 @@ class Exception extends \CException
 	 *
 	 * @return Exception
 	 */
-	function __construct($message, $code = 0)
+	public function __construct($message, $code = 0)
 	{
 		Craft::log($message, LogLevel::Error);
 		parent::__construct($message, $code);

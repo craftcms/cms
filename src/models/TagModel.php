@@ -20,7 +20,7 @@ class TagModel extends BaseElementModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
 	}

@@ -17,6 +17,9 @@ class AssetOperationResponseModel extends BaseModel
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
+	/**
+	 * @var array
+	 */
 	private $_data = array();
 
 	/**
@@ -34,6 +37,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Set an error message.
 	 *
 	 * @param $message
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setError($message)
@@ -45,6 +49,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Set status to success.
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setSuccess()
@@ -57,6 +62,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Set prompt data array.
 	 *
 	 * @param $promptData
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setPrompt($promptData)
@@ -71,6 +77,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 * @param $value
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setDataItem($name, $value)
@@ -83,6 +90,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Get a data item.
 	 *
 	 * @param $name
+	 *
 	 * @return void
 	 */
 	public function getDataItem($name)
@@ -99,6 +107,8 @@ class AssetOperationResponseModel extends BaseModel
 	 * Delete a data item.
 	 *
 	 * @param $name
+	 *
+	 * @return void
 	 */
 	public function deleteDataItem($name)
 	{
@@ -134,6 +144,8 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Return a response array ready to be transported.
+	 *
+	 * @return array
 	 */
 	public function getResponseData()
 	{

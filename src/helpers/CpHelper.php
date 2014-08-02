@@ -14,8 +14,8 @@ namespace Craft;
 class CpHelper
 {
 	/**
-	 * @param null $path
-	 * @param bool $fetch
+	 * @param string|null $path
+	 * @param bool        $fetch
 	 *
 	 * @return array
 	 */

@@ -13,6 +13,9 @@ namespace Craft;
  */
 abstract class BaseComponentModel extends BaseModel
 {
+	/**
+	 * @var array
+	 */
 	private $_settingErrors = array();
 
 	/**
@@ -41,6 +44,7 @@ abstract class BaseComponentModel extends BaseModel
 	 * Returns whether there are setting errors.
 	 *
 	 * @param string|null $attribute
+	 *
 	 * @return bool
 	 */
 	public function hasSettingErrors($attribute = null)
@@ -59,6 +63,7 @@ abstract class BaseComponentModel extends BaseModel
 	 * Returns the errors for all settings attributes.
 	 *
 	 * @param string|null $attribute
+	 *
 	 * @return array
 	 */
 	public function getSettingErrors($attribute = null)
@@ -78,6 +83,8 @@ abstract class BaseComponentModel extends BaseModel
 	 *
 	 * @param string $attribute
 	 * @param string $error
+	 *
+	 * @return void
 	 */
 	public function addSettingsError($attribute,$error)
 	{
@@ -88,6 +95,8 @@ abstract class BaseComponentModel extends BaseModel
 	 * Adds a list of settings errors.
 	 *
 	 * @param array $errors
+	 *
+	 * @return void
 	 */
 	public function addSettingErrors($errors)
 	{

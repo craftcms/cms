@@ -25,10 +25,12 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	/**
 	 * Constructor
 	 *
-	 * @param mixed $attributes
+	 * @param mixed           $attributes
 	 * @param BaseElementType $elementType
+	 *
+	 * @return ElementCriteriaModel
 	 */
-	function __construct($attributes, BaseElementType $elementType)
+	public function __construct($attributes, BaseElementType $elementType)
 	{
 		$this->_elementType = $elementType;
 
@@ -110,11 +112,10 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns whether an element exists at a given offset.
-	 *
-	 * Required by the ArrayAccess interface.
+	 * Returns whether an element exists at a given offset. Required by the ArrayAccess interface.
 	 *
 	 * @param mixed $offset
+	 *
 	 * @return bool
 	 */
 	public function offsetExists($offset)
@@ -130,11 +131,10 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns the element at a given offset.
-	 *
-	 * Required by the ArrayAccess interface.
+	 * Returns the element at a given offset. Required by the ArrayAccess interface.
 	 *
 	 * @param mixed $offset
+	 *
 	 * @return mixed
 	 */
 	public function offsetGet($offset)
@@ -150,12 +150,12 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Sets the element at a given offset.
-	 *
-	 * Required by the ArrayAccess interface.
+	 * Sets the element at a given offset. Required by the ArrayAccess interface.
 	 *
 	 * @param mixed $offset
 	 * @param mixed $item
+	 *
+	 * @return void
 	 */
 	public function offsetSet($offset, $item)
 	{
@@ -170,11 +170,11 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Unsets an element at a given offset.
-	 *
-	 * Required by the ArrayAccess interface.
+	 * Unsets an element at a given offset. Required by the ArrayAccess interface.
 	 *
 	 * @param mixed $offset
+	 *
+	 * @return void
 	 */
 	public function offsetUnset($offset)
 	{
@@ -189,9 +189,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns the total number of elements matched by this criteria.
-	 *
-	 * Required by the Countable interface.
+	 * Returns the total number of elements matched by this criteria. Required by the Countable interface.
 	 *
 	 * @return int
 	 */
@@ -204,7 +202,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Clears the cached values when a new attribute is set.
 	 *
 	 * @param string $name
-	 * @param mixed $value
+	 * @param mixed  $value
+	 *
 	 * @return bool
 	 */
 	public function setAttribute($name, $value)
@@ -245,6 +244,10 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 	/**
 	 * language => locale
+	 *
+	 * @param $locale
+	 *
+	 * @return ElementCriteriaModel
 	 */
 	public function setLanguage($locale)
 	{
@@ -256,6 +259,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns all elements that match the criteria.
 	 *
 	 * @param array|null $attributes
+	 *
 	 * @return array
 	 */
 	public function find($attributes = null)
@@ -284,6 +288,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns an element at a specific offset.
 	 *
 	 * @param int $offset
+	 *
 	 * @return BaseElementModel|null
 	 */
 	public function findElementAtOffset($offset)
@@ -312,6 +317,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns the first element that matches the criteria.
 	 *
 	 * @param array|null $attributes
+	 *
 	 * @return BaseElementModel|null
 	 */
 	public function first($attributes = null)
@@ -325,6 +331,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns the last element that matches the criteria.
 	 *
 	 * @param array|null $attributes
+	 *
 	 * @return BaseElementModel|null
 	 */
 	public function last($attributes = null)
@@ -343,6 +350,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns all element IDs that match the criteria.
 	 *
 	 * @param array|null $attributes
+	 *
 	 * @return array
 	 */
 	public function ids($attributes = null)
@@ -363,6 +371,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns the total elements that match the criteria.
 	 *
 	 * @param array|null $attributes
+	 *
 	 * @return int
 	 */
 	public function total($attributes = null)
@@ -391,7 +400,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Includes
+	 * @return void
 	 */
 	private function _includeInTemplateCaches()
 	{

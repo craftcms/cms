@@ -31,7 +31,7 @@ class StringTemplate
 	 *
 	 * @return StringTemplate
 	 */
-	function __construct($cacheKey = null, $template = null)
+	public function __construct($cacheKey = null, $template = null)
 	{
 		$this->cacheKey = $cacheKey;
 		$this->template = $template;
@@ -42,7 +42,7 @@ class StringTemplate
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->cacheKey;
 	}

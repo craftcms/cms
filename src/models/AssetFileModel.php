@@ -22,7 +22,7 @@ class AssetFileModel extends BaseElementModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		if (isset($this->_transform))
 		{
@@ -38,9 +38,10 @@ class AssetFileModel extends BaseElementModel
 	 * Checks if an attribute value is set.
 	 *
 	 * @param string $name
+	 *
 	 * @return bool
 	 */
-	function __isset($name)
+	public function __isset($name)
 	{
 		// Is it a transform handle?
 		$transform = craft()->assetTransforms->getTransformByHandle($name);
@@ -63,7 +64,7 @@ class AssetFileModel extends BaseElementModel
 	 * @throws \Exception
 	 * @return mixed
 	 */
-	function __get($name)
+	public function __get($name)
 	{
 		// Run through the BaseModel/CModel stuff first
 		try

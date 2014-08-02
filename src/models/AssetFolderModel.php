@@ -23,7 +23,7 @@ class AssetFolderModel extends BaseModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
 	}
@@ -82,6 +82,8 @@ class AssetFolderModel extends BaseModel
 	 * Add a child folder manually.
 	 *
 	 * @param AssetFolderModel $folder
+	 *
+	 * @return void
 	 */
 	public function addChild(AssetFolderModel $folder)
 	{
@@ -89,6 +91,7 @@ class AssetFolderModel extends BaseModel
 		{
 			$this->_children = array();
 		}
+
 		$this->_children[] = $folder;
 	}
 }

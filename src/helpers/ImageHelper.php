@@ -20,6 +20,7 @@ class ImageHelper
 	 * @param  $targetHeight
 	 * @param  $sourceWidth
 	 * @param  $sourceHeight
+	 *
 	 * @return array Array of the width and height.
 	 */
 	public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
@@ -42,6 +43,7 @@ class ImageHelper
 	 * Returns if an image is manipulatable or not.
 	 *
 	 * @param $extension
+	 *
 	 * @return array
 	 */
 	public static function isImageManipulatable($extension)

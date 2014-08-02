@@ -22,7 +22,7 @@ class MatrixBlockTypeModel extends BaseModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->handle;
 	}

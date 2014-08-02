@@ -22,6 +22,7 @@ class AssetsHelper
 	 * Get a temporary file path.
 	 *
 	 * @param string $extension extension to use. "tmp" by default.
+	 *
 	 * @return mixed
 	 */
 	public static function getTempFilePath($extension = 'tmp')
@@ -36,8 +37,9 @@ class AssetsHelper
 	 * Generate a URL for a given Assets file in a Source Type.
 	 *
 	 * @param BaseAssetSourceType $sourceType
-	 * @param AssetFileModel $file
-	 * @param string $transformPath
+	 * @param AssetFileModel      $file
+	 * @param string              $transformPath
+	 *
 	 * @return string
 	 */
 	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file, $transformPath = '')

@@ -13,27 +13,79 @@ namespace Craft;
  */
 abstract class BaseElementModel extends BaseModel
 {
-	protected $elementType;
-
-	private $_contentPostLocation;
-	private $_rawPostContent;
-	private $_content;
-	private $_preppedContent;
-
-	private $_nextElement;
-	private $_prevElement;
-
-	private $_parent;
-	private $_prevSibling;
-	private $_nextSibling;
-	private $_ancestorsCriteria;
-	private $_descendantsCriteria;
-	private $_childrenCriteria;
-	private $_siblingsCriteria;
-
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
+
+	/**
+	 * @var
+	 */
+	protected $elementType;
+
+	/**
+	 * @var
+	 */
+	private $_contentPostLocation;
+
+	/**
+	 * @var
+	 */
+	private $_rawPostContent;
+
+	/**
+	 * @var
+	 */
+	private $_content;
+
+	/**
+	 * @var
+	 */
+	private $_preppedContent;
+
+	/**
+	 * @var
+	 */
+	private $_nextElement;
+
+	/**
+	 * @var
+	 */
+	private $_prevElement;
+
+	/**
+	 * @var
+	 */
+	private $_parent;
+
+	/**
+	 * @var
+	 */
+	private $_prevSibling;
+
+	/**
+	 * @var
+	 */
+	private $_nextSibling;
+
+	/**
+	 * @var
+	 */
+	private $_ancestorsCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_descendantsCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_childrenCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_siblingsCriteria;
 
 	/**
 	 * @return array
@@ -62,6 +114,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @param mixed $values
+	 *
 	 * @return BaseModel
 	 */
 	public static function populateModel($values)
@@ -96,7 +149,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return (string) $this->getTitle();
 	}
@@ -230,6 +283,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the URL to the element's thumbnail, if there is one.
 	 *
 	 * @param int|null $size
+	 *
 	 * @return string|false
 	 */
 	public function getThumbUrl($size = null)
@@ -273,6 +327,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the next element relative to this one, from a given set of criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function getNext($criteria = false)
@@ -291,6 +346,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the previous element relative to this one, from a given set of criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function getPrev($criteria = false)
@@ -309,6 +365,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the default next element.
 	 *
 	 * @param BaseElementModel|false $element
+	 *
+	 * @return void
 	 */
 	public function setNext($element)
 	{
@@ -319,6 +377,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the default previous element.
 	 *
 	 * @param BaseElementModel|false $element
+	 *
+	 * return void
 	 */
 	public function setPrev($element)
 	{
@@ -356,6 +416,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the element's parent.
 	 *
 	 * @param BaseElementModel|null $parent
+	 *
+	 * @return void
 	 */
 	public function setParent($parent)
 	{
@@ -375,6 +437,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the element's ancestors.
 	 *
 	 * @param int|null $dist
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getAncestors($dist = null)
@@ -400,6 +463,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the element's descendants.
 	 *
 	 * @param int|null $dist
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getDescendants($dist = null)
@@ -424,7 +488,9 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's children.
 	 *
-	 * @param mixed $field If this function is being used in the deprecated relationship-focussed way, $field defines which field (if any) to limit the relationships by.
+	 * @param mixed $field If this function is being used in the deprecated relationship-focused way, $field defines
+	 *                     which field (if any) to limit the relationships by.
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getChildren($field = null)
@@ -517,6 +583,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is an ancestor of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isAncestorOf(BaseElementModel $element)
@@ -528,6 +595,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a descendant of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isDescendantOf(BaseElementModel $element)
@@ -539,6 +607,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a direct parent of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isParentOf(BaseElementModel $element)
@@ -550,6 +619,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a direct child of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isChildOf(BaseElementModel $element)
@@ -561,6 +631,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isSiblingOf(BaseElementModel $element)
@@ -589,6 +660,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is the direct previous sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isPrevSiblingOf(BaseElementModel $element)
@@ -600,6 +672,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is the direct next sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isNextSiblingOf(BaseElementModel $element)
@@ -621,10 +694,11 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Treats custom fields as properties.
 	 *
-	 * @param $name
+	 * @param string $name
+	 *
 	 * @return bool
 	 */
-	function __isset($name)
+	public function __isset($name)
 	{
 		if (parent::__isset($name) || $this->getFieldByHandle($name))
 		{
@@ -640,6 +714,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Treats custom fields as array offsets.
 	 *
 	 * @param mixed $offset
+	 *
 	 * @return boolean
 	 */
 	public function offsetExists($offset)
@@ -662,7 +737,7 @@ abstract class BaseElementModel extends BaseModel
 	 * @throws \Exception
 	 * @return mixed
 	 */
-	function __get($name)
+	public function __get($name)
 	{
 		// Run through the BaseModel/CModel stuff first
 		try
@@ -688,7 +763,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param bool $flattenValue
+	 * @param bool   $flattenValue
+	 *
 	 * @return mixed
 	 */
 	public function getAttribute($name, $flattenValue = false)
@@ -702,8 +778,9 @@ abstract class BaseElementModel extends BaseModel
 	 * This is now deprecated. Use getContent() to get the ContentModel instead.
 	 *
 	 * @param string|null $fieldHandle
-	 * @return mixed
+	 *
 	 * @deprecated Deprecated in 2.0.
+	 * @return mixed
 	 */
 	public function getRawContent($fieldHandle = null)
 	{
@@ -752,6 +829,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the content for the element.
 	 *
 	 * @param ContentModel|array $content
+	 *
+	 * @return void
 	 */
 	public function setContent($content)
 	{
@@ -774,6 +853,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the content from post data, calling prepValueFromPost() on the field types.
 	 *
 	 * @param array|string $content
+	 *
+	 * @return void
 	 */
 	public function setContentFromPost($content)
 	{
@@ -865,6 +946,8 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Sets the location in POST that the content was pulled from.
 	 *
+	 * @param $contentPostLocation
+	 *
 	 * @return string|null
 	 */
 	public function setContentPostLocation($contentPostLocation)
@@ -908,8 +991,9 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
 	 *
 	 * @param mixed $field
-	 * @return ElementCriteriaModel
+	 *
 	 * @deprecated Use public {@link getChildren} instead.
+	 * @return ElementCriteriaModel
 	 */
 	private function _getRelChildren($field = null)
 	{
@@ -923,8 +1007,9 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
 	 * @param mixed $field
-	 * @return ElementCriteriaModel
+	 *
 	 * @deprecated Deprecated in 1.3.
+	 * @return ElementCriteriaModel
 	 */
 	public function getParents($field = null)
 	{
@@ -942,6 +1027,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the field with a given handle.
 	 *
 	 * @param string $handle
+	 *
 	 * @return FieldModel|null
 	 */
 	protected function getFieldByHandle($handle)
@@ -962,7 +1048,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
 	 * @param mixed $criteria
-	 * @param int $dir
+	 * @param int   $dir
+	 *
 	 * @return BaseElementModel|null
 	 */
 	private function _getRelativeElement($criteria, $dir)
@@ -993,6 +1080,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the prepped content for a given field.
 	 *
 	 * @param FieldModel $field
+	 *
 	 * @return mixed
 	 */
 	private function _getPreppedContentForField(FieldModel $field)

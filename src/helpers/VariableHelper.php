@@ -16,8 +16,9 @@ class VariableHelper
 	/**
 	 * Returns an array of variables for a given set of class instances.
 	 *
-	 * @param array $instances
+	 * @param array  $instances
 	 * @param string $class
+	 *
 	 * @return array
 	 */
 	public static function populateVariables($instances, $class)

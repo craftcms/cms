@@ -13,15 +13,20 @@ namespace Craft;
  */
 class LocalizationHelper
 {
+	/**
+	 * @var
+	 */
 	private static $_translations;
 
 	/**
 	 * Normalizes a user-submitted number for use in code and/or to be saved into the database.
 	 *
-	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current locale uses something else.
+	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
+	 * locale uses something else.
 	 *
-	 * @param mixed  $number The number that should be normalized.
-	 * @return mixed         The normalized number.
+	 * @param mixed $number The number that should be normalized.
+	 *
+	 * @return mixed The normalized number.
 	 */
 	public static function normalizeNumber($number)
 	{
@@ -46,6 +51,8 @@ class LocalizationHelper
 	 * Looks for a missing translation string in Yii's core translations.
 	 *
 	 * @param \CMissingTranslationEvent $event
+	 *
+	 * @return void
 	 */
 	public static function findMissingTranslation(\CMissingTranslationEvent $event)
 	{

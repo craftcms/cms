@@ -13,6 +13,9 @@ namespace Craft;
  */
 class CategoryModel extends BaseElementModel
 {
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::Category;
 
 	/**

@@ -19,7 +19,7 @@ class ConfigVariable
 	 * @param string $name
 	 * @return bool
 	 */
-	function __isset($name)
+	public function __isset($name)
 	{
 		return craft()->config->exists($name, ConfigFile::General);
 	}
@@ -30,7 +30,7 @@ class ConfigVariable
 	 * @param string $name
 	 * @return string
 	 */
-	function __get($name)
+	public function __get($name)
 	{
 		return craft()->config->get($name, ConfigFile::General);
 	}

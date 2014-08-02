@@ -135,14 +135,15 @@ class HeaderHelper
 	 */
 	public static function setLength($sizeInBytes)
 	{
-		static::setHeader(array('Content-Length' => (int)$sizeInBytes)
-		);
+		static::setHeader(array('Content-Length' => (int)$sizeInBytes));
 	}
 
 	/**
 	 * Removes a header by key.
 	 *
 	 * @param $key
+	 *
+	 * @return void
 	 */
 	public static function removeHeader($key)
 	{
@@ -153,6 +154,7 @@ class HeaderHelper
 	 * Checks whether a header is currently set or not.
 	 *
 	 * @param $key
+	 *
 	 * @return bool
 	 */
 	public static function isHeaderSet($key)
@@ -188,6 +190,7 @@ class HeaderHelper
 	 * Called to output a header.
 	 *
 	 * @param array $header Use key => value
+	 *
 	 * @return void
 	 */
 	public static function setHeader($header)

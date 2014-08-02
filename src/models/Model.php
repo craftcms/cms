@@ -20,7 +20,7 @@ class Model extends BaseModel
 	 *
 	 * @param array $attributeDefs
 	 */
-	function __construct($attributeDefs)
+	public function __construct($attributeDefs)
 	{
 		$this->_attributeDefs = $attributeDefs;
 		parent::__construct();

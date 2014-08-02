@@ -13,6 +13,9 @@ namespace Craft;
  */
 class EntryModel extends BaseElementModel
 {
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::Entry;
 
 	const LIVE     = 'live';
@@ -233,8 +236,8 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Returns the entry's level (formerly "depth").
 	 *
-	 * @return int|null
 	 * @deprecated Deprecated in 2.0.
+	 * @return int|null
 	 */
 	public function depth()
 	{

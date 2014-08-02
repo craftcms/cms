@@ -20,6 +20,8 @@ class LoggingHelper
 	 * @param      $content
 	 * @param null $groupName
 	 * @param bool $forced
+	 *
+	 * @return void
 	 */
 	public static function processFireBugLogEntry($level, $time, $category, $content, $groupName = null, $forced = false)
 	{
@@ -56,7 +58,8 @@ class LoggingHelper
 	 * Will attempt to remove passwords from the log file.
 	 *
 	 * @param $log
-	 * @return mixed
+	 *
+	 * @return string
 	 */
 	public static function redact($log)
 	{

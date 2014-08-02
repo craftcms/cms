@@ -20,7 +20,7 @@ abstract class BaseComponentTypeVariable
 	 *
 	 * @param BaseComponentType $component
 	 */
-	function __construct($component)
+	public function __construct($component)
 	{
 		$this->component = $component;
 	}

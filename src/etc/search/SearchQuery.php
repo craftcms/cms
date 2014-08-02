@@ -30,7 +30,7 @@ class SearchQuery
 	 *
 	 * @return SearchQuery
 	 */
-	function __construct($query)
+	public function __construct($query)
 	{
 		$this->_query = $query;
 		$this->_tokens = array();

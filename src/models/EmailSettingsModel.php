@@ -37,7 +37,7 @@ class EmailSettingsModel extends BaseModel
 	/**
 	 * Declares the validation rules.
 	 *
-	 * @return array of validation rules.
+	 * @return array The array of validation rules.
 	 */
 	public function rules()
 	{

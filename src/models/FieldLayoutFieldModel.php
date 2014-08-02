@@ -59,6 +59,8 @@ class FieldLayoutFieldModel extends BaseModel
 	 * Sets the tab's layout.
 	 *
 	 * @param FieldLayoutModel $layout
+	 *
+	 * @return void
 	 */
 	public function setLayout(FieldLayoutModel $layout)
 	{

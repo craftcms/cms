@@ -43,7 +43,7 @@ class ElementRelationParamParser
 	 *
 	 * @return ElementRelationParamParser
 	 */
-	function __construct()
+	public function __construct()
 	{
 		$this->_joinSourceMatrixBlocksCount = 0;
 		$this->_joinTargetMatrixBlocksCount = 0;

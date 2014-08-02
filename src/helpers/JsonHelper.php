@@ -14,7 +14,7 @@ namespace Craft;
 class JsonHelper extends \CJSON
 {
 	/**
-	 *
+	 * @return void
 	 */
 	public static function sendJsonHeaders()
 	{

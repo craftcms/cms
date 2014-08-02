@@ -13,7 +13,14 @@ namespace Craft;
  */
 class FieldLayoutModel extends BaseModel
 {
+	/**
+	 * @var
+	 */
 	private $_tabs;
+
+	/**
+	 * @var
+	 */
 	private $_fields;
 
 	/**
@@ -92,6 +99,8 @@ class FieldLayoutModel extends BaseModel
 	 * Sets the layout's tabs.
 	 *
 	 * @param array $tabs
+	 *
+	 * @return void
 	 */
 	public function setTabs($tabs)
 	{
@@ -113,6 +122,8 @@ class FieldLayoutModel extends BaseModel
 	 * Sets the layout's fields.
 	 *
 	 * @param array $fields
+	 *
+	 * @return void
 	 */
 	public function setFields($fields)
 	{

@@ -13,8 +13,19 @@ namespace Craft;
  */
 class StringHelper
 {
+	/**
+	 * @var
+	 */
 	private static $_asciiCharMap;
+
+	/**
+	 * @var
+	 */
 	private static $_asciiPunctuation;
+
+	/**
+	 * @var
+	 */
 	private static $_iconv;
 
 	/**
@@ -22,8 +33,9 @@ class StringHelper
 	 *
 	 * @param  string $str
 	 * @param  int    $i
-	 * @return string
+	 *
 	 * @see http://stackoverflow.com/questions/10360764/there-are-simple-way-to-get-a-character-from-multibyte-string-in-php
+	 * @return string
 	 */
 	public static function getCharAt($str, $i)
 	{
@@ -35,6 +47,7 @@ class StringHelper
 	 *
 	 * @param mixed  $arr
 	 * @param string $glue
+	 *
 	 * @return string
 	 */
 	public static function arrayToString($arr, $glue = ',')
@@ -91,6 +104,7 @@ class StringHelper
 	/**
 	 * @param int  $length
 	 * @param bool $extendedChars
+	 *
 	 * @return string
 	 */
 	public static function randomString($length = 36, $extendedChars = false)
@@ -154,6 +168,7 @@ class StringHelper
 	 * Returns is the given string matches a UUID pattern.
 	 *
 	 * @param $uuid
+	 *
 	 * @return bool
 	 */
 	public static function isUUID($uuid)
@@ -163,6 +178,7 @@ class StringHelper
 
 	/**
 	 * @param $string
+	 *
 	 * @return mixed
 	 */
 	public static function escapeRegexChars($string)
@@ -240,6 +256,7 @@ class StringHelper
 	 * Converts extended ASCII characters to ASCII.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function asciiString($str)
@@ -280,8 +297,9 @@ class StringHelper
 	/**
 	 * Normalizes search keywords.
 	 *
-	 * @param string  $str The dirty keywords.
+	 * @param string $str    The dirty keywords.
 	 * @param array  $ignore Ignore words to strip out.
+	 *
 	 * @return string The cleansed keywords.
 	 */
 	public static function normalizeKeywords($str, $ignore = array())
@@ -328,6 +346,7 @@ class StringHelper
 	 * Runs a string through Markdown.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function parseMarkdown($str)
@@ -345,6 +364,7 @@ class StringHelper
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
 	 * @param      $string
+	 *
 	 * @return bool|string
 	 */
 	public static function convertToUTF8($string)
@@ -413,6 +433,7 @@ class StringHelper
 	 * Checks if the given string is UTF-8 encoded.
 	 *
 	 * @param $string The string to check.
+	 *
 	 * @return bool
 	 */
 	public static function isUTF8($string)
@@ -423,7 +444,8 @@ class StringHelper
 	/**
 	 * Gets the current encoding of the given string.
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function getEncoding($string)
@@ -432,10 +454,11 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware upper-case version of a string.
-	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 * Returns a multibyte aware upper-case version of a string. Note: Not using mb_strtoupper because of
+	 * {@see https://bugs.php.net/bug.php?id=47742}
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function toUpperCase($string)
@@ -443,10 +466,11 @@ class StringHelper
 		return mb_convert_case($string, MB_CASE_UPPER, "UTF-8");
 	}
 	/**
-	 * Returns a multibyte aware lower-case version of a string.
-	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 * Returns a multibyte aware lower-case version of a string. Note: Not using mb_strtoupper because of
+	 * {@see https://bugs.php.net/bug.php?id=47742}
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function toLowerCase($string)
@@ -487,6 +511,7 @@ class StringHelper
 	 * Custom alternative to chr().
 	 *
 	 * @param int $int
+	 *
 	 * @return string
 	 */
 	private static function _chr($int)

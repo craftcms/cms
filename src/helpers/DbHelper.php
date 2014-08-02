@@ -14,9 +14,7 @@ namespace Craft;
 class DbHelper
 {
 	/**
-	 * Default column configs
-	 *
-	 * @var array
+	 * @var array The default column configs.
 	 */
 	public static $columnTypeDefaults = array(
 		ColumnType::Char         => array('maxLength' => 255),
@@ -31,18 +29,20 @@ class DbHelper
 	);
 
 	/**
-	 * Numeric column types
-	 *
-	 * @var array
+	 * @var array Numeric column types.
 	 */
 	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
 
 	/**
-	 * Textual column types
-	 *
-	 * @var array
+	 * @var array Textual column types.
 	 */
 	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
+
+	/**
+	 * @var array
+	 */
+	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+
 	/**
 	 * Normalizes a column's config.
 	 *
@@ -56,6 +56,7 @@ class DbHelper
 	 * and renames 'maxLength' to 'length'
 	 *
 	 * @param string|array $config
+	 *
 	 * @return array
 	 */
 	public static function normalizeAttributeConfig($config)
@@ -108,6 +109,7 @@ class DbHelper
 	 * Generates the column definition SQL for a column
 	 *
 	 * @param array $config
+	 *
 	 * @return string
 	 */
 	public static function generateColumnDefinition($config)
@@ -234,6 +236,7 @@ class DbHelper
 	 * Prepares a table name for Yii to add its table prefix
 	 *
 	 * @param mixed $table The table name or an array of table names
+	 *
 	 * @return mixed The modified table name(s)
 	 */
 	public static function addTablePrefix($table)
@@ -256,8 +259,9 @@ class DbHelper
 	/**
 	 * Returns a foreign key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
+	 *
 	 * @return string
 	 */
 	public static function getForeignKeyName($table, $columns)
@@ -270,9 +274,10 @@ class DbHelper
 	/**
 	 * Returns an index name based on the table, column names, and whether it should be unique.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 * @param bool         $unique
+	 *
 	 * @return string
 	 */
 	public static function getIndexName($table, $columns, $unique = false)
@@ -285,9 +290,9 @@ class DbHelper
 	/**
 	 * Returns a primary key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 *
 	 * @return string
 	 */
 	public static function getPrimaryKeyName($table, $columns)
@@ -301,6 +306,7 @@ class DbHelper
 	 * Ensures that an object name is within the schema's limit.
 	 *
 	 * @param string $name
+	 *
 	 * @return string
 	 */
 	public static function normalizeDbObjectName($name)
@@ -356,9 +362,10 @@ class DbHelper
 	/**
 	 * Parses a service param value to a DbCommand where condition.
 	 *
-	 * @param string $key
+	 * @param string       $key
 	 * @param string|array $values
-	 * @param array &$params
+	 * @param array        &$params
+	 *
 	 * @return mixed
 	 */
 	public static function parseParam($key, $values, &$params)
@@ -443,9 +450,10 @@ class DbHelper
 	/**
 	 * Normalizes date params and then sends them off to parseParam().
 	 *
-	 * @param string $key
+	 * @param string                $key
 	 * @param string|array|DateTime $values
-	 * @param array &$params
+	 * @param array                 &$params
+	 *
 	 * @return mixed
 	 */
 	public static function parseDateParam($key, $values, &$params)
@@ -488,14 +496,10 @@ class DbHelper
 	}
 
 	/**
-	 * @var array
-	 */
-	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
-
-	/**
 	 * Extracts the operator from a DB param and returns it.
 	 *
 	 * @param string &$value
+	 *
 	 * @return string
 	 */
 	private static function _parseParamOperator(&$value)

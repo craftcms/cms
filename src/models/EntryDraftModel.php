@@ -30,6 +30,7 @@ class EntryDraftModel extends BaseEntryRevisionModel
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @param mixed $attributes
+	 *
 	 * @return EntryDraftModel
 	 */
 	public static function populateModel($attributes)

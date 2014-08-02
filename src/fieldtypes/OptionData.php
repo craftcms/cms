@@ -37,7 +37,7 @@ class OptionData
 	 *
 	 * @return OptionData
 	 */
-	function __construct($label, $value, $selected)
+	public function __construct($label, $value, $selected)
 	{
 		$this->label    = $label;
 		$this->value    = $value;

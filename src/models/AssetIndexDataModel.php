@@ -18,7 +18,7 @@ class AssetIndexDataModel extends BaseComponentModel
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->uri;
 	}

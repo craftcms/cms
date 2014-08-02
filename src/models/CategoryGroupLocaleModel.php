@@ -13,7 +13,14 @@ namespace Craft;
  */
 class CategoryGroupLocaleModel extends BaseModel
 {
+	/**
+	 * @var bool
+	 */
 	public $urlFormatIsRequired = false;
+
+	/**
+	 * @var bool
+	 */
 	public $nestedUrlFormatIsRequired = false;
 
 	/**

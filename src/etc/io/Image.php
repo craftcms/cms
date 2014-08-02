@@ -46,7 +46,7 @@ class Image
 	/**
 	 * @return Image
 	 */
-	function __construct()
+	public function __construct()
 	{
 		$extension = mb_strtolower(craft()->config->get('imageDriver'));
 

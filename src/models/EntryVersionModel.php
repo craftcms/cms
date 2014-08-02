@@ -30,6 +30,7 @@ class EntryVersionModel extends BaseEntryRevisionModel
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @param mixed $attributes
+	 *
 	 * @return EntryVersionModel
 	 */
 	public static function populateModel($attributes)
