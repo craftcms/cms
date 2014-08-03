@@ -13,6 +13,14 @@ namespace Craft;
  */
 class FieldRecord extends BaseRecord
 {
+	/**
+	 * @var
+	 */
+	private $_oldHandle;
+
+	/**
+	 * @var array
+	 */
 	protected $reservedHandleWords = array(
 		'archived',
 		'author',
@@ -45,10 +53,10 @@ class FieldRecord extends BaseRecord
 		'title',
 	);
 
-	private $_oldHandle;
-
 	/**
 	 * Init
+	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -60,6 +68,8 @@ class FieldRecord extends BaseRecord
 
 	/**
 	 * Store the old handle.
+	 *
+	 * @return void
 	 */
 	public function storeOldHandle()
 	{

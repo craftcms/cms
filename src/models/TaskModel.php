@@ -31,7 +31,7 @@ class TaskModel extends BaseComponentModel
 	}
 
 	/**
-	 * Retuns the task's description.
+	 * Returns the task's description.
 	 *
 	 * @return string
 	 */

@@ -28,6 +28,7 @@ class UpdateModel extends BaseModel
 	/**
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return bool|void
 	 */
 	public function setAttribute($name, $value)

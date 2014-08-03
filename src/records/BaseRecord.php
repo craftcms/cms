@@ -19,16 +19,24 @@ abstract class BaseRecord extends \CActiveRecord
 	const SET_DEFAULT = 'SET DEFAULT';
 	const SET_NULL = 'SET NULL';
 
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
 
 	/**
 	 * Constructor
+	 *
 	 * @param string $scenario
+	 *
+	 * @return BaseRecord
 	 */
 	public function __construct($scenario = 'insert')
 	{
-		// If Craft isn't installed, this model's table won't exist yet,
-		// so just create an instance of the class, for use by the installer
+		/**
+		 * If Craft isn't installed, this model's table won't exist yet, so just create an instance of the class, for
+		 * use by the installer
+		 */
 		if ($scenario !== 'install')
 		{
 			parent::__construct($scenario);
@@ -37,6 +45,8 @@ abstract class BaseRecord extends \CActiveRecord
 
 	/**
 	 * Init
+	 *
+	 * @return void
 	 */
 	public function init()
 	{
@@ -213,7 +223,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Creates the model's table
+	 * Creates the model's table.
+	 *
+	 * @return void
 	 */
 	public function createTable()
 	{
@@ -304,7 +316,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Drops the model's table
+	 * Drops the model's table.
+	 *
+	 * @return void
 	 */
 	public function dropTable()
 	{
@@ -318,7 +332,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Adds foreign keys to the model's table
+	 * Adds foreign keys to the model's table.
+	 *
+	 * @return void
 	 */
 	public function addForeignKeys()
 	{
@@ -360,7 +376,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Drops the foreign keys from the model's table
+	 * Drops the foreign keys from the model's table.
+	 *
+	 * @return void
 	 */
 	public function dropForeignKeys()
 	{
@@ -396,6 +414,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $id
 	 * @param mixed $condition
 	 * @param array $params
+	 *
 	 * @return \CActiveRecord
 	 */
 	public function findById($id, $condition = '', $params = array())
@@ -407,6 +426,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $id
 	 * @param mixed $condition
 	 * @param array $params
+	 *
 	 * @return \CActiveRecord[]
 	 */
 	public function findAllById($id, $condition = '', $params = array())
@@ -420,6 +440,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * Returns an instance of the specified model
 	 *
 	 * @param string $class
+	 *
 	 * @return \CActiveRecord|object The model instance
 	 */
 	public static function model($class = __CLASS__)
@@ -481,7 +502,9 @@ abstract class BaseRecord extends \CActiveRecord
 	 * Normalizes a relation's config
 	 *
 	 * @param string $name
-	 * @param array &$config
+	 * @param array  &$config
+	 *
+	 * @return void
 	 */
 	private function _normalizeRelation($name, &$config)
 	{
@@ -532,13 +555,12 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Sets the named attribute value.
-	 * You may also use $this->AttributeName to set the attribute value.
+	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
 	 *
-	 * @param string $name the attribute name
-	 * @param mixed $value the attribute value.
-	 * @return boolean whether the attribute exists and the assignment is conducted successfully
-	 * @see hasAttribute
+	 * @param string $name  The attribute name.
+	 * @param mixed  $value The attribute value.
+	 *
+	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
 	 */
 	public function setAttribute($name, $value)
 	{

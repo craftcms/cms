@@ -28,6 +28,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $sessionId
 	 * @param $sourceId
+	 *
 	 * @return array
 	 */
 	public function getIndexListForSource($sessionId, $sourceId)
@@ -41,6 +42,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $sessionId
 	 * @param $offset
 	 * @param $sourceId
+	 *
 	 * @return mixed
 	 */
 	public function processIndexForSource($sessionId, $offset, $sourceId)
@@ -49,8 +51,10 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Ensures a top level folder exists that matches the model
+	 * Ensures a top level folder exists that matches the model.
+	 *
 	 * @param AssetSourceModel $model
+	 *
 	 * @return int
 	 */
 	public function ensureTopFolder(AssetSourceModel $model)
@@ -98,6 +102,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $sourceId
 	 * @param $sessionId
 	 * @param $offset
+	 *
 	 * @return AssetIndexDataModel|bool
 	 */
 	public function getIndexEntry($sourceId, $sessionId, $offset)
@@ -121,6 +126,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	/**
 	 * @param $entryId
 	 * @param $recordId
+	 *
+	 * @return void
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
@@ -133,6 +140,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $sources
 	 * @param $sessionId
+	 *
 	 * @return array
 	 */
 	public function getMissingFiles($sources, $sessionId)
@@ -171,6 +179,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * Remove obsolete file records.
 	 *
 	 * @param $fileIds
+	 *
+	 * @return void
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
@@ -187,6 +197,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * Remove obsolete folder records.
 	 *
 	 * @param $folderIds
+	 *
+	 * @return void
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{

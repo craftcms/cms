@@ -13,12 +13,17 @@ namespace Craft;
  */
 class Model extends BaseModel
 {
+	/**
+	 * @var array
+	 */
 	private $_attributeDefs;
 
 	/**
 	 * Constructor
 	 *
 	 * @param array $attributeDefs
+	 *
+	 * @return Model
 	 */
 	public function __construct($attributeDefs)
 	{

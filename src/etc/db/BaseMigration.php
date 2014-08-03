@@ -14,10 +14,10 @@ namespace Craft;
 abstract class BaseMigration extends \CDbMigration
 {
 	/**
-	 * This method contains the logic to be executed when applying this migration.
-	 * Child classes may implement this method to provide actual migration logic.
+	 * This method contains the logic to be executed when applying this migration. Child classes may implement this
+	 * method to provide actual migration logic.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function up()
 	{

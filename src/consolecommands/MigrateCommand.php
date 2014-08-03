@@ -49,7 +49,7 @@ class MigrateCommand extends \MigrateCommand
 	 * @param string $action The name of the action to run.
 	 * @param array  $params The parameters to be passed to the action's method.
 	 *
-	 * @return boolean Whether the action should be executed or not.
+	 * @return bool Whether the action should be executed or not.
 	 */
 	public function beforeAction($action, $params)
 	{

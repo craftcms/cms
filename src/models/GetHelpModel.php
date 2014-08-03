@@ -28,6 +28,9 @@ class GetHelpModel extends BaseModel
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function rules()
 	{
 		// maxSize is 3MB

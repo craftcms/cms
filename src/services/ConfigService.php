@@ -13,9 +13,24 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_cacheDuration;
+
+	/**
+	 * @var
+	 */
 	private $_omitScriptNameInUrls;
+
+	/**
+	 * @var
+	 */
 	private $_usePathInfo;
+
+	/**
+	 * @var array
+	 */
 	private $_loadedConfigFiles = array();
 
 	/**
@@ -23,6 +38,7 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param string $item
 	 * @param string $file
+	 *
 	 * @return mixed
 	 */
 	public function get($item, $file = ConfigFile::General)
@@ -52,6 +68,8 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string $item
 	 * @param mixed  $value
 	 * @param string $file
+	 *
+	 * @return void
 	 */
 	public function set($item, $value, $file = ConfigFile::General)
 	{
@@ -69,6 +87,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string      $item
 	 * @param string|null $localeId
 	 * @param string      $file
+	 *
 	 * @return mixed
 	 */
 	public function getLocalized($item, $localeId = null, $file = ConfigFile::General)
@@ -104,8 +123,9 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param      $item
 	 * @param null $default
-	 * @return string
+	 *
 	 * @deprecated Deprecated in 2.0.
+	 * @return string
 	 */
 	public function getDbItem($item, $default = null)
 	{
@@ -124,6 +144,7 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param        $item
 	 * @param string $file
+	 *
 	 * @return bool
 	 */
 	public function exists($item, $file = ConfigFile::General)
@@ -308,6 +329,8 @@ class ConfigService extends BaseApplicationComponent
 
 	/**
 	 * For when you have to give it all you can.
+	 *
+	 * @return void
 	 */
 	public function maxPowerCaptain()
 	{
@@ -351,9 +374,10 @@ class ConfigService extends BaseApplicationComponent
 	/**
 	 * Gets the account verification URL for a user account.
 	 *
-	 * @param       $code
-	 * @param       $uid
-	 * @param  bool $full
+	 * @param string $code
+	 * @param string $uid
+	 * @param bool   $full
+	 *
 	 * @return string
 	 */
 	public function getActivateAccountPath($code, $uid, $full = true)
@@ -387,6 +411,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param       $uid
 	 * @param       $user
 	 * @param  bool $full
+	 *
 	 * @return string
 	 */
 	public function getSetPasswordPath($code, $uid, $user, $full = false)
@@ -471,6 +496,7 @@ class ConfigService extends BaseApplicationComponent
 	 * Parses a string for any environment variable tags.
 	 *
 	 * @param string $str
+	 *
 	 * @return string $str
 	 */
 	public function parseEnvironmentString($str)
@@ -579,6 +605,8 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param array &$baseConfig
 	 * @param array $customConfig
+	 *
+	 * @return void
 	 */
 	private function _mergeConfigs(&$baseConfig, $customConfig)
 	{

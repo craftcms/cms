@@ -569,7 +569,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
@@ -584,7 +584,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
@@ -598,7 +598,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param                  $newName
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
@@ -626,7 +626,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{

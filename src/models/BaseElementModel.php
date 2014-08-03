@@ -715,7 +715,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $offset
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function offsetExists($offset)
 	{

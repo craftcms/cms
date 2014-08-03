@@ -13,10 +13,24 @@ namespace Craft;
  */
 class CategoriesService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_allGroupIds;
+
+	/**
+	 * @var
+	 */
 	private $_editableGroupIds;
 
+	/**
+	 * @var
+	 */
 	private $_categoryGroupsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllCategoryGroups = false;
 
 	// Category groups
@@ -73,6 +87,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Returns all category groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)
@@ -119,6 +134,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Returns all editable groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableGroups($indexBy = null)
@@ -157,7 +173,8 @@ class CategoriesService extends BaseApplicationComponent
 	/**
 	 * Returns a group by its ID.
 	 *
-	 * @param $groupId
+	 * @param int $groupId
+	 *
 	 * @return CategoryGroupModel|null
 	 */
 	public function getGroupById($groupId)
@@ -183,6 +200,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Returns a group by its handle.
 	 *
 	 * @param string $groupHandle
+	 *
 	 * @return CategoryGroupModel|null
 	 */
 	public function getGroupByHandle($groupHandle)
@@ -202,8 +220,9 @@ class CategoriesService extends BaseApplicationComponent
 	/**
 	 * Returns a group's locales.
 	 *
-	 * @param int $groupId
+	 * @param int         $groupId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getGroupLocales($groupId, $indexBy = null)
@@ -541,8 +560,9 @@ class CategoriesService extends BaseApplicationComponent
 	/**
 	 * Returns a category by its ID.
 	 *
-	 * @param $categoryId
-	 * @param string|null $localeId
+	 * @param int      $categoryId
+	 * @param int|null $localeId
+	 *
 	 * @return CategoryModel|null
 	 */
 	public function getCategoryById($categoryId, $localeId = null)
@@ -699,6 +719,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Deletes an category(s) by its ID.
 	 *
 	 * @param int|array $categoryId
+	 *
 	 * @return bool
 	 */
 	public function deleteCategoryById($categoryId)
@@ -731,6 +752,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Fires an 'onBeforeSaveCategory' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onBeforeSaveCategory(Event $event)
 	{
@@ -741,6 +764,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Fires an 'onSaveCategory' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onSaveCategory(Event $event)
 	{
@@ -751,6 +776,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Fires an 'onBeforeDeleteCategory' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onBeforeDeleteCategory(Event $event)
 	{
@@ -761,6 +788,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Fires an 'onDeleteCategory' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onDeleteCategory(Event $event)
 	{
@@ -773,6 +802,7 @@ class CategoriesService extends BaseApplicationComponent
 	 * Populates a CategoryGroupModel with attributes from a CategoryGroupRecord.
 	 *
 	 * @param CategoryGroupRecord|null
+	 *
 	 * @return CategoryGroupModel|null
 	 */
 	private function _populateCategoryGroupFromRecord($groupRecord)
@@ -796,7 +826,8 @@ class CategoriesService extends BaseApplicationComponent
 	 * Deletes categories, and their descendants.
 	 *
 	 * @param array $categories
-	 * @param bool $deleteDescendants
+	 * @param bool  $deleteDescendants
+	 *
 	 * @return bool
 	 */
 	private function _deleteCategories($categories, $deleteDescendants = true)

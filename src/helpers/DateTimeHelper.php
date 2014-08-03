@@ -214,7 +214,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolean true if date is today, false otherwise.
+	 * @return boolboolean true if date is today, false otherwise.
 	 */
 	public static function isToday($date)
 	{
@@ -226,7 +226,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolean true if date was yesterday, false otherwise.
+	 * @return bool true if date was yesterday, false otherwise.
 	 */
 	public static function wasYesterday($date)
 	{
@@ -238,7 +238,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolean true if date is in this year, false otherwise.
+	 * @return bool true if date is in this year, false otherwise.
 	 */
 	public static function isThisYear($date)
 	{
@@ -250,7 +250,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolean true if date is in this week, false otherwise.
+	 * @return bool true if date is in this week, false otherwise.
 	 */
 	public static function isThisWeek($date)
 	{
@@ -262,7 +262,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolean True if date is in this month, false otherwise.
+	 * @return bool True if date is in this month, false otherwise.
 	 */
 	public static function isThisMonth($date)
 	{

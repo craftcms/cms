@@ -170,7 +170,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
 	 * @param string           $folderName   The name of the folder to check if it exists.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	abstract protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
 
@@ -180,7 +180,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
 	 * @param string           $folderName   The name of the folder to create.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	abstract protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName);
 
@@ -190,7 +190,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
 	 * @param string           $folderName   The name of the folder to be deleted.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	abstract protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName);
 
@@ -200,7 +200,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $folder  The assetFolderModel that has the folder to be renamed.
 	 * @param string           $newName The new name of the folder.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	abstract protected function _renameSourceFolder(AssetFolderModel $folder, $newName);
 
@@ -764,7 +764,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Returns whether this is a local source or not.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function isSourceLocal()
 	{

@@ -13,7 +13,14 @@ namespace Craft;
  */
 class SectionModel extends BaseModel
 {
+	/**
+	 * @var
+	 */
 	private $_locales;
+
+	/**
+	 * @var
+	 */
 	private $_entryTypes;
 
 	/**
@@ -80,6 +87,8 @@ class SectionModel extends BaseModel
 	 * Sets the section's locale models.
 	 *
 	 * @param array $locales
+	 *
+	 * @return void
 	 */
 	public function setLocales($locales)
 	{
@@ -89,8 +98,10 @@ class SectionModel extends BaseModel
 	/**
 	 * Adds locale-specific errors to the model.
 	 *
-	 * @param array $errors
+	 * @param array  $errors
 	 * @param string $localeId
+	 *
+	 * @return void
 	 */
 	public function addLocaleErrors($errors, $localeId)
 	{
@@ -108,6 +119,7 @@ class SectionModel extends BaseModel
 	 * Returns the section's entry types.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEntryTypes($indexBy = null)

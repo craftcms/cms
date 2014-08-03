@@ -13,13 +13,22 @@ namespace Craft;
  */
 class MatrixSettingsModel extends BaseModel
 {
+	/**
+	 * @var FieldModel|null
+	 */
 	private $_matrixField;
+
+	/**
+	 * @var
+	 */
 	private $_blockTypes;
 
 	/**
 	 * Constructor
 	 *
 	 * @param FieldModel|null $matrixField
+	 *
+	 * @return MatrixSettingsModel
 	 */
 	public function __construct(FieldModel $matrixField = null)
 	{
@@ -74,6 +83,8 @@ class MatrixSettingsModel extends BaseModel
 	 * Sets the block types.
 	 *
 	 * @param array $blockTypes
+	 *
+	 * @return void
 	 */
 	public function setBlockTypes($blockTypes)
 	{
@@ -84,7 +95,8 @@ class MatrixSettingsModel extends BaseModel
 	 * Validates the block type settings.
 	 *
 	 * @param array|null $attributes
-	 * @param bool $clearErrors
+	 * @param bool       $clearErrors
+	 *
 	 * @return bool
 	 */
 	public function validate($attributes = null, $clearErrors = true)

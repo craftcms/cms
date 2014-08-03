@@ -70,6 +70,7 @@ class UserModel extends BaseElementModel
 	 * Returns the user's groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getGroups($indexBy = null)
@@ -88,6 +89,7 @@ class UserModel extends BaseElementModel
 	 * Returns whether the user is in a specific group.
 	 *
 	 * @param mixed $group The user group model, its handle, or ID.
+	 *
 	 * @return bool
 	 */
 	public function isInGroup($group)
@@ -180,6 +182,7 @@ class UserModel extends BaseElementModel
 	 * Returns the URL to the user's photo.
 	 *
 	 * @param int $size
+	 *
 	 * @return string|null
 	 */
 	public function getPhotoUrl($size = 100)
@@ -194,6 +197,7 @@ class UserModel extends BaseElementModel
 	 * Returns the URL to the thumbnail for this user for a given size.
 	 *
 	 * @param int $size
+	 *
 	 * @return false|null|string
 	 */
 	public function getThumbUrl($size = 100)
@@ -231,6 +235,7 @@ class UserModel extends BaseElementModel
 	 * Returns whether the user has permission to perform a given action.
 	 *
 	 * @param string $permission
+	 *
 	 * @return bool
 	 */
 	public function can($permission)

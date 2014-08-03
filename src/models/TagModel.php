@@ -79,8 +79,8 @@ class TagModel extends BaseElementModel
 	/**
 	 * Returns the tag group's ID.
 	 *
-	 * @return int|null
 	 * @deprecated Deprecated in 2.0.
+	 * @return int|null
 	 */
 	public function setId()
 	{
@@ -91,8 +91,8 @@ class TagModel extends BaseElementModel
 	/**
 	 * Returns the tag's group.
 	 *
-	 * @return TagGroupModel|null
 	 * @deprecated Deprecated in 2.0.
+	 * @return TagGroupModel|null
 	 */
 	public function getSet()
 	{

@@ -13,7 +13,14 @@ namespace Craft;
  */
 class MatrixBlockModel extends BaseElementModel
 {
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::MatrixBlock;
+
+	/**
+	 * @var
+	 */
 	private $_owner;
 
 	/**

@@ -13,20 +13,22 @@ namespace Craft;
  */
 class AssetsService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_foldersById;
-	private $_includedTransformLoader = false;
 
 	/**
-	 * A flag that designates that a file merge is in progress and name uniqueness should not be enforced
-	 * @var bool
+	 * @var bool A flag that designates that a file merge is in progress and name uniqueness should not be enforced
 	 */
 	private $_mergeInProgress = false;
 
 	/**
 	 * Returns all top-level files in a source.
 	 *
-	 * @param int $sourceId
+	 * @param int         $sourceId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
@@ -45,8 +47,9 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Returns a file by its ID.
 	 *
-	 * @param $fileId
+	 * @param             $fileId
 	 * @param string|null $localeId
+	 *
 	 * @return AssetFileModel|null
 	 */
 	public function getFileById($fileId, $localeId = null)
@@ -58,6 +61,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Finds the first file that matches the given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return AssetFileModel|null
 	 */
 	public function findFile($criteria = null)
@@ -74,6 +78,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Gets the total number of files that match a given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return int
 	 */
 	public function getTotalFiles($criteria = null)
@@ -192,6 +197,8 @@ class AssetsService extends BaseApplicationComponent
 	 * Fires an 'onBeforeSaveAsset' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onBeforeSaveAsset(Event $event)
 	{
@@ -202,6 +209,8 @@ class AssetsService extends BaseApplicationComponent
 	 * Fires an 'onSaveAsset' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return void
 	 */
 	public function onSaveAsset(Event $event)
 	{
@@ -212,7 +221,9 @@ class AssetsService extends BaseApplicationComponent
 	 * Fires an 'onSaveFileContent' event.
 	 *
 	 * @param Event $event
+	 *
 	 * @deprecated Deprecated in 2.0.
+	 * @return void
 	 */
 	public function onSaveFileContent(Event $event)
 	{
@@ -225,8 +236,10 @@ class AssetsService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * Store a folder by model and return the id
+	 * Store a folder by model and return the id.
+	 *
 	 * @param AssetFolderModel $folderModel
+	 *
 	 * @return mixed
 	 */
 	public function storeFolder(AssetFolderModel $folderModel)
@@ -253,6 +266,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Get the folder tree for Assets by source ids
 	 *
 	 * @param $allowedSourceIds
+	 *
 	 * @return array
 	 */
 	public function getFolderTreeBySourceIds($allowedSourceIds)
@@ -320,6 +334,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Get the folder tree for Assets by a folder id.
 	 *
 	 * @param $folderId
+	 *
 	 * @return array
 	 */
 	public function getFolderTreeByFolderId($folderId)
@@ -339,6 +354,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $parentId
 	 * @param $folderName
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function createFolder($parentId, $folderName)
@@ -402,6 +418,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $folderId
 	 * @param $newParentId
 	 * @param $action
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function moveFolder($folderId, $newParentId, $action)
@@ -466,6 +483,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Returns a folder by its ID.
 	 *
 	 * @param int $folderId
+	 *
 	 * @return AssetFolderModel|null
 	 */
 	public function getFolderById($folderId)
@@ -495,6 +513,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Finds folders that match a given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return array
 	 */
 	public function findFolders($criteria = null)
@@ -542,6 +561,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Find all folder's child folders in it's subtree.
 	 *
 	 * @param AssetFolderModel $folderModel
+	 *
 	 * @return array
 	 */
 	public function getAllDescendantFolders(AssetFolderModel $folderModel)
@@ -569,6 +589,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Finds the first folder that matches a given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return AssetFolderModel|null
 	 */
 	public function findFolder($criteria = null)
@@ -593,6 +614,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Gets the total number of folders that match a given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return int
 	 */
 	public function getTotalFolders($criteria)
@@ -616,10 +638,10 @@ class AssetsService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * @param $folderId
-	 * @param string $userResponse User response regarding filename conflict
-	 * @param string $responseInfo Additional information about the chosen action
-	 * @param string $fileName The filename that is in the conflict
+	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
+	 * @param string $userResponse User response regarding filename conflict.
+	 * @param string $responseInfo Additional information about the chosen action.
+	 * @param string $fileName     The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -651,11 +673,12 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Inserts a file from a local path into a folder and returns the resultinf file id.
+	 * Inserts a file from a local path into a folder and returns the resulting file id.
 	 *
 	 * @param $localPath
 	 * @param $fileName
 	 * @param $folderId
+	 *
 	 * @return bool|null
 	 */
 	public function insertFileByLocalPath($localPath, $fileName, $folderId)
@@ -687,6 +710,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Delete a list of files by an array of ids (or a single id).
 	 *
 	 * @param $fileIds
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function deleteFiles($fileIds)
@@ -719,10 +743,10 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Move or rename files.
 	 *
-	 * @param $fileIds
-	 * @param $folderId
-	 * @param string $filename if this is a rename operation
-	 * @param array $actions actions to take in case of a conflict.
+	 * @param        $fileIds
+	 * @param        $folderId
+	 * @param string $filename If this is a rename operation or not.
+	 * @param array  $actions  Actions to take in case of a conflict.
 	 *
 	 * @throws Exception
 	 * @return bool|AssetOperationResponseModel
@@ -796,8 +820,9 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * @param AssetFileModel $file
-	 * @param $filename
-	 * @param string $action action to take in case of a conflict.
+	 * @param string         $filename
+	 * @param string         $action action to take in case of a conflict.
+	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
 	public function renameFile(AssetFileModel $file, $filename, $action = "")
@@ -814,11 +839,12 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	* Delete a folder record by id.
-	*
-	* @param $folderId
-	* @return bool
-	*/
+	 * Delete a folder record by id.
+	 *
+	 * @param $folderId
+	 *
+	 * @return bool
+	 */
 	public function deleteFolderRecord($folderId)
 	{
 		return (bool) AssetFolderRecord::model()->deleteAll('id = :folderId', array(':folderId' => $folderId));
@@ -828,7 +854,8 @@ class AssetsService extends BaseApplicationComponent
 	 * Get URL for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $transform
+	 * @param                $transform
+	 *
 	 * @return string
 	 */
 	public function getUrlForFile(AssetFileModel $file, $transform = null)
@@ -886,6 +913,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Return the folder tree form a list of folders.
 	 *
 	 * @param $folders
+	 *
 	 * @return array
 	 */
 	private function _getFolderTreeByFolders($folders)
@@ -920,8 +948,10 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Applies WHERE conditions to a DbCommand query for folders.
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand           $query
 	 * @param FolderCriteriaModel $criteria
+	 *
+	 * @return void
 	 */
 	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
 	{
@@ -981,6 +1011,8 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * Flag a file merge in progress.
+	 *
+	 * @return void
 	 */
 	private function _startMergeProcess()
 	{
@@ -989,6 +1021,8 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * Flag a file merge no longer in progress.
+	 *
+	 * @return void
 	 */
 	private function _finishMergeProcess()
 	{
@@ -1000,7 +1034,8 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param string $userResponse User response to conflict
 	 * @param string $responseInfo Additional information about the chosen action
-	 * @param string $fileName The filename that is in the conflict
+	 * @param string $fileName     The filename that is in the conflict
+	 *
 	 * @return array|string
 	 */
 	private function _mergeUploadedFiles($userResponse, $responseInfo, $fileName)
@@ -1042,6 +1077,7 @@ class AssetsService extends BaseApplicationComponent
 
 		$response = new AssetOperationResponseModel();
 		$response->setSuccess();
+
 		if ($fileId)
 		{
 			$response->setDataItem('fileId', $fileId);
@@ -1055,9 +1091,10 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param BaseAssetSourceType $originalSource
 	 * @param BaseAssetSourceType $newSource
-	 * @param AssetFileModel $file
-	 * @param AssetFolderModel $folder
-	 * @param string $action
+	 * @param AssetFileModel      $file
+	 * @param AssetFolderModel    $folder
+	 * @param string              $action
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
@@ -1085,6 +1122,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param $folderId
 	 * @param $action
+	 *
 	 * @return bool
 	 */
 	public function canUserPerformAction($folderId, $action)
@@ -1107,6 +1145,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $permission
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	public function checkPermissionByFolderIds($folderIds, $permission)
 	{
@@ -1114,6 +1153,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$folderIds = array($folderIds);
 		}
+
 		foreach ($folderIds as $folderId)
 		{
 			$folderModel = $this->getFolderById($folderId);
@@ -1136,6 +1176,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $permission
 	 *
 	 * @throws Exception
+	 * @return void
 	 */
 	public function checkPermissionByFileIds($fileIds, $permission)
 	{
@@ -1143,6 +1184,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$fileIds = array($fileIds);
 		}
+
 		foreach ($fileIds as $fileId)
 		{
 			$fileModel = $this->getFileById($fileId);

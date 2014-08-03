@@ -13,6 +13,9 @@ namespace Craft;
  */
 class LogEntryModel extends BaseModel
 {
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(

@@ -47,7 +47,7 @@ class FileCache extends \CFileCache
 	 * @param  integer          $expire      The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
 	 *
-	 * @return boolean True if the value is successfully stored into cache, false otherwise
+	 * @return bool True if the value is successfully stored into cache, false otherwise
 	 */
 	public function set($id, $value, $expire = null, $dependency = null)
 	{
@@ -65,7 +65,7 @@ class FileCache extends \CFileCache
 	 * @param  integer           $expire     The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
 	 *
-	 * @return boolean True if the value is successfully stored into cache, false otherwise
+	 * @return bool true if the value is successfully stored into cache, false otherwise
 	 */
 	public function add($id, $value, $expire = null, $dependency = null)
 	{
@@ -81,7 +81,7 @@ class FileCache extends \CFileCache
 	 * @param  string  $value  The value to be cached
 	 * @param  integer $expire The number of seconds in which the cached value will expire. 0 means never expire.
 	 *
-	 * @return boolean true If the value is successfully stored into cache, false otherwise
+	 * @return bool true If the value is successfully stored into cache, false otherwise
 	 */
 	protected function setValue($key, $value, $expire)
 	{

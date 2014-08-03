@@ -13,11 +13,20 @@ namespace Craft;
  */
 class LocaleModel extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_id;
+
+	/**
+	 * @var
+	 */
 	private $_nameInLanguage;
 
 	/**
 	 * Use the ID as the string representation of locales.
+	 *
+	 * @return string
 	 */
 	public function __toString()
 	{
@@ -26,6 +35,10 @@ class LocaleModel extends BaseApplicationComponent
 
 	/**
 	 * Constructor
+	 *
+	 * @param $id
+	 *
+	 * @return LocaleModel
 	 */
 	public function __construct($id)
 	{
@@ -41,6 +54,7 @@ class LocaleModel extends BaseApplicationComponent
 	 * Returns the locale name in a given language.
 	 *
 	 * @param string|null $targetLocaleId
+	 *
 	 * @return string|null
 	 */
 	public function getName($targetLocaleId = null)

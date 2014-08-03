@@ -13,10 +13,29 @@ namespace Craft;
  */
 class AssetSourcesService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_allSourceIds;
+
+	/**
+	 * @var
+	 */
 	private $_viewableSourceIds;
+
+	/**
+	 * @var
+	 */
 	private $_viewableSources;
+
+	/**
+	 * @var
+	 */
 	private $_sourcesById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllSources = false;
 
 	/* Source Types */
@@ -42,6 +61,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns an asset source type by its class handle.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseAssetSourceType|null
 	 */
 	public function getSourceType($class)
@@ -53,6 +73,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates an asset source type with a given source.
 	 *
 	 * @param AssetSourceModel $source
+	 *
 	 * @return BaseAssetSourceType|null
 	 */
 	public function populateSourceType(AssetSourceModel $source)
@@ -64,6 +85,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns a source type by a given source ID.
 	 *
 	 * @param $sourceId
+	 *
 	 * @return BaseAssetSourceType
 	 */
 	public function getSourceTypeById($sourceId)
@@ -126,6 +148,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns all sources that are viewable by the current user.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getViewableSources($indexBy = null)
@@ -184,6 +207,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns all sources.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSources($indexBy = null)
@@ -228,6 +252,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns a source by its ID.
 	 *
 	 * @param int $sourceId
+	 *
 	 * @return AssetSourceModel|null
 	 */
 	public function getSourceById($sourceId)
@@ -491,6 +516,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates a source from its DB result.
 	 *
 	 * @param array $result
+	 *
 	 * @return AssetSourceModel
 	 */
 	private function _populateSource($result)

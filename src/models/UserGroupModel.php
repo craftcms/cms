@@ -41,6 +41,7 @@ class UserGroupModel extends BaseModel
 	 * Returns whether the group has permission to perform a given action.
 	 *
 	 * @param string $permission
+	 *
 	 * @return bool
 	 */
 	public function can($permission)

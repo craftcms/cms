@@ -28,6 +28,7 @@ class UsernameModel extends BaseModel
 	/**
 	 * @param null $attributes
 	 * @param bool $clearErrors
+	 *
 	 * @return bool|void
 	 */
 	public function validate($attributes = null, $clearErrors = true)

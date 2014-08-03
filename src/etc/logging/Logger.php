@@ -156,7 +156,7 @@ class Logger extends \CLogger
 	 *
 	 * @param array $value The element to be filtered
 	 *
-	 * @return boolean true if valid log, false if not.
+	 * @return bool true if valid log, false if not.
 	 */
 	protected function filterByLevel($value)
 	{

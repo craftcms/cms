@@ -13,8 +13,14 @@ namespace Craft;
  */
 class MatrixBlockTypeModel extends BaseModel
 {
+	/**
+	 * @var bool
+	 */
 	public $hasFieldErrors = false;
 
+	/**
+	 * @var
+	 */
 	private $_fields;
 
 	/**
@@ -86,10 +92,12 @@ class MatrixBlockTypeModel extends BaseModel
 		return $this->_fields;
 	}
 
-	/*
+	/**
 	 * Sets the fields associated with this block type.
 	 *
 	 * @param array $fields
+	 *
+	 * @return void
 	 */
 	public function setFields($fields)
 	{

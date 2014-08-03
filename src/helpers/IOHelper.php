@@ -67,7 +67,7 @@ class IOHelper
 	 * @param  bool    $caseInsensitive Whether to perform a case insensitive check or not.
 	 * @param  bool    $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return boolean 'true' if the folder exists, otherwise 'false'.
+	 * @return bool 'true' if the folder exists, otherwise 'false'.
 	 */
 	public static function folderExists($path, $caseInsensitive = false, $suppressErrors = false)
 	{
@@ -203,7 +203,7 @@ class IOHelper
 	 * @param  string  $path           The path to test.
 	 * @param  bool    $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return boolean 'true' if filesystem path is readable, otherwise 'false'.
+	 * @return bool 'true' if filesystem path is readable, otherwise 'false'.
 	 */
 	public static function isReadable($path, $suppressErrors = false)
 	{
@@ -1745,7 +1745,7 @@ class IOHelper
 	 * @param  string $str    String representing file path to be filtered
 	 * @param  array  $filter An array of filter rules, where each rule is a string, supposing that the string starting with '/' is a regular expression. Any other string treated as an extension part of the given filepath (eg. file extension)
 	 *
-	 * @return boolean Returns 'true' if the supplied string matched one of the filter rules.
+	 * @return bool Returns 'true' if the supplied string matched one of the filter rules.
 	 */
 	private static function _filterPassed($str, $filter)
 	{

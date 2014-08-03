@@ -19,7 +19,7 @@ class ComponentsService extends BaseApplicationComponent
 	public $types;
 
 	/**
-	 * @var array The internal list of components
+	 * @var array The internal list of components.
 	 */
 	private $_components;
 
@@ -27,6 +27,7 @@ class ComponentsService extends BaseApplicationComponent
 	 * Returns instances of a component type, indexed by their class handles.
 	 *
 	 * @param string $type
+	 *
 	 * @return array
 	 */
 	public function getComponentsByType($type)
@@ -44,6 +45,7 @@ class ComponentsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param string $class
+	 *
 	 * @return BaseComponentType|null
 	 */
 	public function getComponentByTypeAndClass($type, $class)
@@ -91,8 +93,9 @@ class ComponentsService extends BaseApplicationComponent
 	/**
 	 * Populates a new component instance by its type and model.
 	 *
-	 * @param string $type
+	 * @param string             $type
 	 * @param BaseComponentModel $model
+	 *
 	 * @return BaseComponentType|null
 	 */
 	public function populateComponentByTypeAndModel($type, BaseComponentModel $model)
@@ -121,6 +124,7 @@ class ComponentsService extends BaseApplicationComponent
 	 * Making sure a class exists and it's not abstract or an interface.
 	 *
 	 * @param string $class
+	 *
 	 * @return bool
 	 */
 	public function validateClass($class)
@@ -150,6 +154,7 @@ class ComponentsService extends BaseApplicationComponent
 	 *
 	 * @param string $class
 	 * @param string $instanceOf
+	 *
 	 * @return mixed
 	 */
 	public function initializeComponent($class, $instanceOf = null)
@@ -185,6 +190,7 @@ class ComponentsService extends BaseApplicationComponent
 	 * Finds all of the components by a given type.
 	 *
 	 * @param string $type
+	 *
 	 * @return array
 	 */
 	private function _findComponentsByType($type)
