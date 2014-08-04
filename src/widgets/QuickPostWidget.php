@@ -13,8 +13,14 @@ namespace Craft;
  */
 class QuickPostWidget extends BaseWidget
 {
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
 
+	/**
+	 * @var
+	 */
 	private $_section;
 
 	/**
@@ -72,6 +78,7 @@ class QuickPostWidget extends BaseWidget
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)

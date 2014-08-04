@@ -80,7 +80,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $settings
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _prepareForRequests($settings = null)
 	{
@@ -476,7 +476,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param                  $filename
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -489,7 +489,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param AssetFileModel $file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{

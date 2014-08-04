@@ -14,7 +14,9 @@ namespace Craft;
 class HttpSessionService extends \CHttpSession
 {
 	/**
+	 * Init
 	 *
+	 * @return null
 	 */
 	public function init()
 	{

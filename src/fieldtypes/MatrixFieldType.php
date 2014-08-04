@@ -140,7 +140,7 @@ class MatrixFieldType extends BaseFieldType
 	/**
 	 * Performs any actions after a field is saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterSave()
 	{
@@ -150,7 +150,7 @@ class MatrixFieldType extends BaseFieldType
 	/**
 	 * Performs any actions before a field is deleted.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeDelete()
 	{
@@ -448,7 +448,7 @@ class MatrixFieldType extends BaseFieldType
 	/**
 	 * Performs any additional actions after the element has been saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{

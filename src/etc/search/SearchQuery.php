@@ -60,7 +60,7 @@ class SearchQuery
 	/**
 	 * Parses the query into an array of tokens.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _parse()
 	{

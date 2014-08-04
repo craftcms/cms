@@ -13,8 +13,19 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
+	/**
+	 * @var
+	 */
 	private $_elementType;
+
+	/**
+	 * @var
+	 */
 	private $_localeId;
+
+	/**
+	 * @var
+	 */
 	private $_elementIds;
 
 	/**
@@ -73,6 +84,7 @@ class ResaveElementsTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)

@@ -44,7 +44,7 @@ class Nav_Node extends \Twig_Node_For
 	 *
 	 * @param \Twig_Compiler $compiler
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

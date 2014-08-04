@@ -16,9 +16,9 @@ class RelationsService extends BaseApplicationComponent
 	/**
 	 * Saves some relations for a field.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldModel       $field
 	 * @param BaseElementModel $source
-	 * @param array $targetIds
+	 * @param array            $targetIds
 	 *
 	 * @throws \Exception
 	 * @return bool

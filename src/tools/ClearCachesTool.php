@@ -65,7 +65,8 @@ class ClearCachesTool extends BaseTool
 	 * Performs the tool's action.
 	 *
 	 * @param array $params
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public function performAction($params = array())
 	{
@@ -130,9 +131,11 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
-	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the 'registerCachePaths' hook.
+	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the
+	 * 'registerCachePaths' hook.
 	 *
-	 * @param  bool    $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
+	 * @param bool $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
+	 *
 	 * @return array
 	 */
 	private function _getFolders($obfuscate = true)

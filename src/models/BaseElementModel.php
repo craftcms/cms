@@ -366,7 +366,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param BaseElementModel|false $element
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setNext($element)
 	{
@@ -417,7 +417,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param BaseElementModel|null $parent
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setParent($parent)
 	{
@@ -830,7 +830,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param ContentModel|array $content
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setContent($content)
 	{
@@ -854,7 +854,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param array|string $content
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setContentFromPost($content)
 	{

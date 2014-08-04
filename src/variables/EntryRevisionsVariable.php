@@ -22,8 +22,9 @@ class EntryRevisionsVariable
 	/**
 	 * Returns entry drafts by an entry ID.
 	 *
-	 * @param int $entryId
+	 * @param int    $entryId
 	 * @param string $localeId
+	 *
 	 * @return array
 	 */
 	public function getDraftsByEntryId($entryId, $localeId = null)
@@ -34,8 +35,9 @@ class EntryRevisionsVariable
 	/**
 	 * Returns the drafts of a given entry that are editable by the current user.
 	 *
-	 * @param int $entryId
+	 * @param int    $entryId
 	 * @param string $localeId
+	 *
 	 * @return array
 	 */
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
@@ -46,7 +48,8 @@ class EntryRevisionsVariable
 	/**
 	 * Returns an entry draft by its offset.
 	 *
-	 * @param $draftId
+	 * @param int $draftId
+	 *
 	 * @return EntryDraftModel|null
 	 */
 	public function getDraftById($draftId)
@@ -59,6 +62,7 @@ class EntryRevisionsVariable
 	 *
 	 * @param int $entryId
 	 * @param int $offset
+	 *
 	 * @return EntryDraftModel|null
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
@@ -73,8 +77,9 @@ class EntryRevisionsVariable
 	/**
 	 * Returns entry versions by an entry ID.
 	 *
-	 * @param int $entryId
+	 * @param int    $entryId
 	 * @param string $localeId
+	 *
 	 * @return array
 	 */
 	public function getVersionsByEntryId($entryId, $localeId)
@@ -85,7 +90,8 @@ class EntryRevisionsVariable
 	/**
 	 * Returns an entry version by its ID.
 	 *
-	 * @param $versionId
+	 * @param int $versionId
+	 *
 	 * @return EntryVersionModel|null
 	 */
 	public function getVersionById($versionId)
@@ -98,6 +104,7 @@ class EntryRevisionsVariable
 	 *
 	 * @param int $entryId
 	 * @param int $offset
+	 *
 	 * @return EntryVersionModel|null
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)

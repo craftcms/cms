@@ -13,10 +13,14 @@ namespace Craft;
  */
 class CraftVariable
 {
+	/**
+	 * @var
+	 */
 	private $_rebrandVariable;
 
 	/**
-	 * @param $name
+	 * @param string $name
+	 *
 	 * @return mixed
 	 */
 	public function __get($name)
@@ -39,7 +43,8 @@ class CraftVariable
 	}
 
 	/**
-	 * @param $name
+	 * @param string $name
+	 *
 	 * @return bool
 	 */
 	public function __isset($name)
@@ -79,9 +84,11 @@ class CraftVariable
 	/**
 	 * Returns whether a package is included in the Craft build.
 	 *
-	 * @param $packageName;
+	 * @param string $packageName;
+	 *
+	 * @deprecated Deprecated in 2.0
 	 * @return bool
-	 * @Deprecated Deprecated in 2.0
+	 *
 	 */
 	public function hasPackage($packageName)
 	{
@@ -102,6 +109,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function assets($criteria = null)
@@ -111,6 +119,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function categories($criteria = null)
@@ -179,6 +188,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function entries($criteria = null)
@@ -287,6 +297,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function tags($criteria = null)
@@ -312,6 +323,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function users($criteria = null)

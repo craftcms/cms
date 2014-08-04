@@ -13,12 +13,15 @@ namespace Craft;
  */
 class SecurityService extends \CSecurityManager
 {
+	/**
+	 * @var mixed
+	 */
 	private $_blowFishHashCost;
 
 	/**
-	 *
+	 * @return null
 	 */
-	public function __construct()
+	public function init()
 	{
 		parent::init();
 		$this->_blowFishHashCost = craft()->config->get('blowfishHashCost');
@@ -35,8 +38,8 @@ class SecurityService extends \CSecurityManager
 	/**
 	 * Hashes a given password with the blowfish encryption algorithm.
 	 *
-	 * @param string $string        The string to hash
-	 * @param bool   $validateHash  If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 * @param string $string       The string to hash
+	 * @param bool   $validateHash If you want to validate the just generated hash. Will throw an exception is validation fails.
 	 *
 	 * @throws Exception
 	 * @return string The hash.
@@ -59,8 +62,9 @@ class SecurityService extends \CSecurityManager
 	/**
 	 * Validates a blowfish hash against a given string for sameness.
 	 *
-	 * @param $string
-	 * @param $storedHash
+	 * @param string $string
+	 * @param string $storedHash
+	 *
 	 * @return bool
 	 */
 	public function checkPassword($string, $storedHash)

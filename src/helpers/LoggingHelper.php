@@ -21,7 +21,7 @@ class LoggingHelper
 	 * @param null $groupName
 	 * @param bool $forced
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function processFireBugLogEntry($level, $time, $category, $content, $groupName = null, $forced = false)
 	{

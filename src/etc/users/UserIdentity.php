@@ -59,7 +59,7 @@ class UserIdentity extends \CUserIdentity
 	 * @param UserModel $user
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserStatus(UserModel $user)
 	{
@@ -137,7 +137,7 @@ class UserIdentity extends \CUserIdentity
 	/**
 	 * @param $user
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function logUserIn($user)
 	{

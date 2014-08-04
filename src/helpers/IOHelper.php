@@ -1440,7 +1440,7 @@ class IOHelper
 	 * @param  string $folderPath     The path to the folder.
 	 * @param  bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function ensureFolderExists($folderPath, $suppressErrors = false)
 	{

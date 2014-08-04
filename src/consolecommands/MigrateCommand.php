@@ -90,7 +90,7 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * @param array $args The arguments for the action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDown($args)
 	{
@@ -102,7 +102,7 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * @param array $args
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionRedo($args)
 	{
@@ -114,7 +114,7 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * @param array $args
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionTo($args)
 	{
@@ -126,7 +126,7 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * @param array $args
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMark($args)
 	{

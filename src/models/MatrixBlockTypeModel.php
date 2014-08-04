@@ -97,7 +97,7 @@ class MatrixBlockTypeModel extends BaseModel
 	 *
 	 * @param array $fields
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setFields($fields)
 	{

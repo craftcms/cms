@@ -26,7 +26,7 @@ class FileCache extends \CFileCache
 	/**
 	 * Override so we can set a custom file cache path.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{

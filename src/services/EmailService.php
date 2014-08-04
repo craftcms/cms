@@ -21,6 +21,7 @@ class EmailService extends BaseApplicationComponent
 	 *
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
+	 *
 	 * @return bool
 	 */
 	public function sendEmail(EmailModel $emailModel, $variables = array())
@@ -42,8 +43,8 @@ class EmailService extends BaseApplicationComponent
 	 * Sends an email by its key.
 	 *
 	 * @param UserModel $user
-	 * @param string $key
-	 * @param array $variables
+	 * @param string    $key
+	 * @param array     $variables
 	 *
 	 * @throws Exception
 	 * @return bool
@@ -125,7 +126,10 @@ class EmailService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $settings
+	 * Sends a test email.
+	 *
+	 * @param array $settings
+	 *
 	 * @return bool
 	 */
 	public function sendTestEmail($settings)
@@ -340,6 +344,7 @@ class EmailService extends BaseApplicationComponent
 	 * @param $emailSettings
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
 	{

@@ -23,7 +23,7 @@ class Updater
 
 	/**
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function getLatestUpdateInfo()
 	{
@@ -53,7 +53,7 @@ class Updater
 	 * Performs environmental requirement checks before running an update.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function checkRequirements()
 	{
@@ -123,7 +123,7 @@ class Updater
 	 * @param $uid
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function backupFiles($uid)
 	{
@@ -141,7 +141,7 @@ class Updater
 	 * @param $uid
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function updateFiles($uid)
 	{
@@ -180,7 +180,7 @@ class Updater
 	 * @param BasePlugin|null $plugin
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function updateDatabase($plugin = null)
 	{
@@ -247,7 +247,7 @@ class Updater
 	 *
 	 * @param string $unzipFolder
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _cleanTempFiles($unzipFolder)
 	{

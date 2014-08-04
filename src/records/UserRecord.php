@@ -88,7 +88,7 @@ class UserRecord extends BaseRecord
 	 * @param null $attributes
 	 * @param bool $clearErrors
 	 *
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	public function validate($attributes = null, $clearErrors = true)
 	{

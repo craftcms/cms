@@ -43,7 +43,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 *
 	 * @param array|BaseModel $values
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setSettings($values)
 	{

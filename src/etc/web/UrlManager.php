@@ -49,7 +49,7 @@ class UrlManager extends \CUrlManager
 	private $_matchedElementRoute;
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -76,7 +76,7 @@ class UrlManager extends \CUrlManager
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setRouteVariables($variables)
 	{
@@ -188,7 +188,7 @@ class UrlManager extends \CUrlManager
 	 *
 	 * @param mixed $route
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _setRoute($route)
 	{

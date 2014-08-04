@@ -115,7 +115,7 @@ interface IElementType extends IComponentType
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria);
 

@@ -29,7 +29,7 @@ class EntriesController extends BaseEntriesController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
@@ -348,7 +348,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Switches between two entry types.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSwitchEntryType()
 	{
@@ -379,7 +379,7 @@ class EntriesController extends BaseEntriesController
 	 * Previews an entry.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionPreviewEntry()
 	{
@@ -412,7 +412,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Saves an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveEntry()
 	{
@@ -506,7 +506,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Deletes an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteEntry()
 	{
@@ -565,7 +565,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -631,7 +631,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -664,7 +664,7 @@ class EntriesController extends BaseEntriesController
 	 * @param array &$variables
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
@@ -849,7 +849,7 @@ class EntriesController extends BaseEntriesController
 	 *
 	 * @param EntryModel $entry
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
@@ -877,7 +877,7 @@ class EntriesController extends BaseEntriesController
 	 * @param EntryModel $entry
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _showEntry(EntryModel $entry)
 	{

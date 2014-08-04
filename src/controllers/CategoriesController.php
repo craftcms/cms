@@ -16,7 +16,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Category groups index.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGroupIndex()
 	{
@@ -35,7 +35,7 @@ class CategoriesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditCategoryGroup(array $variables = array())
 	{
@@ -85,7 +85,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Save a category group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveGroup()
 	{
@@ -141,7 +141,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Deletes a category group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteCategoryGroup()
 	{
@@ -158,7 +158,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Saves a category.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCreateCategory()
 	{
@@ -196,7 +196,7 @@ class CategoriesController extends BaseController
 	 * Deletes a category.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteCategory()
 	{

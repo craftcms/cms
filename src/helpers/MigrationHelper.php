@@ -36,7 +36,7 @@ class MigrationHelper
 	/**
 	 * Refreshes our record of everything.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function refresh()
 	{
@@ -50,7 +50,7 @@ class MigrationHelper
 	 * @param string $tableName
 	 * @param array  $columns
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
@@ -139,7 +139,7 @@ class MigrationHelper
 	 * @param string $oldName
 	 * @param string $newName
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function renameColumn($tableName, $oldName, $newName)
 	{
@@ -227,7 +227,7 @@ class MigrationHelper
 	 *                                Defaults to the primary site locale if the element type is not localized, otherwise
 	 *                                all locales.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function makeElemental($table, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
 	{
@@ -427,7 +427,7 @@ class MigrationHelper
 	/**
 	 * Records all the foreign keys and indexes for each table.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _analyzeTables()
 	{
@@ -447,7 +447,7 @@ class MigrationHelper
 	 *
 	 * @param string $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _analyzeTable($table)
 	{
@@ -514,7 +514,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _dropAllForeignKeysOnTable($table)
 	{
@@ -529,7 +529,7 @@ class MigrationHelper
 	 *
 	 * @param object $fk
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _dropForeignKey($fk)
 	{
@@ -542,7 +542,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _dropAllIndexesOnTable($table)
 	{
@@ -557,7 +557,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _dropAllUniqueIndexesOnTable($table)
 	{
@@ -575,7 +575,7 @@ class MigrationHelper
 	 *
 	 * @param object $index
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _dropIndex($index)
 	{
@@ -588,7 +588,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _restoreAllIndexesOnTable($table)
 	{
@@ -603,7 +603,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _restoreAllUniqueIndexesOnTable($table)
 	{
@@ -621,7 +621,7 @@ class MigrationHelper
 	 *
 	 * @param $index
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _restoreIndex($index)
 	{
@@ -636,7 +636,7 @@ class MigrationHelper
 	 *
 	 * @param object $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _restoreAllForeignKeysOnTable($table)
 	{
@@ -651,7 +651,7 @@ class MigrationHelper
 	 *
 	 * @param object $fk
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _restoreForeignKey($fk)
 	{

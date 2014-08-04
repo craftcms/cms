@@ -18,7 +18,7 @@ class StructuresController extends BaseController
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveElement(array $variables = array())
 	{

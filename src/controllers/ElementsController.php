@@ -16,7 +16,7 @@ class ElementsController extends BaseController
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetModalBody()
 	{
@@ -132,7 +132,7 @@ class ElementsController extends BaseController
 	 * Returns the HTML for an element editor HUD.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetEditorHtml()
 	{
@@ -157,7 +157,7 @@ class ElementsController extends BaseController
 	 * Saves an element.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveElement()
 	{
@@ -234,7 +234,7 @@ class ElementsController extends BaseController
 	 * @param bool             $includeLocales
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{

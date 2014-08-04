@@ -28,6 +28,7 @@ class DashboardVariable
 	 * Returns a widget type.
 	 *
 	 * @param string $class
+	 *
 	 * @return WidgetTypeVariable|null
 	 */
 	public function getWidgetType($class)
@@ -44,6 +45,7 @@ class DashboardVariable
 	 * Populates a widget type.
 	 *
 	 * @param WidgetModel $widget
+	 *
 	 * @return WidgetTypeVariable|null
 	 */
 	public function populateWidgetType(WidgetModel $widget)
@@ -69,6 +71,7 @@ class DashboardVariable
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
+	 *
 	 * @return WidgetModel|null
 	 */
 	public function getUserWidgetById($id)

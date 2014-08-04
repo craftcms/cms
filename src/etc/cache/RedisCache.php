@@ -29,7 +29,7 @@ class RedisCache extends \CRedisCache
 	 * Craft overrides this from Yii because the parent is explicitly checking for null in the password.
 	 *
 	 * @throws \CException
-	 * @return void
+	 * @return null
 	 */
 	protected function connect()
 	{

@@ -63,7 +63,7 @@ class ImagesService extends BaseApplicationComponent
 	/**
 	 * Loads an image from a file system path.
 	 *
-	 * @param $path
+	 * @param string $path
 	 *
 	 * @throws \Exception
 	 * @return Image
@@ -123,7 +123,7 @@ class ImagesService extends BaseApplicationComponent
 	/**
 	 * Cleans an image by it's path, clearing embedded JS and PHP code.
 	 *
-	 * @param $filePath
+	 * @param string $filePath
 	 * @return bool
 	 */
 	public function cleanImage($filePath)

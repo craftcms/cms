@@ -45,6 +45,7 @@ class UpdatesVariable
 
 	/**
 	 * @param bool $forceRefresh
+	 *
 	 * @return mixed
 	 */
 	public function getUpdates($forceRefresh = false)
@@ -53,7 +54,7 @@ class UpdatesVariable
 	}
 
 	/**
-	 * @return void|string
+	 * @return string|null
 	 */
 	public function getManualUpdateDisplayName()
 	{
@@ -61,7 +62,7 @@ class UpdatesVariable
 	}
 
 	/**
-	 * @return void|string
+	 * @return string|null
 	 */
 	public function getManualUpdateHandle()
 	{
@@ -69,8 +70,9 @@ class UpdatesVariable
 	}
 
 	/**
-	 * @param $type
-	 * @return void|string
+	 * @param string $type
+	 *
+	 * @return string|null
 	 */
 	private function _getManualUpdateInfo($type)
 	{

@@ -51,6 +51,7 @@ class DbBackupTool extends BaseTool
 	 * Performs the tool's action.
 	 *
 	 * @param array $params
+	 *
 	 * @return array
 	 */
 	public function performAction($params = array())

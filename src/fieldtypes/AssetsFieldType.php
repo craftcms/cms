@@ -173,7 +173,7 @@ class AssetsFieldType extends BaseElementFieldType
 	/**
 	 * Handle file moves between folders for dynamic single folder settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{

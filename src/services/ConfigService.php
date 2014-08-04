@@ -69,7 +69,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param mixed  $value
 	 * @param string $file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function set($item, $value, $file = ConfigFile::General)
 	{
@@ -330,7 +330,7 @@ class ConfigService extends BaseApplicationComponent
 	/**
 	 * For when you have to give it all you can.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function maxPowerCaptain()
 	{
@@ -606,7 +606,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param array &$baseConfig
 	 * @param array $customConfig
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _mergeConfigs(&$baseConfig, $customConfig)
 	{

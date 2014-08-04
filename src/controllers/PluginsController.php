@@ -16,7 +16,7 @@ class PluginsController extends BaseController
 	/**
 	 * Installs a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionInstallPlugin()
 	{
@@ -38,7 +38,7 @@ class PluginsController extends BaseController
 	/**
 	 * Uninstalls a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUninstallPlugin()
 	{
@@ -60,7 +60,7 @@ class PluginsController extends BaseController
 	/**
 	 * Enables a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionEnablePlugin()
 	{
@@ -82,7 +82,7 @@ class PluginsController extends BaseController
 	/**
 	 * Disables a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDisablePlugin()
 	{
@@ -105,7 +105,7 @@ class PluginsController extends BaseController
 	 * Saves a plugin's settings.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSavePluginSettings()
 	{

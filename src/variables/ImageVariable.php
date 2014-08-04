@@ -13,13 +13,22 @@ namespace Craft;
  */
 class ImageVariable
 {
+	/**
+	 * @var string
+	 */
 	protected $path;
+
+	/**
+	 * @var
+	 */
 	protected $size;
 
 	/**
 	 * Constructor
 	 *
 	 * @param string $path
+	 *
+	 * @return ImageVariable
 	 */
 	public function __construct($path)
 	{

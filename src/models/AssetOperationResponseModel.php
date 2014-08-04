@@ -91,7 +91,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function getDataItem($name)
 	{
@@ -108,7 +108,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function deleteDataItem($name)
 	{

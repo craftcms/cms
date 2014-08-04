@@ -252,7 +252,7 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Includes the input resources.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _includeFieldResources()
 	{

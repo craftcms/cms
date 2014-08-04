@@ -13,6 +13,9 @@ namespace Craft;
  */
 class PathService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_templatesPath;
 
 	/**
@@ -198,7 +201,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param null $pluginHandle
+	 * @param string|null $pluginHandle
+	 *
 	 * @return string
 	 */
 	public function getMigrationsPath($pluginHandle = null)
@@ -336,6 +340,8 @@ class PathService extends BaseApplicationComponent
 
 	/**
 	 * Returns the path to the license key file.
+	 *
+	 * @return string
 	 */
 	public function getLicenseKeyPath()
 	{

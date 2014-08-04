@@ -43,7 +43,7 @@ class AppUpdateModel extends BaseModel
 	 * @param string $name
 	 * @param mixed  $value
 	 *
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	public function setAttribute($name, $value)
 	{

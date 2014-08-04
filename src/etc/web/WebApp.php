@@ -101,7 +101,7 @@ class WebApp extends \CWebApplication
 	private $_gettingLanguage = false;
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -145,7 +145,7 @@ class WebApp extends \CWebApplication
 	 * Processes the request.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function processRequest()
 	{
@@ -323,7 +323,7 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param string $language
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setLanguage($language)
 	{
@@ -425,7 +425,7 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param string $path
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setViewPath($path)
 	{
@@ -447,7 +447,7 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param array $data
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnAjaxException($data)
 	{
@@ -475,7 +475,7 @@ class WebApp extends \CWebApplication
 	 * @param string $file    The error file.
 	 * @param string $line    The error line.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
@@ -568,7 +568,7 @@ class WebApp extends \CWebApplication
 	 * @param      $components
 	 * @param bool $merge
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setComponents($components, $merge = true)
 	{
@@ -587,7 +587,7 @@ class WebApp extends \CWebApplication
 	 * @param string $event
 	 * @param mixed  $handler
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function on($event, $handler)
 	{
@@ -639,7 +639,7 @@ class WebApp extends \CWebApplication
 	 * @param mixed  $component
 	 * @param bool   $merge
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setComponent($id, $component, $merge = true)
 	{
@@ -688,7 +688,7 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param string $componentId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _attachEventListeners($componentId)
 	{
@@ -713,7 +713,7 @@ class WebApp extends \CWebApplication
 	 * Processes resource requests.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _processResourceRequest()
 	{
@@ -733,7 +733,7 @@ class WebApp extends \CWebApplication
 	/**
 	 * Sets the edition components.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _setEditionComponents()
 	{
@@ -756,7 +756,7 @@ class WebApp extends \CWebApplication
 	 * Processes install requests.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _processInstallRequest()
 	{
@@ -892,7 +892,7 @@ class WebApp extends \CWebApplication
 	 * Processes action requests.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _processActionRequest()
 	{
@@ -926,7 +926,7 @@ class WebApp extends \CWebApplication
 	 * If there is not cached app path or the existing cached app path does not match the current one, let’s run the requirement checker again.
 	 * This should catch the case where an install is deployed to another server that doesn’t meet Craft’s minimum requirements.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processRequirementsCheck()
 	{
@@ -958,7 +958,7 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _processUpdateLogic()
 	{

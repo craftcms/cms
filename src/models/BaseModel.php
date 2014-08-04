@@ -355,7 +355,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param mixed $values
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setAttributes($values)
 	{

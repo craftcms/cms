@@ -295,7 +295,7 @@ class CategoryElementType extends BaseElementType
 	 * @param BaseElementModel $element
 	 * @param int              $structureId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{

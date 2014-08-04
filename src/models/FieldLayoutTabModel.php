@@ -66,7 +66,7 @@ class FieldLayoutTabModel extends BaseModel
 	 *
 	 * @param FieldLayoutModel $layout
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setLayout(FieldLayoutModel $layout)
 	{
@@ -108,7 +108,7 @@ class FieldLayoutTabModel extends BaseModel
 	 *
 	 * @param array $fields
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setFields($fields)
 	{

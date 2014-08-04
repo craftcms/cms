@@ -17,6 +17,7 @@ class ConfigVariable
 	 * Returns whether a config item exists.
 	 *
 	 * @param string $name
+	 *
 	 * @return bool
 	 */
 	public function __isset($name)
@@ -28,6 +29,7 @@ class ConfigVariable
 	 * Returns a config item.
 	 *
 	 * @param string $name
+	 *
 	 * @return string
 	 */
 	public function __get($name)
@@ -38,8 +40,9 @@ class ConfigVariable
 	/**
 	 * Returns a config item from the specified config file.
 	 *
-	 * @param        $name
+	 * @param string $name
 	 * @param string $file
+	 *
 	 * @return mixed
 	 */
 	public function get($name, $file = 'general')

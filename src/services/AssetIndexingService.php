@@ -127,7 +127,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $entryId
 	 * @param $recordId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
@@ -180,7 +180,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $fileIds
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
@@ -198,7 +198,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $folderIds
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{

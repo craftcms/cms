@@ -61,7 +61,8 @@ class AssetIndexTool extends BaseTool
 	 * Perform the tool's action.
 	 *
 	 * @param array $params
-	 * @return array|void
+	 *
+	 * @return array|null
 	 */
 	public function performAction($params = array())
 	{

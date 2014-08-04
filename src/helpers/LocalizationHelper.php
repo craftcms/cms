@@ -52,7 +52,7 @@ class LocalizationHelper
 	 *
 	 * @param \CMissingTranslationEvent $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function findMissingTranslation(\CMissingTranslationEvent $event)
 	{

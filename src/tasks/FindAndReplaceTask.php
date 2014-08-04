@@ -13,8 +13,19 @@ namespace Craft;
  */
 class FindAndReplaceTask extends BaseTask
 {
+	/**
+	 * @var
+	 */
 	private $_table;
+
+	/**
+	 * @var
+	 */
 	private $_textColumns;
+
+	/**
+	 * @var
+	 */
 	private $_matrixFieldIds;
 
 	/**
@@ -99,6 +110,7 @@ class FindAndReplaceTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -144,6 +156,7 @@ class FindAndReplaceTask extends BaseTask
 	 *
 	 * @param FieldModel $field
 	 * @param string     $fieldColumnPrefix
+	 *
 	 * @return bool
 	 */
 	private function _checkField(FieldModel $field, $fieldColumnPrefix)

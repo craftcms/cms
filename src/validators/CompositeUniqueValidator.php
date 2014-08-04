@@ -13,6 +13,9 @@ namespace Craft;
  */
 class CompositeUniqueValidator extends \CValidator
 {
+	/**
+	 * @var
+	 */
 	public $with;
 
 	/**
@@ -20,6 +23,7 @@ class CompositeUniqueValidator extends \CValidator
 	 * @param string  $attribute
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

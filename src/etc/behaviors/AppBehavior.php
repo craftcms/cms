@@ -87,7 +87,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setIsInstalled()
 	{
@@ -183,7 +183,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the edition Craft is actually licensed to run in.
 	 *
-	 * @return int|void
+	 * @return int|null
 	 */
 	public function getLicensedEdition()
 	{
@@ -198,7 +198,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the name of the edition Craft is actually licensed to run in.
 	 *
-	 * @return string|void
+	 * @return string|null
 	 */
 	public function getLicensedEditionName()
 	{
@@ -510,7 +510,7 @@ class AppBehavior extends BaseBehavior
 	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
 	 *
 	 * @throws DbConnectException
-	 * @return void
+	 * @return null
 	 */
 	public function validateDbConfigFile()
 	{

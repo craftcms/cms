@@ -60,7 +60,7 @@ class FieldLayoutFieldModel extends BaseModel
 	 *
 	 * @param FieldLayoutModel $layout
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setLayout(FieldLayoutModel $layout)
 	{

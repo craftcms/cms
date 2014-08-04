@@ -418,7 +418,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param                  $filename
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -430,7 +430,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param AssetFileModel $file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{

@@ -29,7 +29,7 @@ class RequirementsChecker extends \CComponent
 	private $_serverInfo;
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function run()
 	{

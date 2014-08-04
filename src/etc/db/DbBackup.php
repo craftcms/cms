@@ -56,7 +56,7 @@ class DbBackup
 	 * @param $filePath
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function restore($filePath)
 	{
@@ -85,7 +85,7 @@ class DbBackup
 	/**
 	 * @param $value
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function trimValue(&$value)
 	{
@@ -132,7 +132,7 @@ class DbBackup
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	private function _nukeDb()
 	{
@@ -160,7 +160,7 @@ class DbBackup
 	/**
 	 * Generate the foreign key constraints for all tables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processConstraints()
 	{
@@ -207,7 +207,7 @@ class DbBackup
 	/**
 	 * Set sql file header
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processHeader()
 	{
@@ -225,7 +225,7 @@ class DbBackup
 	/**j
 	 * Set sql file footer
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processFooter()
 	{
@@ -238,7 +238,7 @@ class DbBackup
 	 *
 	 * @param $tableName
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processTable($tableName)
 	{

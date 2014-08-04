@@ -48,27 +48,27 @@ interface IFieldType extends ISavableComponentType
 	public function getSearchKeywords($value);
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeSave();
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterSave();
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeDelete();
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterDelete();
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterElementSave();
 
@@ -83,7 +83,7 @@ interface IFieldType extends ISavableComponentType
 	 * @param DbCommand $query
 	 * @param mixed     $value
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value);
 }

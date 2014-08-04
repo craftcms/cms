@@ -88,7 +88,7 @@ class SectionModel extends BaseModel
 	 *
 	 * @param array $locales
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setLocales($locales)
 	{
@@ -101,7 +101,7 @@ class SectionModel extends BaseModel
 	 * @param array  $errors
 	 * @param string $localeId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addLocaleErrors($errors, $localeId)
 	{

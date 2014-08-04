@@ -35,7 +35,7 @@ class HeaderHelper
 	/**
 	 * Tells the browser not to cache the following content
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setNoCache()
 	{
@@ -53,7 +53,7 @@ class HeaderHelper
 	 *
 	 * @param int $seconds Time in seconds to hold in browser cache
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setExpires($seconds = 300)
 	{
@@ -69,7 +69,7 @@ class HeaderHelper
 	/**
 	 * Tells the browser that the following content is private
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setPrivate()
 	{
@@ -85,7 +85,7 @@ class HeaderHelper
 	/**
 	 * Tells the browser that the following content is public
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setPublic()
 	{
@@ -103,7 +103,7 @@ class HeaderHelper
 	 * @param string  $fileName The name of the file when it's downloaded
 	 * @param int     $fileSize The size in bytes.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setDownload($fileName, $fileSize = null)
 	{
@@ -131,7 +131,7 @@ class HeaderHelper
 	 *
 	 * @param int $sizeInBytes The content size in bytes
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setLength($sizeInBytes)
 	{
@@ -143,7 +143,7 @@ class HeaderHelper
 	 *
 	 * @param $key
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function removeHeader($key)
 	{
@@ -191,7 +191,7 @@ class HeaderHelper
 	 *
 	 * @param array $header Use key => value
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setHeader($header)
 	{

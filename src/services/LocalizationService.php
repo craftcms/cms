@@ -13,14 +13,24 @@ namespace Craft;
  */
 class LocalizationService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_appLocales;
+
+	/**
+	 * @var
+	 */
 	private $_siteLocales;
+
+	/**
+	 * @var
+	 */
 	private $_localeData;
 
 	/**
-	 * Returns an array of all known locales.
-	 *
-	 * The list of known locales is based on whatever files exist in craft/app/framework/i18n/data/.
+	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in
+	 * craft/app/framework/i18n/data/.
 	 *
 	 * @return array An array of LocaleModel objects.
 	 */
@@ -38,11 +48,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of locales that Craft is translated into.
+	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
+	 * in craft/app/translations/.
 	 *
-	 * The list of locales is based on whatever files exist in craft/app/translations/.
-	 *
-	 * @return array An array of LocaleModel objects.
+	 * @return array An array of {@link LocaleModel} objects.
 	 */
 	public function getAppLocales()
 	{
@@ -70,9 +79,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the locale IDs which Craft has been translated into.
-	 *
-	 * The list of locales is based on whetever files exist in craft/app/translations/.
+	 * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
+	 * files exist in craft/app/translations/.
 	 *
 	 * @return array An array of locale IDs.
 	 */
@@ -90,11 +98,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the site locales.
+	 * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the CP.
 	 *
-	 * The list of locales is based on whatever was defined in Settings > Locales in the CP.
-	 *
-	 * @return array An array of LocaleModel objects.
+	 * @return array An array of {@link LocaleModel} objects.
 	 */
 	public function getSiteLocales()
 	{
@@ -127,11 +134,9 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale.
+	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the CP.
 	 *
-	 * The primary locale is whatever is listed first in Settings > Locales in the CP.
-	 *
-	 * @return LocaleModel A LocaleModel object representing the primary locale.
+	 * @return LocaleModel A {@link LocaleModel} object representing the primary locale.
 	 */
 	public function getPrimarySiteLocale()
 	{
@@ -140,9 +145,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale ID.
-	 *
-	 * The primary locale is whatever is listed first in Settings > Locales in the CP.
+	 * Returns the site's primary locale ID. The primary locale is whatever is listed first in Settings > Locales in the
+	 * CP.
 	 *
 	 * @return string The primary locale ID.
 	 */
@@ -152,9 +156,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the site locale IDs.
-	 *
-	 * The list of locales is based on whatever was defined in Settings > Locales in the CP.
+	 * Returns an array of the site locale IDs. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the CP.
 	 *
 	 * @return array An array of locale IDs.
 	 */
@@ -221,6 +224,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Returns a locale by its ID.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return LocaleModel
 	 */
 	public function getLocaleById($localeId)
@@ -232,6 +236,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Adds a new site locale.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return bool
 	 */
 	public function addSiteLocale($localeId)
@@ -279,6 +284,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Reorders the site's locales.
 	 *
 	 * @param array $localeIds
+	 *
 	 * @return bool
 	 */
 	public function reorderSiteLocales($localeIds)
@@ -344,6 +350,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Deletes a site locale.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return bool
 	 */
 	public function deleteSiteLocale($localeId)
@@ -355,7 +362,8 @@ class LocalizationService extends BaseApplicationComponent
 	/**
 	 * Returns the localization data for a given locale.
 	 *
-	 * @param $localeId
+	 * @param string $localeId
+	 *
 	 * @return LocaleData|null
 	 */
 	public function getLocaleData($localeId = null)

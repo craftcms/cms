@@ -21,6 +21,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * Returns all of the system email messages.
 	 *
 	 * @param string|null $localeId
+	 *
 	 * @return array
 	 */
 	public function getAllMessages($localeId = null)
@@ -75,6 +76,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 *
 	 * @param string $key
 	 * @param string|null $localeId
+	 *
 	 * @return RebrandEmailModel
 	 */
 	public function getMessage($key, $localeId = null)
@@ -100,6 +102,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * Saves the localized content for a system email message.
 	 *
 	 * @param RebrandEmailModel $message
+	 *
 	 * @return bool
 	 */
 	public function saveMessage(RebrandEmailModel $message)
@@ -136,6 +139,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * Returns the source locale for a message by its key.
 	 *
 	 * @param string $key
+	 *
 	 * @return string|null
 	 */
 	private function _getMessageSourceLocaleByKey($key)
@@ -150,6 +154,8 @@ class EmailMessagesService extends BaseApplicationComponent
 
 	/**
 	 * Sets all of the email message keys and source locales.
+	 *
+	 * @return null
 	 */
 	private function _setAllMessageKeysAndLocales()
 	{
@@ -184,7 +190,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * @param string $part
 	 * @param string $localeId
 	 *
-	 * @return void|string
+	 * @return null|string
 	 */
 	private function _translateMessageString($key, $part, $localeId)
 	{
@@ -209,8 +215,9 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Gets a message record by its key.
 	 *
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $localeId
+	 *
 	 * @return EmailMessageRecord
 	 */
 	private function _getMessageRecord($key, $localeId = null)

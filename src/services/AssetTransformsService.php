@@ -617,7 +617,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param int $sourceId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function cleanUpTransformsForSource($sourceId)
 	{
@@ -662,7 +662,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param int $fileId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function deleteTransformRecordsByFileId($fileId)
 	{
@@ -803,7 +803,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param $imageSource
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function deleteSourceIfNecessary($imageSource)
 	{
@@ -819,7 +819,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $localCopy
 	 * @param $destination
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function storeLocalSource($localCopy, $destination)
 	{

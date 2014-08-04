@@ -18,7 +18,7 @@ class CacheService extends BaseApplicationComponent
 	/**
 	 * Do the ole' craft()->cache switcharoo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{

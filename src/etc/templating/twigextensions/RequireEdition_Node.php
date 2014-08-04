@@ -18,7 +18,7 @@ class RequireEdition_Node extends \Twig_Node
 	 *
 	 * @param \Twig_Compiler $compiler
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

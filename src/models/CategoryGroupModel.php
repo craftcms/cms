@@ -79,7 +79,7 @@ class CategoryGroupModel extends BaseModel
 	 *
 	 * @param array $locales
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setLocales($locales)
 	{

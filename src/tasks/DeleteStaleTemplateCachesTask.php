@@ -13,12 +13,34 @@ namespace Craft;
  */
 class DeleteStaleTemplateCachesTask extends BaseTask
 {
+	/**
+	 * @var
+	 */
 	private $_elementIds;
+
+	/**
+	 * @var
+	 */
 	private $_elementType;
 
+	/**
+	 * @var
+	 */
 	private $_batch;
+
+	/**
+	 * @var
+	 */
 	private $_batchRows;
+
+	/**
+	 * @var
+	 */
 	private $_noMoreRows;
+
+	/**
+	 * @var
+	 */
 	private $_deletedCacheIds;
 
 	/**
@@ -82,6 +104,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -139,7 +162,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	}
 
 	/**
-	 * Returns a DbCommand object for selecing criteria that could be dropped by this task.
+	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.
 	 *
 	 * @return DbCommand
 	 */

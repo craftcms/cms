@@ -52,6 +52,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	 * Performs the tool's action.
 	 *
 	 * @param array $params
+	 *
 	 * @return array
 	 */
 	public function performAction($params = array())

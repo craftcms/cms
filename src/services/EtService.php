@@ -34,6 +34,7 @@ class EtService extends BaseApplicationComponent
 	 * Checks if any new updates are available.
 	 *
 	 * @param $updateInfo
+	 *
 	 * @return EtModel|null
 	 */
 	public function checkForUpdates($updateInfo)
@@ -64,8 +65,9 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $downloadPath
-	 * @param $md5
+	 * @param string $downloadPath
+	 * @param string $md5
+	 *
 	 * @return bool
 	 */
 	public function downloadUpdate($downloadPath, $md5)
@@ -150,6 +152,7 @@ class EtService extends BaseApplicationComponent
 	 * Attempts to purchase an edition upgrade.
 	 *
 	 * @param UpgradePurchaseModel $model
+	 *
 	 * @return bool
 	 */
 	public function purchaseUpgrade(UpgradePurchaseModel $model)
@@ -231,7 +234,8 @@ class EtService extends BaseApplicationComponent
 	/**
 	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
 	 *
-	 * @param $attributes
+	 * @param array $attributes
+	 *
 	 * @return EtModel|null
 	 */
 	public function decodeEtModel($attributes)
@@ -244,7 +248,7 @@ class EtService extends BaseApplicationComponent
 			{
 				$etModel = new EtModel($attributes);
 
-				// Make sure it's valid. (At a minumum, localBuild and localVersion should be set.)
+				// Make sure it's valid. (At a minimum, localBuild and localVersion should be set.)
 				if ($etModel->validate())
 				{
 					return $etModel;

@@ -15,12 +15,16 @@ class ResourcesService extends BaseApplicationComponent
 {
 	const DefaultUserphotoFilename = 'user.gif';
 
+	/**
+	 * @var
+	 */
 	public $dateParam;
 
 	/**
 	 * Returns the cached file system path for a given resource, if we have it.
 	 *
 	 * @param string $path
+	 *
 	 * @return string|null
 	 */
 	public function getCachedResourcePath($path)
@@ -38,6 +42,8 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @param string $path
 	 * @param string $realPath
+	 *
+	 * @return null
 	 */
 	public function cacheResourcePath($path, $realPath)
 	{
@@ -270,6 +276,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * @param string $path
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function sendResource($path)
 	{
@@ -357,6 +364,7 @@ class ResourcesService extends BaseApplicationComponent
 
 	/**
 	 * @param $match
+	 *
 	 * @return string
 	 */
 	private function _normalizeCssUrl($match)
@@ -387,6 +395,7 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @param $ext
 	 * @param $size
+	 *
 	 * @return string
 	 */
 	private function _getIconPath($ext, $size)

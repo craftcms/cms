@@ -13,4 +13,5 @@ namespace Craft;
  */
 class AssetSourceTypeVariable extends BaseComponentTypeVariable
 {
+
 }

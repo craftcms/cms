@@ -156,7 +156,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects user to the login template if they're not logged in.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function requireLogin()
 	{
@@ -170,7 +170,7 @@ abstract class BaseController extends \CController
 	 * Requires the current user to be logged in as an admin.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAdmin()
 	{
@@ -184,7 +184,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't a POST request
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requirePostRequest()
 	{
@@ -198,7 +198,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't an Ajax request.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAjaxRequest()
 	{
@@ -212,7 +212,7 @@ abstract class BaseController extends \CController
 	 * Requires the current request to include a token.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireToken()
 	{
@@ -229,7 +229,7 @@ abstract class BaseController extends \CController
 	 * @param bool $terminate
 	 * @param int  $statusCode
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
@@ -249,7 +249,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param mixed $object Object containing properties that should be parsed for in the URL.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirectToPostedUrl($object = null)
 	{
@@ -273,7 +273,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param array|null $var The array to JSON-encode and return
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnJson($var = array())
 	{
@@ -287,7 +287,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param string $error The error message
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnErrorJson($error)
 	{

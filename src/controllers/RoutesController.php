@@ -16,7 +16,7 @@ class RoutesController extends BaseController
 	/**
 	 * Saves a new or existing route.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveRoute()
 	{
@@ -52,7 +52,7 @@ class RoutesController extends BaseController
 	/**
 	 * Deletes a route.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteRoute()
 	{
@@ -67,7 +67,7 @@ class RoutesController extends BaseController
 	/**
 	 * Updates the route order.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateRouteOrder()
 	{

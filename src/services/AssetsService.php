@@ -198,7 +198,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeSaveAsset(Event $event)
 	{
@@ -210,7 +210,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onSaveAsset(Event $event)
 	{
@@ -223,7 +223,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param Event $event
 	 *
 	 * @deprecated Deprecated in 2.0.
-	 * @return void
+	 * @return null
 	 */
 	public function onSaveFileContent(Event $event)
 	{
@@ -951,7 +951,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param DbCommand           $query
 	 * @param FolderCriteriaModel $criteria
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
 	{
@@ -1012,7 +1012,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Flag a file merge in progress.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _startMergeProcess()
 	{
@@ -1022,7 +1022,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Flag a file merge no longer in progress.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _finishMergeProcess()
 	{
@@ -1145,7 +1145,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $permission
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function checkPermissionByFolderIds($folderIds, $permission)
 	{
@@ -1176,7 +1176,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $permission
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function checkPermissionByFileIds($fileIds, $permission)
 	{

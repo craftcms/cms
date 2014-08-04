@@ -239,7 +239,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	/**
 	 * Performs any additional actions after the element has been saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{

@@ -13,6 +13,9 @@ namespace Craft;
  */
 class InstallService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_user;
 
 	/**
@@ -21,7 +24,7 @@ class InstallService extends BaseApplicationComponent
 	 * @param array $inputs
 	 *
 	 * @throws Exception|\Exception
-	 * @return void
+	 * @return null
 	 */
 	public function run($inputs)
 	{
@@ -144,7 +147,8 @@ class InstallService extends BaseApplicationComponent
 	 * Creates the tables as defined in the records.
 	 *
 	 * @param $records
-	 * @return void
+	 *
+	 * @return null
 	 */
 	private function _createTablesFromRecords($records)
 	{
@@ -159,6 +163,8 @@ class InstallService extends BaseApplicationComponent
 	 * Creates the foreign keys as defined in the records.
 	 *
 	 * @param $records
+	 *
+	 * @return null
 	 */
 	private function _createForeignKeysFromRecords($records)
 	{
@@ -171,6 +177,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the content table.
+	 *
+	 * @return null
 	 */
 	private function _createContentTable()
 	{
@@ -191,6 +199,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the relations table.
+	 *
+	 * @return null
 	 */
 	private function _createRelationsTable()
 	{
@@ -215,6 +225,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the shunnedmessages table.
+	 *
+	 * @return null
 	 */
 	private function _createShunnedMessagesTable()
 	{
@@ -233,6 +245,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the searchindex table.
+	 *
+	 * @return null
 	 */
 	private function _createSearchIndexTable()
 	{
@@ -266,6 +280,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the template cache tables.
+	 *
+	 * @return null
 	 */
 	private function _createTemplateCacheTables()
 	{
@@ -314,6 +330,8 @@ class InstallService extends BaseApplicationComponent
 	 * @param $inputs
 	 *
 	 * @throws Exception
+	 *
+	 * @return null
 	 */
 	private function _createAndPopulateInfoTable($inputs)
 	{
@@ -363,6 +381,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the Rackspace access table.
+	 *
+	 * @return null
 	 */
 	private function _createRackspaceAccessTable()
 	{
@@ -381,6 +401,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Creates the deprecationerrors table for The Deprecator (tm).
+	 *
+	 * @return null
 	 */
 	private function _createDeprecationErrorsTable()
 	{
@@ -406,6 +428,8 @@ class InstallService extends BaseApplicationComponent
 
 	/**
 	 * Create the Asset Transform Index table.
+	 *
+	 * @return null
 	 */
 	private function _createAssetTransformIndexTable()
 	{
@@ -428,6 +452,7 @@ class InstallService extends BaseApplicationComponent
 	 * Populates the migrations table with the base migration plus any existing ones from app/migrations.
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _populateMigrationTable()
 	{
@@ -473,6 +498,8 @@ class InstallService extends BaseApplicationComponent
 	 * Adds the initial locale to the database.
 	 *
 	 * @param string $locale
+	 *
+	 * @return null
 	 */
 	private function _addLocale($locale)
 	{
@@ -515,6 +542,8 @@ class InstallService extends BaseApplicationComponent
 	 * Attempts to log in the given user.
 	 *
 	 * @param array $inputs
+	 *
+	 * @return null
 	 */
 	private function _logUserIn($inputs)
 	{
@@ -533,8 +562,10 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Saves some default mail settings for the site.
 	 *
-	 * @param $email
-	 * @param $siteName
+	 * @param string $email
+	 * @param string $siteName
+	 *
+	 * @return null
 	 */
 	private function _saveDefaultMailSettings($email, $siteName)
 	{
@@ -560,7 +591,8 @@ class InstallService extends BaseApplicationComponent
 	 * Creates initial database content for the install.
 	 *
 	 * @param $inputs
-	 * @return void
+	 *
+	 * @return null
 	 */
 	private function _createDefaultContent($inputs)
 	{
@@ -831,6 +863,7 @@ class InstallService extends BaseApplicationComponent
 	 * Get a flattened list of model errors
 	 *
 	 * @param array $errors
+	 *
 	 * @return string
 	 */
 	private function _getFlattenedErrors($errors)

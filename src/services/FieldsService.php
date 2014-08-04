@@ -13,18 +13,54 @@ namespace Craft;
  */
 class FieldsService extends BaseApplicationComponent
 {
+	/**
+	 * @var string
+	 */
 	public $oldFieldColumnPrefix = 'field_';
 
+	/**
+	 * @var
+	 */
 	private $_groupsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllGroups = false;
 
+	/**
+	 * @var
+	 */
 	private $_fieldRecordsById;
+
+	/**
+	 * @var
+	 */
 	private $_fieldsById;
+
+	/**
+	 * @var
+	 */
 	private $_allFieldsInContext;
+
+	/**
+	 * @var
+	 */
 	private $_fieldsByContextAndHandle;
+
+	/**
+	 * @var
+	 */
 	private $_fieldsWithContent;
 
+	/**
+	 * @var
+	 */
 	private $_layoutsById;
+
+	/**
+	 * @var
+	 */
 	private $_layoutsByType;
 
 	// Groups
@@ -34,6 +70,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns all field groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)
@@ -78,6 +115,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return FieldGroupModel|null
 	 */
 	public function getGroupById($groupId)
@@ -107,6 +145,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Saves a field group.
 	 *
 	 * @param FieldGroupModel $group
+	 *
 	 * @return bool
 	 */
 	public function saveGroup(FieldGroupModel $group)
@@ -137,6 +176,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field group.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return bool
 	 */
 	public function deleteGroupById($groupId)
@@ -167,6 +207,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllFields($indexBy = null)
@@ -239,6 +280,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field by its ID.
 	 *
 	 * @param int $fieldId
+	 *
 	 * @return FieldModel|null
 	 */
 	public function getFieldById($fieldId)
@@ -269,6 +311,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field by its handle.
 	 *
 	 * @param string $handle
+	 *
 	 * @return FieldModel|null
 	 */
 	public function getFieldByHandle($handle)
@@ -301,6 +344,7 @@ class FieldsService extends BaseApplicationComponent
 	 *
 	 * @param int         $groupId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
@@ -332,6 +376,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Validates a field's settings.
 	 *
 	 * @param FieldModel $field
+	 *
 	 * @return bool
 	 */
 	public function validateField(FieldModel $field)
@@ -381,7 +426,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Saves a field.
 	 *
 	 * @param FieldModel $field
-	 * @param bool $validate
+	 * @param bool       $validate
 	 *
 	 * @throws \Exception
 	 * @return bool
@@ -513,6 +558,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field by its ID.
 	 *
 	 * @param int $fieldId
+	 *
 	 * @return bool
 	 */
 	public function deleteFieldById($fieldId)
@@ -593,6 +639,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field layout by its ID.
 	 *
 	 * @param int $layoutId
+	 *
 	 * @return FieldLayoutModel|null
 	 */
 	public function getLayoutById($layoutId)
@@ -622,6 +669,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a field layout by its type.
 	 *
 	 * @param string $type
+	 *
 	 * @return FieldLayoutModel
 	 */
 	public function getLayoutByType($type)
@@ -658,6 +706,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a layout's tabs by its ID.
 	 *
 	 * @param int $layoutId
+	 *
 	 * @return array
 	 */
 	public function getLayoutTabsById($layoutId)
@@ -673,6 +722,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Returns a layout's tabs by its ID.
 	 *
 	 * @param int $layoutId
+	 *
 	 * @return array
 	 */
 	public function getLayoutFieldsById($layoutId)
@@ -688,6 +738,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Assembles a field layout from post data.
 	 *
 	 * @param bool $customizableTabs Whether the field layout has custom tabs.
+	 *
 	 * @return FieldLayoutModel
 	 */
 	public function assembleLayoutFromPost($customizableTabs = true)
@@ -701,9 +752,10 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Assembles a field layout.
 	 *
-	 * @param array $postedFieldLayout
+	 * @param array      $postedFieldLayout
 	 * @param array|null $requiredFields
-	 * @param bool $customizableTabs Whether the field layout has custom tabs.
+	 * @param bool       $customizableTabs  Whether the field layout has custom tabs.
+	 *
 	 * @return FieldLayoutModel
 	 */
 	public function assembleLayout($postedFieldLayout, $requiredFields, $customizableTabs = true)
@@ -753,7 +805,8 @@ class FieldsService extends BaseApplicationComponent
 	 * Saves a field layout.
 	 *
 	 * @param FieldLayoutModel $layout
-	 * @param bool $customizableTabs Whether the field layout has custom tabs.
+	 * @param bool             $customizableTabs Whether the field layout has custom tabs.
+	 *
 	 * @return bool
 	 */
 	public function saveLayout(FieldLayoutModel $layout, $customizableTabs = true)
@@ -809,6 +862,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes a field layout(s) by its ID.
 	 *
 	 * @param int|array $layoutId
+	 *
 	 * @return bool
 	 */
 	public function deleteLayoutById($layoutId)
@@ -834,6 +888,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Deletes field layouts of a given type.
 	 *
 	 * @param string $type
+	 *
 	 * @return bool
 	 */
 	public function deleteLayoutsByType($type)
@@ -859,6 +914,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Gets a fieldtype.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseFieldType|null
 	 */
 	public function getFieldType($class)
@@ -869,8 +925,9 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Populates a fieldtype by a field model.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldModel            $field
 	 * @param BaseElementModel|null $element
+	 *
 	 * @return BaseFieldType|null
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)
@@ -955,6 +1012,7 @@ class FieldsService extends BaseApplicationComponent
 	 * Populates a field from its DB result.
 	 *
 	 * @param array $result
+	 *
 	 * @return FieldModel
 	 */
 	private function _populateField($result)

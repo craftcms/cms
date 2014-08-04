@@ -30,6 +30,7 @@ interface ITool extends IComponentType
 
 	/**
 	 * @param array $params
+	 *
 	 * @return array
 	 */
 	public function performAction($params = array());

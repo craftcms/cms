@@ -13,16 +13,35 @@ namespace Craft;
  */
 class PaginateVariable
 {
+	/**
+	 * @var
+	 */
 	public $first;
+
+	/**
+	 * @var
+	 */
 	public $last;
+
+	/**
+	 * @var
+	 */
 	public $total;
+
+	/**
+	 * @var
+	 */
 	public $currentPage;
+
+	/**
+	 * @var
+	 */
 	public $totalPages;
 
 	/**
 	 * Returns the URL to a specific page
 	 *
-	 * @param $page
+	 * @param int $page
 	 *
 	 * @return string|null
 	 */
@@ -90,6 +109,7 @@ class PaginateVariable
 	 * Returns previous page URLs up to a certain distance from the current page.
 	 *
 	 * @param int $dist
+	 *
 	 * @return array
 	 */
 	public function getPrevUrls($dist = null)
@@ -110,6 +130,7 @@ class PaginateVariable
 	 * Returns next page URLs up to a certain distance from the current page.
 	 *
 	 * @param int $dist
+	 *
 	 * @return array
 	 */
 	public function getNextUrls($dist = null)
@@ -131,6 +152,7 @@ class PaginateVariable
 	 *
 	 * @param int $start
 	 * @param int $end
+	 *
 	 * @return array
 	 */
 	public function getRangeUrls($start, $end)

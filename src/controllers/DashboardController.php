@@ -16,7 +16,7 @@ class DashboardController extends BaseController
 	/**
 	 * Saves a widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveUserWidget()
 	{
@@ -47,7 +47,7 @@ class DashboardController extends BaseController
 	/**
 	 * Deletes a widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUserWidget()
 	{
@@ -63,7 +63,7 @@ class DashboardController extends BaseController
 	/**
 	 * Reorders widgets.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionReorderUserWidgets()
 	{
@@ -79,7 +79,7 @@ class DashboardController extends BaseController
 	/**
 	 * Returns the items for the Feed widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetFeedItems()
 	{
@@ -108,7 +108,7 @@ class DashboardController extends BaseController
 	/**
 	 * Creates a new support ticket for the GetHelp widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSendSupportRequest()
 	{

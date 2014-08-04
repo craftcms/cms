@@ -32,7 +32,7 @@ class TemplatesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionRender($template, array $variables = array())
 	{
@@ -50,7 +50,7 @@ class TemplatesController extends BaseController
 	/**
 	 * Shows the 'offline' template.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionOffline()
 	{
@@ -68,7 +68,7 @@ class TemplatesController extends BaseController
 	/**
 	 * Renders the Manual Update notification template.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionManualUpdateNotification()
 	{
@@ -78,7 +78,7 @@ class TemplatesController extends BaseController
 	/**
 	 * Renders the Manual Update template.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionManualUpdate()
 	{
@@ -89,7 +89,7 @@ class TemplatesController extends BaseController
 
 	/**
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRequirementsCheck()
 	{
@@ -133,7 +133,7 @@ class TemplatesController extends BaseController
 	 * Renders an error template.
 	 *
 	 * @throws \Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRenderError()
 	{

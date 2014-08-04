@@ -27,7 +27,7 @@ class InstallController extends BaseController
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -41,7 +41,7 @@ class InstallController extends BaseController
 	/**
 	 * Index action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionIndex()
 	{
@@ -60,7 +60,7 @@ class InstallController extends BaseController
 	/**
 	 * Validates the user account credentials.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidateAccount()
 	{
@@ -93,7 +93,7 @@ class InstallController extends BaseController
 	/**
 	 * Validates the site settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidateSite()
 	{
@@ -119,7 +119,7 @@ class InstallController extends BaseController
 	/**
 	 * Install action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionInstall()
 	{

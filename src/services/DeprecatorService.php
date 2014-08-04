@@ -13,16 +13,27 @@ namespace Craft;
  */
 class DeprecatorService extends BaseApplicationComponent
 {
-	private $_fingerprints = array();
-	private $_allLogs;
-
+	/**
+	 * @var string
+	 */
 	private static $_tableName = 'deprecationerrors';
+
+	/**
+	 * @var array
+	 */
+	private $_fingerprints = array();
+
+	/**
+	 * @var
+	 */
+	private $_allLogs;
 
 	/**
 	 * Logs a new deprecation error.
 	 *
-	 * @param $key
-	 * @param $message
+	 * @param string $key
+	 * @param string $message
+	 *
 	 * @return bool
 	 */
 	public function log($key, $message)
@@ -77,6 +88,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Get 'em all.
 	 *
 	 * @param int $limit
+	 *
 	 * @return array
 	 */
 	public function getLogs($limit = 100)
@@ -100,6 +112,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Returns a log by its ID.
 	 *
 	 * @param $logId
+	 *
 	 * @return DeprecationErrorModel|null
 	 */
 	public function getLogById($logId)
@@ -120,6 +133,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Deletes a log by its ID.
 	 *
 	 * @param $id
+	 *
 	 * @return bool
 	 */
 	public function deleteLogById($id)
@@ -143,6 +157,8 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
 	 *
 	 * @param DeprecationErrorModel $log
+	 *
+	 * @return null
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
@@ -268,6 +284,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Adapted from CErrorHandler::argumentsToString(), but this one's less destructive
 	 *
 	 * @param $args array
+	 *
 	 * @return string
 	 */
 	private function _argsToString($args)

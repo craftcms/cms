@@ -17,6 +17,7 @@ class GlobalsVariable
 	 * Returns all global sets.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSets($indexBy = null)
@@ -28,7 +29,7 @@ class GlobalsVariable
 	 * Returns all global sets that are editable by the current user.
 	 *
 	 * @param string|null $indexBy
-	 * @param null        $localeId
+	 * @param string|null $localeId
 	 *
 	 * @return array
 	 */
@@ -60,8 +61,9 @@ class GlobalsVariable
 	/**
 	 * Returns a global set by its ID.
 	 *
-	 * @param int $globalSetId
+	 * @param int         $globalSetId
 	 * @param string|null $localeId
+	 *
 	 * @return GlobalSetModel|null
 	 */
 	public function getSetById($globalSetId, $localeId = null)
@@ -72,8 +74,9 @@ class GlobalsVariable
 	/**
 	 * Returns a global set by its handle.
 	 *
-	 * @param int $globalSetHandle
+	 * @param string      $globalSetHandle
 	 * @param string|null $localeId
+	 *
 	 * @return GlobalSetModel|null
 	 */
 	public function getSetByHandle($globalSetHandle, $localeId = null)

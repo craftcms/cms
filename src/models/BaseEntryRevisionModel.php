@@ -32,7 +32,7 @@ class BaseEntryRevisionModel extends EntryModel
 	 *
 	 * @param array $content
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setContentFromRevision($content)
 	{

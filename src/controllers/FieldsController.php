@@ -19,7 +19,7 @@ class FieldsController extends BaseController
 	/**
 	 * Saves a field group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveGroup()
 	{
@@ -55,7 +55,7 @@ class FieldsController extends BaseController
 	/**
 	 * Deletes a field group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteGroup()
 	{
@@ -78,7 +78,7 @@ class FieldsController extends BaseController
 	/**
 	 * Saves a field.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveField()
 	{
@@ -127,7 +127,7 @@ class FieldsController extends BaseController
 	/**
 	 * Deletes a field.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteField()
 	{

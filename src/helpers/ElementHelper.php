@@ -18,7 +18,7 @@ class ElementHelper
 	 *
 	 * @param BaseElementModel $element
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function setValidSlug(BaseElementModel $element)
 	{

@@ -50,7 +50,7 @@ class EmailModel extends BaseModel
 	 * @param string $encoding File encoding
 	 * @param string $type     File extension MIME type.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
 	{

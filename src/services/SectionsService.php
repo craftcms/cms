@@ -13,14 +13,34 @@ namespace Craft;
  */
 class SectionsService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	public $typeLimits;
 
+	/**
+	 * @var
+	 */
 	private $_allSectionIds;
+
+	/**
+	 * @var
+	 */
 	private $_editableSectionIds;
 
+	/**
+	 * @var
+	 */
 	private $_sectionsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllSections = false;
 
+	/**
+	 * @var
+	 */
 	private $_entryTypesById;
 
 	/**
@@ -70,6 +90,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns all sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSections($indexBy = null)
@@ -126,6 +147,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns all editable sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableSections($indexBy = null)
@@ -174,7 +196,8 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns a section by its ID.
 	 *
-	 * @param $sectionId
+	 * @param int $sectionId
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionById($sectionId)
@@ -211,6 +234,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Gets a section by its handle.
 	 *
 	 * @param string $sectionHandle
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionByHandle($sectionHandle)
@@ -230,8 +254,9 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns a section's locales.
 	 *
-	 * @param int $sectionId
+	 * @param int         $sectionId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
@@ -425,7 +450,7 @@ class SectionsService extends BaseApplicationComponent
 				}
 
 				// Might as well update our cache of the section while we have it.
-				// (It's possilbe that the URL format includes {section.handle} or something...)
+				// (It's possible that the URL format includes {section.handle} or something...)
 				$this->_sectionsById[$section->id] = $section;
 
 				// Update the sections_i18n table
@@ -749,6 +774,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
 	 *
 	 * @param SectionModel $section
+	 *
 	 * @return bool
 	 */
 	public function isSectionTemplateValid(SectionModel $section)
@@ -779,8 +805,9 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns a section's entry types.
 	 *
-	 * @param int $sectionId
+	 * @param int         $sectionId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
@@ -796,6 +823,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns an entry type by its ID.
 	 *
 	 * @param int $entryTypeId
+	 *
 	 * @return EntryTypeModel|null
 	 */
 	public function getEntryTypeById($entryTypeId)
@@ -821,6 +849,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns entry types that have a given handle.
 	 *
 	 * @param int $entryTypeHandle
+	 *
 	 * @return array
 	 */
 	public function getEntryTypesByHandle($entryTypeHandle)
@@ -1072,6 +1101,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns whether another section can be added of a given type.
 	 *
 	 * @param string $type
+	 *
 	 * @return bool
 	 */
 	public function canHaveMore($type)

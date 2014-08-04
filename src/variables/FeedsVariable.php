@@ -14,10 +14,11 @@ namespace Craft;
 class FeedsVariable
 {
 	/**
-	 * @param      $url
-	 * @param int  $limit
-	 * @param int  $offset
-	 * @param null $cacheDuration
+	 * @param string $url
+	 * @param int    $limit
+	 * @param int    $offset
+	 * @param null   $cacheDuration
+	 *
 	 * @return array
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)

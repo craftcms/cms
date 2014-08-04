@@ -84,7 +84,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 *
 	 * @param string $path The alias of the folder containing the command class files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addCommands($path)
 	{

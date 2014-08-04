@@ -25,6 +25,7 @@ interface ITask extends ISavableComponentType
 
 	/**
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step);

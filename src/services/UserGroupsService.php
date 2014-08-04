@@ -19,6 +19,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Returns all user groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)
@@ -31,6 +32,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Gets a user group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return UserGroupModel
 	 */
 	public function getGroupById($groupId)
@@ -47,6 +49,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Gets a user group by its handle.
 	 *
 	 * @param int $groupHandle
+	 *
 	 * @return UserGroupModel
 	 */
 	public function getGroupByHandle($groupHandle)
@@ -64,8 +67,9 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Gets user groups by a user ID.
 	 *
-	 * @param int $userId
+	 * @param int         $userId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
@@ -84,6 +88,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Saves a user group.
 	 *
 	 * @param UserGroupModel $group
+	 *
 	 * @return bool
 	 */
 	public function saveGroup(UserGroupModel $group)
@@ -113,8 +118,9 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Assigns a user to groups
 	 *
-	 * @param int $userId
+	 * @param int       $userId
 	 * @param int|array $groupIds
+	 *
 	 * @return bool
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
@@ -144,6 +150,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Deletes a user group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return bool
 	 */
 	public function deleteGroupById($groupId)
@@ -156,6 +163,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Gets a group's record.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return UserGroupRecord
 	 */
 	private function _getGroupRecordById($groupId = null)
@@ -183,6 +191,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 * @param int $groupId
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _noGroupExists($groupId)
 	{

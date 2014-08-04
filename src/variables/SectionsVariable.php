@@ -17,6 +17,7 @@ class SectionsVariable
 	 * Returns all sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSections($indexBy = null)
@@ -28,6 +29,7 @@ class SectionsVariable
 	 * Returns all editable sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableSections($indexBy = null)
@@ -59,6 +61,7 @@ class SectionsVariable
 	 * Returns a section by its ID.
 	 *
 	 * @param int $sectionId
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionById($sectionId)

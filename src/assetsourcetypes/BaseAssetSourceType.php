@@ -484,7 +484,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFileModel $oldFile     The assetFileModel representing the original file.
 	 * @param AssetFileModel $replaceWith The assetFileModel representing the new file.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
 	{
@@ -563,7 +563,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $file The assetFileModel representing the file that will have any created images deleted.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function deleteCreatedImages(AssetFileModel $file)
 	{
@@ -1000,7 +1000,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $file The assetFileModel representing the file to delete any generated thumbnails for.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteGeneratedThumbnails(AssetFileModel $file)
 	{
@@ -1019,7 +1019,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $file The assetFileModel that represents the file to delete any transformed data for.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteTransformData(AssetFileModel $file)
 	{
@@ -1040,7 +1040,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFolderModel $folder   The assetFolderModel representing the folder that has the file to purge.
 	 * @param string           $filename The file to purge.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -1074,7 +1074,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param mixed            $changedData  Any data that changed during the mirroring operation.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _mirrorStructure(AssetFolderModel $newLocation, AssetFolderModel $sourceFolder, &$changedData)
 	{

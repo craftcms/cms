@@ -84,7 +84,7 @@ abstract class BaseComponentModel extends BaseModel
 	 * @param string $attribute
 	 * @param string $error
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addSettingsError($attribute,$error)
 	{
@@ -96,7 +96,7 @@ abstract class BaseComponentModel extends BaseModel
 	 *
 	 * @param array $errors
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addSettingErrors($errors)
 	{

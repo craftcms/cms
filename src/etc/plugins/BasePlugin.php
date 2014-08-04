@@ -85,7 +85,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Creates any tables defined by the plugin's records.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function createTables()
 	{
@@ -107,7 +107,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Drops any tables defined by the plugin's records.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropTables()
 	{
@@ -129,7 +129,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions after the plugin has been installed.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterInstall()
 	{
@@ -139,7 +139,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions before the plugin has been installed.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeInstall()
 	{
@@ -149,7 +149,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions before the plugin gets uninstalled.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeUninstall()
 	{

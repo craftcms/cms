@@ -150,7 +150,7 @@ class DateFieldType extends BaseFieldType
 	 * @param DbCommand $query
 	 * @param mixed     $value
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{

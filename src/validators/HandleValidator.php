@@ -13,15 +13,26 @@ namespace Craft;
  */
 class HandleValidator extends \CValidator
 {
+	/**
+	 * @var string
+	 */
 	public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 
+	/**
+	 * @var array
+	 */
 	public $reservedWords = array();
 
+	/**
+	 * @var array
+	 */
 	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent', 'section');
 
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

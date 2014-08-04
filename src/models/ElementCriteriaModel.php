@@ -155,7 +155,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * @param mixed $offset
 	 * @param mixed $item
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function offsetSet($offset, $item)
 	{
@@ -174,7 +174,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 *
 	 * @param mixed $offset
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function offsetUnset($offset)
 	{
@@ -400,7 +400,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	private function _includeInTemplateCaches()
 	{

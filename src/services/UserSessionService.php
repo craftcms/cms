@@ -17,16 +17,12 @@ class UserSessionService extends \CWebUser
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
 
 	/**
-	 * Stores the user identity.
-	 *
-	 * @var UserIdentity
+	 * @var UserIdentity Stores the user identity.
 	 */
 	private $_identity;
 
 	/**
-	 * Stores the current user model.
-	 *
-	 * @var UserModel
+	 * @var UserModel Stores the current user model.
 	 */
 	private $_userModel;
 
@@ -41,7 +37,9 @@ class UserSessionService extends \CWebUser
 	private $_sessionRestoredFromCookie;
 
 	/**
+	 * Init
 	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -94,6 +92,7 @@ class UserSessionService extends \CWebUser
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
 	 * @param string $defaultUrl
+	 *
 	 * @return mixed
 	 */
 	public function getReturnUrl($defaultUrl = '')
@@ -105,6 +104,8 @@ class UserSessionService extends \CWebUser
 	 * Sets a notice to the user.
 	 *
 	 * @param string $message
+	 *
+	 * @return null
 	 */
 	public function setNotice($message)
 	{
@@ -115,6 +116,8 @@ class UserSessionService extends \CWebUser
 	 * Sets an error notification.
 	 *
 	 * @param string $message
+	 *
+	 * @return null
 	 */
 	public function setError($message)
 	{
@@ -125,6 +128,8 @@ class UserSessionService extends \CWebUser
 	 * Adds a JS resource flash.
 	 *
 	 * @param string $resource
+	 *
+	 * @return null
 	 */
 	public function addJsResourceFlash($resource)
 	{
@@ -141,6 +146,7 @@ class UserSessionService extends \CWebUser
 	 * Returns the queued-up JS flashes.
 	 *
 	 * @param bool $delete
+	 *
 	 * @return array
 	 */
 	public function getJsResourceFlashes($delete = true)
@@ -152,6 +158,8 @@ class UserSessionService extends \CWebUser
 	 * Adds a JS flash.
 	 *
 	 * @param string $js
+	 *
+	 * @return null
 	 */
 	public function addJsFlash($js)
 	{
@@ -164,6 +172,7 @@ class UserSessionService extends \CWebUser
 	 * Returns the queued-up JS flashes.
 	 *
 	 * @param bool $delete
+	 *
 	 * @return array
 	 */
 	public function getJsFlashes($delete = true)
@@ -173,9 +182,7 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 *
-	 * Check to see if the current web user is a guest.
-	 *
-	 * (wrapper for getIsGuest() for consistency)
+	 * Check to see if the current web user is a guest. (wrapper for getIsGuest() for consistency)
 	 *
 	 * @return bool
 	 */
@@ -210,6 +217,7 @@ class UserSessionService extends \CWebUser
 	 * Returns whether the current user has a given permission.
 	 *
 	 * @param string $permissionName
+	 *
 	 * @return bool
 	 */
 	public function checkPermission($permissionName)
@@ -224,6 +232,7 @@ class UserSessionService extends \CWebUser
 	 * @param string $permissionName
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function requirePermission($permissionName)
 	{
@@ -237,6 +246,7 @@ class UserSessionService extends \CWebUser
 	 * Requires that the current user is an admin, otherwise a 403 exception is thrown.
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function requireAdmin()
 	{
@@ -248,6 +258,9 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Requires that the user is logged in, otherwise redirects them to the login page.
+	 *
+	 * @throws Exception
+	 * @return null
 	 */
 	public function requireLogin()
 	{
@@ -288,6 +301,8 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Pointless Wrapper for requireLogin(), but \CWebUser uses loginRequired() so we must support it as well.
+	 *
+	 * @return null
 	 */
 	public function loginRequired()
 	{
@@ -504,7 +519,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @param $errorCode
 	 * @param $loginName
-	 * @return void|string
+	 * @return null|string
 	 */
 	public function getLoginErrorMessage($errorCode, $loginName)
 	{
@@ -587,11 +602,12 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * TODO: set domain to wildcard?  .example.com, .example.co.uk, .too.many.subdomains.com
-	 *
 	 * @param     $cookieName
 	 * @param     $data
 	 * @param int $duration
+	 *
+	 * @todo Set domain to wildcard?  .example.com, .example.co.uk, .too.many.subdomains.com
+	 * @return null
 	 */
 	public function saveCookie($cookieName, $data, $duration = 0)
 	{
@@ -610,7 +626,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $cookieName
+	 * @param string $cookieName
+	 *
 	 * @return mixed|null
 	 */
 	public function getCookieValue($cookieName)
@@ -627,7 +644,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function wasSessionRestoredFromCookie()
 	{
@@ -636,6 +653,8 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Clears all user identity information from persistent storage. This will remove the data stored via {@link setState}.
+	 *
+	 * @return null
 	 */
 	public function clearStates()
 	{
@@ -659,6 +678,8 @@ class UserSessionService extends \CWebUser
 	 * Fires an 'onBeforeLogin' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeLogin(Event $event)
 	{
@@ -669,6 +690,8 @@ class UserSessionService extends \CWebUser
 	 * Fires an 'onLogin' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onLogin(Event $event)
 	{
@@ -676,13 +699,18 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Changes the current user with the specified identity information. This method is called by {@link login} and {@link restoreFromCookie}
-	 * when the current user needs to be populated with the corresponding identity information. Derived classes may override this method
-	 * by retrieving additional user-related information. Make sure the parent implementation is called first.
+	 * Changes the current user with the specified identity information. This method is called by {@link login} and
+	 * {@link restoreFromCookie} when the current user needs to be populated with the corresponding identity
+	 * information.
 	 *
-	 * @param mixed  $id     A unique identifier for the user
-	 * @param string $name   The display name for the user
-	 * @param array  $states Identity states
+	 * Derived classes may override this method by retrieving additional user-related information. Make sure the parent
+	 * implementation is called first.
+	 *
+	 * @param mixed  $id     A unique identifier for the user.
+	 * @param string $name   The display name for the user.
+	 * @param array  $states Identity states.
+	 *
+	 * @return null
 	 */
 	protected function changeIdentity($id,$name,$states)
 	{
@@ -692,7 +720,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 *
+	 * @return null
 	 */
 	protected function renewCookie()
 	{
@@ -725,9 +753,10 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Populates the current user object with the information obtained from cookie.
-	 * This method is used when automatic login ({@link allowAutoLogin}) is enabled.
-	 * The user identity information is recovered from cookie.
+	 * Populates the current user object with the information obtained from cookie. This method is used when automatic
+	 * login ({@link allowAutoLogin}) is enabled.  The user identity information is recovered from cookie.
+	 *
+	 * @return null
 	 */
 	protected function restoreFromCookie()
 	{
@@ -824,7 +853,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	protected function beforeLogout()
 	{
@@ -861,8 +890,9 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $loginName
-	 * @param $uid
+	 * @param string $loginName
+	 * @param string $uid
+	 *
 	 * @return bool
 	 */
 	private function _findSessionToken($loginName, $uid)
@@ -883,9 +913,10 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $loginName
-	 * @param $currentToken
-	 * @param $newToken
+	 * @param string $loginName
+	 * @param string $currentToken
+	 * @param string $newToken
+	 *
 	 * @return int
 	 */
 	private function _updateSessionToken($loginName, $currentToken, $newToken)
@@ -895,7 +926,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 *
+	 * @return null
 	 */
 	private function _cleanStaleSessions()
 	{
@@ -908,7 +939,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $rememberMe
+	 * @param string $rememberMe
+	 *
 	 * @return int
 	 */
 	private function _getSessionDuration($rememberMe)
@@ -940,7 +972,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $id
+	 * @param int $id
+	 *
 	 * @return int
 	 */
 	private function _getUserRow($id)
@@ -975,6 +1008,8 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Checks whether the the current request has a user agent string or IP address.
+	 *
+	 * @return bool
 	 */
 	private function _checkVitals()
 	{
@@ -994,6 +1029,11 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Checks whether the current user agent string matches the user agent string saved in the identity cookie.
+	 *
+	 * @param string $currentUserAgent
+	 * @param string $savedUserAgent
+	 *
+	 * @return null
 	 */
 	private function _checkUserAgentString($currentUserAgent, $savedUserAgent)
 	{

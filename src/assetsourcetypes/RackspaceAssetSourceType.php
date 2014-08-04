@@ -463,7 +463,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param                  $filename
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -478,7 +478,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param AssetFileModel $file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
@@ -748,7 +748,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * Refresh a connection information and return authorization token.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _refreshConnectionInformation()
 	{
@@ -1017,7 +1017,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Load Rackspace access data from DB.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _loadAccessData()
 	{
@@ -1037,7 +1037,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $connectionKey
 	 * @param $data
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _updateAccessData($connectionKey, $data)
 	{
@@ -1091,7 +1091,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $response
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private static function _logUnexpectedResponse($response)
 	{
@@ -1180,7 +1180,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $uriPath
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _deleteObject($uriPath)
 	{
@@ -1192,7 +1192,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $uriPath
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _purgeObject($uriPath)
 	{
@@ -1205,7 +1205,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $folder
 	 * @param $filename
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
@@ -1219,7 +1219,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param $sourceUri
 	 * @param $targetUri
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _copyFile($sourceUri, $targetUri)
 	{

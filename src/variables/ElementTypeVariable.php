@@ -47,6 +47,7 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	 * Return a key/label list of the element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -68,7 +69,8 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)

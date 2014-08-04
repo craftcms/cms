@@ -42,6 +42,7 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -52,9 +53,10 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	/**
 	 * Creates and runs a subtask.
 	 *
-	 * @param             $taskClassName
+	 * @param string      $taskClassName
 	 * @param string|null $taskDescription
 	 * @param array|null  $settings
+	 *
 	 * @return bool
 	 */
 	protected function runSubTask($taskClassName, $taskDescription = null, $settings = null)

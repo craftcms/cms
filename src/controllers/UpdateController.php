@@ -30,7 +30,7 @@ class UpdateController extends BaseController
 	/**
 	 * Returns the available updates.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetAvailableUpdates()
 	{
@@ -61,7 +61,7 @@ class UpdateController extends BaseController
 	/**
 	 * Returns the update info JSON.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetUpdates()
 	{
@@ -143,7 +143,7 @@ class UpdateController extends BaseController
 	// -------------------------------------------
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionPrepare()
 	{
@@ -188,7 +188,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionProcessDownload()
 	{
@@ -217,7 +217,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionBackupFiles()
 	{
@@ -244,7 +244,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateFiles()
 	{
@@ -271,7 +271,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionBackupDatabase()
 	{
@@ -318,7 +318,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateDatabase()
 	{
@@ -360,7 +360,7 @@ class UpdateController extends BaseController
 	/**
 	 * Performs maintenance and clean up tasks after an update.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCleanUp()
 	{
@@ -414,7 +414,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRollback()
 	{

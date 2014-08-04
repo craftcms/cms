@@ -16,6 +16,8 @@ class DateTimeValidator extends \CValidator
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

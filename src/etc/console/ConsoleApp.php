@@ -18,7 +18,7 @@ class ConsoleApp extends \CConsoleApplication
 	/**
 	 * Initializes the console app by creating the command runner.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -73,7 +73,7 @@ class ConsoleApp extends \CConsoleApplication
 	 * @param string $event
 	 * @param mixed  $handler
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function on($event, $handler)
 	{

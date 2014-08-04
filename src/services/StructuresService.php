@@ -13,6 +13,9 @@ namespace Craft;
  */
 class StructuresService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_rootElementRecordsByStructureId;
 
 	// Structure CRUD
@@ -21,6 +24,7 @@ class StructuresService extends BaseApplicationComponent
 	 * Returns a structure by its ID.
 	 *
 	 * @param int $structureId
+	 *
 	 * @return StructureModel|null
 	 */
 	public function getStructureById($structureId)
@@ -77,6 +81,7 @@ class StructuresService extends BaseApplicationComponent
 	 * Deletes a structure by its ID.
 	 *
 	 * @param int $structureId
+	 *
 	 * @return bool
 	 */
 	public function deleteStructureById($structureId)
@@ -96,12 +101,13 @@ class StructuresService extends BaseApplicationComponent
 	// Moving elements around
 
 	/**
-	 * Prepends an element to another wihin a given structure.
+	 * Prepends an element to another within a given structure.
 	 *
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $parentElement
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
@@ -111,12 +117,13 @@ class StructuresService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Appends an element to another wihin a given structure.
+	 * Appends an element to another within a given structure.
 	 *
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $parentElement
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
@@ -130,7 +137,8 @@ class StructuresService extends BaseApplicationComponent
 	 *
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto')
@@ -144,7 +152,8 @@ class StructuresService extends BaseApplicationComponent
 	 *
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto')
@@ -159,7 +168,8 @@ class StructuresService extends BaseApplicationComponent
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $nextElement
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto')
@@ -174,7 +184,8 @@ class StructuresService extends BaseApplicationComponent
 	 * @param int              $structureId
 	 * @param BaseElementModel $element
 	 * @param BaseElementModel $prevElement
-	 * @param string           $mode Whether this is an "insert", "update", or "auto".
+	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
+	 *
 	 * @return bool
 	 */
 	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto')
@@ -188,8 +199,9 @@ class StructuresService extends BaseApplicationComponent
 	/**
 	 * Returns a structure element record from given structure and element IDs.
 	 *
-	 * @param int $structureId
+	 * @param int              $structureId
 	 * @param BaseElementModel $element
+	 *
 	 * @return StructureElementRecord|null
 	 */
 	private function _getElementRecord($structureId, BaseElementModel $element)
@@ -209,6 +221,7 @@ class StructuresService extends BaseApplicationComponent
 	 * Returns the root node for a given structure ID, or creates one if it doesn't exist.
 	 *
 	 * @param int $structureId
+	 *
 	 * @return StructureElementRecord
 	 */
 	private function _getRootElementRecord($structureId)

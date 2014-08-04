@@ -13,9 +13,24 @@ namespace Craft;
  */
 class GlobalsService extends BaseApplicationComponent
 {
+	/**
+	 * @var
+	 */
 	private $_allGlobalSetIds;
+
+	/**
+	 * @var
+	 */
 	private $_editableGlobalSetIds;
+
+	/**
+	 * @var
+	 */
 	private $_allGlobalSets;
+
+	/**
+	 * @var
+	 */
 	private $_globalSetsById;
 
 	/**
@@ -64,6 +79,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Returns all global sets.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSets($indexBy = null)
@@ -101,6 +117,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Returns all global sets that are editable by the current user.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableSets($indexBy = null)
@@ -150,8 +167,9 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Returns a global set by its ID.
 	 *
-	 * @param int $globalSetId
+	 * @param int         $globalSetId
 	 * @param string|null $localeId
+	 *
 	 * @return GlobalSetModel|null
 	 */
 	public function getSetById($globalSetId, $localeId = null)
@@ -182,8 +200,9 @@ class GlobalsService extends BaseApplicationComponent
 	/**
 	 * Returns a global set by its handle.
 	 *
-	 * @param int $globalSetHandle
+	 * @param int         $globalSetHandle
 	 * @param string|null $localeId
+	 *
 	 * @return GlobalSetModel|null
 	 */
 	public function getSetByHandle($globalSetHandle, $localeId = null)
@@ -353,6 +372,7 @@ class GlobalsService extends BaseApplicationComponent
 	 * Saves a global set's content
 	 *
 	 * @param GlobalSetModel $globalSet
+	 *
 	 * @return bool
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
@@ -376,6 +396,8 @@ class GlobalsService extends BaseApplicationComponent
 	 * Fires an 'onSaveGlobalContent' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveGlobalContent(Event $event)
 	{

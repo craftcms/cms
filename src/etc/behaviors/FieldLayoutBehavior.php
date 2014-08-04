@@ -64,7 +64,7 @@ class FieldLayoutBehavior extends BaseBehavior
 	 *
 	 * @param FieldLayoutModel $fieldLayout
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setFieldLayout(FieldLayoutModel $fieldLayout)
 	{

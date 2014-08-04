@@ -26,7 +26,7 @@ class AssetsController extends BaseController
 	/**
 	 * Upload a file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadFile()
 	{
@@ -60,7 +60,7 @@ class AssetsController extends BaseController
 	 * Uploads a file directly to a field for an entry.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionExpressUpload()
 	{
@@ -112,7 +112,7 @@ class AssetsController extends BaseController
 	/**
 	 * Create a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCreateFolder()
 	{
@@ -138,7 +138,7 @@ class AssetsController extends BaseController
 	/**
 	 * Delete a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteFolder()
 	{
@@ -163,7 +163,7 @@ class AssetsController extends BaseController
 	/**
 	 * Rename a folder
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionRenameFolder()
 	{
@@ -191,7 +191,7 @@ class AssetsController extends BaseController
 	/**
 	 * Delete a file or multiple files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteFile()
 	{
@@ -215,7 +215,7 @@ class AssetsController extends BaseController
 	/**
 	 * Move a file or multiple files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveFile()
 	{
@@ -243,7 +243,7 @@ class AssetsController extends BaseController
 	/**
 	 * Move a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveFolder()
 	{
@@ -272,7 +272,7 @@ class AssetsController extends BaseController
 	/**
 	 * Generate a transform.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGenerateTransform()
 	{
@@ -313,7 +313,7 @@ class AssetsController extends BaseController
 	/**
 	 * Get information about available transforms.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetTransformInfo()
 	{
@@ -333,7 +333,7 @@ class AssetsController extends BaseController
 	 *
 	 * @param $folderId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _checkUploadPermissions($folderId)
 	{

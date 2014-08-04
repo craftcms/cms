@@ -13,12 +13,17 @@ namespace Craft;
  */
 abstract class BaseComponentTypeVariable
 {
+	/**
+	 * @var BaseComponentType
+	 */
 	protected $component;
 
 	/**
 	 * Constructor
 	 *
 	 * @param BaseComponentType $component
+	 *
+	 * @return BaseComponentTypeVariable
 	 */
 	public function __construct($component)
 	{
@@ -79,6 +84,7 @@ abstract class BaseComponentTypeVariable
 	 * Mass-populates instances of this class with a given set of models.
 	 *
 	 * @param array $models
+	 *
 	 * @return array
 	 */
 	public static function populateVariables($models)

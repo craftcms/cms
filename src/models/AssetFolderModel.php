@@ -83,7 +83,7 @@ class AssetFolderModel extends BaseModel
 	 *
 	 * @param AssetFolderModel $folder
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addChild(AssetFolderModel $folder)
 	{

@@ -21,7 +21,7 @@ interface ISavableComponentType extends IComponentType
 	/**
 	 * @param array $values
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setSettings($values);
 

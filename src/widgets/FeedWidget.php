@@ -13,6 +13,9 @@ namespace Craft;
  */
 class FeedWidget extends BaseWidget
 {
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
 
 	/**

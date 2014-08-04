@@ -46,7 +46,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Init
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -127,7 +127,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Prepares the model's attribute values to be saved to the database.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function prepAttributesForSave()
 	{
@@ -165,7 +165,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Return the attribute values to the formats we want to work with in the code.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function prepAttributesForUse()
 	{
@@ -225,7 +225,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Creates the model's table.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function createTable()
 	{
@@ -318,7 +318,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Drops the model's table.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropTable()
 	{
@@ -334,7 +334,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Adds foreign keys to the model's table.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addForeignKeys()
 	{
@@ -378,7 +378,7 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Drops the foreign keys from the model's table.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropForeignKeys()
 	{
@@ -504,7 +504,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param string $name
 	 * @param array  &$config
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _normalizeRelation($name, &$config)
 	{

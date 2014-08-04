@@ -56,7 +56,7 @@ class FieldRecord extends BaseRecord
 	/**
 	 * Init
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -69,7 +69,7 @@ class FieldRecord extends BaseRecord
 	/**
 	 * Store the old handle.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function storeOldHandle()
 	{

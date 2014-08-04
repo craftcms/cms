@@ -100,7 +100,7 @@ class FieldLayoutModel extends BaseModel
 	 *
 	 * @param array $tabs
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setTabs($tabs)
 	{
@@ -123,7 +123,7 @@ class FieldLayoutModel extends BaseModel
 	 *
 	 * @param array $fields
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setFields($fields)
 	{

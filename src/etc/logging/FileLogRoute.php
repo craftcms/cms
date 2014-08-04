@@ -16,7 +16,7 @@ class FileLogRoute extends \CFileLogRoute
 	/**
 	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -33,7 +33,7 @@ class FileLogRoute extends \CFileLogRoute
 	 *
 	 * @param array $logs The list of log messages
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function processLogs($logs)
 	{

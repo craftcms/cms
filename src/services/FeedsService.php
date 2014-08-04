@@ -14,7 +14,7 @@ namespace Craft;
 class FeedsService extends BaseApplicationComponent
 {
 	/**
-	 *
+	 * return void
 	 */
 	public function init()
 	{
@@ -30,7 +30,8 @@ class FeedsService extends BaseApplicationComponent
 	 * @param string|array $url
 	 * @param int          $limit
 	 * @param int          $offset
-	 * @param null         $cacheDuration Any valid PHP time format http://www.php.net/manual/en/datetime.formats.time.php
+	 * @param null         $cacheDuration Any valid PHP time format {@see http://www.php.net/manual/en/datetime.formats.time.php}
+	 *
 	 * @return array
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
@@ -82,6 +83,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getEnclosures($objects)
@@ -130,6 +132,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getRatings($objects)
@@ -152,6 +155,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getRestrictions($objects)
@@ -175,6 +179,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getCaptions($objects)
@@ -200,6 +205,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getCredits($objects)
@@ -223,6 +229,7 @@ class FeedsService extends BaseApplicationComponent
 
 	/**
 	 * @param $objects
+	 *
 	 * @return array
 	 */
 	private function _getCategories($objects)
@@ -248,6 +255,7 @@ class FeedsService extends BaseApplicationComponent
 	 * Returns an array of authors.
 	 *
 	 * @param array $objects
+	 *
 	 * @return array
 	 */
 	private function _getItemAuthors($objects)
@@ -273,6 +281,7 @@ class FeedsService extends BaseApplicationComponent
 	 * Returns an array of categories.
 	 *
 	 * @param array $objects
+	 *
 	 * @return array
 	 */
 	private function _getItemCategories($objects)

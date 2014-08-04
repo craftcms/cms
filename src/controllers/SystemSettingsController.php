@@ -17,7 +17,7 @@ class SystemSettingsController extends BaseController
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -28,7 +28,7 @@ class SystemSettingsController extends BaseController
 	/**
 	 * Shows the settings index.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSettingsIndex()
 	{
@@ -52,7 +52,7 @@ class SystemSettingsController extends BaseController
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGeneralSettings(array $variables = array())
 	{
@@ -109,7 +109,7 @@ class SystemSettingsController extends BaseController
 	/**
 	 * Saves the general settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveGeneralSettings()
 	{
@@ -141,7 +141,7 @@ class SystemSettingsController extends BaseController
 	/**
 	 * Saves the email settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveEmailSettings()
 	{
@@ -170,7 +170,7 @@ class SystemSettingsController extends BaseController
 	/**
 	 * Tests the email settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionTestEmailSettings()
 	{
@@ -204,7 +204,7 @@ class SystemSettingsController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditGlobalSet(array $variables = array())
 	{

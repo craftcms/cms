@@ -15,7 +15,14 @@ craft()->requireEdition(Craft::Client);
  */
 class RebrandVariable
 {
+	/**
+	 * @var
+	 */
 	private $_logoPath;
+
+	/**
+	 * @var
+	 */
 	private $_logoVariable;
 
 	/**

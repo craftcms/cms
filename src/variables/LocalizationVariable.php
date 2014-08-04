@@ -47,6 +47,7 @@ class LocalizationVariable
 	 * Returns a locale by its ID.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return LocaleModel
 	 */
 	public function getLocaleById($localeId)
@@ -107,7 +108,8 @@ class LocalizationVariable
 	/**
 	 * Returns the localization data for a given locale.
 	 *
-	 * @param $localeId
+	 * @param string|null $localeId
+	 *
 	 * @return \CLocale|null
 	 */
 	public function getLocaleData($localeId = null)

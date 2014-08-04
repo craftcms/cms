@@ -22,7 +22,7 @@ class Logger extends \CLogger
 	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
 	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function log($message, $level = 'info', $force = false, $category = 'application', $plugin = null)
 	{

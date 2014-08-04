@@ -42,7 +42,7 @@ abstract class BaseTemplate extends \Twig_Template
 	 *
 	 * @param BaseElementModel $element
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _includeElementInTemplateCaches(BaseElementModel $element)
 	{

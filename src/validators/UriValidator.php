@@ -13,11 +13,16 @@ namespace Craft;
  */
 class UriValidator extends \CValidator
 {
+	/**
+	 * @var string
+	 */
 	public $pattern = '/^[^\s]+$/';
 
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

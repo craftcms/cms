@@ -70,7 +70,7 @@ class EtModel extends BaseModel
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function decode()
 	{

@@ -84,7 +84,7 @@ class MatrixSettingsModel extends BaseModel
 	 *
 	 * @param array $blockTypes
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setBlockTypes($blockTypes)
 	{

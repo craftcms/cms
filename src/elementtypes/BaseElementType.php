@@ -331,7 +331,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
@@ -419,7 +419,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param BaseElementModel $element
 	 * @param int              $structureId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{

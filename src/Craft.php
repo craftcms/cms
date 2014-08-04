@@ -25,8 +25,8 @@ class Craft extends \Yii
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
 	 *
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInstalled() craft()->isInstalled()} instead.
 	 * @return bool
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isInstalled()
 	{
@@ -37,7 +37,8 @@ class Craft extends \Yii
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use craft()->setIsInstalled() instead.
+	 * @return null
 	 */
 	public static function setIsInstalled()
 	{
@@ -48,8 +49,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft version.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getVersion() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getVersion()
 	{
@@ -60,8 +61,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft build.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getBuild() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getBuild()
 	{
@@ -72,8 +73,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft release date.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getReleaseDate() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getReleaseDate()
 	{
@@ -84,8 +85,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the Craft track.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getTrack() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getTrack()
 	{
@@ -98,8 +99,8 @@ class Craft extends \Yii
 	 *
 	 * @param string $packageName The name of the package to search for.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->hasPackage() instead.
 	 * @return bool
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function hasPackage($packageName)
 	{
@@ -110,8 +111,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the site name.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getSiteName() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteName()
 	{
@@ -124,8 +125,8 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever is in the Site URL setting.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getSiteUrl() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUrl($protocol = null)
 	{
@@ -136,8 +137,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the site UID.
 	 *
+	 * @deprecated Deprecated in 1.3. Use craft()->getSiteUid() instead.
 	 * @return string
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUid()
 	{
@@ -148,8 +149,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the system time zone.
 	 *
-	 * @return string
 	 * @deprecated Deprecated in 1.3.
+	 * @return string
 	 */
 	public static function getTimeZone()
 	{
@@ -160,8 +161,8 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is on.
 	 *
-	 * @return bool
 	 * @deprecated Deprecated in 1.3.
+	 * @return bool
 	 */
 	public static function isSystemOn()
 	{
@@ -172,8 +173,8 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is in maintenance mode.
 	 *
-	 * @return bool
 	 * @deprecated Deprecated in 1.3.
+	 * @return bool
 	 */
 	public static function isInMaintenanceMode()
 	{
@@ -184,8 +185,8 @@ class Craft extends \Yii
 	/**
 	 * Enables Maintenance Mode.
 	 *
-	 * @return bool
 	 * @deprecated Deprecated in 1.3.
+	 * @return bool
 	 */
 	public static function enableMaintenanceMode()
 	{
@@ -210,10 +211,9 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $attribute The attribute to return information about.
 	 *
+	 * @deprecated Deprecated in 1.3.
 	 * @throws Exception
 	 * @return mixed
-	 *
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getInfo($attribute = null)
 	{
@@ -226,8 +226,8 @@ class Craft extends \Yii
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
-	 * @return bool
 	 * @deprecated Deprecated in 1.3.
+	 * @return bool
 	 */
 	public static function saveInfo(InfoModel $info)
 	{
@@ -238,8 +238,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the Yii framework version.
 	 *
-	 * @return mixed
 	 * @deprecated Deprecated in 1.3.
+	 * @return mixed
 	 */
 	public static function getYiiVersion()
 	{
@@ -251,7 +251,9 @@ class Craft extends \Yii
 	 * Displays a variable.
 	 *
 	 * @param mixed $target The variable to be dumped.
-		 */
+	 *
+	 * @return null
+	 */
 	public static function dump($target)
 	{
 		\CVarDumper::dump($target, 10, true);
@@ -337,7 +339,8 @@ class Craft extends \Yii
 	 * @param string $language  The target language. If set to null (default), craft()->getLanguage() will be used.
 	 * @param string $category  The message category. Please use only word letters. Note, category 'craft' is reserved for
 	 *                          Craft and 'yii' is reserved for the Yii framework
-	 * @return string|null      The translated message, or null if the source key could not be found.
+	 *
+	 * @return string|null The translated message, or null if the source key could not be found.
 	 */
 	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'craft')
 	{
@@ -382,6 +385,8 @@ class Craft extends \Yii
 	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
 	 * @param string $category The category of the message (e.g. 'application'). It is case-insensitive.
 	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for determining which log file to write to.
+	 *
+	 * @return null
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
@@ -421,6 +426,8 @@ class Craft extends \Yii
 	 * Imports a file into Craft's classMap.
 	 *
 	 * @param string $file The file to import.
+	 *
+	 * @return null
 	 */
 	private static function _importFile($file)
 	{

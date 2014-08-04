@@ -28,8 +28,9 @@ class EmailMessagesVariable
 	/**
 	 * Returns a system email message by its key.
 	 *
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $language
+	 *
 	 * @return RebrandEmailModel|null
 	 */
 	public function getMessage($key, $language = null)

@@ -17,7 +17,8 @@ class FieldTypeVariable extends BaseComponentTypeVariable
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $handle
-	 * @param mixed $value
+	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($handle, $value)
@@ -29,6 +30,7 @@ class FieldTypeVariable extends BaseComponentTypeVariable
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)

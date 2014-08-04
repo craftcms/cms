@@ -89,7 +89,7 @@ class ContentModel extends BaseModel
 	 *
 	 * @param array $requiredFields
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setRequiredFields($requiredFields)
 	{

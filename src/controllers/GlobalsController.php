@@ -16,7 +16,7 @@ class GlobalsController extends BaseController
 	/**
 	 * Saves a global set.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveSet()
 	{
@@ -62,7 +62,7 @@ class GlobalsController extends BaseController
 	/**
 	 * Deletes a global set.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteSet()
 	{
@@ -82,7 +82,7 @@ class GlobalsController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditContent(array $variables = array())
 	{
@@ -151,7 +151,7 @@ class GlobalsController extends BaseController
 	 * Saves a global set's content.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveContent()
 	{

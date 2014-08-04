@@ -34,7 +34,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Performs any actions before a field is saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeSave()
 	{
@@ -43,7 +43,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Performs any actions after a field is saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterSave()
 	{
@@ -52,7 +52,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Performs any actions before a field is deleted.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeDelete()
 	{
@@ -61,7 +61,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Performs any actions after a field is deleted.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterDelete()
 	{
@@ -134,7 +134,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	/**
 	 * Performs any additional actions after the element has been saved.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{
@@ -170,7 +170,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * @param DbCommand $query
 	 * @param mixed     $value
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{

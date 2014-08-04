@@ -300,7 +300,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getRequiredBy()
 	{
@@ -308,7 +308,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{
@@ -339,7 +339,7 @@ class PhpVersionRequirement extends Requirement
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{

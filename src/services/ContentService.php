@@ -217,7 +217,7 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onSaveContent(Event $event)
 	{
@@ -295,7 +295,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param array            &$nonTranslatableFields
 	 * @param array            &$otherContentModels
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _duplicateNonTranslatableFieldValues(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
 	{
@@ -357,7 +357,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param array|null       &$nonTranslatableFields
 	 * @param array|null       &$otherContentModels
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _updateSearchIndexes(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
 	{

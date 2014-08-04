@@ -68,7 +68,7 @@ class Et
 	 *
 	 * @param $allowRedirects
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setAllowRedirects($allowRedirects)
 	{
@@ -86,7 +86,7 @@ class Et
 	/**
 	 * @param $destinationFileName
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setDestinationFileName($destinationFileName)
 	{
@@ -137,7 +137,7 @@ class Et
 	 *
 	 * @param $data
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setData($data)
 	{
@@ -271,7 +271,7 @@ class Et
 	}
 
 	/**
-	 * @return void|string
+	 * @return null|string
 	 */
 	private function _getLicenseKey()
 	{

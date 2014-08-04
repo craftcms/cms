@@ -343,6 +343,7 @@ class UserModel extends BaseElementModel
 	 * Populates a new user instance with a given set of attributes.
 	 *
 	 * @param mixed $attributes
+	 *
 	 * @return UserModel
 	 */
 	public static function populateModel($attributes)
@@ -369,7 +370,8 @@ class UserModel extends BaseElementModel
 	/**
 	 * @param null $attributes
 	 * @param bool $clearErrors
-	 * @return bool|void
+	 *
+	 * @return bool|null
 	 */
 	public function validate($attributes = null, $clearErrors = true)
 	{

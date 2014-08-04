@@ -16,7 +16,7 @@ class LogRouter extends \CLogRouter
 	/**
 	 * @param $route
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addRoute($route)
 	{
@@ -31,7 +31,7 @@ class LogRouter extends \CLogRouter
 	 *
 	 * @param $class
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function removeRoute($class)
 	{

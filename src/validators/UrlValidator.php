@@ -14,14 +14,16 @@ namespace Craft;
 class UrlValidator extends \CUrlValidator
 {
 	/**
-	 * Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
+	 * @var string Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
 	 */
 	public $pattern = '/^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$/i';
 
 	/**
-	 * Add support for protocol-relative URLs.
+	 * Add support for protocol-relative URLs. {@see http://paulirish.com/2010/the-protocol-relative-url/}
 	 *
-	 * @see http://paulirish.com/2010/the-protocol-relative-url/
+	 * @param string $value
+	 *
+	 * @return string
 	 */
 	public function validateValue($value)
 	{

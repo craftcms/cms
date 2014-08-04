@@ -40,7 +40,7 @@ class StatePersister extends \CStatePersister
 	/**
 	 * Initializes the component.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{

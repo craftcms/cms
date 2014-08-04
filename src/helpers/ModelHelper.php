@@ -193,7 +193,7 @@ class ModelHelper
 	 *
 	 * @param \CModel $model
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public static function populateAttributeDefaults(\CModel $model)
 	{

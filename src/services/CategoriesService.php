@@ -753,7 +753,7 @@ class CategoriesService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeSaveCategory(Event $event)
 	{
@@ -765,7 +765,7 @@ class CategoriesService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onSaveCategory(Event $event)
 	{
@@ -777,7 +777,7 @@ class CategoriesService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeDeleteCategory(Event $event)
 	{
@@ -789,7 +789,7 @@ class CategoriesService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onDeleteCategory(Event $event)
 	{

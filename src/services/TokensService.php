@@ -13,6 +13,9 @@ namespace Craft;
  */
 class TokensService extends BaseApplicationComponent
 {
+	/**
+	 * @var bool
+	 */
 	private $_deletedExpiredTokens = false;
 
 	/**
@@ -60,6 +63,7 @@ class TokensService extends BaseApplicationComponent
 	 * Searches for a token, and possibly returns a route for the request.
 	 *
 	 * @param string $token
+	 *
 	 * @return array|false
 	 */
 	public function getTokenRoute($token)
@@ -108,9 +112,10 @@ class TokensService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Incremens a token's usage count.
+	 * Increments a token's usage count.
 	 *
 	 * @param int $tokenId
+	 *
 	 * @return bool
 	 */
 	public function incrementTokenUsageCountById($tokenId)
@@ -128,6 +133,7 @@ class TokensService extends BaseApplicationComponent
 	 * Deletes a token by its ID.
 	 *
 	 * @param int $tokenId
+	 *
 	 * @return bool
 	 */
 	public function deleteTokenById($tokenId)

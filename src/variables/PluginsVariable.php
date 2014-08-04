@@ -18,6 +18,7 @@ class PluginsVariable
 	 *
 	 * @param string $class
 	 * @param bool   $enabledOnly
+	 *
 	 * @return PluginVariable|null
 	 */
 	public function getPlugin($class, $enabledOnly = true)
@@ -34,6 +35,7 @@ class PluginsVariable
 	 * Returns all plugins.
 	 *
 	 * @param bool $enabledOnly
+	 *
 	 * @return array
 	 */
 	public function getPlugins($enabledOnly = true)

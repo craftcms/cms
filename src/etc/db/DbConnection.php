@@ -22,7 +22,7 @@ class DbConnection extends \CDbConnection
 	 * gracefully handle the cases where it can't.
 	 *
 	 * @throws DbConnectException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{

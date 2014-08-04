@@ -34,6 +34,7 @@ class ElementsVariable
 	 * Returns an element type.
 	 *
 	 * @param string $class
+	 *
 	 * @return ElementTypeVariable|null
 	 */
 	public function getElementType($class)

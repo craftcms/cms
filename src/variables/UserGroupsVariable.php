@@ -19,6 +19,7 @@ class UserGroupsVariable
 	 * Returns all user groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)
@@ -30,6 +31,7 @@ class UserGroupsVariable
 	 * Gets a user group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return UserGroupModel|null
 	 */
 	public function getGroupById($groupId)
@@ -41,6 +43,7 @@ class UserGroupsVariable
 	 * Gets a user group by its handle.
 	 *
 	 * @param string $groupHandle
+	 *
 	 * @return UserGroupModel|null
 	 */
 	public function getGroupByHandle($groupHandle)

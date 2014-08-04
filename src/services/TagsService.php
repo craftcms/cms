@@ -48,6 +48,7 @@ class TagsService extends BaseApplicationComponent
 	 * Returns all tag groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllTagGroups($indexBy = null)
@@ -93,7 +94,8 @@ class TagsService extends BaseApplicationComponent
 	/**
 	 * Returns a group by its ID.
 	 *
-	 * @param $groupId
+	 * @param int $groupId
+	 *
 	 * @return TagGroupModel|null
 	 */
 	public function getTagGroupById($groupId)
@@ -119,6 +121,7 @@ class TagsService extends BaseApplicationComponent
 	 * Gets a group by its handle.
 	 *
 	 * @param string $groupHandle
+	 *
 	 * @return TagGroupModel|null
 	 */
 	public function getTagGroupByHandle($groupHandle)
@@ -285,8 +288,9 @@ class TagsService extends BaseApplicationComponent
 	/**
 	 * Returns a tag by its ID.
 	 *
-	 * @param int $tagId
+	 * @param int         $tagId
 	 * @param string|null $localeId
+	 *
 	 * @return TagModel|null
 	 */
 	public function getTagById($tagId, $localeId)
@@ -406,6 +410,8 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onBeforeSaveTag' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeSaveTag(Event $event)
 	{
@@ -416,6 +422,8 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTag' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveTag(Event $event)
 	{
@@ -426,7 +434,9 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
+	 *
 	 * @deprecated Deprecated in 2.0.
+	 * @return null
 	 */
 	public function onSaveTagContent(Event $event)
 	{

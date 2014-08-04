@@ -47,6 +47,7 @@ class UserSessionVariable
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
 	 * @param string $defaultUrl
+	 *
 	 * @return mixed
 	 */
 	public function getReturnUrl($defaultUrl = '')
@@ -58,6 +59,7 @@ class UserSessionVariable
 	 * Returns all flash data for the user.
 	 *
 	 * @param bool $delete
+	 *
 	 * @return array
 	 */
 	public function getFlashes($delete = true)
@@ -71,6 +73,8 @@ class UserSessionVariable
 	 * @param string $key
 	 * @param mixed  $defaultValue
 	 * @param bool   $delete
+	 *
+	 * @return mixed
 	 */
 	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
@@ -81,6 +85,7 @@ class UserSessionVariable
 	 * Returns whether a flash message exists by a given key.
 	 *
 	 * @param string $key
+	 *
 	 * @return mixed
 	 */
 	public function hasFlash($key)

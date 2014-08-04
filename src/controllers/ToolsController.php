@@ -17,7 +17,7 @@ class ToolsController extends BaseController
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -31,7 +31,7 @@ class ToolsController extends BaseController
 	/**
 	 * Performs a tool's action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionPerformAction()
 	{
@@ -49,7 +49,7 @@ class ToolsController extends BaseController
 	/**
 	 * Returns a database backup zip file to the browser.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDownloadBackupFile()
 	{

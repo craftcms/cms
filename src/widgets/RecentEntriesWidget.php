@@ -13,6 +13,9 @@ namespace Craft;
  */
 class RecentEntriesWidget extends BaseWidget
 {
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
 
 	/**
