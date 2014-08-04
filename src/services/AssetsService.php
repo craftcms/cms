@@ -226,24 +226,24 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * Store a folder by model and return the id
-	 * @param AssetFolderModel $folderModel
+	 * @param AssetFolderModel $folder
 	 * @return mixed
 	 */
-	public function storeFolder(AssetFolderModel $folderModel)
+	public function storeFolder(AssetFolderModel $folder)
 	{
-		if (empty($folderModel->id))
+		if (empty($folder->id))
 		{
 			$record = new AssetFolderRecord();
 		}
 		else
 		{
-			$record = AssetFolderRecord::model()->findById($folderModel->id);
+			$record = AssetFolderRecord::model()->findById($folder->id);
 		}
 
-		$record->parentId = $folderModel->parentId;
-		$record->sourceId = $folderModel->sourceId;
-		$record->name = $folderModel->name;
-		$record->path = $folderModel->path;
+		$record->parentId = $folder->parentId;
+		$record->sourceId = $folder->sourceId;
+		$record->name = $folder->name;
+		$record->path = $folder->path;
 		$record->save();
 
 		return $record->id;
@@ -525,12 +525,12 @@ class AssetsService extends BaseApplicationComponent
 			$query->limit($criteria->limit);
 		}
 
-		$result = $query->queryAll();
+		$results = $query->queryAll();
 		$folders = array();
 
-		foreach ($result as $row)
+		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($row);
+			$folder = AssetFolderModel::populateModel($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$folders[] = $folder;
 		}
@@ -539,30 +539,30 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Find all folder's child folders in it's subtree.
+	 * Returns all of the folders that are descendants of a given folder.
 	 *
-	 * @param AssetFolderModel $folderModel
+	 * @param AssetFolderModel $parentFolder
 	 * @return array
 	 */
-	public function getAllDescendantFolders(AssetFolderModel $folderModel)
+	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
 	{
 		$query = craft()->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
-			->where(array('like', 'path', $folderModel->path.'%'))
-			->andWhere('sourceId = :sourceId', array(':sourceId' => $folderModel->sourceId));
+			->where(array('like', 'path', $parentFolder->path.'%'))
+			->andWhere('sourceId = :sourceId', array(':sourceId' => $parentFolder->sourceId));
 
-		$result = $query->queryAll();
-		$folders = array();
+		$results = $query->queryAll();
+		$descendantFolders = array();
 
-		foreach ($result as $row)
+		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($row);
+			$folder = AssetFolderModel::populateModel($result);
 			$this->_foldersById[$folder->id] = $folder;
-			$folders[$folder->id] = $folder;
+			$descendantFolders[$folder->id] = $folder;
 		}
 
-		return $folders;
+		return $descendantFolders;
 	}
 
 	/**
@@ -848,10 +848,10 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		// Get the transform index model
-		$existingTransformData  = craft()->assetTransforms->getTransformIndex($file, $transform);
+		$index = craft()->assetTransforms->getTransformIndex($file, $transform);
 
 		// Does the file actually exist?
-		if ($existingTransformData->fileExists)
+		if ($index->fileExists)
 		{
 			return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
 		}
@@ -859,19 +859,24 @@ class AssetsService extends BaseApplicationComponent
 		{
 			if (craft()->config->get('generateTransformsBeforePageLoad'))
 			{
-				$existingTransformData->inProgress = true;
-				craft()->assetTransforms->storeTransformIndexData($existingTransformData);
+				// Mark the transform as in progress
+				$index->inProgress = true;
+				craft()->assetTransforms->storeTransformIndexData($index);
 
-				craft()->assetTransforms->generateTransform($existingTransformData);
+				// Generate the transform
+				craft()->assetTransforms->generateTransform($index);
 
-				$existingTransformData->fileExists = true;
-				craft()->assetTransforms->storeTransformIndexData($existingTransformData);
+				// Update the index
+				$index->fileExists = true;
+				craft()->assetTransforms->storeTransformIndexData($index);
 
+				// Return the transform URL
 				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
 			}
 			else
 			{
-				return UrlHelper::getResourceUrl('transforms/'.$existingTransformData->id);
+				// Return the temporary transform URL
+				return UrlHelper::getResourceUrl('transforms/'.$index->id);
 			}
 		}
 	}
@@ -1130,7 +1135,7 @@ class AssetsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
-			if(!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId))
+			if (!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
@@ -1151,14 +1156,17 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$fileIds = array($fileIds);
 		}
+
 		foreach ($fileIds as $fileId)
 		{
-			$fileModel = $this->getFileById($fileId);
-			if (!$fileModel)
+			$file = $this->getFileById($fileId);
+
+			if (!$file)
 			{
 				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
-			if(!craft()->userSession->checkPermission($permission.':'.$fileModel->sourceId))
+
+			if (!craft()->userSession->checkPermission($permission.':'.$file->sourceId))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}

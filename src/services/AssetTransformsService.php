@@ -177,19 +177,19 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Update the asset transforms for the FileModel.
 	 *
-	 * @param AssetFileModel $fileModel
+	 * @param AssetFileModel $file
 	 * @param array|object|string $transformsToUpdate
 	 * @return bool
 	 */
-	public function updateTransforms(AssetFileModel $fileModel, $transformsToUpdate)
+	public function updateTransforms(AssetFileModel $file, $transformsToUpdate)
 	{
-		if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($fileModel->filename)))
+		if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			return true;
 		}
 
-		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
-		$imageSource = $this->getLocalImageSource($fileModel);
+		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$imageSource = $this->getLocalImageSource($file);
 
 		if (!is_array($transformsToUpdate))
 		{
@@ -202,11 +202,11 @@ class AssetTransformsService extends BaseApplicationComponent
 			$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 			$transformLocation = $this->_getTransformFolderName($transform);
 
-			$timeModified = $sourceType->getTimeTransformModified($fileModel, $transformLocation);
+			$timeModified = $sourceType->getTimeTransformModified($file, $transformLocation);
 
 			// Create the transform if the file doesn't exist, or if it was created before the image was last updated
 			// or if the transform dimensions have changed since it was last created
-			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $transform->dimensionChangeTime)
+			if (!$timeModified || $timeModified < $file->dateModified || $timeModified < $transform->dimensionChangeTime)
 			{
 				$image = craft()->images->loadImage($imageSource);
 				$image->setQuality($quality);
@@ -232,16 +232,16 @@ class AssetTransformsService extends BaseApplicationComponent
 					}
 				}
 
-				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileModel->filename));
+				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($file->filename));
 				$image->saveAs($targetFile);
 
 				clearstatcache(true, $targetFile);
-				$sourceType->putImageTransform($fileModel, $transformLocation, $targetFile);
+				$sourceType->putImageTransform($file, $transformLocation, $targetFile);
 				IOHelper::deleteFile($targetFile);
 			}
 		}
 
-		if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())
+		if (craft()->assetSources->populateSourceType($file->getSource())->isRemote())
 		{
 			$this->deleteSourceIfNecessary($imageSource);
 		}
@@ -305,20 +305,20 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get a transform URL by the transform index model.
 	 *
-	 * @param AssetTransformIndexModel $transformIndexModel
+	 * @param AssetTransformIndexModel $index
 	 *
 	 * @throws Exception
 	 * @return string
 	 */
-	public function ensureTransformUrlByIndexModel(AssetTransformIndexModel $transformIndexModel)
+	public function ensureTransformUrlByIndexModel(AssetTransformIndexModel $index)
 	{
-		if (!$transformIndexModel)
+		if (!$index)
 		{
 			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
 		}
 
 		// Make sure we're not in the middle of working on this transform from a separate request
-		if ($transformIndexModel->inProgress)
+		if ($index->inProgress)
 		{
 			for ($safety = 0; $safety < 100; $safety++)
 			{
@@ -326,22 +326,22 @@ class AssetTransformsService extends BaseApplicationComponent
 				sleep(1);
 				ini_set('max_execution_time', 120);
 
-				$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById($transformIndexModel->id);
+				$index = $this->getTransformIndexModelById($index->id);
 
 				// Is it being worked on right now?
-				if ($transformIndexModel->inProgress)
+				if ($index->inProgress)
 				{
 					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
 					$time = new DateTime();
 
-					if ($time->getTimestamp() - $transformIndexModel->dateUpdated->getTimestamp() < 30)
+					if ($time->getTimestamp() - $index->dateUpdated->getTimestamp() < 30)
 					{
 						continue;
 					}
 					else
 					{
-						$transformIndexModel->dateUpdated = new DateTime();
-						craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+						$index->dateUpdated = new DateTime();
+						$this->storeTransformIndexData($index);
 						break;
 					}
 				}
@@ -353,42 +353,44 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 
-		if (!$transformIndexModel->fileExists)
+		if (!$index->fileExists)
 		{
-			$transformIndexModel->inProgress = 1;
-			craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+			// Mark the transform as in progress
+			$index->inProgress = 1;
+			$this->storeTransformIndexData($index);
 
-			$result = craft()->assetTransforms->generateTransform($transformIndexModel);
+			// Generate the transform
+			$result = $this->generateTransform($index);
+
+			// Update the index
+			$index->inProgress = 0;
 
 			if ($result)
 			{
-				$transformIndexModel->inProgress = 0;
-				$transformIndexModel->fileExists = 1;
-				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
+				$index->fileExists = 1;
 			}
-			else
+
+			$this->storeTransformIndexData($index);
+
+			if (!$result)
 			{
-				// No source file. Throw a 404.
-				$transformIndexModel->inProgress = 0;
-				craft()->assetTransforms->storeTransformIndexData($transformIndexModel);
 				throw new Exception(Craft::t("The requested image could not be found!"));
 			}
-
 		}
 
-		return $this->getUrlforTransformByIndexId($transformIndexModel->id);
+		return $this->getUrlforTransformByIndexId($index->id);
 	}
 
 	/**
-	 * Index a transform.
+	 * Generates a transform.
 	 *
-	 * @param AssetTransformIndexModel $transformIndexData
+	 * @param AssetTransformIndexModel $index
 	 * @return bool
 	 */
-	public function generateTransform(AssetTransformIndexModel $transformIndexData)
+	public function generateTransform(AssetTransformIndexModel $index)
 	{
 		// For _widthxheight_mode
-		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i', $transformIndexData->location, $matches))
+		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i', $index->location, $matches))
 		{
 			$data = array(
 				'width'      => ($matches['width']  != 'AUTO' ? $matches['width']  : null),
@@ -402,15 +404,15 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 		else
 		{
-			$transform = $this->normalizeTransform(mb_substr($transformIndexData->location, 1));
+			$transform = $this->normalizeTransform(mb_substr($index->location, 1));
 		}
 
-		$sourceType = craft()->assetSources->getSourceTypeById($transformIndexData->sourceId);
+		$sourceType = craft()->assetSources->getSourceTypeById($index->sourceId);
 
-		$file = craft()->assets->getFileById($transformIndexData->fileId);
+		$file = craft()->assets->getFileById($index->fileId);
 
 		// Look for a physical file first
-		$existingFileTimeModified = $sourceType->getTimeTransformModified($file, $transformIndexData->location);
+		$existingFileTimeModified = $sourceType->getTimeTransformModified($file, $index->location);
 
 		if ($existingFileTimeModified && $existingFileTimeModified >= $file->dateModified)
 		{
@@ -434,7 +436,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				{
 					// We have a satisfactory match and the record has been inserted already.
 					// Now copy the file to the new home
-					$sourceType->copyTransform($file, $alternateLocation, $transformIndexData->location);
+					$sourceType->copyTransform($file, $alternateLocation, $index->location);
 					return true;
 				}
 			}
@@ -496,23 +498,23 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Store a transform index data by it's model.
 	 *
-	 * @param AssetTransformIndexModel $data
+	 * @param AssetTransformIndexModel $index
 	 * @return AssetTransformIndexModel
 	 */
-	public function storeTransformIndexData(AssetTransformIndexModel $data)
+	public function storeTransformIndexData(AssetTransformIndexModel $index)
 	{
-		if (!empty($data->id))
+		if (!empty($index->id))
 		{
-			$id = $data->id;
-			craft()->db->createCommand()->update('assettransformindex', $data->getAttributes(null, true), 'id = :id', array(':id' => $id));
+			$id = $index->id;
+			craft()->db->createCommand()->update('assettransformindex', $index->getAttributes(null, true), 'id = :id', array(':id' => $id));
 		}
 		else
 		{
-			craft()->db->createCommand()->insert('assettransformindex', $data->getAttributes(null, true));
-			$data->id = craft()->db->getLastInsertID();
+			craft()->db->createCommand()->insert('assettransformindex', $index->getAttributes(null, true));
+			$index->id = craft()->db->getLastInsertID();
 		}
 
-		return $data;
+		return $index;
 	}
 
 	/**
@@ -570,13 +572,13 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function getUrlforTransformByIndexId($transformId)
 	{
-		$transformIndexModel = $this->getTransformIndexModelById($transformId);
-		$file = craft()->assets->getFileById($transformIndexModel->fileId);
+		$index = $this->getTransformIndexModelById($transformId);
+		$file = craft()->assets->getFileById($index->fileId);
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$baseUrl = $sourceType->getBaseUrl();
 		$folderPath = $baseUrl.$file->getFolder()->path;
 
-		return $folderPath.$transformIndexModel->location.'/'.$file->filename;
+		return $folderPath.$index->location.'/'.$file->filename;
 	}
 
 	/**
@@ -648,26 +650,26 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get a thumb server path by file model and size.
 	 *
-	 * @param $fileModel
+	 * @param $file
 	 * @param $size
 	 * @return bool|string
 	 */
-	public function getThumbServerPath(AssetFileModel $fileModel, $size)
+	public function getThumbServerPath(AssetFileModel $file, $size)
 	{
 		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
 
-		$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+		$thumbPath = $thumbFolder.$file->id.'.'.pathinfo($file->filename, PATHINFO_EXTENSION);
 
 		if (!IOHelper::fileExists($thumbPath))
 		{
-			$imageSource = $this->getLocalImageSource($fileModel);
+			$imageSource = $this->getLocalImageSource($file);
 
 			craft()->images->loadImage($imageSource)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
-			if (craft()->assetSources->populateSourceType($fileModel->getSource())->isRemote())
+			if (craft()->assetSources->populateSourceType($file->getSource())->isRemote())
 			{
 				$this->deleteSourceIfNecessary($imageSource);
 			}
@@ -737,24 +739,24 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get a local image source to use for transforms.
 	 *
-	 * @param $fileModel
+	 * @param $file
 	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
-	public function getLocalImageSource($fileModel)
+	public function getLocalImageSource($file)
 	{
-		$sourceType = craft()->assetSources->getSourceTypeById($fileModel->sourceId);
-		$imageSourcePath = $sourceType->getImageSourcePath($fileModel);
+		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$imageSourcePath = $sourceType->getImageSourcePath($file);
 
 		if (!IOHelper::fileExists($imageSourcePath))
 		{
 			if (!$sourceType->isRemote())
 			{
-				throw new Exception(Craft::t("Image “{file}” cannot be found.", array('file' => $fileModel->filename)));
+				throw new Exception(Craft::t("Image “{file}” cannot be found.", array('file' => $file->filename)));
 			}
 
-			$localCopy = $sourceType->getLocalCopy($fileModel);
+			$localCopy = $sourceType->getLocalCopy($file);
 			$this->storeLocalSource($localCopy, $imageSourcePath);
 		}
 
