@@ -86,7 +86,7 @@ class CraftVariable
 	 *
 	 * @param string $packageName;
 	 *
-	 * @deprecated Deprecated in 2.0
+	 * @deprecated Deprecated in 2.0.
 	 * @return bool
 	 *
 	 */

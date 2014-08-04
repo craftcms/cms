@@ -124,12 +124,12 @@ class ConfigService extends BaseApplicationComponent
 	 * @param      $item
 	 * @param null $default
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link ConfigService::getDbItem() get('key', ConfigFile::Db)} instad.
 	 * @return string
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(<item>, ConfigFile::Db) instead.');
+		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(\'key\', ConfigFile::Db) instead.');
 
 		if ($value = craft()->config->get($item, Config::Db))
 		{

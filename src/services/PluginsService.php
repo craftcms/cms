@@ -536,7 +536,7 @@ class PluginsService extends BaseApplicationComponent
 	 * @param string $method
 	 * @param array  $args
 	 *
-	 * @deprecated Deprecated in 1.0.
+	 * @deprecated Deprecated in 1.0.  Use {@link call()} instead.
 	 * @return array
 	 */
 	public function callHook($method, $args = array())

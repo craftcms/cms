@@ -823,9 +823,8 @@ class UsersController extends BaseController
 	/**
 	 * Saves a user's profile.
 	 *
+	 * @deprecated Deprecated in 2.0. Use {@link UsersController::saveUser()} instead.
 	 * @return null
-	 *
-	 * @deprecated Deprecated in 2.0.
 	 */
 	public function actionSaveProfile()
 	{

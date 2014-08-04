@@ -222,7 +222,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() assets.onSaveAsset} instead.
 	 * @return null
 	 */
 	public function onSaveFileContent(Event $event)

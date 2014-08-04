@@ -37,7 +37,7 @@ class Craft extends \Yii
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->setIsInstalled() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::setIsInstalled() craft()->setIsInstalled()} instead.
 	 * @return null
 	 */
 	public static function setIsInstalled()
@@ -49,7 +49,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft version.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getVersion() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getVersion() craft()->getVersion()} instead.
 	 * @return string
 	 */
 	public static function getVersion()
@@ -61,7 +61,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft build.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getBuild() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getBuild() craft()->getBuild()} instead.
 	 * @return string
 	 */
 	public static function getBuild()
@@ -73,7 +73,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft release date.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getReleaseDate() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getReleaseDate() craft()->getReleaseDate()} instead.
 	 * @return string
 	 */
 	public static function getReleaseDate()
@@ -85,7 +85,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the Craft track.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getTrack() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getTrack() craft()->getTrack()} instead.
 	 * @return string
 	 */
 	public static function getTrack()
@@ -99,7 +99,7 @@ class Craft extends \Yii
 	 *
 	 * @param string $packageName The name of the package to search for.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->hasPackage() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::hasPackage() craft()->hasPackage()} instead.
 	 * @return bool
 	 */
 	public static function hasPackage($packageName)
@@ -111,7 +111,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the site name.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getSiteName() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteName() craft()->getSiteName()} instead.
 	 * @return string
 	 */
 	public static function getSiteName()
@@ -125,7 +125,7 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever is in the Site URL setting.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getSiteUrl() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteUrl() craft()->getSiteUrl()} instead.
 	 * @return string
 	 */
 	public static function getSiteUrl($protocol = null)
@@ -137,7 +137,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the site UID.
 	 *
-	 * @deprecated Deprecated in 1.3. Use craft()->getSiteUid() instead.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteUid() craft()->getSiteUid()} instead.
 	 * @return string
 	 */
 	public static function getSiteUid()
@@ -149,7 +149,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the system time zone.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getTimeZone() craft()->getTimeZone()} instead.
 	 * @return string
 	 */
 	public static function getTimeZone()
@@ -161,7 +161,7 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is on.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isSystemOn() craft()->isSystemOn()} instead.
 	 * @return bool
 	 */
 	public static function isSystemOn()
@@ -173,7 +173,7 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is in maintenance mode.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInMaintenanceMode() craft()->isInMaintenanceMode()} instead.
 	 * @return bool
 	 */
 	public static function isInMaintenanceMode()
@@ -185,7 +185,7 @@ class Craft extends \Yii
 	/**
 	 * Enables Maintenance Mode.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::enableMaintenanceMode() craft()->enableMaintenanceMode()} instead.
 	 * @return bool
 	 */
 	public static function enableMaintenanceMode()
@@ -198,7 +198,7 @@ class Craft extends \Yii
 	 * Disables Maintenance Mode.
 	 *
 	 * @return bool
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::disableMaintenanceMode() craft()->disableMaintenanceMode()} instead.
 	 */
 	public static function disableMaintenanceMode()
 	{
@@ -211,7 +211,7 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $attribute The attribute to return information about.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getInfo() craft()->getInfo()} instead.
 	 * @throws Exception
 	 * @return mixed
 	 */
@@ -226,7 +226,7 @@ class Craft extends \Yii
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::saveInfo() craft()->saveInfo()} instead.
 	 * @return bool
 	 */
 	public static function saveInfo(InfoModel $info)
@@ -238,7 +238,7 @@ class Craft extends \Yii
 	/**
 	 * Returns the Yii framework version.
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getYiiVersion() craft()->getYiiVersion()} instead.
 	 * @return mixed
 	 */
 	public static function getYiiVersion()

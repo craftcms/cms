@@ -352,8 +352,7 @@ class CraftTwigExtension extends \Twig_Extension
 
 			$globals['currentUser'] = craft()->userSession->getUser();
 
-			// Keep 'user' around so long as it's not hurting anyone.
-			// Technically deprecated, though.
+			// Keep 'user' around so long as it's not hurting anyone. Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
 
 			if (craft()->request->isSiteRequest())

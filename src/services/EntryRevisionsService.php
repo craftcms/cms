@@ -42,7 +42,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * @param int $entryId
 	 * @param int $offset
 	 *
-	 * @deprecated Deprecated in 2.1
+	 * @deprecated Deprecated in 2.1.
 	 * @return EntryDraftModel|null
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
@@ -292,7 +292,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * @param int $entryId
 	 * @param int $offset
 	 *
-	 * @deprecated Deprecated in 2.1
+	 * @deprecated Deprecated in 2.1.
 	 * @return EntryVersionModel|null
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)

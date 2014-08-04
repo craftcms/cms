@@ -236,7 +236,7 @@ class EntryModel extends BaseElementModel
 	/**
 	 * Returns the entry's level (formerly "depth").
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use 'level' instead.
 	 * @return int|null
 	 */
 	public function depth()

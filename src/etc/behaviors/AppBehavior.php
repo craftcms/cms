@@ -594,9 +594,8 @@ class AppBehavior extends BaseBehavior
 	 *
 	 * @param $packageName
 	 *
+	 * @deprecated Deprecated in 2.0. To get the installed Craft edition, use {@link AppBehavior::getEdition() craft()->getEdition()}.
 	 * @return bool
-	 *
-	 * @deprecated Deprecated in 2.0
 	 */
 	public function hasPackage($packageName)
 	{

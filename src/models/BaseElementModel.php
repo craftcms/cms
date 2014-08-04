@@ -779,12 +779,12 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param string|null $fieldHandle
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link getContent()} instead.
 	 * @return mixed
 	 */
 	public function getRawContent($fieldHandle = null)
 	{
-		craft()->deprecator->log('BsaeElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
+		craft()->deprecator->log('BaseElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
 
 		$content = $this->getContent();
 
@@ -992,7 +992,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $field
 	 *
-	 * @deprecated Use public {@link getChildren} instead.
+	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
 	 * @return ElementCriteriaModel
 	 */
 	private function _getRelChildren($field = null)
@@ -1008,7 +1008,9 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $field
 	 *
-	 * @deprecated Deprecated in 1.3.
+	 * @deprecated Deprecated in 1.3. Use the {@link http://buildwithcraft.com/docs/relations#the-relatedTo-param relatedTo}
+	 *             param instead.
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getParents($field = null)

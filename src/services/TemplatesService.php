@@ -337,7 +337,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * @param string    $node
 	 * @param bool|null $first
 	 *
-	 * @deprecated Deprecated in 1.1.
+	 * @deprecated Deprecated in 1.1. Use {@link includeHeadHtml()} instead.
 	 * @return null
 	 */
 	public function includeHeadNode($node, $first = false)
@@ -351,7 +351,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated Deprecated in 1.1.
+	 * @deprecated Deprecated in 1.1. Use {@link includeFootHtml()} instead.
 	 */
 	public function includeFootNode($node, $first = false)
 	{

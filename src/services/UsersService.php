@@ -328,7 +328,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link saveUser()} instead.
 	 * @return bool
 	 */
 	public function saveProfile(UserModel $user)
@@ -342,7 +342,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveUser() users.onSaveUser} instead.
 	 * @return null
 	 */
 	public function onSaveProfile(Event $event)
