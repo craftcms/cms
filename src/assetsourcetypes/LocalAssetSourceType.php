@@ -13,10 +13,18 @@ namespace Craft;
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	protected $isSourceLocal = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the name of the source type.
@@ -26,19 +34,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function getName()
 	{
 		return Craft::t('Local Folder');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'path' => array(AttributeType::String, 'required' => true),
-			'url'  => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
-		);
 	}
 
 	/**
@@ -97,6 +92,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				$path = mb_substr($value, mb_strlen($localPath));
 				$segments = explode('/', $path);
+
 				// Ignore the file
 				array_pop($segments);
 
@@ -121,7 +117,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				if (is_dir($file))
 				{
-					$fullPath = rtrim(str_replace($this->getSourceFileSystemPath(), '', $file), '/') . '/';
+					$fullPath = rtrim(str_replace($this->getSourceFileSystemPath(), '', $file), '/').'/';
 					$folderId = $this->ensureFolderByFullPath($fullPath);
 					$indexedFolderIds[$folderId] = true;
 				}
@@ -144,20 +140,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
 		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
-	}
-
-	/**
-	 * Get the file system path for upload source.
-	 *
-	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType
-	 *
-	 * @return string
-	 */
-	protected function getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
-	{
-		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
-		$path = IOHelper::getRealPath($path);
-		return $path;
 	}
 
 	/**
@@ -210,107 +192,20 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Insert a file from path in folder.
+	 * Copy a transform for a file from source location to target location.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param $filePath
-	 * @param $fileName
+	 * @param AssetFileModel $file
+	 * @param                $source
+	 * @param                $target
 	 *
-	 * @throws Exception
-	 * @return AssetOperationResponseModel
+	 * @return mixed
 	 */
-	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	public function copyTransform(AssetFileModel $file, $source, $target)
 	{
-		// Check if the set file system path exists
-		$basePath = $this->getSourceFileSystemPath();
+		$fileFolder = $file->getFolder();
+		$basePath = $this->getSourceFileSystemPath().$fileFolder->path;
 
-		if (empty($basePath))
-		{
-			$basePath = $this->getBasePath();
-
-			if (!empty($basePath))
-			{
-				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', array('folder' => $this->getBasePath())));
-			}
-		}
-
-		$targetFolder = $this->getSourceFileSystemPath() . $folder->path;
-
-		// Make sure the folder exists.
-		if (!IOHelper::folderExists($targetFolder))
-		{
-			throw new Exception(Craft::t('The folder “{folder}” does not exist.', array('folder' => $targetFolder)));
-		}
-
-		// Make sure the folder is writable
-		if (!IOHelper::isWritable($targetFolder))
-		{
-			throw new Exception(Craft::t('The folder “{folder}” is not writable.', array('folder' => $targetFolder)));
-		}
-
-		$fileName = IOHelper::cleanFilename($fileName);
-		$targetPath = $targetFolder . $fileName;
-		$extension = IOHelper::getExtension($fileName);
-
-		if (!IOHelper::isExtensionAllowed($extension))
-		{
-			throw new Exception(Craft::t('This file type is not allowed'));
-		}
-
-		if (IOHelper::fileExists($targetPath))
-		{
-			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
-		}
-
-		if (! IOHelper::copyFile($filePath, $targetPath))
-		{
-			throw new Exception(Craft::t('Could not copy file to target destination'));
-		}
-
-		IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
-
-		$response = new AssetOperationResponseModel();
-		return $response->setSuccess()->setDataItem('filePath', $targetPath);
-	}
-
-	/**
-	 * Get a name replacement for a filename already taken in a folder.
-	 *
-	 * @param AssetFolderModel $folder
-	 * @param                  $fileName
-	 *
-	 * @return string
-	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
-	{
-		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath() . $folder->path, false);
-		$existingFiles = array();
-
-		foreach ($fileList as $file)
-		{
-			$existingFiles[IOHelper::getFileName($file)] = true;
-		}
-
-		// Double-check
-		if (!isset($existingFiles[$fileName]))
-		{
-			return $fileName;
-		}
-
-		$fileParts = explode(".", $fileName);
-		$extension = array_pop($fileParts);
-		$fileName = join(".", $fileParts);
-
-		for ($i = 1; $i <= 50; $i++)
-		{
-			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
-			{
-				return $fileName.'_'.$i.'.'.$extension;
-			}
-		}
-
-		return false;
+		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
 	}
 
 	/**
@@ -361,27 +256,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the local path for an image, optionally with a size handle.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $transformLocation
-	 *
-	 * @return string
-	 */
-	private function _getImageServerPath(AssetFileModel $fileModel, $transformLocation = '')
-	{
-		if (!empty($transformLocation))
-		{
-			$transformLocation = '_'.ltrim($transformLocation, '_');
-		}
-
-		$targetFolder = $this->getSourceFileSystemPath().$fileModel->getFolder()->path;
-		$targetFolder .= !empty($transformLocation) ? $transformLocation.'/': '';
-
-		return $targetFolder.$fileModel->filename;
-	}
-
-	/**
 	 * Make a local copy of the file and return the path to it.
 	 *
 	 * @param AssetFileModel $file
@@ -399,17 +273,174 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a file's system path.
+	 * Return true if a transform exists at the location for a file.
 	 *
 	 * @param AssetFileModel $file
+	 * @param                $location
+	 *
+	 * @return mixed
+	 */
+	public function transformExists(AssetFileModel $file, $location)
+	{
+		return IOHelper::fileExists($this->_getImageServerPath($file, $location));
+	}
+
+	/**
+	 * Return the source's base URL.
 	 *
 	 * @return string
 	 */
-	private function _getFileSystemPath(AssetFileModel $file)
+	public function getBaseUrl()
 	{
-		$folder = $file->getFolder();
-		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		return $this->getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
+		$url = $this->getSettings()->url;
+		return craft()->config->parseEnvironmentString($url);
+	}
+
+	/**
+	 * Returns the source's base server path.
+	 *
+	 * @return string
+	 */
+	public function getBasePath()
+	{
+		$path = $this->getSettings()->path;
+		return craft()->config->parseEnvironmentString($path);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Insert a file from path in folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $filePath
+	 * @param $fileName
+	 *
+	 * @throws Exception
+	 * @return AssetOperationResponseModel
+	 */
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	{
+		// Check if the set file system path exists
+		$basePath = $this->getSourceFileSystemPath();
+
+		if (empty($basePath))
+		{
+			$basePath = $this->getBasePath();
+
+			if (!empty($basePath))
+			{
+				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', array('folder' => $this->getBasePath())));
+			}
+		}
+
+		$targetFolder = $this->getSourceFileSystemPath().$folder->path;
+
+		// Make sure the folder exists.
+		if (!IOHelper::folderExists($targetFolder))
+		{
+			throw new Exception(Craft::t('The folder “{folder}” does not exist.', array('folder' => $targetFolder)));
+		}
+
+		// Make sure the folder is writable
+		if (!IOHelper::isWritable($targetFolder))
+		{
+			throw new Exception(Craft::t('The folder “{folder}” is not writable.', array('folder' => $targetFolder)));
+		}
+
+		$fileName = IOHelper::cleanFilename($fileName);
+		$targetPath = $targetFolder.$fileName;
+		$extension = IOHelper::getExtension($fileName);
+
+		if (!IOHelper::isExtensionAllowed($extension))
+		{
+			throw new Exception(Craft::t('This file type is not allowed'));
+		}
+
+		if (IOHelper::fileExists($targetPath))
+		{
+			$response = new AssetOperationResponseModel();
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+		}
+
+		if (! IOHelper::copyFile($filePath, $targetPath))
+		{
+			throw new Exception(Craft::t('Could not copy file to target destination'));
+		}
+
+		IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
+
+		$response = new AssetOperationResponseModel();
+		return $response->setSuccess()->setDataItem('filePath', $targetPath);
+	}
+
+	/**
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param                  $fileName
+	 *
+	 * @return string
+	 */
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	{
+		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
+		$existingFiles = array();
+
+		foreach ($fileList as $file)
+		{
+			$existingFiles[IOHelper::getFileName($file)] = true;
+		}
+
+		// Double-check
+		if (!isset($existingFiles[$fileName]))
+		{
+			return $fileName;
+		}
+
+		$fileParts = explode(".", $fileName);
+		$extension = array_pop($fileParts);
+		$fileName = join(".", $fileParts);
+
+		for ($i = 1; $i <= 50; $i++)
+		{
+			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
+			{
+				return $fileName.'_'.$i.'.'.$extension;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'path' => array(AttributeType::String, 'required' => true),
+			'url'  => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
+		);
+	}
+
+	/**
+	 * Get the file system path for upload source.
+	 *
+	 * @param BaseAssetSourceType|LocalAssetSourceType $sourceType
+	 *
+	 * @return string
+	 */
+	protected function getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
+	{
+		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
+		$path = IOHelper::getRealPath($path);
+
+		return $path;
 	}
 
 	/**
@@ -436,6 +467,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$transformLocations = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 		$folder = $file->getFolder();
+
 		foreach ($transformLocations as $location)
 		{
 			IOHelper::deleteFile($this->getSourceFileSystemPath().$folder->path.$location.'/'.$file->filename);
@@ -515,7 +547,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::folderExists($this->getSourceFileSystemPath() . $parentFolder->path . $folderName);
+		return IOHelper::folderExists($this->getSourceFileSystemPath().$parentFolder->path.$folderName);
 	}
 
 	/**
@@ -528,11 +560,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		if (!IOHelper::isWritable($this->getSourceFileSystemPath() . $parentFolder->path))
+		if (!IOHelper::isWritable($this->getSourceFileSystemPath().$parentFolder->path))
 		{
 			return false;
 		}
-		return IOHelper::createFolder($this->getSourceFileSystemPath() . $parentFolder->path . $folderName, IOHelper::getWritableFolderPermissions());
+
+		return IOHelper::createFolder($this->getSourceFileSystemPath().$parentFolder->path.$folderName, IOHelper::getWritableFolderPermissions());
 	}
 
 	/**
@@ -575,54 +608,42 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return $originalSource->isSourceLocal();
 	}
 
-	/**
-	 * Copy a transform for a file from source location to target location.
-	 *
-	 * @param AssetFileModel $file
-	 * @param                $source
-	 * @param                $target
-	 *
-	 * @return mixed
-	 */
-	public function copyTransform(AssetFileModel $file, $source, $target)
-	{
-		$fileFolder = $file->getFolder();
-		$basePath = $this->getSourceFileSystemPath().$fileFolder->path;
-		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
-	}
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
-	 * Return true if a transform exists at the location for a file.
+	 * Get the local path for an image, optionally with a size handle.
 	 *
-	 * @param AssetFileModel $file
-	 * @param                $location
-	 *
-	 * @return mixed
-	 */
-	public function transformExists(AssetFileModel $file, $location)
-	{
-		return IOHelper::fileExists($this->_getImageServerPath($file, $location));
-	}
-
-	/**
-	 * Return the source's base URL.
+	 * @param AssetFileModel $fileModel
+	 * @param string         $transformLocation
 	 *
 	 * @return string
 	 */
-	public function getBaseUrl()
+	private function _getImageServerPath(AssetFileModel $fileModel, $transformLocation = '')
 	{
-		$url = $this->getSettings()->url;
-		return craft()->config->parseEnvironmentString($url);
+		if (!empty($transformLocation))
+		{
+			$transformLocation = '_'.ltrim($transformLocation, '_');
+		}
+
+		$targetFolder = $this->getSourceFileSystemPath().$fileModel->getFolder()->path;
+		$targetFolder .= !empty($transformLocation) ? $transformLocation.'/': '';
+
+		return $targetFolder.$fileModel->filename;
 	}
 
 	/**
-	 * Returns the source's base server path.
+	 * Get a file's system path.
+	 *
+	 * @param AssetFileModel $file
 	 *
 	 * @return string
 	 */
-	public function getBasePath()
+	private function _getFileSystemPath(AssetFileModel $file)
 	{
-		$path = $this->getSettings()->path;
-		return craft()->config->parseEnvironmentString($path);
+		$folder = $file->getFolder();
+		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		return $this->getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
 	}
 }

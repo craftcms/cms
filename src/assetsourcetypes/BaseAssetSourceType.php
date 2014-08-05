@@ -32,7 +32,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected $componentType = 'AssetSourceType';
 
 	////////////////////
-	// METHODS
+	// PUBLIC METHODS
 	////////////////////
 
 	/**
@@ -120,106 +120,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @return string
 	 */
 	abstract public function getBaseUrl();
-
-	/**
-	 * Insert a file from path in folder.
-	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that the file will be inserted into.
-	 * @param string           $filePath The filePath of the file to insert.
-	 * @param string           $fileName The fileName of the file to insert.
-	 *
-	 * @throws Exception
-	 * @return AssetOperationResponseModel
-	 */
-	abstract protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
-
-	/**
-	 * Get a name replacement for a filename already taken in a folder.
-	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that has the file to get a name replacement for.
-	 * @param string           $fileName The name of the file to get a replacement name for.
-	 *
-	 * @return mixed
-	 */
-	abstract protected function getNameReplacement(AssetFolderModel $folder, $fileName);
-
-	/**
-	 * Delete just the file inside of a source for an Assets File.
-	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that contains the file to be deleted.
-	 * @param string           $filename The name of the file to be deleted.
-	 */
-	abstract protected function deleteSourceFile(AssetFolderModel $folder, $filename);
-
-	/**
-	 * Move a file in source.
-	 *
-	 * @param AssetFileModel   $file         The assetFileModel of the file to move.
-	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target destination of the file.
-	 * @param string           $fileName     The name of the file to move.
-	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
-	 *
-	 * @return AssetOperationResponseModel
-	 */
-	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
-
-	/**
-	 * Delete generated image transforms for a File.
-	 *
-	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
-	 *
-	 * @return mixed
-	 */
-	abstract protected function deleteGeneratedImageTransforms(AssetFileModel $file);
-
-	/**
-	 * Return true if a physical folder exists.
-	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
-	 * @param string           $folderName   The name of the folder to check if it exists.
-	 *
-	 * @return bool
-	 */
-	abstract protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
-
-	/**
-	 * Creates a physical folder, returns true on success.
-	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
-	 * @param string           $folderName   The name of the folder to create.
-	 *
-	 * @return bool
-	 */
-	abstract protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName);
-
-	/**
-	 * Delete the source folder.
-	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
-	 * @param string           $folderName   The name of the folder to be deleted.
-	 *
-	 * @return bool
-	 */
-	abstract protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName);
-
-	/**
-	 * Rename a source folder.
-	 *
-	 * @param AssetFolderModel $folder  The assetFolderModel that has the folder to be renamed.
-	 * @param string           $newName The new name of the folder.
-	 *
-	 * @return bool
-	 */
-	abstract protected function renameSourceFolder(AssetFolderModel $folder, $newName);
-
-	/**
-	 * Determines if a file can be moved internally from original source.
-	 *
-	 * @param BaseAssetSourceType $originalSource The original source to check if a file can be moved from.
-	 *
-	 * @return mixed
-	 */
-	abstract protected function canMoveFileFrom(BaseAssetSourceType $originalSource);
 
 	/**
 	 * Returns true if this is a valid source. Used for type-specific validations.
@@ -817,6 +717,110 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		);
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Insert a file from path in folder.
+	 *
+	 * @param AssetFolderModel $folder   The assetFolderModel that the file will be inserted into.
+	 * @param string           $filePath The filePath of the file to insert.
+	 * @param string           $fileName The fileName of the file to insert.
+	 *
+	 * @throws Exception
+	 * @return AssetOperationResponseModel
+	 */
+	abstract protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
+
+	/**
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
+	 * @param AssetFolderModel $folder   The assetFolderModel that has the file to get a name replacement for.
+	 * @param string           $fileName The name of the file to get a replacement name for.
+	 *
+	 * @return mixed
+	 */
+	abstract protected function getNameReplacement(AssetFolderModel $folder, $fileName);
+
+	/**
+	 * Delete just the file inside of a source for an Assets File.
+	 *
+	 * @param AssetFolderModel $folder   The assetFolderModel that contains the file to be deleted.
+	 * @param string           $filename The name of the file to be deleted.
+	 */
+	abstract protected function deleteSourceFile(AssetFolderModel $folder, $filename);
+
+	/**
+	 * Move a file in source.
+	 *
+	 * @param AssetFileModel   $file         The assetFileModel of the file to move.
+	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target destination of the file.
+	 * @param string           $fileName     The name of the file to move.
+	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
+	 *
+	 * @return AssetOperationResponseModel
+	 */
+	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
+
+	/**
+	 * Delete generated image transforms for a File.
+	 *
+	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
+	 *
+	 * @return mixed
+	 */
+	abstract protected function deleteGeneratedImageTransforms(AssetFileModel $file);
+
+	/**
+	 * Return true if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
+	 * @param string           $folderName   The name of the folder to check if it exists.
+	 *
+	 * @return bool
+	 */
+	abstract protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName);
+
+	/**
+	 * Creates a physical folder, returns true on success.
+	 *
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
+	 * @param string           $folderName   The name of the folder to create.
+	 *
+	 * @return bool
+	 */
+	abstract protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName);
+
+	/**
+	 * Delete the source folder.
+	 *
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
+	 * @param string           $folderName   The name of the folder to be deleted.
+	 *
+	 * @return bool
+	 */
+	abstract protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName);
+
+	/**
+	 * Rename a source folder.
+	 *
+	 * @param AssetFolderModel $folder  The assetFolderModel that has the folder to be renamed.
+	 * @param string           $newName The new name of the folder.
+	 *
+	 * @return bool
+	 */
+	abstract protected function renameSourceFolder(AssetFolderModel $folder, $newName);
+
+	/**
+	 * Determines if a file can be moved internally from original source.
+	 *
+	 * @param BaseAssetSourceType $originalSource The original source to check if a file can be moved from.
+	 *
+	 * @return mixed
+	 */
+	abstract protected function canMoveFileFrom(BaseAssetSourceType $originalSource);
+
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
@@ -886,7 +890,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 			else
 			{
-				$parameters->path = join('/', $parts) . '/';
+				$parameters->path = join('/', $parts).'/';
 			}
 
 			// Look up the parent folder
@@ -934,7 +938,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			if (!isset($folderList[$folderModel->id]))
 			{
-				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->path;
+				$missingFolders[$folderModel->id] = $this->model->name.'/'.$folderModel->path;
 			}
 		}
 
@@ -957,7 +961,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$parts = explode('/', $uriPath);
 			$fileName = array_pop($parts);
 
-			$searchFullPath = join('/', $parts) . (empty($parts) ? '' : '/');
+			$searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
 
 			if (empty($searchFullPath))
 			{
@@ -1072,6 +1076,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			return array('amount' => '', 'period' => '');
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Mirrors a subset of folder tree from one location to other.

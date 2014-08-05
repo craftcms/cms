@@ -39,37 +39,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	////////////////////
 
 	/**
-	 * Returns the name of the source type.
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return 'Amazon S3';
-	}
-
-	/**
-	 * Returns the component's settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getSettingsHtml()
-	{
-		$settings = $this->getSettings();
-
-		$settings->expires = $this->extractExpiryInformation($settings->expires);
-
-		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
-			'settings' => $settings,
-			'periods' => array_merge(array('' => ''), $this->getPeriodList())
-		));
-	}
-
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
-
-	/**
 	 * Get bucket list with credentials.
 	 *
 	 * @param $keyId
@@ -120,6 +89,33 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		return 's3-'.$location.'.amazonaws.com';
+	}
+
+	/**
+	 * Returns the name of the source type.
+	 *
+	 * @return string
+	 */
+	public function getName()
+	{
+		return 'Amazon S3';
+	}
+
+	/**
+	 * Returns the component's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		$settings = $this->getSettings();
+
+		$settings->expires = $this->extractExpiryInformation($settings->expires);
+
+		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
+			'settings' => $settings,
+			'periods' => array_merge(array('' => ''), $this->getPeriodList())
+		));
 	}
 
 	/**
@@ -401,6 +397,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Defines the settings.
 	 *
@@ -433,7 +433,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
 
 		// Double-check
-		if (!isset($fileList[$this->_getPathPrefix().$folder->path . $fileName]))
+		if (!isset($fileList[$this->_getPathPrefix().$folder->path.$fileName]))
 		{
 			return $fileName;
 		}
@@ -441,15 +441,15 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileNameParts = explode(".", $fileName);
 		$extension = array_pop($fileNameParts);
 
-		$fileNameStart = join(".", $fileNameParts) . '_';
+		$fileNameStart = join(".", $fileNameParts).'_';
 		$index = 1;
 
-		while ( isset($fileList[$this->_getPathPrefix().$folder->path . $fileNameStart . $index . '.' . $extension]))
+		while (isset($fileList[$this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension]))
 		{
 			$index++;
 		}
 
-		return $fileNameStart . $index . '.' . $extension;
+		return $fileNameStart.$index.'.'.$extension;
 	}
 
 	/**
@@ -640,7 +640,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
+		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/').'/', \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -664,7 +664,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			$filePath = mb_substr($file['name'], mb_strlen($this->_getPathPrefix().$folder->path));
 
-			$this->_s3->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \S3::ACL_PUBLIC_READ);
+			$this->_s3->copyObject($bucket, $file['name'], $bucket, $newFullPath.$filePath, \S3::ACL_PUBLIC_READ);
 			@$this->_s3->deleteObject($bucket, $file['name']);
 		}
 
@@ -734,13 +734,17 @@ class S3AssetSourceType extends BaseAssetSourceType
 		{
 			$expires = new DateTime();
 			$now = new DateTime();
-			$expires->modify('+' . $this->getSettings()->expires);
+			$expires->modify('+'.$this->getSettings()->expires);
 			$diff = $expires->format('U') - $now->format('U');
-			$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
+			$headers['Cache-Control'] = 'max-age='.$diff.', must-revalidate';
 		}
 
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Prepare the S3 connection for requests to this bucket.
@@ -784,7 +788,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			return rtrim($settings->subfolder, '/').'/';
 		}
 
-		return "";
+		return '';
 	}
 
 	/**

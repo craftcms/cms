@@ -573,13 +573,13 @@ class SearchService extends BaseApplicationComponent
 					{
 						// Create exact clause from term
 						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-						$keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+						$keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
 					}
 					else
 					{
 						// Create LIKE clause from term
 						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-						$keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
+						$keywords = ($term->subLeft ? '%' : '% ').$keywords.($term->subRight ? '%' : ' %');
 					}
 
 					// Generate the SQL

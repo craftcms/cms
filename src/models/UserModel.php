@@ -109,7 +109,7 @@ class UserModel extends BaseElementModel
 		$firstName = trim($this->firstName);
 		$lastName = trim($this->lastName);
 
-		return $firstName . ($firstName && $lastName ? ' ' : '') . $lastName;
+		return $firstName.($firstName && $lastName ? ' ' : '').$lastName;
 	}
 
 	/**

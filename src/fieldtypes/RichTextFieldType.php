@@ -232,7 +232,7 @@ class RichTextFieldType extends BaseFieldType
 			}
 			else if ($section->hasUrls)
 			{
-				$sources[] = 'section:' . $section->id;
+				$sources[] = 'section:'.$section->id;
 			}
 		}
 

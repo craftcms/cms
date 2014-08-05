@@ -413,7 +413,7 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 		else
 		{
-			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $subpath);
+			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path.$subpath);
 			$existingFolder = craft()->assets->findFolder($folderCriteria);
 		}
 
@@ -469,7 +469,7 @@ class AssetsFieldType extends BaseElementFieldType
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
 					'sourceId' => $currentFolder->sourceId,
-					'path' => trim($currentFolder->path . '/' . $folderName, '/') . '/'
+					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				)
 			);
 			$folderId = craft()->assets->storeFolder($newFolder);
@@ -540,7 +540,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 			$userFolder = craft()->assets->getUserFolder($userModel);
 
-			$folderName = 'field_' . $this->model->id;
+			$folderName = 'field_'.$this->model->id;
 			$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
 
 			if (!$elementFolder)

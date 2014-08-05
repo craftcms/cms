@@ -512,7 +512,7 @@ class UtilsController extends BaseController
 
 			if (is_object($arg))
 			{
-				$arg = get_class($arg) . ' Object ('.implode(',', $args).')';
+				$arg = get_class($arg).' Object ('.implode(',', $args).')';
 			}
 			else if (is_array($arg) && count($arg) == 0)
 			{

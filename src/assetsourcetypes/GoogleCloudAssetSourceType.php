@@ -30,7 +30,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	private $_googleCloud;
 
 	////////////////////
-	// METHODS
+	// PUBLIC METHODS
 	////////////////////
 
 	/**
@@ -374,6 +374,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		return true;
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Defines the settings.
 	 *
@@ -449,7 +453,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
 
 		// Double-check
-		if (!isset($fileList[$this->_getPathPrefix().$folder->path . $fileName]))
+		if (!isset($fileList[$this->_getPathPrefix().$folder->path.$fileName]))
 		{
 			return $fileName;
 		}
@@ -457,15 +461,15 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$fileNameParts = explode(".", $fileName);
 		$extension = array_pop($fileNameParts);
 
-		$fileNameStart = join(".", $fileNameParts) . '_';
+		$fileNameStart = join(".", $fileNameParts).'_';
 		$index = 1;
 
-		while ( isset($fileList[$this->_getPathPrefix().$folder->path . $fileNameStart . $index . '.' . $extension]))
+		while ( isset($fileList[$this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension]))
 		{
 			$index++;
 		}
 
-		return $fileNameStart . $index . '.' . $extension;
+		return $fileNameStart.$index.'.'.$extension;
 	}
 
 	/**
@@ -612,7 +616,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
+		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/').'/', \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -636,7 +640,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		{
 			$filePath = mb_substr($file['name'], mb_strlen($this->_getPathPrefix().$folder->path));
 
-			$this->_googleCloud->copyObject($bucket, $file['name'], $bucket, $newFullPath . $filePath, \GC::ACL_PUBLIC_READ);
+			$this->_googleCloud->copyObject($bucket, $file['name'], $bucket, $newFullPath.$filePath, \GC::ACL_PUBLIC_READ);
 			@$this->_googleCloud->deleteObject($bucket, $file['name']);
 		}
 
@@ -684,9 +688,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		{
 			$expires = new DateTime();
 			$now = new DateTime();
-			$expires->modify('+' . $this->getSettings()->expires);
+			$expires->modify('+'.$this->getSettings()->expires);
 			$diff = $expires->format('U') - $now->format('U');
-			$headers['Cache-Control'] = 'max-age=' . $diff . ', must-revalidate';
+			$headers['Cache-Control'] = 'max-age='.$diff.', must-revalidate';
 		}
 
 		return $this->_googleCloud->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
@@ -713,6 +717,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 		return false;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Return a prefix for S3 path for settings.

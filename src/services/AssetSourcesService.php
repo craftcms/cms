@@ -273,7 +273,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			$source->id = $sourceId;
 			$source->name = TempAssetSourceType::sourceName;
 			$source->type = TempAssetSourceType::sourceType;
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets') . '/');
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');
 			return $source;
 		}
 		else

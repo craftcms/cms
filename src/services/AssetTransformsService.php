@@ -574,7 +574,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$entry =  craft()->db->createCommand()
 			->select('ti.*')
 			->from('assettransformindex ti')
-			->where('ti.fileId = :id AND ti.location = :location', array(':id' => $fileId, ':location' => '_' . $transformHandle))
+			->where('ti.fileId = :id AND ti.location = :location', array(':id' => $fileId, ':location' => '_'.$transformHandle))
 			->queryRow();
 
 		if ($entry)

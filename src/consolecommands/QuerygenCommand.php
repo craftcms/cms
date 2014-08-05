@@ -264,7 +264,7 @@ class QuerygenCommand extends BaseCommand
 
 				if ($showingKeys)
 				{
-					$return .= $this->_varExport($key) . ' => ';
+					$return .= $this->_varExport($key).' => ';
 				}
 
 				$return .= $this->_varExport($value);

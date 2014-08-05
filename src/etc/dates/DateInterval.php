@@ -191,7 +191,7 @@ class DateInterval extends \DateInterval
 			{
 				if ($interval->{$property})
 				{
-					$string .= $interval->{$property} . $suffix;
+					$string .= $interval->{$property}.$suffix;
 				}
 			}
 		}

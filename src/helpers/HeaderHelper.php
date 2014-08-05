@@ -63,7 +63,7 @@ class HeaderHelper
 	{
 		static::setHeader(
 			array(
-				'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT',
+				'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds).' GMT',
 				'Cache-Control' => "max-age={$seconds}, public, s-maxage={$seconds}",
 			)
 		);

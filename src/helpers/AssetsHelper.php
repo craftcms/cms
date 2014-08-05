@@ -36,9 +36,9 @@ class AssetsHelper
 	public static function getTempFilePath($extension = 'tmp')
 	{
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
-		$fileName = uniqid('assets', true) . '.' . $extension;
+		$fileName = uniqid('assets', true).'.'.$extension;
 
-		return IOHelper::createFile(craft()->path->getTempPath() . $fileName)->getRealPath();
+		return IOHelper::createFile(craft()->path->getTempPath().$fileName)->getRealPath();
 	}
 
 	/**

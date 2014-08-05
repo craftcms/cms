@@ -314,12 +314,12 @@ class AssetsService extends BaseApplicationComponent
 
 		if ($userModel)
 		{
-			$folderName = 'user_' . $userModel->id;
+			$folderName = 'user_'.$userModel->id;
 		}
 		else
 		{
 			// A little obfuscation never hurt anyone
-			$folderName = 'user_' . sha1(craft()->httpSession->getSessionID());
+			$folderName = 'user_'.sha1(craft()->httpSession->getSessionID());
 		}
 		$folderCriteria = new FolderCriteriaModel(array(
 			'name' => $folderName,

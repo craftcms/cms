@@ -65,7 +65,7 @@ class ArrayHelper
 			// is this an array element?
 			if (preg_match('/^(\w+)(\[.*)/', $key, $m))
 			{
-				$key = '$expanded["'.$m[1].'"]' . preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
+				$key = '$expanded["'.$m[1].'"]'.preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
 				eval($key.' = "'.addslashes($value).'";');
 			}
 			else

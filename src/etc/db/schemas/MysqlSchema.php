@@ -103,9 +103,9 @@ class MysqlSchema extends \CMysqlSchema
 			$newName = $column;
 		}
 
-		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
-			. $this->quoteColumnName($column) . ' '
-			. $this->quoteColumnName($newName) . ' '
+		return 'ALTER TABLE '.$this->quoteTableName($table).' CHANGE '
+			. $this->quoteColumnName($column).' '
+			. $this->quoteColumnName($newName).' '
 			. $this->getColumnType($type)
 			. ($after ? ' AFTER '.$this->quoteColumnName($after) : '');
 	}

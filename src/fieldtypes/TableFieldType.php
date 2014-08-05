@@ -124,7 +124,7 @@ class TableFieldType extends BaseFieldType
 			)
 		));
 
-		return $columnsField . $defaultsField;
+		return $columnsField.$defaultsField;
 	}
 
 	/**

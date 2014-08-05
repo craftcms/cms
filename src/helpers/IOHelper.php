@@ -1589,7 +1589,7 @@ class IOHelper
 			return '';
 		}
 
-		return join("/", $parts) . '/';
+		return join("/", $parts).'/';
 	}
 
 	/**

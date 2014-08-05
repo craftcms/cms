@@ -139,7 +139,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsImageSourcePath()
 	{
-		$path = $this->getAssetsPath() . 'sources/';
+		$path = $this->getAssetsPath().'sources/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -149,7 +149,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsThumbsPath()
 	{
-		$path = $this->getAssetsPath() . 'thumbs/';
+		$path = $this->getAssetsPath().'thumbs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -159,7 +159,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsIconsPath()
 	{
-		$path = $this->getAssetsPath() . 'icons/';
+		$path = $this->getAssetsPath().'icons/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
