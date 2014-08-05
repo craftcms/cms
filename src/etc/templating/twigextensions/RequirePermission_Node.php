@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RequirePermission_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles a RequirePermission_Node into PHP.
 	 *

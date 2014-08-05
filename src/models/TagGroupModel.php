@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TagGroupModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the translated tag group's name as the string representation.
 	 *
@@ -26,6 +30,20 @@ class TagGroupModel extends BaseModel
 	/**
 	 * @return array
 	 */
+	public function behaviors()
+	{
+		return array(
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Tag),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(
@@ -33,16 +51,6 @@ class TagGroupModel extends BaseModel
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
 			'fieldLayoutId' => AttributeType::Number,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutBehavior(ElementType::Tag),
 		);
 	}
 }

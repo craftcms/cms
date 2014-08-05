@@ -13,6 +13,10 @@ namespace Craft;
  */
 class QuickPostWidget extends BaseWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -23,6 +27,10 @@ class QuickPostWidget extends BaseWidget
 	 */
 	private $_section;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of widget this is.
 	 *
@@ -31,20 +39,6 @@ class QuickPostWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Quick Post');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section'   => array(AttributeType::Number, 'required' => true),
-			'entryType' => AttributeType::Number,
-			'fields'    => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -176,6 +170,28 @@ class QuickPostWidget extends BaseWidget
 
 		return $html;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section'   => array(AttributeType::Number, 'required' => true),
+			'entryType' => AttributeType::Number,
+			'fields'    => AttributeType::Mixed,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the widget's section.

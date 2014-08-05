@@ -13,6 +13,10 @@ namespace Craft;
  */
 class CategoriesFieldType extends BaseElementFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string $elementType The element type this field deals with.
 	 */
@@ -37,6 +41,10 @@ class CategoriesFieldType extends BaseElementFieldType
 	 * @var bool $sortable Whether the elements have a custom sort order.
 	 */
 	protected $sortable = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Performs any additional actions after the element has been saved.
@@ -81,6 +89,10 @@ class CategoriesFieldType extends BaseElementFieldType
 			craft()->relations->saveRelations($this->model, $this->element, $categoryIds);
 		}
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Returns an array of variables that should be passed to the input template.

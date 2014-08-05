@@ -13,6 +13,10 @@ namespace Craft;
  */
 class GlobalsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Saves a global set.
 	 *

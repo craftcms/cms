@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RequirePermission_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Parses {% requirePermission %} tags.
 	 *

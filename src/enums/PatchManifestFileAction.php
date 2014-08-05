@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class PatchManifestFileAction extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Add    = 'Add';
 	const Remove = 'Remove';
 }

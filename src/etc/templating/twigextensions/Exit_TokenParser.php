@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Exit_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Parses {% exit %} tags.
 	 *

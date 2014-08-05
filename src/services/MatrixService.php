@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MatrixService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -47,6 +51,10 @@ class MatrixService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_parentMatrixFields;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the block types for a given Matrix field.
@@ -161,7 +169,7 @@ class MatrixService extends BaseApplicationComponent
 			craft()->fields->validateField($field);
 
 			// Make sure the block type handle + field handle combo is unique for the whole field.
-			// This prevents us from worying about content column conflicts like "a" + "b_c" == "a_b" + "c".
+			// This prevents us from worrying about content column conflicts like "a" + "b_c" == "a_b" + "c".
 			if ($blockType->handle && $field->handle)
 			{
 				$blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
@@ -847,21 +855,6 @@ class MatrixService extends BaseApplicationComponent
 		return true;
 	}
 
-	// Private methods
-
-	/**
-	 * Returns a DbCommand object prepped for retrieving block types.
-	 *
-	 * @return DbCommand
-	 */
-	private function _createBlockTypeQuery()
-	{
-		return craft()->db->createCommand()
-			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
-			->from('matrixblocktypes')
-			->order('sortOrder');
-	}
-
 	/**
 	 * Returns the parent Matrix field, if any.
 	 *
@@ -893,6 +886,23 @@ class MatrixService extends BaseApplicationComponent
 		}
 
 		return $this->_parentMatrixFields[$matrixField->id];
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving block types.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createBlockTypeQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
+			->from('matrixblocktypes')
+			->order('sortOrder');
 	}
 
 	/**

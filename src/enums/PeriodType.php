@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class PeriodType extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Seconds = 'seconds';
 	const Minutes = 'minutes';
 	const Hours   = 'hours';

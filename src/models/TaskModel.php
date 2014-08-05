@@ -13,22 +13,18 @@ namespace Craft;
  */
 class TaskModel extends BaseComponentModel
 {
-	private $_taskType;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * @return array
+	 * @var
 	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'level'       => AttributeType::Number,
-			'description' => AttributeType::String,
-			'parentId'    => AttributeType::Mixed,
-			'totalSteps'  => AttributeType::Number,
-			'currentStep' => AttributeType::Number,
-			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
-		));
-	}
+	private $_taskType;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the task's description.
@@ -114,5 +110,24 @@ class TaskModel extends BaseComponentModel
 			'status'      => $this->status,
 			'progress'    => $this->getProgress(),
 		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'level'       => AttributeType::Number,
+			'description' => AttributeType::String,
+			'parentId'    => AttributeType::Mixed,
+			'totalSteps'  => AttributeType::Number,
+			'currentStep' => AttributeType::Number,
+			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
+		));
 	}
 }

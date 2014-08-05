@@ -13,11 +13,19 @@ namespace Craft;
  */
 class DateTime extends \DateTime
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 	const UTC = 'UTC';
 	const DATEFIELD_24HOUR = 'Y-m-d H:i';
 	const DATEFIELD_12HOUR = 'Y-m-d h:i A';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return string
@@ -202,7 +210,7 @@ class DateTime extends \DateTime
 	 *
 	 * @return string
 	 */
-	function format($format, $timezone = null)
+	public function format($format, $timezone = null)
 	{
 		if (!$timezone)
 		{

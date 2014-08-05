@@ -13,6 +13,15 @@ namespace Craft;
  */
 abstract class BaseModel extends \CModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
+	protected $classSuffix = 'Model';
+
 	/**
 	 * @var
 	 */
@@ -33,10 +42,9 @@ abstract class BaseModel extends \CModel
 	 */
 	private $_attributes;
 
-	/**
-	 * @var string
-	 */
-	protected $classSuffix = 'Model';
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -139,6 +147,51 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @param mixed $values
+	 *
+	 * @return BaseModel
+	 */
+	public static function populateModel($values)
+	{
+		$class = get_called_class();
+		return new $class($values);
+	}
+
+	/**
+	 * Mass-populates models based on an array of attribute arrays.
+	 *
+	 * @param array       $data
+	 * @param string|null $indexBy
+	 *
+	 * @return array
+	 */
+	public static function populateModels($data, $indexBy = null)
+	{
+		$models = array();
+
+		if (is_array($data))
+		{
+			foreach ($data as $values)
+			{
+				$model = static::populateModel($values);
+
+				if ($indexBy)
+				{
+					$models[$model->$indexBy] = $model;
+				}
+				else
+				{
+					$models[] = $model;
+				}
+			}
+		}
+
+		return $models;
+	}
+
+	/**
 	 * Treats attributes defined by defineAttributes() as array offsets.
 	 *
 	 * @param mixed $offset
@@ -181,16 +234,6 @@ abstract class BaseModel extends \CModel
 		}
 
 		return $this->_classHandle;
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array();
 	}
 
 	/**
@@ -446,48 +489,17 @@ abstract class BaseModel extends \CModel
 		return new $class($this->getAttributes());
 	}
 
-	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @param mixed $values
-	 *
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		$class = get_called_class();
-		return new $class($values);
-	}
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
-	 * Mass-populates models based on an array of attribute arrays.
-	 *
-	 * @param array       $data
-	 * @param string|null $indexBy
+	 * Defines this model's attributes.
 	 *
 	 * @return array
 	 */
-	public static function populateModels($data, $indexBy = null)
+	protected function defineAttributes()
 	{
-		$models = array();
-
-		if (is_array($data))
-		{
-			foreach ($data as $values)
-			{
-				$model = static::populateModel($values);
-
-				if ($indexBy)
-				{
-					$models[$model->$indexBy] = $model;
-				}
-				else
-				{
-					$models[] = $model;
-				}
-			}
-		}
-
-		return $models;
+		return array();
 	}
 }

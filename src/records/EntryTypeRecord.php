@@ -13,27 +13,16 @@ namespace Craft;
  */
 class EntryTypeRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'entrytypes';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'required' => true),
-			'hasTitleField' => array(AttributeType::Bool, 'required' => true, 'default' => true),
-			'titleLabel'    => array(AttributeType::String, 'default' => 'Title'),
-			'titleFormat'   => AttributeType::String,
-			'sortOrder'     => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -73,5 +62,24 @@ class EntryTypeRecord extends BaseRecord
 		}
 
 		return $rules;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'required' => true),
+			'hasTitleField' => array(AttributeType::Bool, 'required' => true, 'default' => true),
+			'titleLabel'    => array(AttributeType::String, 'default' => 'Title'),
+			'titleFormat'   => AttributeType::String,
+			'sortOrder'     => AttributeType::SortOrder,
+		);
 	}
 }

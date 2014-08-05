@@ -13,23 +13,16 @@ namespace Craft;
  */
 class FieldLayoutFieldRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'fieldlayoutfields';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -52,6 +45,21 @@ class FieldLayoutFieldRecord extends BaseRecord
 		return array(
 			array('columns' => array('layoutId', 'fieldId'), 'unique' => true),
 			array('columns' => array('sortOrder')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'required'  => AttributeType::Bool,
+			'sortOrder' => AttributeType::SortOrder,
 		);
 	}
 }

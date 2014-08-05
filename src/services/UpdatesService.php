@@ -13,10 +13,18 @@ namespace Craft;
  */
 class UpdatesService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var UpdateModel
 	 */
 	private $_updateModel;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $craftReleases
@@ -601,6 +609,7 @@ class UpdatesService extends BaseApplicationComponent
 		$info->schemaVersion = CRAFT_SCHEMA_VERSION;
 		$info->track = CRAFT_TRACK;
 		$info->releaseDate = CRAFT_RELEASE_DATE;
+
 		return craft()->saveInfo($info);
 	}
 

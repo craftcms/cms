@@ -13,10 +13,18 @@ namespace Craft;
  */
 abstract class BaseTool extends BaseComponentType implements ITool
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Tool';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the tool's icon value.

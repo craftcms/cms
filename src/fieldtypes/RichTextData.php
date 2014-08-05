@@ -13,8 +13,23 @@ namespace Craft;
  */
 class RichTextData extends \Twig_Markup
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_pages;
+
+	/**
+	 * @var string
+	 */
 	private $_rawContent;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

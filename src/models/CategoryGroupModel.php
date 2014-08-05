@@ -13,7 +13,18 @@ namespace Craft;
  */
 class CategoryGroupModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_locales;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the translated category group's name as the string representation.
@@ -23,23 +34,6 @@ class CategoryGroupModel extends BaseModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'structureId'   => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'hasUrls'       => array(AttributeType::Bool, 'default' => true),
-			'template'      => AttributeType::String,
-			'maxLevels'     => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -84,5 +78,26 @@ class CategoryGroupModel extends BaseModel
 	public function setLocales($locales)
 	{
 		$this->_locales = $locales;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'structureId'   => AttributeType::Number,
+			'fieldLayoutId' => AttributeType::Number,
+			'name'          => AttributeType::String,
+			'handle'        => AttributeType::String,
+			'hasUrls'       => array(AttributeType::Bool, 'default' => true),
+			'template'      => AttributeType::String,
+			'maxLevels'     => AttributeType::Number,
+		);
 	}
 }

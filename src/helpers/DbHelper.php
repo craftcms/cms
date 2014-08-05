@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DbHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array The default column configs.
 	 */
@@ -42,6 +46,10 @@ class DbHelper
 	 * @var array
 	 */
 	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Normalizes a column's config.
@@ -494,6 +502,10 @@ class DbHelper
 
 		return static::parseParam($key, $normalizedValues, $params);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Extracts the operator from a DB param and returns it.

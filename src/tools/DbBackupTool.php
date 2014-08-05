@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DbBackupTool extends BaseTool
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the tool name.
 	 *

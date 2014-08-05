@@ -13,6 +13,30 @@ namespace Craft;
  */
 class AppUpdateModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 *
+	 * @return bool|null
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'releases')
+		{
+			$value = AppNewReleaseModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -37,21 +61,5 @@ class AppUpdateModel extends BaseModel
 		$attributes['releases']                = AttributeType::Mixed;
 
 		return $attributes;
-	}
-
-	/**
-	 * @param string $name
-	 * @param mixed  $value
-	 *
-	 * @return bool|null
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'releases')
-		{
-			$value = AppNewReleaseModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

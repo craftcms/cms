@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -62,6 +66,10 @@ class FieldsService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_layoutsByType;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	// Groups
 	// ======
@@ -941,8 +949,9 @@ class FieldsService extends BaseApplicationComponent
 		}
 	}
 
-	// Private methods
-	// ===============
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving groups.

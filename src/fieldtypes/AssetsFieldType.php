@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetsFieldType extends BaseElementFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string $elementType The element type this field deals with.
 	 */
@@ -33,33 +37,9 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private $_failedFiles = array();
 
-	/**
-	 * Returns the label for the "Add" button.
-	 *
-	 * @return string
-	 */
-	protected function getAddButtonLabel()
-	{
-		return Craft::t('Add an asset');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array_merge(parent::defineSettings(), array(
-			'useSingleFolder'              => AttributeType::Bool,
-			'defaultUploadLocationSource'  => AttributeType::Number,
-			'defaultUploadLocationSubpath' => AttributeType::String,
-			'singleUploadLocationSource'   => AttributeType::Number,
-			'singleUploadLocationSubpath'  => AttributeType::String,
-			'restrictFiles'                => AttributeType::Bool,
-			'allowedKinds'                 => AttributeType::Mixed,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the field's settings HTML.
@@ -168,7 +148,6 @@ class AssetsFieldType extends BaseElementFieldType
 
 		return parent::prepValueFromPost($value);
 	}
-
 
 	/**
 	 * Handle file moves between folders for dynamic single folder settings.
@@ -284,6 +263,7 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 	}
 
+
 	/**
 	 * Resolve source path for uploading for this field.
 	 *
@@ -292,6 +272,38 @@ class AssetsFieldType extends BaseElementFieldType
 	public function resolveSourcePath()
 	{
 		return $this->_determineUploadFolderId($this->getSettings());
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the "Add" button.
+	 *
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add an asset');
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array_merge(parent::defineSettings(), array(
+			'useSingleFolder'              => AttributeType::Bool,
+			'defaultUploadLocationSource'  => AttributeType::Number,
+			'defaultUploadLocationSubpath' => AttributeType::String,
+			'singleUploadLocationSource'   => AttributeType::Number,
+			'singleUploadLocationSubpath'  => AttributeType::String,
+			'restrictFiles'                => AttributeType::Bool,
+			'allowedKinds'                 => AttributeType::Mixed,
+		));
 	}
 
 	/**
@@ -350,6 +362,10 @@ class AssetsFieldType extends BaseElementFieldType
 
 		return array('kind' => $allowedKinds);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.

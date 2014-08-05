@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LocaleModel extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -23,15 +27,9 @@ class LocaleModel extends BaseApplicationComponent
 	 */
 	private $_nameInLanguage;
 
-	/**
-	 * Use the ID as the string representation of locales.
-	 *
-	 * @return string
-	 */
-	public function __toString()
-	{
-		return $this->_id;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -43,6 +41,16 @@ class LocaleModel extends BaseApplicationComponent
 	public function __construct($id)
 	{
 		$this->_id = $id;
+	}
+
+	/**
+	 * Use the ID as the string representation of locales.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return $this->_id;
 	}
 
 	public function getId()

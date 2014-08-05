@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TagsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Tag settings index.
 	 *

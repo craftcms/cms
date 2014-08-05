@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseTemplate extends \Twig_Template
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Returns the attribute value for a given array/object.
 	 *
@@ -36,6 +40,10 @@ abstract class BaseTemplate extends \Twig_Template
 
 		return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Includes this element in any active template caches.

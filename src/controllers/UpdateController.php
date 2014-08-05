@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UpdateController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,9 +27,12 @@ class UpdateController extends BaseController
 	 */
 	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
-	// -------------------------------------------
-	//  Auto Updates
-	// -------------------------------------------
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	// Auto Updates
+	// ============
 
 	/**
 	 * Returns the available updates.
@@ -138,9 +145,8 @@ class UpdateController extends BaseController
 		}
 	}
 
-	// -------------------------------------------
-	//  Manual Updates
-	// -------------------------------------------
+	// Manual Updates
+	// ==============
 
 	/**
 	 * @return null
@@ -457,6 +463,10 @@ class UpdateController extends BaseController
 
 		$this->returnJson(array('alive' => true, 'finished' => true, 'rollBack' => true));
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $data

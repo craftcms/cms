@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Cache_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */

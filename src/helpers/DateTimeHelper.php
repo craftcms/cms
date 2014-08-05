@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DateTimeHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return DateTime
 	 */

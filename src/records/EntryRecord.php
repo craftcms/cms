@@ -13,23 +13,16 @@ namespace Craft;
  */
 class EntryRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'entries';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'postDate'   => AttributeType::DateTime,
-			'expiryDate' => AttributeType::DateTime,
-		);
 	}
 
 	/**
@@ -72,6 +65,21 @@ class EntryRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'postDate'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'postDate'   => AttributeType::DateTime,
+			'expiryDate' => AttributeType::DateTime,
 		);
 	}
 }

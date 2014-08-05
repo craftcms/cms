@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Nav_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Gets the tag name associated with this token parser.
 	 *

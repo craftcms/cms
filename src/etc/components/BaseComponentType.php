@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
@@ -22,6 +26,10 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	 * @var string The component's class handle.
 	 */
 	private $_classHandle;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the component’s name.

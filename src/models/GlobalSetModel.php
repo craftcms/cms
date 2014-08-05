@@ -13,7 +13,18 @@ namespace Craft;
  */
 class GlobalSetModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::GlobalSet;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the global set's name as its string representation.
@@ -23,18 +34,6 @@ class GlobalSetModel extends BaseElementModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'name'          => AttributeType::Name,
-			'handle'        => AttributeType::Handle,
-			'fieldLayoutId' => AttributeType::Number,
-		));
 	}
 
 	/**
@@ -65,5 +64,21 @@ class GlobalSetModel extends BaseElementModel
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('globals/'.$this->handle);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'name'          => AttributeType::Name,
+			'handle'        => AttributeType::Handle,
+			'fieldLayoutId' => AttributeType::Number,
+		));
 	}
 }

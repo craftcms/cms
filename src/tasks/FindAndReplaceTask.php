@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FindAndReplaceTask extends BaseTask
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -28,19 +32,9 @@ class FindAndReplaceTask extends BaseTask
 	 */
 	private $_matrixFieldIds;
 
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'find'          => AttributeType::String,
-			'replace'       => AttributeType::String,
-			'matrixFieldId' => AttributeType::String,
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the default description for this task.
@@ -150,6 +144,28 @@ class FindAndReplaceTask extends BaseTask
 			}
 		}
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'find'          => AttributeType::String,
+			'replace'       => AttributeType::String,
+			'matrixFieldId' => AttributeType::String,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly

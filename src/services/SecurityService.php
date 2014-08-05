@@ -13,10 +13,18 @@ namespace Craft;
  */
 class SecurityService extends \CSecurityManager
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var mixed
 	 */
 	private $_blowFishHashCost;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return null

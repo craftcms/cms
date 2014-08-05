@@ -13,6 +13,10 @@ namespace Craft;
  */
 interface ITask extends ISavableComponentType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */

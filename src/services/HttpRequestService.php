@@ -13,6 +13,10 @@ namespace Craft;
  */
 class HttpRequestService extends \CHttpRequest
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -77,6 +81,10 @@ class HttpRequestService extends \CHttpRequest
 	 * @var
 	 */
 	private $_ipAddress;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
@@ -940,6 +948,10 @@ class HttpRequestService extends \CHttpRequest
 		flush();
 		session_write_close();
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the query string path.

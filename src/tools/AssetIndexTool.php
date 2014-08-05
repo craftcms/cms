@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetIndexTool extends BaseTool
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the tool name.
 	 *

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var BaseElementModel The element that the current instance is associated with
 	 */
@@ -22,6 +26,10 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'FieldType';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return mixed Returns the content attribute config.
@@ -94,6 +102,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 		$inputHtml = $this->getInputHtml(StringHelper::randomString(), $value);
 		$inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
 		craft()->templates->clearJsBuffer();
+
 		return $inputHtml;
 	}
 
@@ -187,6 +196,10 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 			}
 		}
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Returns the location in POST that this field's content was pulled from.

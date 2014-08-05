@@ -13,10 +13,18 @@ namespace Craft;
  */
 class InstallService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_user;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Installs Craft!
@@ -142,6 +150,10 @@ class InstallService extends BaseApplicationComponent
 
 		return $records;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Creates the tables as defined in the records.

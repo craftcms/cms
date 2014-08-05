@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseOptionsFieldType extends BaseFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -23,17 +27,9 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	private $_options;
 
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'options' => array(AttributeType::Mixed, 'default' => array())
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the content attribute config.
@@ -163,12 +159,28 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 		return $value;
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Returns the label for the Options setting.
 	 *
 	 * @return string
 	 */
 	abstract protected function getOptionsSettingsLabel();
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'options' => array(AttributeType::Mixed, 'default' => array())
+		);
+	}
 
 	/**
 	 * Returns the field options, accounting for the old school way of saving them.

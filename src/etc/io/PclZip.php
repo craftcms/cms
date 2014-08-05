@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PclZip implements IZip
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip

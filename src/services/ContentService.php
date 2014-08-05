@@ -13,10 +13,14 @@ namespace Craft;
  */
 class ContentService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
-	public $contentTable      = 'content';
+	public $contentTable = 'content';
 
 	/**
 	 * @var string
@@ -26,7 +30,11 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * @var string
 	 */
-	public $fieldContext      = 'global';
+	public $fieldContext = 'global';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the content model for a given element.
@@ -223,6 +231,10 @@ class ContentService extends BaseApplicationComponent
 	{
 		$this->raiseEvent('onSaveContent', $event);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Saves a content model to the database.

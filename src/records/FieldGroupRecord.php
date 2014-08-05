@@ -13,22 +13,16 @@ namespace Craft;
  */
 class FieldGroupRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'fieldgroups';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name' => array(AttributeType::Name, 'required' => true),
-		);
 	}
 
 	/**
@@ -58,6 +52,20 @@ class FieldGroupRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'name'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name' => array(AttributeType::Name, 'required' => true),
 		);
 	}
 }

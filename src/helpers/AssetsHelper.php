@@ -13,10 +13,18 @@ namespace Craft;
  */
 class AssetsHelper
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const ActionKeepBoth = 'keep_both';
 	const ActionReplace = 'replace';
 	const ActionCancel = 'cancel';
 	const IndexSkipItemsPattern = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Get a temporary file path.

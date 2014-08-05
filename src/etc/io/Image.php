@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Image
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -42,6 +46,10 @@ class Image
 	 * @var \Imagine\Image\ImagineInterface
 	 */
 	private $_instance;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return Image
@@ -370,6 +378,10 @@ class Image
 			return $this->_image->save($targetPath, $options);
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.

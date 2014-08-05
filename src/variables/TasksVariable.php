@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TasksVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the currently running task.
 	 *

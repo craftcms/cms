@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TableFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -31,19 +35,6 @@ class TableFieldType extends BaseFieldType
 	public function defineContentAttribute()
 	{
 		return AttributeType::Mixed;
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'columns' => AttributeType::Mixed,
-			'defaults' => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -212,6 +203,27 @@ class TableFieldType extends BaseFieldType
 	{
 		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'columns' => AttributeType::Mixed,
+			'defaults' => AttributeType::Mixed,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the field's input HTML.

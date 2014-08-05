@@ -13,6 +13,24 @@ namespace Craft;
  */
 class StructureModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * Returns whether elements in this structure can be sorted by the current user.
+	 *
+	 * @return bool
+	 */
+	public function isSortable()
+	{
+		return (!$this->movePermission || craft()->userSession->checkPermission($this->movePermission));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -23,15 +41,5 @@ class StructureModel extends BaseModel
 			'maxLevels'      => AttributeType::Number,
 			'movePermission' => AttributeType::String,
 		);
-	}
-
-	/**
-	 * Returns whether elements in this structure can be sorted by the current user.
-	 *
-	 * @return bool
-	 */
-	public function isSortable()
-	{
-		return (!$this->movePermission || craft()->userSession->checkPermission($this->movePermission));
 	}
 }

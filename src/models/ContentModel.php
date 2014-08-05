@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ContentModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -23,51 +27,9 @@ class ContentModel extends BaseModel
 	 */
 	private $_attributeConfigs;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requiredTitle = (isset($this->_requiredFields) && in_array('title', $this->_requiredFields));
-
-		$attributes = array(
-			'id'        => AttributeType::Number,
-			'elementId' => AttributeType::Number,
-			'locale'    => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'title'     => array(AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255),
-		);
-
-		if (craft()->isInstalled() && !craft()->isConsole())
-		{
-			foreach (craft()->fields->getAllFields() as $field)
-			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType)
-				{
-					$attributeConfig = $fieldType->defineContentAttribute();
-				}
-
-				// Default to Mixed
-				if (!$fieldType || !$attributeConfig)
-				{
-					$attributeConfig = AttributeType::Mixed;
-				}
-
-				$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
-				$attributeConfig['label'] = $field->name;
-
-				if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
-				{
-					$attributeConfig['required'] = true;
-				}
-
-				$attributes[$field->handle] = $attributeConfig;
-			}
-		}
-
-		return $attributes;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns this model's normalized attribute configs.
@@ -166,5 +128,55 @@ class ContentModel extends BaseModel
 		}
 
 		return $validates;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$requiredTitle = (isset($this->_requiredFields) && in_array('title', $this->_requiredFields));
+
+		$attributes = array(
+			'id'        => AttributeType::Number,
+			'elementId' => AttributeType::Number,
+			'locale'    => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'title'     => array(AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255),
+		);
+
+		if (craft()->isInstalled() && !craft()->isConsole())
+		{
+			foreach (craft()->fields->getAllFields() as $field)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$attributeConfig = $fieldType->defineContentAttribute();
+				}
+
+				// Default to Mixed
+				if (!$fieldType || !$attributeConfig)
+				{
+					$attributeConfig = AttributeType::Mixed;
+				}
+
+				$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
+				$attributeConfig['label'] = $field->name;
+
+				if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
+				{
+					$attributeConfig['required'] = true;
+				}
+
+				$attributes[$field->handle] = $attributeConfig;
+			}
+		}
+
+		return $attributes;
 	}
 }

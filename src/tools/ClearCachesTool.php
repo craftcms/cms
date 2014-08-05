@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ClearCachesTool extends BaseTool
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the tool name.
 	 *
@@ -129,6 +133,10 @@ class ClearCachesTool extends BaseTool
 			craft()->db->createCommand()->truncateTable('assetindexdata');
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the

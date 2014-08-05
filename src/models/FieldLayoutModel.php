@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldLayoutModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -23,16 +27,9 @@ class FieldLayoutModel extends BaseModel
 	 */
 	private $_fields;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'   => AttributeType::Number,
-			'type' => AttributeType::ClassName,
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the layout's tabs.
@@ -139,5 +136,20 @@ class FieldLayoutModel extends BaseModel
 			$field->setLayout($this);
 			$this->_fields[] = $field;
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'   => AttributeType::Number,
+			'type' => AttributeType::ClassName,
+		);
 	}
 }

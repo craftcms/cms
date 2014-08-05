@@ -13,24 +13,16 @@ namespace Craft;
  */
 class CategoryGroupLocaleRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'categorygroups_i18n';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'required' => true),
-			'urlFormat'       => AttributeType::UrlFormat,
-			'nestedUrlFormat' => AttributeType::UrlFormat,
-		);
 	}
 
 	/**
@@ -51,6 +43,22 @@ class CategoryGroupLocaleRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('groupId', 'locale'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'required' => true),
+			'urlFormat'       => AttributeType::UrlFormat,
+			'nestedUrlFormat' => AttributeType::UrlFormat,
 		);
 	}
 }

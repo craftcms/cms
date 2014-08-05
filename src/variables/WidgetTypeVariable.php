@@ -13,6 +13,10 @@ namespace Craft;
  */
 class WidgetTypeVariable extends BaseComponentTypeVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the widget's title.
 	 *

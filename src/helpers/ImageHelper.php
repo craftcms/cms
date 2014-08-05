@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ImageHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Calculates a missing target dimension for an image.
 	 *

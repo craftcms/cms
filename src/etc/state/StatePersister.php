@@ -37,6 +37,10 @@ namespace Craft;
  */
 class StatePersister extends \CStatePersister
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the component.
 	 *

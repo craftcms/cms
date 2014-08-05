@@ -13,13 +13,17 @@ namespace Craft;
  */
 interface IZip
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip
 	 *
 	 * @return mixed
 	 */
-	function zip($sourceFolder, $destZip);
+	public function zip($sourceFolder, $destZip);
 
 	/**
 	 * @param $sourceZip
@@ -27,7 +31,7 @@ interface IZip
 	 *
 	 * @return mixed
 	 */
-	function unzip($sourceZip, $destFolder);
+	public function unzip($sourceZip, $destFolder);
 
 	/**
 	 * @param      $sourceZip
@@ -37,5 +41,5 @@ interface IZip
 	 *
 	 * @return mixed
 	 */
-	function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
+	public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
 }

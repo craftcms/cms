@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Exit_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles a Exit_Node into PHP.
 	 *

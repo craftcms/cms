@@ -13,6 +13,10 @@ namespace Craft;
  */
 class WidgetRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -24,6 +28,20 @@ class WidgetRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineRelations()
+	{
+		return array(
+			'user' => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true, 'onDelete' => static::CASCADE),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(
@@ -31,16 +49,6 @@ class WidgetRecord extends BaseRecord
 			'sortOrder' => AttributeType::SortOrder,
 			'settings'  => AttributeType::Mixed,
 			'enabled'   => array(AttributeType::Bool, 'default' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'user' => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class VersionUpdateStatus extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const UpToDate        = 'UpToDate';
 	const UpdateAvailable = 'UpdateAvailable';
 }

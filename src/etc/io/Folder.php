@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Folder extends BaseIO
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -22,6 +26,10 @@ class Folder extends BaseIO
 	 * @var bool
 	 */
 	private $_isEmpty;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $path

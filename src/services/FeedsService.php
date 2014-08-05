@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FeedsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * return void
 	 */
@@ -80,6 +84,10 @@ class FeedsService extends BaseApplicationComponent
 
 		return $items;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $objects

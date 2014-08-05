@@ -16,10 +16,18 @@ namespace Craft;
 
 class Switch_Node extends \Twig_Node
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var \Twig_NodeInterface
 	 */
 	private $_cases;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param \Twig_NodeInterface $value

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UrlHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns whether a given string appears to be an absolute URL.
 	 *
@@ -265,6 +269,10 @@ class UrlHelper
 		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
 		return static::getUrl($path, $params, $protocol, true);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a URL.

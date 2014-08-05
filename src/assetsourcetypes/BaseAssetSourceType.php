@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * Whether this is a local source or not. Defaults to false.
 	 *
@@ -26,6 +30,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @var string
 	 */
 	protected $componentType = 'AssetSourceType';
+
+	////////////////////
+	// METHODS
+	////////////////////
 
 	/**
 	 * Starts an indexing session.
@@ -673,7 +681,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
-
 		$response = new AssetOperationResponseModel();
 		if ($folder->id == $newParentFolder->id)
 		{

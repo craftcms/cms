@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UsersController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -22,6 +26,10 @@ class UsersController extends BaseController
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Displays the login template, and handles login post requests.
@@ -1224,6 +1232,10 @@ class UsersController extends BaseController
 
 		$this->returnErrorJson(Craft::t('Invalid password.'));
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $user

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class InfoModel extends BaseModel
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LocaleRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -32,21 +36,25 @@ class LocaleRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('sortOrder')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(
 			'locale'    => array(AttributeType::Locale, 'required' => true, 'primaryKey' => true),
 			'sortOrder' => AttributeType::SortOrder,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => array('sortOrder')),
 		);
 	}
 }

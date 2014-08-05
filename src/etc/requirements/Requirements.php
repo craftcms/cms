@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Requirements
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -137,6 +141,10 @@ class Requirements
 		);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -199,6 +207,10 @@ class Requirements
  */
 class Requirement extends \CComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var null|string
 	 */
@@ -229,6 +241,10 @@ class Requirement extends \CComponent
 	 */
 	private $_result;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Constructor
 	 *
@@ -247,27 +263,6 @@ class Requirement extends \CComponent
 		$this->_required = $required;
 		$this->_requiredBy = $requiredBy;
 		$this->_notes = $notes;
-	}
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if ($this->_condition)
-		{
-			return RequirementResult::Success;
-		}
-		else if ($this->_required)
-		{
-			return RequirementResult::Failed;
-		}
-		else
-		{
-			return RequirementResult::Warning;
-		}
 	}
 
 	/**
@@ -314,6 +309,31 @@ class Requirement extends \CComponent
 	{
 		return $this->_notes;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		if ($this->_condition)
+		{
+			return RequirementResult::Success;
+		}
+		else if ($this->_required)
+		{
+			return RequirementResult::Failed;
+		}
+		else
+		{
+			return RequirementResult::Warning;
+		}
+	}
 }
 
 /**
@@ -323,7 +343,14 @@ class Requirement extends \CComponent
  */
 class PhpVersionRequirement extends Requirement
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return PhpVersionRequirement
@@ -358,6 +385,10 @@ class PhpVersionRequirement extends Requirement
 		}
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Calculates the result of this requirement.
 	 *
@@ -383,6 +414,10 @@ class PhpVersionRequirement extends Requirement
 			return RequirementResult::Failed;
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this is past the min PHP version.

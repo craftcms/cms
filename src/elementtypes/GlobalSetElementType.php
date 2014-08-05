@@ -13,6 +13,10 @@ namespace Craft;
  */
 class GlobalSetElementType extends BaseElementType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the element type name.
 	 *

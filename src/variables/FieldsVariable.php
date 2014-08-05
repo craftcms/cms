@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	// Groups
 	// ======
 

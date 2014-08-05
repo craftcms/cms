@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetSourcesService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -38,7 +42,12 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	private $_fetchedAllSources = false;
 
-	/* Source Types */
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	// Source Types
+	// ============
 
 	/**
 	 * Returns all available source types.
@@ -497,7 +506,9 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 	}
 
-	// Private methods
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sources.

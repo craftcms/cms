@@ -13,6 +13,10 @@ namespace Craft;
  */
 class StringTemplate
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var null|string
 	 */
@@ -22,6 +26,10 @@ class StringTemplate
 	 * @var null|string
 	 */
 	public $template;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

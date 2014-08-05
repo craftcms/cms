@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	 /**
 	 * Checks if a template exists.
 	 *
@@ -99,6 +103,10 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 			return false;
 		}
 	}
+
+	////////////////////
+	// PROPERTIES METHODS
+	////////////////////
 
 	/**
 	 * Returns the path to a given template, or throws a TemplateLoaderException.

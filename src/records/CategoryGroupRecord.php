@@ -13,25 +13,16 @@ namespace Craft;
  */
 class CategoryGroupRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'categorygroups';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'required' => true),
-			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
-			'template'  => AttributeType::Template,
-		);
 	}
 
 	/**
@@ -65,6 +56,23 @@ class CategoryGroupRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'name'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'      => array(AttributeType::Name, 'required' => true),
+			'handle'    => array(AttributeType::Handle, 'required' => true),
+			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
+			'template'  => AttributeType::Template,
 		);
 	}
 }

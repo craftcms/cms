@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RequireLogin_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles a RequireLogin_Node into PHP.
 	 *

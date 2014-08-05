@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MatrixSettingsModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var FieldModel|null
 	 */
@@ -22,6 +26,10 @@ class MatrixSettingsModel extends BaseModel
 	 * @var
 	 */
 	private $_blockTypes;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -33,18 +41,6 @@ class MatrixSettingsModel extends BaseModel
 	public function __construct(FieldModel $matrixField = null)
 	{
 		$this->_matrixField = $matrixField;
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'maxBlocks' => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -110,5 +106,21 @@ class MatrixSettingsModel extends BaseModel
 		}
 
 		return $validates;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines this model's attributes.
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'maxBlocks' => AttributeType::Number,
+		);
 	}
 }

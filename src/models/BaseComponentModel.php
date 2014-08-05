@@ -13,22 +13,18 @@ namespace Craft;
  */
 abstract class BaseComponentModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	private $_settingErrors = array();
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'       => AttributeType::Number,
-			'type'     => array(AttributeType::String),
-			'settings' => AttributeType::Mixed,
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this is a new component.
@@ -114,5 +110,21 @@ abstract class BaseComponentModel extends BaseModel
 				$this->addSettingsError($attribute, $error);
 			}
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'       => AttributeType::Number,
+			'type'     => array(AttributeType::String),
+			'settings' => AttributeType::Mixed,
+		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class RequirementResult extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Success = 'success';
 	const Failed  = 'failed';
 	const Warning = 'warning';

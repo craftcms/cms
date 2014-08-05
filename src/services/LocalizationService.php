@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LocalizationService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -27,6 +31,10 @@ class LocalizationService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_localeData;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in

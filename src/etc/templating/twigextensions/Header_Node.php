@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Header_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles a Header_Node into PHP.
 	 *

@@ -13,10 +13,18 @@ namespace Craft;
  */
 class RichTextFieldType extends BaseFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
 	private static $_redactorLang = 'en';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of field this is.
@@ -26,19 +34,6 @@ class RichTextFieldType extends BaseFieldType
 	public function getName()
 	{
 		return Craft::t('Rich Text');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'configFile'  => AttributeType::String,
-			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
-		);
 	}
 
 	/**
@@ -196,6 +191,27 @@ class RichTextFieldType extends BaseFieldType
 	{
 		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
 	}
+
+	////////////////////
+	// PROPERTIES METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'configFile'  => AttributeType::String,
+			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Get available section sources.

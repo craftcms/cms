@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MatrixBlockTypeModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -22,6 +26,10 @@ class MatrixBlockTypeModel extends BaseModel
 	 * @var
 	 */
 	private $_fields;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the block type handle as the string representation.
@@ -40,21 +48,6 @@ class MatrixBlockTypeModel extends BaseModel
 	{
 		return array(
 			'fieldLayout' => new FieldLayoutBehavior(ElementType::MatrixBlock),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'fieldId'       => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::String,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'sortOrder'     => AttributeType::Number,
 		);
 	}
 
@@ -102,5 +95,24 @@ class MatrixBlockTypeModel extends BaseModel
 	public function setFields($fields)
 	{
 		$this->_fields = $fields;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'fieldId'       => AttributeType::Number,
+			'fieldLayoutId' => AttributeType::String,
+			'name'          => AttributeType::String,
+			'handle'        => AttributeType::String,
+			'sortOrder'     => AttributeType::Number,
+		);
 	}
 }

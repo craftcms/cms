@@ -13,20 +13,18 @@ namespace Craft;
  */
 class CategoryModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::Category;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'groupId' => AttributeType::Number,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the field layout used by this element.
@@ -91,5 +89,19 @@ class CategoryModel extends BaseElementModel
 		{
 			return craft()->categories->getGroupById($this->groupId);
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'groupId' => AttributeType::Number,
+		));
 	}
 }

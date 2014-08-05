@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetTransformsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -22,6 +26,10 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @var bool
 	 */
 	private $_fetchedAllTransforms = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all named asset transforms.
@@ -104,7 +112,6 @@ class AssetTransformsService extends BaseApplicationComponent
 			return $this->_transformsByHandle[$handle];
 		}
 	}
-
 
 	/**
 	 * Saves an asset transform.
@@ -701,66 +708,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		return $thumbPath;
 	}
 
-	// Private methods
-
-	/**
-	 * Returns a DbCommand object prepped for retrieving transforms.
-	 *
-	 * @return DbCommand
-	 */
-	private function _createTransformQuery()
-	{
-		return craft()->db->createCommand()
-			->select('id, name, handle, mode, position, height, width, quality, dimensionChangeTime')
-			->from('assettransforms')
-			->order('name');
-	}
-
-	/**
-	 * Returns a trasnform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 * @return string
-	 */
-	private function _getTransformFolderName(AssetTransformModel $transform)
-	{
-		if ($transform->isNamedTransform())
-		{
-			return $this->_getNamedTransformFolderName($transform);
-		}
-		else
-		{
-			return $this->_getUnnamedTransformFolderName($transform);
-		}
-	}
-
-	/**
-	 * Returns a named transform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 *
-	 * @return string
-	 */
-	private function _getNamedTransformFolderName(AssetTransformModel $transform)
-	{
-		return '_'.$transform->handle;
-	}
-
-	/**
-	 * Returns an unnamed transform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 *
-	 * @return string
-	 */
-	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
-	{
-		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
-		       '_'.($transform->mode) .
-		       '_'.($transform->position) .
-		       ($transform->quality ? '_'.$transform->quality : '');
-	}
-
 	/**
 	 * Get a local image source to use for transforms.
 	 *
@@ -842,5 +789,68 @@ class AssetTransformsService extends BaseApplicationComponent
 				IOHelper::move($localCopy, $destination);
 			}
 		}
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving transforms.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createTransformQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, name, handle, mode, position, height, width, quality, dimensionChangeTime')
+			->from('assettransforms')
+			->order('name');
+	}
+
+	/**
+	 * Returns a transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getTransformFolderName(AssetTransformModel $transform)
+	{
+		if ($transform->isNamedTransform())
+		{
+			return $this->_getNamedTransformFolderName($transform);
+		}
+		else
+		{
+			return $this->_getUnnamedTransformFolderName($transform);
+		}
+	}
+
+	/**
+	 * Returns a named transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getNamedTransformFolderName(AssetTransformModel $transform)
+	{
+		return '_'.$transform->handle;
+	}
+
+	/**
+	 * Returns an unnamed transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
+	{
+		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
+		       '_'.($transform->mode) .
+		       '_'.($transform->position) .
+		       ($transform->quality ? '_'.$transform->quality : '');
 	}
 }

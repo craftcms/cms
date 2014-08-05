@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PluginsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns a plugin by its class handle.
 	 *

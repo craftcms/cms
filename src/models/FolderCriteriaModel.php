@@ -13,6 +13,9 @@ namespace Craft;
  */
 class FolderCriteriaModel extends BaseModel
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return array

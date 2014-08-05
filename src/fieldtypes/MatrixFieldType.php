@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MatrixFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -483,6 +487,10 @@ class MatrixFieldType extends BaseFieldType
 		}
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Returns the settings model.
 	 *
@@ -492,6 +500,10 @@ class MatrixFieldType extends BaseFieldType
 	{
 		return new MatrixSettingsModel($this->model);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns info about each field type for the configurator.

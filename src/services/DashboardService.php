@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DashboardService extends BaseApplicationComponent
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all installed widget types.
 	 *
@@ -229,6 +233,10 @@ class DashboardService extends BaseApplicationComponent
 
 		return true;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Adds the default widgets to the logged-in user.

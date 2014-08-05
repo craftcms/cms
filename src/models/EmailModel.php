@@ -13,34 +13,9 @@ namespace Craft;
  */
 class EmailModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$settings = craft()->email->getSettings();
-
-		$fromEmail = !empty($settings['emailAddress']) ? $settings['emailAddress'] : '';
-		$fromName =  !empty($settings['senderName']) ? $settings['senderName'] : '';
-
-		return array(
-			'fromEmail'         => array(AttributeType::Email, 'required' => true, 'default' => $fromEmail),
-			'fromName'          => array(AttributeType::String, 'default' => $fromName),
-			'toEmail'           => array(AttributeType::Email, 'required' => true),
-			'toFirstName'       => array(AttributeType::String),
-			'toLastName'        => array(AttributeType::String),
-			'subject'           => array(AttributeType::String, 'required' => true),
-			'body'              => array(AttributeType::String, 'required' => true),
-			'htmlBody'          => array(AttributeType::String),
-			'replyTo'           => array(AttributeType::Email),
-			'sender'            => array(AttributeType::Email),
-			'cc'                => array(AttributeType::Mixed),
-			'bcc'               => array(AttributeType::Mixed),
-			'stringAttachments' => array(AttributeType::Mixed),
-			'attachments'       => array(AttributeType::Mixed),
-			'customHeaders'     => array(AttributeType::Mixed),
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or binary data, such as a BLOB record from a database.
@@ -75,5 +50,38 @@ class EmailModel extends BaseModel
 		$existingAttachments = $this->attachments;
 		$existingAttachments[] = array('path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type);
 		$this->attachments = $existingAttachments;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$settings = craft()->email->getSettings();
+
+		$fromEmail = !empty($settings['emailAddress']) ? $settings['emailAddress'] : '';
+		$fromName =  !empty($settings['senderName']) ? $settings['senderName'] : '';
+
+		return array(
+			'fromEmail'         => array(AttributeType::Email, 'required' => true, 'default' => $fromEmail),
+			'fromName'          => array(AttributeType::String, 'default' => $fromName),
+			'toEmail'           => array(AttributeType::Email, 'required' => true),
+			'toFirstName'       => array(AttributeType::String),
+			'toLastName'        => array(AttributeType::String),
+			'subject'           => array(AttributeType::String, 'required' => true),
+			'body'              => array(AttributeType::String, 'required' => true),
+			'htmlBody'          => array(AttributeType::String),
+			'replyTo'           => array(AttributeType::Email),
+			'sender'            => array(AttributeType::Email),
+			'cc'                => array(AttributeType::Mixed),
+			'bcc'               => array(AttributeType::Mixed),
+			'stringAttachments' => array(AttributeType::Mixed),
+			'attachments'       => array(AttributeType::Mixed),
+			'customHeaders'     => array(AttributeType::Mixed),
+		);
 	}
 }

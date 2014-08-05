@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DateFormatter extends \CDateFormatter
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -37,6 +41,10 @@ class DateFormatter extends \CDateFormatter
 	 * @var
 	 */
 	private $_timepickerPhpFormat;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the jQuery UI Datepicker date format.
@@ -134,6 +142,10 @@ class DateFormatter extends \CDateFormatter
 
 		return parent::formatDateTime($timestamp, $dateWidth, $timeWidth);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the date format used by the datepicker.  Similar to 'short' except we want to use 4 digit years instead of 2.

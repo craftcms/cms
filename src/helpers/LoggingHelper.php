@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LoggingHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param      $level
 	 * @param      $time

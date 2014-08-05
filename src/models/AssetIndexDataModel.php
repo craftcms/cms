@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetIndexDataModel extends BaseComponentModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the translated source name as the string representation.
 	 *
@@ -22,6 +26,10 @@ class AssetIndexDataModel extends BaseComponentModel
 	{
 		return $this->uri;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return array

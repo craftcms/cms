@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	// Groups
 	// ======
 

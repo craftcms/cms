@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DropdownFieldType extends BaseOptionsFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -21,16 +25,6 @@ class DropdownFieldType extends BaseOptionsFieldType
 	public function getName()
 	{
 		return Craft::t('Dropdown');
-	}
-
-	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Dropdown Options');
 	}
 
 	/**
@@ -63,5 +57,19 @@ class DropdownFieldType extends BaseOptionsFieldType
 			'value'   => $value,
 			'options' => $options
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Dropdown Options');
 	}
 }

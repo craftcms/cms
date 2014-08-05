@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DateFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -31,19 +35,6 @@ class DateFieldType extends BaseFieldType
 	public function defineContentAttribute()
 	{
 		return AttributeType::DateTime;
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'showDate' => array(AttributeType::Bool, 'default' => true),
-			'showTime' => AttributeType::Bool,
-		);
 	}
 
 	/**
@@ -200,5 +191,22 @@ class DateFieldType extends BaseFieldType
 		}
 
 		return $settings;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'showDate' => array(AttributeType::Bool, 'default' => true),
+			'showTime' => AttributeType::Bool,
+		);
 	}
 }

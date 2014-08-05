@@ -13,25 +13,26 @@ namespace Craft;
  */
 class AssetOperationResponseModel extends BaseModel
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const StatusError = 'error';
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
+
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var array
 	 */
 	private $_data = array();
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
-			'errorMessage'	=> AttributeType::String
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Set an error message.
@@ -169,5 +170,20 @@ class AssetOperationResponseModel extends BaseModel
 		}
 
 		return array();
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
+			'errorMessage'	=> AttributeType::String
+		);
 	}
 }

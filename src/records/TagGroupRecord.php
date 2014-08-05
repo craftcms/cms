@@ -13,24 +13,16 @@ namespace Craft;
  */
 class TagGroupRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'taggroups';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'required' => true),
-			'fieldLayoutId' => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -62,6 +54,22 @@ class TagGroupRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'name'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'required' => true),
+			'fieldLayoutId' => AttributeType::Number,
 		);
 	}
 }

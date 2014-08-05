@@ -13,22 +13,16 @@ namespace Craft;
  */
 class SessionRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'sessions';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'token' => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true),
-		);
 	}
 
 	/**
@@ -50,6 +44,20 @@ class SessionRecord extends BaseRecord
 			array('columns' => array('uid')),
 			array('columns' => array('token')),
 			array('columns' => array('dateUpdated')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'token' => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true),
 		);
 	}
 }

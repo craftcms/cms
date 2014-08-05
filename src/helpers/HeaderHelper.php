@@ -14,6 +14,10 @@ namespace Craft;
  */
 class HeaderHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param $extension
 	 *

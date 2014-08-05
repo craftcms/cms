@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TemplatesService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -102,6 +106,10 @@ class TemplatesService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_renderingTemplate;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
@@ -903,6 +911,25 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPluginsLoaded(Event $event)
+	{
+		foreach ($this->_twigs as $twig)
+		{
+			$this->_addPluginTwigExtensions($twig);
+		}
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
 	 * Returns the Twig environment options
 	 *
 	 * @return array
@@ -1038,22 +1065,7 @@ class TemplatesService extends BaseApplicationComponent
 		else
 		{
 			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-			craft()->on('plugins.loadPlugins', array($this, '_onPluginsLoaded'));
-		}
-	}
-
-	/**
-	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function _onPluginsLoaded(Event $event)
-	{
-		foreach ($this->_twigs as $twig)
-		{
-			$this->_addPluginTwigExtensions($twig);
+			craft()->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
 		}
 	}
 

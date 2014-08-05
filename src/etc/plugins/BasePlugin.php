@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -28,15 +32,9 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	protected $componentType = 'Plugin';
 
-	/**
-	 * Returns the plugin's source language
-	 *
-	 * @return string
-	 */
-	public function getSourceLanguage()
-	{
-		return craft()->sourceLanguage;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the plugin’s version.
@@ -58,6 +56,41 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 * @return string
 	 */
 	abstract public function getDeveloperUrl();
+
+	/**
+	 * A wrapper for logging with plugins.
+	 *
+	 * @param string $msg
+	 * @param string $level
+	 *
+	 * @param bool $force
+	 */
+	public static function log($msg, $level = LogLevel::Info, $force = false)
+	{
+		$plugin = get_called_class();
+
+		// Chunk off any namespaces
+		$parts = explode('\\', $plugin);
+		if (count($parts) > 0)
+		{
+			$plugin = $parts[count($parts) - 1];
+		}
+
+		// Remove the trailing 'Plugin'.
+		$plugin = str_replace('Plugin', '', $plugin);
+
+		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
+	}
+
+	/**
+	 * Returns the plugin's source language
+	 *
+	 * @return string
+	 */
+	public function getSourceLanguage()
+	{
+		return craft()->sourceLanguage;
+	}
 
 	/**
 	 * Returns the URL to the plugin's settings in the CP.
@@ -178,30 +211,5 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 		}
 
 		return $records;
-	}
-
-	/**
-	 * A wrapper for logging with plugins.
-	 *
-	 * @param string $msg
-	 * @param string $level
-	 *
-	 * @param bool $force
-	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false)
-	{
-		$plugin = get_called_class();
-
-		// Chunk off any namespaces
-		$parts = explode('\\', $plugin);
-		if (count($parts) > 0)
-		{
-			$plugin = $parts[count($parts) - 1];
-		}
-
-		// Remove the trailing 'Plugin'.
-		$plugin = str_replace('Plugin', '', $plugin);
-
-		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
 	}
 }

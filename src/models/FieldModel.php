@@ -13,7 +13,18 @@ namespace Craft;
  */
 class FieldModel extends BaseComponentModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_fieldType;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the translated field name as the string representation.
@@ -23,24 +34,6 @@ class FieldModel extends BaseComponentModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'groupId'      => AttributeType::Number,
-			'name'         => AttributeType::String,
-			'handle'       => AttributeType::String,
-			'context'      => AttributeType::String,
-			'instructions' => AttributeType::String,
-			'required'     => AttributeType::Bool,
-			'translatable' => AttributeType::Bool,
-
-			'oldHandle'    => AttributeType::String,
-		));
 	}
 
 	/**
@@ -76,5 +69,27 @@ class FieldModel extends BaseComponentModel
 	public function getGroup()
 	{
 		return craft()->fields->getGroupById($this->groupId);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'groupId'      => AttributeType::Number,
+			'name'         => AttributeType::String,
+			'handle'       => AttributeType::String,
+			'context'      => AttributeType::String,
+			'instructions' => AttributeType::String,
+			'required'     => AttributeType::Bool,
+			'translatable' => AttributeType::Bool,
+
+			'oldHandle'    => AttributeType::String,
+		));
 	}
 }

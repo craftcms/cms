@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseElementFieldType extends BaseFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string $elementType The element type this field deals with.
 	 */
@@ -43,6 +47,10 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected $sortable = true;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -61,32 +69,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	public function defineContentAttribute()
 	{
 		return false;
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		if ($this->allowMultipleSources)
-		{
-			$settings['sources'] = AttributeType::Mixed;
-		}
-		else
-		{
-			$settings['source'] = AttributeType::String;
-		}
-
-		$settings['targetLocale'] = AttributeType::String;
-
-		if ($this->allowLimit)
-		{
-			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
-		}
-
-		return $settings;
 	}
 
 	/**
@@ -252,18 +234,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the label for the "Add" button.
-	 *
-	 * @return string
-	 */
-	protected function getAddButtonLabel()
-	{
-		return Craft::t('Add {type}', array(
-			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
-		));
-	}
-
-	/**
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
@@ -290,6 +260,22 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			return '<p class="light">'.Craft::t('Nothing selected.').'</p>';
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the "Add" button.
+	 *
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add {type}', array(
+			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
+		));
 	}
 
 	/**
@@ -433,5 +419,31 @@ abstract class BaseElementFieldType extends BaseFieldType
 				)
 			));
 		}
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		if ($this->allowMultipleSources)
+		{
+			$settings['sources'] = AttributeType::Mixed;
+		}
+		else
+		{
+			$settings['source'] = AttributeType::String;
+		}
+
+		$settings['targetLocale'] = AttributeType::String;
+
+		if ($this->allowLimit)
+		{
+			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
+		}
+
+		return $settings;
 	}
 }

@@ -13,10 +13,18 @@ namespace Craft;
  */
 class CraftVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_rebrandVariable;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param string $name
@@ -95,9 +103,8 @@ class CraftVariable
 		return craft()->hasPackage($packageName);
 	}
 
-	// -------------------------------------------
-	//  Template variable classes
-	// -------------------------------------------
+	// Template variable classes
+	// =========================
 
 	/**
 	 * @return AppVariable

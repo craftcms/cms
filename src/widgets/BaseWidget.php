@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component this is
 	 */
@@ -27,6 +31,10 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	 * @var bool How many columns the widget should span, if there's enough room.
 	 */
 	protected $colspan = 1;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this component should be selectable when choosing a component of this type.

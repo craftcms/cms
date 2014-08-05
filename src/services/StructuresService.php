@@ -13,12 +13,21 @@ namespace Craft;
  */
 class StructuresService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_rootElementRecordsByStructureId;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	// Structure CRUD
+	// ==============
 
 	/**
 	 * Returns a structure by its ID.
@@ -194,7 +203,9 @@ class StructuresService extends BaseApplicationComponent
 		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
 	}
 
-	// Private methods
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a structure element record from given structure and element IDs.

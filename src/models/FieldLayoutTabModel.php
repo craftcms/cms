@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldLayoutTabModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -23,18 +27,9 @@ class FieldLayoutTabModel extends BaseModel
 	 */
 	private $_fields;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'name'      => AttributeType::Name,
-			'sortOrder' => AttributeType::SortOrder,
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the tab's layout.
@@ -123,5 +118,22 @@ class FieldLayoutTabModel extends BaseModel
 
 			$this->_fields[] = $field;
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'        => AttributeType::Number,
+			'layoutId'  => AttributeType::Number,
+			'name'      => AttributeType::Name,
+			'sortOrder' => AttributeType::SortOrder,
+		);
 	}
 }

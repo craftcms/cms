@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DbConnection extends \CDbConnection
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
@@ -192,6 +196,10 @@ class DbConnection extends \CDbConnection
 		return $tablePrefix;
 
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.

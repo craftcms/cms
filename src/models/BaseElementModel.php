@@ -13,9 +13,16 @@ namespace Craft;
  */
 abstract class BaseElementModel extends BaseModel
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
+
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var
@@ -87,27 +94,67 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	private $_siblingsCriteria;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'enabled'       => array(AttributeType::Bool, 'default' => true),
-			'archived'      => array(AttributeType::Bool, 'default' => false),
-			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
-			'slug'          => AttributeType::String,
-			'uri'           => AttributeType::String,
-			'dateCreated'   => AttributeType::DateTime,
-			'dateUpdated'   => AttributeType::DateTime,
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
-			'root'          => AttributeType::Number,
-			'lft'           => AttributeType::Number,
-			'rgt'           => AttributeType::Number,
-			'level'         => AttributeType::Number,
-		);
+	/**
+	 * Treats custom fields as properties.
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		if (parent::__isset($name) || $this->getFieldByHandle($name))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Getter
+	 *
+	 * @param string $name
+	 *
+	 * @throws \Exception
+	 * @return mixed
+	 */
+	public function __get($name)
+	{
+		// Run through the BaseModel/CModel stuff first
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			// Is $name a field handle?
+			$field = $this->getFieldByHandle($name);
+
+			if ($field)
+			{
+				return $this->_getPreppedContentForField($field);
+			}
+
+			// Fine, throw the exception
+			throw $e;
+		}
+	}
+
+	/**
+	 * Use the element's title as its string representation.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return (string) $this->getTitle();
 	}
 
 	/**
@@ -142,16 +189,6 @@ abstract class BaseElementModel extends BaseModel
 		}
 
 		return $model;
-	}
-
-	/**
-	 * Use the element's title as its string representation.
-	 *
-	 * @return string
-	 */
-	public function __toString()
-	{
-		return (string) $this->getTitle();
 	}
 
 	/**
@@ -692,25 +729,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Treats custom fields as properties.
-	 *
-	 * @param string $name
-	 *
-	 * @return bool
-	 */
-	public function __isset($name)
-	{
-		if (parent::__isset($name) || $this->getFieldByHandle($name))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
 	 * Treats custom fields as array offsets.
 	 *
 	 * @param mixed $offset
@@ -726,36 +744,6 @@ abstract class BaseElementModel extends BaseModel
 		else
 		{
 			return false;
-		}
-	}
-
-	/**
-	 * Getter
-	 *
-	 * @param string $name
-	 *
-	 * @throws \Exception
-	 * @return mixed
-	 */
-	public function __get($name)
-	{
-		// Run through the BaseModel/CModel stuff first
-		try
-		{
-			return parent::__get($name);
-		}
-		catch (\Exception $e)
-		{
-			// Is $name a field handle?
-			$field = $this->getFieldByHandle($name);
-
-			if ($field)
-			{
-				return $this->_getPreppedContentForField($field);
-			}
-
-			// Fine, throw the exception
-			throw $e;
 		}
 	}
 
@@ -985,24 +973,6 @@ abstract class BaseElementModel extends BaseModel
 		return craft()->content->fieldContext;
 	}
 
-	// Deprecated methods
-
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
-	 *
-	 * @param mixed $field
-	 *
-	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
-	 * @return ElementCriteriaModel
-	 */
-	private function _getRelChildren($field = null)
-	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->childOf    = $this;
-		$criteria->childField = $field;
-		return $criteria;
-	}
-
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
@@ -1023,7 +993,9 @@ abstract class BaseElementModel extends BaseModel
 		return $criteria;
 	}
 
-	// Protected and private methods
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Returns the field with a given handle.
@@ -1044,6 +1016,49 @@ abstract class BaseElementModel extends BaseModel
 		$contentService->fieldContext = $originalFieldContext;
 
 		return $field;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'enabled'       => array(AttributeType::Bool, 'default' => true),
+			'archived'      => array(AttributeType::Bool, 'default' => false),
+			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
+			'slug'          => AttributeType::String,
+			'uri'           => AttributeType::String,
+			'dateCreated'   => AttributeType::DateTime,
+			'dateUpdated'   => AttributeType::DateTime,
+
+			'root'          => AttributeType::Number,
+			'lft'           => AttributeType::Number,
+			'rgt'           => AttributeType::Number,
+			'level'         => AttributeType::Number,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
+	 *
+	 * @param mixed $field
+	 *
+	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
+	 * @return ElementCriteriaModel
+	 */
+	private function _getRelChildren($field = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->childOf    = $this;
+		$criteria->childField = $field;
+		return $criteria;
 	}
 
 	/**

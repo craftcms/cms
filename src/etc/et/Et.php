@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Et
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -42,6 +46,41 @@ class Et
 	 * @var string
 	 */
 	private $_destinationFileName;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @param     $endpoint
+	 * @param int $timeout
+	 * @param int $connectTimeout
+	 *
+	 * @return Et
+	 */
+	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+	{
+		$endpoint .= craft()->config->get('endpointSuffix');
+
+		$this->_endpoint = $endpoint;
+		$this->_timeout = $timeout;
+		$this->_connectTimeout = $connectTimeout;
+
+		$this->_model = new EtModel(array(
+			'licenseKey'        => $this->_getLicenseKey(),
+			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
+			'requestIp'         => craft()->request->getIpAddress(),
+			'requestTime'       => DateTimeHelper::currentTimeStamp(),
+			'requestPort'       => craft()->request->getPort(),
+			'localBuild'        => CRAFT_BUILD,
+			'localVersion'      => CRAFT_VERSION,
+			'localEdition'      => craft()->getEdition(),
+			'userEmail'         => craft()->userSession->getUser()->email,
+			'track'             => CRAFT_TRACK,
+		));
+
+		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
+	}
 
 	/**
 	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait indefinitely.
@@ -91,37 +130,6 @@ class Et
 	public function setDestinationFileName($destinationFileName)
 	{
 		$this->_destinationFileName = $destinationFileName;
-	}
-
-	/**
-	 * @param     $endpoint
-	 * @param int $timeout
-	 * @param int $connectTimeout
-	 *
-	 * @return Et
-	 */
-	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
-	{
-		$endpoint .= craft()->config->get('endpointSuffix');
-
-		$this->_endpoint = $endpoint;
-		$this->_timeout = $timeout;
-		$this->_connectTimeout = $connectTimeout;
-
-		$this->_model = new EtModel(array(
-			'licenseKey'        => $this->_getLicenseKey(),
-			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
-			'requestIp'         => craft()->request->getIpAddress(),
-			'requestTime'       => DateTimeHelper::currentTimeStamp(),
-			'requestPort'       => craft()->request->getPort(),
-			'localBuild'        => CRAFT_BUILD,
-			'localVersion'      => CRAFT_VERSION,
-			'localEdition'      => craft()->getEdition(),
-			'userEmail'         => craft()->userSession->getUser()->email,
-			'track'             => CRAFT_TRACK,
-		));
-
-		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
 	}
 
 	/**
@@ -269,6 +277,10 @@ class Et
 
 		return null;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @return null|string

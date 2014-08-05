@@ -13,8 +13,23 @@ namespace Craft;
  */
 class EmailService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_settings;
+
+	/**
+	 * @var int
+	 */
 	private $_defaultEmailTimeout = 10;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Sends an email.
@@ -157,6 +172,10 @@ class EmailService extends BaseApplicationComponent
 
 		return $success;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param UserModel  $user

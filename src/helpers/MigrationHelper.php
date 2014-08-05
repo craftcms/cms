@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MigrationHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -32,6 +36,10 @@ class MigrationHelper
 	 * @var string
 	 */
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Refreshes our record of everything.
@@ -334,6 +342,10 @@ class MigrationHelper
 			static::_restoreAllForeignKeysOnTable($fk->table);
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns info about all of the tables.

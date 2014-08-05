@@ -13,6 +13,10 @@ namespace Craft;
  */
 class SystemSettingsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns whether a setting category exists.
 	 *

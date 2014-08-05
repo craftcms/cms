@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
+	////////////////////
+	// METHODS
+	////////////////////
+
 	// Finding Elements
 	// ================
 
@@ -1607,8 +1611,9 @@ class ElementsService extends BaseApplicationComponent
 		$this->raiseEvent('onMergeElements', $event);
 	}
 
-	// Private functions
-	// =================
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the unique element IDs that match a given element query.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetElementType extends BaseElementType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the element type name.
 	 *
@@ -355,6 +359,10 @@ class AssetElementType extends BaseElementType
 
 		return $success;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Transforms an asset folder tree into a source list.

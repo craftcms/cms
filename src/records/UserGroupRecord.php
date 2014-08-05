@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -26,21 +30,25 @@ class UserGroupRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineRelations()
+	{
+		return array(
+			'users' => array(static::MANY_MANY, 'UserRecord', 'usergroups_users(groupId, userId)'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(
 			'name'   => array(AttributeType::Name, 'required' => true),
 			'handle' => array(AttributeType::Handle, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'users' => array(static::MANY_MANY, 'UserRecord', 'usergroups_users(groupId, userId)'),
 		);
 	}
 }

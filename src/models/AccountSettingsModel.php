@@ -13,19 +13,9 @@ namespace Craft;
  */
 class AccountSettingsModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !craft()->config->get('useEmailAsUsername');
-
-		return array(
-			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'email'    => array(AttributeType::Email, 'required' => true),
-			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param null $attributes
@@ -42,5 +32,23 @@ class AccountSettingsModel extends BaseModel
 		}
 
 		return parent::validate($attributes, false);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$requireUsername = !craft()->config->get('useEmailAsUsername');
+
+		return array(
+			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
+			'email'    => array(AttributeType::Email, 'required' => true),
+			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)
+		);
 	}
 }

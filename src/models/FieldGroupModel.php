@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldGroupModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the group name as the string representation.
 	 *
@@ -24,6 +28,20 @@ class FieldGroupModel extends BaseModel
 	}
 
 	/**
+	 * Returns the group's fields.
+	 *
+	 * @return array
+	 */
+	public function getFields()
+	{
+		return craft()->fields->getFieldsByGroupId($this->id);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -32,15 +50,5 @@ class FieldGroupModel extends BaseModel
 			'id'   => AttributeType::Number,
 			'name' => AttributeType::Name,
 		);
-	}
-
-	/**
-	 * Returns the group's fields.
-	 *
-	 * @return array
-	 */
-	public function getFields()
-	{
-		return craft()->fields->getFieldsByGroupId($this->id);
 	}
 }

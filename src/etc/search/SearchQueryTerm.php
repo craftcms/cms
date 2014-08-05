@@ -15,25 +15,29 @@ namespace Craft;
  */
 class SearchQueryTerm
 {
-	/**
-	 * @var bool
-	 */
-	public $exclude   = false;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var bool
 	 */
-	public $exact     = false;
+	public $exclude = false;
 
 	/**
 	 * @var bool
 	 */
-	public $subLeft   = false;
+	public $exact = false;
 
 	/**
 	 * @var bool
 	 */
-	public $subRight  = false;
+	public $subLeft = false;
+
+	/**
+	 * @var bool
+	 */
+	public $subRight = false;
 
 	/**
 	 * @var null
@@ -43,5 +47,5 @@ class SearchQueryTerm
 	/**
 	 * @var null
 	 */
-	public $term      = null;
+	public $term = null;
 }

@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Client);
  */
 class EmailMessagesVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all of the system email messages.
 	 *

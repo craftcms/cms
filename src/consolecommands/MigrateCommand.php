@@ -41,6 +41,10 @@ namespace Craft;
  */
 class MigrateCommand extends \MigrateCommand
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Used for ensuring a plugin's migration exists if the action is "create".
 	 *
@@ -326,6 +330,18 @@ class MigrateCommand extends \MigrateCommand
 	}
 
 	/**
+	 * Gets the migration template used for generating new migrations.
+	 *
+	 * Overriding Yii's implementation with Craft specific logic.
+	 *
+	 * @return string
+	 */
+	public function getTemplate()
+	{
+		return craft()->migrations->getTemplate();
+	}
+
+	/**
 	 * Used for seeing any new migrations that haven't run yet in Craft or a plugin.
 	 *
 	 *     yiic migrate new PluginHandle
@@ -380,6 +396,10 @@ class MigrateCommand extends \MigrateCommand
 		}
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Gets the migration history for either Craft or a plugin.
 	 *
@@ -416,17 +436,9 @@ class MigrateCommand extends \MigrateCommand
 		return craft()->migrations->getNewMigrations($plugin);
 	}
 
-	/**
-	 * Gets the migration template used for generating new migrations.
-	 *
-	 * Overriding Yii's implementation with Craft specific logic.
-	 *
-	 * @return string
-	 */
-	public function getTemplate()
-	{
-		return craft()->migrations->getTemplate();
-	}
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Given a plugin handle, will retrieve it, or display an error if it doesn't exist or is disabled.

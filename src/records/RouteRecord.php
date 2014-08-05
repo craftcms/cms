@@ -13,26 +13,16 @@ namespace Craft;
  */
 class RouteRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'routes';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'     => AttributeType::Locale,
-			'urlParts'   => array(AttributeType::String, 'required' => true),
-			'urlPattern' => array(AttributeType::String, 'required' => true),
-			'template'   => array(AttributeType::String, 'required' => true),
-			'sortOrder'  => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -53,6 +43,24 @@ class RouteRecord extends BaseRecord
 		return array(
 			array('columns' => array('locale')),
 			array('columns' => array('urlPattern'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'     => AttributeType::Locale,
+			'urlParts'   => array(AttributeType::String, 'required' => true),
+			'urlPattern' => array(AttributeType::String, 'required' => true),
+			'template'   => array(AttributeType::String, 'required' => true),
+			'sortOrder'  => AttributeType::SortOrder,
 		);
 	}
 }

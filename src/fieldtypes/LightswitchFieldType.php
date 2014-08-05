@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LightswitchFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *

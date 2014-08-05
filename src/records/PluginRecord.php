@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PluginRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -20,6 +24,20 @@ class PluginRecord extends BaseRecord
 	{
 		return 'plugins';
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'migrations' => array(static::HAS_MANY, 'MigrationRecord', 'pluginId'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return array
@@ -32,16 +50,6 @@ class PluginRecord extends BaseRecord
 			'enabled'     => AttributeType::Bool,
 			'settings'    => AttributeType::Mixed,
 			'installDate' => array(AttributeType::DateTime, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'migrations' => array(static::HAS_MANY, 'MigrationRecord', 'pluginId'),
 		);
 	}
 }

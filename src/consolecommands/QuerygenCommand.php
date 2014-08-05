@@ -13,10 +13,18 @@ namespace Craft;
  */
 class QuerygenCommand extends BaseCommand
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
 	public $defaultAction = 'all';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $args
@@ -201,6 +209,10 @@ class QuerygenCommand extends BaseCommand
 
 		return 1;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a record instance by its class name.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AppBehavior extends BaseBehavior
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -47,6 +51,10 @@ class AppBehavior extends BaseBehavior
 	 * @var bool
 	 */
 	private $_isDbConnectionValid = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
@@ -602,7 +610,9 @@ class AppBehavior extends BaseBehavior
 		return $this->getEdition() == Craft::Pro;
 	}
 
-	// Private methods
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Enables or disables Maintenance Mode

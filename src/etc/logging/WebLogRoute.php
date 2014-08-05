@@ -13,6 +13,10 @@ namespace Craft;
  */
 class WebLogRoute extends \CWebLogRoute
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param $view
 	 * @param $data

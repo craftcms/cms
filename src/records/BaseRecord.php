@@ -13,16 +13,28 @@ namespace Craft;
  */
 abstract class BaseRecord extends \CActiveRecord
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const RESTRICT = 'RESTRICT';
 	const CASCADE = 'CASCADE';
 	const NO_ACTION = 'NO ACTION';
 	const SET_DEFAULT = 'SET DEFAULT';
 	const SET_NULL = 'SET NULL';
 
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_attributeConfigs;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -65,6 +77,18 @@ abstract class BaseRecord extends \CActiveRecord
 	abstract public function getTableName();
 
 	/**
+	 * Returns an instance of the specified model
+	 *
+	 * @param string $class
+	 *
+	 * @return \CActiveRecord|object The model instance
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model(get_called_class());
+	}
+
+	/**
 	 * Returns the table's primary key.
 	 *
 	 * @return mixed
@@ -72,16 +96,6 @@ abstract class BaseRecord extends \CActiveRecord
 	public function primaryKey()
 	{
 		return 'id';
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array();
 	}
 
 	/**
@@ -437,18 +451,6 @@ abstract class BaseRecord extends \CActiveRecord
 	// CModel and CActiveRecord methods
 
 	/**
-	 * Returns an instance of the specified model
-	 *
-	 * @param string $class
-	 *
-	 * @return \CActiveRecord|object The model instance
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model(get_called_class());
-	}
-
-	/**
 	 * Returns the name of the associated database table.
 	 *
 	 * @return string
@@ -499,6 +501,70 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
+	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
+	 *
+	 * @param string $name  The attribute name.
+	 * @param mixed  $value The attribute value.
+	 *
+	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
+	 */
+	public function setAttribute($name, $value)
+	{
+		if (property_exists($this, $name))
+		{
+			$this->$name = $value;
+		}
+		else if (isset($this->getMetaData()->columns[$name]))
+		{
+			$this->_attributes[$name] = $value;
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Adds search criteria based on this model's attributes.
+	 *
+	 * @return \CActiveDataProvider
+	 */
+	public function search()
+	{
+		// Warning: Please modify the following code to remove attributes that should not be searched.
+		$criteria = new \CDbCriteria;
+
+		foreach (array_keys($this->getAttributeConfigs()) as $name)
+		{
+			$criteria->compare($name, $this->$name);
+		}
+
+		return new \CActiveDataProvider($this, array(
+			'criteria' => $criteria
+		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines this model's attributes.
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array();
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
 	 * Normalizes a relation's config
 	 *
 	 * @param string $name
@@ -532,51 +598,5 @@ abstract class BaseRecord extends \CActiveRecord
 				break;
 			}
 		}
-	}
-
-	/**
-	 * Adds search criteria based on this model's attributes.
-	 *
-	 * @return \CActiveDataProvider
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that should not be searched.
-		$criteria = new \CDbCriteria;
-
-		foreach (array_keys($this->getAttributeConfigs()) as $name)
-		{
-			$criteria->compare($name, $this->$name);
-		}
-
-		return new \CActiveDataProvider($this, array(
-			'criteria' => $criteria
-		));
-	}
-
-	/**
-	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
-	 *
-	 * @param string $name  The attribute name.
-	 * @param mixed  $value The attribute value.
-	 *
-	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
-	 */
-	public function setAttribute($name, $value)
-	{
-		if (property_exists($this, $name))
-		{
-			$this->$name = $value;
-		}
-		else if (isset($this->getMetaData()->columns[$name]))
-		{
-			$this->_attributes[$name] = $value;
-		}
-		else
-		{
-			return false;
-		}
-
-		return true;
 	}
 }

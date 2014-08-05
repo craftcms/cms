@@ -13,6 +13,10 @@ namespace Craft;
  */
 interface IFieldType extends ISavableComponentType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return mixed
 	 */

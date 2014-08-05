@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UpdatesVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns whether the update info is cached.
 	 *
@@ -68,6 +72,10 @@ class UpdatesVariable
 	{
 		return $this->_getManualUpdateInfo('handle');
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param string $type

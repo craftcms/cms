@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PluginNewReleaseModel extends BaseModel
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */

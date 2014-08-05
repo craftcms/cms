@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UserSessionVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns whether the user is logged in.
 	 *

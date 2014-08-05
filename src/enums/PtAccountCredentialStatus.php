@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class PtAccountCredentialStatus extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Valid   = 'valid';
 	const Invalid = 'invalid';
 }

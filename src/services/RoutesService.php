@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RoutesService extends BaseApplicationComponent
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the routes defined in craft/config/routes.php
 	 *

@@ -13,25 +13,16 @@ namespace Craft;
  */
 class ElementLocaleRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'elements_i18n';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'  => array(AttributeType::Locale, 'required' => true),
-			'slug'    => array(AttributeType::String),
-			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
-			'enabled' => array(AttributeType::Bool, 'default' => true),
-		);
 	}
 
 	/**
@@ -55,6 +46,23 @@ class ElementLocaleRecord extends BaseRecord
 			array('columns' => array('slug', 'locale')),
 			array('columns' => array('uri', 'locale'), 'unique' => true),
 			array('columns' => array('enabled')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'  => array(AttributeType::Locale, 'required' => true),
+			'slug'    => array(AttributeType::String),
+			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
+			'enabled' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 }

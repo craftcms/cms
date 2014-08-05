@@ -13,6 +13,10 @@ namespace Craft;
  */
 class NavItem_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param \Twig_Node_Expression_AssignName $valueTarget
 	 * @param \Twig_NodeInterface              $indent

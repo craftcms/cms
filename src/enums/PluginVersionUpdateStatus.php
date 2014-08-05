@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class PluginVersionUpdateStatus extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const UpToDate        = 'UpToDate';
 	const UpdateAvailable = 'UpdateAvailable';
 	const Deleted         = 'Deleted';

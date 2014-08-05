@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DbBackup
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -27,6 +31,10 @@ class DbBackup
 	 * @var string
 	 */
 	private $_filePath;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Dump all tables
@@ -91,6 +99,10 @@ class DbBackup
 	{
 		$value = trim($value);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param array $sql

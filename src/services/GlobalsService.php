@@ -13,6 +13,10 @@ namespace Craft;
  */
 class GlobalsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -32,6 +36,10 @@ class GlobalsService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_globalSetsById;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all of the global set IDs.

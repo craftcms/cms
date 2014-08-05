@@ -13,6 +13,10 @@ namespace Craft;
  */
 class NumberFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -21,20 +25,6 @@ class NumberFieldType extends BaseFieldType
 	public function getName()
 	{
 		return Craft::t('Number');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'min'      => array(AttributeType::Number, 'default' => 0),
-			'max'      => array(AttributeType::Number, 'compare' => '>= min'),
-			'decimals' => array(AttributeType::Number, 'default' => 0),
-		);
 	}
 
 	/**
@@ -100,5 +90,23 @@ class NumberFieldType extends BaseFieldType
 		{
 			return LocalizationHelper::normalizeNumber($data);
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'min'      => array(AttributeType::Number, 'default' => 0),
+			'max'      => array(AttributeType::Number, 'compare' => '>= min'),
+			'decimals' => array(AttributeType::Number, 'default' => 0),
+		);
 	}
 }

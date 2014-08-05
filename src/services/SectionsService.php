@@ -13,6 +13,10 @@ namespace Craft;
  */
 class SectionsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -42,6 +46,10 @@ class SectionsService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_entryTypesById;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all of the section IDs.
@@ -262,12 +270,12 @@ class SectionsService extends BaseApplicationComponent
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
 		$records = craft()->db->createCommand()
-							->select('*')
-							->from('sections_i18n sections_i18n')
-							->join('locales locales', 'locales.locale = sections_i18n.locale')
-							->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
-							->order('locales.sortOrder')
-							->queryAll();
+			->select('*')
+			->from('sections_i18n sections_i18n')
+			->join('locales locales', 'locales.locale = sections_i18n.locale')
+			->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
+			->order('locales.sortOrder')
+			->queryAll();
 
 		return SectionLocaleModel::populateModels($records, $indexBy);
 	}
@@ -1128,7 +1136,9 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
-	// Private methods
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sections.

@@ -13,24 +13,16 @@ namespace Craft;
  */
 class MatrixBlockTypeRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'matrixblocktypes';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'       => array(AttributeType::Name, 'required' => true),
-			'handle'     => array(AttributeType::Handle, 'required' => true),
-			'sortOrder'  => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -52,6 +44,22 @@ class MatrixBlockTypeRecord extends BaseRecord
 		return array(
 			array('columns' => array('name', 'fieldId'), 'unique' => true),
 			array('columns' => array('handle', 'fieldId'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'       => array(AttributeType::Name, 'required' => true),
+			'handle'     => array(AttributeType::Handle, 'required' => true),
+			'sortOrder'  => AttributeType::SortOrder,
 		);
 	}
 }

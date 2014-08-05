@@ -13,6 +13,10 @@ namespace Craft;
  */
 class CategoryRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */

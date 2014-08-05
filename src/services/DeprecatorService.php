@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DeprecatorService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -27,6 +31,10 @@ class DeprecatorService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_allLogs;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Logs a new deprecation error.
@@ -152,6 +160,10 @@ class DeprecatorService extends BaseApplicationComponent
 		$affectedRows = craft()->db->createCommand()->delete(static::$_tableName);
 		return (bool) $affectedRows;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.

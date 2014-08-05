@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserPermissionsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -24,6 +28,10 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_permissionsByUserId;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all of the known permissions, sorted by category.
@@ -326,6 +334,10 @@ class UserPermissionsService extends BaseApplicationComponent
 
 		return true;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the entry permissions for a given Single section.

@@ -13,10 +13,18 @@ namespace Craft;
  */
 class CheckboxesFieldType extends BaseOptionsFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	protected $multi = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of field this is.
@@ -26,16 +34,6 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	public function getName()
 	{
 		return Craft::t('Checkboxes');
-	}
-
-	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Checkbox Options');
 	}
 
 	/**
@@ -69,5 +67,19 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 			'options' => $options,
 			'values'  => $values
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Checkbox Options');
 	}
 }

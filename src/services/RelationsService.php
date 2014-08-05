@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RelationsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Saves some relations for a field.
 	 *

@@ -13,10 +13,18 @@ namespace Craft;
  */
 class Model extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	private $_attributeDefs;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -30,6 +38,10 @@ class Model extends BaseModel
 		$this->_attributeDefs = $attributeDefs;
 		parent::__construct();
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Defines this model's attributeDefs.

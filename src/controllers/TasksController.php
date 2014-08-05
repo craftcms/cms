@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TasksController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Runs any pending tasks.
 	 *
@@ -129,6 +133,10 @@ class TasksController extends BaseController
 
 		$this->returnJson($taskInfo);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns info about the currently running task, if there is one.

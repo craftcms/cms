@@ -13,7 +13,18 @@ namespace Craft;
  */
 class UserModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::User;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the full name or username as the string representation.
@@ -23,37 +34,6 @@ class UserModel extends BaseElementModel
 	public function __toString()
 	{
 		return $this->username;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !craft()->config->get('useEmailAsUsername');
-
-		return array_merge(parent::defineAttributes(), array(
-			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'photo'                      => AttributeType::String,
-			'firstName'                  => AttributeType::String,
-			'lastName'                   => AttributeType::String,
-			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
-			'password'                   => AttributeType::String,
-			'preferredLocale'            => AttributeType::Locale,
-			'admin'                      => AttributeType::Bool,
-			'client'                     => AttributeType::Bool,
-			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
-			'lastLoginDate'              => AttributeType::DateTime,
-			'invalidLoginCount'          => AttributeType::Number,
-			'lastInvalidLoginDate'       => AttributeType::DateTime,
-			'lockoutDate'                => AttributeType::DateTime,
-			'passwordResetRequired'      => AttributeType::Bool,
-			'lastPasswordChangeDate'     => AttributeType::DateTime,
-			'unverifiedEmail'            => AttributeType::Email,
-			'newPassword'                => AttributeType::String,
-			'currentPassword'            => AttributeType::String,
-			'verificationCodeIssuedDate' => AttributeType::DateTime,
-		));
 	}
 
 	/**
@@ -382,5 +362,40 @@ class UserModel extends BaseElementModel
 		}
 
 		return parent::validate($attributes, false);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$requireUsername = !craft()->config->get('useEmailAsUsername');
+
+		return array_merge(parent::defineAttributes(), array(
+			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
+			'photo'                      => AttributeType::String,
+			'firstName'                  => AttributeType::String,
+			'lastName'                   => AttributeType::String,
+			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
+			'password'                   => AttributeType::String,
+			'preferredLocale'            => AttributeType::Locale,
+			'admin'                      => AttributeType::Bool,
+			'client'                     => AttributeType::Bool,
+			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
+			'lastLoginDate'              => AttributeType::DateTime,
+			'invalidLoginCount'          => AttributeType::Number,
+			'lastInvalidLoginDate'       => AttributeType::DateTime,
+			'lockoutDate'                => AttributeType::DateTime,
+			'passwordResetRequired'      => AttributeType::Bool,
+			'lastPasswordChangeDate'     => AttributeType::DateTime,
+			'unverifiedEmail'            => AttributeType::Email,
+			'newPassword'                => AttributeType::String,
+			'currentPassword'            => AttributeType::String,
+			'verificationCodeIssuedDate' => AttributeType::DateTime,
+		));
 	}
 }

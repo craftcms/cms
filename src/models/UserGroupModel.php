@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the translated group name as the string representation.
 	 *
@@ -23,18 +27,6 @@ class UserGroupModel extends BaseModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['id'] = AttributeType::Number;
-		$attributes['name'] = AttributeType::String;
-		$attributes['handle'] = AttributeType::String;
-
-		return $attributes;
 	}
 
 	/**
@@ -54,5 +46,21 @@ class UserGroupModel extends BaseModel
 		{
 			return false;
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$attributes['id'] = AttributeType::Number;
+		$attributes['name'] = AttributeType::String;
+		$attributes['handle'] = AttributeType::String;
+
+		return $attributes;
 	}
 }

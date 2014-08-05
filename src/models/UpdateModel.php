@@ -13,17 +13,9 @@ namespace Craft;
  */
 class UpdateModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
-		$attributes['plugins']  = AttributeType::Mixed;
-		$attributes['errors']   = AttributeType::Mixed;
-
-		return $attributes;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param string $name
@@ -39,5 +31,21 @@ class UpdateModel extends BaseModel
 		}
 
 		parent::setAttribute($name, $value);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
+		$attributes['plugins']  = AttributeType::Mixed;
+		$attributes['errors']   = AttributeType::Mixed;
+
+		return $attributes;
 	}
 }

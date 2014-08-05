@@ -13,6 +13,10 @@ namespace Craft;
  */
 class IncludeTranslations_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles an IncludeTranslations_Node into PHP.
 	 *

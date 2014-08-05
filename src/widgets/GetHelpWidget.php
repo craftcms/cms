@@ -13,10 +13,18 @@ namespace Craft;
  */
 class GetHelpWidget extends BaseWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool Whether users should be able to select more than one of this widget type.
 	 */
 	protected $multi = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of widget this is.

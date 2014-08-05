@@ -13,23 +13,16 @@ namespace Craft;
  */
 class MigrationRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'migrations';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'version' => array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'required' => true),
-			'applyTime' => array(AttributeType::DateTime, 'required' => true),
-		);
 	}
 
 	/**
@@ -49,6 +42,21 @@ class MigrationRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('version'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'version' => array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'required' => true),
+			'applyTime' => array(AttributeType::DateTime, 'required' => true),
 		);
 	}
 }

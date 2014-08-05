@@ -13,6 +13,10 @@ namespace Craft;
  */
 class NumberFormatter extends \CNumberFormatter
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Formats a number using the decimal format defined in the locale.
 	 *

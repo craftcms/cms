@@ -13,6 +13,10 @@ namespace Craft;
  */
 class SiteSettingsModel extends BaseModel
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */

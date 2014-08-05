@@ -15,16 +15,9 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryVersionModel extends BaseEntryRevisionModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'versionId'   => AttributeType::Number,
-			'num'         => AttributeType::Number,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Populates a new model instance with a given set of attributes.
@@ -61,5 +54,20 @@ class EntryVersionModel extends BaseEntryRevisionModel
 		}
 
 		return $version;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'versionId'   => AttributeType::Number,
+			'num'         => AttributeType::Number,
+		));
 	}
 }

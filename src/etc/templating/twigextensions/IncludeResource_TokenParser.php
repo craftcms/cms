@@ -13,10 +13,18 @@ namespace Craft;
  */
 class IncludeResource_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
 	private $_tag;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

@@ -13,22 +13,18 @@ namespace Craft;
  */
 class FieldLayoutFieldModel extends BaseModel
 {
-	private $_layout;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * @return array
+	 * @var
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'tabId'     => AttributeType::Number,
-			'fieldId'   => AttributeType::Name,
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		);
-	}
+	private $_layout;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the tab's layout.
@@ -78,5 +74,24 @@ class FieldLayoutFieldModel extends BaseModel
 		{
 			return craft()->fields->getFieldById($this->fieldId);
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'        => AttributeType::Number,
+			'layoutId'  => AttributeType::Number,
+			'tabId'     => AttributeType::Number,
+			'fieldId'   => AttributeType::Name,
+			'required'  => AttributeType::Bool,
+			'sortOrder' => AttributeType::SortOrder,
+		);
 	}
 }

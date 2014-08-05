@@ -14,10 +14,18 @@ namespace Craft;
  */
 abstract class BaseEnum
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var null
 	 */
 	private static $_constants = null;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param      $name
@@ -49,6 +57,10 @@ abstract class BaseEnum
 		$values = array_values(static::_getConstants());
 		return in_array($value, $values, $strict);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @return array|null

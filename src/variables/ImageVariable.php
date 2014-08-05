@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ImageVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -22,6 +26,10 @@ class ImageVariable
 	 * @var
 	 */
 	protected $size;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

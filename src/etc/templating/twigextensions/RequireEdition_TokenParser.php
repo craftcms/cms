@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RequireEdition_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Parses {% requireEdition %} tags.
 	 *

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AppVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the Craft edition.
 	 *

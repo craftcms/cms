@@ -13,10 +13,18 @@ namespace Craft;
  */
 class TokensService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	private $_deletedExpiredTokens = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Creates a new token and returns it.

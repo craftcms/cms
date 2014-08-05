@@ -15,9 +15,9 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsService extends BaseApplicationComponent
 {
-	// -------------------------------------------
-	//  Drafts
-	// -------------------------------------------
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns a draft by its ID.
@@ -235,41 +235,6 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a draft record.
-	 *
-	 * @param EntryDraftModel $draft
-	 *
-	 * @throws Exception
-	 * @return EntryDraftRecord
-	 */
-	private function _getDraftRecord(EntryDraftModel $draft)
-	{
-		if ($draft->draftId)
-		{
-			$draftRecord = EntryDraftRecord::model()->findById($draft->draftId);
-
-			if (!$draftRecord)
-			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
-			}
-		}
-		else
-		{
-			$draftRecord = new EntryDraftRecord();
-			$draftRecord->entryId   = $draft->id;
-			$draftRecord->sectionId = $draft->sectionId;
-			$draftRecord->creatorId = $draft->creatorId;
-			$draftRecord->locale    = $draft->locale;
-		}
-
-		return $draftRecord;
-	}
-
-	// -------------------------------------------
-	//  Versions
-	// -------------------------------------------
-
-	/**
 	 * Returns a version by its ID.
 	 *
 	 * @param int $versionId
@@ -413,10 +378,6 @@ class EntryRevisionsService extends BaseApplicationComponent
 		}
 	}
 
-	// -------------------------------------------
-	//  Events
-	// -------------------------------------------
-
 	/**
 	 * Fires an 'onSaveDraft' event.
 	 *
@@ -475,6 +436,41 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function onRevertEntryToVersion(Event $event)
 	{
 		$this->raiseEvent('onRevertEntryToVersion', $event);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a draft record.
+	 *
+	 * @param EntryDraftModel $draft
+	 *
+	 * @throws Exception
+	 * @return EntryDraftRecord
+	 */
+	private function _getDraftRecord(EntryDraftModel $draft)
+	{
+		if ($draft->draftId)
+		{
+			$draftRecord = EntryDraftRecord::model()->findById($draft->draftId);
+
+			if (!$draftRecord)
+			{
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
+			}
+		}
+		else
+		{
+			$draftRecord = new EntryDraftRecord();
+			$draftRecord->entryId   = $draft->id;
+			$draftRecord->sectionId = $draft->sectionId;
+			$draftRecord->creatorId = $draft->creatorId;
+			$draftRecord->locale    = $draft->locale;
+		}
+
+		return $draftRecord;
 	}
 
 	/**

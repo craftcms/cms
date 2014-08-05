@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ModelHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * Default attribute configs
 	 *
@@ -46,6 +50,10 @@ class ModelHelper
 		ColumnType::Int       => 2147483648,
 		ColumnType::BigInt    => 9223372036854775808
 	);
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Normalizes an attribute's config.

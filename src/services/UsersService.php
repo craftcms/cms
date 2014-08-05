@@ -13,10 +13,18 @@ namespace Craft;
  */
 class UsersService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_usersById;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Gets a user by their ID in the database.  Returns null if one can’t be found.
@@ -896,8 +904,6 @@ class UsersService extends BaseApplicationComponent
 		}
 	}
 
-	// Events
-
 	/**
 	 * Fires an 'onBeforeSaveUser' event.
 	 *
@@ -1054,7 +1060,9 @@ class UsersService extends BaseApplicationComponent
 		$this->raiseEvent('onDeleteUser', $event);
 	}
 
-	// Private stuff
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Gets a user record by its ID.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class EntryTypeModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the handle as the string representation.
 	 *
@@ -21,23 +25,6 @@ class EntryTypeModel extends BaseModel
 	public function __toString()
 	{
 		return $this->handle;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'sectionId'     => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'hasTitleField' => array(AttributeType::Bool, 'default' => true),
-			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
-			'titleFormat'   => AttributeType::String,
-		);
 	}
 
 	/**
@@ -58,5 +45,26 @@ class EntryTypeModel extends BaseModel
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'sectionId'     => AttributeType::Number,
+			'fieldLayoutId' => AttributeType::Number,
+			'name'          => AttributeType::String,
+			'handle'        => AttributeType::String,
+			'hasTitleField' => array(AttributeType::Bool, 'default' => true),
+			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
+			'titleFormat'   => AttributeType::String,
+		);
 	}
 }

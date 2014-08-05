@@ -13,12 +13,20 @@ namespace Craft;
  */
 class EtService extends BaseApplicationComponent
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
 	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
 	const GetEditionInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getEditionInfo';
 	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return EtModel|null

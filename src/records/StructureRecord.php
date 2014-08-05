@@ -13,6 +13,10 @@ namespace Craft;
  */
 class StructureRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -24,21 +28,25 @@ class StructureRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
+	public function defineRelations()
+	{
+		return array(
+			'elements' => array(static::HAS_MANY, 'StructureElementRecord', 'structureId'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
 	protected function defineAttributes()
 	{
 		return array(
 			'maxLevels'      => array(AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt),
 			'movePermission' => AttributeType::String,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'elements' => array(static::HAS_MANY, 'StructureElementRecord', 'structureId'),
 		);
 	}
 }

@@ -13,6 +13,22 @@ namespace Craft;
  */
 class EtModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @return null
+	 */
+	public function decode()
+	{
+		echo JsonHelper::decode($this);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -67,13 +83,5 @@ class EtModel extends BaseModel
 		$attributes['errors'] = AttributeType::Mixed;
 
 		return $attributes;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function decode()
-	{
-		echo JsonHelper::decode($this);
 	}
 }

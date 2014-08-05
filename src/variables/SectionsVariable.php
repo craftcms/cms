@@ -13,6 +13,10 @@ namespace Craft;
  */
 class SectionsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all sections.
 	 *

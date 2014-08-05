@@ -13,7 +13,18 @@ namespace Craft;
  */
 class TagModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::Tag;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the tag name as its string representation.
@@ -23,17 +34,6 @@ class TagModel extends BaseElementModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'groupId' => AttributeType::Number,
-			'name'    => AttributeType::String,
-		));
 	}
 
 	/**
@@ -98,5 +98,20 @@ class TagModel extends BaseElementModel
 	{
 		craft()->deprecator->log('TagModel::getSet()', 'TagModel::getSet() has been deprecated. Use getGroup() instead.');
 		return $this->getGroup();
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'groupId' => AttributeType::Number,
+			'name'    => AttributeType::String,
+		));
 	}
 }

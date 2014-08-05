@@ -13,10 +13,9 @@ namespace Craft;
  */
 class FieldRecord extends BaseRecord
 {
-	/**
-	 * @var
-	 */
-	private $_oldHandle;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var array
@@ -52,6 +51,15 @@ class FieldRecord extends BaseRecord
 		'status',
 		'title',
 	);
+
+	/**
+	 * @var
+	 */
+	private $_oldHandle;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
@@ -92,22 +100,6 @@ class FieldRecord extends BaseRecord
 	public function getTableName()
 	{
 		return 'fields';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'         => array(AttributeType::Name, 'required' => true),
-			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
-			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
-			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
-			'translatable' => AttributeType::Bool,
-			'type'         => array(AttributeType::ClassName, 'required' => true),
-			'settings'     => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -154,5 +146,25 @@ class FieldRecord extends BaseRecord
 		$attributeConfigs['handle']['maxLength'] = 64 - strlen(craft()->content->fieldColumnPrefix);
 
 		return $attributeConfigs;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'         => array(AttributeType::Name, 'required' => true),
+			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
+			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
+			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
+			'translatable' => AttributeType::Bool,
+			'type'         => array(AttributeType::ClassName, 'required' => true),
+			'settings'     => AttributeType::Mixed,
+		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class EntriesController extends BaseEntriesController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -22,6 +26,10 @@ class EntriesController extends BaseEntriesController
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionViewSharedEntry');
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Edit an entry.
@@ -657,6 +665,10 @@ class EntriesController extends BaseEntriesController
 
 		$this->_showEntry($entry);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Preps entry edit variables.

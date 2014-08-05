@@ -11,8 +11,12 @@ namespace Craft;
  * @package   craft.app.enums
  * @since     2.0
  */
-class TaskStatus
+abstract class TaskStatus
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Pending = 'pending';
 	const Running = 'running';
 	const Error   = 'error';

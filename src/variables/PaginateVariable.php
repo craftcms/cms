@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PaginateVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -37,6 +41,10 @@ class PaginateVariable
 	 * @var
 	 */
 	public $totalPages;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the URL to a specific page

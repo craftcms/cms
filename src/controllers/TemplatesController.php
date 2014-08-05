@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TemplatesController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -24,6 +28,10 @@ class TemplatesController extends BaseController
 	 * @var bool
 	 */
 	public $allowAnonymous = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Renders a template.

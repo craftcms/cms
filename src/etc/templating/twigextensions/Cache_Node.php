@@ -13,10 +13,18 @@ namespace Craft;
  */
 class Cache_Node extends \Twig_Node
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var int
 	 */
 	private static $_cacheCount = 1;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param \Twig_Compiler $compiler

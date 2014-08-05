@@ -13,10 +13,18 @@ namespace Craft;
  */
 abstract class BaseComponentTypeVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var BaseComponentType
 	 */
 	protected $component;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -38,6 +46,18 @@ abstract class BaseComponentTypeVariable
 	public function __toString()
 	{
 		return $this->component->getName();
+	}
+
+	/**
+	 * Mass-populates instances of this class with a given set of models.
+	 *
+	 * @param array $models
+	 *
+	 * @return array
+	 */
+	public static function populateVariables($models)
+	{
+		return VariableHelper::populateVariables($models, get_called_class());
 	}
 
 	/**
@@ -78,17 +98,5 @@ abstract class BaseComponentTypeVariable
 	public function getSettingsHtml()
 	{
 		return $this->component->getSettingsHtml();
-	}
-
-	/**
-	 * Mass-populates instances of this class with a given set of models.
-	 *
-	 * @param array $models
-	 *
-	 * @return array
-	 */
-	public static function populateVariables($models)
-	{
-		return VariableHelper::populateVariables($models, get_called_class());
 	}
 }

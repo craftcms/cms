@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TemplateCacheService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -57,6 +61,10 @@ class TemplateCacheService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_deletedCachesByElementType;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns a cached template by its key.
@@ -478,6 +486,10 @@ class TemplateCacheService extends BaseApplicationComponent
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the current request path, including a "site:" or "cp:" prefix.

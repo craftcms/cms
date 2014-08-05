@@ -13,6 +13,10 @@ namespace Craft;
  */
 class StringHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -27,6 +31,10 @@ class StringHelper
 	 * @var
 	 */
 	private static $_iconv;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the character at a specific point in a potentially multibyte string.
@@ -465,6 +473,7 @@ class StringHelper
 	{
 		return mb_convert_case($string, MB_CASE_UPPER, "UTF-8");
 	}
+
 	/**
 	 * Returns a multibyte aware lower-case version of a string. Note: Not using mb_strtoupper because of
 	 * {@see https://bugs.php.net/bug.php?id=47742}
@@ -477,6 +486,10 @@ class StringHelper
 	{
 		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Get array of chars to be used for conversion.

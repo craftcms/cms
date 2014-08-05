@@ -13,10 +13,18 @@ namespace Craft;
  */
 class AssetFolderModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	private $_children = null;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the folder name as the string representation.
@@ -26,20 +34,6 @@ class AssetFolderModel extends BaseModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'       => AttributeType::Number,
-			'parentId' => AttributeType::Number,
-			'sourceId' => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'path'     => AttributeType::String,
-		);
 	}
 
 	/**
@@ -93,5 +87,23 @@ class AssetFolderModel extends BaseModel
 		}
 
 		$this->_children[] = $folder;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'       => AttributeType::Number,
+			'parentId' => AttributeType::Number,
+			'sourceId' => AttributeType::Number,
+			'name'     => AttributeType::String,
+			'path'     => AttributeType::String,
+		);
 	}
 }

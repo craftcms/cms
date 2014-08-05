@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DateTimeValidator extends \CValidator
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @param $object
 	 * @param $attribute

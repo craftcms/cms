@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ElementsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
@@ -207,6 +211,10 @@ class ElementsController extends BaseController
 			$this->_returnEditorHtml($element, false);
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the element type based on the posted element type class.

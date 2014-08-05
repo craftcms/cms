@@ -13,6 +13,10 @@ namespace Craft;
  */
 class DeleteStaleTemplateCachesTask extends BaseTask
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -43,6 +47,10 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 */
 	private $_deletedCacheIds;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the default description for this task.
 	 *
@@ -51,18 +59,6 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	public function getDescription()
 	{
 		return Craft::t('Deleting stale template caches');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'elementId' => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -160,6 +156,26 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 
 		return true;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'elementId' => AttributeType::Mixed,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.

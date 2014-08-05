@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseEntriesController extends BaseController
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Enforces all Edit Entry permissions.
 	 *

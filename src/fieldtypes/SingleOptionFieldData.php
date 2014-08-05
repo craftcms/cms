@@ -13,10 +13,18 @@ namespace Craft;
  */
 class SingleOptionFieldData extends OptionData
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_options;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the options.

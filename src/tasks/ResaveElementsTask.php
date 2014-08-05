@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -28,6 +32,10 @@ class ResaveElementsTask extends BaseTask
 	 */
 	private $_elementIds;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the default description for this task.
 	 *
@@ -40,19 +48,6 @@ class ResaveElementsTask extends BaseTask
 		return Craft::t('Resaving {type}', array(
 			'type' => StringHelper::toLowerCase($elementType->getName())
 		));
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'elementType' => AttributeType::String,
-			'criteria'    => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -106,5 +101,22 @@ class ResaveElementsTask extends BaseTask
 
 			return $error;
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'elementType' => AttributeType::String,
+			'criteria'    => AttributeType::Mixed,
+		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var BaseModel The model instance associated with the current component instance.
 	 */
@@ -22,6 +26,10 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 * @var BaseModel The model representing the current component instance's settings.
 	 */
 	private $_settings;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Gets the settings.
@@ -81,6 +89,10 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	{
 		return $settings;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Returns the settings model.

@@ -13,7 +13,15 @@ namespace Craft;
  */
 class ConsoleApp extends \CConsoleApplication
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	public $componentAliases;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Initializes the console app by creating the command runner.
@@ -91,14 +99,6 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
-	 * @return ConsoleCommandRunner
-	 */
-	protected function createCommandRunner()
-	{
-		return new ConsoleCommandRunner();
-	}
-
-	/**
 	 * Returns whether we are executing in the context on a console app.
 	 *
 	 * @return bool
@@ -106,5 +106,17 @@ class ConsoleApp extends \CConsoleApplication
 	public function isConsole()
 	{
 		return true;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return ConsoleCommandRunner
+	 */
+	protected function createCommandRunner()
+	{
+		return new ConsoleCommandRunner();
 	}
 }

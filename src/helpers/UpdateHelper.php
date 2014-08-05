@@ -13,10 +13,18 @@ namespace Craft;
  */
 class UpdateHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private static $_manifestData;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $manifestData

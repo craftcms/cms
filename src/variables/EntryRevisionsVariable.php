@@ -15,9 +15,12 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsVariable
 {
-	// -------------------------------------------
-	//  Drafts
-	// -------------------------------------------
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	// Drafts
+	// ======
 
 	/**
 	 * Returns entry drafts by an entry ID.
@@ -70,9 +73,8 @@ class EntryRevisionsVariable
 		return craft()->entryRevisions->getDraftByOffset($entryId, $offset);
 	}
 
-	// -------------------------------------------
-	//  Versions
-	// -------------------------------------------
+	// Versions
+	// ========
 
 	/**
 	 * Returns entry versions by an entry ID.

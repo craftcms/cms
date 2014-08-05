@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PluginsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array The type of components plugins can have. Defined in app/etc/config/common.php.
 	 */
@@ -47,6 +51,10 @@ class PluginsService extends BaseApplicationComponent
 	 * @var array Holds a list of all of the enabled plugin info indexed by the plugin class name.
 	 */
 	private $_enabledPluginInfo = array();
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return bool Returns whether plugins have been loaded yet for this request.
@@ -651,7 +659,6 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
 	{
-		$pluginHandle = $plugin->getClassHandle();
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
 		$classPath = craft()->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
 
@@ -670,7 +677,9 @@ class PluginsService extends BaseApplicationComponent
 		}
 	}
 
-	// Private Methods
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Throws a "no plugin exists" exception.

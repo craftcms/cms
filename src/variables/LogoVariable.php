@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Client);
  */
 class LogoVariable extends ImageVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Return the URL to the logo.
 	 *

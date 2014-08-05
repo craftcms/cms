@@ -13,6 +13,10 @@ namespace Craft;
  */
 class CategoryGroupLocaleModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -23,19 +27,9 @@ class CategoryGroupLocaleModel extends BaseModel
 	 */
 	public $nestedUrlFormatIsRequired = false;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'              => AttributeType::Number,
-			'groupId'         => AttributeType::Number,
-			'locale'          => AttributeType::Locale,
-			'urlFormat'       => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-			'nestedUrlFormat' => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns this model's validation rules.
@@ -57,5 +51,23 @@ class CategoryGroupLocaleModel extends BaseModel
 		}
 
 		return $rules;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'              => AttributeType::Number,
+			'groupId'         => AttributeType::Number,
+			'locale'          => AttributeType::Locale,
+			'urlFormat'       => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
+			'nestedUrlFormat' => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
+		);
 	}
 }

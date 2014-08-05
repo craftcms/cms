@@ -13,10 +13,18 @@ namespace Craft;
  */
 class DbCommand extends \CDbCommand
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array Captures the joined tables
 	 */
 	private $_joinedTables;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -686,6 +694,10 @@ class DbCommand extends \CDbCommand
 		$table = DbHelper::addTablePrefix($table);
 		return parent::dropPrimaryKey($name, $table);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Adds a table to our record of joined tables.

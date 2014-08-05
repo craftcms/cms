@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TemplateHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Paginates an ElementCriteriaModel instance.
 	 *

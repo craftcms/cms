@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetTransformModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Use the folder name as the string representation.
 	 *
@@ -21,24 +25,6 @@ class AssetTransformModel extends BaseModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'                  => AttributeType::Number,
-			'name'                => AttributeType::String,
-			'handle'              => AttributeType::Handle,
-			'width'               => AttributeType::Number,
-			'height'              => AttributeType::Number,
-			'dimensionChangeTime' => AttributeType::DateTime,
-			'mode'                => array(AttributeType::String, 'default' => 'crop'),
-			'position'            => array(AttributeType::String, 'default' => 'center-center'),
-			'quality'             => array(AttributeType::Number),
-		);
 	}
 
 	/**
@@ -62,6 +48,28 @@ class AssetTransformModel extends BaseModel
 			'crop'    => Craft::t('Scale and crop'),
 			'fit'     => Craft::t('Scale to fit'),
 			'stretch' => Craft::t('Stretch to fit')
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'                  => AttributeType::Number,
+			'name'                => AttributeType::String,
+			'handle'              => AttributeType::Handle,
+			'width'               => AttributeType::Number,
+			'height'              => AttributeType::Number,
+			'dimensionChangeTime' => AttributeType::DateTime,
+			'mode'                => array(AttributeType::String, 'default' => 'crop'),
+			'position'            => array(AttributeType::String, 'default' => 'center-center'),
+			'quality'             => array(AttributeType::Number),
 		);
 	}
 }

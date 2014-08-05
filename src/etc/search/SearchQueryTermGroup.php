@@ -15,10 +15,18 @@ namespace Craft;
  */
 class SearchQueryTermGroup
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	public $terms;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

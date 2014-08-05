@@ -15,17 +15,9 @@ craft()->requireEdition(Craft::Client);
  */
 class BaseEntryRevisionModel extends EntryModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'creatorId'   => AttributeType::Number,
-			'dateUpdated' => AttributeType::DateTime,
-			'dateCreated' => AttributeType::DateTime,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Sets the revision content.
@@ -76,5 +68,21 @@ class BaseEntryRevisionModel extends EntryModel
 		}
 
 		return parent::getUrl();
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'creatorId'   => AttributeType::Number,
+			'dateUpdated' => AttributeType::DateTime,
+			'dateCreated' => AttributeType::DateTime,
+		));
 	}
 }

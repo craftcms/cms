@@ -13,6 +13,10 @@ namespace Craft;
  */
 class SearchQuery
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -22,6 +26,10 @@ class SearchQuery
 	 * @var array
 	 */
 	private $_tokens;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -56,6 +64,10 @@ class SearchQuery
 	{
 		return $this->_query;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Parses the query into an array of tokens.

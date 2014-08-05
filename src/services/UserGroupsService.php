@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all user groups.
 	 *
@@ -158,6 +162,10 @@ class UserGroupsService extends BaseApplicationComponent
 		craft()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Gets a group's record.

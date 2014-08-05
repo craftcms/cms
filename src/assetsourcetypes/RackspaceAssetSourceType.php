@@ -632,7 +632,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		// This may or may not exist.
 		$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().rtrim($folder->path, '/')));
 
-		return TRUE;
+		return true;
 	}
 
 	/**

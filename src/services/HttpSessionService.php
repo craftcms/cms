@@ -13,6 +13,10 @@ namespace Craft;
  */
 class HttpSessionService extends \CHttpSession
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Init
 	 *

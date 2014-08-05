@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ProfileLogRoute extends \CProfileLogRoute
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @param $view
 	 * @param $data

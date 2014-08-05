@@ -13,10 +13,18 @@ namespace Craft;
  */
 class RecentEntriesWidget extends BaseWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	public $multipleInstances = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of widget this is.
@@ -26,19 +34,6 @@ class RecentEntriesWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Recent Entries');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section' => array(AttributeType::Mixed, 'default' => '*'),
-			'limit'   => array(AttributeType::Number, 'default' => 10),
-		);
 	}
 
 	/**
@@ -110,6 +105,27 @@ class RecentEntriesWidget extends BaseWidget
 			'entries' => $entries
 		));
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section' => array(AttributeType::Mixed, 'default' => '*'),
+			'limit'   => array(AttributeType::Number, 'default' => 10),
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the recent entries, based on the widget settings and user permissions.

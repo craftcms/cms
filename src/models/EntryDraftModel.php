@@ -15,16 +15,9 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryDraftModel extends BaseEntryRevisionModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'draftId' => AttributeType::Number,
-			'name'    => AttributeType::String,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Populates a new model instance with a given set of attributes.
@@ -65,5 +58,20 @@ class EntryDraftModel extends BaseEntryRevisionModel
 		}
 
 		return $draft;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'draftId' => AttributeType::Number,
+			'name'    => AttributeType::String,
+		));
 	}
 }

@@ -13,22 +13,16 @@ namespace Craft;
  */
 class FieldLayoutRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'fieldlayouts';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'type' => array(AttributeType::ClassName, 'required' => true),
-		);
 	}
 
 	/**
@@ -49,6 +43,20 @@ class FieldLayoutRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('type')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'type' => array(AttributeType::ClassName, 'required' => true),
 		);
 	}
 }

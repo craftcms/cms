@@ -13,6 +13,10 @@ namespace Craft;
  */
 class NumberHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the "word" version of a number
 	 *

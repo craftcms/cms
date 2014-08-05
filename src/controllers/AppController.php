@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AppController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns update info.
 	 *

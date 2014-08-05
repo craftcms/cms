@@ -13,8 +13,16 @@ namespace Craft;
  */
 class UserSessionService extends \CWebUser
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
+
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var UserIdentity Stores the user identity.
@@ -35,6 +43,10 @@ class UserSessionService extends \CWebUser
 	 * @var
 	 */
 	private $_sessionRestoredFromCookie;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
@@ -698,6 +710,10 @@ class UserSessionService extends \CWebUser
 		$this->raiseEvent('onLogin', $event);
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Changes the current user with the specified identity information. This method is called by {@link login} and
 	 * {@link restoreFromCookie} when the current user needs to be populated with the corresponding identity
@@ -888,6 +904,10 @@ class UserSessionService extends \CWebUser
 
 		return true;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param string $loginName

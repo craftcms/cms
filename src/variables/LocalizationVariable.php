@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LocalizationVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Gets all known languages.
 	 *

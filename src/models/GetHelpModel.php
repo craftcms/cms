@@ -13,6 +13,25 @@ namespace Craft;
  */
 class GetHelpModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	public function rules()
+	{
+		// maxSize is 3MB
+		return array_merge(parent::rules(), array(
+			array('attachment', 'file', 'maxSize' => 3145728, 'allowEmpty' => true),
+		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -26,16 +45,5 @@ class GetHelpModel extends BaseModel
 			'attachTemplates'  => AttributeType::Bool,
 			'attachment'       => AttributeType::Mixed,
 		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function rules()
-	{
-		// maxSize is 3MB
-		return array_merge(parent::rules(), array(
-			array('attachment', 'file', 'maxSize' => 3145728, 'allowEmpty' => true),
-		));
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class InstallController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -22,6 +26,10 @@ class InstallController extends BaseController
 	 * @var bool
 	 */
 	protected $allowAnonymous = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.

@@ -506,7 +506,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return TRUE if a physical folder exists.
+	 * Return true if a physical folder exists.
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
@@ -519,7 +519,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Create a physical folder, return TRUE on success.
+	 * Create a physical folder, return true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName

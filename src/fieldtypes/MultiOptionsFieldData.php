@@ -13,10 +13,18 @@ namespace Craft;
  */
 class MultiOptionsFieldData extends \ArrayObject
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_options;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the options.

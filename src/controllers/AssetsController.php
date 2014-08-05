@@ -13,6 +13,10 @@ namespace Craft;
  */
 class AssetsController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -22,6 +26,10 @@ class AssetsController extends BaseController
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionGenerateTransform');
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Upload a file
@@ -327,6 +335,10 @@ class AssetsController extends BaseController
 
 		$this->returnJson($output);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Check upload permissions.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MatrixBlockModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -23,21 +27,9 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	private $_owner;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'fieldId'     => AttributeType::Number,
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number,
-
-			'collapsed'   => AttributeType::Bool,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the field layout used by this element.
@@ -173,6 +165,30 @@ class MatrixBlockModel extends BaseElementModel
 	{
 		return 'matrixBlockType:'.$this->typeId;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'fieldId'     => AttributeType::Number,
+			'ownerId'     => AttributeType::Number,
+			'ownerLocale' => AttributeType::Locale,
+			'typeId'      => AttributeType::Number,
+			'sortOrder'   => AttributeType::Number,
+
+			'collapsed'   => AttributeType::Bool,
+		));
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the Matrix field.

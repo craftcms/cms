@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ComponentsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array The types of components supported by Craft.
 	 */
@@ -22,6 +26,10 @@ class ComponentsService extends BaseApplicationComponent
 	 * @var array The internal list of components.
 	 */
 	private $_components;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns instances of a component type, indexed by their class handles.
@@ -185,6 +193,10 @@ class ComponentsService extends BaseApplicationComponent
 		$component->init();
 		return $component;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Finds all of the components by a given type.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class OptionData
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -27,6 +31,10 @@ class OptionData
 	 * @var
 	 */
 	public $selected;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

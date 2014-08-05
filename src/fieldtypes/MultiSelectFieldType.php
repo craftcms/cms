@@ -13,10 +13,18 @@ namespace Craft;
  */
 class MultiSelectFieldType extends BaseOptionsFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	protected $multi = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of field this is.
@@ -26,16 +34,6 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 	public function getName()
 	{
 		return Craft::t('Multi-select');
-	}
-
-	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Multi-select Options');
 	}
 
 	/**
@@ -69,5 +67,19 @@ class MultiSelectFieldType extends BaseOptionsFieldType
 			'values'  => $values,
 			'options' => $options
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Multi-select Options');
 	}
 }

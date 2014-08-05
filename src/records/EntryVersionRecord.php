@@ -15,25 +15,16 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryVersionRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'entryversions';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale' => array(AttributeType::Locale, 'required' => true),
-			'num'    => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'required' => true),
-			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
-			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
-		);
 	}
 
 	/**
@@ -56,6 +47,23 @@ class EntryVersionRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('entryId', 'locale')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale' => array(AttributeType::Locale, 'required' => true),
+			'num'    => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'required' => true),
+			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
+			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
 		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RequirementsChecker extends \CComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -27,6 +31,10 @@ class RequirementsChecker extends \CComponent
 	 * @var
 	 */
 	private $_serverInfo;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return null
@@ -77,6 +85,10 @@ class RequirementsChecker extends \CComponent
 	{
 		return $this->_requirements;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @return string

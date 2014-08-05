@@ -13,6 +13,10 @@ namespace Craft;
  */
 class CpHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param string|null $path
 	 * @param bool        $fetch

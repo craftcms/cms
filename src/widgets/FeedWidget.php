@@ -13,10 +13,18 @@ namespace Craft;
  */
 class FeedWidget extends BaseWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
 	public $multipleInstances = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of widget this is.
@@ -26,20 +34,6 @@ class FeedWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Feed');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
-			'title' => array(AttributeType::Name, 'required' => true),
-			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
-		);
 	}
 
 	/**
@@ -83,5 +77,23 @@ class FeedWidget extends BaseWidget
 		return craft()->templates->render('_components/widgets/Feed/body', array(
 			'limit' => $limit
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
+			'title' => array(AttributeType::Name, 'required' => true),
+			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
+		);
 	}
 }

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class LicenseKeyStatus extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Valid            = 'Valid';
 	const Invalid          = 'Invalid';
 	const Missing          = 'Missing';

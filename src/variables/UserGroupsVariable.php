@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all user groups.
 	 *

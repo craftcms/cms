@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroup_UserRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */

@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserPermissionRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -26,20 +30,24 @@ class UserPermissionRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name' => array(AttributeType::Name, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
 	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('name'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name' => array(AttributeType::Name, 'required' => true),
 		);
 	}
 }

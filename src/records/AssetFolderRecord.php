@@ -13,23 +13,16 @@ namespace Craft;
  */
 class AssetFolderRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'assetfolders';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'     => array(AttributeType::String, 'required' => true),
-			'path'     => array(AttributeType::String),
-		);
 	}
 
 	/**
@@ -50,6 +43,21 @@ class AssetFolderRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('name', 'parentId', 'sourceId'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'     => array(AttributeType::String, 'required' => true),
+			'path'     => array(AttributeType::String),
 		);
 	}
 }

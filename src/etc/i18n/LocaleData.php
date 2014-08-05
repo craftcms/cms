@@ -13,6 +13,10 @@ namespace Craft;
  */
 class LocaleData extends \CLocale
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the instance of the specified locale. Since the constructor of CLocale is protected, you can only use
 	 * this method to obtain an instance of the specified locale.
@@ -36,6 +40,20 @@ class LocaleData extends \CLocale
 	}
 
 	/**
+	 * @param $id
+	 *
+	 * @return bool
+	 */
+	public static function exists($id)
+	{
+		$id = static::getCanonicalID($id);
+		$dataPath = static::$dataPath === null ? craft()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
+		$dataFile = $dataPath.'/'.$id.'.php';
+
+		return IOHelper::fileExists($dataFile);
+	}
+
+	/**
 	 * Converts a locale ID to a language ID.  Language ID consists of only the first group of letters before an underscore or dash.
 	 *
 	 * Craft overrides the parent method from {@link CLocale} because this is where we want to chop off the territory half of a locale ID.
@@ -48,20 +66,6 @@ class LocaleData extends \CLocale
 	{
 		$id = $this->getLanguageID($id);
 		return $this->getLocaleDisplayName($id, 'languages');
-	}
-
-	/**
-	 * @param $id
-	 *
-	 * @return bool
-	 */
-	public static function exists($id)
-	{
-		$id = static::getCanonicalID($id);
-		$dataPath = static::$dataPath === null ? craft()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
-		$dataFile = $dataPath.'/'.$id.'.php';
-
-		return IOHelper::fileExists($dataFile);
 	}
 
 	/**

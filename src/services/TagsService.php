@@ -13,11 +13,31 @@ namespace Craft;
  */
 class TagsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_allTagGroupIds;
+
+	/**
+	 * @var
+	 */
 	private $_tagGroupsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllTagGroups = false;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	// Tag groups
+	// ==========
 
 	/**
 	 * Returns all of the group IDs.
@@ -284,6 +304,7 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Tags
+	// ====
 
 	/**
 	 * Returns a tag by its ID.

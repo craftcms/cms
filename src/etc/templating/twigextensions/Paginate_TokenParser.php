@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Paginate_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Parses a token and returns a node.
 	 *

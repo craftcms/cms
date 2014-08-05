@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UtilsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
@@ -407,6 +411,10 @@ class UtilsController extends BaseController
 		craft()->deprecator->deleteLogById($logId);
 		craft()->end();
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $arrayToClean

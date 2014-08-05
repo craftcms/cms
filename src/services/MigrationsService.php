@@ -13,6 +13,10 @@ namespace Craft;
  */
 class MigrationsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The default command action. It defaults to 'up'.
 	 */
@@ -22,6 +26,10 @@ class MigrationsService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_migrationTable;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
@@ -327,6 +335,10 @@ class MigrationsService extends BaseApplicationComponent
 	{
 		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving migrations.

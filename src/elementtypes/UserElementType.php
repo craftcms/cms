@@ -13,6 +13,10 @@ namespace Craft;
  */
 class UserElementType extends BaseElementType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the element type name.
 	 *
@@ -378,6 +382,10 @@ class UserElementType extends BaseElementType
 	{
 		return UserModel::populateModel($row);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $groupIds

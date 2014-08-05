@@ -13,6 +13,10 @@ namespace Craft;
  */
 class RadioButtonsFieldType extends BaseOptionsFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -21,16 +25,6 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 	public function getName()
 	{
 		return Craft::t('Radio Buttons');
-	}
-
-	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Radio Button Options');
 	}
 
 	/**
@@ -63,5 +57,19 @@ class RadioButtonsFieldType extends BaseOptionsFieldType
 			'value'   => $value,
 			'options' => $options
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Radio Button Options');
 	}
 }

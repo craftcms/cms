@@ -13,23 +13,18 @@ namespace Craft;
  */
 class ResaveAllElementsTask extends BaseTask
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
 	private $_elementTypes;
 
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
-			'localizableOnly' => AttributeType::Bool
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the default description for this task.
@@ -86,5 +81,22 @@ class ResaveAllElementsTask extends BaseTask
 				'localeEnabled' => null,
 			)
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
+			'localizableOnly' => AttributeType::Bool
+		);
 	}
 }

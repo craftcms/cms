@@ -13,6 +13,10 @@ namespace Craft;
  */
 class PlainTextFieldType extends BaseFieldType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -21,21 +25,6 @@ class PlainTextFieldType extends BaseFieldType
 	public function getName()
 	{
 		return Craft::t('Plain Text');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'placeholder'   => array(AttributeType::String),
-			'multiline'     => array(AttributeType::Bool),
-			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
-			'maxLength'     => array(AttributeType::Number, 'min' => 0),
-		);
 	}
 
 	/**
@@ -99,5 +88,24 @@ class PlainTextFieldType extends BaseFieldType
 			'value'    => $value,
 			'settings' => $this->getSettings()
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'placeholder'   => array(AttributeType::String),
+			'multiline'     => array(AttributeType::Bool),
+			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
+			'maxLength'     => array(AttributeType::Number, 'min' => 0),
+		);
 	}
 }

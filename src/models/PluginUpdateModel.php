@@ -13,22 +13,9 @@ namespace Craft;
  */
 class PluginUpdateModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['class']                   = AttributeType::String;
-		$attributes['localVersion']            = AttributeType::String;
-		$attributes['latestVersion']           = AttributeType::String;
-		$attributes['latestDate']              = AttributeType::DateTime;
-		$attributes['status']                  = AttributeType::Bool;
-		$attributes['displayName']             = AttributeType::String;
-		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
-		$attributes['releases']                = AttributeType::Mixed;;
-
-		return $attributes;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param string $name
@@ -44,5 +31,26 @@ class PluginUpdateModel extends BaseModel
 		}
 
 		parent::setAttribute($name, $value);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$attributes['class']                   = AttributeType::String;
+		$attributes['localVersion']            = AttributeType::String;
+		$attributes['latestVersion']           = AttributeType::String;
+		$attributes['latestDate']              = AttributeType::DateTime;
+		$attributes['status']                  = AttributeType::Bool;
+		$attributes['displayName']             = AttributeType::String;
+		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
+		$attributes['releases']                = AttributeType::Mixed;;
+
+		return $attributes;
 	}
 }

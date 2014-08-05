@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class EmailerType extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Php      = 'php';
 	const Sendmail = 'sendmail';
 	const Smtp     = 'smtp';

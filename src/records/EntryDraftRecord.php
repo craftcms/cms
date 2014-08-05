@@ -15,25 +15,16 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryDraftRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'entrydrafts';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale' => array(AttributeType::Locale, 'required' => true),
-			'name'   => array(AttributeType::String, 'required' => true),
-			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
-			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
-		);
 	}
 
 	/**
@@ -56,6 +47,23 @@ class EntryDraftRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('entryId', 'locale')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale' => array(AttributeType::Locale, 'required' => true),
+			'name'   => array(AttributeType::String, 'required' => true),
+			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
+			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
 		);
 	}
 }

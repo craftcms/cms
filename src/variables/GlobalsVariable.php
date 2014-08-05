@@ -13,6 +13,10 @@ namespace Craft;
  */
 class GlobalsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all global sets.
 	 *

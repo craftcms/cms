@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -32,6 +36,10 @@ class ConfigService extends BaseApplicationComponent
 	 * @var array
 	 */
 	private $_loadedConfigFiles = array();
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
@@ -124,7 +132,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param      $item
 	 * @param null $default
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link ConfigService::getDbItem() get('key', ConfigFile::Db)} instad.
+	 * @deprecated Deprecated in 2.0. Use {@link ConfigService::getDbItem() get('key', ConfigFile::Db)} instead.
 	 * @return string
 	 */
 	public function getDbItem($item, $default = null)
@@ -525,6 +533,10 @@ class ConfigService extends BaseApplicationComponent
 			return $this->get('resourceTrigger');
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $name

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TasksService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -27,6 +31,10 @@ class TasksService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_runningTask;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Creates a task to run later in the system.
@@ -517,6 +525,10 @@ class TasksService extends BaseApplicationComponent
 
 		return $success;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a task by its ID.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class ArrayHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Flattens a multi-dimensional array into a single-dimensional array
 	 *
@@ -176,6 +180,10 @@ class ArrayHelper
 			}
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * The array_filter() callback function for filterEmptyStringsFromArray().

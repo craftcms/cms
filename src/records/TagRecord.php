@@ -13,22 +13,16 @@ namespace Craft;
  */
 class TagRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'tags';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'   => array(AttributeType::String, 'required' => true),
-		);
 	}
 
 	/**
@@ -49,6 +43,20 @@ class TagRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('name', 'groupId'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'   => array(AttributeType::String, 'required' => true),
 		);
 	}
 }

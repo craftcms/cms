@@ -15,7 +15,18 @@ craft()->requireEdition(Craft::Client);
  */
 class EmailMessagesService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_messageKeysAndSourceLocales;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all of the system email messages.
@@ -122,6 +133,10 @@ class EmailMessagesService extends BaseApplicationComponent
 			return false;
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns all email message keys.

@@ -13,6 +13,10 @@ namespace Craft;
  */
 abstract class InvalidLoginMode extends BaseEnum
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const Cooldown = 'cooldown';
 	const Lockout  = 'lockout';
 }

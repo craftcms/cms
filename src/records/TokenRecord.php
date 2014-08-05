@@ -13,6 +13,10 @@ namespace Craft;
  */
 class TokenRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -20,6 +24,21 @@ class TokenRecord extends BaseRecord
 	{
 		return 'tokens';
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('token'), 'unique' => true),
+			array('columns' => array('expiryDate')),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return array
@@ -32,17 +51,6 @@ class TokenRecord extends BaseRecord
 			'usageLimit' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
 			'usageCount' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
 			'expiryDate' => array(AttributeType::DateTime, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => array('token'), 'unique' => true),
-			array('columns' => array('expiryDate')),
 		);
 	}
 }

@@ -15,6 +15,10 @@ craft()->requireEdition(Craft::Client);
  */
 class RebrandEmailModel extends BaseModel
 {
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */

@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Updater
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return Updater
 	 */
@@ -241,6 +245,10 @@ class Updater
 		Craft::log('Finished Updater.', LogLevel::Info, true);
 		return true;
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Remove any temp files and/or folders that might have been created.

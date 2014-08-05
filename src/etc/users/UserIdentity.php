@@ -14,10 +14,9 @@ namespace Craft;
  */
 class UserIdentity extends \CUserIdentity
 {
-	/**
-	 * @var int
-	 */
-	private $_id;
+	////////////////////
+	// CONSTANTS
+	////////////////////
 
 	const ERROR_ACCOUNT_LOCKED          = 50;
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
@@ -25,6 +24,19 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
 	const ERROR_NO_CP_ACCESS            = 54;
 	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
+
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var int
+	 */
+	private $_id;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Authenticates a user against the database.
@@ -54,6 +66,22 @@ class UserIdentity extends \CUserIdentity
 	{
 		return $this->_id;
 	}
+
+	/**
+	 * @param $user
+	 *
+	 * @return null
+	 */
+	public function logUserIn($user)
+	{
+		$this->_id = $user->id;
+		$this->username = $user->username;
+		$this->errorCode = static::ERROR_NONE;
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param UserModel $user
@@ -132,18 +160,6 @@ class UserIdentity extends \CUserIdentity
 				throw new Exception(Craft::t('User has unknown status “{status}”', array($user->status)));
 			}
 		}
-	}
-
-	/**
-	 * @param $user
-	 *
-	 * @return null
-	 */
-	public function logUserIn($user)
-	{
-		$this->_id = $user->id;
-		$this->username = $user->username;
-		$this->errorCode = static::ERROR_NONE;
 	}
 
 	/**

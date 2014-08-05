@@ -13,6 +13,10 @@ namespace Craft;
  */
 class Paginate_Node extends \Twig_Node
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Compiles the node to PHP.
 	 *

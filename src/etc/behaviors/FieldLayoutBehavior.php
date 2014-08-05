@@ -13,6 +13,10 @@ namespace Craft;
  */
 class FieldLayoutBehavior extends BaseBehavior
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var
 	 */
@@ -22,6 +26,10 @@ class FieldLayoutBehavior extends BaseBehavior
 	 * @var
 	 */
 	private $_elementType;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor

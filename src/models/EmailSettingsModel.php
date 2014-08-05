@@ -13,26 +13,9 @@ namespace Craft;
  */
 class EmailSettingsModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'protocol'                => AttributeType::String,
-			'host'                    => AttributeType::String,
-			'port'                    => AttributeType::String,
-			'smtpAuth'                => AttributeType::String,
-			'username'                => AttributeType::String,
-			'password'                => AttributeType::String,
-			'smtpKeepAlive'           => AttributeType::Bool,
-			'smtpSecureTransportType' => AttributeType::String,
-			'timeout'                 => AttributeType::String,
-			'emailAddress'            => AttributeType::Email,
-			'senderName'              => AttributeType::String,
-			'testEmailAddress'        => AttributeType::Email,
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Declares the validation rules.
@@ -77,5 +60,30 @@ class EmailSettingsModel extends BaseModel
 		}
 
 		return $rules;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'protocol'                => AttributeType::String,
+			'host'                    => AttributeType::String,
+			'port'                    => AttributeType::String,
+			'smtpAuth'                => AttributeType::String,
+			'username'                => AttributeType::String,
+			'password'                => AttributeType::String,
+			'smtpKeepAlive'           => AttributeType::Bool,
+			'smtpSecureTransportType' => AttributeType::String,
+			'timeout'                 => AttributeType::String,
+			'emailAddress'            => AttributeType::Email,
+			'senderName'              => AttributeType::String,
+			'testEmailAddress'        => AttributeType::Email,
+		);
 	}
 }

@@ -14,6 +14,10 @@ namespace Craft;
  */
 class IOHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Tests whether the given file path exists on the file system.
 	 *
@@ -1612,6 +1616,10 @@ class IOHelper
 
 		throw new ErrorException($message, 0);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param string $path
