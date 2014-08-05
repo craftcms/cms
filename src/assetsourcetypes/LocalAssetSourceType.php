@@ -16,7 +16,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * @var bool
 	 */
-	protected $_isSourceLocal = true;
+	protected $isSourceLocal = true;
 
 	/**
 	 * Returns the name of the source type.
@@ -82,7 +82,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
 
-		$localPath = $this->_getSourceFileSystemPath();
+		$localPath = $this->getSourceFileSystemPath();
 
 		if ($localPath == '/' || !IOHelper::folderExists($localPath) || $localPath === false)
 		{
@@ -121,8 +121,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				if (is_dir($file))
 				{
-					$fullPath = rtrim(str_replace($this->_getSourceFileSystemPath(), '', $file), '/') . '/';
-					$folderId = $this->_ensureFolderByFullPath($fullPath);
+					$fullPath = rtrim(str_replace($this->getSourceFileSystemPath(), '', $file), '/') . '/';
+					$folderId = $this->ensureFolderByFullPath($fullPath);
 					$indexedFolderIds[$folderId] = true;
 				}
 				else
@@ -141,7 +141,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			}
 		}
 
-		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
+		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
 		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
@@ -153,7 +153,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return string
 	 */
-	protected function _getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
+	protected function getSourceFileSystemPath(LocalAssetSourceType $sourceType = null)
 	{
 		$path = is_null($sourceType) ? $this->getBasePath() : $sourceType->getBasePath();
 		$path = IOHelper::getRealPath($path);
@@ -178,14 +178,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		}
 
 		// Make sure we have a trailing slash. Some people love to skip those.
-		$uploadPath = $this->_getSourceFileSystemPath();
+		$uploadPath = $this->getSourceFileSystemPath();
 
 		$file = $indexEntryModel->uri;
 
 		// This is the part of the path that actually matters
 		$uriPath = mb_substr($file, mb_strlen($uploadPath));
 
-		$fileModel = $this->_indexFile($uriPath);
+		$fileModel = $this->indexFile($uriPath);
 
 		if ($fileModel)
 		{
@@ -219,10 +219,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
-	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		// Check if the set file system path exists
-		$basePath = $this->_getSourceFileSystemPath();
+		$basePath = $this->getSourceFileSystemPath();
 
 		if (empty($basePath))
 		{
@@ -234,7 +234,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			}
 		}
 
-		$targetFolder = $this->_getSourceFileSystemPath() . $folder->path;
+		$targetFolder = $this->getSourceFileSystemPath() . $folder->path;
 
 		// Make sure the folder exists.
 		if (!IOHelper::folderExists($targetFolder))
@@ -260,7 +260,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if (IOHelper::fileExists($targetPath))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
@@ -282,9 +282,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return string
 	 */
-	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-		$fileList = IOHelper::getFolderContents($this->_getSourceFileSystemPath() . $folder->path, false);
+		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath() . $folder->path, false);
 		$existingFiles = array();
 
 		foreach ($fileList as $file)
@@ -375,7 +375,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$transformLocation = '_'.ltrim($transformLocation, '_');
 		}
 
-		$targetFolder = $this->_getSourceFileSystemPath().$fileModel->getFolder()->path;
+		$targetFolder = $this->getSourceFileSystemPath().$fileModel->getFolder()->path;
 		$targetFolder .= !empty($transformLocation) ? $transformLocation.'/': '';
 
 		return $targetFolder.$fileModel->filename;
@@ -409,7 +409,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$folder = $file->getFolder();
 		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		return $this->_getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
+		return $this->getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
 	}
 
 	/**
@@ -420,9 +420,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
+	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
-		IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->path.$filename);
+		IOHelper::deleteFile($this->getSourceFileSystemPath().$folder->path.$filename);
 	}
 
 	/**
@@ -432,13 +432,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
+	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$transformLocations = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
 		$folder = $file->getFolder();
 		foreach ($transformLocations as $location)
 		{
-			IOHelper::deleteFile($this->_getSourceFileSystemPath().$folder->path.$location.'/'.$file->filename);
+			IOHelper::deleteFile($this->getSourceFileSystemPath().$folder->path.$location.'/'.$file->filename);
 		}
 	}
 
@@ -452,14 +452,14 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
 			$fileName = $file->filename;
 		}
 
-		$newServerPath = $this->_getSourceFileSystemPath().$targetFolder->path.$fileName;
+		$newServerPath = $this->getSourceFileSystemPath().$targetFolder->path.$fileName;
 
 		$conflictingRecord = craft()->assets->findFile(array(
 			'folderId' => $targetFolder->id,
@@ -471,7 +471,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
@@ -482,12 +482,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->_deleteGeneratedThumbnails($file);
+			$this->deleteGeneratedThumbnails($file);
 
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-			$baseFromPath = $this->_getSourceFileSystemPath().$file->getFolder()->path;
-			$baseToPath = $this->_getSourceFileSystemPath().$targetFolder->path;
+			$baseFromPath = $this->getSourceFileSystemPath().$file->getFolder()->path;
+			$baseToPath = $this->getSourceFileSystemPath().$targetFolder->path;
 
 			foreach ($transforms as $location)
 			{
@@ -513,9 +513,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentFolder->path . $folderName);
+		return IOHelper::folderExists($this->getSourceFileSystemPath() . $parentFolder->path . $folderName);
 	}
 
 	/**
@@ -526,13 +526,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		if (!IOHelper::isWritable($this->_getSourceFileSystemPath() . $parentFolder->path))
+		if (!IOHelper::isWritable($this->getSourceFileSystemPath() . $parentFolder->path))
 		{
 			return false;
 		}
-		return IOHelper::createFolder($this->_getSourceFileSystemPath() . $parentFolder->path . $folderName, IOHelper::getWritableFolderPermissions());
+		return IOHelper::createFolder($this->getSourceFileSystemPath() . $parentFolder->path . $folderName, IOHelper::getWritableFolderPermissions());
 	}
 
 	/**
@@ -543,11 +543,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
-		return IOHelper::rename($this->_getSourceFileSystemPath().$folder->path, $this->_getSourceFileSystemPath().$newFullPath);
+		return IOHelper::rename($this->getSourceFileSystemPath().$folder->path, $this->getSourceFileSystemPath().$newFullPath);
 	}
 
 	/**
@@ -558,9 +558,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		return IOHelper::deleteFolder($this->_getSourceFileSystemPath().$parentFolder->path.$folderName);
+		return IOHelper::deleteFolder($this->getSourceFileSystemPath().$parentFolder->path.$folderName);
 	}
 
 	/**
@@ -587,7 +587,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function copyTransform(AssetFileModel $file, $source, $target)
 	{
 		$fileFolder = $file->getFolder();
-		$basePath = $this->_getSourceFileSystemPath().$fileFolder->path;
+		$basePath = $this->getSourceFileSystemPath().$fileFolder->path;
 		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
 	}
 

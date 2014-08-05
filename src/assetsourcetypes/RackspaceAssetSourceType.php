@@ -16,7 +16,6 @@ craft()->requireEdition(Craft::Pro);
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
 	const RackspaceAuthHost = 'https://identity.api.rackspacecloud.com/v2.0/tokens';
-
 	const RackspaceStorageOperation = 'storage';
 	const RackspaceCDNOperation = 'cdn';
 
@@ -216,11 +215,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		// Ensure folders are in the DB
 		foreach ($containerFolders as $fullPath => $nothing)
 		{
-			$folderId = $this->_ensureFolderByFullPath($fullPath.'/');
+			$folderId = $this->ensureFolderByFullPath($fullPath.'/');
 			$indexedFolderIds[$folderId] = true;
 		}
 
-		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
+		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
 		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
@@ -243,7 +242,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		}
 
 		$uriPath = $indexEntryModel->uri;
-		$fileModel = $this->_indexFile($uriPath);
+		$fileModel = $this->indexFile($uriPath);
 
 		if ($fileModel)
 		{
@@ -289,7 +288,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @throws Exception
 	 * @return AssetFileModel
 	 */
-	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		$fileName = IOHelper::cleanFilename($fileName);
 		$extension = IOHelper::getExtension($fileName);
@@ -308,7 +307,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		clearstatcache();
@@ -395,7 +394,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$prefix = $this->_getPathPrefix().$folder->path;
 
@@ -465,7 +464,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
+	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->path . $filename);
 
@@ -480,7 +479,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
+	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
 		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -501,7 +500,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -523,7 +522,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		$sourceFolder = $file->getFolder();
@@ -540,7 +539,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->_deleteGeneratedThumbnails($file);
+			$this->deleteGeneratedThumbnails($file);
 
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -571,7 +570,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
 		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentFolder->path.$folderName);
 
@@ -585,7 +584,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$headers = array(
 			'Content-type: application/directory',
@@ -606,7 +605,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -643,7 +642,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$container = $this->getSettings()->container;
 		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->path.$folderName);
@@ -1207,7 +1206,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _purgeCachedSourceFile(AssetFolderModel $folder, $filename)
+	protected function purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix() . $folder->path . $filename);
 		$this->_purgeObject($uriPath);

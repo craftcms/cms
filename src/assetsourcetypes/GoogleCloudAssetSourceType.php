@@ -180,11 +180,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		// Ensure folders are in the DB
 		foreach ($bucketFolders as $fullPath => $nothing)
 		{
-			$folderId = $this->_ensureFolderByFullPath($fullPath);
+			$folderId = $this->ensureFolderByFullPath($fullPath);
 			$indexedFolderIds[$folderId] = true;
 		}
 
-		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
+		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
 		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
@@ -207,7 +207,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		}
 
 		$uriPath = $indexEntryModel->uri;
-		$fileModel = $this->_indexFile($uriPath);
+		$fileModel = $this->indexFile($uriPath);
 		$this->_prepareForRequests();
 
 		if ($fileModel)
@@ -280,7 +280,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	public function getSettingsHtml()
 	{
 		$settings = $this->getSettings();
-		$settings->expires = $this->_extractExpiryInformation($settings->expires);
+		$settings->expires = $this->extractExpiryInformation($settings->expires);
 
 		return craft()->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
 			'settings' => $settings,
@@ -337,7 +337,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
-		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \GC::ACL_PUBLIC_READ);
+		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -401,7 +401,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @throws Exception
 	 * @return AssetFileModel
 	 */
-	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		$fileName = IOHelper::cleanFilename($fileName);
 		$extension = IOHelper::getExtension($fileName);
@@ -420,13 +420,13 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_putObject($filePath, $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
+		if (!$this->putObject($filePath, $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
@@ -443,7 +443,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$this->_prepareForRequests();
 		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
@@ -476,7 +476,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
+	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
 		@$this->_googleCloud->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path.$filename);
@@ -489,7 +489,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
+	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
 		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -513,7 +513,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -536,7 +536,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 
@@ -559,7 +559,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->_deleteGeneratedThumbnails($file);
+			$this->deleteGeneratedThumbnails($file);
 
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -594,7 +594,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
@@ -609,10 +609,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->_putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
+		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \GC::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -623,7 +623,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -651,7 +651,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
@@ -675,7 +675,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _putObject($filePath, $bucket, $uriPath, $permissions)
+	protected function putObject($filePath, $bucket, $uriPath, $permissions)
 	{
 		$object = empty($filePath) ? '' : array('file' => $filePath);
 		$headers = array();

@@ -27,7 +27,7 @@ class TempAssetSourceType extends LocalAssetSourceType
 	/**
 	 * @var bool
 	 */
-	protected $_isSourceLocal = true;
+	protected $isSourceLocal = true;
 
 	////////////////////
 	// PUBLIC METHODS

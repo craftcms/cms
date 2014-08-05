@@ -57,7 +57,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$settings = $this->getSettings();
 
-		$settings->expires = $this->_extractExpiryInformation($settings->expires);
+		$settings->expires = $this->extractExpiryInformation($settings->expires);
 
 		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
 			'settings' => $settings,
@@ -215,11 +215,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 		// Ensure folders are in the DB
 		foreach ($bucketFolders as $fullPath => $nothing)
 		{
-			$folderId = $this->_ensureFolderByFullPath($fullPath);
+			$folderId = $this->ensureFolderByFullPath($fullPath);
 			$indexedFolderIds[$folderId] = true;
 		}
 
-		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
+		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
 		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
@@ -242,7 +242,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		$uriPath = $indexEntryModel->uri;
-		$fileModel = $this->_indexFile($uriPath);
+		$fileModel = $this->indexFile($uriPath);
 		$this->_prepareForRequests();
 
 		if ($fileModel)
@@ -398,7 +398,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
 
-		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
+		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -427,7 +427,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$this->_prepareForRequests();
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
@@ -462,7 +462,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @throws Exception
 	 * @return AssetFileModel
 	 */
-	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		$fileName = IOHelper::cleanFilename($fileName);
 		$extension = IOHelper::getExtension($fileName);
@@ -481,13 +481,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		clearstatcache();
 		$this->_prepareForRequests();
 
-		if (!$this->_putObject($filePath, $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
+		if (!$this->putObject($filePath, $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
 		{
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
@@ -504,7 +504,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteSourceFile(AssetFolderModel $folder, $filename)
+	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
 		@$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path.$filename);
@@ -517,7 +517,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return null
 	 */
-	protected function _deleteGeneratedImageTransforms(AssetFileModel $file)
+	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
 	{
 		$folder = craft()->assets->getFolderById($file->folderId);
 		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -541,7 +541,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return mixed
 	 */
-	protected function _moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -564,7 +564,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->_getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 
@@ -587,7 +587,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->_deleteGeneratedThumbnails($file);
+			$this->deleteGeneratedThumbnails($file);
 
 			// Move transforms
 			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
@@ -622,7 +622,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
+	protected function sourceFolderExists(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
@@ -637,10 +637,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _createSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
-		return $this->_putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
+		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/') . '/', \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -651,7 +651,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _renameSourceFolder(AssetFolderModel $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -679,7 +679,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
@@ -725,7 +725,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return bool
 	 */
-	protected function _putObject($filePath, $bucket, $uriPath, $permissions)
+	protected function putObject($filePath, $bucket, $uriPath, $permissions)
 	{
 		$object = empty($filePath) ? '' : array('file' => $filePath);
 		$headers = array();
