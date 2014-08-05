@@ -434,6 +434,13 @@ return array(
 	'verificationCodeDuration' => 'P1D',
 
 	/**
+	 * The format to use for web-safe transform generation if Imagick is not available for transparency testing.
+	 *
+	 * Possible values: 'jpg', 'png' and 'gif'. Defaults to 'png'.
+	 */
+	'webSafeImageFallbackFormat' => 'png',
+
+	/**
 	 * The permissions Craft will use when creating a new file that must be writable on the file system.
 	 */
 	'writableFilePermissions' => 0777,
