@@ -413,6 +413,8 @@ class InstallService extends BaseApplicationComponent
 
 		craft()->db->createCommand()->createTable('assettransformindex', array(
 			'fileId'       => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => true),
+			'filename'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => false),
+			'format'       => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => false),
 			'location'     => array('maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => true),
 			'sourceId'     => array('maxLength' => 11, 'column' => ColumnType::Int, 'required' => false),
 			'fileExists'   => array('column' => ColumnType::Bool),
