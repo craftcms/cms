@@ -19,15 +19,17 @@
 	{%- includeJsResource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
 {%- endif %}
 
+{%- set useCompressedJs = craft.config.useCompressedJs %}
 {%- includeJsResource "js/cp.js" first -%}
 {%- includeJsResource "js/craft.js" first -%}
-{%- includeJsResource 'lib/garnish-0.1'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
+{%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/jquery.placeholder'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
-{%- includeJsResource 'lib/jquery-ui-1.10.4.custom'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
-{%- includeJsResource 'lib/jquery-2.1.0'~(craft.config.useCompressedJs ? '.min' : '')~'.js' first %}
-{%- includeJsResource 'lib/xregexp-all'~(craft.config.useCompressedJs ? '-min' : '')~'.js' first %}
+{%- includeJsResource 'lib/jquery.placeholder'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/jquery.velocity'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/jquery-ui-1.10.4.custom'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/jquery-2.1.0'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
 
 {%- includeTranslations "Show", "Hide" %}
 

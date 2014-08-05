@@ -146,7 +146,7 @@ Craft.Structure = Garnish.Base.extend(
 		}
 
 		$row.css('margin-bottom', -30);
-		$row.animate({ 'margin-bottom': 0 }, 'fast');
+		$row.velocity({ 'margin-bottom': 0 }, 'fast');
 	},
 
 	removeElement: function($element)
@@ -163,7 +163,7 @@ Craft.Structure = Garnish.Base.extend(
 			var $parentUl = $li.parent();
 		}
 
-		$li.css('visibility', 'hidden').animate({ marginBottom: -$li.height() }, 'fast', $.proxy(function()
+		$li.css('visibility', 'hidden').velocity({ marginBottom: -$li.height() }, 'fast', $.proxy(function()
 		{
 			$li.remove();
 

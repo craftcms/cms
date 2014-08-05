@@ -8,38 +8,82 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.3
  */
 class HeaderHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	private static $_mimeType;
 
 	/**
-	 * @param $extension
+	 * Returns the MIME type that is going to be included in the response via the Content-Type header,
+	 * whether that has been set explicitely in the PHP code or if it's going to be based on the default_mimetype setting in php.ini.
 	 *
-	 * @throws Exception
+	 * @static
+	 * @return string
+	 */
+	public static function getMimeType()
+	{
+		if (!isset(static::$_mimeType))
+		{
+			// Has it been explicitly set?
+			static::$_mimeType = static::getHeader('Content-Type');
+
+			if (static::$_mimeType !== null)
+			{
+				// Drop the charset, if it's there
+				if (($pos = strpos(static::$_mimeType, ';')) !== false)
+				{
+					static::$_mimeType = rtrim(substr(static::$_mimeType, 0, $pos));
+				}
+			}
+			else
+			{
+				// Then it's whatever's in php.ini
+				static::$_mimeType = ini_get('default_mimetype');
+			}
+		}
+
+		return static::$_mimeType;
+	}
+
+	/**
+	 * Sets the Content-Type header based on a file extension.
+	 *
+	 * @param string $extension
+	 * @return bool Whether setting the header was successful.
 	 */
 	public static function setContentTypeByExtension($extension)
 	{
 		$extension = strtolower($extension);
 		$mimeTypes = require(Craft::getPathOfAlias('app.framework.utils.mimeTypes').'.php');
 
-		if (!array_key_exists($extension, $mimeTypes))
+		if (!isset($mimeTypes[$extension]))
 		{
 			Craft::log('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', LogLevel::Warning);
+			return false;
 		}
 
-		static::setHeader(array('Content-Type' => $mimeTypes[$extension].'; charset=utf-8'));
+		$mimeType = $mimeTypes[$extension];
+
+		if (static::setHeader(array('Content-Type' => $mimeType.'; charset=utf-8')))
+		{
+			// Save the MIME type for getMimeType()
+			static::$_mimeType = $mimeType;
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
 	 * Tells the browser not to cache the following content
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public static function setNoCache()
 	{
@@ -55,15 +99,14 @@ class HeaderHelper
 	/**
 	 * Tells the browser not to request this content again the next $sec seconds but use the browser cached content
 	 *
-	 * @param int $seconds Time in seconds to hold in browser cache
-	 *
-	 * @return null
+	 * @param integer $seconds Time in seconds to hold in browser cache
+	 * @return void
 	 */
 	public static function setExpires($seconds = 300)
 	{
 		static::setHeader(
 			array(
-				'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds).' GMT',
+				'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds) . ' GMT',
 				'Cache-Control' => "max-age={$seconds}, public, s-maxage={$seconds}",
 			)
 		);
@@ -73,7 +116,7 @@ class HeaderHelper
 	/**
 	 * Tells the browser that the following content is private
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public static function setPrivate()
 	{
@@ -89,7 +132,7 @@ class HeaderHelper
 	/**
 	 * Tells the browser that the following content is public
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public static function setPublic()
 	{
@@ -105,9 +148,9 @@ class HeaderHelper
 	 * Forces a file download. Be sure to give the right extension.
 	 *
 	 * @param string  $fileName The name of the file when it's downloaded
-	 * @param int     $fileSize The size in bytes.
+	 * @param integer $fileSize The size in bytes.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public static function setDownload($fileName, $fileSize = null)
 	{
@@ -133,21 +176,19 @@ class HeaderHelper
 	 * Tells the browser the length of the following content.  This mostly makes sense when using the download function
 	 * so the browser can calculate how many bytes are left during the process
 	 *
-	 * @param int $sizeInBytes The content size in bytes
-	 *
-	 * @return null
+	 * @param integer $sizeInBytes The content size in bytes
+	 * @return void
 	 */
 	public static function setLength($sizeInBytes)
 	{
-		static::setHeader(array('Content-Length' => (int)$sizeInBytes));
+		static::setHeader(array('Content-Length' => (int)$sizeInBytes)
+		);
 	}
 
 	/**
 	 * Removes a header by key.
 	 *
 	 * @param $key
-	 *
-	 * @return null
 	 */
 	public static function removeHeader($key)
 	{
@@ -155,47 +196,47 @@ class HeaderHelper
 	}
 
 	/**
-	 * Checks whether a header is currently set or not.
+	 * Checks whether a header is currently set.
 	 *
-	 * @param $key
-	 *
-	 * @return bool
+	 * @param $name The name of the header.
+	 * @return bool Whether the header has been set
 	 */
-	public static function isHeaderSet($key)
+	public static function isHeaderSet($name)
 	{
-		// Grab existing headers.
-		$currentHeaders = headers_list();
-		$exists = false;
-
-		foreach ($currentHeaders as $currentHeader)
-		{
-			// See if the existing header is in the "key: value" format.
-			if (strpos($currentHeader, ':') !== false)
-			{
-				$currentParts = explode(':', $currentHeader);
-				$currentKey = trim($currentParts[0]);
-			}
-			else
-			{
-				$currentKey = false;
-			}
-
-			if ($key == $currentKey)
-			{
-				$exists = true;
-				break;
-			}
-		}
-
-		return $exists;
+		return (static::getHeader($name) !== null);
 	}
 
 	/**
-	 * Called to output a header.
+	 * Returns the value of a given header, if it has been set.
 	 *
-	 * @param array $header Use key => value
+	 * @static
+	 * @param string $name The name of the header.
+	 * @return string|null The value of the header, or `null` if it hasn’t been set.
+	 */
+	public static function getHeader($name)
+	{
+		// Normalize to lowercase
+		$name = strtolower($name);
+
+		// Loop through each of the headers
+		foreach (headers_list() as $header)
+		{
+			// Split it into its trimmed key/value
+			$parts = array_map('trim', explode(':', $header, 2));
+
+			// Is this the header we're looking for?
+			if (isset($parts[1]) && $name == strtolower($parts[0]))
+			{
+				return $parts[1];
+			}
+		}
+	}
+
+	/**
+	 * Sets one or more response headers
 	 *
-	 * @return null
+	 * @param string|array $header Either a string in the "name: value" format, or an array of key/value pairs.
+	 * @return bool Whether setting the header(s) was successful.
 	 */
 	public static function setHeader($header)
 	{
@@ -204,6 +245,9 @@ class HeaderHelper
 		{
 			return false;
 		}
+
+		// Clear out our stored MIME type in case its about to be overridden
+		static::$_mimeType = null;
 
 		if (is_string($header))
 		{
@@ -221,5 +265,7 @@ class HeaderHelper
 				header("$key: $value");
 			}
 		}
+
+		return true;
 	}
 }

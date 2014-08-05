@@ -219,8 +219,8 @@ var LoginForm = Garnish.Base.extend(
 			loginFieldsHeight = this.$loginFields.height(),
 			newFormTopMargin = formTopMargin + Math.round(loginFieldsHeight/2);
 
-		this.$form.animate({marginTop: newFormTopMargin}, 'fast');
-		this.$loginFields.animate({height: 0}, 'fast');
+		this.$form.velocity({marginTop: newFormTopMargin}, 'fast');
+		this.$loginFields.velocity({height: 0}, 'fast');
 
 		this.$submitBtn.addClass('reset-password');
 		this.$submitBtn.attr('value', Craft.t('Reset Password'));

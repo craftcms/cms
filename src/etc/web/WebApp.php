@@ -131,7 +131,7 @@ class WebApp extends \CWebApplication
 		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
-		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
+		$this->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath($this->path->getRuntimePath());
@@ -144,6 +144,12 @@ class WebApp extends \CWebApplication
 		{
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
+		}
+
+		// If there is a custom appId set, apply it here.
+		if ($appId = $this->config->get('appId'))
+		{
+			$this->setId($appId);
 		}
 
 		parent::init();
@@ -161,13 +167,13 @@ class WebApp extends \CWebApplication
 		$this->_processResourceRequest();
 
 		// Validate some basics on the database configuration file.
-		craft()->validateDbConfigFile();
+		$this->validateDbConfigFile();
 
 		// Process install requests
 		$this->_processInstallRequest();
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
-		if (craft()->isInMaintenanceMode() && $this->request->isSiteRequest())
+		if ($this->isInMaintenanceMode() && $this->request->isSiteRequest())
 		{
 			throw new HttpException(503);
 		}
@@ -186,8 +192,8 @@ class WebApp extends \CWebApplication
 		{
 			if ($this->request->isCpRequest())
 			{
-				$version = craft()->getVersion();
-				$build = craft()->getBuild();
+				$version = $this->getVersion();
+				$build = $this->getBuild();
 				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
 				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', array(
@@ -207,7 +213,7 @@ class WebApp extends \CWebApplication
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
-			(craft()->isInMaintenanceMode() && $this->request->isCpRequest()) ||
+			($this->isInMaintenanceMode() && $this->request->isCpRequest()) ||
 			$this->request->getActionSegments() == array('update', 'cleanUp') ||
 			$this->request->getActionSegments() == array('update', 'rollback')
 		)
@@ -222,7 +228,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Make sure that the system is on...
-		if (craft()->isSystemOn() ||
+		if ($this->isSystemOn() ||
 			// ...or it's a CP request...
 			($this->request->isCpRequest() && (
 				// ...and the user has permission to access the CP when the site is off
@@ -246,7 +252,7 @@ class WebApp extends \CWebApplication
 		)
 		{
 			// Load the plugins
-			craft()->plugins->loadPlugins();
+			$this->plugins->loadPlugins();
 
 			// Check if a plugin needs to update the database.
 			if ($this->updates->isPluginDbUpdateNeeded())
@@ -294,8 +300,7 @@ class WebApp extends \CWebApplication
 			}
 			else
 			{
-				// Display the offline template
-				$this->runController('templates/offline');
+				throw new HttpException(503);
 			}
 		}
 	}
@@ -347,7 +352,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLocale($localeId = null)
 	{
-		return craft()->i18n->getLocaleData($localeId);
+		return $this->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -754,7 +759,7 @@ class WebApp extends \CWebApplication
 		{
 			foreach ($this->_editionComponents as $edition => $editionComponents)
 			{
-				if (craft()->getEdition() >= $edition)
+				if ($this->getEdition() >= $edition)
 				{
 					$this->setComponents($editionComponents);
 				}
@@ -775,7 +780,7 @@ class WebApp extends \CWebApplication
 		$isCpRequest = $this->request->isCpRequest();
 
 		// Are they requesting an installer template/action specifically?
-		if ($isCpRequest && $this->request->getSegment(1) === 'install' && !craft()->isInstalled())
+		if ($isCpRequest && $this->request->getSegment(1) === 'install' && !$this->isInstalled())
 		{
 			$action = $this->request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
@@ -791,7 +796,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Should they be?
-		else if (!craft()->isInstalled())
+		else if (!$this->isInstalled())
 		{
 			// Give it to them if accessing the CP
 			if ($isCpRequest)
@@ -814,7 +819,7 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getTargetLanguage()
 	{
-		if (craft()->isInstalled())
+		if ($this->isInstalled())
 		{
 			// Will any locale validation be necessary here?
 			if ($this->request->isCpRequest() || defined('CRAFT_LOCALE'))
@@ -958,7 +963,7 @@ class WebApp extends \CWebApplication
 		// Only run for CP requests and if we're not in the middle of an update.
 		if ($this->request->isCpRequest() && !$update)
 		{
-			$cachedAppPath = craft()->cache->get('appPath');
+			$cachedAppPath = $this->cache->get('appPath');
 			$appPath = $this->path->getAppPath();
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
@@ -1021,7 +1026,7 @@ class WebApp extends \CWebApplication
 		else
 		{
 			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for
-			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+			$this->path->setTemplatesPath($this->path->getCpTemplatesPath());
 
 			throw new HttpException(503);
 		}

@@ -178,6 +178,16 @@ class EmailService extends BaseApplicationComponent
 	////////////////////
 
 	/**
+	 * Fires an 'onBeforeSendEmail' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeSendEmail(Event $event)
+	{
+		$this->raiseEvent('onBeforeSendEmail', $event);
+	}
+
+	/**
 	 * @param UserModel  $user
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
@@ -194,6 +204,13 @@ class EmailService extends BaseApplicationComponent
 		{
 			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
 		}
+
+		// Fire an 'onBeforeSendEmail' event
+		$this->onBeforeSendEmail(new Event($this, array(
+			'user' => $user,
+			'emailModel' => $emailModel,
+			'variables'	 => $variables
+		)));
 
 		$email = new \PHPMailer(true);
 

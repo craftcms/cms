@@ -408,7 +408,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-			$response = $source->renameFolder($folder, IOHelper::cleanFilename($newName));
+			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName));
 
 		}
 		catch (Exception $exception)
@@ -697,7 +697,7 @@ class AssetsService extends BaseApplicationComponent
 			return false;
 		}
 
-		$fileName = IOHelper::cleanFilename($fileName);
+		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
 		return $response->getDataItem('fileId');
@@ -779,45 +779,53 @@ class AssetsService extends BaseApplicationComponent
 
 		$response = new AssetOperationResponseModel();
 
-		foreach ($fileIds as $i => $fileId)
+		$folder = $this->getFolderById($folderId);
+		$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
+
+		if (!$newSourceType->sourceFolderExists($folder))
 		{
-			$file = $this->getFileById($fileId);
-
-			// If this is not a rename operation, then the filename remains the original
-			if (count($fileIds) > 1 || empty($filename))
+			$response->setError(Craft::t("The target folder does not exist!"));
+		}
+		else
+		{
+			foreach ($fileIds as $i => $fileId)
 			{
-				$filename = $file->filename;
-			}
+				$file = $this->getFileById($fileId);
 
-			// If the new file does not have an extension, give it the old file extension.
-			if (!IOHelper::getExtension($filename))
-			{
-				$filename .= '.'.$file->getExtension();
-			}
-
-			$filename = IOHelper::cleanFilename($filename);
-
-			if ($folderId == $file->folderId && ($filename == $file->filename))
-			{
-				$response = new AssetOperationResponseModel();
-				$response->setSuccess();
-				$results[] = $response;
-			}
-
-			$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-			$folder = $this->getFolderById($folderId);
-			$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
-
-			if ($originalSourceType && $newSourceType)
-			{
-				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
+				// If this is not a rename operation, then the filename remains the original
+				if (count($fileIds) > 1 || empty($filename))
 				{
-					$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
+					$filename = $file->filename;
 				}
-			}
-			else
-			{
-				$response->setError(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+
+				// If the new file does not have an extension, give it the old file extension.
+				if (!IOHelper::getExtension($filename))
+				{
+					$filename .= '.'.$file->getExtension();
+				}
+
+				$filename = AssetsHelper::cleanAssetName($filename);
+
+				if ($folderId == $file->folderId && ($filename == $file->filename))
+				{
+					$response = new AssetOperationResponseModel();
+					$response->setSuccess();
+					$results[] = $response;
+				}
+
+				$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+
+				if ($originalSourceType && $newSourceType)
+				{
+					if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
+					{
+						$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
+					}
+				}
+				else
+				{
+					$response->setError(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+				}
 			}
 		}
 

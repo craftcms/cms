@@ -446,7 +446,7 @@ var CP = Garnish.Base.extend(
 
 			var height = this.$alerts.height();
 
-			this.$alerts.height(0).animate({ height: height }, 'fast', $.proxy(function()
+			this.$alerts.height(0).velocity({ height: height }, 'fast', $.proxy(function()
 			{
 				this.$alerts.height('auto');
 			}, this));

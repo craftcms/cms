@@ -2,7 +2,7 @@
 
 
 <div class="user-photo" data-user="{{ account.id }}">
-	<div class="current-photo" style="background-image: url({{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }});"></div>
+	<div class="current-photo" style="background-image: url('{{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }}');"></div>
 	<div class="user-photo-controls">
 		{% if account.photo %}
 			<div class="btn upload-photo">{{ "Change photo"|t }}</div>

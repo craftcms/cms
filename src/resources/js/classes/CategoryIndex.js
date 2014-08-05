@@ -169,7 +169,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 				};
 				animateCss[Craft.left] = 0;
 
-				$element.css(css).animate(animateCss, 'fast');
+				$element.css(css).velocity(animateCss, 'fast');
 			}
 
 		}, this));

@@ -7,44 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.1
  */
 class MigrationHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
-
-	/**
-	 * @var
-	 */
 	private static $_tables;
-
-	/**
-	 * @var
-	 */
 	private static $_tablePrefixLength;
 
-	/**
-	 * @var array
-	 */
 	private static $_idColumnType = array('column' => ColumnType::Int, 'required' => true);
-
-	/**
-	 * @var string
-	 */
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
-
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
 
 	/**
 	 * Refreshes our record of everything.
-	 *
-	 * @return null
 	 */
 	public static function refresh()
 	{
@@ -56,19 +32,17 @@ class MigrationHelper
 	 * Drops a foreign key if it exists.
 	 *
 	 * @param string $tableName
-	 * @param array  $columns
-	 *
-	 * @return null
+	 * @param array $columns
 	 */
 	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
-		$table = static::_getTable($tableName);
+		$table = static::getTable($tableName);
 
 		foreach ($table->fks as $i => $fk)
 		{
 			if ($columns == $fk->columns)
 			{
-				static::_dropForeignKey($fk);
+				static::dropForeignKey($fk);
 				unset($table->fks[$i]);
 				break;
 			}
@@ -79,20 +53,18 @@ class MigrationHelper
 	 * Drops an index if it exists.
 	 *
 	 * @param string $tableName
-	 * @param array  $columns
-	 * @param bool   $unique
-	 *
-	 * @return false
+	 * @param array $columns
+	 * @param bool $unique
 	 */
 	public static function dropIndexIfExists($tableName, $columns, $unique = false)
 	{
-		$table = static::_getTable($tableName);
+		$table = static::getTable($tableName);
 
 		foreach ($table->indexes as $i => $index)
 		{
 			if ($columns == $index->columns && $unique == $index->unique)
 			{
-				static::_dropIndex($index);
+				static::dropIndex($index);
 				unset($table->indexes[$i]);
 				break;
 			}
@@ -100,27 +72,26 @@ class MigrationHelper
 	}
 
 	/**
-	 * Renames a table, while also updating its index and FK names, as well as any other FK names pointing to the table.
+	 * Renames a table, while also updating its index and FK names,
+	 * as well as any other FK names pointing to the table.
 	 *
 	 * @param string $oldName
 	 * @param string $newName
-	 *
-	 * @return false
 	 */
 	public static function renameTable($oldName, $newName)
 	{
 		// Drop any foreign keys pointing to this table
-		$fks = static::_findForeignKeysToTable($oldName);
+		$fks = static::findForeignKeysTo($oldName);
 
 		foreach ($fks as $fk)
 		{
-			static::_dropForeignKey($fk->fk);
+			static::dropForeignKey($fk->fk);
 		}
 
 		// Drop all the FKs and indexes on the table
-		$table = static::_getTable($oldName);
-		static::_dropAllForeignKeysOnTable($table);
-		static::_dropAllIndexesOnTable($table);
+		$table = static::getTable($oldName);
+		static::dropAllForeignKeysOnTable($table);
+		static::dropAllIndexesOnTable($table);
 
 		// Rename the table
 		craft()->db->createCommand()->renameTable($oldName, $newName);
@@ -130,13 +101,13 @@ class MigrationHelper
 		static::$_tables[$newName]->name = $newName;
 		unset(static::$_tables[$oldName]);
 
-		static::_restoreAllIndexesOnTable($table);
-		static::_restoreAllForeignKeysOnTable($table);
+		static::restoreAllIndexesOnTable($table);
+		static::restoreAllForeignKeysOnTable($table);
 
 		foreach ($fks as $fk)
 		{
 			$fk->fk->refTable = $newName;
-			static::_restoreForeignKey($fk->fk);
+			static::restoreForeignKey($fk->fk);
 		}
 	}
 
@@ -146,13 +117,11 @@ class MigrationHelper
 	 * @param string $tableName
 	 * @param string $oldName
 	 * @param string $newName
-	 *
-	 * @return null
 	 */
 	public static function renameColumn($tableName, $oldName, $newName)
 	{
-		$table = static::_getTable($tableName);
-		$allOtherTableFks = static::_findForeignKeysToTable($tableName);
+		$table = static::getTable($tableName);
+		$allOtherTableFks = static::findForeignKeysTo($tableName);
 
 		// Temporarily drop any FKs and indexes that include this column
 		$columnFks = array();
@@ -164,7 +133,7 @@ class MigrationHelper
 		{
 			$key = array_search($oldName, $fk->columns);
 			$columnFks[] = array($fk, $key);
-			static::_dropForeignKey($fk);
+			static::dropForeignKey($fk);
 		}
 
 		foreach ($table->indexes as $index)
@@ -173,7 +142,7 @@ class MigrationHelper
 			if ($key !== false)
 			{
 				$columnIndexes[] = array($index, $key);
-				static::_dropIndex($index);
+				static::dropIndex($index);
 			}
 		}
 
@@ -183,7 +152,7 @@ class MigrationHelper
 			if ($key !== false)
 			{
 				$otherTableFks[] = array($fkData->fk, $key);
-				static::_dropForeignKey($fkData->fk);
+				static::dropForeignKey($fkData->fk);
 			}
 		}
 
@@ -200,14 +169,14 @@ class MigrationHelper
 		{
 			list($fk, $key) = $fkData;
 			$fk->refColumns[$key] = $newName;
-			static::_restoreForeignKey($fk);
+			static::restoreForeignKey($fk);
 		}
 
 		foreach ($columnIndexes as $indexData)
 		{
 			list($index, $key) = $indexData;
 			$index->columns[$key] = $newName;
-			static::_restoreIndex($index);
+			static::restoreIndex($index);
 		}
 
 		foreach ($columnFks as $fkData)
@@ -219,33 +188,30 @@ class MigrationHelper
 				$fk->columns[$key] = $newName;
 			}
 
-			static::_restoreForeignKey($fk);
+			static::restoreForeignKey($fk);
 		}
 	}
 
 	/**
-	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId', and updates the names of any
-	 * FK's in other tables.
+	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId',
+	 * and updates the names of any FK's in other tables.
 	 *
 	 * @param string     $table       The existing table name used to store records of this element.
 	 * @param string     $elementType The element type handle (e.g. "Entry", "Asset", etc.).
 	 * @param bool       $hasContent  Whether this element type has content.
 	 * @param bool       $isLocalized Whether this element type stores data in multiple locales.
 	 * @param array|null $locales     Which locales the elements should store content in.
-	 *                                Defaults to the primary site locale if the element type is not localized, otherwise
-	 *                                all locales.
-	 *
-	 * @return null
+	 *                                Defaults to the primary site locale if the element type is not localized, otherwise all locales.
 	 */
 	public static function makeElemental($table, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
 	{
-		$fks = static::_findForeignKeysToTable($table);
+		$fks = static::findForeignKeysTo($table);
 
 		foreach ($fks as $fk)
 		{
 			// Drop all FKs and indexes on this table
-			static::_dropAllForeignKeysOnTable($fk->table);
-			static::_dropAllUniqueIndexesOnTable($fk->table);
+			static::dropAllForeignKeysOnTable($fk->table);
+			static::dropAllUniqueIndexesOnTable($fk->table);
 
 			// Rename the old id column and add the new one
 			craft()->db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
@@ -338,21 +304,17 @@ class MigrationHelper
 			craft()->db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old');
 
 			// Restore its unique indexes and FKs
-			static::_restoreAllUniqueIndexesOnTable($fk->table);
-			static::_restoreAllForeignKeysOnTable($fk->table);
+			static::restoreAllUniqueIndexesOnTable($fk->table);
+			static::restoreAllForeignKeysOnTable($fk->table);
 		}
 	}
-
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
 
 	/**
 	 * Returns info about all of the tables.
 	 *
 	 * @return array
 	 */
-	private static function _getTables()
+	public static function getTables()
 	{
 		if (!isset(static::$_tables))
 		{
@@ -366,12 +328,11 @@ class MigrationHelper
 	 * Returns info about a given table.
 	 *
 	 * @param string $table
-	 *
 	 * @return object|null
 	 */
-	private static function _getTable($table)
+	public static function getTable($table)
 	{
-		$tables = static::_getTables();
+		$tables = static::getTables();
 
 		if (isset($tables[$table]))
 		{
@@ -380,24 +341,24 @@ class MigrationHelper
 	}
 
 	/**
-	 * Returns a list of all the foreign keys that point to a given table.
+	 * Returns a list of all the foreign keys that point to a given table/column.
 	 *
-	 * @param string $table
-	 *
-	 * @return array
+	 * @param string $table  The table the foreign keys should point to.
+	 * @param string $column The column the foreign keys should point to. Defaults to 'id'.
+	 * @return array         A list of the foreign keys pointing to that table/column.
 	 */
-	private static function _findForeignKeysToTable($table)
+	public static function findForeignKeysTo($table, $column = 'id')
 	{
 		$fks = array();
 
-		foreach (static::_getTables() as $otherTable)
+		foreach (static::getTables() as $otherTable)
 		{
 			foreach ($otherTable->fks as $fk)
 			{
 				if ($fk->refTable == $table)
 				{
 					// Figure out which column in the FK is pointing to this table's id column (if any)
-					$fkColumnIndex = array_search('id', $fk->refColumns);
+					$fkColumnIndex = array_search($column, $fk->refColumns);
 
 					if ($fkColumnIndex !== false)
 					{
@@ -422,6 +383,138 @@ class MigrationHelper
 	}
 
 	/**
+	 * Drops all the foreign keys on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function dropAllForeignKeysOnTable($table)
+	{
+		foreach ($table->fks as $fk)
+		{
+			static::dropForeignKey($fk);
+		}
+	}
+
+	/**
+	 * Drops a foreign key.
+	 *
+	 * @param object $fk
+	 */
+	public static function dropForeignKey($fk)
+	{
+		// Don't assume that the FK name is "correct"
+		craft()->db->createCommand()->setText(craft()->db->getSchema()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}'))->execute();
+	}
+
+	/**
+	 * Drops all the indexes on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function dropAllIndexesOnTable($table)
+	{
+		foreach ($table->indexes as $index)
+		{
+			static::dropIndex($index);
+		}
+	}
+
+	/**
+	 * Drops all the unique indexes on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function dropAllUniqueIndexesOnTable($table)
+	{
+		foreach ($table->indexes as $index)
+		{
+			if ($index->unique)
+			{
+				static::dropIndex($index);
+			}
+		}
+	}
+
+	/**
+	 * Drops an index.
+	 *
+	 * @param object $index
+	 */
+	public static function dropIndex($index)
+	{
+		// Don't assume that the constraint name is "correct"
+		craft()->db->createCommand()->setText(craft()->db->getSchema()->dropIndex($index->name, '{{'.$index->table->name.'}}'))->execute();
+	}
+
+	/**
+	 * Restores all the indexes on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function restoreAllIndexesOnTable($table)
+	{
+		foreach ($table->indexes as $index)
+		{
+			static::restoreIndex($index);
+		}
+	}
+
+	/**
+	 * Restores all the unique indexes on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function restoreAllUniqueIndexesOnTable($table)
+	{
+		foreach ($table->indexes as $index)
+		{
+			if ($index->unique)
+			{
+				static::restoreIndex($index);
+			}
+		}
+	}
+
+	/**
+	 * Restores an index.
+	 *
+	 * @param object $index
+	 */
+	public static function restoreIndex($index)
+	{
+		craft()->db->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
+
+		// Update our record of its name
+		$index->name = craft()->db->getIndexName($index->table->name, $index->columns, $index->unique);
+	}
+
+	/**
+	 * Restores all the foreign keys on a table.
+	 *
+	 * @param object $table
+	 */
+	public static function restoreAllForeignKeysOnTable($table)
+	{
+		foreach ($table->fks as $fk)
+		{
+			static::restoreForeignKey($fk);
+		}
+	}
+
+	/**
+	 * Restores a foreign key.
+	 *
+	 * @param object $fk
+	 */
+	public static function restoreForeignKey($fk)
+	{
+		craft()->db->createCommand()->addForeignKey($fk->table->name, implode(',', $fk->columns), $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate);
+
+		// Update our record of its name
+		$fk->name = craft()->db->getForeignKeyName($fk->table->name, $fk->columns);
+	}
+
+	/**
 	 * Returns the length of the table prefix.
 	 *
 	 * @return string
@@ -438,8 +531,6 @@ class MigrationHelper
 
 	/**
 	 * Records all the foreign keys and indexes for each table.
-	 *
-	 * @return null
 	 */
 	private static function _analyzeTables()
 	{
@@ -458,8 +549,6 @@ class MigrationHelper
 	 * Records all the foreign keys and indexes for a given table.
 	 *
 	 * @param string $table
-	 *
-	 * @return null
 	 */
 	private static function _analyzeTable($table)
 	{
@@ -519,157 +608,5 @@ class MigrationHelper
 				);
 			}
 		}
-	}
-
-	/**
-	 * Drops all the foreign keys on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _dropAllForeignKeysOnTable($table)
-	{
-		foreach ($table->fks as $fk)
-		{
-			static::_dropForeignKey($fk);
-		}
-	}
-
-	/**
-	 * Drops a foreign key.
-	 *
-	 * @param object $fk
-	 *
-	 * @return null
-	 */
-	private static function _dropForeignKey($fk)
-	{
-		// Don't assume that the FK name is "correct"
-		craft()->db->createCommand()->setText(craft()->db->getSchema()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}'))->execute();
-	}
-
-	/**
-	 * Drops all the indexes on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _dropAllIndexesOnTable($table)
-	{
-		foreach ($table->indexes as $index)
-		{
-			static::_dropIndex($index);
-		}
-	}
-
-	/**
-	 * Drops all the unique indexes on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _dropAllUniqueIndexesOnTable($table)
-	{
-		foreach ($table->indexes as $index)
-		{
-			if ($index->unique)
-			{
-				static::_dropIndex($index);
-			}
-		}
-	}
-
-	/**
-	 * Drops an index.
-	 *
-	 * @param object $index
-	 *
-	 * @return null
-	 */
-	private static function _dropIndex($index)
-	{
-		// Don't assume that the constraint name is "correct"
-		craft()->db->createCommand()->setText(craft()->db->getSchema()->dropIndex($index->name, '{{'.$index->table->name.'}}'))->execute();
-	}
-
-	/**
-	 * Restores all the indexes on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _restoreAllIndexesOnTable($table)
-	{
-		foreach ($table->indexes as $index)
-		{
-			static::_restoreIndex($index);
-		}
-	}
-
-	/**
-	 * Restores all the unique indexes on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _restoreAllUniqueIndexesOnTable($table)
-	{
-		foreach ($table->indexes as $index)
-		{
-			if ($index->unique)
-			{
-				static::_restoreIndex($index);
-			}
-		}
-	}
-
-	/**
-	 * Restores an index.
-	 *
-	 * @param $index
-	 *
-	 * @return null
-	 */
-	private static function _restoreIndex($index)
-	{
-		craft()->db->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
-
-		// Update our record of its name
-		$index->name = DbHelper::getIndexName($index->table->name, $index->columns, $index->unique);
-	}
-
-	/**
-	 * Restores all the foreign keys on a table.
-	 *
-	 * @param object $table
-	 *
-	 * @return null
-	 */
-	private static function _restoreAllForeignKeysOnTable($table)
-	{
-		foreach ($table->fks as $fk)
-		{
-			static::_restoreForeignKey($fk);
-		}
-	}
-
-	/**
-	 * Restores a foreign key.
-	 *
-	 * @param object $fk
-	 *
-	 * @return null
-	 */
-	private static function _restoreForeignKey($fk)
-	{
-		craft()->db->createCommand()->addForeignKey($fk->table->name, implode(',', $fk->columns), $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate);
-
-		// Update our record of its name
-		$fk->name = DbHelper::getForeignKeyName($fk->table->name, $fk->columns);
 	}
 }

@@ -51,6 +51,22 @@ return array(
 	'allowUppercaseInSlug' => false,
 
 	/**
+	 * If this is set, Craft will call Yii’s CApplication->setId method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
+	 * set an application ID for Craft instead of using it’s own method of generating an ID based on a hash of
+	 * CApplication->getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
+	 * where deploying will destroy any active user sessions.
+	 *
+	 * The value is itself is not important as long as it is very hard to guess and is NOT based on the the absolute path
+	 * of the craft/app folder.
+	 */
+	'appId' => null,
+
+	/**
+	 * The string to use to separate words when uploading Assets. If set to anything but a string, spaces will be left alone.
+	 */
+	'assetFilenameWordSeparator' => '-',
+
+	/**
 	 * If set to true, will automatically log the user in after successful account activation.
 	 */
 	'autoLoginAfterAccountActivation' => false,
@@ -75,6 +91,11 @@ return array(
 	 * For example, if the hash takes 1 second to compute when the value is 14 then the compute time varies as 2^(value - 14) seconds.
 	 */
 	'blowfishHashCost' => 13,
+
+	/**
+	 * Whether Craft should cache element queries that fall inside {% cache %} tags.
+	 */
+	'cacheElementQueries' => true,
 
 	/**
 	 * The length of time Craft will keep things cached in craft/storage/runtime/.
@@ -215,6 +236,11 @@ return array(
 	 * The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
 	 */
 	'maxInvalidLogins' => 5,
+
+	/**
+	 * The highest number Craft will tack onto a slug in order to make it unique before giving up and thrownig an error.
+	 */
+	'maxSlugIncrement' => 100,
 
 	/**
 	 * The maximum upload file size allowed in bytes.

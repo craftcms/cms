@@ -73,7 +73,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 		var animateCss = {};
 		animateCss['margin-'+Craft.left] = 0;
-		this.$addElementBtn.animate(animateCss, 'fast');
+		this.$addElementBtn.velocity(animateCss, 'fast');
 
 		this.$elements = this.$elements.add($newElement);
 		this.initElements($newElement);

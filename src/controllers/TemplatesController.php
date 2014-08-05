@@ -7,16 +7,12 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class TemplatesController extends BaseController
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
-
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -29,10 +25,6 @@ class TemplatesController extends BaseController
 	 */
 	public $allowAnonymous = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
-
 	/**
 	 * Renders a template.
 	 *
@@ -40,7 +32,7 @@ class TemplatesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return null
+	 * @return void
 	 */
 	public function actionRender($template, array $variables = array())
 	{
@@ -56,27 +48,9 @@ class TemplatesController extends BaseController
 	}
 
 	/**
-	 * Shows the 'offline' template.
-	 *
-	 * @return null
-	 */
-	public function actionOffline()
-	{
-		// If this is a site request, make sure the offline template exists
-		if (craft()->request->isSiteRequest() && !craft()->templates->doesTemplateExist('offline'))
-		{
-			// Set PathService to use the CP templates path instead
-			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-		}
-
-		// Output the offline template
-		$this->renderTemplate('offline');
-	}
-
-	/**
 	 * Renders the Manual Update notification template.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function actionManualUpdateNotification()
 	{
@@ -86,7 +60,7 @@ class TemplatesController extends BaseController
 	/**
 	 * Renders the Manual Update template.
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function actionManualUpdate()
 	{
@@ -97,7 +71,7 @@ class TemplatesController extends BaseController
 
 	/**
 	 * @throws Exception
-	 * @return null
+	 * @return void
 	 */
 	public function actionRequirementsCheck()
 	{
@@ -141,7 +115,7 @@ class TemplatesController extends BaseController
 	 * Renders an error template.
 	 *
 	 * @throws \Exception
-	 * @return null
+	 * @return void
 	 */
 	public function actionRenderError()
 	{
@@ -155,6 +129,10 @@ class TemplatesController extends BaseController
 			if (craft()->templates->doesTemplateExist($prefix.$code))
 			{
 				$template = $prefix.$code;
+			}
+			else if ($code == 503 && craft()->templates->doesTemplateExist($prefix.'offline'))
+			{
+				$template = $prefix.'offline';
 			}
 			else if (craft()->templates->doesTemplateExist($prefix.'error'))
 			{

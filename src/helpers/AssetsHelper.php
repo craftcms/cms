@@ -66,5 +66,22 @@ class AssetsHelper
 		return $baseUrl.$folderPath.$transformPath.$fileName.$appendix;
 
 	}
+
+	/**
+	 * Clean an Asset's filename.
+	 *
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public static function cleanAssetName($fileName)
+	{
+		$separator = craft()->config->get('assetFilenameWordSeparator');
+		if (!is_string($separator))
+		{
+			$separator = null;
+		}
+
+		return IOHelper::cleanFilename($fileName, false, $separator);
+	}
 }
 

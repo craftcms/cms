@@ -359,11 +359,17 @@ class Image
 	 * @param string $targetPath
 	 * @param bool   $sanitizeAndAutoQuality
 	 *
+	 * @param      $targetPath
+	 * @param bool $sanitizeAndAutoQuality
+	 * @param string $extension
 	 * @return bool
 	 */
-	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
+	public function saveAs($targetPath, $sanitizeAndAutoQuality = false, $extension = null)
 	{
-		$extension = $this->getExtension();
+		if (empty($extension))
+		{
+			$extension = $this->getExtension();
+		}
 
 		$options = $this->_getSaveOptions(false);
 
@@ -385,8 +391,8 @@ class Image
 
 	/**
 	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
-	 *
 	 * @param int|string $width
+	 *
 	 * @param int|string $height
 	 *
 	 * @throws Exception
@@ -473,7 +479,6 @@ class Image
 	 * Get save options.
 	 *
 	 * @param int|null $quality
-	 *
 	 * @return array
 	 */
 	private function _getSaveOptions($quality = null)

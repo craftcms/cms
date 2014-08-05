@@ -7,16 +7,12 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     1.0
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
-
 	/**
 	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
@@ -27,12 +23,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	private $_sourcesByContext;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
 
 	// Basic info methods
-	// ==================
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Returns whether this element type has content.
@@ -129,8 +122,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
+
 	// Element index methods
-	// =====================
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Returns the element index HTML.
@@ -282,7 +276,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
-	// Methods for customizing the content table...
+
+	// Methods for customizing the content table
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Returns the content table name that should be joined in for an elements query.
@@ -321,7 +317,9 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return $columns;
 	}
 
-	// Methods for customizing ElementCriteriaModel's for this element type...
+
+	// Methods for customizing ElementCriteriaModel's for this element type
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Returns the element query condition for a custom status criteria.
@@ -341,7 +339,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return null|false
+	 * @return void|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
@@ -429,16 +427,15 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param BaseElementModel $element
 	 * @param int              $structureId
 	 *
-	 * @return null
+	 * @return void
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
-
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+
+	// Private methods
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Finds a source by its key, even if it's nested.

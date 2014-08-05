@@ -11,30 +11,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app
  * @since     1.0
  */
 class Craft extends \Yii
 {
-	////////////////////
-	// CONSTS
-	////////////////////
-
 	// Edition constants
 	const Personal = 0;
 	const Client   = 1;
 	const Pro      = 2;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
-
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInstalled() craft()->isInstalled()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isInstalled()
 	{
@@ -45,8 +37,7 @@ class Craft extends \Yii
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::setIsInstalled() craft()->setIsInstalled()} instead.
-	 * @return null
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function setIsInstalled()
 	{
@@ -57,8 +48,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft version.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getVersion() craft()->getVersion()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getVersion()
 	{
@@ -69,8 +60,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft build.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getBuild() craft()->getBuild()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getBuild()
 	{
@@ -81,8 +72,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft release date.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getReleaseDate() craft()->getReleaseDate()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getReleaseDate()
 	{
@@ -93,8 +84,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the Craft track.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getTrack() craft()->getTrack()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getTrack()
 	{
@@ -107,8 +98,8 @@ class Craft extends \Yii
 	 *
 	 * @param string $packageName The name of the package to search for.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::hasPackage() craft()->hasPackage()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function hasPackage($packageName)
 	{
@@ -119,8 +110,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the site name.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteName() craft()->getSiteName()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteName()
 	{
@@ -133,8 +124,8 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever is in the Site URL setting.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteUrl() craft()->getSiteUrl()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUrl($protocol = null)
 	{
@@ -145,8 +136,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the site UID.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteUid() craft()->getSiteUid()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getSiteUid()
 	{
@@ -157,8 +148,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the system time zone.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getTimeZone() craft()->getTimeZone()} instead.
 	 * @return string
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getTimeZone()
 	{
@@ -169,8 +160,8 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is on.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isSystemOn() craft()->isSystemOn()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isSystemOn()
 	{
@@ -181,8 +172,8 @@ class Craft extends \Yii
 	/**
 	 * Returns whether the system is in maintenance mode.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::isInMaintenanceMode() craft()->isInMaintenanceMode()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function isInMaintenanceMode()
 	{
@@ -193,8 +184,8 @@ class Craft extends \Yii
 	/**
 	 * Enables Maintenance Mode.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::enableMaintenanceMode() craft()->enableMaintenanceMode()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function enableMaintenanceMode()
 	{
@@ -206,7 +197,7 @@ class Craft extends \Yii
 	 * Disables Maintenance Mode.
 	 *
 	 * @return bool
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::disableMaintenanceMode() craft()->disableMaintenanceMode()} instead.
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function disableMaintenanceMode()
 	{
@@ -219,9 +210,10 @@ class Craft extends \Yii
 	 *
 	 * @param string|null $attribute The attribute to return information about.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getInfo() craft()->getInfo()} instead.
 	 * @throws Exception
 	 * @return mixed
+	 *
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getInfo($attribute = null)
 	{
@@ -234,8 +226,8 @@ class Craft extends \Yii
 	 *
 	 * @param InfoModel $info The InfoModel that you want to save.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::saveInfo() craft()->saveInfo()} instead.
 	 * @return bool
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function saveInfo(InfoModel $info)
 	{
@@ -246,8 +238,8 @@ class Craft extends \Yii
 	/**
 	 * Returns the Yii framework version.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getYiiVersion() craft()->getYiiVersion()} instead.
 	 * @return mixed
+	 * @deprecated Deprecated in 1.3.
 	 */
 	public static function getYiiVersion()
 	{
@@ -257,14 +249,27 @@ class Craft extends \Yii
 
 	/**
 	 * Displays a variable.
-	 *
-	 * @param mixed $target The variable to be dumped.
-	 *
-	 * @return null
+     *
+	 * @param mixed $target    The variable to be dumped.
+	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
 	 */
-	public static function dump($target)
+	public static function dump($target, $depth = 10, $highlight = true)
 	{
-		\CVarDumper::dump($target, 10, true);
+		\CVarDumper::dump($target, $depth, $highlight);
+	}
+
+	/**
+	 * Displays a variable and ends the request. (“Dump and die”)
+     *
+	 * @param mixed $target    The variable to be dumped.
+	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
+	 */
+	public static function dd($target, $depth = 10, $highlight = true)
+	{
+		static::dump($target, $depth, $highlight);
+		craft()->end();
 	}
 
 	/**
@@ -347,8 +352,7 @@ class Craft extends \Yii
 	 * @param string $language  The target language. If set to null (default), craft()->getLanguage() will be used.
 	 * @param string $category  The message category. Please use only word letters. Note, category 'craft' is reserved for
 	 *                          Craft and 'yii' is reserved for the Yii framework
-	 *
-	 * @return string|null The translated message, or null if the source key could not be found.
+	 * @return string|null      The translated message, or null if the source key could not be found.
 	 */
 	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'craft')
 	{
@@ -393,8 +397,6 @@ class Craft extends \Yii
 	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
 	 * @param string $category The category of the message (e.g. 'application'). It is case-insensitive.
 	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for determining which log file to write to.
-	 *
-	 * @return null
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
 	{
@@ -430,16 +432,10 @@ class Craft extends \Yii
 		static::getLogger()->log($msg, $level, $force, $category, $plugin);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
-
 	/**
 	 * Imports a file into Craft's classMap.
 	 *
 	 * @param string $file The file to import.
-	 *
-	 * @return null
 	 */
 	private static function _importFile($file)
 	{

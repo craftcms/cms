@@ -410,8 +410,8 @@ class FieldsService extends BaseApplicationComponent
 		// Give the field type a chance to prep the settings from post
 		$preppedSettings = $fieldType->prepSettings($field->settings);
 
-		// Set the prepped settings on the FieldRecord, FieldModel, and the field type
-		$fieldRecord->settings = $field->settings = $preppedSettings;
+		// Set the prepped settings on the FieldRecord and the field type
+		$fieldRecord->settings = $preppedSettings;
 		$fieldType->setSettings($preppedSettings);
 
 		// Run validation

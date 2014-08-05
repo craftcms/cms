@@ -453,7 +453,7 @@ Garnish = $.extend(Garnish, {
 				{
 					Garnish.shake._properties = {};
 					Garnish.shake._properties[prop] = startingPoint + (i % 2 ? -1 : 1) * (10-i);
-					$elem.animate(Garnish.shake._properties, Garnish.SHAKE_STEP_DURATION);
+					$elem.velocity(Garnish.shake._properties, Garnish.SHAKE_STEP_DURATION);
 				}, (Garnish.SHAKE_STEP_DURATION * i));
 			})(i);
 		}
@@ -1835,7 +1835,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			(
 				function($draggee, $helper)
 				{
-					$helper.animate({left: draggeeOffset.left, top: draggeeOffset.top}, 'fast',
+					$helper.velocity({left: draggeeOffset.left, top: draggeeOffset.top}, 'fast',
 						function()
 						{
 							$draggee.css('visibility', 'inherit');
@@ -2692,7 +2692,7 @@ Garnish.LightSwitch = Garnish.Base.extend({
 
 	turnOn: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
+		this.$innerContainer.stop().velocity({marginLeft: 0}, 'fast');
 		this.$input.val(Garnish.Y_AXIS);
 		this.on = true;
 		this.onChange();
@@ -2701,19 +2701,19 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		this.$toggleTarget.height('auto');
 		var height = this.$toggleTarget.height();
 		this.$toggleTarget.height(0);
-		this.$toggleTarget.stop().animate({height: height}, 'fast', $.proxy(function() {
+		this.$toggleTarget.stop().velocity({height: height}, 'fast', $.proxy(function() {
 			this.$toggleTarget.height('auto');
 		}, this));
 	},
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: Garnish.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.stop().velocity({marginLeft: Garnish.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.onChange();
 
-		this.$toggleTarget.stop().animate({height: 0}, 'fast');
+		this.$toggleTarget.stop().velocity({height: 0}, 'fast');
 	},
 
 	toggle: function(ev)
@@ -2866,8 +2866,8 @@ Garnish.Menu = Garnish.Base.extend({
 		this.setSettings(settings, Garnish.Menu.defaults);
 
 		this.$container = $(container);
-		this.$options = this.$container.find('a');
-		this.$options.data('menu', this);
+		this.$options = $();
+		this.addOptions(this.$container.find('a'));
 
 		if (this.settings.attachToElement)
 		{
@@ -2879,9 +2879,13 @@ Garnish.Menu = Garnish.Base.extend({
 		{
 			ev.stopPropagation();
 		});
+	},
 
-		// Listen for option clicks
-		this.addListener(this.$options, 'click', 'selectOption');
+	addOptions: function($options)
+	{
+		this.$options = this.$options.add($options);
+		$options.data('menu', this);
+		this.addListener($options, 'click', 'selectOption');
 	},
 
 	setPositionRelativeToTrigger: function()

@@ -107,8 +107,9 @@ class ElementHelper
 		}
 
 		$slugWordSeparator = craft()->config->get('slugWordSeparator');
+		$maxSlugIncrement = craft()->config->get('maxSlugIncrement');
 
-		for ($i = 0; $i < 100; $i++)
+		for ($i = 0; $i < $maxSlugIncrement; $i++)
 		{
 			$testSlug = $element->slug;
 

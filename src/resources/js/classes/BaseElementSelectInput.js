@@ -172,7 +172,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		};
 		animateCss['margin-'+Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-'+Craft.right)));
 
-		$element.animate(animateCss, 'fast', function() {
+		$element.velocity(animateCss, 'fast', function() {
 			$element.remove();
 		});
 
@@ -270,7 +270,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			};
 			animateCss[Craft.left] = 0;
 
-			$element.animate(animateCss, function() {
+			$element.velocity(animateCss, function() {
 				$(this).css('z-index', 1);
 			});
 

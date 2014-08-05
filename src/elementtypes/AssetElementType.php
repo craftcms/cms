@@ -293,6 +293,7 @@ class AssetElementType extends BaseElementType
 		$html .= craft()->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label'     => Craft::t('Title'),
+				'locale'    => $element->locale,
 				'id'        => 'title',
 				'name'      => 'title',
 				'value'     => $element->title,

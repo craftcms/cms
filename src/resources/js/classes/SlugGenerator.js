@@ -15,8 +15,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 		sourceVal = sourceVal.toLowerCase();
 
 		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Preiods are OK, too.
-		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}\\.]+')]));
+		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}]+')]));
 
 		if (words.length)
 		{

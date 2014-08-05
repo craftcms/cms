@@ -25,39 +25,25 @@ class WebLogRoute extends \CWebLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$isAjax = craft()->request->isAjaxRequest();
-		$mimeType = craft()->request->getMimeType();
-
-		if (craft()->config->get('devMode') && !craft()->request->isResourceRequest())
+		if (
+			!craft()->isConsole() &&
+			!craft()->request->isResourceRequest() &&
+			!craft()->request->isAjaxRequest() &&
+			craft()->config->get('devMode') &&
+			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+		)
 		{
-			if ($this->showInFireBug)
+			if (($userAgent = craft()->request->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))
 			{
-				if ($isAjax && $this->ignoreAjaxInFireBug)
-				{
-					return;
-				}
-
-				$view .= '-firebug';
-
-				if (($userAgent = craft()->request->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))
-				{
-					echo '<script type="text/javascript">';
-					echo IOHelper::getFileContents((IOHelper::getFolderName(__FILE__).'/../vendors/console-normalizer/normalizeconsole.min.js'));
-					echo "</script>\n";
-				}
+				echo '<script type="text/javascript">';
+				echo IOHelper::getFileContents((IOHelper::getFolderName(__FILE__).'/../vendors/console-normalizer/normalizeconsole.min.js'));
+				echo "</script>\n";
 			}
-			else if (!(craft() instanceof \CWebApplication) || $isAjax)
+			else
 			{
-				return;
+				$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
+				include(craft()->findLocalizedFile($viewFile, 'en'));
 			}
-
-			if ($mimeType !== 'text/html')
-			{
-				return;
-			}
-
-			$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'.php';
-			include(craft()->findLocalizedFile($viewFile, 'en'));
 		}
 	}
 }

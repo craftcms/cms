@@ -7,16 +7,12 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @link      http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class ElementsService extends BaseApplicationComponent
 {
-	////////////////////
-	// METHODS
-	////////////////////
-
 	// Finding Elements
 	// ================
 
@@ -24,7 +20,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns an element criteria model for a given element type.
 	 *
 	 * @param string $type
-	 * @param mixed  $attributes
+	 * @param mixed $attributes
 	 *
 	 * @throws Exception
 	 * @return ElementCriteriaModel
@@ -44,10 +40,9 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its ID.
 	 *
-	 * @param int         $elementId
-	 * @param null        $elementType
+	 * @param int $elementId
+	 * @param string|null $type
 	 * @param string|null $localeId
-	 *
 	 * @return BaseElementModel|null
 	 */
 	public function getElementById($elementId, $elementType = null, $localeId = null)
@@ -78,10 +73,8 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its URI.
 	 *
-	 * @param string      $uri
+	 * @param string $uri
 	 * @param string|null $localeId
-	 * @param bool        $enabledOnly
-	 *
 	 * @return BaseElementModel|null
 	 */
 	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
@@ -133,7 +126,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the element type(s) used by the element of a given ID(s).
 	 *
 	 * @param int|array $elementId
-	 *
 	 * @return string|array|null
 	 */
 	public function getElementTypeById($elementId)
@@ -160,8 +152,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Finds elements.
 	 *
 	 * @param mixed $criteria
-	 * @param bool  $justIds
-	 *
+	 * @param bool $justIds
 	 * @return array
 	 */
 	public function findElements($criteria = null, $justIds = false)
@@ -337,7 +328,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the total number of elements that match a given criteria.
 	 *
 	 * @param mixed $criteria
-	 *
 	 * @return int
 	 */
 	public function getTotalElements($criteria = null)
@@ -367,7 +357,6 @@ class ElementsService extends BaseApplicationComponent
 	 * @param mixed &$criteria
 	 * @param null  &$contentTable
 	 * @param null  &$fieldColumns
-	 *
 	 * @return DbCommand|false
 	 */
 	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
@@ -773,9 +762,8 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element's URI for a given locale.
 	 *
-	 * @param int    $elementId
+	 * @param int $elementId
 	 * @param string $localeId
-	 *
 	 * @return string
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
@@ -791,7 +779,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the locales that a given element is enabled in.
 	 *
 	 * @param int $elementId
-	 *
 	 * @return array
 	 */
 	public function getEnabledLocalesForElement($elementId)
@@ -810,8 +797,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Saves an element.
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
-	 * @param bool|null $validateContent Whether the element's content should be validated. If left 'null', it
-	 *                                   will depend on whether the element is enabled or not.
+	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it will depend on whether the element is enabled or not.
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -1138,10 +1124,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's slug and URI, along with any descendants.
 	 *
 	 * @param BaseElementModel $element
-	 * @param bool             $updateOtherLocales
-	 * @param bool             $updateDescendants
-	 *
-	 * @return null
+	 * @param bool $updateOtherLocales
+	 * @param bool $updateDescendants
 	 */
 	public function updateElementSlugAndUri(BaseElementModel $element, $updateOtherLocales = true, $updateDescendants = true)
 	{
@@ -1173,8 +1157,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's slug and URI, for any locales besides the given one.
 	 *
 	 * @param BaseElementModel $element
-	 *
-	 * @return null
 	 */
 	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
 	{
@@ -1198,8 +1180,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's descendants' slugs and URIs.
 	 *
 	 * @param BaseElementModel $element
-	 *
-	 * @return null
 	 */
 	public function updateDescendantSlugsAndUris(BaseElementModel $element)
 	{
@@ -1221,8 +1201,6 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param int $mergedElementId
 	 * @param int $prevailingElementId
-	 *
-	 * @throws \Exception
 	 * @return bool
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
@@ -1337,8 +1315,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Deletes an element(s) by its ID(s).
 	 *
 	 * @param int|array $elementIds
-	 *
-	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteElementById($elementIds)
@@ -1374,6 +1350,11 @@ class ElementsService extends BaseApplicationComponent
 			// (passing `false` because there's no chance this element is suddenly going to show up in a new query)
 			craft()->templateCache->deleteCachesByElementId($elementIds, false);
 
+			// Fire an 'onBeforeDeleteElements' event
+			$this->onBeforeDeleteElements(new Event($this, array(
+				'elementIds' => $elementIds
+			)));
+
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
 			{
@@ -1408,7 +1389,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Deletes elements by a given type.
 	 *
 	 * @param string $type
-	 *
 	 * @return bool
 	 */
 	public function deleteElementsByType($type)
@@ -1446,7 +1426,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns an element type.
 	 *
 	 * @param string $class
-	 *
 	 * @return BaseElementType|null
 	 */
 	public function getElementType($class)
@@ -1461,7 +1440,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Parses a string for element reference tags.
 	 *
 	 * @param string $str
-	 *
 	 * @return string|array
 	 */
 	public function parseRefs($str)
@@ -1591,8 +1569,6 @@ class ElementsService extends BaseApplicationComponent
 	 * Fires an 'onPopulateElement' event.
 	 *
 	 * @param Event $event
-	 *
-	 * @return null
 	 */
 	public function onPopulateElement(Event $event)
 	{
@@ -1603,23 +1579,29 @@ class ElementsService extends BaseApplicationComponent
 	 * Fires an 'onMergeElements' event.
 	 *
 	 * @param Event $event
-	 *
-	 * @return null
 	 */
 	public function onMergeElements(Event $event)
 	{
 		$this->raiseEvent('onMergeElements', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	/**
+	 * Fires an 'onBeforeDeleteElements' event.
+	 *
+	 * @param Event $event
+	 */
+	public function onBeforeDeleteElements(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteElements', $event);
+	}
+
+	// Private functions
+	// =================
 
 	/**
 	 * Returns the unique element IDs that match a given element query.
 	 *
 	 * @param DbCommand $query
-	 *
 	 * @return array
 	 */
 	private function _getElementIdsFromQuery(DbCommand $query)
