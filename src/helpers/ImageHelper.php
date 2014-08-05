@@ -48,4 +48,14 @@ class ImageHelper
 	{
 		return in_array($extension, array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm'));
 	}
+
+	/**
+	 * Return a list of web safe formats.
+	 * 
+	 * @return array
+	 */
+	public static function getWebSafeFormats()
+	{
+		return array('jpg', 'jpeg', 'gif', 'png');
+	}
 }
