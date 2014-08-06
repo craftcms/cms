@@ -81,7 +81,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @param string $class
 	 *
-	 * @return \CActiveRecord|object The model instance
+	 * @return BaseRecord|object The model instance
 	 */
 	public static function model($class = __CLASS__)
 	{
@@ -429,7 +429,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $condition
 	 * @param array $params
 	 *
-	 * @return \CActiveRecord
+	 * @return BaseRecord
 	 */
 	public function findById($id, $condition = '', $params = array())
 	{
@@ -441,7 +441,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $condition
 	 * @param array $params
 	 *
-	 * @return \CActiveRecord[]
+	 * @return BaseRecord[]
 	 */
 	public function findAllById($id, $condition = '', $params = array())
 	{

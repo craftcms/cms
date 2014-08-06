@@ -297,7 +297,7 @@ class TasksService extends BaseApplicationComponent
 	 *
 	 * @param int $taskId
 	 *
-	 * @return TaskModel[]|null
+	 * @return TaskModel|null
 	 */
 	public function getTaskById($taskId)
 	{
@@ -332,7 +332,7 @@ class TasksService extends BaseApplicationComponent
 	/**
 	 * Returns the currently running task.
 	 *
-	 * @return TaskModel[]|null
+	 * @return TaskModel|null
 	 */
 	public function getRunningTask()
 	{
