@@ -1,7 +1,7 @@
 <?php
 
 // Make sure this is PHP 5.3 or later
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)
 {
@@ -10,7 +10,7 @@ if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)
 
 
 // omitScriptNameInUrls and usePathInfo tests
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testScriptNameRedirect')
 	|| (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'testScriptNameRedirect') !== false))
@@ -25,7 +25,7 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 
 
 // Load and run Craft
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 $app = require 'bootstrap.php';
 $app->run();

@@ -25,7 +25,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Basic info methods
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Returns whether this element type has content.
@@ -124,7 +124,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Element index methods
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Returns the element index HTML.
@@ -278,7 +278,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Methods for customizing the content table
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Returns the content table name that should be joined in for an elements query.
@@ -319,7 +319,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Methods for customizing ElementCriteriaModel's for this element type
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Returns the element query condition for a custom status criteria.
@@ -435,7 +435,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Private methods
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Finds a source by its key, even if it's nested.

@@ -1,7 +1,7 @@
 <?php
 
 // Path constants and validation
-// ----------------------------------------------------------------------
+// ------------------------------------------------------------------------------------
 
 // We're already in the app/ folder, so let's use that as the starting point.
 // Make sure it doesn't look like we're on a network share that starts with \\
@@ -73,7 +73,7 @@ craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/', true);
 
 
 // Determine if Craft is running in Dev Mode
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 // Set the environment
 defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
@@ -124,7 +124,7 @@ else
 
 
 // Load Yii, Composer dependencies, and the app
-// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 // Load Yii, if it's not already
 if (!class_exists('Yii', false))
