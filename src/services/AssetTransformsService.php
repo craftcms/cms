@@ -539,6 +539,20 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a list of pending transform index IDs.
+	 *
+	 * @return array
+	 */
+	public function getPendingTransformIndexIds()
+	{
+		return craft()->db->createCommand()
+			->select('id')
+			->from('assettransformindex')
+			->where(array('and', 'fileExists = 0', 'inProgress = 0'))
+			->queryColumn();
+	}
+
+	/**
 	 * Get a transform index model by a row id.
 	 *
 	 * @param int $transformId
