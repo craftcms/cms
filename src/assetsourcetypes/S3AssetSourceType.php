@@ -589,21 +589,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return TRUE if a physical folder exists.
-	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param                  $folderName
-	 *
-	 * @return boolean
-	 */
-	protected function _sourceFolderExists($parentPath, $folderName)
-	{
-		$this->_prepareForRequests();
-		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/') . '/');
-
-	}
-
-	/**
 	 * Create a physical folder, return TRUE on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
@@ -740,6 +725,20 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
+	}
+
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
+	 *
+	 * @return boolean
+	 */
+	public function folderExists($parentPath, $folderName)
+	{
+		$this->_prepareForRequests();
+		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/') . '/');
 	}
 
 	/**

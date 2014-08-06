@@ -506,20 +506,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return TRUE if a physical folder exists.
-	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param                  $folderName
-	 *
-	 * @return boolean
-	 */
-	protected function _sourceFolderExists($parentPath, $folderName)
-
-	{
-		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentPath . $folderName);
-	}
-
-	/**
 	 * Create a physical folder, return TRUE on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
@@ -603,6 +589,19 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function transformExists(AssetFileModel $file, $location)
 	{
 		return IOHelper::fileExists($this->_getImageServerPath($file, $location));
+	}
+
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
+	 *
+	 * @return boolean
+	 */
+	public function folderExists($parentPath, $folderName)
+	{
+		return IOHelper::folderExists($this->_getSourceFileSystemPath() . $parentPath . $folderName);
 	}
 
 	/**

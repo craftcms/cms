@@ -564,22 +564,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if a folder exists on Rackspace.
-	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param                  $folderName
-	 *
-	 * @param string $parentPath
-	 * @param $folderName
-	 * @return boolean
-	 */
-	protected function _sourceFolderExists($parentPath, $folderName)
-	{
-		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentPath.rtrim($folderName, "/")."/");
-
-	}
-
-	/**
 	 * Create a folder on Rackspace, return true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
@@ -733,6 +717,21 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	public function transformExists(AssetFileModel $file, $location)
 	{
 		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
+	}
+
+	/**
+	 * Return true if a folder exists on Rackspace.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
+	 *
+	 * @param string $parentPath
+	 * @param $folderName
+	 * @return boolean
+	 */
+	public function folderExists($parentPath, $folderName)
+	{
+		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentPath.rtrim($folderName, "/")."/");
 	}
 
 	/**

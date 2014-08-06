@@ -563,23 +563,6 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return TRUE if a physical folder exists.
-	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param                  $folderName
-	 *
-	 * @param string $parentPath
-	 * @param $folderName
-	 * @return boolean
-	 */
-	protected function _sourceFolderExists($parentPath, $folderName)
-	{
-		$this->_prepareForRequests();
-		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/') . '/');
-
-	}
-
-	/**
 	 * Create a physical folder, return TRUE on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
@@ -716,6 +699,22 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		return (bool) @$this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
+	}
+
+	/**
+	 * Return TRUE if a physical folder exists.
+	 *
+	 * @param AssetFolderModel $parentFolder
+	 * @param                  $folderName
+	 *
+	 * @param string $parentPath
+	 * @param $folderName
+	 * @return boolean
+	 */
+	public function folderExists($parentPath, $folderName)
+	{
+		$this->_prepareForRequests();
+		return (bool) $this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/') . '/');
 	}
 
 	/**
