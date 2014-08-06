@@ -811,29 +811,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Return true if a source folder exists.
-	 *
-	 * @param AssetFolderModel $folder The assetFolderModel that represents the folder to check if it exists.
-	 *
-	 * @return bojol
-	 */
-	public function sourceFolderExists(AssetFolderModel $folder)
-	{
-		$parent = $folder->getParent();
-
-		if ($parent)
-		{
-			$parentPath = $parent->path;
-		}
-		else
-		{
-			$parentPath = "";
-		}
-
-		return $this->folderExists($parentPath, $folder->name);
-	 }
-
-	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
 	 * @param string $fileName The file that is the cause of all the trouble.
