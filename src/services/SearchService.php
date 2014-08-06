@@ -7,66 +7,62 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class SearchService extends BaseApplicationComponent
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	// Reformat this?
 	const DEFAULT_STOP_WORDS = "a's able about above according accordingly across actually after afterwards again against ain't all allow allows almost alone along already also although always am among amongst an and another any anybody anyhow anyone anything anyway anyways anywhere apart appear appreciate appropriate are aren't around as aside ask asking associated at available away awfully be became because become becomes becoming been before beforehand behind being believe below beside besides best better between beyond both brief but by c'mon c's came can can't cannot cant cause causes certain certainly changes clearly co com come comes concerning consequently consider considering contain containing contains corresponding could couldn't course currently definitely described despite did didn't different do does doesn't doing don't done down downwards during each edu eg eight either else elsewhere enough entirely especially et etc even ever every everybody everyone everything everywhere ex exactly example except far few fifth first five followed following follows for former formerly forth four from further furthermore get gets getting given gives go goes going gone got gotten greetings had hadn't happens hardly has hasn't have haven't having he he's hello help hence her here here's hereafter hereby herein hereupon hers herself hi him himself his hither hopefully how howbeit however i'd i'll i'm i've ie if ignored immediate in inasmuch inc indeed indicate indicated indicates inner insofar instead into inward is isn't it it'd it'll it's its itself just keep keeps kept know known knows last lately later latter latterly least less lest let let's like liked likely little look looking looks ltd mainly many may maybe me mean meanwhile merely might more moreover most mostly much must my myself name namely nd near nearly necessary need needs neither never nevertheless new next nine no nobody non none noone nor normally not nothing novel now nowhere obviously of off often oh ok okay old on once one ones only onto or other others otherwise ought our ours ourselves out outside over overall own particular particularly per perhaps placed please plus possible presumably probably provides que quite qv rather rd re really reasonably regarding regardless regards relatively respectively right said same saw say saying says second secondly see seeing seem seemed seeming seems seen self selves sensible sent serious seriously seven several shall she should shouldn't since six so some somebody somehow someone something sometime sometimes somewhat somewhere soon sorry specified specify specifying still sub such sup sure t's take taken tell tends th than thank thanks thanx that that's thats the their theirs them themselves then thence there there's thereafter thereby therefore therein theres thereupon these they they'd they'll they're they've think third this thorough thoroughly those though three through throughout thru thus to together too took toward towards tried tries truly try trying twice two un under unfortunately unless unlikely until unto up upon us use used useful uses using usually value various very via viz vs want wants was wasn't way we we'd we'll we're we've welcome well went were weren't what what's whatever when whence whenever where where's whereafter whereas whereby wherein whereupon wherever whether which while whither who who's whoever whole whom whose why will willing wish with within without won't wonder would wouldn't yes yet you you'd you'll you're you've your yours yourself yourselves zero";
 
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private static $_ftMinWordLength;
+
+	/**
+	 * @var
+	 */
 	private static $_ftStopWords;
 
+	/**
+	 * @var
+	 */
 	private $_tokens;
+
+	/**
+	 * @var
+	 */
 	private $_terms;
+
+	/**
+	 * @var
+	 */
 	private $_groups;
+
+	/**
+	 * @var
+	 */
 	private $_results;
 
-	/**
-	 * Returns the FULLTEXT minimum word length.
-	 *
-	 * @return int
-	 * @todo Get actual value from DB
-	 */
-	private static function _getMinWordLength()
-	{
-		if (!isset(static::$_ftMinWordLength))
-		{
-			static::$_ftMinWordLength = 4;
-		}
-
-		return static::$_ftMinWordLength;
-	}
-
-	/**
-	 * Returns the FULLTEXT stop words.
-	 *
-	 * @return array
-	 * @todo Make this customizable from the config settings
-	 */
-	private static function _getStopWords()
-	{
-		if (!isset(static::$_ftStopWords))
-		{
-			$words = explode(' ', static::DEFAULT_STOP_WORDS);
-
-			foreach ($words as &$word)
-			{
-				$word = StringHelper::normalizeKeywords($word);
-			}
-
-			static::$_ftStopWords = $words;
-		}
-
-		return static::$_ftStopWords;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Indexes the attributes of a given element defined by its element type.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool Whether the indexing was a success.
 	 */
 	public function indexElementAttributes(BaseElementModel $element)
@@ -101,6 +97,7 @@ class SearchService extends BaseApplicationComponent
 	 * @param int    $elementId The ID of the element getting indexed.
 	 * @param string $localeId  The locale ID of the content getting indexed.
 	 * @param array  $fields    The field values, indexed by field ID.
+	 *
 	 * @return bool  Whether the indexing was a success.
 	 */
 	public function indexElementFields($elementId, $localeId, $fields)
@@ -116,9 +113,10 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search query.
 	 *
-	 * @param array  $elementIds The list of element IDs to filter by the search query.
-	 * @param mixed  $query      The search query (either a string or a SearchQuery instance)
+	 * @param array  $elementIds   The list of element IDs to filter by the search query.
+	 * @param mixed  $query        The search query (either a string or a SearchQuery instance)
 	 * @param bool   $scoreResults Whether to order the results based on how closely they match the query.
+	 *
 	 * @return array The filtered list of element IDs.
 	 */
 	public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true)
@@ -214,6 +212,49 @@ class SearchService extends BaseApplicationComponent
 		return $elementIds;
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns the FULLTEXT minimum word length.
+	 *
+	 * @todo Get actual value from DB
+	 * @return int
+	 */
+	private static function _getMinWordLength()
+	{
+		if (!isset(static::$_ftMinWordLength))
+		{
+			static::$_ftMinWordLength = 4;
+		}
+
+		return static::$_ftMinWordLength;
+	}
+
+	/**
+	 * Returns the FULLTEXT stop words.
+	 *
+	 * @todo Make this customizable from the config settings
+	 * @return array
+	 */
+	private static function _getStopWords()
+	{
+		if (!isset(static::$_ftStopWords))
+		{
+			$words = explode(' ', static::DEFAULT_STOP_WORDS);
+
+			foreach ($words as &$word)
+			{
+				$word = StringHelper::normalizeKeywords($word);
+			}
+
+			static::$_ftStopWords = $words;
+		}
+
+		return static::$_ftStopWords;
+	}
+
 	/**
 	 * Indexes keywords for a specific element attribute/field.
 	 *
@@ -222,6 +263,8 @@ class SearchService extends BaseApplicationComponent
 	 * @param string      $fieldId
 	 * @param string|null $localeId
 	 * @param string      $dirtyKeywords
+	 *
+	 * @return null
 	 */
 	private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
 	{
@@ -258,8 +301,9 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Calculate score for a result.
 	 *
-	 * @param array  $row  A single result from the search query.
-	 * @return float  The total score for this row.
+	 * @param array $row A single result from the search query.
+	 *
+	 * @return float The total score for this row.
 	 */
 	private function _scoreRow($row)
 	{
@@ -292,10 +336,11 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Calculate score for a row/term combination.
 	 *
-	 * @param  object    $term    The SearchQueryTerm to score.
-	 * @param  array     $row     The result row to score against.
-	 * @param  float|int $weight  Optional weight for this term.
-	 * @return float              The total score for this term/row combination.
+	 * @param  object    $term   The SearchQueryTerm to score.
+	 * @param  array     $row    The result row to score against.
+	 * @param  float|int $weight Optional weight for this term.
+	 *
+	 * @return float The total score for this term/row combination.
 	 */
 	private function _scoreTerm($term, $row, $weight = 1)
 	{
@@ -385,6 +430,7 @@ class SearchService extends BaseApplicationComponent
 	 *
 	 * @param array $tokens
 	 * @param bool  $inclusive
+	 *
 	 * @return string|false
 	 */
 	private function _processTokens($tokens = array(), $inclusive = true)
@@ -443,6 +489,7 @@ class SearchService extends BaseApplicationComponent
 	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
 	 *
 	 * @param  SearchQueryTerm $term
+	 *
 	 * @return array
 	 */
 	private function _getSqlFromTerm(SearchQueryTerm $term)
@@ -483,7 +530,7 @@ class SearchService extends BaseApplicationComponent
 			$subSelect = null;
 		}
 
-		// Sanatize term
+		// Sanitize term
 		if ($term->term !== null)
 		{
 			$keywords = $this->_normalizeTerm($term->term);
@@ -526,13 +573,13 @@ class SearchService extends BaseApplicationComponent
 					{
 						// Create exact clause from term
 						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-						$keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+						$keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
 					}
 					else
 					{
 						// Create LIKE clause from term
 						$operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-						$keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
+						$keywords = ($term->subLeft ? '%' : '% ').$keywords.($term->subRight ? '%' : ' %');
 					}
 
 					// Generate the SQL
@@ -562,6 +609,7 @@ class SearchService extends BaseApplicationComponent
 	 * Normalize term from tokens, keep a record for cache.
 	 *
 	 * @param string $term
+	 *
 	 * @return string
 	 */
 	private function _normalizeTerm($term)
@@ -577,10 +625,10 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Remove padding from keywords.
-	 * Might seem silly now, but padding might change.
+	 * Remove padding from keywords. Might seem silly now, but padding might change.
 	 *
 	 * @param string $keywords
+	 *
 	 * @return string
 	 */
 	private function _removePadding($keywords)
@@ -589,9 +637,10 @@ class SearchService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Determine if search term is eligable for full-text or not.
+	 * Determine if search term is eligible for full-text or not.
 	 *
 	 * @param string $term The search term to check
+	 *
 	 * @return bool
 	 */
 	private function _isFulltextTerm($term)
@@ -620,6 +669,7 @@ class SearchService extends BaseApplicationComponent
 	 * Get the fieldId for given attribute or 0 for unmatched.
 	 *
 	 * @param string $attribute
+	 *
 	 * @return int
 	 */
 	private function _getFieldIdFromAttribute($attribute)
@@ -634,9 +684,10 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get SQL bit for simple WHERE clause
 	 *
-	 * @param string $key   Attribute
-	 * @param string $oper  Operator
-	 * @param string $val   Value
+	 * @param string $key  The attribute.
+	 * @param string $oper The operator.
+	 * @param string $val  The value.
+	 *
 	 * @return string
 	 */
 	private function _sqlWhere($key, $oper, $val)
@@ -651,8 +702,9 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Get SQL but for MATCH AGAINST clause.
 	 *
-	 * @param mixed  $val   String or Array of keywords
-	 * @param bool   $bool  Use In Boolean Mode or not
+	 * @param mixed  $val  String or Array of keywords
+	 * @param bool   $bool Use In Boolean Mode or not
+	 *
 	 * @return string
 	 */
 	private function _sqlMatch($val, $bool = true)
@@ -668,6 +720,7 @@ class SearchService extends BaseApplicationComponent
 	 * Get SQL bit for sub-selects.
 	 *
 	 * @param string $where
+	 *
 	 * @return string|false
 	 */
 	private function _sqlSubSelect($where)

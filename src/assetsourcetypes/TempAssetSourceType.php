@@ -7,19 +7,31 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
  * @since     2.0
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
-	/**
-	 * @var bool
-	 */
-	protected $_isSourceLocal = true;
+	////////////////////
+	// CONSTANTS
+	////////////////////
 
 	const sourceName = "Temporary source";
 	const sourceType = "Temp";
+
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var bool
+	 */
+	protected $isSourceLocal = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the name of the source type.

@@ -7,19 +7,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class AssetTransformsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_transformsByHandle;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllTransforms = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns all named asset transforms.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllTransforms($indexBy = null)
@@ -63,7 +79,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Returns an asset transform by its handle.
 	 *
-	 * @param $handle
+	 * @param string $handle
+	 *
 	 * @return AssetTransformModel|null
 	 */
 	public function getTransformByHandle($handle)
@@ -95,7 +112,6 @@ class AssetTransformsService extends BaseApplicationComponent
 			return $this->_transformsByHandle[$handle];
 		}
 	}
-
 
 	/**
 	 * Saves an asset transform.
@@ -177,8 +193,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Update the asset transforms for the FileModel.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel      $file
 	 * @param array|object|string $transformsToUpdate
+	 *
 	 * @return bool
 	 */
 	public function updateTransforms(AssetFileModel $file, $transformsToUpdate)
@@ -253,7 +270,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get a transform index row. If it doesn't exist - create one.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $transform
+	 * @param                $transform
+	 *
 	 * @return AssetTransformIndexModel
 	 */
 	public function getTransformIndex(AssetFileModel $file, $transform)
@@ -385,6 +403,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Generates a transform.
 	 *
 	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return bool
 	 */
 	public function generateTransform(AssetTransformIndexModel $index)
@@ -451,6 +470,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get a transform's subpath
 	 *
 	 * @param $transform
+	 *
 	 * @return string
 	 */
 	public function getTransformSubpath($transform)
@@ -499,6 +519,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Store a transform index data by it's model.
 	 *
 	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return AssetTransformIndexModel
 	 */
 	public function storeTransformIndexData(AssetTransformIndexModel $index)
@@ -520,7 +541,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get a transform index model by a row id.
 	 *
-	 * @param $transformId
+	 * @param int $transformId
+	 *
 	 * @return AssetTransformIndexModel|null
 	 */
 	public function getTransformIndexModelById($transformId)
@@ -543,8 +565,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get a transform index model by a row id.
 	 *
-	 * @param $fileId
-	 * @param $transformHandle
+	 * @param int    $fileId
+	 * @param string $transformHandle
+	 *
 	 * @return AssetTransformIndexModel|null
 	 */
 	public function getTransformIndexModelByFileIdAndHandle($fileId, $transformHandle)
@@ -553,7 +576,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$entry =  craft()->db->createCommand()
 			->select('ti.*')
 			->from('assettransformindex ti')
-			->where('ti.fileId = :id AND ti.location = :location', array(':id' => $fileId, ':location' => '_' . $transformHandle))
+			->where('ti.fileId = :id AND ti.location = :location', array(':id' => $fileId, ':location' => '_'.$transformHandle))
 			->queryRow();
 
 		if ($entry)
@@ -567,7 +590,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Get URL for Transform by TransformIndexId.
 	 *
-	 * @param $transformId
+	 * @param int $transformId
+	 *
 	 * @return string
 	 */
 	public function getUrlforTransformByIndexId($transformId)
@@ -585,7 +609,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get URL for a transform by File Model and transform.
 	 *
 	 * @param AssetFileModel $file
-	 * @param $transform
+	 * @param                $transform
+	 *
 	 * @return string
 	 */
 	public function getUrlforTransformByFile($file, $transform)
@@ -599,25 +624,28 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Cleans up transforms for a source by making sure that all indexed transforms actually exist.
 	 *
-	 * @param $sourceId
+	 * @param int $sourceId
+	 *
+	 * @return null
 	 */
 	public function cleanUpTransformsForSource($sourceId)
 	{
 		$transformList = craft()->db->createCommand()
-							->where('sourceId = :sourceId AND fileExists = 1', array(':sourceId' => $sourceId))
-							->select('*')
-							->from('assettransformindex')
-							->queryAll();
+		        ->where('sourceId = :sourceId AND fileExists = 1', array(':sourceId' => $sourceId))
+		        ->select('*')
+		        ->from('assettransformindex')
+		        ->queryAll();
 
 		$sourceType = craft()->assetSources->getSourceTypeById($sourceId);
 
 		foreach ($transformList as $row)
 		{
-				$file = craft()->assets->getFileById($row['fileId']);
-				if (!$file || !$sourceType->transformExists($file, $row['location']))
-				{
-					craft()->db->createCommand()->delete('assettransformindex', 'id = '.$row['id']);
-				}
+			$file = craft()->assets->getFileById($row['fileId']);
+
+			if (!$file || !$sourceType->transformExists($file, $row['location']))
+			{
+				craft()->db->createCommand()->delete('assettransformindex', 'id = '.$row['id']);
+			}
 		}
 	}
 
@@ -625,6 +653,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Get generated transform locations for a file.
 	 *
 	 * @param AssetFileModel $file
+	 *
 	 * @return array|\CDbDataReader
 	 */
 	public function getGeneratedTransformLocationsForFile(AssetFileModel $file)
@@ -640,7 +669,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Delete transform records by a file id.
 	 *
-	 * @param $fileId
+	 * @param int $fileId
+	 *
+	 * @return null
 	 */
 	public function deleteTransformRecordsByFileId($fileId)
 	{
@@ -652,6 +683,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param $file
 	 * @param $size
+	 *
 	 * @return bool|string
 	 */
 	public function getThumbServerPath(AssetFileModel $file, $size)
@@ -676,64 +708,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 
 		return $thumbPath;
-	}
-
-	// Private methods
-
-	/**
-	 * Returns a DbCommand object prepped for retrieving transforms.
-	 *
-	 * @return DbCommand
-	 */
-	private function _createTransformQuery()
-	{
-		return craft()->db->createCommand()
-			->select('id, name, handle, mode, position, height, width, quality, dimensionChangeTime')
-			->from('assettransforms')
-			->order('name');
-	}
-
-	/**
-	 * Returns a trasnform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 * @return string
-	 */
-	private function _getTransformFolderName(AssetTransformModel $transform)
-	{
-		if ($transform->isNamedTransform())
-		{
-			return $this->_getNamedTransformFolderName($transform);
-		}
-		else
-		{
-			return $this->_getUnnamedTransformFolderName($transform);
-		}
-	}
-
-	/**
-	 * Returns a named transform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 * @return string
-	 */
-	private function _getNamedTransformFolderName(AssetTransformModel $transform)
-	{
-		return '_'.$transform->handle;
-	}
-
-	/**
-	 * Returns an unnamed transform's folder name.
-	 *
-	 * @param AssetTransformModel $transform
-	 * @return string
-	 */
-	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
-	{
-		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
-		       '_'.($transform->mode) .
-		       '_'.($transform->position) .
-		       ($transform->quality ? '_'.$transform->quality : '');
 	}
 
 	/**
@@ -777,6 +751,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Deletes an image local source if required by config.
 	 *
 	 * @param $imageSource
+	 *
+	 * @return null
 	 */
 	public function deleteSourceIfNecessary($imageSource)
 	{
@@ -791,6 +767,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param $localCopy
 	 * @param $destination
+	 *
+	 * @return null
 	 */
 	public function storeLocalSource($localCopy, $destination)
 	{
@@ -813,5 +791,68 @@ class AssetTransformsService extends BaseApplicationComponent
 				IOHelper::move($localCopy, $destination);
 			}
 		}
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving transforms.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createTransformQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, name, handle, mode, position, height, width, quality, dimensionChangeTime')
+			->from('assettransforms')
+			->order('name');
+	}
+
+	/**
+	 * Returns a transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getTransformFolderName(AssetTransformModel $transform)
+	{
+		if ($transform->isNamedTransform())
+		{
+			return $this->_getNamedTransformFolderName($transform);
+		}
+		else
+		{
+			return $this->_getUnnamedTransformFolderName($transform);
+		}
+	}
+
+	/**
+	 * Returns a named transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getNamedTransformFolderName(AssetTransformModel $transform)
+	{
+		return '_'.$transform->handle;
+	}
+
+	/**
+	 * Returns an unnamed transform's folder name.
+	 *
+	 * @param AssetTransformModel $transform
+	 *
+	 * @return string
+	 */
+	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
+	{
+		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
+		       '_'.($transform->mode) .
+		       '_'.($transform->position) .
+		       ($transform->quality ? '_'.$transform->quality : '');
 	}
 }

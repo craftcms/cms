@@ -7,31 +7,27 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     2.0
  */
 class TaskModel extends BaseComponentModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_taskType;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'level'       => AttributeType::Number,
-			'description' => AttributeType::String,
-			'parentId'    => AttributeType::Mixed,
-			'totalSteps'  => AttributeType::Number,
-			'currentStep' => AttributeType::Number,
-			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
-	 * Retuns the task's description.
+	 * Returns the task's description.
 	 *
 	 * @return string
 	 */
@@ -114,5 +110,24 @@ class TaskModel extends BaseComponentModel
 			'status'      => $this->status,
 			'progress'    => $this->getProgress(),
 		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'level'       => AttributeType::Number,
+			'description' => AttributeType::String,
+			'parentId'    => AttributeType::Mixed,
+			'totalSteps'  => AttributeType::Number,
+			'currentStep' => AttributeType::Number,
+			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
+		));
 	}
 }

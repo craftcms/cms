@@ -7,12 +7,36 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class UpdateModel extends BaseModel
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 *
+	 * @return bool|null
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'plugins')
+		{
+			$value = PluginUpdateModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -23,20 +47,5 @@ class UpdateModel extends BaseModel
 		$attributes['errors']   = AttributeType::Mixed;
 
 		return $attributes;
-	}
-
-	/**
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return bool|void
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'plugins')
-		{
-			$value = PluginUpdateModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

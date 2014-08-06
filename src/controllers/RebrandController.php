@@ -9,16 +9,20 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class RebrandController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Upload a logo for the admin panel.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadLogo()
 	{
@@ -84,7 +88,7 @@ class RebrandController extends BaseController
 	/**
 	 * Crop user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCropLogo()
 	{
@@ -138,7 +142,7 @@ class RebrandController extends BaseController
 	/**
 	 * Delete logo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteLogo()
 	{

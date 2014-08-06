@@ -9,14 +9,29 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class RebrandVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_logoPath;
+
+	/**
+	 * @var
+	 */
 	private $_logoVariable;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns whether a custom logo has been uploaded.
@@ -51,6 +66,10 @@ class RebrandVariable
 
 		return $this->_logoVariable;
 	}
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the path to the logo, or false if a logo hasn't been uploaded.

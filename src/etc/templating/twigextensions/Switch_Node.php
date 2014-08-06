@@ -9,15 +9,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     1.3
  */
 
 class Switch_Node extends \Twig_Node
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var \Twig_NodeInterface
+	 */
 	private $_cases;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @param \Twig_NodeInterface $value
+	 * @param \Twig_NodeInterface $cases
+	 * @param \Twig_NodeInterface $default
+	 * @param null|string         $lineno
+	 * @param null                $tag
+	 *
+	 * @return Switch_Node
+	 */
 	public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
 	{
 		$this->_cases = $cases;
@@ -29,6 +49,8 @@ class Switch_Node extends \Twig_Node
 	 * Compiles the node to PHP.
 	 *
 	 * @param \Twig_Compiler $compiler
+	 *
+	 * @return null
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

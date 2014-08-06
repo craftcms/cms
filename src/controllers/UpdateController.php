@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class UpdateController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,14 +27,17 @@ class UpdateController extends BaseController
 	 */
 	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
-	// -------------------------------------------
-	//  Auto Updates
-	// -------------------------------------------
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	// Auto Updates
+	// ============
 
 	/**
 	 * Returns the available updates.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetAvailableUpdates()
 	{
@@ -61,7 +68,7 @@ class UpdateController extends BaseController
 	/**
 	 * Returns the update info JSON.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetUpdates()
 	{
@@ -138,12 +145,11 @@ class UpdateController extends BaseController
 		}
 	}
 
-	// -------------------------------------------
-	//  Manual Updates
-	// -------------------------------------------
+	// Manual Updates
+	// ==============
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionPrepare()
 	{
@@ -188,7 +194,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionProcessDownload()
 	{
@@ -217,7 +223,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionBackupFiles()
 	{
@@ -244,7 +250,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateFiles()
 	{
@@ -271,7 +277,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionBackupDatabase()
 	{
@@ -318,7 +324,7 @@ class UpdateController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateDatabase()
 	{
@@ -360,7 +366,7 @@ class UpdateController extends BaseController
 	/**
 	 * Performs maintenance and clean up tasks after an update.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCleanUp()
 	{
@@ -414,7 +420,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRollback()
 	{
@@ -457,6 +463,10 @@ class UpdateController extends BaseController
 
 		$this->returnJson(array('alive' => true, 'finished' => true, 'rollBack' => true));
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $data

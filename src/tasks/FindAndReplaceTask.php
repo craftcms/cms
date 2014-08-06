@@ -7,29 +7,34 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.tasks
  * @since     2.0
  */
 class FindAndReplaceTask extends BaseTask
 {
-	private $_table;
-	private $_textColumns;
-	private $_matrixFieldIds;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @return array
+	 * @var
 	 */
-	protected function defineSettings()
-	{
-		return array(
-			'find'          => AttributeType::String,
-			'replace'       => AttributeType::String,
-			'matrixFieldId' => AttributeType::String,
-		);
-	}
+	private $_table;
+
+	/**
+	 * @var
+	 */
+	private $_textColumns;
+
+	/**
+	 * @var
+	 */
+	private $_matrixFieldIds;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the default description for this task.
@@ -99,6 +104,7 @@ class FindAndReplaceTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -139,11 +145,34 @@ class FindAndReplaceTask extends BaseTask
 		}
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'find'          => AttributeType::String,
+			'replace'       => AttributeType::String,
+			'matrixFieldId' => AttributeType::String,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly
 	 *
 	 * @param FieldModel $field
 	 * @param string     $fieldColumnPrefix
+	 *
 	 * @return bool
 	 */
 	private function _checkField(FieldModel $field, $fieldColumnPrefix)

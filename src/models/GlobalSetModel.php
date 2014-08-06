@@ -7,34 +7,33 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class GlobalSetModel extends BaseElementModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::GlobalSet;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the global set's name as its string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'name'          => AttributeType::Name,
-			'handle'        => AttributeType::Handle,
-			'fieldLayoutId' => AttributeType::Number,
-		));
 	}
 
 	/**
@@ -65,5 +64,21 @@ class GlobalSetModel extends BaseElementModel
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('globals/'.$this->handle);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'name'          => AttributeType::Name,
+			'handle'        => AttributeType::Handle,
+			'fieldLayoutId' => AttributeType::Number,
+		));
 	}
 }

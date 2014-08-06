@@ -7,31 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     2.0
  */
 class StructureElementRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'structureelements';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'root'  => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true),
-			'lft'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'rgt'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'level' => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false),
-		);
 	}
 
 	/**
@@ -66,6 +57,23 @@ class StructureElementRecord extends BaseRecord
 	{
 		return array(
 			'nestedSet' => 'app.extensions.NestedSetBehavior',
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'root'  => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true),
+			'lft'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
+			'rgt'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
+			'level' => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false),
 		);
 	}
 }

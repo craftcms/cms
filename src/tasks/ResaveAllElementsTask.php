@@ -7,26 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.tasks
  * @since     2.0
  */
 class ResaveAllElementsTask extends BaseTask
 {
-	private $_elementTypes;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @return array
+	 * @var
 	 */
-	protected function defineSettings()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
-			'localizableOnly' => AttributeType::Bool
-		);
-	}
+	private $_elementTypes;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the default description for this task.
@@ -70,6 +68,7 @@ class ResaveAllElementsTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -82,5 +81,22 @@ class ResaveAllElementsTask extends BaseTask
 				'localeEnabled' => null,
 			)
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
+			'localizableOnly' => AttributeType::Bool
+		);
 	}
 }

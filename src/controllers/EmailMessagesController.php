@@ -9,16 +9,20 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class EmailMessagesController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Saves an email message.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveMessage()
 	{

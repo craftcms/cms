@@ -7,41 +7,38 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class SectionModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_locales;
+
+	/**
+	 * @var
+	 */
 	private $_entryTypes;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the translated section name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'                        => AttributeType::Number,
-			'structureId'               => AttributeType::Number,
-			'name'                      => AttributeType::String,
-			'handle'                    => AttributeType::String,
-			'type'                      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure)),
-			'hasUrls'                   => array(AttributeType::Bool, 'default' => true),
-			'template'                  => AttributeType::String,
-			'maxLevels'                 => AttributeType::Number,
-			'enableVersioning'          => array(AttributeType::Bool, 'default' => true),
-		);
 	}
 
 	/**
@@ -80,6 +77,8 @@ class SectionModel extends BaseModel
 	 * Sets the section's locale models.
 	 *
 	 * @param array $locales
+	 *
+	 * @return null
 	 */
 	public function setLocales($locales)
 	{
@@ -89,8 +88,10 @@ class SectionModel extends BaseModel
 	/**
 	 * Adds locale-specific errors to the model.
 	 *
-	 * @param array $errors
+	 * @param array  $errors
 	 * @param string $localeId
+	 *
+	 * @return null
 	 */
 	public function addLocaleErrors($errors, $localeId)
 	{
@@ -108,6 +109,7 @@ class SectionModel extends BaseModel
 	 * Returns the section's entry types.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEntryTypes($indexBy = null)
@@ -166,5 +168,27 @@ class SectionModel extends BaseModel
 
 			return $locales[$localeId]->urlFormat;
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'                        => AttributeType::Number,
+			'structureId'               => AttributeType::Number,
+			'name'                      => AttributeType::String,
+			'handle'                    => AttributeType::String,
+			'type'                      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure)),
+			'hasUrls'                   => array(AttributeType::Bool, 'default' => true),
+			'template'                  => AttributeType::String,
+			'maxLevels'                 => AttributeType::Number,
+			'enableVersioning'          => array(AttributeType::Bool, 'default' => true),
+		);
 	}
 }

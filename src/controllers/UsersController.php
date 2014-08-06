@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class UsersController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,10 +27,14 @@ class UsersController extends BaseController
 	 */
 	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Displays the login template, and handles login post requests.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionLogin()
 	{
@@ -109,7 +117,7 @@ class UsersController extends BaseController
 	/**
 	 * Logs a user in for impersonation.  Requires you to be an administrator.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionImpersonate()
 	{
@@ -140,7 +148,7 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionLogout()
 	{
@@ -151,7 +159,7 @@ class UsersController extends BaseController
 	/**
 	 * Sends a Forgot Password email.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionForgotPassword()
 	{
@@ -211,7 +219,7 @@ class UsersController extends BaseController
 	 * Sets a user's password once they've verified they have access to their email.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSetPassword()
 	{
@@ -301,7 +309,7 @@ class UsersController extends BaseController
 	 * Validate that a user has access to an email address.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidate()
 	{
@@ -427,7 +435,7 @@ class UsersController extends BaseController
 	/**
 	 * Manually activates a user account.  Only admins have access.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionActivateUser()
 	{
@@ -461,7 +469,7 @@ class UsersController extends BaseController
 	 * @param string|null $account
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditUser(array $variables = array(), $account = null)
 	{
@@ -615,7 +623,7 @@ class UsersController extends BaseController
 	 * Registers a new user, or saves an existing user's account settings.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveUser()
 	{
@@ -823,9 +831,8 @@ class UsersController extends BaseController
 	/**
 	 * Saves a user's profile.
 	 *
-	 * @return void
-	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link UsersController::saveUser()} instead.
+	 * @return null
 	 */
 	public function actionSaveProfile()
 	{
@@ -836,7 +843,7 @@ class UsersController extends BaseController
 	/**
 	 * Upload a user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadUserPhoto()
 	{
@@ -912,7 +919,7 @@ class UsersController extends BaseController
 	/**
 	 * Crop user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCropUserPhoto()
 	{
@@ -980,7 +987,7 @@ class UsersController extends BaseController
 	/**
 	 * Delete all the photos for current user.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUserPhoto()
 	{
@@ -1011,7 +1018,7 @@ class UsersController extends BaseController
 	/**
 	 * Sends a new activation email to a user.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSendActivationEmail()
 	{
@@ -1042,7 +1049,7 @@ class UsersController extends BaseController
 	 * Unlocks a user, bypassing the cooldown phase.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionUnlockUser()
 	{
@@ -1076,7 +1083,7 @@ class UsersController extends BaseController
 	 * Suspends a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionSuspendUser()
 	{
@@ -1110,7 +1117,7 @@ class UsersController extends BaseController
 	 * Deletes a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUser()
 	{
@@ -1146,7 +1153,7 @@ class UsersController extends BaseController
 	 * Unsuspends a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionUnsuspendUser()
 	{
@@ -1179,7 +1186,7 @@ class UsersController extends BaseController
 	/**
 	 * Saves the asset field layout.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveFieldLayout()
 	{
@@ -1226,10 +1233,14 @@ class UsersController extends BaseController
 		$this->returnErrorJson(Craft::t('Invalid password.'));
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * @param $user
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processSetPasswordPath($user)
 	{
@@ -1259,7 +1270,7 @@ class UsersController extends BaseController
 	 * @param int $userId
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _noUserExists($userId)
 	{
@@ -1269,7 +1280,7 @@ class UsersController extends BaseController
 	/**
 	 * @param $userId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _assignDefaultGroupToUser($userId)
 	{
@@ -1285,7 +1296,7 @@ class UsersController extends BaseController
 	/**
 	 * @param $user
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserPhoto($user)
 	{
@@ -1318,7 +1329,7 @@ class UsersController extends BaseController
 	 * @param $user
 	 * @param $currentUser
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserGroupsPermissions($user, $currentUser)
 	{

@@ -7,30 +7,89 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class HttpRequestService extends \CHttpRequest
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_path;
+
+	/**
+	 * @var
+	 */
 	private $_segments;
+
+	/**
+	 * @var int
+	 */
 	private $_pageNum = 1;
 
+	/**
+	 * @var bool
+	 */
 	private $_isCpRequest = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_isResourceRequest = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_isActionRequest = false;
 
+	/**
+	 * @var bool
+	 */
 	private $_checkedRequestType = false;
+
+	/**
+	 * @var
+	 */
 	private $_actionSegments;
+
+	/**
+	 * @var
+	 */
 	private $_isMobileBrowser;
+
+	/**
+	 * @var
+	 */
 	private $_isMobileOrTabletBrowser;
+
+	/**
+	 * @var
+	 */
 	private $_mimeType;
+
+	/**
+	 * @var
+	 */
 	private $_browserLanguages;
+
+	/**
+	 * @var
+	 */
 	private $_ipAddress;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Init
+	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -119,6 +178,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns a specific URI segment, or null if the segment doesn't exist.
 	 *
 	 * @param int $num
+	 *
 	 * @return string|null
 	 */
 	public function getSegment($num)
@@ -244,7 +304,8 @@ class HttpRequestService extends \CHttpRequest
 	 * $name can also represent a nested param using dot syntax, e.g. getQuery('fields.body')
 	 *
 	 * @param string|null $name
-	 * @param mixed       $defaultValue
+	 * @param string|null $defaultValue
+	 *
 	 * @return mixed
 	 */
 	public function getQuery($name = null, $defaultValue = null)
@@ -255,7 +316,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the named GET parameter value, or throws an exception if it's not set
 	 *
-	 * @param $name
+	 * @param string $name
 	 *
 	 * @throws HttpException
 	 * @return mixed
@@ -280,7 +341,8 @@ class HttpRequestService extends \CHttpRequest
 	 * $name can also represent a nested param using dot syntax, e.g. getPost('fields.body')
 	 *
 	 * @param string|null $name
-	 * @param mixed       $defaultValue
+	 * @param string|null $defaultValue
+	 *
 	 * @return mixed
 	 */
 	public function getPost($name = null, $defaultValue = null)
@@ -291,7 +353,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
-	 * @param $name
+	 * @param string $name
 	 *
 	 * @throws HttpException
 	 * @return mixed
@@ -315,6 +377,7 @@ class HttpRequestService extends \CHttpRequest
 	 *
 	 * @param string $name
 	 * @param null   $defaultValue
+	 *
 	 * @return mixed|null
 	 */
 	public function getParam($name, $defaultValue = null)
@@ -334,7 +397,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
 	 *
-	 * @param $name
+	 * @param string $name
 	 *
 	 * @throws HttpException
 	 * @return mixed
@@ -354,12 +417,12 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether the request is coming from a mobile browser.
-	 * Detection script courtesy of http://detectmobilebrowsers.com
+	 * Returns whether the request is coming from a mobile browser. Detection script courtesy of http://detectmobilebrowsers.com
 	 *
 	 * Last updated: 2013-02-04
 	 *
 	 * @param bool $detectTablets
+	 *
 	 * @return bool
 	 */
 	public function isMobileBrowser($detectTablets = false)
@@ -388,11 +451,10 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the user preferred languages sorted by preference.
-	 * The returned language IDs will be canonicalized using {@link LocaleData::getCanonicalID}.
-	 * This method returns false if the user does not have language preferences.
+	 * Returns the user preferred languages sorted by preference. The returned language IDs will be canonicalized using
+	 * {@link LocaleData::getCanonicalID}. This method returns false if the user does not have language preferences.
 	 *
-	 * @return array the user preferred languages.
+	 * @return array The user preferred languages.
 	 */
 	public function getBrowserLanguages()
 	{
@@ -453,6 +515,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param bool|null  $terminate
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)
 	{
@@ -602,6 +665,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns a cookie, if it's set.
 	 *
 	 * @param string $name
+	 *
 	 * @return \CHttpCookie|null
 	 */
 	public function getCookie($name)
@@ -616,6 +680,8 @@ class HttpRequestService extends \CHttpRequest
 	 * Deletes a cookie.
 	 *
 	 * @param $name
+	 *
+	 * @return null
 	 */
 	public function deleteCookie($name)
 	{
@@ -702,11 +768,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Retrieves the best guess of the client's actual IP address taking into account numerous HTTP proxy headers due to variations
-	 * in how different ISPs handle IP addresses in headers between hops.
+	 * Retrieves the best guess of the client's actual IP address taking into account numerous HTTP proxy headers due
+	 * to variations in how different ISPs handle IP addresses in headers between hops.
 	 *
-	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you need a trusted
-	 * source of information for you IP address... use $_SERVER['REMOTE_ADDR'] instead.
+	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
+	 * need a trusted source of information for you IP address... use $_SERVER['REMOTE_ADDR'] instead.
 	 */
 	public function getIpAddress()
 	{
@@ -714,17 +780,17 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$ipMatch = false;
 
-			// check for shared internet/ISP IP
+			// Check for shared internet/ISP IP
 			if (!empty($_SERVER['HTTP_CLIENT_IP']) && $this->_validateIp($_SERVER['HTTP_CLIENT_IP']))
 			{
 				$ipMatch = $_SERVER['HTTP_CLIENT_IP'];
 			}
 			else
 			{
-				// check for IPs passing through proxies
+				// Check for IPs passing through proxies
 				if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 				{
-					// check if multiple ips exist in var
+					// Check if multiple IPs exist in var
 					$ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
 
 					foreach ($ipList as $ip)
@@ -782,6 +848,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Wrapper for Yii's decodePathInfo, plus we clean up path separators.
 	 *
 	 * @param string $pathInfo
+	 *
 	 * @return string
 	 */
 	public function decodePathInfo($pathInfo)
@@ -850,7 +917,9 @@ class HttpRequestService extends \CHttpRequest
 	 * Ends the current HTTP request, without ending script execution.
 	 *
 	 * @param string|null $content
+	 *
 	 * @see http://stackoverflow.com/a/141026
+	 * @return null
 	 */
 	public function close($content = '')
 	{
@@ -878,6 +947,10 @@ class HttpRequestService extends \CHttpRequest
 		session_write_close();
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Returns the query string path.
 	 *
@@ -891,6 +964,8 @@ class HttpRequestService extends \CHttpRequest
 
 	/**
 	 * Checks to see if this is an action or resource request.
+	 *
+	 * @return null
 	 */
 	private function _checkRequestType()
 	{
@@ -962,6 +1037,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string|null $name
 	 * @param mixed       $defaultValue
 	 * @param array       $data
+	 *
 	 * @return mixed
 	 */
 	private function _getParam($name, $defaultValue, $data)
@@ -1003,7 +1079,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @param $things
+	 * @param array|string $things
+	 *
 	 * @return mixed
 	 */
 	private function _utf8AllTheThings($things)
@@ -1031,7 +1108,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @param $ip
+	 * @param string $ip
+	 *
 	 * @return bool
 	 */
 	private function _validateIp($ip)

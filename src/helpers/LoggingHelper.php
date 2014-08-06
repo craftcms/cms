@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class LoggingHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param      $level
 	 * @param      $time
@@ -20,6 +24,8 @@ class LoggingHelper
 	 * @param      $content
 	 * @param null $groupName
 	 * @param bool $forced
+	 *
+	 * @return null
 	 */
 	public static function processFireBugLogEntry($level, $time, $category, $content, $groupName = null, $forced = false)
 	{
@@ -56,7 +62,8 @@ class LoggingHelper
 	 * Will attempt to remove passwords from the log file.
 	 *
 	 * @param $log
-	 * @return mixed
+	 *
+	 * @return string
 	 */
 	public static function redact($log)
 	{

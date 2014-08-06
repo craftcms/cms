@@ -7,13 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class PathService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_templatesPath;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @return string
@@ -128,7 +139,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsImageSourcePath()
 	{
-		$path = $this->getAssetsPath() . 'sources/';
+		$path = $this->getAssetsPath().'sources/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -138,7 +149,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsThumbsPath()
 	{
-		$path = $this->getAssetsPath() . 'thumbs/';
+		$path = $this->getAssetsPath().'thumbs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -148,7 +159,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsIconsPath()
 	{
-		$path = $this->getAssetsPath() . 'icons/';
+		$path = $this->getAssetsPath().'icons/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -198,7 +209,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param null $pluginHandle
+	 * @param string|null $pluginHandle
+	 *
 	 * @return string
 	 */
 	public function getMigrationsPath($pluginHandle = null)
@@ -336,6 +348,8 @@ class PathService extends BaseApplicationComponent
 
 	/**
 	 * Returns the path to the license key file.
+	 *
+	 * @return string
 	 */
 	public function getLicenseKeyPath()
 	{

@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class AppController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns update info.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCheckForUpdates()
 	{
@@ -34,7 +38,7 @@ class AppController extends BaseController
 	/**
 	 * Loads any CP alerts.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetCpAlerts()
 	{
@@ -51,7 +55,7 @@ class AppController extends BaseController
 	/**
 	 * Shuns a CP alert for 24 hours.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionShunCpAlert()
 	{
@@ -79,7 +83,7 @@ class AppController extends BaseController
 	/**
 	 * Transfers the Craft license to the current domain.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionTransferLicenseToCurrentDomain()
 	{
@@ -104,7 +108,7 @@ class AppController extends BaseController
 	/**
 	 * Returns the edition upgrade modal.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetUpgradeModal()
 	{
@@ -168,7 +172,7 @@ class AppController extends BaseController
 	/**
 	 * Passes along a given CC token to Elliott to purchase a Craft edition.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionPurchaseUpgrade()
 	{
@@ -201,7 +205,7 @@ class AppController extends BaseController
 	 * Tries a Craft edition on for size.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionTestUpgrade()
 	{
@@ -225,7 +229,7 @@ class AppController extends BaseController
 	/**
 	 * Switches Craft to the edition it's licensed for.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSwitchToLicensedEdition()
 	{

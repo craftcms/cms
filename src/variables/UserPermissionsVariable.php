@@ -9,12 +9,16 @@ craft()->requireEdition(Craft::Pro);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class UserPermissionsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns all of the known permissions, sorted by category.
 	 *
@@ -29,6 +33,7 @@ class UserPermissionsVariable
 	 * Returns all of the group permissions a given user has.
 	 *
 	 * @param int $userId
+	 *
 	 * @return array
 	 */
 	public function getGroupPermissionsByUserId($userId)

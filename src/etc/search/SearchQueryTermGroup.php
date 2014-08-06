@@ -9,16 +9,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.search
  * @since     1.0
  */
 class SearchQueryTermGroup
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	public $terms;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
@@ -27,7 +35,7 @@ class SearchQueryTermGroup
 	 *
 	 * @return SearchQueryTermGroup
 	 */
-	function __construct($terms = array())
+	public function __construct($terms = array())
 	{
 		$this->terms = $terms;
 	}

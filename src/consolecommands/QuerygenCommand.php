@@ -7,16 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.consolecommands
  * @since     1.0
  */
 class QuerygenCommand extends BaseCommand
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
 	public $defaultAction = 'all';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $args
@@ -202,6 +210,10 @@ class QuerygenCommand extends BaseCommand
 		return 1;
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Returns a record instance by its class name.
 	 *
@@ -252,7 +264,7 @@ class QuerygenCommand extends BaseCommand
 
 				if ($showingKeys)
 				{
-					$return .= $this->_varExport($key) . ' => ';
+					$return .= $this->_varExport($key).' => ';
 				}
 
 				$return .= $this->_varExport($value);

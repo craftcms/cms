@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.dates
  * @since     1.0
  */
 class DateInterval extends \DateInterval
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	/**
 	 * Number of seconds in a minute.
 	 *
@@ -52,6 +56,10 @@ class DateInterval extends \DateInterval
 	 */
 	const SECONDS_YEAR = 31556874;
 
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * The date properties.
 	 *
@@ -66,6 +74,10 @@ class DateInterval extends \DateInterval
 	 */
 	private static $_time = array('h' => 'H', 'i' => 'M', 's' => 'S');
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the interval specification.
 	 *
@@ -79,7 +91,8 @@ class DateInterval extends \DateInterval
 	/**
 	 * Returns the DateInterval instance for the number of seconds.
 	 *
-	 * @param integer|string $seconds The number of seconds.
+	 * @param int|string $seconds The number of seconds.
+	 *
 	 * @return DateInterval The date interval.
 	 */
 	public static function fromSeconds($seconds)
@@ -178,7 +191,7 @@ class DateInterval extends \DateInterval
 			{
 				if ($interval->{$property})
 				{
-					$string .= $interval->{$property} . $suffix;
+					$string .= $interval->{$property}.$suffix;
 				}
 			}
 		}

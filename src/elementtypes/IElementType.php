@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     1.0
  */
 interface IElementType extends IComponentType
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return bool
 	 */
@@ -115,7 +119,7 @@ interface IElementType extends IComponentType
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return void|false
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria);
 

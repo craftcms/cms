@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class AssetSourcesController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Shows the asset source list.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSourceIndex()
 	{
@@ -32,7 +36,7 @@ class AssetSourcesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditSource(array $variables = array())
 	{
@@ -95,7 +99,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Saves an asset source.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveSource()
 	{
@@ -156,7 +160,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Reorders asset sources.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionReorderSources()
 	{
@@ -173,7 +177,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Deletes an asset source.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteSource()
 	{
@@ -191,7 +195,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Get Amazon S3 buckets.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetS3Buckets()
 	{
@@ -214,7 +218,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Get Rackspace regions.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetRackspaceRegions()
 	{
@@ -243,7 +247,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Get Rackspace containers.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetRackspaceContainers()
 	{
@@ -273,7 +277,7 @@ class AssetSourcesController extends BaseController
 	/**
 	 * Get Google Cloud Storage buckets.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetGoogleCloudBuckets()
 	{

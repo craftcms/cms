@@ -7,20 +7,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class SystemSettingsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	public $defaults;
 
+	/**
+	 * @var
+	 */
 	private $_settingsRecords;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the system settings for a category.
 	 *
 	 * @param string $category
+	 *
 	 * @return array
 	 */
 	public function getSettings($category)
@@ -48,7 +63,8 @@ class SystemSettingsService extends BaseApplicationComponent
 	 * Return the DateTime for when the category was last updated.
 	 *
 	 * @param $category
-	 * @return void|DateTime
+	 *
+	 * @return null|DateTime
 	 */
 	public function getCategoryTimeUpdated($category)
 	{
@@ -73,6 +89,7 @@ class SystemSettingsService extends BaseApplicationComponent
 	 *
 	 * @param string $category
 	 * @param string $key
+	 *
 	 * @return mixed
 	 */
 	public function getSetting($category, $key)
@@ -89,7 +106,8 @@ class SystemSettingsService extends BaseApplicationComponent
 	 * Saves the system settings for a category.
 	 *
 	 * @param string $category
-	 * @param array $settings
+	 * @param array  $settings
+	 *
 	 * @return bool Whether the new settings saved
 	 */
 	public function saveSettings($category, $settings = null)
@@ -124,10 +142,15 @@ class SystemSettingsService extends BaseApplicationComponent
 		return !$record->hasErrors();
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Returns a SystemSettings record by its category.
 	 *
 	 * @param string $category
+	 *
 	 * @return mixed The SystemSettings record or false
 	 */
 	private function _getSettingsRecord($category)

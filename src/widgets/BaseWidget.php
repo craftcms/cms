@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.widgets
  * @since     1.0
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component this is
 	 */
@@ -27,6 +31,10 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	 * @var bool How many columns the widget should span, if there's enough room.
 	 */
 	protected $colspan = 1;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this component should be selectable when choosing a component of this type.

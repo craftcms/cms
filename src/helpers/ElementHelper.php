@@ -7,16 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     2.0
  */
 class ElementHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Sets a valid slug on a given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
+	 * @return null
 	 */
 	public static function setValidSlug(BaseElementModel $element)
 	{
@@ -34,6 +40,7 @@ class ElementHelper
 	 * Creates a slug based on a given string.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function createSlug($str)
@@ -60,8 +67,7 @@ class ElementHelper
 	}
 
 	/**
-	 * Sets the URI on an element using a given URL format,
-	 * tweaking its slug if necessary to ensure it's unique.
+	 * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -172,12 +178,14 @@ class ElementHelper
 	 * Returns whether a given URL format has a proper {slug} tag.
 	 *
 	 * @param string $urlFormat
+	 *
 	 * @return bool
 	 */
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
 		$element = (object) array('slug' => StringHelper::randomString());
 		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+
 		return (strpos($uri, $element->slug) !== false);
 	}
 
@@ -185,6 +193,7 @@ class ElementHelper
 	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public static function isElementEditable(BaseElementModel $element)
@@ -219,6 +228,7 @@ class ElementHelper
 	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return array
 	 */
 	public static function getEditableLocaleIdsForElement(BaseElementModel $element)

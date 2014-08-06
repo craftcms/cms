@@ -9,16 +9,18 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     1.3
  */
 class Switch_TokenParser extends \Twig_TokenParser
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Gets the tag name associated with this token parser.
-	 *
-	 * @param string The tag name
 	 *
 	 * @return string
 	 */
@@ -95,11 +97,21 @@ class Switch_TokenParser extends \Twig_TokenParser
 		return new Switch_Node($name, new \Twig_Node($cases), $default, $lineno, $this->getTag());
 	}
 
+	/**
+	 * @param $token
+	 *
+	 * @return mixed
+	 */
 	public function decideIfFork($token)
 	{
 		return $token->test(array('case', 'default', 'endswitch'));
 	}
 
+	/**
+	 * @param $token
+	 *
+	 * @return mixed
+	 */
 	public function decideIfEnd($token)
 	{
 		return $token->test(array('endswitch'));

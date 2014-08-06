@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.plugins
  * @since     1.0
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var bool
 	 */
@@ -28,15 +32,9 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	protected $componentType = 'Plugin';
 
-	/**
-	 * Returns the plugin's source language
-	 *
-	 * @return string
-	 */
-	public function getSourceLanguage()
-	{
-		return craft()->sourceLanguage;
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the plugin’s version.
@@ -58,6 +56,41 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 * @return string
 	 */
 	abstract public function getDeveloperUrl();
+
+	/**
+	 * A wrapper for logging with plugins.
+	 *
+	 * @param string $msg
+	 * @param string $level
+	 *
+	 * @param bool $force
+	 */
+	public static function log($msg, $level = LogLevel::Info, $force = false)
+	{
+		$plugin = get_called_class();
+
+		// Chunk off any namespaces
+		$parts = explode('\\', $plugin);
+		if (count($parts) > 0)
+		{
+			$plugin = $parts[count($parts) - 1];
+		}
+
+		// Remove the trailing 'Plugin'.
+		$plugin = str_replace('Plugin', '', $plugin);
+
+		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
+	}
+
+	/**
+	 * Returns the plugin's source language
+	 *
+	 * @return string
+	 */
+	public function getSourceLanguage()
+	{
+		return craft()->sourceLanguage;
+	}
 
 	/**
 	 * Returns the URL to the plugin's settings in the CP.
@@ -85,7 +118,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Creates any tables defined by the plugin's records.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function createTables()
 	{
@@ -107,7 +140,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Drops any tables defined by the plugin's records.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropTables()
 	{
@@ -129,7 +162,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions after the plugin has been installed.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterInstall()
 	{
@@ -139,7 +172,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions before the plugin has been installed.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeInstall()
 	{
@@ -149,7 +182,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	/**
 	 * Perform any actions before the plugin gets uninstalled.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onBeforeUninstall()
 	{
@@ -178,30 +211,5 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 		}
 
 		return $records;
-	}
-
-	/**
-	 * A wrapper for logging with plugins.
-	 *
-	 * @param string $msg
-	 * @param string $level
-	 *
-	 * @param bool $force
-	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false)
-	{
-		$plugin = get_called_class();
-
-		// Chunk off any namespaces
-		$parts = explode('\\', $plugin);
-		if (count($parts) > 0)
-		{
-			$plugin = $parts[count($parts) - 1];
-		}
-
-		// Remove the trailing 'Plugin'.
-		$plugin = str_replace('Plugin', '', $plugin);
-
-		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
 	}
 }

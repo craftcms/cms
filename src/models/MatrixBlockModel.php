@@ -7,30 +7,29 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.3
  */
 class MatrixBlockModel extends BaseElementModel
 {
-	protected $elementType = ElementType::MatrixBlock;
-	private $_owner;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * @return array
+	 * @var string
 	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'fieldId'     => AttributeType::Number,
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number,
+	protected $elementType = ElementType::MatrixBlock;
 
-			'collapsed'   => AttributeType::Bool,
-		));
-	}
+	/**
+	 * @var
+	 */
+	private $_owner;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the field layout used by this element.
@@ -166,6 +165,30 @@ class MatrixBlockModel extends BaseElementModel
 	{
 		return 'matrixBlockType:'.$this->typeId;
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'fieldId'     => AttributeType::Number,
+			'ownerId'     => AttributeType::Number,
+			'ownerLocale' => AttributeType::Locale,
+			'typeId'      => AttributeType::Number,
+			'sortOrder'   => AttributeType::Number,
+
+			'collapsed'   => AttributeType::Bool,
+		));
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the Matrix field.

@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db.schemas
  * @since     1.0
  */
 class MysqlSchema extends \CMysqlSchema
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @var int The maximum length that objects' names can be.
 	 */
@@ -104,9 +108,9 @@ class MysqlSchema extends \CMysqlSchema
 			$newName = $column;
 		}
 
-		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
-			. $this->quoteColumnName($column) . ' '
-			. $this->quoteColumnName($newName) . ' '
+		return 'ALTER TABLE '.$this->quoteTableName($table).' CHANGE '
+			. $this->quoteColumnName($column).' '
+			. $this->quoteColumnName($newName).' '
 			. $this->getColumnType($type)
 			. ($after ? ' AFTER '.$this->quoteColumnName($after) : '');
 	}
@@ -258,6 +262,10 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		return '`'.$name.'`';
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.

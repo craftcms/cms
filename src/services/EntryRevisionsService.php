@@ -9,20 +9,21 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class EntryRevisionsService extends BaseApplicationComponent
 {
-	// -------------------------------------------
-	//  Drafts
-	// -------------------------------------------
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns a draft by its ID.
 	 *
 	 * @param int $draftId
+	 *
 	 * @return EntryDraftModel|null
 	 */
 	public function getDraftById($draftId)
@@ -40,8 +41,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 *
 	 * @param int $entryId
 	 * @param int $offset
+	 *
+	 * @deprecated Deprecated in 2.1.
 	 * @return EntryDraftModel|null
-	 * @deprecated Deprecated in 2.1
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
 	{
@@ -62,8 +64,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 	/**
 	 * Returns drafts of a given entry.
 	 *
-	 * @param int $entryId
+	 * @param int    $entryId
 	 * @param string $localeId
+	 *
 	 * @return array
 	 */
 	public function getDraftsByEntryId($entryId, $localeId = null)
@@ -98,8 +101,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 	/**
 	 * Returns the drafts of a given entry that are editable by the current user.
 	 *
-	 * @param int $entryId
+	 * @param int    $entryId
 	 * @param string $localeId
+	 *
 	 * @return array
 	 */
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
@@ -127,6 +131,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Saves a draft.
 	 *
 	 * @param EntryDraftModel $draft
+	 *
 	 * @return bool
 	 */
 	public function saveDraft(EntryDraftModel $draft)
@@ -175,6 +180,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Publishes a draft.
 	 *
 	 * @param EntryDraftModel $draft
+	 *
 	 * @return bool
 	 */
 	public function publishDraft(EntryDraftModel $draft)
@@ -229,44 +235,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a draft record.
-	 *
-	 * @param EntryDraftModel $draft
-	 *
-	 * @throws Exception
-	 * @return EntryDraftRecord
-	 */
-	private function _getDraftRecord(EntryDraftModel $draft)
-	{
-		if ($draft->draftId)
-		{
-			$draftRecord = EntryDraftRecord::model()->findById($draft->draftId);
-
-			if (!$draftRecord)
-			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
-			}
-		}
-		else
-		{
-			$draftRecord = new EntryDraftRecord();
-			$draftRecord->entryId   = $draft->id;
-			$draftRecord->sectionId = $draft->sectionId;
-			$draftRecord->creatorId = $draft->creatorId;
-			$draftRecord->locale    = $draft->locale;
-		}
-
-		return $draftRecord;
-	}
-
-	// -------------------------------------------
-	//  Versions
-	// -------------------------------------------
-
-	/**
 	 * Returns a version by its ID.
 	 *
 	 * @param int $versionId
+	 *
 	 * @return EntryDraftModel|null
 	 */
 	public function getVersionById($versionId)
@@ -284,8 +256,9 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 *
 	 * @param int $entryId
 	 * @param int $offset
+	 *
+	 * @deprecated Deprecated in 2.1.
 	 * @return EntryVersionModel|null
-	 * @deprecated Deprecated in 2.1
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)
 	{
@@ -305,9 +278,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 	/**
 	 * Returns versions by an entry ID.
 	 *
-	 * @param int $entryId
-	 * @param string $localeId
+	 * @param int      $entryId
+	 * @param string   $localeId
 	 * @param int|null $limit
+	 *
 	 * @return array
 	 */
 	public function getVersionsByEntryId($entryId, $localeId, $limit = null)
@@ -342,9 +316,10 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves a new versoin.
+	 * Saves a new version.
 	 *
 	 * @param EntryModel $entry
+	 *
 	 * @return bool
 	 */
 	public function saveVersion(EntryModel $entry)
@@ -366,6 +341,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		$versionRecord->notes = $entry->revisionNotes;
+
 		return $versionRecord->save();
 	}
 
@@ -373,6 +349,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Reverts an entry to a version.
 	 *
 	 * @param EntryVersionModel $version
+	 *
 	 * @return bool
 	 */
 	public function revertEntryToVersion(EntryVersionModel $version)
@@ -401,14 +378,12 @@ class EntryRevisionsService extends BaseApplicationComponent
 		}
 	}
 
-	// -------------------------------------------
-	//  Events
-	// -------------------------------------------
-
 	/**
 	 * Fires an 'onSaveDraft' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveDraft(Event $event)
 	{
@@ -419,6 +394,8 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Fires an 'onPublishDraft' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onPublishDraft(Event $event)
 	{
@@ -429,6 +406,8 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Fires an 'onBeforeDeleteDraft' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeDeleteDraft(Event $event)
 	{
@@ -439,6 +418,8 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Fires an 'onAfterDeleteDraft' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onAfterDeleteDraft(Event $event)
 	{
@@ -449,16 +430,54 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 * Fires an 'onRevertEntryToVersion' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onRevertEntryToVersion(Event $event)
 	{
 		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a draft record.
+	 *
+	 * @param EntryDraftModel $draft
+	 *
+	 * @throws Exception
+	 * @return EntryDraftRecord
+	 */
+	private function _getDraftRecord(EntryDraftModel $draft)
+	{
+		if ($draft->draftId)
+		{
+			$draftRecord = EntryDraftRecord::model()->findById($draft->draftId);
+
+			if (!$draftRecord)
+			{
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
+			}
+		}
+		else
+		{
+			$draftRecord = new EntryDraftRecord();
+			$draftRecord->entryId   = $draft->id;
+			$draftRecord->sectionId = $draft->sectionId;
+			$draftRecord->creatorId = $draft->creatorId;
+			$draftRecord->locale    = $draft->locale;
+		}
+
+		return $draftRecord;
+	}
+
 	/**
 	 * Returns an array of all the revision data for a draft or version.
 	 *
 	 * @param EntryDraftModel|EntryVersionModel $revision
+	 *
 	 * @return array
 	 */
 	private function _getRevisionData($revision)

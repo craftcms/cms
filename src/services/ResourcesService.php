@@ -7,20 +7,36 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class ResourcesService extends BaseApplicationComponent
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const DefaultUserphotoFilename = 'user.gif';
 
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	public $dateParam;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the cached file system path for a given resource, if we have it.
 	 *
 	 * @param string $path
+	 *
 	 * @return string|null
 	 */
 	public function getCachedResourcePath($path)
@@ -38,6 +54,8 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @param string $path
 	 * @param string $realPath
+	 *
+	 * @return null
 	 */
 	public function cacheResourcePath($path, $realPath)
 	{
@@ -270,6 +288,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * @param string $path
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function sendResource($path)
 	{
@@ -355,8 +374,13 @@ class ResourcesService extends BaseApplicationComponent
 		craft()->end();
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * @param $match
+	 *
 	 * @return string
 	 */
 	private function _normalizeCssUrl($match)
@@ -387,6 +411,7 @@ class ResourcesService extends BaseApplicationComponent
 	 *
 	 * @param $ext
 	 * @param $size
+	 *
 	 * @return string
 	 */
 	private function _getIconPath($ext, $size)

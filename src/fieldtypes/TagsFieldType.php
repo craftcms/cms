@@ -7,13 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.2
  */
 class TagsFieldType extends BaseElementFieldType
 {
-	private $_tagGroupId;
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
 	 * @var string $elementType The element type this field deals with.
@@ -31,10 +33,20 @@ class TagsFieldType extends BaseElementFieldType
 	protected $allowLimit = false;
 
 	/**
+	 * @var
+	 */
+	private $_tagGroupId;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $criteria)
@@ -65,6 +77,10 @@ class TagsFieldType extends BaseElementFieldType
 			return '<p class="error">'.Craft::t('This field is not set to a valid source.').'</p>';
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns the tag group associated with this field.

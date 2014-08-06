@@ -7,22 +7,30 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.dates
  * @since     1.0
  */
 class DateTime extends \DateTime
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
+
 	const W3C_DATE = 'Y-m-d';
 	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 	const UTC = 'UTC';
 	const DATEFIELD_24HOUR = 'Y-m-d H:i';
 	const DATEFIELD_12HOUR = 'Y-m-d h:i A';
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->format(static::W3C_DATE);
 	}
@@ -202,7 +210,7 @@ class DateTime extends \DateTime
 	 *
 	 * @return string
 	 */
-	function format($format, $timezone = null)
+	public function format($format, $timezone = null)
 	{
 		if (!$timezone)
 		{

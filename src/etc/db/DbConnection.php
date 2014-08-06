@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db
  * @since     1.0
  */
 class DbConnection extends \CDbConnection
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
@@ -22,7 +26,7 @@ class DbConnection extends \CDbConnection
 	 * gracefully handle the cases where it can't.
 	 *
 	 * @throws DbConnectException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -192,6 +196,10 @@ class DbConnection extends \CDbConnection
 		return $tablePrefix;
 
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Adds the table prefix to the passed-in table name(s).

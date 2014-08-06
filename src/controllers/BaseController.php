@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 abstract class BaseController extends \CController
 {
+	////////////////////
+	// PROTECTED
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -22,6 +26,10 @@ abstract class BaseController extends \CController
 	 * @var bool
 	 */
 	protected $allowAnonymous = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Include any route params gathered by UrlManager as controller action params.
@@ -114,7 +122,7 @@ abstract class BaseController extends \CController
 					{
 						if (($endHeadPos = mb_stripos($output, '</head>')) !== false)
 						{
-							$output = mb_substr($output, 0, $endHeadPos) . $headHtml . mb_substr($output, $endHeadPos);
+							$output = mb_substr($output, 0, $endHeadPos).$headHtml.mb_substr($output, $endHeadPos);
 						}
 						else
 						{
@@ -126,7 +134,7 @@ abstract class BaseController extends \CController
 					{
 						if (($endBodyPos = mb_stripos($output, '</body>')) !== false)
 						{
-							$output = mb_substr($output, 0, $endBodyPos) . $footHtml . mb_substr($output, $endBodyPos);
+							$output = mb_substr($output, 0, $endBodyPos).$footHtml.mb_substr($output, $endBodyPos);
 						}
 						else
 						{
@@ -151,7 +159,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects user to the login template if they're not logged in.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function requireLogin()
 	{
@@ -165,7 +173,7 @@ abstract class BaseController extends \CController
 	 * Requires the current user to be logged in as an admin.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAdmin()
 	{
@@ -179,7 +187,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't a POST request
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requirePostRequest()
 	{
@@ -193,7 +201,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't an Ajax request.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAjaxRequest()
 	{
@@ -207,7 +215,7 @@ abstract class BaseController extends \CController
 	 * Requires the current request to include a token.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireToken()
 	{
@@ -224,7 +232,7 @@ abstract class BaseController extends \CController
 	 * @param bool $terminate
 	 * @param int  $statusCode
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
@@ -244,7 +252,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param mixed $object Object containing properties that should be parsed for in the URL.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirectToPostedUrl($object = null)
 	{
@@ -268,7 +276,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param array|null $var The array to JSON-encode and return
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnJson($var = array())
 	{
@@ -282,7 +290,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param string $error The error message
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnErrorJson($error)
 	{
@@ -322,5 +330,6 @@ abstract class BaseController extends \CController
 	 */
 	public function filters()
 	{
+
 	}
 }

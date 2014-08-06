@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class PluginsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Installs a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionInstallPlugin()
 	{
@@ -38,7 +42,7 @@ class PluginsController extends BaseController
 	/**
 	 * Uninstalls a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUninstallPlugin()
 	{
@@ -60,7 +64,7 @@ class PluginsController extends BaseController
 	/**
 	 * Enables a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionEnablePlugin()
 	{
@@ -82,7 +86,7 @@ class PluginsController extends BaseController
 	/**
 	 * Disables a plugin.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDisablePlugin()
 	{
@@ -105,7 +109,7 @@ class PluginsController extends BaseController
 	 * Saves a plugin's settings.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSavePluginSettings()
 	{

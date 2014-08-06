@@ -7,39 +7,33 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     2.0
  */
 class CategoryGroupModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_locales;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the translated category group's name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'structureId'   => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'hasUrls'       => array(AttributeType::Bool, 'default' => true),
-			'template'      => AttributeType::String,
-			'maxLevels'     => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -78,9 +72,32 @@ class CategoryGroupModel extends BaseModel
 	 * Sets the section's locale models.
 	 *
 	 * @param array $locales
+	 *
+	 * @return null
 	 */
 	public function setLocales($locales)
 	{
 		$this->_locales = $locales;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'structureId'   => AttributeType::Number,
+			'fieldLayoutId' => AttributeType::Number,
+			'name'          => AttributeType::String,
+			'handle'        => AttributeType::String,
+			'hasUrls'       => array(AttributeType::Bool, 'default' => true),
+			'template'      => AttributeType::String,
+			'maxLevels'     => AttributeType::Number,
+		);
 	}
 }

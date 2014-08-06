@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class ModelHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * Default attribute configs
 	 *
@@ -35,6 +39,23 @@ class ModelHelper
 	);
 
 	/**
+	 * Integer column sizes
+	 *
+	 * @var array
+	 */
+	private static $_intColumnSizes = array(
+		ColumnType::TinyInt   => 128,
+		ColumnType::SmallInt  => 32768,
+		ColumnType::MediumInt => 8388608,
+		ColumnType::Int       => 2147483648,
+		ColumnType::BigInt    => 9223372036854775808
+	);
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
 	 * Normalizes an attribute's config.
 	 *
 	 * Attributes can be defined in 3 ways:
@@ -47,6 +68,7 @@ class ModelHelper
 	 * merges in the default column settings if 'column' is set, and sets the 'unsigned', 'min', and 'max' values for integers.
 	 *
 	 * @param string|array $config
+	 *
 	 * @return array
 	 */
 	public static function normalizeAttributeConfig($config)
@@ -119,9 +141,10 @@ class ModelHelper
 	/**
 	 * Returns a number attribute config, taking the min, max, and number of decimal points into account.
 	 *
-	 * @param number $min
-	 * @param number $max
+	 * @param int $min
+	 * @param int $max
 	 * @param int $decimals
+	 *
 	 * @return array
 	 */
 	public static function getNumberAttributeConfig($min = null, $max = null, $decimals = null)
@@ -174,22 +197,11 @@ class ModelHelper
 	}
 
 	/**
-	 * Integer column sizes
-	 *
-	 * @var array
-	 */
-	private static $_intColumnSizes = array(
-		ColumnType::TinyInt   => 128,
-		ColumnType::SmallInt  => 32768,
-		ColumnType::MediumInt => 8388608,
-		ColumnType::Int       => 2147483648,
-		ColumnType::BigInt    => 9223372036854775808
-	);
-
-	/**
 	 * Populates any default values that are defined for a model.
 	 *
 	 * @param \CModel $model
+	 *
+	 * @return null
 	 */
 	public static function populateAttributeDefaults(\CModel $model)
 	{
@@ -206,6 +218,7 @@ class ModelHelper
 	 * Returns the rules array used by CModel.
 	 *
 	 * @param \CModel $model
+	 *
 	 * @return array
 	 */
 	public static function getRules(\CModel $model)
@@ -471,6 +484,7 @@ class ModelHelper
 	 * Returns the attribute labels.
 	 *
 	 * @param \CModel $model
+	 *
 	 * @return array
 	 */
 	public static function getAttributeLabels(\CModel $model)
@@ -491,9 +505,9 @@ class ModelHelper
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
-	 * @param      $value
-	 * @param bool $jsonEncodeArrays
-	 * @internal param $storedValue
+	 * @param mixed $value
+	 * @param bool  $jsonEncodeArrays
+	 *
 	 * @return int|mixed|null|string
 	 */
 	public static function packageAttributeValue($value, $jsonEncodeArrays = false)
@@ -549,6 +563,7 @@ class ModelHelper
 	 * Searches an array for any flattened models, and expands them back to models.
 	 *
 	 * @param array $arr
+	 *
 	 * @return array|BaseModel
 	 */
 	public static function expandModelsInArray($arr)
@@ -576,9 +591,4 @@ class ModelHelper
 
 		return $arr;
 	}
-
-	/**
-	 * @var array
-	 */
-	private static $_comparisonOperators = array('==|=|!=|>=|>|<=|<');
 }

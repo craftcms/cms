@@ -7,13 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class CheckboxesFieldType extends BaseOptionsFieldType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var bool
+	 */
 	protected $multi = true;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the type of field this is.
@@ -26,20 +37,11 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	}
 
 	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Checkbox Options');
-	}
-
-	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
 	 * @param mixed  $values
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $values)
@@ -65,5 +67,19 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 			'options' => $options,
 			'values'  => $values
 		));
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Checkbox Options');
 	}
 }

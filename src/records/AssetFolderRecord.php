@@ -7,29 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     1.0
  */
 class AssetFolderRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'assetfolders';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'     => array(AttributeType::String, 'required' => true),
-			'path'     => array(AttributeType::String),
-		);
 	}
 
 	/**
@@ -50,6 +43,21 @@ class AssetFolderRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('name', 'parentId', 'sourceId'), 'unique' => true),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'     => array(AttributeType::String, 'required' => true),
+			'path'     => array(AttributeType::String),
 		);
 	}
 }

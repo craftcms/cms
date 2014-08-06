@@ -7,16 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class UrlHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns whether a given string appears to be an absolute URL.
 	 *
 	 * @param string $url
+	 *
 	 * @return bool
 	 */
 	public static function isAbsoluteUrl($url)
@@ -28,6 +33,7 @@ class UrlHelper
 	 * Returns whether a given string appears to be a protocol-relative URL.
 	 *
 	 * @param string $url
+	 *
 	 * @return bool
 	 */
 	public static function isProtocolRelativeUrl($url)
@@ -39,6 +45,7 @@ class UrlHelper
 	 * Returns whether a given string appears to be a root-relative URL.
 	 *
 	 * @param string $url
+	 *
 	 * @return bool
 	 */
 	public static function isRootRelativeUrl($url)
@@ -50,6 +57,7 @@ class UrlHelper
 	 * Returns whether a given string appears to be a "full" URL (absolute or root-relative).
 	 *
 	 * @param string $url
+	 *
 	 * @return bool
 	 */
 	public static function isFullUrl($url)
@@ -60,8 +68,9 @@ class UrlHelper
 	/**
 	 * Returns a URL with additional query string parameters.
 	 *
-	 * @param string $url
+	 * @param string       $url
 	 * @param array|string $params
+	 *
 	 * @return string
 	 */
 	public static function getUrlWithParams($url, $params)
@@ -95,6 +104,7 @@ class UrlHelper
 	 *
 	 * @param string $url
 	 * @param string $token
+	 *
 	 * @return string
 	 */
 	public static function getUrlWithToken($url, $token)
@@ -109,6 +119,7 @@ class UrlHelper
 	 *
 	 * @param string $url
 	 * @param string $protocol
+	 *
 	 * @return string
 	 */
 	public static function getUrlWithProtocol($url, $protocol)
@@ -139,6 +150,7 @@ class UrlHelper
 	 * @param array|string|null $params
 	 * @param string|null       $protocol
 	 * @param bool              $mustShowScriptName
+	 *
 	 * @return string
 	 */
 	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
@@ -183,9 +195,10 @@ class UrlHelper
 	/**
 	 * Returns a CP URL.
 	 *
-	 * @param string $path
+	 * @param string            $path
 	 * @param array|string|null $params
-	 * @param string|null $protocol
+	 * @param string|null       $protocol
+	 *
 	 * @return string
 	 */
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
@@ -256,6 +269,10 @@ class UrlHelper
 		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
 		return static::getUrl($path, $params, $protocol, true);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns a URL.

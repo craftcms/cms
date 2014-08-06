@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class InstallController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,11 +27,15 @@ class InstallController extends BaseController
 	 */
 	protected $allowAnonymous = true;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -41,7 +49,7 @@ class InstallController extends BaseController
 	/**
 	 * Index action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionIndex()
 	{
@@ -60,7 +68,7 @@ class InstallController extends BaseController
 	/**
 	 * Validates the user account credentials.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidateAccount()
 	{
@@ -93,7 +101,7 @@ class InstallController extends BaseController
 	/**
 	 * Validates the site settings.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidateSite()
 	{
@@ -119,7 +127,7 @@ class InstallController extends BaseController
 	/**
 	 * Install action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionInstall()
 	{

@@ -7,35 +7,40 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.3
  */
 class MatrixSettingsModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var FieldModel|null
+	 */
 	private $_matrixField;
+
+	/**
+	 * @var
+	 */
 	private $_blockTypes;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
 	 *
 	 * @param FieldModel|null $matrixField
+	 *
+	 * @return MatrixSettingsModel
 	 */
-	function __construct(FieldModel $matrixField = null)
+	public function __construct(FieldModel $matrixField = null)
 	{
 		$this->_matrixField = $matrixField;
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'maxBlocks' => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -74,6 +79,8 @@ class MatrixSettingsModel extends BaseModel
 	 * Sets the block types.
 	 *
 	 * @param array $blockTypes
+	 *
+	 * @return null
 	 */
 	public function setBlockTypes($blockTypes)
 	{
@@ -84,7 +91,8 @@ class MatrixSettingsModel extends BaseModel
 	 * Validates the block type settings.
 	 *
 	 * @param array|null $attributes
-	 * @param bool $clearErrors
+	 * @param bool       $clearErrors
+	 *
 	 * @return bool
 	 */
 	public function validate($attributes = null, $clearErrors = true)
@@ -98,5 +106,21 @@ class MatrixSettingsModel extends BaseModel
 		}
 
 		return $validates;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Defines this model's attributes.
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'maxBlocks' => AttributeType::Number,
+		);
 	}
 }

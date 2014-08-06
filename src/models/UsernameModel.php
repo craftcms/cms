@@ -7,28 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class UsernameModel extends BaseModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !craft()->config->get('useEmailAsUsername');
-
-		return array(
-			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-		);
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param null $attributes
 	 * @param bool $clearErrors
-	 * @return bool|void
+	 *
+	 * @return bool|null
 	 */
 	public function validate($attributes = null, $clearErrors = true)
 	{
@@ -39,5 +32,21 @@ class UsernameModel extends BaseModel
 		}
 
 		return parent::validate($attributes, false);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$requireUsername = !craft()->config->get('useEmailAsUsername');
+
+		return array(
+			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
+		);
 	}
 }

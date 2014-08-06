@@ -9,27 +9,21 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class EntryVersionModel extends BaseEntryRevisionModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'versionId'   => AttributeType::Number,
-			'num'         => AttributeType::Number,
-		));
-	}
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Populates a new model instance with a given set of attributes.
 	 *
 	 * @param mixed $attributes
+	 *
 	 * @return EntryVersionModel
 	 */
 	public static function populateModel($attributes)
@@ -60,5 +54,20 @@ class EntryVersionModel extends BaseEntryRevisionModel
 		}
 
 		return $version;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'versionId'   => AttributeType::Number,
+			'num'         => AttributeType::Number,
+		));
 	}
 }

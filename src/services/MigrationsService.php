@@ -7,22 +7,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class MigrationsService extends BaseApplicationComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
-	 * @var string the default command action. It defaults to 'up'.
+	 * @var string The default command action. It defaults to 'up'.
 	 */
 	public $defaultAction = 'up';
 
+	/**
+	 * @var
+	 */
 	private $_migrationTable;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
+	 * Init
+	 *
 	 * @throws Exception
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	public function init()
 	{
@@ -31,7 +44,8 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param null $plugin
+	 * @param BasePlugin|null $plugin
+	 *
 	 * @return mixed
 	 */
 	public function runToTop($plugin = null)
@@ -110,6 +124,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @param      $class
 	 * @param null $plugin
+	 *
 	 * @return bool|null
 	 */
 	public function migrateUp($class, $plugin = null)
@@ -192,6 +207,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @param null $plugin
 	 * @param null $limit
+	 *
 	 * @return mixed
 	 */
 	public function getMigrationHistory($plugin = null, $limit = null)
@@ -218,8 +234,9 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * Returns whether a given migration has been run.
 	 *
-	 * @param string $version
+	 * @param string      $version
 	 * @param string|null $plugin
+	 *
 	 * @return bool
 	 */
 	public function hasRun($version, $plugin = null)
@@ -319,10 +336,15 @@ class MigrationsService extends BaseApplicationComponent
 		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Returns a DbCommand object prepped for retrieving migrations.
 	 *
 	 * @param string|null $plugin
+	 *
 	 * @return DbCommand
 	 */
 	private function _createMigrationQuery($plugin = null)

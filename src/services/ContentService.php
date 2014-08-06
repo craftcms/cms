@@ -7,21 +7,41 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class ContentService extends BaseApplicationComponent
 {
-	public $contentTable      = 'content';
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var string
+	 */
+	public $contentTable = 'content';
+
+	/**
+	 * @var string
+	 */
 	public $fieldColumnPrefix = 'field_';
-	public $fieldContext      = 'global';
+
+	/**
+	 * @var string
+	 */
+	public $fieldContext = 'global';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the content model for a given element.
 	 *
 	 * @param BaseElementModel $element The element whose content we're looking for.
-	 * @return ContentModel|null        The element's content, or `null` if no content has been saved for the element.
+	 *
+	 * @return ContentModel|null The element's content or `null` if no content has been saved for the element.
 	 */
 	public function getContent(BaseElementModel $element)
 	{
@@ -67,7 +87,8 @@ class ContentService extends BaseApplicationComponent
 	 * Instantiates a new content model for a given element.
 	 *
 	 * @param BaseElementModel $element The element for which we should create a new content model.
-	 * @return ContentModel             The new content model.
+	 *
+	 * @return ContentModel The new content model.
 	 */
 	public function createContent(BaseElementModel $element)
 	{
@@ -95,10 +116,12 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param BaseElementModel $element            The element whose content we're saving.
 	 * @param bool             $validate           Whether the element's content should be validated first.
-	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the element's other locales.
-	 * @return bool                                Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the element and its content model.
+	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the
+	 *                                             element's other locales.
 	 *
 	 * @throws Exception
+	 * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+	 *              element and its content model.
 	 */
 	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
 	{
@@ -152,7 +175,8 @@ class ContentService extends BaseApplicationComponent
 	 * Validates some content with a given field layout.
 	 *
 	 * @param BaseElementModel $element The element whose content should be validated.
-	 * @return bool                     Whether the element's content validates.
+	 *
+	 * @return bool Whether the element's content validates.
 	 */
 	public function validateContent(BaseElementModel $element)
 	{
@@ -200,16 +224,23 @@ class ContentService extends BaseApplicationComponent
 	 * Fires an 'onSaveContent' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveContent(Event $event)
 	{
 		$this->raiseEvent('onSaveContent', $event);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Saves a content model to the database.
 	 *
 	 * @param ContentModel $content
+	 *
 	 * @return bool
 	 */
 	private function _saveContentRow(ContentModel $content)
@@ -275,7 +306,8 @@ class ContentService extends BaseApplicationComponent
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param array            &$nonTranslatableFields
 	 * @param array            &$otherContentModels
-	 * @param
+	 *
+	 * @return null
 	 */
 	private function _duplicateNonTranslatableFieldValues(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
 	{
@@ -336,6 +368,8 @@ class ContentService extends BaseApplicationComponent
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param array|null       &$nonTranslatableFields
 	 * @param array|null       &$otherContentModels
+	 *
+	 * @return null
 	 */
 	private function _updateSearchIndexes(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
 	{
@@ -381,6 +415,7 @@ class ContentService extends BaseApplicationComponent
 	 * Removes the column prefixes from a given row.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	private function _removeColumnPrefixesFromRow($row)

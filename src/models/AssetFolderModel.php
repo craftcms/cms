@@ -7,39 +7,33 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class AssetFolderModel extends BaseModel
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var array
 	 */
 	private $_children = null;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Use the folder name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'       => AttributeType::Number,
-			'parentId' => AttributeType::Number,
-			'sourceId' => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'path'     => AttributeType::String,
-		);
 	}
 
 	/**
@@ -82,6 +76,8 @@ class AssetFolderModel extends BaseModel
 	 * Add a child folder manually.
 	 *
 	 * @param AssetFolderModel $folder
+	 *
+	 * @return null
 	 */
 	public function addChild(AssetFolderModel $folder)
 	{
@@ -89,6 +85,25 @@ class AssetFolderModel extends BaseModel
 		{
 			$this->_children = array();
 		}
+
 		$this->_children[] = $folder;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'       => AttributeType::Number,
+			'parentId' => AttributeType::Number,
+			'sourceId' => AttributeType::Number,
+			'name'     => AttributeType::String,
+			'path'     => AttributeType::String,
+		);
 	}
 }

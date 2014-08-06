@@ -7,17 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class SectionsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -30,7 +34,7 @@ class SectionsController extends BaseController
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionIndex(array $variables = array())
 	{
@@ -56,7 +60,7 @@ class SectionsController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditSection(array $variables = array())
 	{
@@ -137,7 +141,7 @@ class SectionsController extends BaseController
 	/**
 	 * Saves a section.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveSection()
 	{
@@ -224,7 +228,7 @@ class SectionsController extends BaseController
 	/**
 	 * Deletes a section.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteSection()
 	{
@@ -245,7 +249,7 @@ class SectionsController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEntryTypesIndex(array $variables = array())
 	{
@@ -278,7 +282,7 @@ class SectionsController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditEntryType(array $variables = array())
 	{
@@ -332,7 +336,7 @@ class SectionsController extends BaseController
 	/**
 	 * Saves an entry type.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveEntryType()
 	{
@@ -374,7 +378,7 @@ class SectionsController extends BaseController
 	/**
 	 * Reorders entry types.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionReorderEntryTypes()
 	{
@@ -390,7 +394,7 @@ class SectionsController extends BaseController
 	/**
 	 * Deletes an entry type.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteEntryType()
 	{

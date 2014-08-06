@@ -7,30 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     2.0
  */
 class TagGroupRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'taggroups';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'required' => true),
-			'fieldLayoutId' => AttributeType::Number,
-		);
 	}
 
 	/**
@@ -62,6 +54,22 @@ class TagGroupRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'name'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'required' => true),
+			'fieldLayoutId' => AttributeType::Number,
 		);
 	}
 }

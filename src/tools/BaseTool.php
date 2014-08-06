@@ -7,16 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.tools
  * @since     1.0
  */
 abstract class BaseTool extends BaseComponentType implements ITool
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Tool';
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the tool's icon value.
@@ -52,6 +60,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	 * Performs the tool's action.
 	 *
 	 * @param array $params
+	 *
 	 * @return array
 	 */
 	public function performAction($params = array())

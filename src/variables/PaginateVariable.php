@@ -7,22 +7,49 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class PaginateVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	public $first;
+
+	/**
+	 * @var
+	 */
 	public $last;
+
+	/**
+	 * @var
+	 */
 	public $total;
+
+	/**
+	 * @var
+	 */
 	public $currentPage;
+
+	/**
+	 * @var
+	 */
 	public $totalPages;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the URL to a specific page
 	 *
-	 * @param $page
+	 * @param int $page
 	 *
 	 * @return string|null
 	 */
@@ -90,6 +117,7 @@ class PaginateVariable
 	 * Returns previous page URLs up to a certain distance from the current page.
 	 *
 	 * @param int $dist
+	 *
 	 * @return array
 	 */
 	public function getPrevUrls($dist = null)
@@ -110,6 +138,7 @@ class PaginateVariable
 	 * Returns next page URLs up to a certain distance from the current page.
 	 *
 	 * @param int $dist
+	 *
 	 * @return array
 	 */
 	public function getNextUrls($dist = null)
@@ -131,6 +160,7 @@ class PaginateVariable
 	 *
 	 * @param int $start
 	 * @param int $end
+	 *
 	 * @return array
 	 */
 	public function getRangeUrls($start, $end)

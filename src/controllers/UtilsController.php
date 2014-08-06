@@ -7,17 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.3
  */
 class UtilsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -28,7 +32,7 @@ class UtilsController extends BaseController
 	/**
 	 * Server info
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionServerInfo()
 	{
@@ -44,7 +48,7 @@ class UtilsController extends BaseController
 	/**
 	 * PHP info
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionPhpInfo()
 	{
@@ -140,7 +144,7 @@ class UtilsController extends BaseController
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionLogs(array $variables = array())
 	{
@@ -349,7 +353,7 @@ class UtilsController extends BaseController
 	/**
 	 * Deprecation Errors
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeprecationErrors()
 	{
@@ -364,7 +368,7 @@ class UtilsController extends BaseController
 	/**
 	 * View stack trace for a deprecator log entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetDeprecationErrorTracesModal()
 	{
@@ -381,7 +385,7 @@ class UtilsController extends BaseController
 	/**
 	 * Deletes all deprecation errors.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteAllDeprecationErrors()
 	{
@@ -395,7 +399,7 @@ class UtilsController extends BaseController
 	/**
 	 * Deletes a deprecation error.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteDeprecationError()
 	{
@@ -407,6 +411,10 @@ class UtilsController extends BaseController
 		craft()->deprecator->deleteLogById($logId);
 		craft()->end();
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * @param $arrayToClean
@@ -473,7 +481,7 @@ class UtilsController extends BaseController
 	/**
 	 * @param $arg
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _getArg(&$arg)
 	{
@@ -504,7 +512,7 @@ class UtilsController extends BaseController
 
 			if (is_object($arg))
 			{
-				$arg = get_class($arg) . ' Object ('.implode(',', $args).')';
+				$arg = get_class($arg).' Object ('.implode(',', $args).')';
 			}
 			else if (is_array($arg) && count($arg) == 0)
 			{

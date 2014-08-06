@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.logging
  * @since     1.0
  */
 class Logger extends \CLogger
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Logs a message. Messages logged by this method may be retrieved back via {@link getLogs}.
 	 *
@@ -22,7 +26,7 @@ class Logger extends \CLogger
 	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
 	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function log($message, $level = 'info', $force = false, $category = 'application', $plugin = null)
 	{
@@ -104,6 +108,10 @@ class Logger extends \CLogger
 		return $ret;
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
 	 * Filter function used by {@link getLogs}
 	 *
@@ -156,7 +164,7 @@ class Logger extends \CLogger
 	 *
 	 * @param array $value The element to be filtered
 	 *
-	 * @return boolean true if valid log, false if not.
+	 * @return bool true if valid log, false if not.
 	 */
 	protected function filterByLevel($value)
 	{

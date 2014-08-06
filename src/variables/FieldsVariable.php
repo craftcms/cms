@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class FieldsVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	// Groups
 	// ======
 
@@ -20,6 +24,7 @@ class FieldsVariable
 	 * Returns all field groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllGroups($indexBy = null)
@@ -31,6 +36,7 @@ class FieldsVariable
 	 * Returns a field group by its ID.
 	 *
 	 * @param int $groupId
+	 *
 	 * @return FieldGroupModel|null
 	 */
 	public function getGroupById($groupId)
@@ -45,6 +51,7 @@ class FieldsVariable
 	 * Returns a field by its ID.
 	 *
 	 * @param int $fieldId
+	 *
 	 * @return FieldModel|null
 	 */
 	public function getFieldById($fieldId)
@@ -56,6 +63,7 @@ class FieldsVariable
 	 * Returns a field by its handle.
 	 *
 	 * @param string $handle
+	 *
 	 * @return FieldModel|null
 	 */
 	public function getFieldByHandle($handle)
@@ -67,6 +75,7 @@ class FieldsVariable
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllFields($indexBy = null)
@@ -79,6 +88,7 @@ class FieldsVariable
 	 *
 	 * @param int         $groupId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
@@ -93,6 +103,7 @@ class FieldsVariable
 	 * Returns a field layout by its ID.
 	 *
 	 * @param int $layoutId
+	 *
 	 * @return FieldLayoutModel|null
 	 */
 	public function getLayoutById($layoutId)
@@ -104,6 +115,7 @@ class FieldsVariable
 	 * Returns a field layout by its type.
 	 *
 	 * @param int $type
+	 *
 	 * @return FieldLayoutModel|null
 	 */
 	public function getLayoutByType($type)
@@ -129,6 +141,7 @@ class FieldsVariable
 	 * Gets a fieldtype.
 	 *
 	 * @param string $class
+	 *
 	 * @return FieldTypeVariable|null
 	 */
 	public function getFieldType($class)
@@ -144,8 +157,9 @@ class FieldsVariable
 	/**
 	 * Populates a fieldtype.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldModel            $field
 	 * @param BaseElementModel|null $element
+	 *
 	 * @return BaseFieldType|null
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)

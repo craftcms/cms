@@ -9,17 +9,21 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class EntryRevisionsController extends BaseEntriesController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Saves a draft, or creates a new one.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveDraft()
 	{
@@ -104,7 +108,7 @@ class EntryRevisionsController extends BaseEntriesController
 	 * Renames a draft.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateDraftMeta()
 	{
@@ -144,7 +148,7 @@ class EntryRevisionsController extends BaseEntriesController
 	 * Deletes a draft.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteDraft()
 	{
@@ -172,7 +176,7 @@ class EntryRevisionsController extends BaseEntriesController
 	 * Publish a draft.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionPublishDraft()
 	{
@@ -258,7 +262,7 @@ class EntryRevisionsController extends BaseEntriesController
 	 * Reverts an entry to a version.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRevertEntryToVersion()
 	{
@@ -319,12 +323,16 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Sets a draft's attributes from the post data.
 	 *
 	 * @param EntryDraftModel $draft
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _setDraftAttributesFromPost(EntryDraftModel $draft)
 	{

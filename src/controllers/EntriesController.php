@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class EntriesController extends BaseEntriesController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,13 +27,17 @@ class EntriesController extends BaseEntriesController
 	 */
 	protected $allowAnonymous = array('actionViewSharedEntry');
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Edit an entry.
 	 *
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
@@ -348,7 +356,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Switches between two entry types.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSwitchEntryType()
 	{
@@ -379,7 +387,7 @@ class EntriesController extends BaseEntriesController
 	 * Previews an entry.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionPreviewEntry()
 	{
@@ -412,7 +420,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Saves an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveEntry()
 	{
@@ -506,7 +514,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Deletes an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteEntry()
 	{
@@ -565,7 +573,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -631,7 +639,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -658,13 +666,17 @@ class EntriesController extends BaseEntriesController
 		$this->_showEntry($entry);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Preps entry edit variables.
 	 *
 	 * @param array &$variables
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
@@ -849,7 +861,7 @@ class EntriesController extends BaseEntriesController
 	 *
 	 * @param EntryModel $entry
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
@@ -877,7 +889,7 @@ class EntriesController extends BaseEntriesController
 	 * @param EntryModel $entry
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _showEntry(EntryModel $entry)
 	{

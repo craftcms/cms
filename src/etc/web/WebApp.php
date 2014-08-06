@@ -55,18 +55,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.web
  * @since     1.0
  */
 class WebApp extends \CWebApplication
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
-	 * @var string The language that the application is written in. This mainly refers to
-	 * the language that the messages and view files are in.
+	 * @var string The language that the application is written in. This mainly refers to the language that the messages
+	 *             and view files are in.
 	 *
-	 * Setting it here even though CApplication already defaults to 'en_us',
-	 * so it's clear and in case they change it down the road.
+	 *             Setting it here even though CApplication already defaults to 'en_us', so it's clear and in case they
+	 *             change it down the road.
 	 */
 	public $sourceLanguage = 'en_us';
 
@@ -75,14 +79,37 @@ class WebApp extends \CWebApplication
 	 */
 	public $componentAliases;
 
+	/**
+	 * @var
+	 */
 	private $_language;
-	private $_templatePath;
-	private $_editionComponents;
-	private $_pendingEvents;
-	private $_gettingLanguage = false;
 
 	/**
-	 * Processes resource requests before anything else has a chance to initialize.
+	 * @var
+	 */
+	private $_templatePath;
+
+	/**
+	 * @var
+	 */
+	private $_editionComponents;
+
+	/**
+	 * @var
+	 */
+	private $_pendingEvents;
+
+	/**
+	 * @var bool
+	 */
+	private $_gettingLanguage = false;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
+	/**
+	 * @return null
 	 */
 	public function init()
 	{
@@ -132,6 +159,7 @@ class WebApp extends \CWebApplication
 	 * Processes the request.
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function processRequest()
 	{
@@ -307,6 +335,8 @@ class WebApp extends \CWebApplication
 	 * Sets the target application language.
 	 *
 	 * @param string $language
+	 *
+	 * @return null
 	 */
 	public function setLanguage($language)
 	{
@@ -317,6 +347,7 @@ class WebApp extends \CWebApplication
 	 * Returns the localization data for a given locale.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return LocaleData
 	 */
 	public function getLocale($localeId = null)
@@ -328,7 +359,8 @@ class WebApp extends \CWebApplication
 	 * Creates a controller instance based on a route.
 	 *
 	 * @param string $route
-	 * @param mixed $owner
+	 * @param mixed  $owner
+	 *
 	 * @return array|null
 	 */
 	public function createController($route, $owner = null)
@@ -377,9 +409,11 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * Gets the viewPath for the incoming request.
-	 * We can't use setViewPath() because our view path depends on the request type, which is initialized after web application, so we override getViewPath();
 	 *
-	 * @return mixed
+	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path depends on the request type,
+	 * which is initialized after web application, so we override getViewPath().
+	 *
+	 * @return string
 	 */
 	public function getViewPath()
 	{
@@ -402,7 +436,9 @@ class WebApp extends \CWebApplication
 	/**
 	 * Sets the template path for the app.
 	 *
-	 * @param $path
+	 * @param string $path
+	 *
+	 * @return null
 	 */
 	public function setViewPath($path)
 	{
@@ -423,6 +459,8 @@ class WebApp extends \CWebApplication
 	 * Formats an exception into JSON before returning it to the client.
 	 *
 	 * @param array $data
+	 *
+	 * @return null
 	 */
 	public function returnAjaxException($data)
 	{
@@ -445,10 +483,12 @@ class WebApp extends \CWebApplication
 	/**
 	 * Formats a PHP error into JSON before returning it to the client.
 	 *
-	 * @param integer $code error code
-	 * @param string $message error message
-	 * @param string $file error file
-	 * @param string $line error line
+	 * @param int    $code    The error code.
+	 * @param string $message The error message.
+	 * @param string $file    The error file.
+	 * @param string $line    The error line.
+	 *
+	 * @return null
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
@@ -515,9 +555,9 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
-	// Remap $this->getSession() to $this->httpSession and $this->getUser() to craft->userSession
-
 	/**
+	 * Returns the {@link HttpSessionService} (craft()->httpSession).
+	 *
 	 * @return HttpSessionService
 	 */
 	public function getSession()
@@ -526,6 +566,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
+	 * Returns the {@link UserSessionService} (craft()->userSession).
+	 *
 	 * @return UserSessionService
 	 */
 	public function getUser()
@@ -538,6 +580,8 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param      $components
 	 * @param bool $merge
+	 *
+	 * @return null
 	 */
 	public function setComponents($components, $merge = true)
 	{
@@ -555,6 +599,8 @@ class WebApp extends \CWebApplication
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
+	 *
+	 * @return null
 	 */
 	public function on($event, $handler)
 	{
@@ -582,7 +628,8 @@ class WebApp extends \CWebApplication
 	 * Override getComponent() so we can attach any pending events if the component is getting initialized.
 	 *
 	 * @param string $id
-	 * @param boolean $createIfNull
+	 * @param bool   $createIfNull
+	 *
 	 * @return mixed
 	 */
 	public function getComponent($id, $createIfNull = true)
@@ -604,6 +651,8 @@ class WebApp extends \CWebApplication
 	 * @param string $id
 	 * @param mixed  $component
 	 * @param bool   $merge
+	 *
+	 * @return null
 	 */
 	public function setComponent($id, $component, $merge = true)
 	{
@@ -647,10 +696,16 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
 	 *
 	 * @param string $componentId
+	 *
+	 * @return null
 	 */
 	private function _attachEventListeners($componentId)
 	{
@@ -675,6 +730,7 @@ class WebApp extends \CWebApplication
 	 * Processes resource requests.
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	private function _processResourceRequest()
 	{
@@ -693,6 +749,8 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * Sets the edition components.
+	 *
+	 * @return null
 	 */
 	private function _setEditionComponents()
 	{
@@ -715,6 +773,7 @@ class WebApp extends \CWebApplication
 	 * Processes install requests.
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	private function _processInstallRequest()
 	{
@@ -756,7 +815,7 @@ class WebApp extends \CWebApplication
 	/**
 	 * Returns the target app language.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	private function _getTargetLanguage()
 	{
@@ -850,6 +909,7 @@ class WebApp extends \CWebApplication
 	 * Processes action requests.
 	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	private function _processActionRequest()
 	{
@@ -882,6 +942,8 @@ class WebApp extends \CWebApplication
 	/**
 	 * If there is not cached app path or the existing cached app path does not match the current one, let’s run the requirement checker again.
 	 * This should catch the case where an install is deployed to another server that doesn’t meet Craft’s minimum requirements.
+	 *
+	 * @return null
 	 */
 	private function _processRequirementsCheck()
 	{
@@ -913,6 +975,7 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * @throws HttpException
+	 * @return null
 	 */
 	private function _processUpdateLogic()
 	{

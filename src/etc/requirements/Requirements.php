@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.requirements
  * @since     1.2
  */
 class Requirements
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return array
 	 */
@@ -137,6 +141,10 @@ class Requirements
 		);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
@@ -199,6 +207,10 @@ class Requirements
  */
 class Requirement extends \CComponent
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var null|string
 	 */
@@ -229,6 +241,10 @@ class Requirement extends \CComponent
 	 */
 	private $_result;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Constructor
 	 *
@@ -240,34 +256,13 @@ class Requirement extends \CComponent
 	 *
 	 * @return Requirement
 	 */
-	function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
+	public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
 	{
 		$this->_name = $name;
 		$this->_condition = $condition;
 		$this->_required = $required;
 		$this->_requiredBy = $requiredBy;
 		$this->_notes = $notes;
-	}
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if ($this->_condition)
-		{
-			return RequirementResult::Success;
-		}
-		else if ($this->_required)
-		{
-			return RequirementResult::Failed;
-		}
-		else
-		{
-			return RequirementResult::Warning;
-		}
 	}
 
 	/**
@@ -300,7 +295,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getRequiredBy()
 	{
@@ -308,11 +303,36 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{
 		return $this->_notes;
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		if ($this->_condition)
+		{
+			return RequirementResult::Success;
+		}
+		else if ($this->_required)
+		{
+			return RequirementResult::Failed;
+		}
+		else
+		{
+			return RequirementResult::Warning;
+		}
 	}
 }
 
@@ -323,12 +343,19 @@ class Requirement extends \CComponent
  */
 class PhpVersionRequirement extends Requirement
 {
+	////////////////////
+	// CONSTANTS
+	////////////////////
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * @return PhpVersionRequirement
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct(
 			Craft::t('PHP Version'),
@@ -339,7 +366,7 @@ class PhpVersionRequirement extends Requirement
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{
@@ -357,6 +384,10 @@ class PhpVersionRequirement extends Requirement
 			));
 		}
 	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
 
 	/**
 	 * Calculates the result of this requirement.
@@ -383,6 +414,10 @@ class PhpVersionRequirement extends Requirement
 			return RequirementResult::Failed;
 		}
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this is past the min PHP version.

@@ -7,20 +7,33 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 abstract class BaseComponentTypeVariable
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var BaseComponentType
+	 */
 	protected $component;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Constructor
 	 *
 	 * @param BaseComponentType $component
+	 *
+	 * @return BaseComponentTypeVariable
 	 */
-	function __construct($component)
+	public function __construct($component)
 	{
 		$this->component = $component;
 	}
@@ -33,6 +46,18 @@ abstract class BaseComponentTypeVariable
 	public function __toString()
 	{
 		return $this->component->getName();
+	}
+
+	/**
+	 * Mass-populates instances of this class with a given set of models.
+	 *
+	 * @param array $models
+	 *
+	 * @return array
+	 */
+	public static function populateVariables($models)
+	{
+		return VariableHelper::populateVariables($models, get_called_class());
 	}
 
 	/**
@@ -73,16 +98,5 @@ abstract class BaseComponentTypeVariable
 	public function getSettingsHtml()
 	{
 		return $this->component->getSettingsHtml();
-	}
-
-	/**
-	 * Mass-populates instances of this class with a given set of models.
-	 *
-	 * @param array $models
-	 * @return array
-	 */
-	public static function populateVariables($models)
-	{
-		return VariableHelper::populateVariables($models, get_called_class());
 	}
 }

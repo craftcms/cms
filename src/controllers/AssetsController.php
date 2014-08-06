@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class AssetsController extends BaseController
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 * If set to true, anonymous access is allowed for all of the given controller's actions.
@@ -23,10 +27,14 @@ class AssetsController extends BaseController
 	 */
 	protected $allowAnonymous = array('actionGenerateTransform');
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Upload a file
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadFile()
 	{
@@ -60,7 +68,7 @@ class AssetsController extends BaseController
 	 * Uploads a file directly to a field for an entry.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionExpressUpload()
 	{
@@ -112,7 +120,7 @@ class AssetsController extends BaseController
 	/**
 	 * Create a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCreateFolder()
 	{
@@ -138,7 +146,7 @@ class AssetsController extends BaseController
 	/**
 	 * Delete a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteFolder()
 	{
@@ -163,7 +171,7 @@ class AssetsController extends BaseController
 	/**
 	 * Rename a folder
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionRenameFolder()
 	{
@@ -191,7 +199,7 @@ class AssetsController extends BaseController
 	/**
 	 * Delete a file or multiple files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteFile()
 	{
@@ -215,7 +223,7 @@ class AssetsController extends BaseController
 	/**
 	 * Move a file or multiple files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveFile()
 	{
@@ -243,7 +251,7 @@ class AssetsController extends BaseController
 	/**
 	 * Move a folder.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveFolder()
 	{
@@ -272,7 +280,7 @@ class AssetsController extends BaseController
 	/**
 	 * Generate a transform.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGenerateTransform()
 	{
@@ -313,7 +321,7 @@ class AssetsController extends BaseController
 	/**
 	 * Get information about available transforms.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetTransformInfo()
 	{
@@ -328,12 +336,16 @@ class AssetsController extends BaseController
 		$this->returnJson($output);
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Check upload permissions.
 	 *
 	 * @param $folderId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _checkUploadPermissions($folderId)
 	{

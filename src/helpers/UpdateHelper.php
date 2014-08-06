@@ -7,17 +7,29 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class UpdateHelper
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private static $_manifestData;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param $manifestData
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public static function rollBackFileChanges($manifestData)
 	{
@@ -62,7 +74,7 @@ class UpdateHelper
 
 	/**
 	 * @param $backupPath
-	 * @return void
+	 * @return null
 	 */
 	public static function rollBackDatabaseChanges($backupPath)
 	{
@@ -74,6 +86,7 @@ class UpdateHelper
 	/**
 	 * @param $manifestData
 	 * @param $sourceTempFolder
+	 *
 	 * @return bool
 	 */
 	public static function doFileUpdate($manifestData, $sourceTempFolder)
@@ -145,6 +158,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return bool
 	 */
 	public static function isManifestVersionInfoLine($line)
@@ -161,6 +175,7 @@ class UpdateHelper
 	 * Returns the local build number from the given manifest file.
 	 *
 	 * @param $manifestData
+	 *
 	 * @return bool|string
 	 */
 	public static function getLocalBuildFromManifest($manifestData)
@@ -180,6 +195,7 @@ class UpdateHelper
 	 * Returns the local version number from the given manifest file.
 	 *
 	 * @param $manifestData
+	 *
 	 * @return bool|string
 	 */
 	public static function getLocalVersionFromManifest($manifestData)
@@ -259,6 +275,7 @@ class UpdateHelper
 
 	/**
 	 * @param $uid
+	 *
 	 * @return string
 	 */
 	public static function getUnzipFolderFromUID($uid)
@@ -268,6 +285,7 @@ class UpdateHelper
 
 	/**
 	 * @param $uid
+	 *
 	 * @return string
 	 */
 	public static function getZipFileFromUID($uid)
@@ -277,6 +295,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return bool
 	 */
 	public static function isManifestLineAFolder($line)
@@ -291,6 +310,7 @@ class UpdateHelper
 
 	/**
 	 * @param $line
+	 *
 	 * @return string
 	 */
 	public static function cleanManifestFolderLine($line)

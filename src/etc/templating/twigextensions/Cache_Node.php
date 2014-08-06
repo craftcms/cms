@@ -7,16 +7,29 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     2.0
  */
 class Cache_Node extends \Twig_Node
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var int
+	 */
 	private static $_cacheCount = 1;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * @param \Twig_Compiler $compiler
+	 *
+	 * @return null
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{

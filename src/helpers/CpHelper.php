@@ -7,15 +7,19 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class CpHelper
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
-	 * @param null $path
-	 * @param bool $fetch
+	 * @param string|null $path
+	 * @param bool        $fetch
 	 *
 	 * @return array
 	 */

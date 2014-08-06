@@ -7,25 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 abstract class BaseComponentModel extends BaseModel
 {
-	private $_settingErrors = array();
+	////////////////////
+	// PROPERTIES
+	////////////////////
 
 	/**
-	 * @return array
+	 * @var array
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'       => AttributeType::Number,
-			'type'     => array(AttributeType::String),
-			'settings' => AttributeType::Mixed,
-		);
-	}
+	private $_settingErrors = array();
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns whether this is a new component.
@@ -41,6 +40,7 @@ abstract class BaseComponentModel extends BaseModel
 	 * Returns whether there are setting errors.
 	 *
 	 * @param string|null $attribute
+	 *
 	 * @return bool
 	 */
 	public function hasSettingErrors($attribute = null)
@@ -59,6 +59,7 @@ abstract class BaseComponentModel extends BaseModel
 	 * Returns the errors for all settings attributes.
 	 *
 	 * @param string|null $attribute
+	 *
 	 * @return array
 	 */
 	public function getSettingErrors($attribute = null)
@@ -78,6 +79,8 @@ abstract class BaseComponentModel extends BaseModel
 	 *
 	 * @param string $attribute
 	 * @param string $error
+	 *
+	 * @return null
 	 */
 	public function addSettingsError($attribute,$error)
 	{
@@ -88,6 +91,8 @@ abstract class BaseComponentModel extends BaseModel
 	 * Adds a list of settings errors.
 	 *
 	 * @param array $errors
+	 *
+	 * @return null
 	 */
 	public function addSettingErrors($errors)
 	{
@@ -105,5 +110,21 @@ abstract class BaseComponentModel extends BaseModel
 				$this->addSettingsError($attribute, $error);
 			}
 		}
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'       => AttributeType::Number,
+			'type'     => array(AttributeType::String),
+			'settings' => AttributeType::Mixed,
+		);
 	}
 }

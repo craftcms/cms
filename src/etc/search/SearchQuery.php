@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.search
  * @since     1.0
  */
 class SearchQuery
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string
 	 */
@@ -23,6 +27,10 @@ class SearchQuery
 	 */
 	private $_tokens;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Constructor
 	 *
@@ -30,7 +38,7 @@ class SearchQuery
 	 *
 	 * @return SearchQuery
 	 */
-	function __construct($query)
+	public function __construct($query)
 	{
 		$this->_query = $query;
 		$this->_tokens = array();
@@ -57,10 +65,14 @@ class SearchQuery
 		return $this->_query;
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Parses the query into an array of tokens.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _parse()
 	{

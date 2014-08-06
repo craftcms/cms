@@ -7,29 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     1.0
  */
 class EntryRecord extends BaseRecord
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'entries';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'postDate'   => AttributeType::DateTime,
-			'expiryDate' => AttributeType::DateTime,
-		);
 	}
 
 	/**
@@ -72,6 +65,21 @@ class EntryRecord extends BaseRecord
 	{
 		return array(
 			'ordered' => array('order' => 'postDate'),
+		);
+	}
+
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'postDate'   => AttributeType::DateTime,
+			'expiryDate' => AttributeType::DateTime,
 		);
 	}
 }

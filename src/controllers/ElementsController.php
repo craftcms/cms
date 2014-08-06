@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class ElementsController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetModalBody()
 	{
@@ -132,7 +136,7 @@ class ElementsController extends BaseController
 	 * Returns the HTML for an element editor HUD.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetEditorHtml()
 	{
@@ -157,7 +161,7 @@ class ElementsController extends BaseController
 	 * Saves an element.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveElement()
 	{
@@ -208,6 +212,10 @@ class ElementsController extends BaseController
 		}
 	}
 
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
 	/**
 	 * Returns the element type based on the posted element type class.
 	 *
@@ -234,7 +242,7 @@ class ElementsController extends BaseController
 	 * @param bool             $includeLocales
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{

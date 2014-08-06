@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.console
  * @since     1.0
  */
 class ConsoleCommandRunner extends \CConsoleCommandRunner
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * @param string $name command name (case-insensitive)
 	 *
@@ -84,7 +88,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 *
 	 * @param string $path The alias of the folder containing the command class files.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addCommands($path)
 	{

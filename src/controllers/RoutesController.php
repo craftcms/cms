@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class RoutesController extends BaseController
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Saves a new or existing route.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveRoute()
 	{
@@ -52,7 +56,7 @@ class RoutesController extends BaseController
 	/**
 	 * Deletes a route.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteRoute()
 	{
@@ -67,7 +71,7 @@ class RoutesController extends BaseController
 	/**
 	 * Updates the route order.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUpdateRouteOrder()
 	{

@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.components
  * @since     1.0
  */
 abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 */
@@ -22,6 +26,10 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	 * @var string The component's class handle.
 	 */
 	private $_classHandle;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the component’s name.

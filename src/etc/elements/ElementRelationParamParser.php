@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.elements
  * @since     1.3
  */
 class ElementRelationParamParser
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
 	/**
 	 * @var int
 	 */
@@ -38,12 +42,16 @@ class ElementRelationParamParser
 	 */
 	private $_sourceLocaleParamCount;
 
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Constructor
 	 *
 	 * @return ElementRelationParamParser
 	 */
-	function __construct()
+	public function __construct()
 	{
 		$this->_joinSourceMatrixBlocksCount = 0;
 		$this->_joinTargetMatrixBlocksCount = 0;
@@ -151,6 +159,10 @@ class ElementRelationParamParser
 			!$this->_joinTargetMatrixBlocksCount
 		);
 	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
 
 	/**
 	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.

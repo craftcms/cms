@@ -7,12 +7,16 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class AppVariable
 {
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
+
 	/**
 	 * Returns the Craft edition.
 	 *
@@ -74,7 +78,7 @@ class AppVariable
 	}
 
 	/**
-	 * Returns whether Craft is running on a domain that is elligible to test out the editions.
+	 * Returns whether Craft is running on a domain that is eligible to test out the editions.
 	 *
 	 * @return bool
 	 */

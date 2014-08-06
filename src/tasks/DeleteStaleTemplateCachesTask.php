@@ -7,19 +7,49 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.tasks
  * @since     2.0
  */
 class DeleteStaleTemplateCachesTask extends BaseTask
 {
+	////////////////////
+	// PROPERTIES
+	////////////////////
+
+	/**
+	 * @var
+	 */
 	private $_elementIds;
+
+	/**
+	 * @var
+	 */
 	private $_elementType;
 
+	/**
+	 * @var
+	 */
 	private $_batch;
+
+	/**
+	 * @var
+	 */
 	private $_batchRows;
+
+	/**
+	 * @var
+	 */
 	private $_noMoreRows;
+
+	/**
+	 * @var
+	 */
 	private $_deletedCacheIds;
+
+	////////////////////
+	// PUBLIC METHODS
+	////////////////////
 
 	/**
 	 * Returns the default description for this task.
@@ -29,18 +59,6 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	public function getDescription()
 	{
 		return Craft::t('Deleting stale template caches');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'elementId' => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -82,6 +100,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -138,8 +157,28 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		return true;
 	}
 
+	////////////////////
+	// PROTECTED METHODS
+	////////////////////
+
 	/**
-	 * Returns a DbCommand object for selecing criteria that could be dropped by this task.
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'elementId' => AttributeType::Mixed,
+		);
+	}
+
+	////////////////////
+	// PRIVATE METHODS
+	////////////////////
+
+	/**
+	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.
 	 *
 	 * @return DbCommand
 	 */
