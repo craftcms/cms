@@ -477,7 +477,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath, true))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t("Could not move the file „{filename}”.", array('filename' => $fileName)));
+			return $response->setError(Craft::t('Could not move the file “{filename}”.', array('filename' => $fileName)));
 		}
 
 		if ($file->kind == 'image')
