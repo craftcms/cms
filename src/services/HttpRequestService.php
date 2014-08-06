@@ -926,10 +926,21 @@ class HttpRequestService extends \CHttpRequest
 		// Prevent the script from ending when the browser closes the connection
 		ignore_user_abort(true);
 
-		// Discard any current OB content
-		if (ob_get_length() !== false)
+		// Prepend any current OB content
+		while (ob_get_length() !== false)
 		{
-			ob_end_clean();
+			// If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag,
+			// ob_get_clean() will cause a PHP notice and return false.
+			$obContent = @ob_get_clean();
+
+			if ($obContent !== false)
+			{
+				$content = $obContent . $content;
+			}
+			else
+			{
+				break;
+			}
 		}
 
 		// Send the content
@@ -938,8 +949,10 @@ class HttpRequestService extends \CHttpRequest
 		$size = ob_get_length();
 
 		// Tell the browser to close the connection
-		header('Connection: close');
-		header('Content-Length: '.$size);
+		HeaderHelper::setHeader(array(
+			'Connection'     => 'close',
+			'Content-Length' => $size
+		));
 
 		// Output the content, flush it to the browser, and close out the session
 		ob_end_flush();
