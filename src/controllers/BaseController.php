@@ -143,7 +143,8 @@ abstract class BaseController extends \CController
 					}
 				}
 
-				// Output to the browser!
+				// Output it into a buffer, in case TasksService wants to close the connection prematurely
+				ob_start();
 				echo $output;
 
 				// End the request
