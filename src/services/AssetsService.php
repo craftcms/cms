@@ -909,6 +909,12 @@ class AssetsService extends BaseApplicationComponent
 			}
 			else
 			{
+				// Queue up a new Generate Pending Transforms task, if there isn't one already
+				if (!craft()->tasks->areTasksPending('GeneratePendingTransforms'))
+				{
+					craft()->tasks->createTask('GeneratePendingTransforms');
+				}
+
 				// Return the temporary transform URL
 				return UrlHelper::getResourceUrl('transforms/'.$index->id);
 			}
