@@ -985,10 +985,10 @@ abstract class BaseElementModel extends BaseModel
 				$value = $fieldType->prepValue($value);
 			}
 
-			$this->_preppedContent[$field->handle] = $value;
+			$this->_preppedContent[$fieldHandle] = $value;
 		}
 
-		return $this->_preppedContent[$field->handle];
+		return $this->_preppedContent[$fieldHandle];
 	}
 
 	/**
