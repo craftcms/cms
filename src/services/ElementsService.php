@@ -208,7 +208,8 @@ class ElementsService extends BaseApplicationComponent
 					// Add the field column prefixes
 					foreach ($fieldColumns as $column)
 					{
-						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or "column_name desc"
+						// Avoid matching fields named "asc" or "desc" in the
+						// string "column_name asc" or "column_name desc"
 						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
@@ -380,6 +381,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Set up the query
+		// ---------------------------------------------------------------------
 
 		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
@@ -415,6 +417,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Basic element params
+		// ---------------------------------------------------------------------
 
 		// If the 'id' parameter is set to any empty value besides `null`, don't return anything
 		if ($criteria->id !== null && empty($criteria->id))
@@ -504,6 +507,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// i18n params
+		// ---------------------------------------------------------------------
 
 		if ($criteria->slug)
 		{
@@ -521,6 +525,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Relational params
+		// ---------------------------------------------------------------------
 
 		// Convert the old childOf and parentOf params to the relatedTo param
 		// childOf(element)  => relatedTo({ source: element })
@@ -563,6 +568,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give field types a chance to make changes
+		// ---------------------------------------------------------------------
 
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
@@ -579,6 +585,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give the element type a chance to make changes
+		// ---------------------------------------------------------------------
 
 		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
@@ -586,6 +593,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Structure params
+		// ---------------------------------------------------------------------
 
 		if ($query->isJoined('structureelements'))
 		{
