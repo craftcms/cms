@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TagsFieldType extends BaseElementFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string $elementType The element type this field deals with.
@@ -37,9 +36,8 @@ class TagsFieldType extends BaseElementFieldType
 	 */
 	private $_tagGroupId;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field's input HTML.
@@ -78,9 +76,8 @@ class TagsFieldType extends BaseElementFieldType
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tag group associated with this field.

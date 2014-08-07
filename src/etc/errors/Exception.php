@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Exception extends \CException
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param     $message

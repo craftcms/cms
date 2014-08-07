@@ -17,18 +17,16 @@ namespace Craft;
  */
 class Craft extends \Yii
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	// Edition constants
 	const Personal = 0;
 	const Client   = 1;
 	const Pro      = 2;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
@@ -430,9 +428,8 @@ class Craft extends \Yii
 		static::getLogger()->log($msg, $level, $force, $category, $plugin);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Imports a file into Craft's classMap.

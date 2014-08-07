@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixBlockElementType extends BaseElementType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the element type name.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Updater
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return Updater
@@ -246,9 +245,8 @@ class Updater
 		return true;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Remove any temp files and/or folders that might have been created.

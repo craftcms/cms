@@ -13,18 +13,16 @@ namespace Craft;
  */
 class TaskModel extends BaseComponentModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_taskType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the task's description.
@@ -112,9 +110,8 @@ class TaskModel extends BaseComponentModel
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

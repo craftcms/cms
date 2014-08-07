@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class LocalizationController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Adds a new a locale.

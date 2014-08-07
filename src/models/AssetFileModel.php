@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetFileModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -27,9 +26,8 @@ class AssetFileModel extends BaseElementModel
 	 */
 	private $_transform;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the entry's title as its string representation.
@@ -315,9 +313,8 @@ class AssetFileModel extends BaseElementModel
 		return $this->_getDimension('width', $transform);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -337,9 +334,8 @@ class AssetFileModel extends BaseElementModel
 		));
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the actual width attribute, since $this->width gets routed to getWidth() now.

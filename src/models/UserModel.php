@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UserModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::User;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the full name or username as the string representation.
@@ -364,9 +362,8 @@ class UserModel extends BaseElementModel
 		return parent::validate($attributes, false);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

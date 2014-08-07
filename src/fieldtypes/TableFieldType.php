@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TableFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -204,9 +203,8 @@ class TableFieldType extends BaseFieldType
 		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -221,9 +219,8 @@ class TableFieldType extends BaseFieldType
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field's input HTML.

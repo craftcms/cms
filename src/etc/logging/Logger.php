@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Logger extends \CLogger
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Logs a message. Messages logged by this method may be retrieved back via {@link getLogs}.
@@ -108,9 +107,8 @@ class Logger extends \CLogger
 		return $ret;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Filter function used by {@link getLogs}

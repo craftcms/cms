@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ContentModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class ContentModel extends BaseModel
 	 */
 	private $_attributeConfigs;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns this model's normalized attribute configs.
@@ -130,9 +128,8 @@ class ContentModel extends BaseModel
 		return $validates;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

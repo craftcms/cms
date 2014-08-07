@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class ConfigFile extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const FileCache    = 'filecache';
 	const General      = 'general';

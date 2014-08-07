@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
@@ -27,12 +26,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	private $_sourcesByContext;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Basic info methods
-	// ==================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns whether this element type has content.
@@ -130,7 +128,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	// Element index methods
-	// =====================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element index HTML.
@@ -436,9 +434,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Finds a source by its key, even if it's nested.

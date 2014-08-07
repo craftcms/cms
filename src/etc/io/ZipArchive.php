@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ZipArchive implements IZip
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $sourceFolder

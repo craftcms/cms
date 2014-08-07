@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SectionLocaleModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ class SectionLocaleModel extends BaseModel
 	 */
 	public $nestedUrlFormatIsRequired = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns this model's validation rules.
@@ -53,9 +51,8 @@ class SectionLocaleModel extends BaseModel
 		return $rules;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

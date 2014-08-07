@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseModel extends \CModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -42,9 +41,8 @@ abstract class BaseModel extends \CModel
 	 */
 	private $_attributes;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -489,9 +487,8 @@ abstract class BaseModel extends \CModel
 		return new $class($this->getAttributes());
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines this model's attributes.

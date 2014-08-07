@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CraftTwigExtension extends \Twig_Extension
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the token parser instances to add to the existing list.

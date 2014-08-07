@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DropdownFieldType extends BaseOptionsFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -59,9 +58,8 @@ class DropdownFieldType extends BaseOptionsFieldType
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the Options setting.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldLayoutTabModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class FieldLayoutTabModel extends BaseModel
 	 */
 	private $_fields;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tab's layout.
@@ -120,9 +118,8 @@ class FieldLayoutTabModel extends BaseModel
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

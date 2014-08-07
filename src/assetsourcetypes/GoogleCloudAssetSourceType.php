@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -29,9 +28,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 */
 	private $_googleCloud;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Get bucket list with credentials.
@@ -374,9 +372,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -718,9 +715,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		return false;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Return a prefix for S3 path for settings.

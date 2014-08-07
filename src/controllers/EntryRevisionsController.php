@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsController extends BaseEntriesController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Saves a draft, or creates a new one.
@@ -323,9 +322,8 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Sets a draft's attributes from the post data.

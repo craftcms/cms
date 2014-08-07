@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MysqlSchema extends \CMysqlSchema
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $table
@@ -258,9 +257,8 @@ class MysqlSchema extends \CMysqlSchema
 		return '`'.$name.'`';
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.

@@ -31,9 +31,8 @@ namespace Craft;
  */
 class UploadedFile extends \CUploadedFile
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns an instance of the specified uploaded file.  The name can be a plain string or a string like an array
@@ -80,9 +79,8 @@ class UploadedFile extends \CUploadedFile
 		return $instances;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Swaps dot notation for the normal format.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PlainTextFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -90,9 +89,8 @@ class PlainTextFieldType extends BaseFieldType
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

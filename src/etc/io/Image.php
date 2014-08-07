@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Image
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -47,9 +46,8 @@ class Image
 	 */
 	private $_instance;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return Image
@@ -379,9 +377,8 @@ class Image
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.

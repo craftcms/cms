@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -32,9 +31,8 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	protected $componentType = 'Plugin';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the plugin’s version.

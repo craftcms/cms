@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ColorFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class NumberFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -92,9 +91,8 @@ class NumberFieldType extends BaseFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

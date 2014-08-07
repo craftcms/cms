@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UrlHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether a given string appears to be an absolute URL.

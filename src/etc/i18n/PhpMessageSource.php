@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PhpMessageSource extends \CPhpMessageSource
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var boolean Whether to force message translation when the source and target languages are the same.
@@ -29,9 +28,8 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private $_translations;
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Loads the message translation for the specified language and category.
@@ -120,9 +118,8 @@ class PhpMessageSource extends \CPhpMessageSource
 		return $this->_translations[$language];
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $localeId

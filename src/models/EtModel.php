@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EtModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null
@@ -25,9 +24,8 @@ class EtModel extends BaseModel
 		echo JsonHelper::decode($this);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

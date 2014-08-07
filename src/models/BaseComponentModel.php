@@ -13,18 +13,16 @@ namespace Craft;
  */
 abstract class BaseComponentModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var array
 	 */
 	private $_settingErrors = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this is a new component.
@@ -112,9 +110,8 @@ abstract class BaseComponentModel extends BaseModel
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface IZip
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $sourceFolder

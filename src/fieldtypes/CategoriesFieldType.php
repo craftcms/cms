@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoriesFieldType extends BaseElementFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string $elementType The element type this field deals with.
@@ -42,9 +41,8 @@ class CategoriesFieldType extends BaseElementFieldType
 	 */
 	protected $sortable = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Performs any additional actions after the element has been saved.
@@ -90,9 +88,8 @@ class CategoriesFieldType extends BaseElementFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns an array of variables that should be passed to the input template.

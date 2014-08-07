@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DeprecationErrorModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a simple indication of the origin of the deprecation error.
@@ -47,9 +46,8 @@ class DeprecationErrorModel extends BaseModel
 		return $file.($line ? " ({$line})" : '');
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

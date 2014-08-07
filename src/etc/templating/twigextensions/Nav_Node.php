@@ -13,18 +13,16 @@ namespace Craft;
  */
 class Nav_Node extends \Twig_Node_For
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var NavItem_Node
 	 */
 	protected $navItemNode;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param \Twig_Node_Expression_AssignName $keyTarget

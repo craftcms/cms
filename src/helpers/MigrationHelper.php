@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MigrationHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class MigrationHelper
 	 */
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Refreshes our record of everything.
@@ -343,9 +341,8 @@ class MigrationHelper
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns info about all of the tables.

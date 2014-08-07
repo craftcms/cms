@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EmailSettingsModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Declares the validation rules.
@@ -62,9 +61,8 @@ class EmailSettingsModel extends BaseModel
 		return $rules;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

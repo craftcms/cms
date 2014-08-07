@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ConsoleCommandRunner extends \CConsoleCommandRunner
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $name command name (case-insensitive)

@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class CraftPackage extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const PublishPro = 'PublishPro';
 	const Users      = 'Users';

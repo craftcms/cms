@@ -13,9 +13,8 @@ namespace Craft;
  */
 class GetHelpModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -28,9 +27,8 @@ class GetHelpModel extends BaseModel
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

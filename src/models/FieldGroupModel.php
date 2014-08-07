@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldGroupModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the group name as the string representation.
@@ -37,9 +36,8 @@ class FieldGroupModel extends BaseModel
 		return craft()->fields->getFieldsByGroupId($this->id);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

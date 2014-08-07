@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DateFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -193,9 +192,8 @@ class DateFieldType extends BaseFieldType
 		return $settings;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

@@ -13,16 +13,14 @@ namespace Craft;
  */
 abstract class BaseElementModel extends BaseModel
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -94,9 +92,8 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	private $_siblingsCriteria;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Treats custom fields as properties.
@@ -993,9 +990,8 @@ abstract class BaseElementModel extends BaseModel
 		return $criteria;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field with a given handle.
@@ -1041,9 +1037,8 @@ abstract class BaseElementModel extends BaseModel
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.

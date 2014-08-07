@@ -13,23 +13,29 @@ namespace Craft;
  */
 abstract class BaseController extends \CController
 {
-	////////////////////
-	// PROTECTED
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * craft()->userSession->requireLogin() in the individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Include any route params gathered by UrlManager as controller action params.

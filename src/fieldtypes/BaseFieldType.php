@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var BaseElementModel The element that the current instance is associated with
@@ -27,9 +26,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	protected $componentType = 'FieldType';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return mixed Returns the content attribute config.
@@ -197,9 +195,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the location in POST that this field's content was pulled from.

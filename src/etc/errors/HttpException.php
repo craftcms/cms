@@ -13,9 +13,8 @@ namespace Craft;
  */
 class HttpException extends \CHttpException
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param      $status

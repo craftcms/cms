@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoriesController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Category groups index.

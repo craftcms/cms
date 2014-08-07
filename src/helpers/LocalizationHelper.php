@@ -13,18 +13,16 @@ namespace Craft;
  */
 class LocalizationHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private static $_translations;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Normalizes a user-submitted number for use in code and/or to be saved into the database.

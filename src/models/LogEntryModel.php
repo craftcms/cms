@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LogEntryModel extends BaseModel
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

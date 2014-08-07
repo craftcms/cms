@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserSettingsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class ComponentType extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const AssetSource = 'assetSource';
 	const Element     = 'element';

@@ -61,9 +61,8 @@ namespace Craft;
  */
 class WebApp extends \CWebApplication
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string The language that the application is written in. This mainly refers to the language that the messages
@@ -104,9 +103,8 @@ class WebApp extends \CWebApplication
 	 */
 	private $_gettingLanguage = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null
@@ -691,9 +689,8 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Attaches any pending event listeners to the newly-initialized component.

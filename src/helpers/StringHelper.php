@@ -13,9 +13,8 @@ namespace Craft;
  */
 class StringHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -32,9 +31,8 @@ class StringHelper
 	 */
 	private static $_iconv;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the character at a specific point in a potentially multibyte string.
@@ -487,9 +485,8 @@ class StringHelper
 		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Get array of chars to be used for conversion.

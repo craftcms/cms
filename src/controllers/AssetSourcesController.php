@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetSourcesController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Shows the asset source list.

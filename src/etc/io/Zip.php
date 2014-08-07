@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Zip
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $source
@@ -141,9 +140,8 @@ class Zip
 		return false;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return PclZip|ZipArchive

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SystemSettingsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
@@ -254,9 +253,8 @@ class SystemSettingsController extends BaseController
 		$this->renderTemplate('settings/globals/_edit', $variables);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the email settings from the post data.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CpHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string|null $path

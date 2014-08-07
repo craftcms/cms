@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated group name as the string representation.
@@ -48,9 +47,8 @@ class UserGroupModel extends BaseModel
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

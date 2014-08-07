@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SectionModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class SectionModel extends BaseModel
 	 */
 	private $_entryTypes;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated section name as the string representation.
@@ -170,9 +168,8 @@ class SectionModel extends BaseModel
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

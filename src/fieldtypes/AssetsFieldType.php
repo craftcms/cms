@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetsFieldType extends BaseElementFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string $elementType The element type this field deals with.
@@ -37,9 +36,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private $_failedFiles = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field's settings HTML.
@@ -274,9 +272,8 @@ class AssetsFieldType extends BaseElementFieldType
 		return $this->_determineUploadFolderId($this->getSettings());
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the "Add" button.
@@ -363,9 +360,8 @@ class AssetsFieldType extends BaseElementFieldType
 		return array('kind' => $allowedKinds);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.

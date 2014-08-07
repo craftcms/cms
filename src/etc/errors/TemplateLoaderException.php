@@ -13,18 +13,16 @@ namespace Craft;
  */
 class TemplateLoaderException extends \Twig_Error_Loader
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	public $template;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $template

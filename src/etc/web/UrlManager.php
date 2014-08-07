@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UrlManager extends \CUrlManager
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -52,9 +51,8 @@ class UrlManager extends \CUrlManager
 	 */
 	private $_matchedElementRoute;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null
@@ -191,9 +189,8 @@ class UrlManager extends \CUrlManager
 		return $this->_matchedElement;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Sets the route.

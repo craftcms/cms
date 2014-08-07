@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UsernameModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param null $attributes
@@ -34,9 +33,8 @@ class UsernameModel extends BaseModel
 		return parent::validate($attributes, false);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

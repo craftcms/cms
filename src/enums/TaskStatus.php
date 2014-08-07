@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class TaskStatus
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Pending = 'pending';
 	const Running = 'running';

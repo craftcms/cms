@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementRelationParamParser
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var int
@@ -42,9 +41,8 @@ class ElementRelationParamParser
 	 */
 	private $_sourceLocaleParamCount;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -160,9 +158,8 @@ class ElementRelationParamParser
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.

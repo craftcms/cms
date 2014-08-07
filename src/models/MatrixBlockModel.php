@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixBlockModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -27,9 +26,8 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	private $_owner;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field layout used by this element.
@@ -166,9 +164,8 @@ class MatrixBlockModel extends BaseElementModel
 		return 'matrixBlockType:'.$this->typeId;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -186,9 +183,8 @@ class MatrixBlockModel extends BaseElementModel
 		));
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Matrix field.

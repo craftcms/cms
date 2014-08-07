@@ -13,15 +13,13 @@ namespace Craft;
  */
 class ConsoleApp extends \CConsoleApplication
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	public $componentAliases;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Initializes the console app by creating the command runner.
@@ -108,9 +106,8 @@ class ConsoleApp extends \CConsoleApplication
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return ConsoleCommandRunner

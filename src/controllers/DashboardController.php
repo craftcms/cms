@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DashboardController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Saves a widget.
@@ -324,9 +323,8 @@ class DashboardController extends BaseController
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return string

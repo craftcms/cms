@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementCriteriaModel extends BaseModel implements \Countable
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var BaseElementType
@@ -47,9 +46,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	private $_cachedTotal;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -366,9 +364,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		return new $class($this->getAttributes(), $this->_elementType);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -432,9 +429,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		return $attributes;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return null

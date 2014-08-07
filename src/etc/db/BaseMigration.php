@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseMigration extends \CDbMigration
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * This method contains the logic to be executed when applying this migration. Child classes may implement this
@@ -539,9 +538,8 @@ abstract class BaseMigration extends \CDbMigration
 		$this->_processDoneTime($time);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $time

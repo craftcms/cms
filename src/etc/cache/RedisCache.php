@@ -23,9 +23,8 @@ namespace Craft;
  */
 class RedisCache extends \CRedisCache
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Establishes a connection to the redis server.  It does nothing if the connection has already been established.

@@ -19,9 +19,8 @@ namespace Craft;
  */
 class DbCache extends \CDbCache
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return DbConnection

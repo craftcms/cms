@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseElementFieldType extends BaseFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string $elementType The element type this field deals with.
@@ -47,9 +46,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected $sortable = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -262,9 +260,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the "Add" button.

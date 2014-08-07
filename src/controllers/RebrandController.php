@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class RebrandController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Upload a logo for the admin panel.

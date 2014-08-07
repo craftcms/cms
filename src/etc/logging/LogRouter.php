@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LogRouter extends \CLogRouter
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $route

@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class AttributeType extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Mixed      = 'mixed';
 	const Bool       = 'bool';

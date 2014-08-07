@@ -13,9 +13,8 @@ namespace Craft;
  */
 class RoutesController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Saves a new or existing route.

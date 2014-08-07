@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sets a valid slug on a given element.

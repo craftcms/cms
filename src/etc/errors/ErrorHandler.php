@@ -49,18 +49,16 @@ namespace Craft;
  */
 class ErrorHandler extends \CErrorHandler
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_error;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the stored error, if there is one.
@@ -79,9 +77,8 @@ class ErrorHandler extends \CErrorHandler
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.

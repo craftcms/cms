@@ -13,18 +13,16 @@ namespace Craft;
  */
 class AppHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var null
 	 */
 	private static $_isPhpDevServer = null;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+

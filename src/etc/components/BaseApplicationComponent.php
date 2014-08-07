@@ -13,9 +13,8 @@ namespace Craft;
  */
 class BaseApplicationComponent extends \CApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Checks if this application component has been initialized yet, or not.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoryElementType extends BaseElementType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the element type name.

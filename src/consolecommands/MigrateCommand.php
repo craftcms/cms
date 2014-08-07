@@ -22,7 +22,8 @@ namespace Craft;
  *
  *     yiic migrate up PluginHandle
  *
- * Note that PluginHandle is optional in these examples and if it is not presented, the command will run against Craft itself.
+ * Note that PluginHandle is optional in these examples and if it is not presented,
+ * the command will run against Craft itself.
  *
  * Craft explicitly disables support for Yii's "down", "redo" and "mark" actions.
  *
@@ -41,9 +42,8 @@ namespace Craft;
  */
 class MigrateCommand extends \MigrateCommand
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Used for ensuring a plugin's migration exists if the action is "create".
@@ -59,7 +59,8 @@ class MigrateCommand extends \MigrateCommand
 	{
 		if ($action == 'create')
 		{
-			// If the 1nd dimension is the 1nd index, then we know it's a plugin.  No need to make them specify the path.
+			// If the 1st dimension is the 1st index, then we know it's a plugin.
+			// No need to make them specify the path.
 			if (isset($params[0][1]))
 			{
 				$plugin = $params[0][1];
@@ -220,8 +221,9 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate up PluginHandle
 	 *
-	 * If PluginHandle is omitted, any new migrations that haven't ran yet in craft/app/migrations will be ran.
-	 * If it is available, any new migrations in craft/plugins/PluginHandle/migrations that haven't ran yet, will run.
+	 * If PluginHandle is omitted, any new migrations that haven't ran yet in
+	 * craft/app/migrations will be ran. If it is available, any new migrations
+	 * in craft/plugins/PluginHandle/migrations that haven't ran yet, will run.
 	 *
 	 * @param array $args The arguments passed in.
 	 *
@@ -396,16 +398,17 @@ class MigrateCommand extends \MigrateCommand
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Gets the migration history for either Craft or a plugin.
 	 *
 	 * Overriding Yii's implementation with Craft specific logic.
 	 *
-	 * @param BasePlugin|null $plugin If null, will get Craft's migration history. If a plugin instance, will get the plugin's migration history.
+	 * @param BasePlugin|null $plugin If null, will get Craft's migration history.
+	 *                                If a plugin instance, will get the plugin's
+	 *                                migration history.
 	 *
 	 * @return mixed
 	 */
@@ -427,7 +430,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * Overriding Yii's implementation with Craft specific logic.
 	 *
-	 * @param BasePlugin|null $plugin If null, will get any new Craft migrations. If a plugin instance, will get new plugin migrations..
+	 * @param BasePlugin|null $plugin If null, will get any new Craft migrations.
+	 *                                If a plugin instance, will get new plugin migrations.
 	 *
 	 * @return array
 	 */
@@ -436,12 +440,12 @@ class MigrateCommand extends \MigrateCommand
 		return craft()->migrations->getNewMigrations($plugin);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
-	 * Given a plugin handle, will retrieve it, or display an error if it doesn't exist or is disabled.
+	 * Given a plugin handle, will retrieve it, or display an error if it
+	 * doesn't exist or is disabled.
 	 *
 	 * @param string $pluginHandle The handle of the plugin to search for.
 	 *

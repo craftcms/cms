@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LocaleData extends \CLocale
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the instance of the specified locale. Since the constructor of CLocale is protected, you can only use

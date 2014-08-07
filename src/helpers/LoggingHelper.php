@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LoggingHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param      $level

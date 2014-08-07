@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * Whether this is a local source or not. Defaults to false.
@@ -31,9 +30,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	protected $componentType = 'AssetSourceType';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Starts an indexing session.
@@ -717,9 +715,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Insert a file from path in folder.
@@ -1077,9 +1074,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Mirrors a subset of folder tree from one location to other.

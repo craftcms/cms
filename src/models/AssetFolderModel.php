@@ -13,18 +13,16 @@ namespace Craft;
  */
 class AssetFolderModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var array
 	 */
 	private $_children = null;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the folder name as the string representation.
@@ -89,9 +87,8 @@ class AssetFolderModel extends BaseModel
 		$this->_children[] = $folder;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

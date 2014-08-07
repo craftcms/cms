@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Hook_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Compiles a Hook_Node into PHP.

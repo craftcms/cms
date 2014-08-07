@@ -13,12 +13,11 @@ namespace Craft;
  */
 class FieldsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Groups
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves a field group.
@@ -77,7 +76,7 @@ class FieldsController extends BaseController
 	}
 
 	// Fields
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves a field.

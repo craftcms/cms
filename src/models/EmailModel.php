@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EmailModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or binary data, such as a BLOB record from a database.
@@ -52,9 +51,8 @@ class EmailModel extends BaseModel
 		$this->attachments = $existingAttachments;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

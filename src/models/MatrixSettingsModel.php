@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixSettingsModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var FieldModel|null
@@ -27,9 +26,8 @@ class MatrixSettingsModel extends BaseModel
 	 */
 	private $_blockTypes;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -108,9 +106,8 @@ class MatrixSettingsModel extends BaseModel
 		return $validates;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines this model's attributes.

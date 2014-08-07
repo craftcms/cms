@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Redirect_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Compiles a Redirect_Node into PHP.

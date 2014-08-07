@@ -27,9 +27,8 @@ namespace Craft;
  */
 abstract class ColumnType extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const PK           = 'pk';
 	const Char         = 'char';
