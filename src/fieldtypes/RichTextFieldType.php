@@ -13,18 +13,16 @@ namespace Craft;
  */
 class RichTextFieldType extends BaseFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	private static $_redactorLang = 'en';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -192,9 +190,8 @@ class RichTextFieldType extends BaseFieldType
 		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
 	}
 
-	////////////////////
-	// PROPERTIES METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -209,9 +206,8 @@ class RichTextFieldType extends BaseFieldType
 		);
 	}
 
-	////////////////////
 	// PRIVATE METHODS
-	////////////////////
+	// =========================================================================
 
 	/**
 	 * Get available section sources.

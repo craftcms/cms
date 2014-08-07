@@ -76,7 +76,7 @@ class AssetIndexingService extends BaseApplicationComponent
 			$folder->sourceId = $model->id;
 			$folder->parentId = null;
 			$folder->name = $model->name;
-			$folder->path = "";
+			$folder->path = '';
 			$folder->save();
 		}
 
