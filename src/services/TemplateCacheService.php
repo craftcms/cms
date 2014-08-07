@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TemplateCacheService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -62,9 +61,8 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	private $_deletedCachesByElementType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a cached template by its key.
@@ -487,9 +485,8 @@ class TemplateCacheService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the current request path, including a "site:" or "cp:" prefix.

@@ -13,12 +13,11 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
-	////////////////////
 	// METHODS
-	////////////////////
+	// =========================================================================
 
 	// Finding Elements
-	// ================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns an element criteria model for a given element type.
@@ -804,7 +803,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	// Saving Elements
-	// ===============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves an element.
@@ -1430,7 +1429,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	// Element types
-	// =============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all installed element types.
@@ -1611,9 +1610,8 @@ class ElementsService extends BaseApplicationComponent
 		$this->raiseEvent('onMergeElements', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the unique element IDs that match a given element query.

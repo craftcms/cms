@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementTypeVariable extends BaseComponentTypeVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this element type stores data on a per-locale basis.

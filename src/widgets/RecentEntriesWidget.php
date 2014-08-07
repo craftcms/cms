@@ -13,18 +13,16 @@ namespace Craft;
  */
 class RecentEntriesWidget extends BaseWidget
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	public $multipleInstances = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -106,9 +104,8 @@ class RecentEntriesWidget extends BaseWidget
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -123,9 +120,8 @@ class RecentEntriesWidget extends BaseWidget
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the recent entries, based on the widget settings and user permissions.

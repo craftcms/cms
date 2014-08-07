@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -67,12 +66,11 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	private $_layoutsByType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Groups
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all field groups.
@@ -209,7 +207,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Fields
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all fields.
@@ -641,7 +639,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Layouts
-	// =======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a field layout by its ID.
@@ -906,7 +904,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Fieldtypes
-	// ==========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all installed fieldtypes.
@@ -949,9 +947,8 @@ class FieldsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving groups.

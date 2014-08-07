@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ContentService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -32,9 +31,8 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public $fieldContext = 'global';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the content model for a given element.
@@ -232,9 +230,8 @@ class ContentService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveContent', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Saves a content model to the database.

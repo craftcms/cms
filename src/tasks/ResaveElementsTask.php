@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -32,9 +31,8 @@ class ResaveElementsTask extends BaseTask
 	 */
 	private $_elementIds;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -103,9 +101,8 @@ class ResaveElementsTask extends BaseTask
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

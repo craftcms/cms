@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string The type of component this is
@@ -32,9 +31,8 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	 */
 	protected $colspan = 1;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this component should be selectable when choosing a component of this type.

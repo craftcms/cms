@@ -13,24 +13,21 @@ namespace Craft;
  */
 class ResourcesService extends BaseApplicationComponent
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const DefaultUserphotoFilename = 'user.gif';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	public $dateParam;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the cached file system path for a given resource, if we have it.
@@ -374,9 +371,8 @@ class ResourcesService extends BaseApplicationComponent
 		craft()->end();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $match

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DeprecatorVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the total number of deprecation errors that have been logged.

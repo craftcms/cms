@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseRecord extends \CActiveRecord
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const RESTRICT = 'RESTRICT';
 	const CASCADE = 'CASCADE';
@@ -23,18 +22,16 @@ abstract class BaseRecord extends \CActiveRecord
 	const SET_DEFAULT = 'SET DEFAULT';
 	const SET_NULL = 'SET NULL';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_attributeConfigs;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -546,9 +543,8 @@ abstract class BaseRecord extends \CActiveRecord
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines this model's attributes.
@@ -560,9 +556,8 @@ abstract class BaseRecord extends \CActiveRecord
 		return array();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Normalizes a relation's config

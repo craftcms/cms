@@ -13,18 +13,16 @@ namespace Craft;
  */
 class CompositeUniqueValidator extends \CValidator
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	public $with;
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param \CModel $object

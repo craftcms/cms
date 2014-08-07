@@ -269,9 +269,8 @@ class UrlHelper
 		return static::getUrl($path, $params, $protocol, true);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a URL.

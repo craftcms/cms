@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserPermission_UserGroupRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string

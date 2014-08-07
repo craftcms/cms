@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TemplatesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -107,9 +106,8 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private $_renderingTemplate;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Init
@@ -925,9 +923,8 @@ class TemplatesService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Twig environment options

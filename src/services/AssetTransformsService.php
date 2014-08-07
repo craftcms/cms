@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetTransformsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private $_fetchedAllTransforms = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all named asset transforms.
@@ -791,9 +789,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving transforms.

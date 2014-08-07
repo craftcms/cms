@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ClearCachesTool extends BaseTool
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tool name.
@@ -134,9 +133,8 @@ class ClearCachesTool extends BaseTool
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the

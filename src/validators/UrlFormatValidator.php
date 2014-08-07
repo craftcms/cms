@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UrlFormatValidator extends \CValidator
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool Whether we should ensure that "{slug}" is used within the URL format.
 	 */
 	public $requireSlug = false;
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object

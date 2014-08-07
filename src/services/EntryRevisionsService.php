@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a draft by its ID.
@@ -438,9 +437,8 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a draft record.

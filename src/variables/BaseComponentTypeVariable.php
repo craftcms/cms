@@ -13,18 +13,16 @@ namespace Craft;
  */
 abstract class BaseComponentTypeVariable
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var BaseComponentType
 	 */
 	protected $component;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -52,9 +51,8 @@ class MatrixService extends BaseApplicationComponent
 	 */
 	private $_parentMatrixFields;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the block types for a given Matrix field.
@@ -888,9 +886,8 @@ class MatrixService extends BaseApplicationComponent
 		return $this->_parentMatrixFields[$matrixField->id];
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving block types.

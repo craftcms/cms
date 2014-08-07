@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LocaleValidator extends \CValidator
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object

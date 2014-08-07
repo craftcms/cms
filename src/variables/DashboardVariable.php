@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DashboardVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all installed widget types.

@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UriValidator extends \CValidator
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	public $pattern = '/^[^\s]+$/';
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object

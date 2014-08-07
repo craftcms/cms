@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DeleteStaleTemplateCachesTask extends BaseTask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -47,9 +46,8 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	 */
 	private $_deletedCacheIds;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -157,9 +155,8 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -173,9 +170,8 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.

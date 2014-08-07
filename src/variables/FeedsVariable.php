@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FeedsVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $url

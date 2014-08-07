@@ -13,18 +13,16 @@ namespace Craft;
  */
 class CacheService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var null
 	 */
 	private $_cacheComponent = null;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Do the ole' craft()->cache switcharoo.

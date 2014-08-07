@@ -13,9 +13,8 @@ namespace Craft;
  */
 class HttpRequestVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this is an Ajax request.

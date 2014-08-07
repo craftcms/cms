@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UpdatesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var UpdateModel
 	 */
 	private $_updateModel;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $craftReleases

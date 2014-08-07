@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface IWidget extends ISavableComponentType
 {
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return string

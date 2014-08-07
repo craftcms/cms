@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface ITool extends IComponentType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string

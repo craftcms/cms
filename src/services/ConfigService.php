@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	private $_loadedConfigFiles = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
@@ -534,9 +532,8 @@ class ConfigService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $name

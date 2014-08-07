@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoriesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,12 +36,11 @@ class CategoriesService extends BaseApplicationComponent
 	 */
 	private $_fetchedAllCategoryGroups = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Category groups
-	// ===============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the group IDs.
@@ -565,7 +563,7 @@ class CategoriesService extends BaseApplicationComponent
 	}
 
 	// Categories
-	// ==========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a category by its ID.
@@ -806,9 +804,8 @@ class CategoriesService extends BaseApplicationComponent
 		$this->raiseEvent('onDeleteCategory', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Populates a CategoryGroupModel with attributes from a CategoryGroupRecord.

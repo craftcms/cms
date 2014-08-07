@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FindAndReplaceTask extends BaseTask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -32,9 +31,8 @@ class FindAndReplaceTask extends BaseTask
 	 */
 	private $_matrixFieldIds;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -145,9 +143,8 @@ class FindAndReplaceTask extends BaseTask
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -163,9 +160,8 @@ class FindAndReplaceTask extends BaseTask
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly

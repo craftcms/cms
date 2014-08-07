@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserPermissionsVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the known permissions, sorted by category.

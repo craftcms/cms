@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SectionsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -47,9 +46,8 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	private $_entryTypesById;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the section IDs.
@@ -1136,9 +1134,8 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sections.

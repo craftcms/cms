@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DeprecatorService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -32,9 +31,8 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private $_allLogs;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Logs a new deprecation error.
@@ -161,9 +159,8 @@ class DeprecatorService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EntriesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns an entry by its ID.
@@ -393,9 +392,8 @@ class EntriesService extends BaseApplicationComponent
 		$this->raiseEvent('onDeleteEntry', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Checks if an entry was submitted with a new parent entry selected.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	private $_mergeInProgress = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all top-level files in a source.
@@ -642,7 +640,7 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	// File and folder managing
-	// ========================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
@@ -984,9 +982,8 @@ class AssetsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving assets.

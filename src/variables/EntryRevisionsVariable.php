@@ -15,12 +15,11 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Drafts
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns entry drafts by an entry ID.
@@ -74,7 +73,7 @@ class EntryRevisionsVariable
 	}
 
 	// Versions
-	// ========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns entry versions by an entry ID.

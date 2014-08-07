@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CpVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Get the sections of the CP.

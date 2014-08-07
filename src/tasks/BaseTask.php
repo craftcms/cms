@@ -13,18 +13,16 @@ namespace Craft;
  */
 abstract class BaseTask extends BaseSavableComponentType implements ITask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string The type of component this is
 	 */
 	protected $componentType = 'Task';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -58,9 +56,8 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Creates and runs a subtask.

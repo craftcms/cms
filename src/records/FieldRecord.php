@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldRecord extends BaseRecord
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var array
@@ -57,9 +56,8 @@ class FieldRecord extends BaseRecord
 	 */
 	private $_oldHandle;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Init
@@ -148,9 +146,8 @@ class FieldRecord extends BaseRecord
 		return $attributeConfigs;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

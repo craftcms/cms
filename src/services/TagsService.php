@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TagsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -32,12 +31,11 @@ class TagsService extends BaseApplicationComponent
 	 */
 	private $_fetchedAllTagGroups = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Tag groups
-	// ==========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the group IDs.
