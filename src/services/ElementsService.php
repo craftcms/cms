@@ -162,27 +162,6 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			if ($criteria->search)
-			{
-				$elementIds = $this->_getElementIdsFromQuery($query);
-				$scoredSearchResults = ($criteria->order == 'score');
-				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
-
-				// No results?
-				if (!$filteredElementIds)
-				{
-					return array();
-				}
-
-				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
-
-				if ($scoredSearchResults)
-				{
-					// Order the elements in the exact order that SearchService returned them in
-					$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
-				}
-			}
-
 			if ($justIds)
 			{
 				$query->select('elements.id');
@@ -761,6 +740,30 @@ class ElementsService extends BaseApplicationComponent
 				// TODO: 'depth' is deprecated; use 'level' instead.
 				$level = ($criteria->level ? $criteria->level : $criteria->depth);
 				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
+			}
+		}
+
+		// Search
+		// ---------------------------------------------------------------------
+
+		if ($criteria->search)
+		{
+			$elementIds = $this->_getElementIdsFromQuery($query);
+			$scoredSearchResults = ($criteria->order == 'score');
+			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+
+			// No results?
+			if (!$filteredElementIds)
+			{
+				return array();
+			}
+
+			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+
+			if ($scoredSearchResults)
+			{
+				// Order the elements in the exact order that SearchService returned them in
+				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
 		}
 
