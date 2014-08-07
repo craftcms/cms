@@ -27,7 +27,7 @@ class FieldLayoutFieldModel extends BaseModel
 	////////////////////
 
 	/**
-	 * Returns the tab's layout.
+	 * Returns the field's layout.
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -52,7 +52,7 @@ class FieldLayoutFieldModel extends BaseModel
 	}
 
 	/**
-	 * Sets the tab's layout.
+	 * Sets the field's layout.
 	 *
 	 * @param FieldLayoutModel $layout
 	 *

@@ -18,7 +18,7 @@ namespace Craft;
 class Craft extends \Yii
 {
 	////////////////////
-	// CONSTS
+	// CONSTANTS
 	////////////////////
 
 	// Edition constants
@@ -204,8 +204,8 @@ class Craft extends \Yii
 	/**
 	 * Disables Maintenance Mode.
 	 *
-	 * @return bool
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::disableMaintenanceMode() craft()->disableMaintenanceMode()} instead.
+	 * @return bool
 	 */
 	public static function disableMaintenanceMode()
 	{
