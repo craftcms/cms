@@ -832,7 +832,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function renameFile(AssetFileModel $file, $filename, $action = "")
+	public function renameFile(AssetFileModel $file, $filename, $action = '')
 	{
 		$response = $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
 

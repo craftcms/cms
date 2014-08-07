@@ -862,7 +862,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @return string
 	 */
-	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array(), $payload = "")
+	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array(), $payload = '')
 	{
 		$ch = curl_init($url);
 		if ($method == 'HEAD')

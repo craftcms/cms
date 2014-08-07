@@ -885,7 +885,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (empty($parts))
 			{
 				// Looking for a top level folder, apparently.
-				$parameters->path = "";
+				$parameters->path = '';
 				$parameters->parentId = ':empty:';
 			}
 			else
