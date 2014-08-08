@@ -173,7 +173,8 @@ class AssetsService extends BaseApplicationComponent
 
 					// Fire an 'onSaveAsset' event
 					$this->onSaveAsset(new Event($this, array(
-						'asset' => $file
+						'asset'      => $file,
+						'isNewAsset' => $isNewFile
 					)));
 
 					if ($this->hasEventHandler('onSaveFileContent'))
