@@ -246,7 +246,7 @@ class TableFieldType extends BaseFieldType
 				}
 			}
 
-			if ($this->isFresh())
+			if ($this->isFresh() && !$value)
 			{
 				$defaults = $this->getSettings()->defaults;
 
