@@ -132,6 +132,7 @@ class Zip
 		craft()->config->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($sourceZip);
+
 		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))
 		{
 			return true;

@@ -220,8 +220,9 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns the schema and host part of the application URL.  The returned URL does not have an ending slash.
-	 * By default this is determined based on the user request information.
+	 * Returns the schema and host part of the application URL.  The returned
+	 * URL does not have an ending slash. By default this is determined based on
+	 * the user request information.
 	 *
 	 * @param string $schema
 	 *
@@ -243,8 +244,9 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns the path info of the currently requested URL. This refers to the part that is after the entry script and
-	 * before the question mark. The starting and ending slashes are stripped off.
+	 * Returns the path info of the currently requested URL. This refers to the
+	 * part that is after the entry script and before the question mark. The
+	 * starting and ending slashes are stripped off.
 	 *
 	 * @return string
 	 */
@@ -254,8 +256,9 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns the request URI portion for the currently requested URL.  This refers to the portion that is after the
-	 * host info part. It includes the query string part if any.
+	 * Returns the request URI portion for the currently requested URL. This refers
+	 * to the portion that is after the host info part. It includes the query
+	 * string part if any.
 	 *
 	 * @return string
 	 */
@@ -315,8 +318,8 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns the port to use for insecure requests. Defaults to 80, or the port specified by the server if the current
-	 * request is insecure.
+	 * Returns the port to use for insecure requests. Defaults to 80, or the port
+	 * specified by the server if the current request is insecure.
 	 *
 	 * @return int
 	 */

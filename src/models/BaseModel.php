@@ -273,7 +273,9 @@ abstract class BaseModel extends \CModel
 	 * Returns an array of attribute values.
 	 *
 	 * @param null $names
-	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to array, etc. Useful for saving to DB or sending over a web service.
+	 * @param bool $flattenValues Will change a DateTime object to a timestamp,
+	 *                            Mixed to array, etc. Useful for saving to DB or
+	 *                            sending over a web service.
 	 *
 	 * @return array
 	 */

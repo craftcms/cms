@@ -309,7 +309,8 @@ class UpdateController extends BaseController
 		{
 			$plugin = craft()->plugins->getPlugin($handle);
 
-			// If this a plugin, make sure it actually has new migrations before backing up the database.
+			// If this a plugin, make sure it actually has new migrations before
+			// backing up the database.
 			if ($handle == 'craft' || ($plugin && craft()->migrations->getNewMigrations($plugin)))
 			{
 				$return = craft()->updates->backupDatabase();

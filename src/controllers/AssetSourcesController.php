@@ -229,8 +229,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
-			// have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables
+			// around, such as location), we'll have to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
 			/** @var RackspaceAssetSourceType $source */
@@ -259,8 +259,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
-			// have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables
+			/// around, such as location), we'll have to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var RackspaceAssetSourceType $source */

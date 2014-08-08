@@ -164,7 +164,8 @@ class FindAndReplaceTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Checks whether the given field is saving data into a textual column, and saves it accordingly
+	 * Checks whether the given field is saving data into a textual column,
+	 * and saves it accordingly
 	 *
 	 * @param FieldModel $field
 	 * @param string     $fieldColumnPrefix

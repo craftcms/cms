@@ -171,7 +171,8 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
-		// Get the stack trace, but skip the first one, since it's just the call to this private function
+		// Get the stack trace, but skip the first one, since it's just the call
+		// to this private function
 		$traces = debug_backtrace();
 		array_shift($traces);
 

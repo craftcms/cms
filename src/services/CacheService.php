@@ -108,15 +108,19 @@ class CacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Stores a value identified by a key into cache.  If the cache already contains such a key, the existing value and
-	 * expiration time will be replaced with the new ones.
+	 * Stores a value identified by a key into cache.  If the cache already
+	 * contains such a key, the existing value and expiration time will be replaced
+	 * with the new ones.
 	 *
-	 * @param string            $id         The key identifying the value to be cached
-	 * @param mixed             $value      The value to be cached
-	 * @param int               $expire     The number of seconds in which the cached value will expire. 0 means never expire.
-	 * @param \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
+	 * @param string            $id         The key identifying the value to be cached.
+	 * @param mixed             $value      The value to be cached.
+	 * @param int               $expire     The number of seconds in which the cached
+	 *                                      value will expire. 0 means never expire.
+	 * @param \ICacheDependency $dependency Dependency of the cached item. If the
+	 *                                      dependency changes, the item is labeled
+	 *                                      invalid.
 	 *
-	 * @return bool true if the value is successfully stored into cache, false otherwise
+	 * @return bool true if the value is successfully stored into cache, false otherwise.
 	 */
 	public function set($id, $value, $expire = null, $dependency = null)
 	{
@@ -129,13 +133,15 @@ class CacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Stores a value identified by a key into cache if the cache does not contain this key.  Nothing will be done if
-	 * the cache already contains the key.
+	 * Stores a value identified by a key into cache if the cache does not contain
+	 * this key. Nothing will be done if the cache already contains the key.
 	 *
-	 * @param string            $id         The key identifying the value to be cached
-	 * @param mixed             $value      The value to be cached
-	 * @param int               $expire     The number of seconds in which the cached value will expire. 0 means never expire.
-	 * @param \ICacheDependency $dependency dependency of the cached item. If the dependency changes, the item is labeled invalid.
+	 * @param string            $id         The key identifying the value to be cached.
+	 * @param mixed             $value      The value to be cached.
+	 * @param int               $expire     The number of seconds in which the
+	 *                                      cached value will expire. 0 means never expire.
+	 * @param \ICacheDependency $dependency Dependency of the cached item. If the
+	 *                                      dependency changes, the item is labeled invalid.
 	 *
 	 * @return bool true if the value is successfully stored into cache, false otherwise
 	 */
@@ -154,7 +160,8 @@ class CacheService extends BaseApplicationComponent
 	 *
 	 * @param string $id A key identifying the cached value
 	 *
-	 * @return mixed The value stored in cache, false if the value is not in the cache, expired if the dependency has changed.
+	 * @return mixed The value stored in cache, false if the value is not in the
+	 *               cache, expired if the dependency has changed.
 	 */
 	public function get($id)
 	{
@@ -162,14 +169,16 @@ class CacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Retrieves multiple values from cache with the specified keys. Some caches (such as memcache, apc) allow retrieving
-	 * multiple cached values at one time, which may improve the performance since it reduces the communication cost.
-	 * In case a cache does not support this feature natively, it will be simulated by this method.
+	 * Retrieves multiple values from cache with the specified keys. Some caches
+	 * (such as memcache, apc) allow retrieving multiple cached values at one time, which may improve the performance since it reduces the communication cost.
+	 * In case a cache does not support this feature natively, it will be simulated
+	 * by this method.
 	 *
 	 * @param array $ids The list of keys identifying the cached values
 	 *
-	 * @return array The list of cached values corresponding to the specified keys. The array is returned in terms of
-	 *               (key,value) pairs. If a value is not cached or expired, the corresponding array value will be false.
+	 * @return array The list of cached values corresponding to the specified keys.
+	 *         The array is returned in terms of (key,value) pairs. If a value is
+	 *         not cached or expired, the corresponding array value will be false.
 	 */
 	public function mget($ids)
 	{
@@ -189,7 +198,8 @@ class CacheService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes all values from cache. Be careful of performing this operation if the cache is shared by multiple applications.
+	 * Deletes all values from cache. Be careful of performing this operation if
+	 * the cache is shared by multiple applications.
 	 *
 	 * @return bool Whether the flush operation was successful.
 	 */

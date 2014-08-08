@@ -17,7 +17,9 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	// =========================================================================
 
 	/**
-	 * @var string The type of component this is
+	 * The type of component this is.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'Tool';
 

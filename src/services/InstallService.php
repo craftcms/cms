@@ -719,10 +719,10 @@ class InstallService extends BaseApplicationComponent
 		$homepageLayout->type = ElementType::Entry;
 
 		$homepageSingleSection = new SectionModel();
-		$homepageSingleSection->name       = Craft::t('Homepage');
-		$homepageSingleSection->handle     = 'homepage';
-		$homepageSingleSection->type       = SectionType::Single;
-		$homepageSingleSection->hasUrls  = false;
+		$homepageSingleSection->name = Craft::t('Homepage');
+		$homepageSingleSection->handle = 'homepage';
+		$homepageSingleSection->type = SectionType::Single;
+		$homepageSingleSection->hasUrls = false;
 		$homepageSingleSection->template = 'index';
 
 		$primaryLocaleId = craft()->i18n->getPrimarySiteLocaleId();

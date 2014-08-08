@@ -114,7 +114,9 @@ class ElementsController extends BaseController
 
 		if ($criteria->limit)
 		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of 50 elements, rather than running two separate element queries
+			// We'll risk a pointless additional Ajax request in the unlikely
+			// event that there are exactly a factor of 50 elements, rather than
+			// running two separate element queries
 			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else

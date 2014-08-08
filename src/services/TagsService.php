@@ -302,7 +302,7 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Tags
-	// ====
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a tag by its ID.
@@ -424,6 +424,7 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onBeforeSaveTag' event.

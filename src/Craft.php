@@ -4,9 +4,11 @@ namespace Craft;
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * It encapsulates {@link Yii} and ultimately {@link YiiBase}, which provides the actual implementation.
+ * It encapsulates {@link Yii} and ultimately {@link YiiBase}, which provides the
+ * actual implementation.
  *
- * It also defines the global craft() method, which is a wrapper for the Craft::app() singleton.
+ * It also defines the global craft() method, which is a wrapper for the
+ * Craft::app() singleton.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -129,7 +131,9 @@ class Craft extends \Yii
 	/**
 	 * Returns the site URL.
 	 *
-	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever is in the Site URL setting.
+	 * @param string|null $protocol The protocol to use (http or https). If none
+	 *                              is specified, it will default to whatever is
+	 *                              in the Site URL setting.
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getSiteUrl() craft()->getSiteUrl()} instead.
 	 * @return string
@@ -269,7 +273,8 @@ class Craft extends \Yii
 	 * Takes a path alias and will import any files/folders that it contains.
 	 *
 	 * @param string $alias        The path alias to import.
-	 * @param bool   $forceInclude If set to true, Craft will require_once the file. Defaults to false.
+	 * @param bool   $forceInclude If set to true, Craft will require_once the file.
+	 *                             Defaults to false.
 	 *
 	 * @throws \Exception
 	 * @return string|null
@@ -335,18 +340,25 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Translates a given message into the specified language. If the config setting 'translationDebugOutput'
-	 * is set, the the output will be wrapped in a pair of '@' to help diagnose any missing translations.
+	 * Translates a given message into the specified language. If the config setting
+	 * 'translationDebugOutput' is set, the the output will be wrapped in a pair
+	 * of '@' to help diagnose any missing translations.
 	 *
-	 * @param string $message   The original source message.
-	 * @param array  $variables An associative array of key => value pairs to be applied to the message using <code>strtr</code>.
-	 * @param string $source    Defines which message source application component to use. Defaults to null,
-	 *                          meaning use 'coreMessages' for messages belonging to the 'yii' category and using 'messages' for messages belonging to Craft.
-	 * @param string $language  The target language. If set to null (default), craft()->getLanguage() will be used.
-	 * @param string $category  The message category. Please use only word letters. Note, category 'craft' is reserved for
-	 *                          Craft and 'yii' is reserved for the Yii framework
+	 * @param string      $message   The original source message.
+	 * @param array       $variables An associative array of key => value pairs to be
+	 *                               applied to the message using `strtr`.
+	 * @param string|null $source    Defines which message source application component
+	 *                               to use. Defaults to null, meaning use 'coreMessages'
+	 *                               for messages belonging to the 'yii' category and
+	 *                               using 'messages' for messages belonging to Craft.
+	 * @param string|null $language  The target language. If set to null (default),
+	 *                               craft()->getLanguage() will be used.
+	 * @param string      $category  The message category. Please use only word letters.
+	 *                               Note, category 'craft' is reserved for Craft and
+	 *                               'yii' is reserved for the Yii framework.
 	 *
-	 * @return string|null The translated message, or null if the source key could not be found.
+	 * @return string|null The translated message, or null if the source key
+	 *                     could not be found.
 	 */
 	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'craft')
 	{
@@ -384,13 +396,21 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Logs a message.  Messages logged by this method may be retrieved via {@link Logger::getLogs} and may be recorded in different media, such as file, email, database, using {@link LogRouter}.
+	 * Logs a message.  Messages logged by this method may be retrieved via
+	 * {@link Logger::getLogs} and may be recorded in different media, such as
+	 * file, email, database, using {@link LogRouter}.
 	 *
 	 * @param string $msg      The message to be logged.
-	 * @param string $level    The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or LogLevel::Error). Defaults to LogLevel::Info.
-	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
-	 * @param string $category The category of the message (e.g. 'application'). It is case-insensitive.
-	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for determining which log file to write to.
+	 * @param string $level    The level of the message (e.g. LogLevel::Trace',
+	 *                         LogLevel::Info, LogLevel::Warning or LogLevel::Error).
+	 *                         Defaults to LogLevel::Info.
+	 * @param bool   $force    Whether to force the message to be logged regardless
+	 *                         of the level or category.
+	 * @param string $category The category of the message (e.g. 'application').
+	 *                         It is case-insensitive.
+	 * @param string $plugin   The plugin handle that made the log call. If null,
+	 *                         will be set to 'craft'. Use for determining which
+	 *                         log file to write to.
 	 *
 	 * @return null
 	 */
@@ -452,7 +472,8 @@ class Craft extends \Yii
 }
 
 /**
- * Returns the current craft() instance. This is a wrapper function for the Craft::app() instance.
+ * Returns the current craft() instance. This is a wrapper function for the
+ * Craft::app() instance.
  *
  * @return WebApp|ConsoleApp
  */

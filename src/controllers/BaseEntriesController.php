@@ -49,7 +49,8 @@ abstract class BaseEntriesController extends BaseController
 			{
 				case 'Entry':
 				{
-					// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
+					// If it's another user's entry (and it's not a Single), make
+					// sure they have permission to edit those
 					if (
 						$entry->authorId != $userSessionService->getUser()->id &&
 						$entry->getSection()->type != SectionType::Single
@@ -63,7 +64,8 @@ abstract class BaseEntriesController extends BaseController
 
 				case 'EntryDraft':
 				{
-					// If it's another user's draft, make sure they have permission to edit those
+					// If it's another user's draft, make sure they have
+					// permission to edit those
 					if (
 						$entry->getClassHandle() == 'EntryDraft' &&
 						$entry->creatorId != $userSessionService->getUser()->id

@@ -71,7 +71,8 @@ class LightswitchFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
+		// It's stored as '0' in the database, but it's returned as false.
+		// Change it back to '0'.
 		return $value == false ? '0' : $value;
 	}
 }

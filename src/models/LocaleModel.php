@@ -81,7 +81,7 @@ class LocaleModel extends BaseApplicationComponent
 
 				if (!$name)
 				{
-					// Try grabbling the language and territory separately...
+					// Try grabbing the language and territory separately...
 					$name = $localeData->getLanguage($this->_id);
 
 					if ($name)

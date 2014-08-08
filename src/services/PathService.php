@@ -238,7 +238,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the current templates path, taking into account whether this is a CP or Site request.
+	 * Returns the current templates path, taking into account whether this is a
+	 * CP or Site request.
 	 *
 	 * @return string
 	 */
@@ -290,24 +291,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the path to the offline template by first checking to see if they have set a custom path in config.
-	 * If that is not set, it will fall back on the default CP offline template.
-	 *
-	 * @return mixed
-	 */
-	public function getOfflineTemplatePath()
-	{
-		// If the user has set offlinePath config item, let's use it.
-		if (($path = craft()->config->get('offlinePath')) !== null)
-		{
-			return mb_substr($path, 0, mb_strlen($path) - mb_strlen(IOHelper::getFileName($path)));
-		}
-
-		return $this->getCpTemplatesPath();
-	}
-
-	/**
-	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
+	 * Returns the current parsed templates path, taking into account whether this
+	 * is a CP or Site request.
 	 *
 	 * @return mixed
 	 */

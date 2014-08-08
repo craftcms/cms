@@ -19,7 +19,8 @@ class CraftTwigExtension extends \Twig_Extension
 	/**
 	 * Returns the token parser instances to add to the existing list.
 	 *
-	 * @return array An array of Twig_TokenParserInterface or Twig_TokenParserBrokerInterface instances
+	 * @return array An array of Twig_TokenParserInterface or
+	 *               Twig_TokenParserBrokerInterface instances
 	 */
 	public function getTokenParsers()
 	{
@@ -128,7 +129,8 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Replaces Twig's |replace filter, adding support for passing in separate search and replace arrays.
+	 * Replaces Twig's |replace filter, adding support for passing in separate
+	 * search and replace arrays.
 	 *
 	 * @param mixed $str
 	 * @param mixed $search
@@ -355,7 +357,8 @@ class CraftTwigExtension extends \Twig_Extension
 
 			$globals['currentUser'] = craft()->userSession->getUser();
 
-			// Keep 'user' around so long as it's not hurting anyone. Technically deprecated, though.
+			// Keep 'user' around so long as it's not hurting anyone.
+			// Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
 
 			if (craft()->request->isSiteRequest())

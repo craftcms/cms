@@ -93,8 +93,8 @@ class SectionsController extends BaseController
 		$types = array(SectionType::Single, SectionType::Channel, SectionType::Structure);
 		$variables['typeOptions'] = array();
 
-		/* Get these strings to be caught by our translation util:
-		   Craft::t("Channel") Craft::t("Structure") Craft::t("Single") */
+		// Get these strings to be caught by our translation util:
+		// Craft::t("Channel") Craft::t("Structure") Craft::t("Single")
 
 		foreach ($types as $type)
 		{

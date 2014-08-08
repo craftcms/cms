@@ -17,7 +17,9 @@ class MigrationsService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @var string The default command action. It defaults to 'up'.
+	 * The default command action. It defaults to 'up'.
+	 *
+	 * @var string
 	 */
 	public $defaultAction = 'up';
 

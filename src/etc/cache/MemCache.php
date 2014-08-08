@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * MemCache implements a cache application component based on {@link http://memcached.org/ memcached}.
+ * MemCache implements a cache application component based on
+ * {@link http://memcached.org/ memcached}.
  *
  * MemCache can be configured with a list of memcache servers.  By default, MemCache assumes
  * there is a memcache server running on localhost at port 11211.

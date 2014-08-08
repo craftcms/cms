@@ -70,7 +70,7 @@ class DashboardService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Get only the enabled widgtes.
+			// Get only the enabled widgets.
 			foreach ($widgetRecords as $key => $widgetRecord)
 			{
 				if (!$widgetRecord->enabled)

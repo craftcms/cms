@@ -17,12 +17,16 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	// =========================================================================
 
 	/**
-	 * @var BaseElementModel The element that the current instance is associated with
+	 * The element that the current instance is associated with.
+	 *
+	 * @var BaseElementModel
 	 */
 	public $element;
 
 	/**
-	 * @var string The type of component this is
+	 * The type of component this is.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'FieldType';
 
@@ -148,7 +152,8 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
 	 *
 	 * @param mixed $value
 	 *

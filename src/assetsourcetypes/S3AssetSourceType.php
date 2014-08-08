@@ -391,7 +391,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param                $sourceImage
 	 *
 	 * @return mixed
-	*/
+	 */
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$this->_prepareForRequests();

@@ -51,8 +51,9 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	public function getLocales()
 	{
-		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't translatable.
-		// Otherwise all blocks belong to all locales, and their content is translatable.
+		// If the Matrix field is translatable, than each individual block is
+		// tied to a single locale, and thus aren't translatable. Otherwise all
+		// blocks belong to all locales, and their content is translatable.
 
 		if ($this->ownerLocale)
 		{
@@ -64,7 +65,8 @@ class MatrixBlockModel extends BaseElementModel
 
 			if ($owner)
 			{
-				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+				// Just send back an array of locale IDs -- don't pass along
+				// enabledByDefault configs
 				$localeIds = array();
 
 				foreach ($owner->getLocales() as $localeId => $localeInfo)

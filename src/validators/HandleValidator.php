@@ -44,7 +44,8 @@ class HandleValidator extends \CValidator
 	{
 		$handle = $object->$attribute;
 
-		// Handles are always required, so if it's blank, the required validator will catch this.
+		// Handles are always required, so if it's blank, the required
+		// validator will catch this.
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);

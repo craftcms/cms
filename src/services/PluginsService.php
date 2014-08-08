@@ -17,37 +17,51 @@ class PluginsService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @var array The type of components plugins can have. Defined in app/etc/config/common.php.
+	 * The type of components plugins can have. Defined in app/etc/config/common.php.
+	 *
+	 * @var array
 	 */
 	public $autoloadClasses;
 
 	/**
-	 * @var bool Stores whether plugins have been loaded yet for this request.
+	 * Stores whether plugins have been loaded yet for this request.
+	 *
+	 * @var bool
 	 */
 	private $_pluginsLoaded = false;
 
 	/**
-	 * @var bool Stores whether plugins are in the middle of being loaded.
+	 * Stores whether plugins are in the middle of being loaded.
+	 *
+	 * @var bool
 	 */
 	private $_loadingPlugins = false;
 
 	/**
-	 * @var array Stores all plugins, whether installed or not.
+	 * Stores all plugins, whether installed or not.
+	 *
+	 * @var array
 	 */
 	private $_plugins = array();
 
 	/**
-	 * @var array Stores all enabled plugins.
+	 * Stores all plugins, whether installed or not.
+	 *
+	 * @var array
 	 */
 	private $_enabledPlugins = array();
 
 	/**
-	 * @var array Stores all plugins in the system, regardless of whether they're installed/enabled or not.
+	 * Stores all plugins in the system, regardless of whether they're installed/enabled or not.
+	 *
+	 * @var array
 	 */
 	private $_allPlugins;
 
 	/**
-	 * @var array Holds a list of all of the enabled plugin info indexed by the plugin class name.
+	 * Holds a list of all of the enabled plugin info indexed by the plugin class name.
+	 *
+	 * @var array
 	 */
 	private $_enabledPluginInfo = array();
 
@@ -55,7 +69,9 @@ class PluginsService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @return bool Returns whether plugins have been loaded yet for this request.
+	 * Returns whether plugins have been loaded yet for this request.
+	 *
+	 * @return bool
 	 */
 	public function arePluginsLoaded()
 	{
@@ -380,7 +396,9 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Uninstalls a plugin by removing it's record from the database, deleting it's tables and foreign keys and running the plugin's uninstall method if it exists.
+	 * Uninstalls a plugin by removing it's record from the database, deleting
+	 * it's tables and foreign keys and running the plugin's uninstall method if
+	 * it exists.
 	 *
 	 * @param string $handle
 	 *
@@ -552,7 +570,8 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the given plugin's local version number is greater than the record we have in the database.
+	 * Returns whether the given plugin's local version number is greater than
+	 * the record we have in the database.
 	 *
 	 * @param BasePlugin $plugin
 	 *
@@ -714,7 +733,8 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * If the plugin already had a migrations folder with migrations in it, let's save them in the db.
+	 * If the plugin already had a migrations folder with migrations in it, let's
+	 * save them in the db.
 	 *
 	 * @param int    $pluginId
 	 * @param string $pluginHandle

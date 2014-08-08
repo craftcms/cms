@@ -74,7 +74,8 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param mixed $template      The name of the template to load, or a StringTemplate object.
+	 * @param mixed $template      The name of the template to load, or a
+	 *                             StringTemplate object.
 	 * @param array $variables     The variables that should be available to the template
 	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput
@@ -99,8 +100,10 @@ abstract class BaseController extends \CController
 			{
 				// Get the template file's MIME type
 
-				// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
-				// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
+				// Safe to assume that findTemplate() will return an actual
+				// template path here, and not `false`. the template didn't exist,
+				// a TemplateLoaderException would have been thrown when
+				// calling craft()->templates->render().
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
 
@@ -109,7 +112,8 @@ abstract class BaseController extends \CController
 					$extension = 'html';
 				}
 
-				// If Content-Type is set already, presumably the template set it with the {% header %} tag.
+				// If Content-Type is set already, presumably the template set
+				// it with the {% header %} tag.
 				if (!HeaderHelper::isHeaderSet('Content-Type'))
 				{
 					HeaderHelper::setContentTypeByExtension($extension);
@@ -149,7 +153,8 @@ abstract class BaseController extends \CController
 				}
 				else
 				{
-					// If this is a non-HTML, non-Twig request, remove the extra logging information.
+					// If this is a non-HTML, non-Twig request, remove the extra
+					// logging information.
 					craft()->log->removeRoute('WebLogRoute');
 					craft()->log->removeRoute('ProfileLogRoute');
 				}
@@ -261,7 +266,8 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param mixed $object Object containing properties that should be parsed for in the URL.
+	 * @param mixed $object Object containing properties that should be parsed
+	 *                      for in the URL.
 	 *
 	 * @return null
 	 */
@@ -309,8 +315,8 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access to
-	 * or as a bool that applies to all actions.
+	 * Checks if a controller has overridden allowAnonymous either as an array with
+	 * actions to allow anonymous access to or as a bool that applies to all actions.
 	 *
 	 * @param \CAction $action
 	 *

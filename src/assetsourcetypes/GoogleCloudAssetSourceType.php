@@ -131,10 +131,12 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file['name']))
 			{
-				// In S3, it's possible to have files in folders that don't exist. E.g. - one/two/three.jpg.
-				// If folder "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
+				// In S3, it's possible to have files in folders that don't exist.
+				// e.g. - one/two/three.jpg. If folder "one" is empty, except for
+				// folder "two", then "one" won't show up in this list so we work around it.
 
-				// Matches all paths with folders, except if folder is last or no folder at all.
+				// Matches all paths with folders, except if folder is last
+				// or no folder at all.
 				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
@@ -322,14 +324,15 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	* Put an image transform for the File and handle using the provided path to the source image.
-	*
-	* @param AssetFileModel $fileModel
-	* @param                $handle
-	* @param                $sourceImage
+	 * Put an image transform for the File and handle using the provided path
+	 * to the source image.
 	 *
-	* @return mixed
-	*/
+	 * @param AssetFileModel $fileModel
+	 * @param                $handle
+	 * @param                $sourceImage
+	 *
+	 * @return mixed
+	 */
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$this->_prepareForRequests();
@@ -570,10 +573,12 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 			foreach ($transforms as $location)
 			{
-				// Surpress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
+				// Suppress errors when trying to move image transforms. Maybe
+				// the user hasn't updated them yet.
 				$copyResult = @$this->_googleCloud->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \GC::ACL_PUBLIC_READ);
 
-				// If we failed to copy, that's because source wasn't there. Skip delete and save time - everyone's a winner!
+				// If we failed to copy, that's because source wasn't there. Skip
+				// delete and save time - everyone's a winner!
 				if ($copyResult)
 				{
 					@$this->_googleCloud->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
@@ -633,6 +638,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$filesToMove = $this->_googleCloud->getBucket($bucket, $this->_getPathPrefix().$folder->path);
 
 		rsort($filesToMove);
+
 		foreach ($filesToMove as $file)
 		{
 			$filePath = mb_substr($file['name'], mb_strlen($this->_getPathPrefix().$folder->path));
@@ -721,7 +727,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings The settings to use.  If null, will use current settings.
+	 * @param object|null $settings The settings to use. If null, will use
+	 *                              current settings.
 	 *
 	 * @return string
 	 */

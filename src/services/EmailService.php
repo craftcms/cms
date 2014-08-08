@@ -197,7 +197,8 @@ class EmailService extends BaseApplicationComponent
 		// Default the charset to UTF-8
 		$email->CharSet = 'UTF-8';
 
-		// Add a reply to (if any).  Make sure it’s set before setting From, because email is dumb.
+		// Add a reply to (if any).  Make sure it’s set before setting From,
+		// because email is dumb.
 		if (!empty($emailModel->replyTo))
 		{
 			$email->addReplyTo($emailModel->replyTo);
@@ -255,7 +256,8 @@ class EmailService extends BaseApplicationComponent
 			}
 		}
 
-		// If they have the test email config var set to something, use it instead of the supplied email.
+		// If they have the test email config var set to something, use it
+		// instead of the supplied email.
 		if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
 		{
 			$email->addAddress($testToEmail, 'Test Email');

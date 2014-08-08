@@ -57,7 +57,8 @@ class EntryRevisionsController extends BaseEntriesController
 		{
 			// Attempt to create a new entry
 
-			// Manually validate 'title' since ElementsService will just give it a title automatically
+			// Manually validate 'title' since ElementsService will just give
+			// it a title automatically
 			$fields = array('title');
 			$content = $draft->getContent();
 			$content->setRequiredFields($fields);

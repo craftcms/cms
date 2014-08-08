@@ -110,9 +110,12 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search query.
 	 *
-	 * @param array  $elementIds   The list of element IDs to filter by the search query.
-	 * @param mixed  $query        The search query (either a string or a SearchQuery instance)
-	 * @param bool   $scoreResults Whether to order the results based on how closely they match the query.
+	 * @param array $elementIds   The list of element IDs to filter by the search
+	 *                            query.
+	 * @param mixed $query        The search query (either a string or a
+	 *                            SearchQuery instance)
+	 * @param bool  $scoreResults Whether to order the results based on how closely
+	 *                            they match the query.
 	 *
 	 * @return array The filtered list of element IDs.
 	 */
@@ -585,7 +588,8 @@ class SearchService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Support for attribute:* syntax to just check if something has *any* keyword value
+			// Support for attribute:* syntax to just check if something has *any*
+			// keyword value
 			if ($term->subLeft)
 			{
 				$sql = $this->_sqlWhere('keywords', '!=', '');
@@ -721,7 +725,8 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _sqlSubSelect($where)
 	{
-		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
+		// FULLTEXT indexes are not used in queries with subselects, so let's
+		// do this as its own query.
 		$elementIds = craft()->db->createCommand()
 			->select('elementId')
 			->from('searchindex')

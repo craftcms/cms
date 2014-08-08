@@ -77,7 +77,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns whether an element exists at a given offset. Required by the ArrayAccess interface.
+	 * Returns whether an element exists at a given offset. Required by the
+	 * ArrayAccess interface.
 	 *
 	 * @param mixed $offset
 	 *
@@ -154,7 +155,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns the total number of elements matched by this criteria. Required by the Countable interface.
+	 * Returns the total number of elements matched by this criteria.
+	 * Required by the Countable interface.
 	 *
 	 * @return int
 	 */

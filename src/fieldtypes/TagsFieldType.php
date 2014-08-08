@@ -17,17 +17,23 @@ class TagsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Tag';
 
 	/**
-	 * @var bool $allowMultipleSources Whether the field settings should allow multiple sources to be selected.
+	 * Whether the field settings should allow multiple sources to be selected.
+	 *
+	 * @var bool $allowMultipleSources
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @var bool $allowLimit Whether to allow the Limit setting.
+	 * Whether to allow the Limit setting.
+	 *
+	 * @var bool $allowLimit
 	 */
 	protected $allowLimit = false;
 

@@ -77,7 +77,8 @@ class AppVariable
 	}
 
 	/**
-	 * Returns whether Craft is running on a domain that is eligible to test out the editions.
+	 * Returns whether Craft is running on a domain that is eligible to test out
+	 * the editions.
 	 *
 	 * @return bool
 	 */

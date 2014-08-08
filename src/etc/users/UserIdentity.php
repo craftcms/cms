@@ -3,7 +3,8 @@ namespace Craft;
 
 /**
  * UserIdentity represents the data needed to identify a user.
- * It contains the authentication method that checks if the provided data can identity the user.
+ * It contains the authentication method that checks if the provided data can
+ * identity the user.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -159,7 +160,8 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * Returns the proper Account Locked error code, based on the system's Invalid Login Mode
+	 * Returns the proper Account Locked error code, based on the system's
+	 * Invalid Login Mode
 	 *
 	 * @return int
 	 */

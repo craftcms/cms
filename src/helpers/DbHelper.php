@@ -17,7 +17,9 @@ class DbHelper
 	// =========================================================================
 
 	/**
-	 * @var array The default column configs.
+	 * The default column configs.
+	 *
+	 * @var array
 	 */
 	public static $columnTypeDefaults = array(
 		ColumnType::Char         => array('maxLength' => 255),
@@ -32,12 +34,16 @@ class DbHelper
 	);
 
 	/**
-	 * @var array Numeric column types.
+	 * Numeric column types.
+	 *
+	 * @var array
 	 */
 	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
 
 	/**
-	 * @var array Textual column types.
+	 * Textual column types.
+	 *
+	 * @var array
 	 */
 	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
 
@@ -58,8 +64,8 @@ class DbHelper
 	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, merges in the default config settings for the column type,
-	 * and renames 'maxLength' to 'length'
+	 * This function normalizes on the 3rd, merges in the default config settings
+	 * for the column type, and renames 'maxLength' to 'length'.
 	 *
 	 * @param string|array $config
 	 *
@@ -112,7 +118,7 @@ class DbHelper
 	}
 
 	/**
-	 * Generates the column definition SQL for a column
+	 * Generates the column definition SQL for a column.
 	 *
 	 * @param array $config
 	 *
@@ -278,7 +284,8 @@ class DbHelper
 	}
 
 	/**
-	 * Returns an index name based on the table, column names, and whether it should be unique.
+	 * Returns an index name based on the table, column names, and whether it
+	 * should be unique.
 	 *
 	 * @param string       $table
 	 * @param string|array $columns
@@ -318,7 +325,8 @@ class DbHelper
 	public static function normalizeDbObjectName($name)
 	{
 		// TODO: MySQL specific
-		// MySQL indexes can't be more than 64 characters (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
+		// MySQL indexes can't be more than 64 characters
+		// (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
 		$maxLength = 64;
 
 		$name = trim($name, '_');

@@ -17,7 +17,9 @@ class DbCommand extends \CDbCommand
 	// =========================================================================
 
 	/**
-	 * @var array Captures the joined tables
+	 * Captures the joined tables.
+	 *
+	 * @var array
 	 */
 	private $_joinedTables;
 
@@ -726,7 +728,8 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Adds support for array('column' => 'value') conditional syntax.
-	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'), array('column2' => 'value2'))
+	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'),
+	 * array('column2' => 'value2'))
 	 *
 	 * @param mixed $conditions
 	 * @param array &$params

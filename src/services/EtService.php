@@ -254,7 +254,8 @@ class EtService extends BaseApplicationComponent
 			{
 				$etModel = new EtModel($attributes);
 
-				// Make sure it's valid. (At a minimum, localBuild and localVersion should be set.)
+				// Make sure it's valid. (At a minimum, localBuild and localVersion
+				// should be set.)
 				if ($etModel->validate())
 				{
 					return $etModel;

@@ -19,10 +19,12 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
-	 * This method is required by {@link IApplicationComponent} and is invoked by Craft when the `craft()-db` is first used.
+	 * This method is required by {@link IApplicationComponent} and is invoked by
+	 * Craft when the `craft()-db` is first used.
 	 *
-	 * This method does it's best to make sure it can connect to the database with the supplied credentials and configurations and
-	 * gracefully handle the cases where it can't.
+	 * This method does it's best to make sure it can connect to the database with
+	 * the supplied credentials and configurations and gracefully handle the cases
+	 * where it can't.
 	 *
 	 * @throws DbConnectException
 	 * @return null
@@ -78,7 +80,8 @@ class DbConnection extends \CDbConnection
 
 		craft()->setIsDbConnectionValid(true);
 
-		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
+		// Now that we've validated the config and connection, set extra db logging
+		// if devMode is enabled.
 		if (craft()->config->get('devMode'))
 		{
 			$this->enableProfiling = true;
@@ -200,13 +203,15 @@ class DbConnection extends \CDbConnection
 	// =========================================================================
 
 	/**
-	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+	 * Returns the correct connection string depending on whether a unixSocket is
+	 * specified or not in the db config.
 	 *
 	 * @return string
 	 */
 	private function _processConnectionString()
 	{
 		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
+
 		if (!empty($unixSocket))
 		{
 			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';

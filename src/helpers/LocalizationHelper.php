@@ -25,10 +25,11 @@ class LocalizationHelper
 	// =========================================================================
 
 	/**
-	 * Normalizes a user-submitted number for use in code and/or to be saved into the database.
+	 * Normalizes a user-submitted number for use in code and/or to be saved into
+	 * the database.
 	 *
-	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
-	 * locale uses something else.
+	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are
+	 * converted to a periods, if the current locale uses something else.
 	 *
 	 * @param mixed $number The number that should be normalized.
 	 *
@@ -62,7 +63,8 @@ class LocalizationHelper
 	 */
 	public static function findMissingTranslation(\CMissingTranslationEvent $event)
 	{
-		// Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
+		// Look for translation file from most to least specific.  So nl_nl.php
+		// gets checked before nl.php, for example.
 		$translationFiles = array();
 		$parts = explode('_', $event->language);
 		$totalParts = count($parts);

@@ -17,7 +17,7 @@ class ArrayHelper
 	// =========================================================================
 
 	/**
-	 * Flattens a multi-dimensional array into a single-dimensional array
+	 * Flattens a multi-dimensional array into a single-dimensional array.
 	 *
 	 * @param        $arr
 	 * @param string $prefix

@@ -274,7 +274,8 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
+	 * Returns the remaining cooldown time for this user, if they've entered
+	 * their password incorrectly too many times.
 	 *
 	 * @return DateInterval|null
 	 */

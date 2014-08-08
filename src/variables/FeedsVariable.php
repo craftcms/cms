@@ -30,7 +30,8 @@ class FeedsVariable
 		$offset = NumberHelper::makeNumeric($offset);
 		$items = craft()->feeds->getFeedItems($url, $limit, $offset, $cacheDuration);
 
-		// Prevent everyone from having to use the |raw filter when outputting the title and content
+		// Prevent everyone from having to use the |raw filter when outputting
+		// the title and content
 		$rawProperties = array('title', 'content', 'summary');
 
 		foreach ($items as &$item)

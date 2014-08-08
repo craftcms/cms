@@ -36,7 +36,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Starts an indexing session.
 	 *
-	 * @param string $sessionId The unique session id to keep track of this indexing operation.
+	 * @param string $sessionId The unique session id to keep track of this
+	 *                          indexing operation.
 	 *
 	 * @return array
 	 */
@@ -45,7 +46,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Process an indexing session.
 	 *
-	 * @param string $sessionId The unique session id to keep track of this indexing operation.
+	 * @param string $sessionId The unique session id to keep track of this
+	 *                          indexing operation.
 	 * @param int $offset    The offset of this index.
 	 *
 	 * @return mixed
@@ -64,7 +66,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get the timestamp of when a file transform was last modified.
 	 *
-	 * @param AssetFileModel $fileModel The assetFileModel for the timestamp of the last time the transform was modified.
+	 * @param AssetFileModel $fileModel The assetFileModel for the timestamp of
+	 *                                  the last time the transform was modified.
 	 * @param string $transformLocation The location of the transform.
 	 *
 	 * @return mixed
@@ -74,7 +77,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
-	 * @param AssetFileModel $fileModel   The assetFileModel to put the image transform in.
+	 * @param AssetFileModel $fileModel   The assetFileModel to put the image
+	 *                                    transform in.
 	 * @param string         $handle      The handle of the transform.
 	 * @param string         $sourceImage The source image.
 	 *
@@ -85,7 +89,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Make a local copy of the file and return the path to it.
 	 *
-	 * @param AssetFileModel $file The assetFileModel that has the file to make a copy of.
+	 * @param AssetFileModel $file The assetFileModel that has the file to
+	 *                             make a copy of.
 	 *
 	 * @return mixed
 	 */
@@ -132,7 +137,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Upload a file.
 	 *
-	 * @param AssetFolderModel $folder The assetFolderModel where the file should be uploaded to.
+	 * @param AssetFolderModel $folder The assetFolderModel where the file should
+	 *                                 be uploaded to.
 	 *
 	 * @throws Exception
 	 * @return object
@@ -173,10 +179,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Insert a file into a folder by it's local path.
 	 *
-	 * @param string           $localFilePath    The local file path of the file to insert.
-	 * @param AssetFolderModel $folder           The assetFolderModel where the file should be uploaded to.
+	 * @param string           $localFilePath    The local file path of the file
+	 *                                           to insert.
+	 * @param AssetFolderModel $folder           The assetFolderModel where the
+	 *                                           file should be uploaded to.
 	 * @param string           $fileName         The name of the file to insert.
-	 * @param bool             $preventConflicts If set to true, will ensure that a conflict is not encountered by checking the file name prior insertion.
+	 * @param bool             $preventConflicts If set to true, will ensure that
+	 *                                           a conflict is not encountered by
+	 *                                           checking the file name prior insertion.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -250,8 +260,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
 	 * @param string           $localCopy The local copy of the file to transfer.
-	 * @param AssetFolderModel $folder    The assetFolderModel that contains the file to transfer.
-	 * @param AssetFileModel   $file      The assetFileModel that represents the file to transfer.
+	 * @param AssetFolderModel $folder    The assetFolderModel that contains the
+	 *                                    file to transfer.
+	 * @param AssetFileModel   $file      The assetFileModel that represents the
+	 *                                    file to transfer.
 	 * @param string           $action    The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
@@ -446,8 +458,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Merge a file.
 	 *
-	 * @param AssetFileModel $sourceFile The assetFileModel representing the file being merged.
-	 * @param AssetFileModel $targetFile The assetFileModel representing the file that is being merged into.
+	 * @param AssetFileModel $sourceFile The AssetFileModel representing the
+	 *                                   file being merged.
+	 * @param AssetFileModel $targetFile The AssetFileModel representing the file
+	 *                                   that is being merged into.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -467,7 +481,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Finalize an outgoing transfer for a file.
 	 *
-	 * @param AssetFileModel $file The assetFileModel representing the file that will have any created images deleted.
+	 * @param AssetFileModel $file The assetFileModel representing the file that
+	 *                             will have any created images deleted.
 	 *
 	 * @return null
 	 */
@@ -480,7 +495,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Create a folder.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel representing the folder to create.
+	 * @param AssetFolderModel $parentFolder The assetFolderModel representing
+	 *                                       the folder to create.
 	 * @param string           $folderName   The name of the folder to create.
 	 *
 	 * @throws Exception
@@ -520,7 +536,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Rename a folder.
 	 *
-	 * @param AssetFolderModel $folder  The assetFolderModel representing the name of the folder to rename.
+	 * @param AssetFolderModel $folder  The assetFolderModel representing the
+	 *                                  name of the folder to rename.
 	 * @param string           $newName The new name of the folder.
 	 *
 	 * @throws Exception
@@ -571,8 +588,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Moves a folder.
 	 *
-	 * @param AssetFolderModel $folder          The assetFolderModel representing the existing folder.
-	 * @param AssetFolderModel $newParentFolder The assetFolderModel representing the new parent folder.
+	 * @param AssetFolderModel $folder          The assetFolderModel representing
+	 *                                          the existing folder.
+	 * @param AssetFolderModel $newParentFolder The assetFolderModel representing
+	 *                                          the new parent folder.
 	 * @param bool             $overwriteTarget If true, will overwrite folder, if needed
 	 *
 	 * @return AssetOperationResponseModel
@@ -634,7 +653,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete a folder.
 	 *
-	 * @param AssetFolderModel $folder The assetFolderModel representing the folder to be deleted.
+	 * @param AssetFolderModel $folder The assetFolderModel representing the
+	 *                                 folder to be deleted.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -679,7 +699,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Finalize a file transfer between sources for the provided file.
 	 *
-	 * @param AssetFileModel $file The assetFileModel representing the file we're finalizing the transfer for.
+	 * @param AssetFileModel $file The assetFileModel representing the file
+	 *                             we're finalizing the transfer for.
 	 *
 	 * @return mixed
 	 */
@@ -721,7 +742,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Insert a file from path in folder.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that the file will be inserted into.
+	 * @param AssetFolderModel $folder   The assetFolderModel that the file
+	 *                                   will be inserted into.
 	 * @param string           $filePath The filePath of the file to insert.
 	 * @param string           $fileName The fileName of the file to insert.
 	 *
@@ -733,7 +755,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that has the file to get a name replacement for.
+	 * @param AssetFolderModel $folder   The assetFolderModel that has the file
+	 *                                   to get a name replacement for.
 	 * @param string           $fileName The name of the file to get a replacement name for.
 	 *
 	 * @return mixed
@@ -743,7 +766,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete just the file inside of a source for an Assets File.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that contains the file to be deleted.
+	 * @param AssetFolderModel $folder   The assetFolderModel that contains the
+	 *                                   file to be deleted.
 	 * @param string           $filename The name of the file to be deleted.
 	 */
 	abstract protected function deleteSourceFile(AssetFolderModel $folder, $filename);
@@ -752,7 +776,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Move a file in source.
 	 *
 	 * @param AssetFileModel   $file         The assetFileModel of the file to move.
-	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target destination of the file.
+	 * @param AssetFolderModel $targetFolder The assetFolderModel that is the target
+	 *                                       destination of the file.
 	 * @param string           $fileName     The name of the file to move.
 	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
 	 *
@@ -763,7 +788,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete generated image transforms for a File.
 	 *
-	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
+	 * @param AssetFileModel $file The assetFileModel that has the images to
+	 *                             delete the transforms for
 	 *
 	 * @return mixed
 	 */
@@ -772,7 +798,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return true if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the
+	 *                                       folder to check if it exists.
 	 * @param string           $folderName   The name of the folder to check if it exists.
 	 *
 	 * @return bool
@@ -782,7 +809,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Creates a physical folder, returns true on success.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the
+	 *                                       parent folder of the folder to create.
 	 * @param string           $folderName   The name of the folder to create.
 	 *
 	 * @return bool
@@ -792,7 +820,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent of the folder to be deleted
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the
+	 *                                       parent of the folder to be deleted
 	 * @param string           $folderName   The name of the folder to be deleted.
 	 *
 	 * @return bool
@@ -812,7 +841,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Determines if a file can be moved internally from original source.
 	 *
-	 * @param BaseAssetSourceType $originalSource The original source to check if a file can be moved from.
+	 * @param BaseAssetSourceType $originalSource The original source to check
+	 *                                            if a file can be moved from.
 	 *
 	 * @return mixed
 	 */
@@ -916,9 +946,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Return a list of missing folders, when comparing the full folder list for this source against the provided list.
+	 * Return a list of missing folders, when comparing the full folder list for
+	 * this source against the provided list.
 	 *
-	 * @param array $folderList The full folder list to check if there are any missing from the source.
+	 * @param array $folderList The full folder list to check if there are any
+	 *                          missing from the source.
 	 *
 	 * @return array
 	 */
@@ -1006,7 +1038,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete all the generated images for this file.
 	 *
-	 * @param AssetFileModel $file The assetFileModel representing the file to delete any generated thumbnails for.
+	 * @param AssetFileModel $file The assetFileModel representing the file to
+	 *                             delete any generated thumbnails for.
 	 *
 	 * @return null
 	 */
@@ -1025,7 +1058,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete transform-related data for file.
 	 *
-	 * @param AssetFileModel $file The assetFileModel that represents the file to delete any transformed data for.
+	 * @param AssetFileModel $file The assetFileModel that represents the file
+	 *                             to delete any transformed data for.
 	 *
 	 * @return null
 	 */
@@ -1043,9 +1077,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Purge a file from the Source's cache.  Sources that need this should override this method.
+	 * Purge a file from the Source's cache.  Sources that need this should
+	 * override this method.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel representing the folder that has the file to purge.
+	 * @param AssetFolderModel $folder   The assetFolderModel representing the f
+	 *                                   older that has the file to purge.
 	 * @param string           $filename The file to purge.
 	 *
 	 * @return null
@@ -1080,8 +1116,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Mirrors a subset of folder tree from one location to other.
 	 *
-	 * @param AssetFolderModel $newLocation  The assetFolderModel representing the new location for the folder mirror.
-	 * @param AssetFolderModel $sourceFolder The assetFolderModel representing the source folder for the mirror operation.
+	 * @param AssetFolderModel $newLocation  The AssetFolderModel representing
+	 *                                       the new location for the folder mirror.
+	 * @param AssetFolderModel $sourceFolder The AssetFolderModel representing the
+	 *                                       source folder for the mirror operation.
 	 * @param mixed            $changedData  Any data that changed during the mirroring operation.
 	 *
 	 * @throws Exception

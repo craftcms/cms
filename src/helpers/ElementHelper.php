@@ -83,7 +83,8 @@ class ElementHelper
 			return;
 		}
 
-		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
+		// No slug, or a URL format with no {slug}, just parse the URL format
+		// and get on with our lives
 		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
 		{
 			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
@@ -188,7 +189,8 @@ class ElementHelper
 	}
 
 	/**
-	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
+	 * Returns whether the given element is editable by the current user, taking
+	 * user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -223,7 +225,8 @@ class ElementHelper
 	}
 
 	/**
-	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
+	 * Returns the editable locale IDs for a given element, taking user locale
+	 * permissions into account.
 	 *
 	 * @param BaseElementModel $element
 	 *

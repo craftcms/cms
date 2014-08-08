@@ -121,7 +121,8 @@ class AppController extends BaseController
 			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
 		}
 
-		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+		// Make sure we've got a valid license key (mismatched domain is OK
+		// for these purposes)
 		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
 		{
 			$this->returnErrorJson(Craft::t('Your license key is invalid.'));

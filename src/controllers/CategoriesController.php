@@ -105,7 +105,7 @@ class CategoriesController extends BaseController
 		$group->template  = craft()->request->getPost('template');
 		$group->maxLevels = craft()->request->getPost('maxLevels');
 
-		// Locale-spceific URL formats
+		// Locale-specific URL formats
 		$locales = array();
 
 		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)

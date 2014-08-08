@@ -17,22 +17,30 @@ class AssetsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Asset';
 
 	/**
-	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
 	 */
 	protected $inputJsClass = 'Craft.AssetSelectInput';
 
 	/**
-	 * @var string Template to use for field rendering
+	 * Template to use for field rendering.
+	 *
+	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Assets/input';
 
 	/**
-	 * @var array Uploaded files that failed validation.
+	 * Uploaded files that failed validation.
+	 *
+	 * @var array
 	 */
 	private $_failedFiles = array();
 
@@ -46,7 +54,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		// Create a list of folder options for the main Source setting, and source options for the upload location settings.
+		// Create a list of folder options for the main Source setting, and source
+		// options for the upload location settings.
 		$folderOptions = array();
 		$sourceOptions = array();
 
@@ -304,7 +313,8 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns an array of the source keys the field should be able to select elements from.
+	 * Returns an array of the source keys the field should be able to select
+	 * elements from.
 	 *
 	 * @throws Exception
 	 * @return array
@@ -343,7 +353,8 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 * Returns any additional criteria parameters limiting which elements the
+	 * field should be able to select.
 	 *
 	 * @return array
 	 */
@@ -364,7 +375,8 @@ class AssetsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
+	 * Resolve a source path to it's folder ID by the source path and the matched
+	 * source beginning.
 	 *
 	 * @param int    $sourceId
 	 * @param string $subpath
@@ -459,7 +471,8 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if ($response->isError() || $response->isConflict())
 		{
-			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
+			// If folder doesn't exist in DB, but we can't create it, it probably
+			// exists on the server.
 			$newFolder = new AssetFolderModel(
 				array(
 					'parentId' => $currentFolder->id,
@@ -504,7 +517,8 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
+	 * Determine an upload folder id by looking at the settings and whether Element
+	 * this field belongs to is new or not.
 	 *
 	 * @param $settings
 	 *
@@ -513,7 +527,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _determineUploadFolderId($settings)
 	{
-		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real folder
+		// If there's no dynamic tags in the set path, or if the element has
+		// already been saved, we con use the real folder
 		if (!empty($this->element->id)
 			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
 			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)

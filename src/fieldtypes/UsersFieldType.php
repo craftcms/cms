@@ -17,7 +17,9 @@ class UsersFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 *  The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'User';
 

@@ -42,10 +42,8 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function __construct($scenario = 'insert')
 	{
-		/**
-		 * If Craft isn't installed, this model's table won't exist yet, so just create an instance of the class, for
-		 * use by the installer
-		 */
+		 // If Craft isn't installed, this model's table won't exist yet, so just
+		 // create an instance of the class, for use by the installer
 		if ($scenario !== 'install')
 		{
 			parent::__construct($scenario);
@@ -152,7 +150,8 @@ abstract class BaseRecord extends \CActiveRecord
 
 			if ($config['type'] == AttributeType::DateTime)
 			{
-				// Leaving this in because we want to allow plugin devs to save a timestamp or DateTime object.
+				// Leaving this in because we want to allow plugin devs to save
+				// a timestamp or DateTime object.
 				if (DateTimeHelper::isValidTimeStamp($value))
 				{
 					$value = new DateTime('@'.$value);
@@ -260,7 +259,8 @@ abstract class BaseRecord extends \CActiveRecord
 			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			// (foreign keys already get indexed, so we're only concerned with
+			// whether it should be unique)
 			if (!empty($config['unique']))
 			{
 				$indexes[] = array('columns' => array($columnName), 'unique' => true);
@@ -498,12 +498,14 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
+	 * Sets the named attribute value. You may also use $this->AttributeName to
+	 * set the attribute value.
 	 *
 	 * @param string $name  The attribute name.
 	 * @param mixed  $value The attribute value.
 	 *
-	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
+	 * @return bool Whether the attribute exists and the assignment is
+	 *              conducted successfully.
 	 */
 	public function setAttribute($name, $value)
 	{
@@ -530,7 +532,8 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function search()
 	{
-		// Warning: Please modify the following code to remove attributes that should not be searched.
+		// Warning: Please modify the following code to remove attributes that
+		// should not be searched.
 		$criteria = new \CDbCriteria;
 
 		foreach (array_keys($this->getAttributeConfigs()) as $name)

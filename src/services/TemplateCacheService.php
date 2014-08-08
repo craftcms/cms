@@ -330,10 +330,12 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int|array $elementId         The ID of the element whose caches should be cleared.
-	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any query
-	 *                                     caches that may now involve this element, but hadn't previously.
-	 *                                     (Defaults to `true`.)
+	 * @param int|array $elementId         The ID of the element whose caches
+	 *                                     should be cleared.
+	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches
+	 *                                     task should be created, deleting any query
+	 *                                     caches that may now involve this element,
+	 *                                     but hadn't previously. (Defaults to `true`.)
 	 *
 	 * @return bool
 	 */
@@ -346,7 +348,8 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches)
 		{
-			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
+			// If there are any pending DeleteStaleTemplateCaches tasks, just
+			// append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))

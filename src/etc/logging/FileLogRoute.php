@@ -17,7 +17,8 @@ class FileLogRoute extends \CFileLogRoute
 	// =========================================================================
 
 	/**
-	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
+	 * Initializes the log route.  This method is invoked after the log route is
+	 * created by the route manager.
 	 *
 	 * @return null
 	 */

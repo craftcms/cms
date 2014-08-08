@@ -145,19 +145,19 @@ class DateTime extends \DateTime
 			$date = trim((string) $date);
 
 			if (preg_match('/^
-				(?P<year>\d{4})                                            # YYYY (four digit year)
+				(?P<year>\d{4})                                  # YYYY (four digit year)
 				(?:
-					-(?P<mon>\d\d?)                                        # -M or -MM (one or two digit month)
+					-(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
 					(?:
-						-(?P<day>\d\d?)                                    # -D or -DD (one or two digit day)
+						-(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
 						(?:
-							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)            # [T or space]hh:mm (one or two digit hour and two digit minute)
+							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
 							(?:
-								\:(?P<sec>\d\d)                            # :ss (two digit second)
-								(?:\.\d+)?                                 # .s (decimal fraction of a second -- not supported)
+								\:(?P<sec>\d\d)                  # :ss (two digit second)
+								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
 							)?
-							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?              # An optional space and AM or PM
-							(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?                # Z or [+ or -]hh:ss (UTC or a timezone offset)
+							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
+							(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?      # Z or [+ or -]hh:ss (UTC or a timezone offset)
 						)?
 					)?
 				)?$/x', $date, $m))
@@ -204,7 +204,8 @@ class DateTime extends \DateTime
 
 	/**
 	 * @param string $format
-	 * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
+	 * @param mixed  $timezone The timezone to output the date in (defaults to
+	 *                         the current app timezone).
 	 *
 	 * @return string
 	 */

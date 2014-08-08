@@ -17,12 +17,16 @@ class ComponentsService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @var array The types of components supported by Craft.
+	 * The types of components supported by Craft.
+	 *
+	 * @var array
 	 */
 	public $types;
 
 	/**
-	 * @var array The internal list of components.
+	 * The internal list of components.
+	 *
+	 * @var array
 	 */
 	private $_components;
 

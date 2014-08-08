@@ -410,8 +410,9 @@ class Updater
 	}
 
 	/**
-	 * Attempt to backup each of the update manifest files by copying them to a file with the same name with a .bak extension.
-	 * If there is an exception thrown, we attempt to roll back all of the changes.
+	 * Attempt to backup each of the update manifest files by copying them to a
+	 * file with the same name with a .bak extension. If there is an exception
+	 * thrown, we attempt to roll back all of the changes.
 	 *
 	 * @param string $unzipFolder
 	 *
@@ -502,7 +503,8 @@ class Updater
 
 		$newTempFilePath = craft()->path->getAppPath().'etc/requirements/'.$tempFileName;
 
-		// Copy the random file name requirements to the requirements folder.  We don't want to execute any PHP from the storage folder.
+		// Copy the random file name requirements to the requirements folder.
+		// We don't want to execute any PHP from the storage folder.
 		IOHelper::copyFile($requirementsFolderPath.$tempFileName, $newTempFilePath);
 
 		require_once($newTempFilePath);

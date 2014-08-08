@@ -301,7 +301,8 @@ class EntriesController extends BaseEntriesController
 			{
 				$classHandle = $variables['entry']->getClassHandle();
 
-				// If we're looking at the live version of an entry, just use the entry's main URL as its share URL
+				// If we're looking at the live version of an entry, just use
+				// the entry's main URL as its share URL
 				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
 				{
 					$variables['shareUrl'] = $variables['entry']->getUrl();
@@ -337,7 +338,9 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Set the base CP edit URL
-		// - Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
+
+		// Can't just use the entry's getCpEditUrl() because that might
+		// include the locale ID when we don't want it
 		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}';
 
 		// Set the "Continue Editing" URL
@@ -870,7 +873,8 @@ class EntriesController extends BaseEntriesController
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
-		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
+		// Set the entry attributes, defaulting to the existing values for
+		// whatever is missing from the post data
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
 		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
 		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);

@@ -348,7 +348,8 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the actual height attribute, since $this->height gets routed to getHeight() now.
+	 * Returns the actual height attribute, since $this->height gets routed to
+	 * getHeight() now.
 	 *
 	 * @return mixed
 	 */
@@ -394,7 +395,8 @@ class AssetFileModel extends BaseElementModel
 			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
 		}
 
-		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
+		// Special case for 'fit' since that's the only one whose dimensions
+		// vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
 			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);

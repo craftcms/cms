@@ -126,7 +126,8 @@ class StringHelper
 
 		$randomString = '';
 
-		// count the number of chars in the valid chars string so we know how many choices we have
+		// count the number of chars in the valid chars string so we know how
+		// many choices we have
 		$numValidChars = mb_strlen($validChars);
 
 		// repeat the steps until we've created a string of the right length
@@ -375,7 +376,8 @@ class StringHelper
 	 */
 	public static function convertToUTF8($string)
 	{
-		// Don't wrap in a class_exists in case the server already has it's own version of HTMLPurifier and they have open_basedir restrictions
+		// Don't wrap in a class_exists in case the server already has it's own
+		// version of HTMLPurifier and they have open_basedir restrictions
 		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
 
 		// If it's already a UTF8 string, just clean and return it
@@ -417,7 +419,8 @@ class StringHelper
 			static::$_iconv = false;
 
 			// Check if iconv is installed.
-			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
+			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable()
+			//because they don't consider iconv "installed" if it's there but "unusable".
 			if (!function_exists('iconv'))
 			{
 				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
@@ -460,8 +463,8 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware upper-case version of a string. Note: Not using mb_strtoupper because of
-	 * {@see https://bugs.php.net/bug.php?id=47742}
+	 * Returns a multibyte aware upper-case version of a string. Note: Not using
+	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
 	 * @param string $string
 	 *
@@ -473,8 +476,8 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware lower-case version of a string. Note: Not using mb_strtoupper because of
-	 * {@see https://bugs.php.net/bug.php?id=47742}
+	 * Returns a multibyte aware lower-case version of a string. Note: Not using
+	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
 	 * @param string $string
 	 *

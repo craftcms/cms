@@ -17,7 +17,10 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// =========================================================================
 
 	/**
-	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by
+	 * the component type's base class.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'ElementType';
 
@@ -227,7 +230,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					}
 					else
 					{
-						// Add some <wbr> tags in there so it doesn't all have to be on one line
+						// Add some <wbr> tags in there so it doesn't all have
+						// to be on one line
 						$find = array('/');
 						$replace = array('/<wbr>');
 
@@ -320,6 +324,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	// Methods for customizing ElementCriteriaModel's for this element type...
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element query condition for a custom status criteria.

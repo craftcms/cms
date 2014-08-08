@@ -53,6 +53,7 @@ class TasksService extends BaseApplicationComponent
 		$task->settings = $settings;
 		$task->parentId = $parentId;
 		$this->saveTask($task);
+
 		return $task;
 	}
 
@@ -472,7 +473,8 @@ class TasksService extends BaseApplicationComponent
 	 */
 	public function getNextPendingTask($type = null)
 	{
-		// If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
+		// If a type was passed, we don't need to actually save it, as it's
+		// probably not an actual task-running request.
 		if ($type)
 		{
 			$pendingTasks = $this->getPendingTasks($type, 1);

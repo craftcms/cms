@@ -265,8 +265,9 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate history PluginHandle
 	 *
-	 * If PluginHandle is omitted, it will display all of Craft's migrations that have already ran.
-	 * If it is available, it will display all of PluginHandle's migrations that have already ran.
+	 * If PluginHandle is omitted, it will display all of Craft's migrations
+	 * that have already ran. If it is available, it will display all of PluginHandle's
+	 * migrations that have already ran.
 	 *
 	 * @param array $args The arguments passed in.
 	 *
@@ -348,8 +349,9 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate new PluginHandle
 	 *
-	 * If PluginHandle is omitted, it will display any new Craft migrations that have not run, yet.
-	 * If it is available, it will display all of PluginHandle's migrations that have not run, yet.
+	 * If PluginHandle is omitted, it will display any new Craft migrations that
+	 * have not run, yet. If it is available, it will display all of PluginHandle's
+	 * migrations that have not run, yet.
 	 *
 	 * @param array $args The arguments passed in.
 	 *

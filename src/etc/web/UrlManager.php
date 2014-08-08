@@ -27,7 +27,9 @@ class UrlManager extends \CUrlManager
 	public $pathParam;
 
 	/**
-	 * @var array List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 * List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 *
+	 * @var array
 	 */
 	private $_routeVariables;
 
@@ -61,7 +63,7 @@ class UrlManager extends \CUrlManager
 	{
 		parent::init();
 
-		// set this to false so extra query string parameters don't get the path treatment
+		// Set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
@@ -90,12 +92,14 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Determines which controller/action to route the request to.  Routing candidates include actual template paths,
-	 * elements with URIs, and registered URL routes.
+	 * Determines which controller/action to route the request to.  Routing
+	 * candidates include actual template paths, elements with URIs, and registered
+	 * URL routes.
 	 *
 	 * @param HttpRequestService $request
 	 *
-	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
+	 * @throws HttpException Throws a 404 in the event that we can't figure out
+	 *                       where to route the request.
 	 * @return string The controller/action path.
 	 */
 	public function parseUrl($request)
@@ -358,7 +362,8 @@ class UrlManager extends \CUrlManager
 		foreach ($routes as $pattern => $route)
 		{
 			// Escape any unescaped forward slashes
-			// Dumb ol' PHP is having trouble with this one when you use single quotes and don't escape the backslashes.
+			// Dumb ol' PHP is having trouble with this one when you use single
+			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
 
 			// Parse {handle} tokens
@@ -395,7 +400,8 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
+	 * Returns whether the current path is "public" (no segments that start with
+	 * the privateTemplateTrigger).
 	 *
 	 * @return bool
 	 */

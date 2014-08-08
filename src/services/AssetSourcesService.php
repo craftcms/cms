@@ -101,7 +101,8 @@ class AssetSourcesService extends BaseApplicationComponent
 		return $this->populateSourceType($source);
 	}
 
-	/* Sources */
+	// Sources
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the source IDs.

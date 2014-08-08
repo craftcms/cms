@@ -308,7 +308,8 @@ class CategoryElementType extends BaseElementType
 			// Update its URI
 			craft()->elements->updateElementSlugAndUri($element);
 
-			// Make sure that each of the category's ancestors are related wherever the category is related
+			// Make sure that each of the category's ancestors are related
+			// wherever the category is related
 			$newRelationValues = array();
 
 			$ancestorIds = $element->getAncestors()->ids();

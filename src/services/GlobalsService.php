@@ -331,7 +331,7 @@ class GlobalsService extends BaseApplicationComponent
 	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteSetById($setId)
 	{
 		if (!$setId)

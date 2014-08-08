@@ -34,7 +34,8 @@ class HttpSessionService extends \CHttpSession
 		{
 			$this->setSavePath(craft()->path->getSessionPath());
 		}
-		// Else if it's not false, then it must be 'auto', so let's attempt to check if we're on a distributed cache system
+		// Else if it's not false, then it must be 'auto', so let's attempt to
+		// check if we're on a distributed cache system
 		else if ($configVal !== false)
 		{
 			if (mb_strpos($this->getSavePath(), 'tcp://') === false)

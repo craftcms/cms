@@ -22,7 +22,10 @@ class AssetsService extends BaseApplicationComponent
 	private $_foldersById;
 
 	/**
-	 * @var bool A flag that designates that a file merge is in progress and name uniqueness should not be enforced
+	 * A flag that designates that a file merge is in progress and name uniqueness
+	 * should not be enforced.
+	 *
+	 * @var bool
 	 */
 	private $_mergeInProgress = false;
 
@@ -302,7 +305,8 @@ class AssetsService extends BaseApplicationComponent
 	{
 		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
-		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
+		// Super unlikely, but would be very awkward if this happened without
+		// any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
 			$sourceTopFolder = new AssetFolderModel();

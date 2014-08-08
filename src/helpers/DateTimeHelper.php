@@ -38,8 +38,8 @@ class DateTimeHelper
 	 */
 	public static function currentTimeForDb()
 	{
-		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
-		// For now, it's MySQL only.
+		// Eventually this will return the time in the appropriate database
+		// format for MySQL, Postgre, etc. For now, it's MySQL only.
 		$date = static::currentUTCDateTime();
 		return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
@@ -51,8 +51,8 @@ class DateTimeHelper
 	 */
 	public static function formatTimeForDb($timeStamp = null)
 	{
-		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
-		// For now, it's MySQL only.
+		// Eventually this will accept a database parameter and format the timestamp
+		// for the given database date/time datatype. For now, it's MySQL only.
 
 		if ($timeStamp)
 		{
@@ -275,7 +275,8 @@ class DateTimeHelper
 	/**
 	 * Returns either a relative date or a formatted date depending
 	 * on the difference between the current time and given datetime.
-	 * $datetime should be in a <i>strtotime</i>-parsable format, like MySQL's datetime datatype.
+	 * $datetime should be in a <i>strtotime</i>-parsable format, like MySQL's
+	 * datetime datatype.
 	 *
 	 * Options:
 	 *  * 'format' => a fall back format if the relative time is longer than the duration specified by end
@@ -287,8 +288,8 @@ class DateTimeHelper
 	 * Formatted dates look like this:
 	 *  on 02/18/2004
 	 *
-	 * The returned string includes 'ago' or 'on' and assumes you'll properly add a word
-	 * like 'Posted ' before the function output.
+	 * The returned string includes 'ago' or 'on' and assumes you'll properly
+	 * add a word  like 'Posted ' before the function output.
 	 *
 	 * @param       $dateTime
 	 * @param array $options Default format if timestamp is used in $dateString
@@ -495,7 +496,8 @@ class DateTimeHelper
 	/**
 	 * Returns true if specified datetime was within the interval specified, else false.
 	 *
-	 * @param mixed $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days, 1 minute.
+	 * @param mixed $timeInterval The numeric value with space then time type. E
+	 *                            xample of valid types: 6 hours, 2 days, 1 minute.
 	 * @param mixed $dateString   The datestring or unix timestamp to compare
 	 * @param int   $userOffset   User's offset from GMT (in hours)
 	 *
@@ -535,7 +537,8 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid strtotime() date string.
+	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid
+	 * strtotime() date string.
 	 *
 	 * @param string $dateString Datetime string
 	 * @param int    $userOffset User's offset from GMT (in hours)

@@ -9,11 +9,11 @@ namespace Craft;
  * It also chooses the most preferred language for displaying the error.
  *
  * ErrorHandler uses two sets of views:
- * <ul>
- * <li>development templates, named as <code>exception.php</code>;
- * <li>production templates, named as <code>error&lt;StatusCode&gt;.php</code>;
- * </ul>
- * where &lt;StatusCode&gt; stands for the HTTP error code (e.g. error500.php).
+ *
+ * * development templates, named as `exception.php`;
+ * * production templates, named as `error<StatusCode>.php`;
+ *
+ * where <StatusCode> stands for the HTTP error code (e.g. error500.php).
  * Localized templates are named similarly but located under a subdirectory
  * whose name is the language code (e.g. zh_cn/error500.php).
  *
@@ -25,11 +25,11 @@ namespace Craft;
  * sensitive information.
  *
  * ErrorHandler looks for the templates from the following locations in order:
- * <ol>
- * <li><code>craft/templates/{siteHandle}/errors</code>: when a theme is active.</li>
- * <li><code>craft/app/templates/errors</code></li>
- * <li><code>craft/app/framework/views</code></li>
- * </ol>
+ *
+ * * `craft/templates/{siteHandle}/errors`: when a theme is active.
+ * * `craft/app/templates/errors`
+ * * `craft/app/framework/views`
+ *
  * If the template is not found in a directory, it will be looked for in the next directory.
  *
  * The property {@link maxSourceLines} can be changed to specify the number
@@ -81,7 +81,8 @@ class ErrorHandler extends \CErrorHandler
 	// =========================================================================
 
 	/**
-	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
+	 * Handles a thrown exception.  Will also log extra information if the exception
+	 * happens to by a MySql deadlock.
 	 *
 	 * @param Exception $exception The exception captured.
 	 *
@@ -241,7 +242,8 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
-	 * Returns server version information. If the site is in non-dev mode, an empty string is returned.
+	 * Returns server version information. If the site is in non-dev mode, an
+	 * empty string is returned.
 	 *
 	 * @return string The server version information. Empty if in non-dev mode.
 	 */
