@@ -127,8 +127,8 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns whether a table exists.
 	 *
-	 * @param string      $table
-	 * @param bool|null   $refresh
+	 * @param string    $table
+	 * @param bool|null $refresh
 	 *
 	 * @return bool
 	 */
@@ -182,6 +182,7 @@ class DbConnection extends \CDbConnection
 	{
 		// Table prefixes cannot be longer than 5 characters
 		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+
 		if ($tablePrefix)
 		{
 			if (strlen($tablePrefix) > 5)
