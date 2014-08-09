@@ -196,7 +196,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 *
 	 * Check to see if the current web user is a guest. (wrapper for {@link getIsGuest()}
 	 * for consistency)
 	 *
