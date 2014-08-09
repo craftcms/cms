@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Requirements
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -141,9 +140,8 @@ class Requirements
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -207,9 +205,8 @@ class Requirements
  */
 class Requirement extends \CComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var null|string
@@ -241,9 +238,8 @@ class Requirement extends \CComponent
 	 */
 	private $_result;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -310,9 +306,8 @@ class Requirement extends \CComponent
 		return $this->_notes;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Calculates the result of this requirement.
@@ -343,14 +338,13 @@ class Requirement extends \CComponent
  */
 class PhpVersionRequirement extends Requirement
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
+
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return PhpVersionRequirement
@@ -385,9 +379,8 @@ class PhpVersionRequirement extends Requirement
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Calculates the result of this requirement.
@@ -398,7 +391,8 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_doesMinVersionPass())
 		{
-			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning, due to the PHP hijack bug:
+			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning,
+			// due to the PHP hijack bug:
 			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
 			if ($this->_isBadPhpVersion())
 			{
@@ -415,9 +409,8 @@ class PhpVersionRequirement extends Requirement
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this is past the min PHP version.

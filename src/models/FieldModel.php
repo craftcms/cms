@@ -13,18 +13,16 @@ namespace Craft;
  */
 class FieldModel extends BaseComponentModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_fieldType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated field name as the string representation.
@@ -71,9 +69,8 @@ class FieldModel extends BaseComponentModel
 		return craft()->fields->getGroupById($this->groupId);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

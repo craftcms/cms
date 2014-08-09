@@ -13,9 +13,8 @@ namespace Craft;
  */
 class QuickPostWidget extends BaseWidget
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ class QuickPostWidget extends BaseWidget
 	 */
 	private $_section;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -171,9 +169,8 @@ class QuickPostWidget extends BaseWidget
 		return $html;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -189,9 +186,8 @@ class QuickPostWidget extends BaseWidget
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the widget's section.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementsVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all installed element types.

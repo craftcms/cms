@@ -13,9 +13,8 @@ namespace Craft;
  */
 class NavItem_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param \Twig_Node_Expression_AssignName $valueTarget

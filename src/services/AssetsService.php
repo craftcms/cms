@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -23,13 +22,15 @@ class AssetsService extends BaseApplicationComponent
 	private $_foldersById;
 
 	/**
-	 * @var bool A flag that designates that a file merge is in progress and name uniqueness should not be enforced
+	 * A flag that designates that a file merge is in progress and name uniqueness
+	 * should not be enforced.
+	 *
+	 * @var bool
 	 */
 	private $_mergeInProgress = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all top-level files in a source.
@@ -305,7 +306,8 @@ class AssetsService extends BaseApplicationComponent
 	{
 		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
-		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
+		// Super unlikely, but would be very awkward if this happened without
+		// any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
 			$sourceTopFolder = new AssetFolderModel();
@@ -643,7 +645,7 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	// File and folder managing
-	// ========================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
@@ -1009,9 +1011,8 @@ class AssetsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving assets.

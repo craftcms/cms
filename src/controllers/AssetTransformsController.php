@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetTransformsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Shows the asset transform list.

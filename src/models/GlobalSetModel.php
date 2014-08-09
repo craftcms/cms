@@ -13,18 +13,16 @@ namespace Craft;
  */
 class GlobalSetModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::GlobalSet;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the global set's name as its string representation.
@@ -66,9 +64,8 @@ class GlobalSetModel extends BaseElementModel
 		return UrlHelper::getCpUrl('globals/'.$this->handle);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

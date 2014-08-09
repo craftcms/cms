@@ -13,23 +13,29 @@ namespace Craft;
  */
 abstract class BaseController extends \CController
 {
-	////////////////////
-	// PROTECTED
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * craft()->userSession->requireLogin() in the individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Include any route params gathered by UrlManager as controller action params.
@@ -68,7 +74,8 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param mixed $template      The name of the template to load, or a StringTemplate object.
+	 * @param mixed $template      The name of the template to load, or a
+	 *                             StringTemplate object.
 	 * @param array $variables     The variables that should be available to the template
 	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput
@@ -91,12 +98,15 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				// Set the MIME type for the request based on the matched template's file extension
-				// (unless the Content-Type header was already set, perhaps by the template via the {% header %} tag)
+				// Set the MIME type for the request based on the matched template's
+				// file extension (unless the Content-Type header was already set,
+				// perhaps by the template via the {% header %} tag)
 				if (!HeaderHelper::isHeaderSet('Content-Type'))
 				{
-					// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
-					// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
+					// Safe to assume that findTemplate() will return an actual
+					// template path here, and not `false`. If the template didn't
+					// exist, a TemplateLoaderException would have been thrown
+					// when calling craft()->templates->render().
 					$templateFile = craft()->templates->findTemplate($template);
 					$extension = IOHelper::getExtension($templateFile, 'html');
 
@@ -143,7 +153,8 @@ abstract class BaseController extends \CController
 					}
 				}
 
-				// Output it into a buffer, in case TasksService wants to close the connection prematurely
+				// Output it into a buffer, in case TasksService wants to
+				// close the connection prematurely
 				ob_start();
 				echo $output;
 
@@ -251,7 +262,8 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param mixed $object Object containing properties that should be parsed for in the URL.
+	 * @param mixed $object Object containing properties that should be parsed
+	 *                      for in the URL.
 	 *
 	 * @return null
 	 */
@@ -299,8 +311,8 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access to
-	 * or as a bool that applies to all actions.
+	 * Checks if a controller has overridden allowAnonymous either as an array with
+	 * actions to allow anonymous access to or as a bool that applies to all actions.
 	 *
 	 * @param \CAction $action
 	 *

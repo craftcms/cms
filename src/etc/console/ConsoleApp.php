@@ -13,15 +13,13 @@ namespace Craft;
  */
 class ConsoleApp extends \CConsoleApplication
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	public $componentAliases;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Initializes the console app by creating the command runner.
@@ -62,7 +60,8 @@ class ConsoleApp extends \CConsoleApplication
 		// Validate some basics on the database configuration file.
 		craft()->validateDbConfigFile();
 
-		// Call parent::init before the plugin console command logic so craft()->commandRunner will be available to us.
+		// Call parent::init before the plugin console command logic so
+		// craft()->commandRunner will be available to us.
 		parent::init();
 
 		foreach (craft()->plugins->getPlugins() as $plugin)
@@ -76,7 +75,8 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
-	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
+	 * Attaches an event listener, or remembers it for later if the component
+	 * has not been initialized yet.
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
@@ -108,9 +108,8 @@ class ConsoleApp extends \CConsoleApplication
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return ConsoleCommandRunner

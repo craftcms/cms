@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface IComponentType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string

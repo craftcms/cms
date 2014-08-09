@@ -13,9 +13,8 @@ namespace Craft;
  */
 class File extends BaseIO
 {
-	////////////////////
-	// PROTECTED
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -62,9 +61,8 @@ class File extends BaseIO
 	 */
 	private $_md5;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $path

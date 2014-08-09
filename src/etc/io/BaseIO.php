@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseIO
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -67,9 +66,8 @@ abstract class BaseIO
 	 */
 	private $_permissions;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return mixed

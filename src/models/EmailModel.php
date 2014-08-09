@@ -13,12 +13,13 @@ namespace Craft;
  */
 class EmailModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or binary data, such as a BLOB record from a database.
+	 * Adds a string or binary attachment (non-filesystem) to the list. This
+	 * method can be used to attach ascii or binary data, such as a BLOB record
+	 * from a database.
 	 *
 	 * @param string $string   String attachment data.
 	 * @param string $fileName Name of the attachment.
@@ -35,7 +36,8 @@ class EmailModel extends BaseModel
 	}
 
 	/**
-	 * Adds an attachment from a path on the filesystem. Returns false if the file could not be found or accessed.
+	 * Adds an attachment from a path on the filesystem. Returns false if the
+	 * file could not be found or accessed.
 	 *
 	 * @param string $path     Path to the attachment.
 	 * @param string $name     Overrides the attachment name.
@@ -52,9 +54,8 @@ class EmailModel extends BaseModel
 		$this->attachments = $existingAttachments;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

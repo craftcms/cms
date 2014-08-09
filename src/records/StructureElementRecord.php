@@ -13,9 +13,8 @@ namespace Craft;
  */
 class StructureElementRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -60,9 +59,8 @@ class StructureElementRecord extends BaseRecord
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

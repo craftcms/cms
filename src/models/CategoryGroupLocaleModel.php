@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoryGroupLocaleModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ class CategoryGroupLocaleModel extends BaseModel
 	 */
 	public $nestedUrlFormatIsRequired = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns this model's validation rules.
@@ -53,9 +51,8 @@ class CategoryGroupLocaleModel extends BaseModel
 		return $rules;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

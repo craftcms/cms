@@ -52,8 +52,9 @@ return array(
 	'collation' => 'utf8_unicode_ci',
 
 	/**
-	 * If this is set, then the CLI connection string (used for yiic) will connect to the Unix socket, instead of the server and port.
-	 * If this is specified, then 'server' and 'port' settings are ignored.
+	 * If this is set, then the CLI connection string (used for yiic) will
+	 * connect to the Unix socket, instead of the server and port. If this is
+	 * specified, then 'server' and 'port' settings are ignored.
 	 */
 	'unixSocket' => '',
 );

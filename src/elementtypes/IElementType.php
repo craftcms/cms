@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface IElementType extends IComponentType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return bool

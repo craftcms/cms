@@ -21,7 +21,8 @@ return array(
 	'port' => 6379,
 
 	/**
-	 * The password to use to authenticate with the redis server. If not set, no AUTH command will be sent.
+	 * The password to use to authenticate with the redis server. If not set,
+	 * no AUTH command will be sent.
 	 */
 	'password' => '',
 
@@ -31,7 +32,8 @@ return array(
 	'database' => 0,
 
 	/**
-	 * Timeout to use for connection to redis. If not set the timeout set in php.ini will be used: ini_get("default_socket_timeout")
+	 * Timeout to use for connection to redis. If not set the timeout set in
+	 * php.ini will be used: ini_get("default_socket_timeout")
 	 */
 	'timeout' => null,
 );

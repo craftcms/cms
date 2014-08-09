@@ -13,9 +13,8 @@ namespace Craft;
  */
 class NumberHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the "word" version of a number
@@ -138,8 +137,8 @@ class NumberHelper
 	/**
 	 * Returns the numeric value of a variable.
 	 *
-	 * If the variable is an object with a __toString() method, the numeric value of its string representation will be
-	 * returned.
+	 * If the variable is an object with a __toString() method, the numeric
+	 * value of its string representation will be returned.
 	 *
 	 * @param mixed $var
 	 *

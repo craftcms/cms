@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FindAndReplaceTool extends BaseTool
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tool name.

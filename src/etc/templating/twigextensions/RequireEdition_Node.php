@@ -13,9 +13,8 @@ namespace Craft;
  */
 class RequireEdition_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Compiles a RequireEdition_Node into PHP.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetFileModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -27,9 +26,8 @@ class AssetFileModel extends BaseElementModel
 	 */
 	private $_transform;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the entry's title as its string representation.
@@ -315,9 +313,8 @@ class AssetFileModel extends BaseElementModel
 		return $this->_getDimension('width', $transform);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -337,9 +334,8 @@ class AssetFileModel extends BaseElementModel
 		));
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the actual width attribute, since $this->width gets routed to getWidth() now.
@@ -352,7 +348,8 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the actual height attribute, since $this->height gets routed to getHeight() now.
+	 * Returns the actual height attribute, since $this->height gets routed to
+	 * getHeight() now.
 	 *
 	 * @return mixed
 	 */
@@ -398,7 +395,8 @@ class AssetFileModel extends BaseElementModel
 			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
 		}
 
-		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
+		// Special case for 'fit' since that's the only one whose dimensions
+		// vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
 			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);

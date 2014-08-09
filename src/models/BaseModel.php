@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseModel extends \CModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -42,9 +41,8 @@ abstract class BaseModel extends \CModel
 	 */
 	private $_attributes;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -275,7 +273,9 @@ abstract class BaseModel extends \CModel
 	 * Returns an array of attribute values.
 	 *
 	 * @param null $names
-	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to array, etc. Useful for saving to DB or sending over a web service.
+	 * @param bool $flattenValues Will change a DateTime object to a timestamp,
+	 *                            Mixed to array, etc. Useful for saving to DB or
+	 *                            sending over a web service.
 	 *
 	 * @return array
 	 */
@@ -489,9 +489,8 @@ abstract class BaseModel extends \CModel
 		return new $class($this->getAttributes());
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines this model's attributes.

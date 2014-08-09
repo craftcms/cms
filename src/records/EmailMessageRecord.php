@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EmailMessageRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -47,9 +46,8 @@ class EmailMessageRecord extends BaseRecord
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

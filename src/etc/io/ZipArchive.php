@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ZipArchive implements IZip
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $sourceFolder
@@ -101,12 +100,17 @@ class ZipArchive implements IZip
 	}
 
 	/**
-	 * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents recursively.
+	 * Will add either a file or a folder to an existing zip file.  If it is a
+	 * folder, it will add the contents recursively.
 	 *
 	 * @param string $sourceZip  The zip file to be added to.
-	 * @param string $pathToAdd  A file or a folder to add.  If it is a folder, it will recursively add the contents of the folder to the zip.
-	 * @param string $basePath   The root path of the file(s) to be added that will be removed before adding.
-	 * @param string $pathPrefix A path to be prepended to each file before it is added to the zip.
+	 * @param string $pathToAdd  A file or a folder to add.  If it is a folder,
+	 *                           it will recursively add the contents of the folder
+	 *                           to the zip.
+	 * @param string $basePath   The root path of the file(s) to be added that
+	 *                           will be removed before adding.
+	 * @param string $pathPrefix A path to be prepended to each file before it
+	 *                           is added to the zip.
 	 *
 	 * @return bool
 	 */
@@ -152,7 +156,8 @@ class ZipArchive implements IZip
 				}
 				elseif (IOHelper::fileExists($itemToZip))
 				{
-					// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
+					// We can't use $zip->addFile() here but it's a terrible,
+					// horrible, POS method that's buggy on Windows.
 					$fileContents = IOHelper::getFileContents($itemToZip);
 
 					if (!$zip->addFromString($relFilePath, $fileContents))

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SectionLocaleRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -46,9 +45,8 @@ class SectionLocaleRecord extends BaseRecord
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

@@ -13,18 +13,16 @@ namespace Craft;
  */
 class QuerygenCommand extends BaseCommand
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	public $defaultAction = 'all';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $args
@@ -66,7 +64,8 @@ class QuerygenCommand extends BaseCommand
 			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			// (foreign keys already get indexed, so we're only concerned with
+			// whether it should be unique)
 			if (!empty($config['unique']))
 			{
 				$indexes[] = array('columns' => array($columnName), 'unique' => true);
@@ -210,9 +209,8 @@ class QuerygenCommand extends BaseCommand
 		return 1;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a record instance by its class name.

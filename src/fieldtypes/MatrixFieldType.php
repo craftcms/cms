@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixFieldType extends BaseFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -170,8 +169,8 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// $value will be an array of block data or an empty string if there was a validation error
-		// or we're loading a draft/version.
+		// $value will be an array of block data or an empty string if there was
+		// a validation error or we're loading a draft/version.
 		if (is_array($value))
 		{
 			return $value;
@@ -356,7 +355,8 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the content attribute.
+	 * Validates the value beyond the checks that were assumed based on the
+	 * content attribute.
 	 *
 	 * Returns 'true' or any custom validation errors.
 	 *
@@ -407,7 +407,8 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
 	 *
 	 * @param mixed $value
 	 *
@@ -487,9 +488,8 @@ class MatrixFieldType extends BaseFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the settings model.
@@ -501,9 +501,8 @@ class MatrixFieldType extends BaseFieldType
 		return new MatrixSettingsModel($this->model);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns info about each field type for the configurator.

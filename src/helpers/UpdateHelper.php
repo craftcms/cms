@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UpdateHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private static $_manifestData;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $manifestData
@@ -226,7 +224,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
+	 * Returns the relevant lines from the update manifest file starting with the
+	 * current local version/build.
 	 *
 	 * @param $manifestDataPath
 	 *

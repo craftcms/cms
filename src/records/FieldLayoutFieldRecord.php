@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldLayoutFieldRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -48,9 +47,8 @@ class FieldLayoutFieldRecord extends BaseRecord
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

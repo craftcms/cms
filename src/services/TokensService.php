@@ -13,26 +13,27 @@ namespace Craft;
  */
 class TokensService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	private $_deletedExpiredTokens = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Creates a new token and returns it.
 	 *
-	 * @param mixed         $route      Where matching requests should be routed to.  If you want them to be routed to a controller
-	 *                                  action, pass `array('action' => "controller/action", 'params' => array('foo' => 'bar'))`.
-	 * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
-	 * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config setting.
+	 * @param mixed         $route      Where matching requests should be routed to. If you
+	 *                                  want them to be routed to a controller action, pass:
+	 *                                  `array('action' => "controller/action", 'params' => array('foo' => 'bar'))`.
+	 * @param int|null      $usageLimit The maximum number of times this token can
+	 *                                  be used. Defaults to no limit.
+	 * @param DateTime|null $expiryDate The date that the token expires. Defaults
+	 *                                  to the 'defaultTokenDuration' config setting.
 	 *
 	 * @return string|false             The generated token, or `false` if there was an error.
 	 */

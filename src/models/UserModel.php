@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UserModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::User;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the full name or username as the string representation.
@@ -283,7 +281,8 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
+	 * Returns the remaining cooldown time for this user, if they've entered
+	 * their password incorrectly too many times.
 	 *
 	 * @return DateInterval|null
 	 */
@@ -371,9 +370,8 @@ class UserModel extends BaseElementModel
 		return parent::validate($attributes, false);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

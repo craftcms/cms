@@ -13,24 +13,26 @@ namespace Craft;
  */
 class UserSessionService extends \CWebUser
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var UserIdentity Stores the user identity.
+	 * Stores the user identity.
+	 *
+	 * @var UserIdentity
 	 */
 	private $_identity;
 
 	/**
-	 * @var UserModel Stores the current user model.
+	 * Stores the current user model.
+	 *
+	 * @var UserModel
 	 */
 	private $_userModel;
 
@@ -44,9 +46,8 @@ class UserSessionService extends \CWebUser
 	 */
 	private $_sessionRestoredFromCookie;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Init
@@ -59,7 +60,8 @@ class UserSessionService extends \CWebUser
 		{
 			craft()->getSession()->open();
 
-			// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged out when updating.
+			// Let's set our own state key prefix. Leaving identical to CWebUser
+			// for the key so people won't get logged out when updating.
 			$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
 
 			$rememberMe = craft()->request->getCookie('rememberMe') !== null ? true : false;
@@ -101,7 +103,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Returns the URL the user was trying to access before getting sent to the login page.
+	 * Returns the URL the user was trying to access before getting sent to the
+	 * login page.
 	 *
 	 * @param string $defaultUrl
 	 *
@@ -194,7 +197,8 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 *
-	 * Check to see if the current web user is a guest. (wrapper for {@link getIsGuest()} for consistency)
+	 * Check to see if the current web user is a guest. (wrapper for {@link getIsGuest()}
+	 * for consistency)
 	 *
 	 * @return bool
 	 */
@@ -239,7 +243,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Requires that the current user has a given permission, otherwise a 403 exception is thrown.
+	 * Requires that the current user has a given permission, otherwise a 403
+	 * exception is thrown.
 	 *
 	 * @param string $permissionName
 	 *
@@ -312,7 +317,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Pointless Wrapper for requireLogin(), but \CWebUser uses loginRequired() so we must support it as well.
+	 * Pointless Wrapper for {@link requireLogin()}, but {@link CWebUser} uses
+	 * {@link loginRequired()} so we must support it as well.
 	 *
 	 * @return null
 	 */
@@ -340,7 +346,8 @@ class UserSessionService extends \CWebUser
 		$usernameModel->username = $username;
 		$passwordModel->password = $password;
 
-		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+		// Require a userAgent string and an IP address to help prevent direct
+		// socket connections from trying to login.
 		if (!craft()->request->userAgent || !$_SERVER['REMOTE_ADDR'])
 		{
 			Craft::log('Someone tried to login with loginName: '.$username.', without presenting an IP address or userAgent string.', LogLevel::Warning);
@@ -358,8 +365,10 @@ class UserSessionService extends \CWebUser
 			// Was the login successful?
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
-				// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
+				// See if the 'rememberUsernameDuration' config item is set.
+				// If so, save the name to a cookie.
 				$rememberUsernameDuration = craft()->config->get('rememberUsernameDuration');
+
 				if ($rememberUsernameDuration)
 				{
 					$interval = new DateInterval($rememberUsernameDuration);
@@ -370,7 +379,8 @@ class UserSessionService extends \CWebUser
 					$this->saveCookie('username', $username, $expire->getTimestamp());
 				}
 
-				// If there is a remember me cookie, but $rememberMe is false, they logged in with an unchecked remember me box, so let's remove the cookie.
+				// If there is a remember me cookie, but $rememberMe is false, they
+				// logged in with an unchecked remember me box, so let's remove the cookie.
 				if (craft()->request->getCookie('rememberMe') !== null && !$rememberMe)
 				{
 					craft()->request->deleteCookie('rememberMe');
@@ -531,6 +541,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @param $errorCode
 	 * @param $loginName
+	 *
 	 * @return null|string
 	 */
 	public function getLoginErrorMessage($errorCode, $loginName)
@@ -664,7 +675,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Clears all user identity information from persistent storage. This will remove the data stored via {@link setState}.
+	 * Clears all user identity information from persistent storage. This will
+	 * remove the data stored via {@link setState}.
 	 *
 	 * @return null
 	 */
@@ -730,17 +742,16 @@ class UserSessionService extends \CWebUser
 		$this->raiseEvent('onLogout', $event);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
-	 * Changes the current user with the specified identity information. This method is called by {@link login} and
-	 * {@link restoreFromCookie} when the current user needs to be populated with the corresponding identity
-	 * information.
+	 * Changes the current user with the specified identity information. This
+	 * method is called by {@link login} and {@link restoreFromCookie} when the
+	 * current user needs to be populated with the corresponding identity information.
 	 *
-	 * Derived classes may override this method by retrieving additional user-related information. Make sure the parent
-	 * implementation is called first.
+	 * Derived classes may override this method by retrieving additional
+	 * user-related information. Make sure the parent implementation is called first.
 	 *
 	 * @param mixed  $id     A unique identifier for the user.
 	 * @param string $name   The display name for the user.
@@ -789,8 +800,9 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Populates the current user object with the information obtained from cookie. This method is used when automatic
-	 * login ({@link allowAutoLogin}) is enabled.  The user identity information is recovered from cookie.
+	 * Populates the current user object with the information obtained from cookie.
+	 * This method is used when automatic login ({@link allowAutoLogin}) is enabled.
+	 * The user identity information is recovered from cookie.
 	 *
 	 * @return null
 	 */
@@ -869,14 +881,16 @@ class UserSessionService extends \CWebUser
 					else
 					{
 						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', LogLevel::Error);
-						// Forcing logout here clears the identity cookie helping to prevent session fixation.
+						// Forcing logout here clears the identity cookie helping
+						// to prevent session fixation.
 						$this->logout();
 					}
 				}
 				else
 				{
 					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', LogLevel::Error);
-					// Forcing logout here clears the identity cookie helping to prevent session fixation.
+					// Forcing logout here clears the identity cookie helping to
+					// prevent session fixation.
 					$this->logout();
 				}
 			}
@@ -898,7 +912,8 @@ class UserSessionService extends \CWebUser
 
 		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
 
-		// Grab the identity cookie information and make sure the data hasn't been tampered with.
+		// Grab the identity cookie information and make sure the data hasn't
+		// been tampered with.
 		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
 		{
 			// Grab the data
@@ -939,9 +954,8 @@ class UserSessionService extends \CWebUser
 		$this->onLogout(new Event($this));
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param string $loginName
@@ -976,6 +990,7 @@ class UserSessionService extends \CWebUser
 	private function _updateSessionToken($loginName, $currentToken, $newToken)
 	{
 		$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
 		craft()->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
 	}
 
@@ -1069,11 +1084,13 @@ class UserSessionService extends \CWebUser
 	{
 		if (craft()->config->get('requireUserAgentAndIpForSession'))
 		{
-			// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+			// Require a userAgent string and an IP address to help prevent direct
+			// socket connections from trying to login.
 			if (!craft()->request->userAgent || !craft()->request->getIpAddress())
 			{
 				Craft::log('Someone tried to restore a session from a cookie without presenting an IP address or userAgent string.', LogLevel::Warning);
 				$this->logout(true);
+
 				return false;
 			}
 		}
@@ -1082,7 +1099,8 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Checks whether the current user agent string matches the user agent string saved in the identity cookie.
+	 * Checks whether the current user agent string matches the user agent
+	 * string saved in the identity cookie.
 	 *
 	 * @param string $currentUserAgent
 	 * @param string $savedUserAgent

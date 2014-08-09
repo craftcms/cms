@@ -13,9 +13,8 @@ namespace Craft;
  */
 class RouteRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -46,9 +45,8 @@ class RouteRecord extends BaseRecord
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

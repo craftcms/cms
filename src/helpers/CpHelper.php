@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CpHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string|null $path
@@ -35,8 +34,8 @@ class CpHelper
 
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
-			// Fetch the updates regardless of whether we're on the Updates page or not,
-			// because the other alerts are relying on cached Elliott info
+			// Fetch the updates regardless of whether we're on the Updates page
+			// or not, because the other alerts are relying on cached Elliott info
 			$updateModel = craft()->updates->getUpdates();
 
 			if ($path != 'updates' && $user->can('performUpdates'))

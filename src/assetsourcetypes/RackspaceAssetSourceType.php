@@ -15,17 +15,15 @@ craft()->requireEdition(Craft::Pro);
  */
 class RackspaceAssetSourceType extends BaseAssetSourceType
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const RackspaceAuthHost = 'https://identity.api.rackspacecloud.com/v2.0/tokens';
 	const RackspaceStorageOperation = 'storage';
 	const RackspaceCDNOperation = 'cdn';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * Stores access information.
@@ -34,9 +32,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private static $_accessStore = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the name of the source type.
@@ -161,10 +158,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file->name))
 			{
-				// So in Rackspace a folder may or may not exist. For path a/path/to/file.jpg, any of those folders may
-				// or may not exist. So we have to add all the segments to $containerFolders to make sure we index them
+				// So in Rackspace a folder may or may not exist. For path
+				// a/path/to/file.jpg, any of those folders may or may not exist.
+				// So we have to add all the segments to $containerFolders to
+				// make sure we index them
 
-				// Matches all paths with folders, except if there if no folder at all.
+				// Matches all paths with folders, except if there if no folder
+				// at all.
 				if (preg_match('/(.*\/).+$/', $file->name, $matches))
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
@@ -311,14 +311,15 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	* Put an image transform for the File and handle using the provided path to the source image.
-	*
-	* @param AssetFileModel $fileModel
-	* @param                $handle
-	* @param                $sourceImage
+	 * Put an image transform for the File and handle using the provided path to
+	 * the source image.
 	 *
-	* @return mixed
-	*/
+	 * @param AssetFileModel $fileModel
+	 * @param                $handle
+	 * @param                $sourceImage
+	 *
+	 * @return mixed
+	 */
 	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
 	{
 		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
@@ -408,12 +409,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return true if a folder exists on Rackspace.
 	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param string           $folderName
-	 *
 	 * @param string $parentPath
-	 * @param $folderName
-	 *	 
+	 * @param string $folderName
+	 *
 	 * @return boolean
 	 */
 	public function folderExists($parentPath, $folderName)
@@ -421,9 +419,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentPath.rtrim($folderName, "/")."/");
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Get a name replacement for a filename already taken in a folder.
@@ -568,7 +565,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite    If true, will overwrite target destination
+	 * @param bool             $overwrite    If true, will overwrite target
+	 *                                       destination
 	 *
 	 * @return mixed
 	 */
@@ -753,9 +751,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$this->_purgeObject($uriPath);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Create the authorization request URL
@@ -932,7 +929,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings The settings to use.  If null, will use the current settings.
+	 * @param object|null $settings The settings to use.  If null, will use the
+	 *                              current settings.
 	 *
 	 * @return string
 	 */
@@ -1060,10 +1058,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Do an authenticated request against Rackspace severs.
 	 *
-	 * @param string $operationType Operation type so we know which server to target
-	 * @param string $target        URI target on the Rackspace server
+	 * @param string $operationType Operation type so we know which server to
+	 *                              target.
+	 * @param string $target        URI target on the Rackspace server.
 	 * @param string $method        GET/POST/PUT/DELETE
-	 * @param array  $headers       Array of headers. Authorization token will be appended to this before request.
+	 * @param array  $headers       Array of headers. Authorization token will
+	 *                              be appended to this before request.
 	 * @param array  $curlOptions   Additional curl options to set.
 	 *
 	 * @throws Exception
@@ -1166,7 +1166,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Download a file to the target location. The file will be downloaded using the public URL, instead of cURL.
+	 * Download a file to the target location. The file will be downloaded using
+	 * the public URL, instead of cURL.
 	 *
 	 * @param $path
 	 * @param $targetFile

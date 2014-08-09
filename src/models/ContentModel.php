@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ContentModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class ContentModel extends BaseModel
 	 */
 	private $_attributeConfigs;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns this model's normalized attribute configs.
@@ -98,7 +96,8 @@ class ContentModel extends BaseModel
 
 			$value = $this->getAttribute($handle);
 
-			// Don't worry about blank values. Those will already be caught by required field validation.
+			// Don't worry about blank values. Those will already be caught by
+			// required field validation.
 			if ($value)
 			{
 				$fieldType = $field->getFieldType();
@@ -130,9 +129,8 @@ class ContentModel extends BaseModel
 		return $validates;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

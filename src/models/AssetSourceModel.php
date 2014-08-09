@@ -13,18 +13,16 @@ namespace Craft;
  */
 class AssetSourceModel extends BaseComponentModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_sourceType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated source name as the string representation.
@@ -71,9 +69,8 @@ class AssetSourceModel extends BaseComponentModel
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

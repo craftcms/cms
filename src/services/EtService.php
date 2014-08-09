@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EtService extends BaseApplicationComponent
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
 	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
@@ -24,9 +23,8 @@ class EtService extends BaseApplicationComponent
 	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return EtModel|null
@@ -256,7 +254,8 @@ class EtService extends BaseApplicationComponent
 			{
 				$etModel = new EtModel($attributes);
 
-				// Make sure it's valid. (At a minimum, localBuild and localVersion should be set.)
+				// Make sure it's valid. (At a minimum, localBuild and localVersion
+				// should be set.)
 				if ($etModel->validate())
 				{
 					return $etModel;

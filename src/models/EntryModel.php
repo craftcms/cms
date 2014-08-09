@@ -13,26 +13,23 @@ namespace Craft;
  */
 class EntryModel extends BaseElementModel
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const LIVE     = 'live';
 	const PENDING  = 'pending';
 	const EXPIRED  = 'expired';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::Entry;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field layout used by this element.
@@ -239,9 +236,8 @@ class EntryModel extends BaseElementModel
 		return $this->level;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

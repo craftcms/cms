@@ -13,12 +13,12 @@ namespace Craft;
  */
 class FileLogRoute extends \CFileLogRoute
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
+	 * Initializes the log route.  This method is invoked after the log route is
+	 * created by the route manager.
 	 *
 	 * @return null
 	 */
@@ -32,9 +32,8 @@ class FileLogRoute extends \CFileLogRoute
 		parent::init();
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Saves log messages in files.

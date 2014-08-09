@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class CacheMethod extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const APC          = 'apc';
 	const Db           = 'db';

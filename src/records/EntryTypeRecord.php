@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EntryTypeRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -64,9 +63,8 @@ class EntryTypeRecord extends BaseRecord
 		return $rules;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

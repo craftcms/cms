@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ClearCachesTool extends BaseTool
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tool name.
@@ -134,15 +133,15 @@ class ClearCachesTool extends BaseTool
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
-	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the
-	 * 'registerCachePaths' hook.
+	 * Returns the cache folders we allow to be cleared as well as any plugin
+	 * cache paths that have used the 'registerCachePaths' hook.
 	 *
-	 * @param bool $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
+	 * @param bool $obfuscate If true, will MD5 the path so it will be obfuscated
+	 *                        in the template.
 	 *
 	 * @return array
 	 */

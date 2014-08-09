@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixBlockTypeModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ class MatrixBlockTypeModel extends BaseModel
 	 */
 	private $_fields;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the block type handle as the string representation.
@@ -97,9 +95,8 @@ class MatrixBlockTypeModel extends BaseModel
 		$this->_fields = $fields;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserGroupsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all user groups.
@@ -163,9 +162,8 @@ class UserGroupsService extends BaseApplicationComponent
 		return true;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Gets a group's record.

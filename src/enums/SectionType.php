@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class SectionType extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Single    = 'single';
 	const Channel   = 'channel';

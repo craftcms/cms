@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ContentService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -32,16 +31,16 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public $fieldContext = 'global';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the content model for a given element.
 	 *
 	 * @param BaseElementModel $element The element whose content we're looking for.
 	 *
-	 * @return ContentModel|null The element's content or `null` if no content has been saved for the element.
+	 * @return ContentModel|null The element's content or `null` if no content
+	 *                           has been saved for the element.
 	 */
 	public function getContent(BaseElementModel $element)
 	{
@@ -86,7 +85,8 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Instantiates a new content model for a given element.
 	 *
-	 * @param BaseElementModel $element The element for which we should create a new content model.
+	 * @param BaseElementModel $element The element for which we should create a
+	 *                                  new content model.
 	 *
 	 * @return ContentModel The new content model.
 	 */
@@ -114,14 +114,17 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an element's content.
 	 *
-	 * @param BaseElementModel $element            The element whose content we're saving.
-	 * @param bool             $validate           Whether the element's content should be validated first.
-	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the
+	 * @param BaseElementModel $element            The element whose content we're
+	 *                                             saving.
+	 * @param bool             $validate           Whether the element's content
+	 *                                             should be validated first.
+	 * @param bool             $updateOtherLocales Whether any non-translatable fields'
+	 *                                             values should be copied to the
 	 *                                             element's other locales.
 	 *
 	 * @throws Exception
-	 * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
-	 *              element and its content model.
+	 * @return bool Whether the content was saved successfully. If it wasn't, any
+	 *              validation errors will be saved on the element and its content model.
 	 */
 	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
 	{
@@ -232,9 +235,8 @@ class ContentService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveContent', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Saves a content model to the database.
@@ -252,7 +254,8 @@ class ContentService extends BaseApplicationComponent
 		);
 
 		// If the element type has titles, than it's required and will be set.
-		// Otherwise, no need to include it (it might not even be a real column if this isn't the 'content' table).
+		// Otherwise, no need to include it (it might not even be a real column
+		// if this isn't the 'content' table).
 		if ($content->title)
 		{
 			$values['title'] = $content->title;
@@ -299,7 +302,8 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Copies the new values of any non-translatable fields across the element's other locales.
+	 * Copies the new values of any non-translatable fields across the element's
+	 * other locales.
 	 *
 	 * @param BaseElementModel $element
 	 * @param ContentModel     $content

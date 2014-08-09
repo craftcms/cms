@@ -13,18 +13,16 @@ namespace Craft;
  */
 class CategoryGroupModel extends BaseModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_locales;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated category group's name as the string representation.
@@ -80,9 +78,8 @@ class CategoryGroupModel extends BaseModel
 		$this->_locales = $locales;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

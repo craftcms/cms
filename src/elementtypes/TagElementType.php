@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TagElementType extends BaseElementType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the element type name.

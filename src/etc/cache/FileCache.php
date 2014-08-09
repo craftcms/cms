@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FileCache extends \CFileCache
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ class FileCache extends \CFileCache
 	 */
 	private $_originalKey;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Override so we can set a custom file cache path.
@@ -82,9 +80,8 @@ class FileCache extends \CFileCache
 		return parent::add($id, $value, $expire, $dependency);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Stores a value identified by a key in cache. This is the implementation of the method declared in the parent class.

@@ -13,18 +13,16 @@ namespace Craft;
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	protected $isSourceLocal = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the name of the source type.
@@ -229,7 +227,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
+	 * Put an image transform for the File and handle using the provided path to
+	 * the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param                $handle
@@ -320,9 +319,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return craft()->config->parseEnvironmentString($path);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Insert a file from path in folder.
@@ -493,7 +491,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite    If true, will overwrite target destination.
+	 * @param bool             $overwrite    If true, will overwrite target
+	 *                                       destination.
 	 *
 	 * @return mixed
 	 */
@@ -608,9 +607,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return $originalSource->isSourceLocal();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Get the local path for an image, optionally with a size handle.

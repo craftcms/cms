@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ConfigVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether a config item exists.

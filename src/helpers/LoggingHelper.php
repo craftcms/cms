@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LoggingHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param      $level
@@ -67,13 +66,16 @@ class LoggingHelper
 	 */
 	public static function redact($log)
 	{
-		// Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
+		// Will match 'password => 'secretPassword', which gets logged in the POST
+		// params during debug mode.
 		$log = preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);
 
-		// Will match 'newPassword => 'secretPassword', which gets logged in the POST params during debug mode.
+		// Will match 'newPassword => 'secretPassword', which gets logged in the
+		// POST params during debug mode.
 		$log = preg_replace("/'newPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
 
-		// Will match 'smtpPassword => 'secretPassword', which gets logged in the POST params during debug mode.
+		// Will match 'smtpPassword => 'secretPassword', which gets logged in the
+		// POST params during debug mode.
 		$log = preg_replace("/'smtpPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
 
 		return $log;

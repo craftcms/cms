@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class RebrandVariable
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -29,9 +28,8 @@ class RebrandVariable
 	 */
 	private $_logoVariable;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether a custom logo has been uploaded.
@@ -67,9 +65,8 @@ class RebrandVariable
 		return $this->_logoVariable;
 	}
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the path to the logo, or false if a logo hasn't been uploaded.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementCriteriaModel extends BaseModel implements \Countable
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var BaseElementType
@@ -47,9 +46,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	private $_cachedTotal;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -79,7 +77,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns whether an element exists at a given offset. Required by the ArrayAccess interface.
+	 * Returns whether an element exists at a given offset. Required by the
+	 * ArrayAccess interface.
 	 *
 	 * @param mixed $offset
 	 *
@@ -156,7 +155,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns the total number of elements matched by this criteria. Required by the Countable interface.
+	 * Returns the total number of elements matched by this criteria.
+	 * Required by the Countable interface.
 	 *
 	 * @return int
 	 */
@@ -370,8 +370,10 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 * Returns an element at a specific offset.
 	 *
 	 * @param int $offset
+	 *
+	 * @deprecated Deprecated in 2.2. Use {@link nth()} instead.
 	 * @return BaseElementModel|null
-	 * @deprecated Deprecated in 2.2. Use nth() instead.
+	 *
 	 */
 	public function findElementAtOffset($offset)
 	{
@@ -379,9 +381,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		return $this->nth($offset);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -445,9 +446,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		return $attributes;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return null

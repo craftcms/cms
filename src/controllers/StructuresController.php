@@ -13,9 +13,8 @@ namespace Craft;
  */
 class StructuresController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Moves an element within a structure.

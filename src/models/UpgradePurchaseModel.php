@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UpgradePurchaseModel extends BaseModel
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

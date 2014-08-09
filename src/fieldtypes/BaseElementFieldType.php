@@ -13,43 +13,53 @@ namespace Craft;
  */
 abstract class BaseElementFieldType extends BaseFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * List of built-in component aliases to be imported.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType;
 
 	/**
-	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
 	 */
 	protected $inputJsClass;
 
 	/**
-	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
+	 * Whether to allow multiple source selection in the settings.
+	 *
+	 * @var bool $allowMultipleSources
 	 */
 	protected $allowMultipleSources = true;
 
 	/**
-	 * @var bool $allowLimit Whether to allow the Limit setting.
+	 * Whether to allow the Limit setting.
+	 *
+	 * @var bool $allowLimit
 	 */
 	protected $allowLimit = true;
 
 	/**
-	 * @var string Template to use for field rendering
+	 * Template to use for field rendering.
+	 *
+	 * @var string
 	 */
 	protected $inputTemplate = '_includes/forms/elementSelect';
 
 	/**
-	 * @var bool $sortable Whether the elements have a custom sort order.
+	 * Whether the elements have a custom sort order.
+	 *
+	 * @var bool $sortable
 	 */
 	protected $sortable = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -99,8 +109,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the content attribute.  Returns 'true' or any
-	 * custom validation errors.
+	 * Validates the value beyond the checks that were assumed based on the content
+	 * attribute.  Returns 'true' or any custom validation errors.
 	 *
 	 * @param array $value
 	 *
@@ -200,7 +210,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field,
+	 * based on the prepped post data.
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -262,9 +273,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the "Add" button.
@@ -338,7 +348,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns an array of the source keys the field should be able to select elements from.
+	 * Returns an array of the source keys the field should be able to select
+	 * elements from.
 	 *
 	 * @return array
 	 */
@@ -357,7 +368,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 * Returns any additional criteria parameters limiting which elements the
+	 * field should be able to select.
 	 *
 	 * @return array
 	 */

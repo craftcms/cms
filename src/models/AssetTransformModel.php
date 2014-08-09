@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetTransformModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the folder name as the string representation.
@@ -51,9 +50,8 @@ class AssetTransformModel extends BaseModel
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

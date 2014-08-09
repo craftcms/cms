@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsController extends BaseEntriesController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Saves a draft, or creates a new one.
@@ -58,7 +57,8 @@ class EntryRevisionsController extends BaseEntriesController
 		{
 			// Attempt to create a new entry
 
-			// Manually validate 'title' since ElementsService will just give it a title automatically
+			// Manually validate 'title' since ElementsService will just give
+			// it a title automatically
 			$fields = array('title');
 			$content = $draft->getContent();
 			$content->setRequiredFields($fields);
@@ -323,9 +323,8 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Sets a draft's attributes from the post data.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface IPlugin extends ISavableComponentType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string|null

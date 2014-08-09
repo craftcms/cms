@@ -13,8 +13,14 @@ namespace Craft;
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by
+	 * the component type's base class.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'ElementType';
 
@@ -23,9 +29,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	private $_sourcesByContext;
 
+	// Public Methods
+	// =========================================================================
 
 	// Basic info methods
-	// -----------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns whether this element type has content.
@@ -122,9 +130,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
-
 	// Element index methods
-	// -----------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element index HTML.
@@ -223,7 +230,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					}
 					else
 					{
-						// Add some <wbr> tags in there so it doesn't all have to be on one line
+						// Add some <wbr> tags in there so it doesn't all have
+						// to be on one line
 						$find = array('/');
 						$replace = array('/<wbr>');
 
@@ -317,9 +325,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return $columns;
 	}
 
-
-	// Methods for customizing ElementCriteriaModel's for this element type
-	// -----------------------------------------------------------------------------
+	// Methods for customizing ElementCriteriaModel's for this element type...
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element query condition for a custom status criteria.
@@ -433,9 +440,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	{
 	}
 
-
-	// Private methods
-	// -----------------------------------------------------------------------------
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Finds a source by its key, even if it's nested.

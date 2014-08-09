@@ -13,14 +13,15 @@ namespace Craft;
  */
 class PhpMessageSource extends \CPhpMessageSource
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var boolean Whether to force message translation when the source and target languages are the same.
-	 *              Yii defaults this to false, meaning translation is only performed when source and target languages are different,
-	 *              but Craft defaults it to true.
+	 * Whether to force message translation when the source and target languages
+	 * are the same. Yii defaults this to false, meaning translation is only performed
+	 * when source and target languages are different, but Craft defaults it to true.
+	 *
+	 * @var boolean
 	 */
 	public $forceTranslation = true;
 
@@ -29,9 +30,8 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private $_translations;
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Loads the message translation for the specified language and category.
@@ -55,7 +55,8 @@ class PhpMessageSource extends \CPhpMessageSource
 			// Plugin translations get added first so they always lose out for conflicts
 			if (craft()->isInstalled() && !craft()->isInMaintenanceMode())
 			{
-				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
+				// Don't use PluginService, but go straight to the file system.
+				// Who cares if they are disabled.
 				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
 
 				if ($pluginPaths)
@@ -87,7 +88,8 @@ class PhpMessageSource extends \CPhpMessageSource
 				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
 			}
 
-			// Now loop through all of the paths and translation files and import the ones that exist
+			// Now loop through all of the paths and translation files and import
+			// the ones that exist
 			foreach ($paths as $folderPath)
 			{
 				if (IOHelper::folderExists($folderPath))
@@ -103,7 +105,8 @@ class PhpMessageSource extends \CPhpMessageSource
 
 							if (is_array($translations))
 							{
-								// If this is framework data and we're not on en_us, then do some special processing.
+								// If this is framework data and we're not on en_us,
+								// then do some special processing.
 								if (strpos($path, 'framework/i18n/data') !== false && $file !== 'en_us')
 								{
 									$translations = $this->_processFrameworkData($file);
@@ -120,9 +123,8 @@ class PhpMessageSource extends \CPhpMessageSource
 		return $this->_translations[$language];
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $localeId

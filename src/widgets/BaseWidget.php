@@ -13,28 +13,32 @@ namespace Craft;
  */
 abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string The type of component this is
+	 * The type of component this is.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'Widget';
 
 	/**
-	 * @var bool Whether users should be able to select more than one of this widget type.
+	 * Whether users should be able to select more than one of this widget type.
+	 *
+	 * @var bool
 	 */
 	protected $multi = true;
 
 	/**
-	 * @var bool How many columns the widget should span, if there's enough room.
+	 * How many columns the widget should span, if there's enough room.
+	 *
+	 * @var bool
 	 */
 	protected $colspan = 1;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this component should be selectable when choosing a component of this type.

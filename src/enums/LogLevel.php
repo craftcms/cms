@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class LogLevel extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Trace   = 'trace';
 	const Warning = 'warning';

@@ -13,18 +13,18 @@ namespace Craft;
  */
 class EntriesFieldType extends BaseElementFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Entry';
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the "Add" button.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PathHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Ensures that a relative path never goes deeper than its root directory.

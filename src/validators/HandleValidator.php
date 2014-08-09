@@ -13,9 +13,8 @@ namespace Craft;
  */
 class HandleValidator extends \CValidator
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -32,9 +31,8 @@ class HandleValidator extends \CValidator
 	 */
 	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent', 'section');
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object
@@ -46,7 +44,8 @@ class HandleValidator extends \CValidator
 	{
 		$handle = $object->$attribute;
 
-		// Handles are always required, so if it's blank, the required validator will catch this.
+		// Handles are always required, so if it's blank, the required
+		// validator will catch this.
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);

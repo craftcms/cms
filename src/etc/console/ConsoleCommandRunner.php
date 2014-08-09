@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ConsoleCommandRunner extends \CConsoleCommandRunner
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $name command name (case-insensitive)
@@ -84,7 +83,8 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	}
 
 	/**
-	 * Adds commands from the specified command path.  If a command already exists, the new one will overwrite it.
+	 * Adds commands from the specified command path.  If a command already
+	 * exists, the new one will overwrite it.
 	 *
 	 * @param string $path The alias of the folder containing the command class files.
 	 *

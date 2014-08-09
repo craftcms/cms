@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MysqlSchema extends \CMysqlSchema
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @var int The maximum length that objects' names can be.
@@ -172,10 +171,12 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
-	 * @param string $table   The name of the table (including prefix, or wrapped in "{{" and "}}").
+	 * @param string $table   The name of the table (including prefix, or
+	 *                        wrapped in "{{" and "}}").
 	 * @param array  $columns An array of columns.
 	 * @param string $options Any additional SQL to append to the end of the query.
-	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM"). Default is "InnoDb".
+	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM").
+	 *                        Default is "InnoDb".
 	 *
 	 * @return string The full SQL for creating a table.
 	 */
@@ -263,9 +264,8 @@ class MysqlSchema extends \CMysqlSchema
 		return '`'.$name.'`';
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.

@@ -13,18 +13,16 @@ namespace Craft;
  */
 class TagModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::Tag;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the tag name as its string representation.
@@ -100,9 +98,8 @@ class TagModel extends BaseElementModel
 		return $this->getGroup();
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

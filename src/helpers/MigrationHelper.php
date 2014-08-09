@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MigrationHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class MigrationHelper
 	 */
 	private static $_fkRefActions = 'RESTRICT|CASCADE|NO ACTION|SET DEFAULT|SET NULL';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Refreshes our record of everything.
@@ -100,7 +98,8 @@ class MigrationHelper
 	}
 
 	/**
-	 * Renames a table, while also updating its index and FK names, as well as any other FK names pointing to the table.
+	 * Renames a table, while also updating its index and FK names, as well as
+	 * any other FK names pointing to the table.
 	 *
 	 * @param string $oldName
 	 * @param string $newName
@@ -159,7 +158,8 @@ class MigrationHelper
 		$columnIndexes = array();
 		$otherTableFks = array();
 
-		// Drop all the FKs because any one of them might be relying on an index we're about to drop
+		// Drop all the FKs because any one of them might be relying on an
+		// index we're about to drop
 		foreach ($table->fks as $fk)
 		{
 			$key = array_search($oldName, $fk->columns);
@@ -224,15 +224,18 @@ class MigrationHelper
 	}
 
 	/**
-	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId', and updates the names of any
-	 * FK's in other tables.
+	 * Creates elements for all rows in a given table, swaps its 'id' PK for
+	 * 'elementId', and updates the names of any FK's in other tables.
 	 *
-	 * @param string     $table       The existing table name used to store records of this element.
+	 * @param string     $table       The existing table name used to store records
+	 *                                of this element.
 	 * @param string     $elementType The element type handle (e.g. "Entry", "Asset", etc.).
 	 * @param bool       $hasContent  Whether this element type has content.
-	 * @param bool       $isLocalized Whether this element type stores data in multiple locales.
+	 * @param bool       $isLocalized Whether this element type stores data in
+	 *                                multiple locales.
 	 * @param array|null $locales     Which locales the elements should store content in.
-	 *                                Defaults to the primary site locale if the element type is not localized, otherwise
+	 *                                Defaults to the primary site locale if the
+	 *                                element type is not localized, otherwise
 	 *                                all locales.
 	 *
 	 * @return null
@@ -262,7 +265,8 @@ class MigrationHelper
 			->from($table)
 			->queryAll();
 
-		// Figure out which locales we're going to be storing elements_i18n and content rows in.
+		// Figure out which locales we're going to be storing elements_i18n and
+		// content rows in.
 		if (!$locales || !is_array($locales))
 		{
 			if ($isLocalized)
@@ -393,7 +397,8 @@ class MigrationHelper
 			{
 				if ($fk->refTable == $table)
 				{
-					// Figure out which column in the FK is pointing to this table's id column (if any)
+					// Figure out which column in the FK is pointing to this
+					// table's id column (if any)
 					$fkColumnIndex = array_search($column, $fk->refColumns);
 
 					if ($fkColumnIndex !== false)
@@ -570,9 +575,8 @@ class MigrationHelper
 		$fk->name = craft()->db->getForeignKeyName($fk->table->name, $fk->columns);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the length of the table prefix.

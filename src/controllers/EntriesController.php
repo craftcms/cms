@@ -13,23 +13,29 @@ namespace Craft;
  */
 class EntriesController extends BaseEntriesController
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * craft()->userSession->requireLogin() in the individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionViewSharedEntry');
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Edit an entry.
@@ -295,7 +301,8 @@ class EntriesController extends BaseEntriesController
 			{
 				$classHandle = $variables['entry']->getClassHandle();
 
-				// If we're looking at the live version of an entry, just use the entry's main URL as its share URL
+				// If we're looking at the live version of an entry, just use
+				// the entry's main URL as its share URL
 				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
 				{
 					$variables['shareUrl'] = $variables['entry']->getUrl();
@@ -331,7 +338,9 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Set the base CP edit URL
-		// - Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
+
+		// Can't just use the entry's getCpEditUrl() because that might
+		// include the locale ID when we don't want it
 		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}';
 
 		// Set the "Continue Editing" URL
@@ -666,9 +675,8 @@ class EntriesController extends BaseEntriesController
 		$this->_showEntry($entry);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Preps entry edit variables.
@@ -865,7 +873,8 @@ class EntriesController extends BaseEntriesController
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
-		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
+		// Set the entry attributes, defaulting to the existing values for
+		// whatever is missing from the post data
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
 		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
 		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);

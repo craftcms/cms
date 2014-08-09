@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UserRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -75,9 +74,8 @@ class UserRecord extends BaseRecord
 		return parent::validate($attributes, false);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

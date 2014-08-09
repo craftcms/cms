@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Hook_TokenParser extends \Twig_TokenParser
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Defines the tag name.

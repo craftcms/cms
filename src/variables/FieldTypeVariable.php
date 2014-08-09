@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldTypeVariable extends BaseComponentTypeVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field's input HTML.

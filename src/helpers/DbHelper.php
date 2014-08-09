@@ -13,12 +13,13 @@ namespace Craft;
  */
 class DbHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var array The default column configs.
+	 * The default column configs.
+	 *
+	 * @var array
 	 */
 	public static $columnTypeDefaults = array(
 		ColumnType::Char         => array('maxLength' => 255),
@@ -33,12 +34,16 @@ class DbHelper
 	);
 
 	/**
-	 * @var array Numeric column types.
+	 * Numeric column types.
+	 *
+	 * @var array
 	 */
 	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
 
 	/**
-	 * @var array Textual column types.
+	 * Textual column types.
+	 *
+	 * @var array
 	 */
 	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
 
@@ -47,9 +52,8 @@ class DbHelper
 	 */
 	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Normalizes a column's config.
@@ -60,8 +64,8 @@ class DbHelper
 	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, merges in the default config settings for the column type,
-	 * and renames 'maxLength' to 'length'
+	 * This function normalizes on the 3rd, merges in the default config settings
+	 * for the column type, and renames 'maxLength' to 'length'.
 	 *
 	 * @param string|array $config
 	 *
@@ -114,7 +118,7 @@ class DbHelper
 	}
 
 	/**
-	 * Generates the column definition SQL for a column
+	 * Generates the column definition SQL for a column.
 	 *
 	 * @param array $config
 	 *
@@ -270,7 +274,8 @@ class DbHelper
 	}
 
 	/**
-	 * Returns an index name based on the table, column names, and whether it should be unique.
+	 * Returns an index name based on the table, column names, and whether it
+	 * should be unique.
 	 *
 	 * @param string       $table
 	 * @param string|array $columns
@@ -320,8 +325,8 @@ class DbHelper
 	public static function getAuditColumnConfig()
 	{
 		return array(
-			'dateCreated' => array('column' => ColumnType::DateTime,  'required' => true),
-			'dateUpdated' => array('column' => ColumnType::DateTime,  'required' => true),
+			'dateCreated' => array('column' => ColumnType::DateTime, 'required' => true),
+			'dateUpdated' => array('column' => ColumnType::DateTime, 'required' => true),
 			'uid'         => array('column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
 		);
 	}
@@ -462,9 +467,8 @@ class DbHelper
 		return static::parseParam($key, $normalizedValues, $params);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Extracts the operator from a DB param and returns it.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AppBehavior extends BaseBehavior
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -52,9 +51,8 @@ class AppBehavior extends BaseBehavior
 	 */
 	private $_isDbConnectionValid = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
@@ -282,7 +280,8 @@ class AppBehavior extends BaseBehavior
 				return true;
 			}
 
-			// Base this off of what they're actually licensed to use, not what's currently running
+			// Base this off of what they're actually licensed to use, not
+			// what's currently running
 			$licensedEdition = $this->getLicensedEdition();
 			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
 		}
@@ -321,7 +320,9 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the site URL (with a trailing slash).
 	 *
-	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever's in the Site URL setting.
+	 * @param string|null $protocol The protocol to use (http or https). If none
+	 *                              is specified, it will default to whatever's
+	 *                              in the Site URL setting.
 	 *
 	 * @return string
 	 */
@@ -365,6 +366,8 @@ class AppBehavior extends BaseBehavior
 	 * Sets the site URL, while ensuring that the given URL ends with a trailing slash.
 	 *
 	 * @param string $siteUrl
+	 *
+	 * @return null
 	 */
 	public function setSiteUrl($siteUrl)
 	{
@@ -515,7 +518,8 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
+	 * Make sure the basics are in place in the db connection file before we
+	 * actually try to connect later on.
 	 *
 	 * @throws DbConnectException
 	 * @return null
@@ -602,7 +606,8 @@ class AppBehavior extends BaseBehavior
 	 *
 	 * @param $packageName
 	 *
-	 * @deprecated Deprecated in 2.0. To get the installed Craft edition, use {@link AppBehavior::getEdition() craft()->getEdition()}.
+	 * @deprecated Deprecated in 2.0. To get the installed Craft edition, use
+	 *             {@link AppBehavior::getEdition() craft()->getEdition()}.
 	 * @return bool
 	 */
 	public function hasPackage($packageName)
@@ -610,9 +615,8 @@ class AppBehavior extends BaseBehavior
 		return $this->getEdition() == Craft::Pro;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Enables or disables Maintenance Mode

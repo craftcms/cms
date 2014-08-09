@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SearchIndexTool extends BaseTool
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tool name.

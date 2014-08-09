@@ -13,9 +13,8 @@ namespace Craft;
  */
 class VariableHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns an array of variables for a given set of class instances.

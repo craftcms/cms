@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryVersionModel extends BaseEntryRevisionModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Populates a new model instance with a given set of attributes.
@@ -56,9 +55,8 @@ class EntryVersionModel extends BaseEntryRevisionModel
 		return $version;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

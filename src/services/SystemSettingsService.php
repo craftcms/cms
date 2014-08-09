@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SystemSettingsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class SystemSettingsService extends BaseApplicationComponent
 	 */
 	private $_settingsRecords;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the system settings for a category.
@@ -142,9 +140,8 @@ class SystemSettingsService extends BaseApplicationComponent
 		return !$record->hasErrors();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a SystemSettings record by its category.

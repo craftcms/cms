@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DateInterval extends \DateInterval
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	/**
 	 * Number of seconds in a minute.
@@ -56,9 +55,8 @@ class DateInterval extends \DateInterval
 	 */
 	const SECONDS_YEAR = 31556874;
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * The date properties.
@@ -74,9 +72,8 @@ class DateInterval extends \DateInterval
 	 */
 	private static $_time = array('h' => 'H', 'i' => 'M', 's' => 'S');
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the interval specification.

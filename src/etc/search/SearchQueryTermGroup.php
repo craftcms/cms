@@ -4,7 +4,8 @@ namespace Craft;
 /**
  * Search Query Term Group class
  *
- * Contains multiple SearchQueryTerm instances, each representing a term in the search query that was combined by "OR".
+ * Contains multiple SearchQueryTerm instances, each representing a term in the
+ * search query that was combined by "OR".
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -15,18 +16,16 @@ namespace Craft;
  */
 class SearchQueryTermGroup
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var array
 	 */
 	public $terms;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor

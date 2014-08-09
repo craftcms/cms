@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TemplateCacheService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -62,9 +61,8 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	private $_deletedCachesByElementType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a cached template by its key.
@@ -336,10 +334,12 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int|array $elementId         The ID of the element whose caches should be cleared.
-	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any query
-	 *                                     caches that may now involve this element, but hadn't previously.
-	 *                                     (Defaults to `true`.)
+	 * @param int|array $elementId         The ID of the element whose caches
+	 *                                     should be cleared.
+	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches
+	 *                                     task should be created, deleting any query
+	 *                                     caches that may now involve this element,
+	 *                                     but hadn't previously. (Defaults to `true`.)
 	 *
 	 * @return bool
 	 */
@@ -352,7 +352,8 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
-			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
+			// If there are any pending DeleteStaleTemplateCaches tasks, just
+			// append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))
@@ -491,9 +492,8 @@ class TemplateCacheService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the current request path, including a "site:" or "cp:" prefix.

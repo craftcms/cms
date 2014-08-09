@@ -13,13 +13,12 @@ namespace Craft;
  */
 class LocaleData extends \CLocale
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the instance of the specified locale. Since the constructor of CLocale is protected, you can only use
-	 * this method to obtain an instance of the specified locale.
+	 * Returns the instance of the specified locale. Since the constructor of
+	 * CLocale is protected, you can only use this method to obtain an instance of the specified locale.
 	 *
 	 * @param  string $id The locale ID (e.g. en_US)
 	 *
@@ -54,9 +53,11 @@ class LocaleData extends \CLocale
 	}
 
 	/**
-	 * Converts a locale ID to a language ID.  Language ID consists of only the first group of letters before an underscore or dash.
+	 * Converts a locale ID to a language ID.  Language ID consists of only the
+	 * first group of letters before an underscore or dash.
 	 *
-	 * Craft overrides the parent method from {@link CLocale} because this is where we want to chop off the territory half of a locale ID.
+	 * Craft overrides the parent method from {@link CLocale} because this is
+	 * where we want to chop off the territory half of a locale ID.
 	 *
 	 * @param string $id The locale ID to be converted
 	 *

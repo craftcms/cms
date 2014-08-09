@@ -84,7 +84,8 @@ class RichTextFieldType extends BaseFieldType
 	{
 		if ($value)
 		{
-			// Prevent everyone from having to use the |raw filter when outputting RTE content
+			// Prevent everyone from having to use the |raw filter when
+			// outputting RTE content
 			$charset = craft()->templates->getTwig()->getCharset();
 			return new RichTextData($value, $charset);
 		}
@@ -206,7 +207,7 @@ class RichTextFieldType extends BaseFieldType
 		);
 	}
 
-	// PRIVATE METHODS
+	// Private Methods
 	// =========================================================================
 
 	/**

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PasswordModel extends BaseModel
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

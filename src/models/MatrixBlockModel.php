@@ -13,9 +13,8 @@ namespace Craft;
  */
 class MatrixBlockModel extends BaseElementModel
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -27,9 +26,8 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	private $_owner;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field layout used by this element.
@@ -53,8 +51,9 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	public function getLocales()
 	{
-		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't translatable.
-		// Otherwise all blocks belong to all locales, and their content is translatable.
+		// If the Matrix field is translatable, than each individual block is
+		// tied to a single locale, and thus aren't translatable. Otherwise all
+		// blocks belong to all locales, and their content is translatable.
 
 		if ($this->ownerLocale)
 		{
@@ -66,7 +65,8 @@ class MatrixBlockModel extends BaseElementModel
 
 			if ($owner)
 			{
-				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+				// Just send back an array of locale IDs -- don't pass along
+				// enabledByDefault configs
 				$localeIds = array();
 
 				foreach ($owner->getLocales() as $localeId => $localeInfo)
@@ -166,9 +166,8 @@ class MatrixBlockModel extends BaseElementModel
 		return 'matrixBlockType:'.$this->typeId;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -186,9 +185,8 @@ class MatrixBlockModel extends BaseElementModel
 		));
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Matrix field.

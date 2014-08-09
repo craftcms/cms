@@ -13,18 +13,16 @@ namespace Craft;
  */
 class FeedWidget extends BaseWidget
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	public $multipleInstances = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -79,9 +77,8 @@ class FeedWidget extends BaseWidget
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

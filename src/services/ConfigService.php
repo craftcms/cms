@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	private $_loadedConfigFiles = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
@@ -56,7 +54,8 @@ class ConfigService extends BaseApplicationComponent
 			$this->_loadConfigFile($file);
 		}
 
-		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like devMode is turned on.
+		// If we're looking for devMode and we it looks like we're on the installer
+		// and it's a CP request, pretend like devMode is turned on.
 		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
 		{
 			return true;
@@ -222,15 +221,17 @@ class ConfigService extends BaseApplicationComponent
 				}
 				else
 				{
-					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-					// *unless* the URI looks like a file, in which case it'll just throw a 404.
+					// PHP Dev Server does omit the script name from 404s without
+					// any help from a redirect script, *unless* the URI looks like
+					// a file, in which case it'll just throw a 404.
 					if (AppHelper::isPhpDevServer())
 					{
 						$this->_omitScriptNameInUrls = false;
 					}
 					else
 					{
-						// Cache it early so the testScriptNameRedirect request isn't checking for it too
+						// Cache it early so the testScriptNameRedirect request
+						// isn't checking for it too
 						craft()->cache->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
@@ -297,15 +298,16 @@ class ConfigService extends BaseApplicationComponent
 					{
 						$this->_usePathInfo = 'y';
 					}
-					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
-					// so we need to explicitly check for that.
+					// PHP Dev Server supports path info, and doesn't support
+					// simultaneous requests, so we need to explicitly check for that.
 					else if (AppHelper::isPhpDevServer())
 					{
 						$this->_usePathInfo = 'y';
 					}
 					else
 					{
-						// Cache it early so the testPathInfo request isn't checking for it too
+						// Cache it early so the testPathInfo request isn't
+						// checking for it too
 						craft()->cache->set('usePathInfo', 'n');
 
 						// Test the server for it
@@ -534,9 +536,8 @@ class ConfigService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $name
@@ -566,7 +567,8 @@ class ConfigService extends BaseApplicationComponent
 		// Little extra logic for the general config file.
 		if ($name == ConfigFile::General)
 		{
-			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
+			// Does craft/config/general.php exist? (It used to be called
+			// blocks.php so maybe not.)
 			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 			{
 				if (is_array($customConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
@@ -576,7 +578,8 @@ class ConfigService extends BaseApplicationComponent
 			}
 			else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
 			{
-				// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+				// Originally blocks.php defined a $blocksConfig variable, and
+				// then later returned an array directly.
 				if (is_array($customConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
 				{
 					$this->_mergeConfigs($defaultsConfig, $customConfig);
@@ -613,7 +616,8 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Merges a base config array with a custom config array, taking environment-specific configs into account.
+	 * Merges a base config array with a custom config array, taking
+	 * environment-specific configs into account.
 	 *
 	 * @param array &$baseConfig
 	 * @param array $customConfig

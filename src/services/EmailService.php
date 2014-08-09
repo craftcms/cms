@@ -13,9 +13,8 @@ namespace Craft;
  */
 class EmailService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class EmailService extends BaseApplicationComponent
 	 */
 	private $_defaultEmailTimeout = 10;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sends an email.
@@ -173,9 +171,8 @@ class EmailService extends BaseApplicationComponent
 		return $success;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Fires an 'onBeforeSendEmail' event.
@@ -217,7 +214,8 @@ class EmailService extends BaseApplicationComponent
 		// Default the charset to UTF-8
 		$email->CharSet = 'UTF-8';
 
-		// Add a reply to (if any).  Make sure it’s set before setting From, because email is dumb.
+		// Add a reply to (if any).  Make sure it’s set before setting From,
+		// because email is dumb.
 		if (!empty($emailModel->replyTo))
 		{
 			$email->addReplyTo($emailModel->replyTo);
@@ -275,7 +273,8 @@ class EmailService extends BaseApplicationComponent
 			}
 		}
 
-		// If they have the test email config var set to something, use it instead of the supplied email.
+		// If they have the test email config var set to something, use it
+		// instead of the supplied email.
 		if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
 		{
 			$email->addAddress($testToEmail, 'Test Email');

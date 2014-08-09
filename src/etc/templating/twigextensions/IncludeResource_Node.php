@@ -13,9 +13,8 @@ namespace Craft;
  */
 class IncludeResource_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Compiles an IncludeResource_Node into PHP.

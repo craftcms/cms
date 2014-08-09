@@ -13,23 +13,29 @@ namespace Craft;
  */
 class AssetsController extends BaseController
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * craft()->userSession->requireLogin() in the individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionGenerateTransform');
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Upload a file
@@ -46,7 +52,8 @@ class AssetsController extends BaseController
 		$responseInfo = craft()->request->getPost('additionalInfo');
 		$fileName = craft()->request->getPost('fileName');
 
-		// For a conflict resolution, the folder ID is no longer there and no file is actually being uploaded
+		// For a conflict resolution, the folder ID is no longer there and no
+		// file is actually being uploaded
 		if (!empty($folderId) && empty($userResponse))
 		{
 			try
@@ -280,6 +287,7 @@ class AssetsController extends BaseController
 	/**
 	 * Generate a transform.
 	 *
+	 * @throws HttpException
 	 * @return null
 	 */
 	public function actionGenerateTransform()
@@ -336,9 +344,8 @@ class AssetsController extends BaseController
 		$this->returnJson($output);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Check upload permissions.
@@ -351,7 +358,8 @@ class AssetsController extends BaseController
 	{
 		$folder = craft()->assets->getFolderById($folderId);
 
-		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
+		// if folder exists and the source ID is null, it's a temp source and
+		// we always allow uploads there.
 		if (!(is_object($folder) && is_null($folder->sourceId)))
 		{
 			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');

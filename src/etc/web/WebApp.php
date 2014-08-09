@@ -2,55 +2,55 @@
 namespace Craft;
 
 /**
- * @property AssetIndexingService        $assetIndexing        The assets indexing service
- * @property AssetSourcesService         $assetSources         The assets sources service
- * @property AssetsService               $assets               The assets service
- * @property AssetTransformsService      $assetTransforms      The assets sizes service
- * @property CacheService                $cache                The cache service
- * @property CategoriesService           $categories           The categories service
- * @property ComponentsService           $components           The components service
- * @property ConfigService               $config               The config service
- * @property ContentService              $content              The content service
- * @property DashboardService            $dashboard            The dashboard service
- * @property DbConnection                $db                   The database
- * @property DeprecatorService           $deprecator           The deprecator service
- * @property ElementsService             $elements             The elements service
- * @property EmailMessagesService        $emailMessages        The email messages service
- * @property EmailService                $email                The email service
- * @property EntriesService              $entries              The entries service
- * @property EntryRevisionsService       $entryRevisions       The entry revisions service
- * @property EtService                   $et                   The E.T. service
- * @property FeedsService                $feeds                The feeds service
- * @property FieldsService               $fields               The fields service
- * @property FileCache                   $fileCache            File caching
- * @property GlobalsService              $globals              The globals service
- * @property HttpRequestService          $request              The request service
- * @property HttpSessionService          $httpSession          The HTTP session service
- * @property ImagesService               $images               The images service
- * @property InstallService              $install              The images service
- * @property LocalizationService         $localization         The localization service
- * @property MatrixService               $matrix               The matrix service
- * @property MigrationsService           $migrations           The migrations service
- * @property PathService                 $path                 The path service
- * @property PluginsService              $plugins              The plugins service
- * @property RelationsService            $relations            The relations service
- * @property ResourcesService            $resources            The resources service
- * @property RoutesService               $routes               The routes service
- * @property SearchService               $search               The search service
- * @property SectionsService             $sections             The sections service
- * @property SecurityService             $security             The security service
- * @property StructuresService           $structures           The structures service
- * @property SystemSettingsService       $systemSettings       The system settings service
- * @property TagsService                 $tags                 The tags service
- * @property TasksService                $tasks                The tasks service
- * @property TemplateCacheService        $templateCache        The template cache service
- * @property TemplatesService            $templates            The template service
- * @property TokensService               $tokens               The tokens service
- * @property UpdatesService              $updates              The updates service
- * @property UserGroupsService           $userGroups           The user groups service
- * @property UserPermissionsService      $userPermissions      The user permission service
- * @property UserSessionService          $userSession          The user session service
- * @property UsersService                $users                The users service
+ * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
+ * @property AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
+ * @property AssetsService           $assets           The {@link AssetsService assets service}.
+ * @property AssetTransformsService  $assetTransforms  The {@link AssetTransformsService assets sizes service}.
+ * @property CacheService            $cache            The {@link CacheService cache service}.
+ * @property CategoriesService       $categories       The {@link CategoriesService categories service}.
+ * @property ComponentsService       $components       The {@link ComponentsService components service}.
+ * @property ConfigService           $config           The {@link ConfigService config service}.
+ * @property ContentService          $content          The {@link ContentService content service}.
+ * @property DashboardService        $dashboard        The {@link DashboardService dashboard service}.
+ * @property DbConnection            $db               The {@link DbConnection database connection}.
+ * @property DeprecatorService       $deprecator       The {@link DeprecatorService deprecator service}.
+ * @property ElementsService         $elements         The {@link ElementsService elements service}.
+ * @property EmailMessagesService    $emailMessages    The {@link EmailMessagesService email messages service}.
+ * @property EmailService            $email            The {@link EmailService email service}.
+ * @property EntriesService          $entries          The {@link EntriesService entries service}.
+ * @property EntryRevisionsService   $entryRevisions   The {@link EntryRevisionsService entry revisions service}.
+ * @property EtService               $et               The {@link EtService E.T. service}.
+ * @property FeedsService            $feeds            The {@link FeedsService feeds service}.
+ * @property FieldsService           $fields           The {@link FieldsService fields service}.
+ * @property FileCache               $fileCache        {@link FileCache File caching}.
+ * @property GlobalsService          $globals          The {@link GlobalsService globals service}.
+ * @property HttpRequestService      $request          The {@link HttpRequestService request service}.
+ * @property HttpSessionService      $httpSession      The {@link HttpSessionService HTTP session service}.
+ * @property ImagesService           $images           The {@link ImagesService images service}.
+ * @property InstallService          $install          The {@link InstallService install service}.
+ * @property LocalizationService     $localization     The {@link LocalizationService localization service}.
+ * @property MatrixService           $matrix           The {@link MatrixService matrix service}.
+ * @property MigrationsService       $migrations       The {@link MigrationsService migrations service}.
+ * @property PathService             $path             The {@link PathService path service}.
+ * @property PluginsService          $plugins          The {@link PluginsService plugins service}.
+ * @property RelationsService        $relations        The {@link RelationsService relations service}.
+ * @property ResourcesService        $resources        The {@link ResourcesService resources service}.
+ * @property RoutesService           $routes           The {@link RoutesService routes service}.
+ * @property SearchService           $search           The {@link SearchService search service}.
+ * @property SectionsService         $sections         The {@link SectionsService sections service}.
+ * @property SecurityService         $security         The {@link SecurityService security service}.
+ * @property StructuresService       $structures       The {@link StructuresService structures service}.
+ * @property SystemSettingsService   $systemSettings   The {@link SystemSettingsService system settings service}.
+ * @property TagsService             $tags             The {@link TagsService tags service}.
+ * @property TasksService            $tasks            The {@link TasksService tasks service}.
+ * @property TemplateCacheService    $templateCache    The {@link TemplateCacheService template cache service}.
+ * @property TemplatesService        $templates        The {@link TemplatesService template service}.
+ * @property TokensService           $tokens           The {@link TokensService tokens service}.
+ * @property UpdatesService          $updates          The {@link UpdatesService updates service}.
+ * @property UserGroupsService       $userGroups       The {@link UserGroupsService user groups service}.
+ * @property UserPermissionsService  $userPermissions  The {@link UserPermissionsService user permission service}.
+ * @property UserSessionService      $userSession      The {@link UserSessionService user session service}.
+ * @property UsersService            $users            The {@link UsersService users service}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -61,21 +61,24 @@ namespace Craft;
  */
 class WebApp extends \CWebApplication
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string The language that the application is written in. This mainly refers to the language that the messages
-	 *             and view files are in.
+	 * The language that the application is written in. This mainly refers to the
+	 * language that the messages and view files are in.
+     *
+	 * Setting it here even though CApplication already defaults to 'en_us', so
+	 * it's clear and in case they change it down the road.
 	 *
-	 *             Setting it here even though CApplication already defaults to 'en_us', so it's clear and in case they
-	 *             change it down the road.
+	 * @var string
 	 */
 	public $sourceLanguage = 'en_us';
 
 	/**
-	 * @var array List of built-in component aliases to be imported.
+	 * List of built-in component aliases to be imported.
+	 *
+	 * @var array
 	 */
 	public $componentAliases;
 
@@ -104,9 +107,8 @@ class WebApp extends \CWebApplication
 	 */
 	private $_gettingLanguage = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null
@@ -125,7 +127,8 @@ class WebApp extends \CWebApplication
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
-		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
+		// Initialize Cache, HttpRequestService and LogRouter right away
+		// (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('request');
 		$this->getComponent('log');
@@ -209,8 +212,9 @@ class WebApp extends \CWebApplication
 		// Set the edition components
 		$this->_setEditionComponents();
 
-		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
-		// If we're in maintenance mode and it's not a site request, show the manual update template.
+		// isCraftDbMigrationNeeded will return true if we're in the middle of a
+		// manual or auto-update for Craft itself. If we're in maintenance mode
+		// and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
 			($this->isInMaintenanceMode() && $this->request->isCpRequest()) ||
@@ -221,7 +225,8 @@ class WebApp extends \CWebApplication
 			$this->_processUpdateLogic();
 		}
 
-		// If there's a new version, but the schema hasn't changed, just update the info table
+		// If there's a new version, but the schema hasn't changed, just update
+		// the info table
 		if ($this->updates->hasCraftBuildChanged())
 		{
 			$this->updates->updateCraftVersionInfo();
@@ -260,14 +265,16 @@ class WebApp extends \CWebApplication
 				$this->_processUpdateLogic();
 			}
 
-			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+			// If this is a non-login, non-validate, non-setPassword CP request,
+			// make sure the user has access to the CP
 			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
 			{
 				// Make sure the user has access to the CP
 				$this->userSession->requireLogin();
 				$this->userSession->requirePermission('accessCp');
 
-				// If they're accessing a plugin's section, make sure that they have permission to do so
+				// If they're accessing a plugin's section, make sure that they
+				// have permission to do so
 				$firstSeg = $this->request->getSegment(1);
 				if ($firstSeg)
 				{
@@ -322,7 +329,8 @@ class WebApp extends \CWebApplication
 			}
 			else
 			{
-				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+				// We tried to get the language, but something went wrong. Use
+				// fallback to prevent infinite loop.
 				$this->setLanguage($this->_getFallbackLanguage());
 				$this->_gettingLanguage = false;
 			}
@@ -410,8 +418,9 @@ class WebApp extends \CWebApplication
 	/**
 	 * Gets the viewPath for the incoming request.
 	 *
-	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path depends on the request type,
-	 * which is initialized after web application, so we override getViewPath().
+	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path
+	 * depends on the request type, which is initialized after web application,
+	 * so we override getViewPath().
 	 *
 	 * @return string
 	 */
@@ -595,7 +604,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
+	 * Attaches an event listener, or remembers it for later if the component
+	 * has not been initialized yet.
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
@@ -625,7 +635,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Override getComponent() so we can attach any pending events if the component is getting initialized.
+	 * Override getComponent() so we can attach any pending events if the
+	 * component is getting initialized.
 	 *
 	 * @param string $id
 	 * @param bool   $createIfNull
@@ -661,8 +672,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Returns the system time zone.  Note that this method cannot be in AppBehavior, because Yii will check
-	 * \CApplication->getTimeZone instead.
+	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior},
+	 * because Yii will check {@link CApplication::getTimeZone()} instead.
 	 *
 	 * @return string
 	 */
@@ -672,7 +683,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
+	 * Tries to find a match between the browser's preferred locales and the locales
+	 * Craft has been translated into.
 	 *
 	 * @return string
 	 */
@@ -696,9 +708,8 @@ class WebApp extends \CWebApplication
 		return false;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Attaches any pending event listeners to the newly-initialized component.
@@ -739,7 +750,8 @@ class WebApp extends \CWebApplication
 			// Don't want to log anything on a resource request.
 			$this->log->removeRoute('FileLogRoute');
 
-			// Get the path segments, except for the first one which we already know is "resources"
+			// Get the path segments, except for the first one which we already
+			// know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 			$path = implode('/', $segs);
 
@@ -842,7 +854,8 @@ class WebApp extends \CWebApplication
 					// Place this within a try/catch in case userSession is being fussy.
 					try
 					{
-						// If the user is logged in *and* has a primary language set, use that
+						// If the user is logged in *and* has a primary language
+						// set, use that
 						$user = $this->userSession->getUser();
 
 						if ($user && $user->preferredLocale)
@@ -855,7 +868,8 @@ class WebApp extends \CWebApplication
 						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
 					}
 
-					// Otherwise check if the browser's preferred language matches any of the site locales
+					// Otherwise check if the browser's preferred language matches
+					// any of the site locales
 					$browserLanguages = $this->request->getBrowserLanguages();
 
 					if ($browserLanguages)
@@ -887,13 +901,15 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Tries to find a language match with the user's browser's preferred language(s).  If not uses the app's sourceLanguage.
+	 * Tries to find a language match with the user's browser's preferred language(s).
+	 * If not uses the app's sourceLanguage.
 	 *
 	 * @return string
 	 */
 	private function _getFallbackLanguage()
 	{
-		// See if we have the CP translated in one of the user's browsers preferred language(s)
+		// See if we have the CP translated in one of the user's browsers
+		// preferred language(s)
 		$language = $this->getTranslatedBrowserLanguage();
 
 		// Default to the source language.
@@ -940,8 +956,10 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * If there is not cached app path or the existing cached app path does not match the current one, let’s run the requirement checker again.
-	 * This should catch the case where an install is deployed to another server that doesn’t meet Craft’s minimum requirements.
+	 * If there is not cached app path or the existing cached app path does not
+	 * match the current one, let’s run the requirement checker again. This should
+	 * catch the case where an install is deployed to another server that doesn’t
+	 * meet Craft’s minimum requirements.
 	 *
 	 * @return null
 	 */
@@ -1025,7 +1043,8 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for
+			// Use our own error template in case the custom 503 template comes
+			// with any SQL queries we're not ready for
 			$this->path->setTemplatesPath($this->path->getCpTemplatesPath());
 
 			throw new HttpException(503);

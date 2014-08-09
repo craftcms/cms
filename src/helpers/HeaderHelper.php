@@ -14,22 +14,21 @@ namespace Craft;
  */
 class HeaderHelper
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private static $_mimeType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the MIME type that is going to be included in the response via the Content-Type header,
-	 * whether that has been set explicitly in the PHP code or if it's going to be based on the default_mimetype setting in php.ini.
+	 * Returns the MIME type that is going to be included in the response via
+	 * the Content-Type header, whether that has been set explicitly in the PHP
+	 * code or if it's going to be based on the default_mimetype setting in php.ini.
 	 *
 	 * @return string
 	 */
@@ -108,7 +107,8 @@ class HeaderHelper
 	}
 
 	/**
-	 * Tells the browser not to request this content again the next $sec seconds but use the browser cached content
+	 * Tells the browser not to request this content again the next $sec seconds
+	 * but use the browser cached content.
 	 *
 	 * @param int $seconds Time in seconds to hold in browser cache
 	 *
@@ -185,8 +185,9 @@ class HeaderHelper
 
 
 	/**
-	 * Tells the browser the length of the following content.  This mostly makes sense when using the download function
-	 * so the browser can calculate how many bytes are left during the process
+	 * Tells the browser the length of the following content. This mostly makes
+	 * sense when using the download function so the browser can calculate how
+	 * many bytes are left during the process.
 	 *
 	 * @param int $sizeInBytes The content size in bytes
 	 *

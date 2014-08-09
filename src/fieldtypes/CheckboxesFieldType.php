@@ -13,18 +13,16 @@ namespace Craft;
  */
 class CheckboxesFieldType extends BaseOptionsFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	protected $multi = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -49,7 +47,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for any default options
-		if ($this->isFresh())
+		if ($this->isFresh() && !count($values))
 		{
 			$values = array();
 
@@ -69,9 +67,8 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the Options setting.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class InstallStatus extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Success = 'success';
 	const Failed  = 'failed';

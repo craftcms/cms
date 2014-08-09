@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FeedsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * return void
@@ -24,7 +23,8 @@ class FeedsService extends BaseApplicationComponent
 	{
 		parent::init();
 
-		// Import this here to ensure that libs like SimplePie are using our version of the class and not any servers's random version.
+		// Import this here to ensure that libs like SimplePie are using our version
+		// of the class and not any server's random version.
 		require_once(Craft::getPathOfAlias('app.vendor.simplepie.simplepie.idn.').DIRECTORY_SEPARATOR.'idna_convert.class.php');
 	}
 
@@ -34,7 +34,8 @@ class FeedsService extends BaseApplicationComponent
 	 * @param string|array $url
 	 * @param int          $limit
 	 * @param int          $offset
-	 * @param null         $cacheDuration Any valid PHP time format {@see http://www.php.net/manual/en/datetime.formats.time.php}
+	 * @param null         $cacheDuration Any valid PHP time format
+	 *                                    {@see http://www.php.net/manual/en/datetime.formats.time.php}
 	 *
 	 * @return array
 	 */
@@ -85,9 +86,8 @@ class FeedsService extends BaseApplicationComponent
 		return $items;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $objects

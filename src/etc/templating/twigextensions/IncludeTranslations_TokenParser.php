@@ -13,9 +13,8 @@ namespace Craft;
  */
 class IncludeTranslations_TokenParser extends \Twig_TokenParser
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Parses {% includeTranslations %} tags.

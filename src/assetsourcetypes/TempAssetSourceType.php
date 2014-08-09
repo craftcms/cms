@@ -13,25 +13,22 @@ namespace Craft;
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const sourceName = "Temporary source";
 	const sourceType = "Temp";
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
 	protected $isSourceLocal = true;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the name of the source type.

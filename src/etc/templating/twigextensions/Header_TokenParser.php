@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Header_TokenParser extends \Twig_TokenParser
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Parses {% requireLogin %} tags.

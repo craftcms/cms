@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class EntryRevisionsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a draft by its ID.
@@ -140,7 +139,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 		if (!$draft->name && $draft->id)
 		{
-			// Get the total number of exsiting drafts for this entry/locale
+			// Get the total number of existing drafts for this entry/locale
 			$totalDrafts = craft()->db->createCommand()
 				->from('entrydrafts')
 				->where(
@@ -324,7 +323,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function saveVersion(EntryModel $entry)
 	{
-		// Get the total number of exsiting versions for this entry/locale
+		// Get the total number of existing versions for this entry/locale
 		$totalVersions = craft()->db->createCommand()
 			->from('entryversions')
 			->where(
@@ -438,9 +437,8 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a draft record.

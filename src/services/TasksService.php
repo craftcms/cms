@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TasksService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class TasksService extends BaseApplicationComponent
 	 */
 	private $_listeningForRequestEnd = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Creates a task to run later in the system.
@@ -131,6 +129,8 @@ class TasksService extends BaseApplicationComponent
 
 	/**
 	 * Closes the connection with the client and turns the request into a task runner.
+	 *
+	 * @return null
 	 */
 	public function closeAndRun()
 	{
@@ -502,7 +502,8 @@ class TasksService extends BaseApplicationComponent
 	 */
 	public function getNextPendingTask($type = null)
 	{
-		// If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
+		// If a type was passed, we don't need to actually save it, as it's
+		// probably not an actual task-running request.
 		if ($type)
 		{
 			$pendingTasks = $this->getPendingTasks($type, 1);
@@ -554,9 +555,8 @@ class TasksService extends BaseApplicationComponent
 		return $success;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a task by its ID.

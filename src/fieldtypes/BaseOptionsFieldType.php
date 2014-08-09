@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BaseOptionsFieldType extends BaseFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -27,9 +26,8 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	private $_options;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the content attribute config.
@@ -159,9 +157,8 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 		return $value;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the Options setting.

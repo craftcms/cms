@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AppNewReleaseModel extends BaseModel
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

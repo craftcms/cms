@@ -13,26 +13,23 @@ namespace Craft;
  */
 class AssetOperationResponseModel extends BaseModel
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const StatusError = 'error';
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var array
 	 */
 	private $_data = array();
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Set an error message.
@@ -172,9 +169,8 @@ class AssetOperationResponseModel extends BaseModel
 		return array();
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

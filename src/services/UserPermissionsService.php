@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class UserPermissionsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -29,9 +28,8 @@ class UserPermissionsService extends BaseApplicationComponent
 	 */
 	private $_permissionsByUserId;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the known permissions, sorted by category.
@@ -41,6 +39,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	public function getAllPermissions()
 	{
 		// General
+		// ---------------------------------------------------------------------
 
 		$general = array(
 			'accessSiteWhenSystemIsOff' => array(
@@ -72,6 +71,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		$permissions[Craft::t('General')] = $general;
 
 		// Users
+		// ---------------------------------------------------------------------
 
 		$permissions[Craft::t('Users')] = array(
 			'editUsers' => array(
@@ -94,6 +94,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		);
 
 		// Locales
+		// ---------------------------------------------------------------------
 
 		if (craft()->isLocalized())
 		{
@@ -109,6 +110,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Entries
+		// ---------------------------------------------------------------------
 
 		$sections = craft()->sections->getAllSections();
 
@@ -127,6 +129,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Global sets
+		// ---------------------------------------------------------------------
 
 		$globalSets = craft()->globals->getAllSets();
 
@@ -136,6 +139,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Categories
+		// ---------------------------------------------------------------------
 
 		$categoryGroups = craft()->categories->getAllGroups();
 
@@ -145,6 +149,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Asset sources
+		// ---------------------------------------------------------------------
 
 		$assetSources = craft()->assetSources->getAllSources();
 
@@ -155,6 +160,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Plugins
+		// ---------------------------------------------------------------------
 
 		foreach (craft()->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
@@ -335,9 +341,8 @@ class UserPermissionsService extends BaseApplicationComponent
 		return true;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the entry permissions for a given Single section.
@@ -499,8 +504,9 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * Filters out any orphaned permissions.
 	 *
 	 * @param array $postedPermissions The posted permissions.
-	 * @param array $groupPermissions  Permissions the user is already assigned to via their group, if we're saving a
-	 *                                 user's permissions.
+	 * @param array $groupPermissions  Permissions the user is already assigned to
+	 *                                 via their group, if we're saving a user's
+	 *                                 permissions.
 	 *
 	 * @return array $filteredPermissions The permissions we'll actually let them save.
 	 */
@@ -533,7 +539,8 @@ class UserPermissionsService extends BaseApplicationComponent
 	{
 		foreach ($permissionsGroup as $name => $data)
 		{
-			// Was this permission in the post data, or do they already have it via their group?
+			// Was this permission in the post data, or do they already have it
+			// via their group?
 			if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions))
 			{
 				// If it was in the post data, give it to them directly now
@@ -551,7 +558,8 @@ class UserPermissionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a permission record based on its name. If a record doesn't exist, it will be created.
+	 * Returns a permission record based on its name. If a record doesn't
+	 * exist, it will be created.
 	 *
 	 * @param string $permissionName
 	 *

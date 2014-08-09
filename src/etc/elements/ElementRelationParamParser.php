@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementRelationParamParser
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var int
@@ -42,9 +41,8 @@ class ElementRelationParamParser
 	 */
 	private $_sourceLocaleParamCount;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -61,7 +59,8 @@ class ElementRelationParamParser
 	}
 
 	/**
-	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
+	 * Parses a relatedTo criteria param and returns the condition(s) or 'false'
+	 * if there's an issue.
 	 *
 	 * @param mixed     $relatedTo
 	 * @param DbCommand $query
@@ -91,7 +90,8 @@ class ElementRelationParamParser
 
 		if ($glue == 'or')
 		{
-			// Group all of the unspecified elements, so we avoid adding massive JOINs to the query
+			// Group all of the unspecified elements, so we avoid adding massive
+			// JOINs to the query
 			$unspecifiedElements = array();
 
 			foreach ($relatedTo as $i => $relCriteria)
@@ -146,7 +146,8 @@ class ElementRelationParamParser
 	}
 
 	/**
-	 * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
+	 * Returns whether the relatedTo value appears to be for selecting the targets
+	 * of a single relation field.
 	 *
 	 * @return bool
 	 */
@@ -160,12 +161,12 @@ class ElementRelationParamParser
 		);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
-	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
+	 * Parses a part of a relatedTo criteria param and returns the condition or
+	 * 'false' if there's an issue.
 	 *
 	 * @param mixed     $relCriteria
 	 * @param DbCommand $query
@@ -361,8 +362,9 @@ class ElementRelationParamParser
 			}
 		}
 
-		// If there were no fields, or there are some non-Matrix fields, add the normal relation condition
-		// (Basically, run this code if the rel criteria wasn't exclusively for Matrix.)
+		// If there were no fields, or there are some non-Matrix fields, add the
+		// normal relation condition. (Basically, run this code if the rel criteria
+		// wasn't exclusively for Matrix.)
 		if (empty($relCriteria['field']) || $normalFieldIds)
 		{
 			if (isset($relCriteria['sourceElement']))

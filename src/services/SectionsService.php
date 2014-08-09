@@ -13,9 +13,8 @@ namespace Craft;
  */
 class SectionsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -47,9 +46,8 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	private $_entryTypesById;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the section IDs.
@@ -210,8 +208,8 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionById($sectionId)
 	{
-		// If we've already fetched all sections we can save ourselves a trip to the DB
-		// for section IDs that don't exist
+		// If we've already fetched all sections we can save ourselves a trip to
+		// the DB for section IDs that don't exist
 		if (!$this->_fetchedAllSections &&
 			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
 		)
@@ -458,7 +456,8 @@ class SectionsService extends BaseApplicationComponent
 				}
 
 				// Might as well update our cache of the section while we have it.
-				// (It's possible that the URL format includes {section.handle} or something...)
+				// (It's possible that the URL format includes {section.handle}
+				// or something...)
 				$this->_sectionsById[$section->id] = $section;
 
 				// Update the sections_i18n table
@@ -525,7 +524,8 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
+					// Let's grab all of the entry type IDs to save ourselves a
+					// query down the road if this is a Single
 					$entryTypeIds = craft()->db->createCommand()
 						->select('id')
 						->from('entrytypes')
@@ -557,8 +557,10 @@ class SectionsService extends BaseApplicationComponent
 				{
 					case SectionType::Single:
 					{
-						// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this section.
-						// We also want to make sure the entry has rows in the i18n tables for each of the sections' locales.
+						// In a nut, we want to make sure that there is one and
+						// only one Entry Type and Entry for this section. We also
+						// want to make sure the entry has rows in the i18n tables
+						// for each of the sections' locales.
 
 						$singleEntryId = null;
 
@@ -725,7 +727,7 @@ class SectionsService extends BaseApplicationComponent
 	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteSectionById($sectionId)
 	{
 		if (!$sectionId)
@@ -779,7 +781,8 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
+	 * Returns whether a section's entries have URLs, and if the section's
+	 * template path is valid.
 	 *
 	 * @param SectionModel $section
 	 *
@@ -1006,7 +1009,7 @@ class SectionsService extends BaseApplicationComponent
 	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteEntryTypeById($entryTypeId)
 	{
 		if (!$entryTypeId)
@@ -1136,9 +1139,8 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sections.

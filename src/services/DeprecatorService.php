@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DeprecatorService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -32,9 +31,8 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private $_allLogs;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Logs a new deprecation error.
@@ -161,9 +159,8 @@ class DeprecatorService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
@@ -174,7 +171,8 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
-		// Get the stack trace, but skip the first one, since it's just the call to this private function
+		// Get the stack trace, but skip the first one, since it's just the call
+		// to this private function
 		$traces = debug_backtrace();
 		array_shift($traces);
 

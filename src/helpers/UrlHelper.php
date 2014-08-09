@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UrlHelper
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether a given string appears to be an absolute URL.
@@ -226,9 +225,12 @@ class UrlHelper
 	/**
 	 * Returns a resource URL.
 	 *
-	 * @param string $path
+	 * @param string            $path
 	 * @param array|string|null $params
-	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @param string|null       $protocol The protocol to use (e.g. http, https).
+	 *                                    If empty, the protocol used for the current
+	 *                                    request will be used.
+	 *
 	 * @return string
 	 */
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
@@ -237,8 +239,10 @@ class UrlHelper
 
 		if ($path)
 		{
-			// If we've served this resource before, we should have a cached copy of the server path already.
-			// Use that to get its timestamp, and add timestamp to the resource URL so ResourcesService sends it with a Pragma: Cache header.
+			// If we've served this resource before, we should have a cached copy
+			// of the server path already. Use that to get its timestamp, and add
+			// timestamp to the resource URL so ResourcesService sends it with
+			// a Pragma: Cache header.
 
 			$realPath = craft()->resources->getCachedResourcePath($path);
 
@@ -261,18 +265,20 @@ class UrlHelper
 	/**
 	 * @param string $path
 	 * @param null   $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @param string $protocol The protocol to use (e.g. http, https). If empty, the
+	 *                         protocol used for the current request will be used.
+	 *
 	 * @return array|string
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
+
 		return static::getUrl($path, $params, $protocol, true);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a URL.

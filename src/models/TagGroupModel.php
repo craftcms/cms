@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TagGroupModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated tag group's name as the string representation.
@@ -37,9 +36,8 @@ class TagGroupModel extends BaseModel
 		);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

@@ -13,18 +13,18 @@ namespace Craft;
  */
 abstract class BaseTask extends BaseSavableComponentType implements ITask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string The type of component this is
+	 *  The type of component this is.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'Task';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -58,9 +58,8 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 		return true;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Creates and runs a subtask.
@@ -73,7 +72,8 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	 */
 	protected function runSubTask($taskClassName, $taskDescription = null, $settings = null)
 	{
-		$task = craft()->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
+		$task
+			= craft()->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
 		return craft()->tasks->runTask($task);
 	}
 }

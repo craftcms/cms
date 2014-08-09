@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PluginsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Installs a plugin.

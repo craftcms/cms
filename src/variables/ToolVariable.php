@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ToolVariable extends BaseComponentTypeVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tool's icon value.

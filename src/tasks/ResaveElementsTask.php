@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ResaveElementsTask extends BaseTask
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -32,9 +31,8 @@ class ResaveElementsTask extends BaseTask
 	 */
 	private $_elementIds;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the default description for this task.
@@ -59,7 +57,8 @@ class ResaveElementsTask extends BaseTask
 	{
 		$settings = $this->getSettings();
 
-		// Let's save ourselves some trouble and just clear all the caches for this element type
+		// Let's save ourselves some trouble and just clear all the caches for
+		// this element type
 		craft()->templateCache->deleteCachesByElementType($settings->elementType);
 
 		// Now find the affected element IDs
@@ -103,9 +102,8 @@ class ResaveElementsTask extends BaseTask
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.

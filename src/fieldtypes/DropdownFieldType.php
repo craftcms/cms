@@ -13,9 +13,8 @@ namespace Craft;
  */
 class DropdownFieldType extends BaseOptionsFieldType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of field this is.
@@ -40,7 +39,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for a default option
-		if ($this->isFresh())
+		if ($this->isFresh() && (!$value || !$value->value))
 		{
 			foreach ($options as $option)
 			{
@@ -59,9 +58,8 @@ class DropdownFieldType extends BaseOptionsFieldType
 		));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the label for the Options setting.

@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class UserStatus extends BaseEnum
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const Active    = 'active';
 	const Locked    = 'locked';

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class GlobalsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,9 +36,8 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	private $_globalSetsById;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the global set IDs.
@@ -333,7 +331,7 @@ class GlobalsService extends BaseApplicationComponent
 	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteSetById($setId)
 	{
 		if (!$setId)

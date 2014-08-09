@@ -13,12 +13,12 @@ namespace Craft;
  */
 class UtilsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before
+	 * the controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -290,7 +290,8 @@ class UtilsController extends BaseController
 
 							$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 1));
 
-							// We can't just grab the profile info, we need to do some extra processing on it.
+							// We can't just grab the profile info, we need to do
+							// some extra processing on it.
 							$tempProfile = array_slice($rowContents, $profileStart);
 
 							$profile = array();
@@ -412,9 +413,8 @@ class UtilsController extends BaseController
 		craft()->end();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $arrayToClean

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class AssetTransformIndexModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the folder name as the string representation.
@@ -27,9 +26,8 @@ class AssetTransformIndexModel extends BaseModel
 		return $this->id;
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

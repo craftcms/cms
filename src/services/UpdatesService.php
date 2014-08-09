@@ -13,18 +13,16 @@ namespace Craft;
  */
 class UpdatesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var UpdateModel
 	 */
 	private $_updateModel;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $craftReleases
@@ -242,7 +240,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Checks to see if Craft can write to a defined set of folders/files that are needed for auto-update to work.
+	 * Checks to see if Craft can write to a defined set of folders/files that are
+	 * needed for auto-update to work.
 	 *
 	 * @return array|null
 	 */
@@ -566,8 +565,9 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns true is the build stored in craft_info is less than the minimum required build on the file system.
-	 * This effectively makes sure that a user cannot manually update past a manual breakpoint.
+	 * Returns true is the build stored in craft_info is less than the minimum
+	 * required build on the file system. This effectively makes sure that a user
+	 * cannot manually update past a manual breakpoint.
 	 *
 	 * @return bool
 	 */
@@ -577,7 +577,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the uploaded DB schema is equal to or greater than the installed schema
+	 * Returns whether the uploaded DB schema is equal to or greater than the
+	 * installed schema
 	 *
 	 * @return bool
 	 */

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class TemplatesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -107,9 +106,8 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private $_renderingTemplate;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Init
@@ -124,7 +122,7 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Gets the Twig instance.
 	 *
-	 * @param  string            $loaderClass The template loader class to use with the environment.
+	 * @param string $loaderClass The template loader class to use with the environment.
 	 *
 	 * @return \Twig_Environment
 	 */
@@ -174,7 +172,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the template path that is currently being rendered, or the full template if renderString() or renderObjectTemplate() was called.
+	 * Returns the template path that is currently being rendered, or the full
+	 * template if {@link renderString()} or {@link renderObjectTemplate()} was called.
 	 *
 	 * @return string|null
 	 */
@@ -495,7 +494,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Clears and ends a JS buffer, returning whatever JS was included while the buffer was active.
+	 * Clears and ends a JS buffer, returning whatever JS was included while
+	 * the buffer was active.
 	 *
 	 * @param bool $scriptTag
 	 *
@@ -526,7 +526,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the nodes prepared for inclusion in the <head> of the template, and flushes out the head nodes queue.
+	 * Returns the nodes prepared for inclusion in the <head> of the template,
+	 * and flushes out the head nodes queue.
 	 *
 	 * @return string
 	 */
@@ -577,8 +578,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the nodes prepared for inclusion right above the </body> in the template, and flushes out the foot nodes
-	 * queue.
+	 * Returns the nodes prepared for inclusion right above the </body> in the
+	 * template, and flushes out the foot nodes queue.
 	 *
 	 * @return string
 	 */
@@ -657,8 +658,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the translations prepared for inclusion by includeTranslations(), in JSON, and flushes out the
-	 * translations queue.
+	 * Returns the translations prepared for inclusion by includeTranslations(),
+	 * in JSON, and flushes out the translations queue.
 	 *
 	 * @return string
 	 */
@@ -728,7 +729,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Otherwise maybe it's a plugin template?
 
-		// Only attempt to match against a plugin's templates if this is a CP or action request.
+		// Only attempt to match against a plugin's templates if this is a CP or
+		// action request.
 		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
 		{
 			// Sanitize
@@ -782,7 +784,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string      $html            The template with the inputs.
 	 * @param string|null $namespace       The namespace to make inputs belong to.
-	 * @param bool        $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
+	 * @param bool        $otherAttributes Whether id=, for=, etc., should also be
+	 *                                     namespaced. Defaults to true.
 	 *
 	 * @return string The template with namespaced inputs.
 	 */
@@ -925,9 +928,8 @@ class TemplatesService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Twig environment options
@@ -955,8 +957,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from
-	 * {@link Twig_Loader_Filesystem}.
+	 * Ensures that a template name isn't null, and that it doesn't lead outside
+	 * the template folder. Borrowed from {@link Twig_Loader_Filesystem}.
 	 *
 	 * @param string $name
 	 *
@@ -976,7 +978,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Searches for localized template files, and returns the first match if there is one.
+	 * Searches for localized template files, and returns the first match if
+	 * there is one.
 	 *
 	 * @param string $path
 	 *
@@ -1064,7 +1067,8 @@ class TemplatesService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
+			// Wait around for plugins to actually be loaded, then do it for all
+			// Twig environments that have been created.
 			craft()->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
 		}
 	}

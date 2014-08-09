@@ -13,9 +13,8 @@ namespace Craft;
  */
 class JsonHelper extends \CJSON
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null

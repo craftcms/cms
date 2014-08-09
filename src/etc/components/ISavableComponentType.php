@@ -13,9 +13,8 @@ namespace Craft;
  */
 interface ISavableComponentType extends IComponentType
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return BaseModel

@@ -13,18 +13,16 @@ namespace Craft;
  */
 class InstallService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_user;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Installs Craft!
@@ -151,9 +149,8 @@ class InstallService extends BaseApplicationComponent
 		return $records;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Creates the tables as defined in the records.
@@ -722,10 +719,10 @@ class InstallService extends BaseApplicationComponent
 		$homepageLayout->type = ElementType::Entry;
 
 		$homepageSingleSection = new SectionModel();
-		$homepageSingleSection->name       = Craft::t('Homepage');
-		$homepageSingleSection->handle     = 'homepage';
-		$homepageSingleSection->type       = SectionType::Single;
-		$homepageSingleSection->hasUrls  = false;
+		$homepageSingleSection->name = Craft::t('Homepage');
+		$homepageSingleSection->handle = 'homepage';
+		$homepageSingleSection->type = SectionType::Single;
+		$homepageSingleSection->hasUrls = false;
 		$homepageSingleSection->template = 'index';
 
 		$primaryLocaleId = craft()->i18n->getPrimarySiteLocaleId();

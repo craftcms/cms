@@ -13,9 +13,8 @@ namespace Craft;
  */
 class UpdateModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param string $name
@@ -33,9 +32,8 @@ class UpdateModel extends BaseModel
 		parent::setAttribute($name, $value);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

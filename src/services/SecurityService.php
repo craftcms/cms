@@ -13,18 +13,16 @@ namespace Craft;
  */
 class SecurityService extends \CSecurityManager
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var mixed
 	 */
 	private $_blowFishHashCost;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return null
@@ -47,7 +45,8 @@ class SecurityService extends \CSecurityManager
 	 * Hashes a given password with the blowfish encryption algorithm.
 	 *
 	 * @param string $string       The string to hash
-	 * @param bool   $validateHash If you want to validate the just generated hash. Will throw an exception is validation fails.
+	 * @param bool   $validateHash If you want to validate the just generated hash.
+	 *                             Will throw an exception is validation fails.
 	 *
 	 * @throws Exception
 	 * @return string The hash.

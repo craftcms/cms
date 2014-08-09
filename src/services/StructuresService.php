@@ -13,21 +13,19 @@ namespace Craft;
  */
 class StructuresService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	private $_rootElementRecordsByStructureId;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Structure CRUD
-	// ==============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a structure by its ID.
@@ -108,6 +106,7 @@ class StructuresService extends BaseApplicationComponent
 	}
 
 	// Moving elements around
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Prepends an element to another within a given structure.
@@ -122,6 +121,7 @@ class StructuresService extends BaseApplicationComponent
 	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+
 		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
 	}
 
@@ -138,6 +138,7 @@ class StructuresService extends BaseApplicationComponent
 	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
+
 		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
 	}
 
@@ -153,6 +154,7 @@ class StructuresService extends BaseApplicationComponent
 	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
+
 		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
 	}
 
@@ -168,6 +170,7 @@ class StructuresService extends BaseApplicationComponent
 	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
+
 		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
 	}
 
@@ -184,6 +187,7 @@ class StructuresService extends BaseApplicationComponent
 	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto')
 	{
 		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
+
 		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', 'moveBefore', $mode);
 	}
 
@@ -200,12 +204,12 @@ class StructuresService extends BaseApplicationComponent
 	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto')
 	{
 		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
+
 		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a structure element record from given structure and element IDs.

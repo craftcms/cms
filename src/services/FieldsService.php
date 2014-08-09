@@ -13,9 +13,8 @@ namespace Craft;
  */
 class FieldsService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var string
@@ -67,12 +66,11 @@ class FieldsService extends BaseApplicationComponent
 	 */
 	private $_layoutsByType;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Groups
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all field groups.
@@ -209,7 +207,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Fields
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all fields.
@@ -495,7 +493,8 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
-					// Make sure we're working with the latest data in the case of a renamed field.
+					// Make sure we're working with the latest data in the case
+					// of a renamed field.
 					craft()->db->schema->refresh();
 
 					if (craft()->db->columnExists($contentTable, $oldColumnName))
@@ -525,7 +524,8 @@ class FieldsService extends BaseApplicationComponent
 
 				if (!$isNewField)
 				{
-					// Save the old field handle on the model in case the field type needs to do something with it.
+					// Save the old field handle on the model in case the field
+					// type needs to do something with it.
 					$field->oldHandle = $fieldRecord->getOldHandle();
 
 					unset($this->_fieldsByContextAndHandle[$field->context][$field->oldHandle]);
@@ -641,7 +641,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Layouts
-	// =======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a field layout by its ID.
@@ -906,7 +906,7 @@ class FieldsService extends BaseApplicationComponent
 	}
 
 	// Fieldtypes
-	// ==========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all installed fieldtypes.
@@ -949,9 +949,8 @@ class FieldsService extends BaseApplicationComponent
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving groups.

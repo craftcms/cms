@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Namespace_Node extends \Twig_Node
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Compiles a Namespace_Node into PHP.

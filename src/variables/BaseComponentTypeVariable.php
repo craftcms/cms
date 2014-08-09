@@ -13,18 +13,16 @@ namespace Craft;
  */
 abstract class BaseComponentTypeVariable
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var BaseComponentType
 	 */
 	protected $component;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -71,7 +69,8 @@ abstract class BaseComponentTypeVariable
 	}
 
 	/**
-	 * Returns whether this component should be selectable when choosing a component of this type.
+	 * Returns whether this component should be selectable when choosing a
+	 * component of this type.
 	 *
 	 * @return bool
 	 */

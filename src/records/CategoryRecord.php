@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoryRecord extends BaseRecord
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string

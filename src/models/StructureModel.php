@@ -13,9 +13,8 @@ namespace Craft;
  */
 class StructureModel extends BaseModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether elements in this structure can be sorted by the current user.
@@ -27,9 +26,8 @@ class StructureModel extends BaseModel
 		return (!$this->movePermission || craft()->userSession->checkPermission($this->movePermission));
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

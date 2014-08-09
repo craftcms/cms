@@ -13,24 +13,21 @@ namespace Craft;
  */
 class ResourcesService extends BaseApplicationComponent
 {
-	////////////////////
-	// CONSTANTS
-	////////////////////
+	// Constants
+	// =========================================================================
 
 	const DefaultUserphotoFilename = 'user.gif';
 
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
 	 */
 	public $dateParam;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the cached file system path for a given resource, if we have it.
@@ -68,7 +65,8 @@ class ResourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
+	 * Resolves a resource path to the actual file system path, or returns false
+	 * if the resource cannot be found.
 	 *
 	 * @param string $path
 	 *
@@ -269,7 +267,9 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Maybe a plugin wants to do something custom with this URL
 		craft()->plugins->loadPlugins();
+
 		$pluginPaths = craft()->plugins->call('getResourcePath', array($path));
+
 		foreach ($pluginPaths as $path)
 		{
 			if ($path && IOHelper::fileExists($path))
@@ -326,8 +326,10 @@ class ResourcesService extends BaseApplicationComponent
 			throw new HttpException(404);
 		}
 
-		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last modified date.
-		// If the last modified date is less than the timestamp, return a 304 not modified and let the browser serve it from cache.
+		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the
+		// timestamp against requested file's last modified date. If the last
+		// modified date is less than the timestamp, return a 304 not modified
+		// and let the browser serve it from cache.
 		$timestamp = craft()->request->getParam($this->dateParam, null);
 
 		if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER))
@@ -343,8 +345,8 @@ class ResourcesService extends BaseApplicationComponent
 			}
 		}
 
-		// Note that $content may be empty -- they could be requesting a blank text file or something.
-		// It doens't matter. No need to throw a 404.
+		// Note that $content may be empty -- they could be requesting a blank
+		// text file or something. It doens't matter. No need to throw a 404.
 		$content = IOHelper::getFileContents($realPath);
 
 		// Normalize URLs in CSS files
@@ -374,9 +376,8 @@ class ResourcesService extends BaseApplicationComponent
 		craft()->end();
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $match
@@ -396,6 +397,7 @@ class ResourcesService extends BaseApplicationComponent
 		// Make sure this is a resource URL
 		$resourceTrigger = craft()->config->getResourceTrigger();
 		$resourceTriggerPos = mb_strpos($url, $resourceTrigger);
+
 		if ($resourceTriggerPos !== false)
 		{
 			// Give UrlHelper a chance to add the timestamp
@@ -465,10 +467,12 @@ class ResourcesService extends BaseApplicationComponent
 
 		// Do we have a source icon that we can resize?
 		$sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
+
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
 			$sourceFile = craft()->path->getAppPath().'etc/assets/fileicons/'.$sourceSize['size'].'.png';
 			$image = imagecreatefrompng($sourceFile);
+
 			// Text placement.
 			if ($ext)
 			{

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class RoutesVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the routes defined in the CP.

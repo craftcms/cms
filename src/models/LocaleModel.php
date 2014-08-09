@@ -13,9 +13,8 @@ namespace Craft;
  */
 class LocaleModel extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -27,9 +26,8 @@ class LocaleModel extends BaseApplicationComponent
 	 */
 	private $_nameInLanguage;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -83,7 +81,7 @@ class LocaleModel extends BaseApplicationComponent
 
 				if (!$name)
 				{
-					// Try grabbling the language and territory separately...
+					// Try grabbing the language and territory separately...
 					$name = $localeData->getLanguage($this->_id);
 
 					if ($name)

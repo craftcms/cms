@@ -13,9 +13,8 @@ namespace Craft;
  */
 class CategoriesService extends BaseApplicationComponent
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var
@@ -37,12 +36,11 @@ class CategoriesService extends BaseApplicationComponent
 	 */
 	private $_fetchedAllCategoryGroups = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	// Category groups
-	// ===============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the group IDs.
@@ -416,8 +414,8 @@ class CategoriesService extends BaseApplicationComponent
 
 				if (!$isNewCategoryGroup)
 				{
-					// Drop any locales that are no longer being used, as well as the associated category/element
-					// locale rows
+					// Drop any locales that are no longer being used, as well
+					// as the associated category/element locale rows
 
 					$droppedLocaleIds = array_diff(array_keys($oldLocales), array_keys($groupLocales));
 
@@ -462,7 +460,8 @@ class CategoriesService extends BaseApplicationComponent
 							{
 								craft()->config->maxPowerCaptain();
 
-								// Loop through each of the changed locales and update all of the categories’ slugs and URIs
+								// Loop through each of the changed locales and
+								// update all of the categories’ slugs and URIs
 								foreach ($changedLocaleIds as $localeId)
 								{
 									$criteria = craft()->elements->getCriteria(ElementType::Category);
@@ -565,7 +564,7 @@ class CategoriesService extends BaseApplicationComponent
 	}
 
 	// Categories
-	// ==========
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a category by its ID.
@@ -757,6 +756,7 @@ class CategoriesService extends BaseApplicationComponent
 	}
 
 	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onBeforeSaveCategory' event.
@@ -806,9 +806,8 @@ class CategoriesService extends BaseApplicationComponent
 		$this->raiseEvent('onDeleteCategory', $event);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Populates a CategoryGroupModel with attributes from a CategoryGroupRecord.

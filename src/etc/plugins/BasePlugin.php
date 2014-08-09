@@ -13,9 +13,8 @@ namespace Craft;
  */
 abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
@@ -32,9 +31,8 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	protected $componentType = 'Plugin';
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the plugin’s version.
@@ -97,7 +95,8 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 *
 	 * A full URL is not required -- you can simply return "pluginname/settings".
 	 *
-	 * If this is left blank, a simple settings page will be provided, filled with whatever getSettingsHtml() returns.
+	 * If this is left blank, a simple settings page will be provided, filled
+	 * with whatever getSettingsHtml() returns.
 	 *
 	 * @return string|null
 	 */

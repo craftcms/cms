@@ -13,9 +13,8 @@ namespace Craft;
  */
 class ElementsController extends BaseController
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
@@ -115,7 +114,9 @@ class ElementsController extends BaseController
 
 		if ($criteria->limit)
 		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of 50 elements, rather than running two separate element queries
+			// We'll risk a pointless additional Ajax request in the unlikely
+			// event that there are exactly a factor of 50 elements, rather than
+			// running two separate element queries
 			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else
@@ -212,9 +213,8 @@ class ElementsController extends BaseController
 		}
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the element type based on the posted element type class.

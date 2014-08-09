@@ -13,18 +13,18 @@ namespace Craft;
  */
 class DbCommand extends \CDbCommand
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var array Captures the joined tables
+	 * Captures the joined tables.
+	 *
+	 * @var array
 	 */
 	private $_joinedTables;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
@@ -695,9 +695,8 @@ class DbCommand extends \CDbCommand
 		return parent::dropPrimaryKey($name, $table);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Adds a table to our record of joined tables.
@@ -729,7 +728,8 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Adds support for array('column' => 'value') conditional syntax.
-	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'), array('column2' => 'value2'))
+	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'),
+	 * array('column2' => 'value2'))
 	 *
 	 * @param mixed $conditions
 	 * @param array &$params

@@ -13,9 +13,8 @@ namespace Craft;
  */
 class Zip
 {
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $source
@@ -133,6 +132,7 @@ class Zip
 		craft()->config->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($sourceZip);
+
 		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))
 		{
 			return true;
@@ -141,9 +141,8 @@ class Zip
 		return false;
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return PclZip|ZipArchive

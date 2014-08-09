@@ -13,38 +13,46 @@ namespace Craft;
  */
 class CategoriesFieldType extends BaseElementFieldType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Category';
 
 	/**
-	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
+	 * Whether to allow multiple source selection in the settings.
+	 *
+	 * @var bool $allowMultipleSources
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
 	 */
 	protected $inputJsClass = 'Craft.CategorySelectInput';
 
 	/**
-	 * @var string Template to use for field rendering
+	 * Template to use for field rendering
+	 *
+	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
 	/**
-	 * @var bool $sortable Whether the elements have a custom sort order.
+	 * Whether the elements have a custom sort order.
+	 *
+	 * @var bool $sortable
 	 */
 	protected $sortable = false;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Performs any additional actions after the element has been saved.
@@ -90,9 +98,8 @@ class CategoriesFieldType extends BaseElementFieldType
 		}
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns an array of variables that should be passed to the input template.

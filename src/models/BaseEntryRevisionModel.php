@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Client);
  */
 class BaseEntryRevisionModel extends EntryModel
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sets the revision content.
@@ -70,9 +69,8 @@ class BaseEntryRevisionModel extends EntryModel
 		return parent::getUrl();
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

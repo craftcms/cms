@@ -13,9 +13,8 @@ namespace Craft;
  */
 class PluginVariable extends BaseComponentTypeVariable
 {
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the plugin’s display name.

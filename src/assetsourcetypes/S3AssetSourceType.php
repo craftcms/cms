@@ -15,9 +15,8 @@ craft()->requireEdition(Craft::Pro);
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
-	////////////////////
-	// PROPERTIES
-	////////////////////
+	// Properties
+	// =========================================================================
 
 	/**
 	 * A list of predefined endpoints.
@@ -34,9 +33,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	private $_s3;
 
-	////////////////////
-	// PUBLIC METHODS
-	////////////////////
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Get bucket list with credentials.
@@ -164,10 +162,13 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file['name']))
 			{
-				// In S3, it's possible to have files in folders that don't exist. E.g. - one/two/three.jpg.
-				// If folder "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
+				// In S3, it's possible to have files in folders that don't
+				// exist. E.g. - one/two/three.jpg. If folder "one" is empty,
+				// except for folder "two", then "one" won't show up in this
+				//list so we work around it.
 
-				// Matches all paths with folders, except if folder is last or no folder at all.
+				// Matches all paths with folders, except if folder is last or
+				// no folder at all.
 				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
@@ -261,7 +262,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 
-				// Store the local source or delete - maxCacheCloudImageSize is king.
+				// Store the local source or delete - maxCacheCloudImageSize
+				// is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
 				craft()->assetTransforms->deleteSourceIfNecessary($targetPath);
 			}
@@ -395,7 +397,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
+	 * Put an image transform for the File and handle using the provided path to
+	 * the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param                $handle
@@ -411,9 +414,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
-	////////////////////
-	// PROTECTED METHODS
-	////////////////////
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Defines the settings.
@@ -437,7 +439,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param                 $fileName
+	 * @param string           $fileName
 	 *
 	 * @return mixed
 	 */
@@ -551,7 +553,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite IftTrue, will overwrite the target destination.
+	 * @param bool             $overwrite If true, will overwrite the target
+	 *                                    destination.
 	 *
 	 * @return mixed
 	 */
@@ -611,10 +614,12 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			foreach ($transforms as $location)
 			{
-				// Surpress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
+				// Suppress errors when trying to move image transforms. Maybe
+				// the user hasn't updated them yet.
 				$copyResult = @$this->_s3->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \S3::ACL_PUBLIC_READ);
 
-				// If we failed to copy, that's because source wasn't there. Skip delete and save time - everyone's a winner!
+				// If we failed to copy, that's because source wasn't there.
+				// Skip delete and save time - everyone's a winner!
 				if ($copyResult)
 				{
 					@$this->_s3->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
@@ -741,9 +746,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
 	}
 
-	////////////////////
-	// PRIVATE METHODS
-	////////////////////
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Prepare the S3 connection for requests to this bucket.
@@ -771,7 +775,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings The settings to use.  If null, will use current settings.
+	 * @param object|null $settings The settings to use. If null, will use
+	 *                              current settings.
 	 *
 	 * @return string
 	 */
