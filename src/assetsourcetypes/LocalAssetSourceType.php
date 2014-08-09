@@ -287,7 +287,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return true if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param AssetFolderModel $parentPath
 	 * @param string           $folderName
 	 *
 	 * @return boolean
