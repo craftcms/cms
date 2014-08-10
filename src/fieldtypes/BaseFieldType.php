@@ -228,6 +228,16 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	protected function isFresh()
 	{
-		return (!isset($this->element) || (empty($this->element->getContent()->id) && !$this->element->hasErrors()));
+		// If this is for a Matrix block, we're more interested in its owner
+		if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+		{
+			$element = $this->element->getOwner();
+		}
+		else
+		{
+			$element = $this->element;
+		}
+
+		return (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
 	}
 }
