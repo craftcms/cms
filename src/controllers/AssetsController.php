@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles asset tasks.
+ * The AssetsController class is a controller that handles various actions related
+ * to asset tasks, such as uploading files and creating/deleting/renaming files
+ * and folders.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

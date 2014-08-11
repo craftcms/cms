@@ -4,7 +4,8 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Rackspace source type class
+ * The Rackspace asset source type class. Handles the implementation of Rackspace
+ * as an asset source type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

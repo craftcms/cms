@@ -4,7 +4,8 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * S3 source type class.
+ * The S3 asset source type class. Handles the implementation of Amazon S3 as an
+ * asset source type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

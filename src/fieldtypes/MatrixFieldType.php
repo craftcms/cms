@@ -247,7 +247,7 @@ class MatrixFieldType extends BaseFieldType
 	 *
 	 * @param mixed $data
 	 *
-	 * @return mixed
+	 * @return MatrixBlockModel[]
 	 */
 	public function prepValueFromPost($data)
 	{

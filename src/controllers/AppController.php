@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Class AppController
+ * The AppController class is a controller that handles various actions for
+ * Craft updates, control panel requests, upgrading Craft editions and license
+ * requests.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

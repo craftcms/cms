@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Element actions.
+ * The ElementsController class is a controller that handles various element
+ * related actions including retrieving and saving element and their corresponding
+ * HTML.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

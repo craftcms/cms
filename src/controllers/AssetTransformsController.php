@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Handles asset transform tasks.
+ * The AssetTransformsController class is a controller that handles various
+ * actions related to asset transformations, such as creating, editing and
+ * deleting transforms.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

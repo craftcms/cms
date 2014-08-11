@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Temp source type class.
+ * A temporary asset source type class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

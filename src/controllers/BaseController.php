@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Class BaseController
+ * BaseController is a base class that all controllers in Craft extend.
+ *
+ * It extend's Yii's {@link CController} overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -38,7 +40,8 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * Include any route params gathered by UrlManager as controller action params.
+	 * Include any route params gathered by {@link UrlManager} as controller
+	 * action params.
 	 *
 	 * @return array
 	 */
@@ -57,7 +60,8 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the folder containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to craft().
+	 * Craft overrides this since {@link CController}'s version defaults
+	 * $module to craft().
 	 *
 	 * @return string The folder containing the view files for this controller.
 	 */
@@ -75,7 +79,7 @@ abstract class BaseController extends \CController
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param mixed $template      The name of the template to load, or a
-	 *                             StringTemplate object.
+	 *                             {@link StringTemplate} object.
 	 * @param array $variables     The variables that should be available to the template
 	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput

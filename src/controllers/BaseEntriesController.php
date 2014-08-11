@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Handles entry tasks.
+ * BaseController is a base class that any entry related controllers, such as
+ * {@link EntriesController} and {@link EntryRevisionsController} extend to
+ * share common functionality.
+ *
+ * It extend's Yii's {@link CController} overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
