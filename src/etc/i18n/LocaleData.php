@@ -101,7 +101,11 @@ class LocaleData extends \CLocale
 	}
 
 	/**
-	 * @return mixed
+	 * Returns an array of territories for the locale instance or null, if none
+	 * exist.
+	 *
+	 * @return string[]|null An array of all territories for the given locale,
+	 *                       or null, if none exist.
 	 */
 	public function getAllTerritories()
 	{
