@@ -124,7 +124,7 @@ class HttpRequestService extends \CHttpRequest
 			$path = implode('/', $this->_segments);
 			$pageTrigger = preg_quote(craft()->config->get('pageTrigger'), '/');
 
-			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
+			if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match))
 			{
 				// Capture the page num
 				$this->_pageNum = (int) $match[2];
