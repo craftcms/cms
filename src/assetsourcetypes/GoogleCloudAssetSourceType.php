@@ -4,7 +4,8 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Google Cloud source type class.
+ * The Google Cloud asset source type class. Handles the implementation of Google
+ * Cloud as an asset source type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

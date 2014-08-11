@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Asset source base class.
+ * The base class for all asset source types.  Any asset source type must extend
+ * this class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

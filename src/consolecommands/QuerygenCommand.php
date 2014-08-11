@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Query generator console command.
+ * The query generator console command.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

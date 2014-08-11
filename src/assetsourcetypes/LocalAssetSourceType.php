@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Local source type class.
+ * The local asset source type class. Handles the implementation of the local
+ * filesystem as an asset source type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

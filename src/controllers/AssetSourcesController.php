@@ -2,7 +2,10 @@
 namespace Craft;
 
 /**
- * Handles asset source tasks.
+ * The AssetSourcesController class is a controller that handles various actions
+ * related to asset sources, such as creating, editing, renaming and reordering
+ * them.
+ *
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

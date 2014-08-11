@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Class DashboardController
+ * The DashboardController class is a controller that handles various dashboard
+ * related actions including managing widgets, getting {@link FeedWidget} feeds
+ * and sending {@link GetHelpWidget} support ticket requests.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

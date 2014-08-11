@@ -716,7 +716,8 @@ class UsersController extends BaseController
 				$newEmail = null;
 			}
 
-			// You must pass your current password to change these fields for an existing user
+			// You must pass your current password to change these fields for an
+			// existing user
 			if (!$isNewUser && ($newEmail || $newPassword))
 			{
 				// Make sure the correct current password has been submitted
