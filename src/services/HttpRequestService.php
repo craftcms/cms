@@ -122,7 +122,7 @@ class HttpRequestService extends \CHttpRequest
 			// Match against the entire path string as opposed to just the last segment
 			// so that we can support "/page/2"-style pagination URLs
 			$path = implode('/', $this->_segments);
-			$pageTrigger = str_replace('/', '\/', craft()->config->get('pageTrigger'));
+			$pageTrigger = preg_quote(craft()->config->get('pageTrigger'), '/');
 
 			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
 			{
