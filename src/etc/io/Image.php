@@ -365,6 +365,8 @@ class Image
 
 		$options = $this->_getSaveOptions(false);
 
+		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
+		
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
