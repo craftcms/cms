@@ -2,7 +2,14 @@
 namespace Craft;
 
 /**
- * Class UpdateController
+ * The UpdateController class is a controller that handles various update
+ * related tasks such as checking for available updates and running manual and
+ * auto-updates.
+ *
+ * Note that all actions in the controller, except for {@link actionManualUpdate},
+ * {@link actionPrepare}, {@link actionBackupDatabase}, {@link actionUpdateDatabase},
+ * {@link actionCleanUp} and {@link actionRollback} require an authenticated
+ * Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -151,10 +158,9 @@ class UpdateController extends BaseController
 		}
 	}
 
-	// Manual Updates
-	// -------------------------------------------------------------------------
-
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionPrepare()
@@ -200,6 +206,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionProcessDownload()
@@ -229,6 +237,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionBackupFiles()
@@ -256,6 +266,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionUpdateFiles()
@@ -283,6 +295,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionBackupDatabase()
@@ -331,6 +345,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionUpdateDatabase()
@@ -372,6 +388,8 @@ class UpdateController extends BaseController
 
 	/**
 	 * Performs maintenance and clean up tasks after an update.
+	 *
+	 * Called during both a manual and auto-update.
 	 *
 	 * @return null
 	 */
@@ -426,6 +444,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Can be called during both a manual and auto-update.
+	 *
 	 * @throws Exception
 	 * @return null
 	 */

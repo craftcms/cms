@@ -6,6 +6,9 @@ namespace Craft;
  * related actions including retrieving and saving element and their corresponding
  * HTML.
  *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
+ *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement

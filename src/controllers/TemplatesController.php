@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Class TemplatesController
+ * The TemplatesController class is a controller that handles various template
+ * rendering related tasks for both the control panel and front-end of a Craft
+ * site.
+ *
+ * Note that all actions in the controller are open to do not require an
+ * authenticated Craft session in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Class InstallController
+ * The InstallController class is a controller that directs all installation
+ * related tasks such as creating the database schema and default content for a
+ * Craft installation.
+ *
+ * Note that all actions in the controller are open to do not require an
+ * authenticated Craft session in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -38,7 +43,8 @@ class InstallController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before the
+	 * controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null

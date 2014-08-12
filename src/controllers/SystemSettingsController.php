@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Handles settings from the control panel.
+ * The SystemSettingsController class is a controller that handles various
+ * control panel settings related tasks such as displaying, saving and testing
+ * Craft settings in the control panel.
+ *
+ * Note that all actions in this controller require administrator access in
+ * order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Class TagsController
+ * The TagsController class is a controller that handles various tag and tag
+ * group related tasks such as displaying, saving, deleting, searching and
+ * creating tags and tag groups in the control panel.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +22,7 @@ class TagsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Tag settings index.
+	 * Called before displaying the tag settings index page.
 	 *
 	 * @return null
 	 */

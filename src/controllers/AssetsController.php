@@ -6,6 +6,9 @@ namespace Craft;
  * to asset tasks, such as uploading files and creating/deleting/renaming files
  * and folders.
  *
+ * Note that all actions in the controller except {@link actionGenerateTransform}
+ * require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement

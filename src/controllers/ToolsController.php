@@ -2,7 +2,11 @@
 namespace Craft;
 
 /**
- * Handles tool actions.
+ * The ToolsController class is a controller that handles various tools related
+ * tasks such as trigger tool actions.
+ *
+ * Note that all actions in this controller require administrator access in
+ * order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

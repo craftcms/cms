@@ -2,7 +2,16 @@
 namespace Craft;
 
 /**
- * Handles user account related tasks.
+ * The UsersController class is a controller that handles various user account
+ * related tasks such as logging-in, impersonating a user, logging out,
+ * forgetting passwords, setting passwords, validating accounts, activating
+ * accounts, creating users, saving users, processing user avatars, deleting,
+ * suspending and un-suspending users.
+ *
+ * Note that all actions in the controller, except {@link actionLogin},
+ * {@link actionForgotPassword}, {@link actionValidate}, {@link actionSetPassword}
+ * and {@link actionSaveUser} require an authenticated Craft session via
+ * {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Handles section management tasks.
+ * The SectionsController class is a controller that handles various section
+ * and entry type related tasks such as displaying, saving, deleting and
+ * reordering them in the control panel.
+ *
+ * Note that all actions in this controller require administrator access in
+ * order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +22,8 @@ class SectionsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before
+	 * the controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null
