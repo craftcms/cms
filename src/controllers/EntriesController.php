@@ -33,7 +33,8 @@ class EntriesController extends BaseEntriesController
 	 *
 	 * If you have a controller that where the majority of action methods will
 	 * be anonymous, but you only want require login on a few, it's best to use
-	 * craft()->userSession->requireLogin() in the individual methods.
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */

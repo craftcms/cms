@@ -270,9 +270,11 @@ class WebApp extends \CWebApplication
 				// If they're accessing a plugin's section, make sure that they
 				// have permission to do so
 				$firstSeg = $this->request->getSegment(1);
+
 				if ($firstSeg)
 				{
 					$plugin = $plugin = $this->plugins->getPlugin($firstSeg);
+
 					if ($plugin)
 					{
 						$this->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());

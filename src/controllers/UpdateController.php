@@ -6,8 +6,8 @@ namespace Craft;
  * related tasks such as checking for available updates and running manual and
  * auto-updates.
  *
- * Note that all actions in the controller, except for {@link actionManualUpdate},
- * {@link actionPrepare}, {@link actionBackupDatabase}, {@link actionUpdateDatabase},
+ * Note that all actions in the controller, except for {@link actionPrepare},
+ * {@link actionBackupDatabase}, {@link actionUpdateDatabase},
  * {@link actionCleanUp} and {@link actionRollback} require an authenticated
  * Craft session via {@link BaseController::allowAnonymous}.
  *
@@ -35,11 +35,12 @@ class UpdateController extends BaseController
 	 *
 	 * If you have a controller that where the majority of action methods will
 	 * be anonymous, but you only want require login on a few, it's best to use
-	 * craft()->userSession->requireLogin() in the individual methods.
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
+	protected $allowAnonymous = array('actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
 	// Public Methods
 	// =========================================================================
