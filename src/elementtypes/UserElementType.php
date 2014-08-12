@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * User element type.
+ * The UserElementType class is responsible for implementing and defining
+ * users as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Element type interface.
+ * This interface defines the contract that all element types must implement via
+ * {@link BaseElementType}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

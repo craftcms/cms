@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Element type base class.
+ * The base class for all Craft element types. Any element type must extend
+ * this class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
