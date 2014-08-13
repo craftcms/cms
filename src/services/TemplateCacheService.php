@@ -57,6 +57,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	private $_deletedExpiredCaches = false;
 
 	/**
+	 * @var bool Whether all caches have been deleted in this request.
+	 */
+	private $_deletedAllCaches = false;
+
+	/**
 	 * @var bool Whether all caches have been deleted, on a per-element type basis, in this request.
 	 */
 	private $_deletedCachesByElementType;
@@ -263,6 +268,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCacheById($cacheId)
 	{
+		if ($this->_deletedAllCaches)
+		{
+			return false;
+		}
+
 		if (is_array($cacheId))
 		{
 			$condition = array('in', 'id', $cacheId);
@@ -287,7 +297,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCachesByElementType($elementType)
 	{
-		if (!empty($this->_deletedCachesByElementType[$elementType]))
+		if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]))
 		{
 			return false;
 		}
@@ -308,6 +318,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCachesByElement($elements)
 	{
+		if ($this->_deletedAllCaches)
+		{
+			return false;
+		}
+
 		if (!$elements)
 		{
 			return false;
@@ -346,6 +361,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
 	{
+		if ($this->_deletedAllCaches)
+		{
+			return false;
+		}
+
 		if (!$elementId)
 		{
 			return false;
@@ -424,6 +444,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCachesByCriteria(ElementCriteriaModel $criteria)
 	{
+		if ($this->_deletedAllCaches)
+		{
+			return false;
+		}
+
 		$criteria->limit = null;
 		$elementIds = $criteria->ids();
 
@@ -437,8 +462,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteExpiredCaches()
 	{
-		// Ignore if we've already done this once during the request
-		if ($this->_deletedExpiredCaches)
+		if ($this->_deletedAllCaches || $this->_deletedExpiredCaches)
 		{
 			return false;
 		}
@@ -489,6 +513,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteAllCaches()
 	{
+		if ($this->_deletedAllCaches)
+		{
+			return false;
+		}
+
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}
