@@ -712,24 +712,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Do an upload conflict resolution with merging.
-	 *
-	 * @param $conflictResolution
-	 * @param $theNewFileId
-	 * @param $fileName
-	 *
-	 * @return AssetOperationResponseModel
-	 */
-	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
-	{
-		$this->_startMergeProcess();
-		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
-		$this->_finishMergeProcess();
-
-		return $response;
-	}
-
-	/**
 	 * Returns true, if a file is in the process os being merged.
 	 *
 	 * @return bool
@@ -1229,6 +1211,24 @@ class AssetsService extends BaseApplicationComponent
 			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Do an upload conflict resolution with merging.
+	 *
+	 * @param $conflictResolution
+	 * @param $theNewFileId
+	 * @param $fileName
+	 *
+	 * @return AssetOperationResponseModel
+	 */
+	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
+	{
+		$this->_startMergeProcess();
+		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
+		$this->_finishMergeProcess();
 
 		return $response;
 	}
