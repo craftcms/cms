@@ -112,7 +112,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		foreach ($fileList as $file)
 		{
-			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file))
+			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file))
 			{
 				if (is_dir($file))
 				{

@@ -121,7 +121,7 @@ class AssetsController extends BaseController
 		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
-		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetsHelper::ActionKeepBoth);
+		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::ActionKeepBoth);
 		$fileId = $response->getDataItem('fileId');
 
 		// Render and return
