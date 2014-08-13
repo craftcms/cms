@@ -142,7 +142,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *                                 be uploaded to.
 	 *
 	 * @throws Exception
-	 * @return object
+	 * @return AssetOperationResponseModel
 	 */
 	public function uploadFile(AssetFolderModel $folder)
 	{
