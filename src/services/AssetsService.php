@@ -649,7 +649,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
 	 * @param string $userResponse User response regarding filename conflict.
-	 * @param string $theNewFileId The new file ID that has triggered the conflict.
+	 * @param int    $theNewFileId The new file ID that has triggered the conflict.
 	 * @param string $fileName     The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
@@ -659,7 +659,7 @@ class AssetsService extends BaseApplicationComponent
 		try
 		{
 			// handle a user's conflict resolution response
-			if ( ! empty($userResponse))
+			if (!empty($userResponse))
 			{
 				return $this->_resolveUploadConflict($userResponse, $theNewFileId, $fileName);
 			}
@@ -683,7 +683,8 @@ class AssetsService extends BaseApplicationComponent
 	 * @param string $localPath
 	 * @param string $fileName
 	 * @param int    $folderId
-	 * @param mixed  $conflictResolution What action should be taken in the event of a filename conflict
+	 * @param mixed  $conflictResolution What action should be taken in the event
+	 *                                   of a filename conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -716,6 +717,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $conflictResolution
 	 * @param $theNewFileId
 	 * @param $fileName
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
@@ -752,6 +754,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		$response = new AssetOperationResponseModel();
+
 		try
 		{
 			foreach ($fileIds as $fileId)
@@ -834,7 +837,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if ($originalSourceType && $newSourceType)
 			{
-				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
+				if (!$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
 				{
 					$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
 				}
@@ -852,7 +855,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * @param AssetFileModel $file
 	 * @param string         $filename
-	 * @param string         $action action to take in case of a conflict.
+	 * @param string         $action The action to take in case of a conflict.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
@@ -1147,8 +1150,8 @@ class AssetsService extends BaseApplicationComponent
 	 * Merge a conflicting uploaded file.
 	 *
 	 * @param string $conflictResolution  User response to conflict
-	 * @param int    $theNewFileId  The id of the new file that is conflicting
-	 * @param string $fileName      The filename that is in the conflict
+	 * @param int    $theNewFileId        The id of the new file that is conflicting
+	 * @param string $fileName            The filename that is in the conflict
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -1217,6 +1220,7 @@ class AssetsService extends BaseApplicationComponent
 		$oldFileModel = clone $file;
 
 		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+
 		if ($response->isSuccess())
 		{
 			// Use the previous data to clean up
