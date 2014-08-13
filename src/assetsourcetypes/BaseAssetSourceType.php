@@ -260,22 +260,20 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
-	 * @param string           $localCopy The local copy of the file to transfer.
-	 * @param AssetFolderModel $folder    The assetFolderModel that contains the
-	 *                                    file to transfer.
-	 * @param AssetFileModel   $file      The assetFileModel that represents the
-	 *                                    file to transfer.
-	 * @param string           $action    The action to perform during the transfer.
+	 * @param string           $localCopy          The local copy of the file to transfer.
+	 * @param AssetFolderModel $folder             The assetFolderModel that contains the file to transfer.
+	 * @param AssetFileModel   $file               The assetFileModel that represents the file to transfer.
+	 * @param string           $conflictResolution The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
+	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $conflictResolution)
 	{
 		$filename = IOHelper::cleanFilename($file->filename);
 
-		if (!empty($action))
+		if (!empty($conflictResolution))
 		{
-			switch ($action)
+			switch ($conflictResolution)
 			{
 				case AssetConflictResolution::ActionReplace:
 				{
@@ -320,15 +318,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Move file from one path to another if it's possible. Return false on failure.
 	 *
-	 * @param BaseAssetSourceType $originalSource The original source of the file being moved.
-	 * @param AssetFileModel $file                The assetFileModel representing the file to move.
-	 * @param AssetFolderModel $targetFolder      The assetFolderModel representing the target folder.
-	 * @param string $filename                    The file name of the file to move.
-	 * @param string $action                      The action to perform during the file move.
+	 * @param BaseAssetSourceType $originalSource     The original source of the file being moved.
+	 * @param AssetFileModel      $file               The assetFileModel representing the file to move.
+	 * @param AssetFolderModel    $targetFolder       The assetFolderModel representing the target folder.
+	 * @param string              $filename           The file name of the file to move.
+	 * @param string              $conflictResolution The action to perform during the file move.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $action = '')
+	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $conflictResolution = null)
 	{
 		if (!$this->canMoveFileFrom($originalSource))
 		{
@@ -344,9 +342,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$mergeFiles = false;
 
 		// If this is a revisited conflict, perform the appropriate actions
-		if (!empty($action))
+		if (!empty($conflictResolution))
 		{
-			switch ($action)
+			switch ($conflictResolution)
 			{
 				case AssetConflictResolution::ActionReplace:
 				{
