@@ -298,6 +298,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		$response = $this->insertFileInFolder($folder, $localCopy, $filename);
+
 		if ($response->isSuccess())
 		{
 			$file->folderId = $folder->id;
@@ -318,11 +319,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Move file from one path to another if it's possible. Return false on failure.
 	 *
-	 * @param BaseAssetSourceType $originalSource     The original source of the file being moved.
-	 * @param AssetFileModel      $file               The assetFileModel representing the file to move.
-	 * @param AssetFolderModel    $targetFolder       The assetFolderModel representing the target folder.
+	 * @param BaseAssetSourceType $originalSource     The original source of the file
+	 *                                                being moved.
+	 * @param AssetFileModel      $file               The assetFileModel representing
+	 *                                                the file to move.
+	 * @param AssetFolderModel    $targetFolder       The assetFolderModel representing
+	 *                                                the target folder.
 	 * @param string              $filename           The file name of the file to move.
-	 * @param string              $conflictResolution The action to perform during the file move.
+	 * @param string              $conflictResolution The action to perform during
+	 *                                                the file move.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
