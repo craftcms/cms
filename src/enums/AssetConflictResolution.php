@@ -2,8 +2,8 @@
 namespace Craft;
 
 /**
- * The AssetConflictResolution class is an abstract class that defines all of the
- * Asset conflict resolution foptions that are available in Craft.
+ * The AssetConflictResolution class is an abstract class that defines all of
+ * the Asset conflict resolution options that are available in Craft.
  *
  * This class is a poor man's version of an enum, since PHP does not have
  * support for native enumerations.
@@ -20,7 +20,7 @@ abstract class AssetConflictResolution extends BaseEnum
 	// Constants
 	// =========================================================================
 
-	const ActionKeepBoth = 'keep_both';
+	const ActionKeepBoth = 'keepBoth';
 	const ActionReplace  = 'replace';
 	const ActionCancel   = 'cancel';
 }
