@@ -20,7 +20,7 @@ abstract class AssetConflictResolution extends BaseEnum
 	// Constants
 	// =========================================================================
 
-	const ActionKeepBoth = 'keepBoth';
-	const ActionReplace  = 'replace';
-	const ActionCancel   = 'cancel';
+	const KeepBoth = 'keepBoth';
+	const Replace  = 'replace';
+	const Cancel   = 'cancel';
 }

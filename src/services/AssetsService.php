@@ -1163,7 +1163,7 @@ class AssetsService extends BaseApplicationComponent
 
 		switch ($conflictResolution)
 		{
-			case AssetConflictResolution::ActionReplace:
+			case AssetConflictResolution::Replace:
 			{
 				// Replace the actual file
 				$targetFile = $this->findFile(array(

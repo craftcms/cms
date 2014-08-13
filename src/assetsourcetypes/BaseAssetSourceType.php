@@ -275,7 +275,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			switch ($conflictResolution)
 			{
-				case AssetConflictResolution::ActionReplace:
+				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
 					if ($fileToReplace)
@@ -289,7 +289,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					break;
 				}
 
-				case AssetConflictResolution::ActionKeepBoth:
+				case AssetConflictResolution::KeepBoth:
 				{
 					$filename = $this->getNameReplacement($folder, $filename);
 					break;
@@ -346,7 +346,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			switch ($conflictResolution)
 			{
-				case AssetConflictResolution::ActionReplace:
+				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
 					if ($fileToReplace)
@@ -363,7 +363,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					break;
 				}
 
-				case AssetConflictResolution::ActionKeepBoth:
+				case AssetConflictResolution::KeepBoth:
 				{
 					$filename = $this->getNameReplacement($targetFolder, $filename);
 					break;
@@ -859,9 +859,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		return (object) array(
 			'message' => Craft::t('File “{file}” already exists at target location.', array('file' => $fileName)),
 			'choices' => array(
-				array('value' => AssetConflictResolution::ActionKeepBoth, 'title' => Craft::t('Keep both')),
-				array('value' => AssetConflictResolution::ActionReplace, 'title' => Craft::t('Replace it')),
-				array('value' => AssetConflictResolution::ActionCancel, 'title' => Craft::t('Cancel'))
+				array('value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('Keep both')),
+				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace it')),
+				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel'))
 			)
 		);
 	}
@@ -880,8 +880,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			'message' => Craft::t('Folder “{folder}” already exists at target location', array('folder' => $folderName)),
 			'file_name' => $folderId,
 			'choices' => array(
-				array('value' => AssetConflictResolution::ActionReplace, 'title' => Craft::t('Replace the existing folder')),
-				array('value' => AssetConflictResolution::ActionCancel, 'title' => Craft::t('Cancel the folder move.'))
+				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace the existing folder')),
+				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel the folder move.'))
 			)
 		);
 	}
