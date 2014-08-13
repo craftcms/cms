@@ -649,26 +649,22 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
 	 * @param string $userResponse User response regarding filename conflict.
-	 * @param string $responseInfo Additional information about the chosen action.
+	 * @param string $theNewFileId The new file ID that has triggered the conflict.
 	 * @param string $fileName     The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function uploadFile($folderId, $userResponse = '', $responseInfo = '', $fileName = '')
+	public function uploadFile($folderId, $userResponse = '', $theNewFileId = 0, $fileName = '')
 	{
 		try
 		{
 			// handle a user's conflict resolution response
 			if ( ! empty($userResponse))
 			{
-				$this->_startMergeProcess();
-				$response =  $this->_mergeUploadedFiles($userResponse, $responseInfo, $fileName);
-				$this->_finishMergeProcess();
-				return $response;
+				return $this->_resolveUploadConflict($userResponse, $theNewFileId, $fileName);
 			}
 
 			$folder = $this->getFolderById($folderId);
-
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
 			return $source->uploadFile($folder);
@@ -684,13 +680,14 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Inserts a file from a local path into a folder and returns the resulting file id.
 	 *
-	 * @param $localPath
-	 * @param $fileName
-	 * @param $folderId
+	 * @param string $localPath
+	 * @param string $fileName
+	 * @param int    $folderId
+	 * @param mixed  $conflictResolution either null or one of AssetsHelper::Action* constants
 	 *
-	 * @return bool|null
+	 * @return AssetOperationResponseModel
 	 */
-	public function insertFileByLocalPath($localPath, $fileName, $folderId)
+	public function insertFileByLocalPath($localPath, $fileName, $folderId, $conflictResolution = null)
 	{
 		$folder = $this->getFolderById($folderId);
 
@@ -701,8 +698,33 @@ class AssetsService extends BaseApplicationComponent
 
 		$fileName = IOHelper::cleanFilename($fileName);
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-		$response = $source->insertFileByPath($localPath, $folder, $fileName, true);
-		return $response->getDataItem('fileId');
+
+		$response = $source->insertFileByPath($localPath, $folder, $fileName);
+
+		if ($response->isConflict() && $conflictResolution)
+		{
+			$theNewFileId = $response->getDataItem('fileId');
+			$response = $this->_resolveUploadConflict($conflictResolution, $theNewFileId, $fileName);
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Do an upload conflict resolution with merging.
+	 *
+	 * @param $conflictResolution
+	 * @param $theNewFileId
+	 * @param $fileName
+	 * @return AssetOperationResponseModel
+	 */
+	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
+	{
+		$this->_startMergeProcess();
+		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
+		$this->_finishMergeProcess();
+
+		return $response;
 	}
 
 	/**
@@ -1124,45 +1146,43 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Merge a conflicting uploaded file.
 	 *
-	 * @param string $userResponse User response to conflict
-	 * @param string $responseInfo Additional information about the chosen action
-	 * @param string $fileName     The filename that is in the conflict
+	 * @param string $conflictResolution  User response to conflict
+	 * @param int    $theNewFileId  The id of the new file that is conflicting
+	 * @param string $fileName      The filename that is in the conflict
 	 *
-	 * @return array|string
+	 * @return AssetOperationResponseModel
 	 */
-	private function _mergeUploadedFiles($userResponse, $responseInfo, $fileName)
+	private function _mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName)
 	{
-		list ($folderId, $createdFileId) = explode(":", $responseInfo);
 
-		$folder = $this->getFolderById($folderId);
+		$theNewFile = $this->getFileById($theNewFileId);
+		$folder = $theNewFile->getFolder();
 		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
 		$fileId = null;
 
-		switch ($userResponse)
+		switch ($conflictResolution)
 		{
 			case AssetsHelper::ActionReplace:
 			{
 				// Replace the actual file
 				$targetFile = $this->findFile(array(
-					'folderId' => $folderId,
+					'folderId' => $folder->id,
 					'filename' => $fileName
 				));
 
-				$replaceWith = $this->getFileById($createdFileId);
-
-				$source->replaceFile($targetFile, $replaceWith);
+				$source->replaceFile($targetFile, $theNewFile);
 				$fileId = $targetFile->id;
 			}
 			// Falling through to delete the file
 			case AssetsHelper::ActionCancel:
 			{
-				$this->deleteFiles($createdFileId);
+				$this->deleteFiles($theNewFileId);
 				break;
 			}
 			default:
 			{
-				$fileId = $createdFileId;
+				$fileId = $theNewFileId;
 				break;
 			}
 		}

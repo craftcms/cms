@@ -246,7 +246,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
 			{
-				$response = $conflictResponse->setDataItem('additionalInfo', $folder->id.':'.$fileModel->id)->setDataItem('newFileId', $fileModel->id);
+				$response = $conflictResponse;
 			}
 
 			$response->setDataItem('fileId', $fileModel->id);

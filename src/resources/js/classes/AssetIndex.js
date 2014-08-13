@@ -889,9 +889,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
 		{
 			var postData = {
-				additionalInfo: parameterArray[parameterIndex].additionalInfo,
-				fileName:       parameterArray[parameterIndex].fileName,
-				userResponse:   parameterArray[parameterIndex].choice
+				newFileId:    parameterArray[parameterIndex].fileId,
+				fileName:     parameterArray[parameterIndex].fileName,
+				userResponse: parameterArray[parameterIndex].choice
 			};
 
 			Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data, textStatus)
