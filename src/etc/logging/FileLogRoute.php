@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.logging
  * @since     1.0
  */
 class FileLogRoute extends \CFileLogRoute
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
+	 * Initializes the log route.  This method is invoked after the log route is
+	 * created by the route manager.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -28,12 +32,15 @@ class FileLogRoute extends \CFileLogRoute
 		parent::init();
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Saves log messages in files.
 	 *
 	 * @param array $logs The list of log messages
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function processLogs($logs)
 	{

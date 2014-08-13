@@ -2,17 +2,24 @@
 namespace Craft;
 
 /**
- * Class PeriodType
+ * The PeriodType class is an abstract class that defines the various time
+ * period lengths that are available in Craft.
+ *
+ * This class is a poor man's version of an enum, since PHP does not have
+ * support for native enumerations.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.enums
  * @since     2.0
  */
 abstract class PeriodType extends BaseEnum
 {
+	// Constants
+	// =========================================================================
+
 	const Seconds = 'seconds';
 	const Minutes = 'minutes';
 	const Hours   = 'hours';

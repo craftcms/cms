@@ -7,21 +7,29 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.components
  * @since     1.0
  */
 abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var BaseModel The model instance associated with the current component instance.
+	 * The model instance associated with the current component instance.
+	 *
+	 * @var BaseModel
 	 */
 	public $model;
 
 	/**
-	 * @var BaseModel The model representing the current component instance's settings.
+	 * @var
 	 */
 	private $_settings;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Gets the settings.
@@ -43,7 +51,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 *
 	 * @param array|BaseModel $values
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setSettings($values)
 	{
@@ -81,6 +89,9 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	{
 		return $settings;
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the settings model.

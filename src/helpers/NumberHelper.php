@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class NumberHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the "word" version of a number
 	 *
 	 * @param int $num The number
+	 *
 	 * @return string The number word, or the original number if it's >= 10
 	 */
 	public static function word($num)
@@ -46,6 +50,7 @@ class NumberHelper
 	 * Returns the uppercase alphabetic version of a number
 	 *
 	 * @param int $num The number
+	 *
 	 * @return string The alphabetic version of the number
 	 */
 	public static function upperAlpha($num)
@@ -68,6 +73,7 @@ class NumberHelper
 	 * Returns the lowercase alphabetic version of a number
 	 *
 	 * @param int $num The number
+	 *
 	 * @return string The alphabetic version of the number
 	 */
 	public static function lowerAlpha($num)
@@ -80,6 +86,7 @@ class NumberHelper
 	 * Returns the uppercase roman numeral version of a number
 	 *
 	 * @param int $num The number
+	 *
 	 * @return string The roman numeral version of the number
 	 */
 	public static function upperRoman($num)
@@ -118,6 +125,7 @@ class NumberHelper
 	 * Returns the lowercase roman numeral version of a number
 	 *
 	 * @param int $num The number
+	 *
 	 * @return string The roman numeral version of the number
 	 */
 	public static function lowerRoman($num)
@@ -129,10 +137,11 @@ class NumberHelper
 	/**
 	 * Returns the numeric value of a variable.
 	 *
-	 * If the variable is an object with a __toString() method,
-	 * the numeric value of its string representation will be returned.
+	 * If the variable is an object with a __toString() method, the numeric
+	 * value of its string representation will be returned.
 	 *
 	 * @param mixed $var
+	 *
 	 * @return mixed
 	 */
 	public static function makeNumeric($var)

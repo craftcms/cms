@@ -7,16 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class SectionsVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSections($indexBy = null)
@@ -28,6 +32,7 @@ class SectionsVariable
 	 * Returns all editable sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableSections($indexBy = null)
@@ -59,6 +64,7 @@ class SectionsVariable
 	 * Returns a section by its ID.
 	 *
 	 * @param int $sectionId
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionById($sectionId)

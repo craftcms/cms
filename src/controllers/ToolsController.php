@@ -2,22 +2,30 @@
 namespace Craft;
 
 /**
- * Handles tool actions.
+ * The ToolsController class is a controller that handles various tools related
+ * tasks such as trigger tool actions.
+ *
+ * Note that all actions in this controller require administrator access in
+ * order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class ToolsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before
+	 * the controller starts to execute.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -31,7 +39,7 @@ class ToolsController extends BaseController
 	/**
 	 * Performs a tool's action.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionPerformAction()
 	{
@@ -49,7 +57,7 @@ class ToolsController extends BaseController
 	/**
 	 * Returns a database backup zip file to the browser.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDownloadBackupFile()
 	{

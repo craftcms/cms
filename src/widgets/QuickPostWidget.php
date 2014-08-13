@@ -7,15 +7,27 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.widgets
  * @since     1.0
  */
 class QuickPostWidget extends BaseWidget
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
 
+	/**
+	 * @var
+	 */
 	private $_section;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -25,20 +37,6 @@ class QuickPostWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Quick Post');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section'   => array(AttributeType::Number, 'required' => true),
-			'entryType' => AttributeType::Number,
-			'fields'    => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -72,6 +70,7 @@ class QuickPostWidget extends BaseWidget
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -169,6 +168,26 @@ class QuickPostWidget extends BaseWidget
 
 		return $html;
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section'   => array(AttributeType::Number, 'required' => true),
+			'entryType' => AttributeType::Number,
+			'fields'    => AttributeType::Mixed,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the widget's section.

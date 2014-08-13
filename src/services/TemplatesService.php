@@ -7,37 +7,112 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class TemplatesService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_twigs;
+
+	/**
+	 * @var
+	 */
 	private $_twigOptions;
+
+	/**
+	 * @var
+	 */
 	private $_templatePaths;
+
+	/**
+	 * @var
+	 */
 	private $_objectTemplates;
 
+	/**
+	 * @var
+	 */
 	private $_defaultTemplateExtensions;
+
+	/**
+	 * @var
+	 */
 	private $_indexTemplateFilenames;
 
+	/**
+	 * @var
+	 */
 	private $_namespace;
 
+	/**
+	 * @var array
+	 */
 	private $_headHtml = array();
+
+	/**
+	 * @var array
+	 */
 	private $_footHtml = array();
+
+	/**
+	 * @var array
+	 */
 	private $_cssFiles = array();
+
+	/**
+	 * @var array
+	 */
 	private $_jsFiles = array();
+
+	/**
+	 * @var array
+	 */
 	private $_css = array();
+
+	/**
+	 * @var array
+	 */
 	private $_hiResCss = array();
+
+	/**
+	 * @var array
+	 */
 	private $_jsBuffers = array(array());
+
+	/**
+	 * @var array
+	 */
 	private $_translations = array();
 
+	/**
+	 * @var
+	 */
 	private $_hooks;
+
+	/**
+	 * @var
+	 */
 	private $_textareaMarkers;
+
+	/**
+	 * @var
+	 */
 	private $_renderingTemplate;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Init
+	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -47,7 +122,8 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Gets the Twig instance.
 	 *
-	 * @param  string            $loaderClass The template loader class to use with the environment.
+	 * @param string $loaderClass The template loader class to use with the environment.
+	 *
 	 * @return \Twig_Environment
 	 */
 	public function getTwig($loaderClass = null)
@@ -96,7 +172,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the template path that is currently being rendered, or the full template if renderString() or renderObjectTemplate() was called.
+	 * Returns the template path that is currently being rendered, or the full
+	 * template if {@link renderString()} or {@link renderObjectTemplate()} was called.
 	 *
 	 * @return string|null
 	 */
@@ -125,9 +202,10 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renders a template.
 	 *
-	 * @param  string $template The name of the template to load, or a StringTemplate object
-	 * @param  array  $variables The variables that should be available to the template
-	 * @return string            The rendered template
+	 * @param  string $template  The name of the template to load, or a StringTemplate object.
+	 * @param  array  $variables The variables that should be available to the template.
+	 *
+	 * @return string The rendered template
 	 */
 	public function render($template, $variables = array())
 	{
@@ -146,6 +224,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * @param  string $template
 	 * @param  string $macro
 	 * @param  array  $args
+	 *
 	 * @return string
 	 */
 	public function renderMacro($template, $macro, $args = array())
@@ -157,15 +236,17 @@ class TemplatesService extends BaseApplicationComponent
 		$this->_renderingTemplate = $template;
 		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
 		$this->_renderingTemplate = $lastRenderingTemplate;
+
 		return $result;
 	}
 
 	/**
 	 * Renders a template string.
 	 *
-	 * @param  string $template  The source template string
-	 * @param  array  $variables The variables that should be available to the template
-	 * @return string            The rendered template
+	 * @param  string $template  The source template string.
+	 * @param  array  $variables The variables that should be available to the template.
+	 *
+	 * @return string The rendered template
 	 */
 	public function renderString($template, $variables = array())
 	{
@@ -182,7 +263,8 @@ class TemplatesService extends BaseApplicationComponent
 	 * Renders a micro template for accessing properties of a single object.
 	 *
 	 * @param string $template
-	 * @param mixed $object
+	 * @param mixed  $object
+	 *
 	 * @return string
 	 */
 	public function renderObjectTemplate($template, $object)
@@ -235,6 +317,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeHeadHtml($node, $first = false)
 	{
@@ -246,6 +330,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeFootHtml($node, $first = false)
 	{
@@ -257,7 +343,9 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated Deprecated in 1.1.
+	 *
+	 * @deprecated Deprecated in 1.1. Use {@link includeHeadHtml()} instead.
+	 * @return null
 	 */
 	public function includeHeadNode($node, $first = false)
 	{
@@ -270,7 +358,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $node
 	 * @param bool|null $first
-	 * @deprecated Deprecated in 1.1.
+	 * @deprecated Deprecated in 1.1. Use {@link includeFootHtml()} instead.
 	 */
 	public function includeFootNode($node, $first = false)
 	{
@@ -283,6 +371,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $url
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeCssFile($url, $first = false)
 	{
@@ -297,6 +387,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $url
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeJsFile($url, $first = false)
 	{
@@ -311,6 +403,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $path
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeCssResource($path, $first = false)
 	{
@@ -323,6 +417,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $path
 	 * @param bool|null $first
+	 *
+	 * @return null
 	 */
 	public function includeJsResource($path, $first = false)
 	{
@@ -335,7 +431,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $css
 	 * @param bool|null $first
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public function includeCss($css, $first = false)
 	{
@@ -347,7 +444,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string    $css
 	 * @param bool|null $first
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public function includeHiResCss($css, $first = false)
 	{
@@ -359,7 +457,8 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param           $js
 	 * @param bool|null $first
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public function includeJs($js, $first = false)
 	{
@@ -371,6 +470,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Wraps some JS in a <script> tag.
 	 *
 	 * @param string|array $js
+	 *
 	 * @return string
 	 */
 	public function getScriptTag($js)
@@ -385,6 +485,8 @@ class TemplatesService extends BaseApplicationComponent
 
 	/**
 	 * Starts a JS buffer.
+	 *
+	 * @return null
 	 */
 	public function startJsBuffer()
 	{
@@ -392,9 +494,11 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Clears and ends a JS buffer, returning whatever JS was included while the buffer was active.
+	 * Clears and ends a JS buffer, returning whatever JS was included while
+	 * the buffer was active.
 	 *
 	 * @param bool $scriptTag
+	 *
 	 * @return string|null|false
 	 */
 	public function clearJsBuffer($scriptTag = true)
@@ -474,8 +578,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the nodes prepared for inclusion right above the </body> in the template,
-	 * and flushes out the foot nodes queue.
+	 * Returns the nodes prepared for inclusion right above the </body> in the
+	 * template, and flushes out the foot nodes queue.
 	 *
 	 * @return string
 	 */
@@ -529,7 +633,7 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares translations for inclusion in the template, to be used by the JS.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function includeTranslations()
 	{
@@ -554,8 +658,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the translations prepared for inclusion by includeTranslations(), in JSON,
-	 * and flushes out the translations queue.
+	 * Returns the translations prepared for inclusion by includeTranslations(),
+	 * in JSON, and flushes out the translations queue.
 	 *
 	 * @return string
 	 */
@@ -570,6 +674,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Returns whether a template exists or not.
 	 *
 	 * @param string $name
+	 *
 	 * @return bool
 	 */
 	public function doesTemplateExist($name)
@@ -581,6 +686,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Finds a template on the file system and returns its path.
 	 *
 	 * @param string $name
+	 *
 	 * @return string|false
 	 */
 	public function findTemplate($name)
@@ -623,7 +729,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Otherwise maybe it's a plugin template?
 
-		// Only attempt to match against a plugin's templates if this is a CP or action request.
+		// Only attempt to match against a plugin's templates if this is a CP or
+		// action request.
 		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
 		{
 			// Sanitize
@@ -664,6 +771,8 @@ class TemplatesService extends BaseApplicationComponent
 	 * Sets the active namespace.
 	 *
 	 * @param string $namespace
+	 *
+	 * @return null
 	 */
 	public function setNamespace($namespace)
 	{
@@ -673,10 +782,12 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renames input names so they belong to a namespace.
 	 *
-	 * @param string $html The template with the inputs
-	 * @param string|null $namespace The namespace to make inputs belong to
-	 * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to true.
-	 * @return string The template with namespaced inputs
+	 * @param string      $html            The template with the inputs.
+	 * @param string|null $namespace       The namespace to make inputs belong to.
+	 * @param bool        $otherAttributes Whether id=, for=, etc., should also be
+	 *                                     namespaced. Defaults to true.
+	 *
+	 * @return string The template with namespaced inputs.
 	 */
 	public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
 	{
@@ -711,8 +822,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Namespaces an input name.
 	 *
-	 * @param string $inputName
-	 * @param null   $namespace
+	 * @param string      $inputName
+	 * @param string|null $namespace
+	 *
 	 * @return string
 	 */
 	public function namespaceInputName($inputName, $namespace = null)
@@ -735,6 +847,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param      $inputId
 	 * @param null $namespace
+	 *
 	 * @return string
 	 */
 	public function namespaceInputId($inputId, $namespace = null)
@@ -756,6 +869,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Formats an ID out of an input name.
 	 *
 	 * @param string $inputName
+	 *
 	 * @return string
 	 */
 	public function formatInputId($inputName)
@@ -767,7 +881,9 @@ class TemplatesService extends BaseApplicationComponent
 	 * Registers a function for a template hook.
 	 *
 	 * @param string $hook
-	 * @param mixed $method
+	 * @param mixed  $method
+	 *
+	 * @return null
 	 */
 	public function hook($hook, $method)
 	{
@@ -778,7 +894,8 @@ class TemplatesService extends BaseApplicationComponent
 	 * Invokes a template hook.
 	 *
 	 * @param string $hook
-	 * @param array &$context
+	 * @param array  &$context
+	 *
 	 * @return string
 	 */
 	public function invokeHook($hook, &$context)
@@ -795,6 +912,24 @@ class TemplatesService extends BaseApplicationComponent
 
 		return $return;
 	}
+
+	/**
+	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onPluginsLoaded(Event $event)
+	{
+		foreach ($this->_twigs as $twig)
+		{
+			$this->_addPluginTwigExtensions($twig);
+		}
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Twig environment options
@@ -822,8 +957,8 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder.
-	 * Borrowed from Twig_Loader_Filesystem.
+	 * Ensures that a template name isn't null, and that it doesn't lead outside
+	 * the template folder. Borrowed from {@link Twig_Loader_Filesystem}.
 	 *
 	 * @param string $name
 	 *
@@ -843,9 +978,11 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Searches for localized template files, and returns the first match if there is one.
+	 * Searches for localized template files, and returns the first match if
+	 * there is one.
 	 *
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _findTemplate($path)
@@ -906,6 +1043,8 @@ class TemplatesService extends BaseApplicationComponent
 	 * Adds any plugin-supplied Twig extensions to a given Twig instance.
 	 *
 	 * @param \Twig_Environment $twig
+	 *
+	 * @return null
 	 */
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
@@ -928,22 +1067,9 @@ class TemplatesService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Wait around for plugins to actually be loaded,
-			// then do it for all Twig environments that have been created.
-			craft()->on('plugins.loadPlugins', array($this, '_onPluginsLoaded'));
-		}
-	}
-
-	/**
-	 * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
-	 *
-	 * @param Event $event
-	 */
-	public function _onPluginsLoaded(Event $event)
-	{
-		foreach ($this->_twigs as $twig)
-		{
-			$this->_addPluginTwigExtensions($twig);
+			// Wait around for plugins to actually be loaded, then do it for all
+			// Twig environments that have been created.
+			craft()->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
 		}
 	}
 
@@ -951,6 +1077,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Replaces textarea contents with a marker.
 	 *
 	 * @param array $matches
+	 *
 	 * @return string
 	 */
 	private function _createTextareaMarker($matches)
@@ -963,7 +1090,8 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Combines the JS in a buffer.
 	 *
-	 * @param $js
+	 * @param string $js
+	 *
 	 * @return string
 	 */
 	private function _combineJs($js)
@@ -975,6 +1103,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * Returns the HTML for an element in the CP.
 	 *
 	 * @param array &$context
+	 *
 	 * @return string
 	 */
 	private function _getCpElementHtml(&$context)

@@ -7,14 +7,19 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class PluginsService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var array The type of components plugins can have. Defined in app/etc/config/common.php.
+	 * The type of components plugins can have. Defined in app/etc/config/common.php.
+	 *
+	 * @var array
 	 */
 	public $autoloadClasses;
 
@@ -40,7 +45,7 @@ class PluginsService extends BaseApplicationComponent
 	private $_plugins = array();
 
 	/**
-	 * Stores all enabled plugins.
+	 * Stores all plugins, whether installed or not.
 	 *
 	 * @var array
 	 */
@@ -60,6 +65,9 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private $_enabledPluginInfo = array();
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns whether plugins have been loaded yet for this request.
 	 *
@@ -72,6 +80,8 @@ class PluginsService extends BaseApplicationComponent
 
 	/**
 	 * Loads the enabled plugins.
+	 *
+	 * @return null
 	 */
 	public function loadPlugins()
 	{
@@ -142,6 +152,7 @@ class PluginsService extends BaseApplicationComponent
 	 *
 	 * @param string $handle
 	 * @param bool   $enabledOnly
+	 *
 	 * @return BasePlugin|null
 	 */
 	public function getPlugin($handle, $enabledOnly = true)
@@ -189,6 +200,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Returns all plugins, whether they're installed or not.
 	 *
 	 * @param bool $enabledOnly
+	 *
 	 * @return array
 	 */
 	public function getPlugins($enabledOnly = true)
@@ -254,7 +266,7 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Enables a plugin.
 	 *
-	 * @param $handle
+	 * @param string $handle
 	 *
 	 * @throws Exception
 	 * @return bool
@@ -288,7 +300,7 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Disables a plugin.
 	 *
-	 * @param $handle
+	 * @param string $handle
 	 *
 	 * @throws Exception
 	 * @return bool
@@ -322,7 +334,7 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Installs a plugin.
 	 *
-	 * @param $handle
+	 * @param string $handle
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -384,9 +396,11 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Uninstalls a plugin by removing it's record from the database, deleting it's tables and foreign keys and running the plugin's uninstall method if it exists.
+	 * Uninstalls a plugin by removing it's record from the database, deleting
+	 * it's tables and foreign keys and running the plugin's uninstall method if
+	 * it exists.
 	 *
-	 * @param $handle
+	 * @param string $handle
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -483,7 +497,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Saves a plugin's settings.
 	 *
 	 * @param BasePlugin $plugin
-	 * @param mixed $settings
+	 * @param mixed      $settings
+	 *
 	 * @return bool
 	 */
 	public function savePluginSettings(BasePlugin $plugin, $settings)
@@ -514,7 +529,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Calls a method on all plugins that have the method.
 	 *
 	 * @param string $method
-	 * @param array $args
+	 * @param array  $args
+	 *
 	 * @return array
 	 */
 	public function call($method, $args = array())
@@ -542,9 +558,10 @@ class PluginsService extends BaseApplicationComponent
 	 * Provides legacy support for craft()->plugins->callHook().
 	 *
 	 * @param string $method
-	 * @param array $args
+	 * @param array  $args
+	 *
+	 * @deprecated Deprecated in 1.0.  Use {@link call()} instead.
 	 * @return array
-	 * @deprecated Deprecated in 1.0.
 	 */
 	public function callHook($method, $args = array())
 	{
@@ -553,9 +570,11 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the given plugin's local version number is greater than the record we have in the database.
+	 * Returns whether the given plugin's local version number is greater than
+	 * the record we have in the database.
 	 *
 	 * @param BasePlugin $plugin
+	 *
 	 * @return bool
 	 */
 	public function doesPluginRequireDatabaseUpdate(BasePlugin $plugin)
@@ -577,6 +596,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Returns an array of the stored info for a given plugin.
 	 *
 	 * @param BasePlugin $plugin
+	 *
 	 * @return array|null
 	 */
 	public function getPluginInfo(BasePlugin $plugin)
@@ -593,6 +613,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Fires an 'onLoadPlugins' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onLoadPlugins(Event $event)
 	{
@@ -606,6 +628,7 @@ class PluginsService extends BaseApplicationComponent
 	 * @param string     $classSubfolder
 	 * @param string     $classSuffix
 	 * @param bool       $autoload
+	 *
 	 * @return array
 	 */
 	public function getPluginClasses(BasePlugin $plugin, $classSubfolder, $classSuffix, $autoload = true)
@@ -648,11 +671,11 @@ class PluginsService extends BaseApplicationComponent
 	 * @param string     $classSubfolder
 	 * @param string     $class
 	 * @param bool       $autoload
+	 *
 	 * @return bool
 	 */
 	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
 	{
-		$pluginHandle = $plugin->getClassHandle();
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
 		$classPath = craft()->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
 
@@ -672,6 +695,7 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Throws a "no plugin exists" exception.
@@ -679,6 +703,7 @@ class PluginsService extends BaseApplicationComponent
 	 * @param string $handle
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _noPluginExists($handle)
 	{
@@ -689,6 +714,8 @@ class PluginsService extends BaseApplicationComponent
 	 * Finds and imports all of the auto-loadable classes for a given plugin.
 	 *
 	 * @param BasePlugin $plugin
+	 *
+	 * @return null
 	 */
 	private function _autoloadPluginClasses(BasePlugin $plugin)
 	{
@@ -706,10 +733,11 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * If the plugin already had a migrations folder with migrations in it, let's save them in the db.
+	 * If the plugin already had a migrations folder with migrations in it, let's
+	 * save them in the db.
 	 *
-	 * @param $pluginId
-	 * @param $pluginHandle
+	 * @param int    $pluginId
+	 * @param string $pluginHandle
 	 *
 	 * @throws Exception
 	 */
@@ -754,7 +782,7 @@ class PluginsService extends BaseApplicationComponent
 	 * @param array $classes
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _registerPluginServices($classes)
 	{
@@ -790,7 +818,8 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Returns a new plugin instance based on its class handle.
 	 *
-	 * @param $handle
+	 * @param string $handle
+	 *
 	 * @return BasePlugin|null
 	 */
 	private function _getPlugin($handle)
@@ -833,7 +862,8 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Returns the actual plugin class handle based on a case-insensitive handle.
 	 *
-	 * @param $iHandle
+	 * @param string $iHandle
+	 *
 	 * @return bool|string
 	 */
 	private function _getPluginHandleFromFileSystem($iHandle)
@@ -854,6 +884,7 @@ class PluginsService extends BaseApplicationComponent
 	 * Get a flattened list of model errors
 	 *
 	 * @param array $errors
+	 *
 	 * @return string
 	 */
 	private function _getFlattenedErrors($errors)

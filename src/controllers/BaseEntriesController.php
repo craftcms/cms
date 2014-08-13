@@ -2,23 +2,30 @@
 namespace Craft;
 
 /**
- * Handles entry tasks.
+ * BaseController is a base class that any entry related controllers, such as
+ * {@link EntriesController} and {@link EntryRevisionsController} extend to
+ * share common functionality.
+ *
+ * It extend's Yii's {@link CController} overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     2.1
  */
 abstract class BaseEntriesController extends BaseController
 {
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Enforces all Edit Entry permissions.
 	 *
 	 * @param EntryModel $entry
 	 *
-	 * @return void
+	 * @return null
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)
 	{
@@ -46,7 +53,8 @@ abstract class BaseEntriesController extends BaseController
 			{
 				case 'Entry':
 				{
-					// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
+					// If it's another user's entry (and it's not a Single), make
+					// sure they have permission to edit those
 					if (
 						$entry->authorId != $userSessionService->getUser()->id &&
 						$entry->getSection()->type != SectionType::Single
@@ -60,7 +68,8 @@ abstract class BaseEntriesController extends BaseController
 
 				case 'EntryDraft':
 				{
-					// If it's another user's draft, make sure they have permission to edit those
+					// If it's another user's draft, make sure they have
+					// permission to edit those
 					if (
 						$entry->getClassHandle() == 'EntryDraft' &&
 						$entry->creatorId != $userSessionService->getUser()->id

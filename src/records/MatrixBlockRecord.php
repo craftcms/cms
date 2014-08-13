@@ -7,29 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     1.3
  */
 class MatrixBlockRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'matrixblocks';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'ownerLocale' => AttributeType::Locale,
-			'sortOrder' => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -56,6 +48,20 @@ class MatrixBlockRecord extends BaseRecord
 			array('columns' => array('fieldId')),
 			array('columns' => array('typeId')),
 			array('columns' => array('sortOrder')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'sortOrder' => AttributeType::SortOrder,
+			'ownerLocale' => AttributeType::Locale,
 		);
 	}
 }

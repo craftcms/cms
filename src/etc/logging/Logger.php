@@ -7,22 +7,31 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.logging
  * @since     1.0
  */
 class Logger extends \CLogger
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Logs a message. Messages logged by this method may be retrieved back via {@link getLogs}.
+	 * Logs a message. Messages logged by this method may be retrieved back
+	 * via {@link getLogs}.
 	 *
 	 * @param string $message  The message to be logged
-	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error'). It is case-insensitive.
-	 * @param bool   $force    Whether for force the message to be logged regardless of category or level
-	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
-	 * @param string $plugin   The plugin handle that made the log call.  If null, will be set to 'craft'. Use for determining which log file to write to.
+	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error').
+	 *                         It is case-insensitive.
+	 * @param bool   $force    Whether for force the message to be logged regardless
+	 *                         of category or level
+	 * @param string $category The category of the message (e.g. 'system.web').
+	 *                         It is case-insensitive.
+	 * @param string $plugin   The plugin handle that made the log call. If null,
+	 *                         will be set to 'craft'. Use for determining which
+	 *                         log file to write to.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function log($message, $level = 'info', $force = false, $category = 'application', $plugin = null)
 	{
@@ -46,12 +55,17 @@ class Logger extends \CLogger
 	 * Retrieves log messages.
 	 *
 	 * Messages may be filtered by log levels and/or categories.
-	 * A level filter is specified by a list of levels separated by comma or space (e.g. 'trace, error'). A category filter is similar to level filter
-	 * (e.g. 'system, system.web'). A difference is that in category filter you can use pattern like 'system.*' to indicate all categories starting with 'system'.
 	 *
-	 * If you do not specify level filter, it will bring back logs at all levels. The same applies to category filter.
+	 * A level filter is specified by a list of levels separated by comma or space
+	 * (e.g. 'trace, error'). A category filter is similar to level filter
+	 * (e.g. 'system, system.web'). A difference is that in category filter you
+	 * can use pattern like 'system.*' to indicate all categories starting with 'system'.
 	 *
-	 * Level filter and category filter are combinational, i.e., only messages satisfying both filter conditions will be returned.
+	 * If you do not specify level filter, it will bring back logs at all levels.
+	 * The same applies to category filter.
+	 *
+	 * Level filter and category filter are combinational, i.e., only messages
+	 * satisfying both filter conditions will be returned.
 	 *
 	 * @param string       $levels     level filter
 	 * @param array|string $categories category filter
@@ -103,6 +117,9 @@ class Logger extends \CLogger
 
 		return $ret;
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Filter function used by {@link getLogs}
@@ -156,7 +173,7 @@ class Logger extends \CLogger
 	 *
 	 * @param array $value The element to be filtered
 	 *
-	 * @return boolean true if valid log, false if not.
+	 * @return bool true if valid log, false if not.
 	 */
 	protected function filterByLevel($value)
 	{

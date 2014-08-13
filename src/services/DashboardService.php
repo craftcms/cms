@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class DashboardService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all installed widget types.
 	 *
@@ -27,6 +30,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns a widget type.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseWidget|null
 	 */
 	public function getWidgetType($class)
@@ -38,6 +42,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Populates a widget type.
 	 *
 	 * @param WidgetModel $widget
+	 *
 	 * @return BaseWidget|null
 	 */
 	public function populateWidgetType(WidgetModel $widget)
@@ -49,6 +54,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns the dashboard widgets for the current user.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getUserWidgets($indexBy = null)
@@ -64,7 +70,7 @@ class DashboardService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Get only the enabled widgtes.
+			// Get only the enabled widgets.
 			foreach ($widgetRecords as $key => $widgetRecord)
 			{
 				if (!$widgetRecord->enabled)
@@ -86,6 +92,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns whether the current user has a widget of the given type.
 	 *
 	 * @param $type
+	 *
 	 * @return bool
 	 */
 	public function doesUserHaveWidget($type)
@@ -103,6 +110,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
+	 *
 	 * @return WidgetModel
 	 */
 	public function getUserWidgetById($id)
@@ -122,6 +130,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Saves a widget for the current user.
 	 *
 	 * @param WidgetModel $widget
+	 *
 	 * @return bool
 	 */
 	public function saveUserWidget(WidgetModel $widget)
@@ -173,6 +182,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Soft deletes a widget.
 	 *
 	 * @param int $widgetId
+	 *
 	 * @return bool
 	 */
 	public function deleteUserWidgetById($widgetId)
@@ -223,8 +233,13 @@ class DashboardService extends BaseApplicationComponent
 		return true;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Adds the default widgets to the logged-in user.
+	 *
+	 * @return null
 	 */
 	private function _addDefaultUserWidgets()
 	{
@@ -278,6 +293,7 @@ class DashboardService extends BaseApplicationComponent
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
+
 		$this->saveUserWidget($widget);
 	}
 
@@ -285,6 +301,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Gets a widget's record.
 	 *
 	 * @param int $widgetId
+	 *
 	 * @return WidgetRecord
 	 */
 	private function _getUserWidgetRecordById($widgetId = null)
@@ -318,6 +335,7 @@ class DashboardService extends BaseApplicationComponent
 	 * @param int $widgetId
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _noWidgetExists($widgetId)
 	{

@@ -7,25 +7,51 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 abstract class BaseModel extends \CModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
+	protected $classSuffix = 'Model';
+
+	/**
+	 * @var
+	 */
 	private $_classHandle;
+
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
+
+	/**
+	 * @var
+	 */
 	private $_attributeNames;
+
+	/**
+	 * @var
+	 */
 	private $_attributes;
 
-	protected $classSuffix = 'Model';
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
 	 *
 	 * @param mixed $attributes
+	 *
+	 * @return BaseModel
 	 */
-	function __construct($attributes = null)
+	public function __construct($attributes = null)
 	{
 		ModelHelper::populateAttributeDefaults($this);
 		$this->setAttributes($attributes);
@@ -37,9 +63,10 @@ abstract class BaseModel extends \CModel
 	 * PHP getter magic method.
 	 *
 	 * @param string $name
+	 *
 	 * @return mixed
 	 */
-	function __get($name)
+	public function __get($name)
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
@@ -56,9 +83,10 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return mixed
 	 */
-	function __set($name, $value)
+	public function __set($name, $value)
 	{
 		if ($this->setAttribute($name, $value) === false)
 		{
@@ -70,10 +98,11 @@ abstract class BaseModel extends \CModel
 	 * Magic __call() method, used for chain-setting attribute values.
 	 *
 	 * @param string $name
-	 * @param array $arguments
+	 * @param array  $arguments
+	 *
 	 * @return BaseModel
 	 */
-	function __call($name, $arguments)
+	public function __call($name, $arguments)
 	{
 		if (in_array($name, $this->attributeNames()))
 		{
@@ -100,9 +129,10 @@ abstract class BaseModel extends \CModel
 	 * Treats attributes defined by defineAttributes() as properties.
 	 *
 	 * @param string $name
+	 *
 	 * @return bool
 	 */
-	function __isset($name)
+	public function __isset($name)
 	{
 		if (parent::__isset($name) || in_array($name, $this->attributeNames()))
 		{
@@ -115,10 +145,56 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @param mixed $values
+	 *
+	 * @return BaseModel
+	 */
+	public static function populateModel($values)
+	{
+		$class = get_called_class();
+		return new $class($values);
+	}
+
+	/**
+	 * Mass-populates models based on an array of attribute arrays.
+	 *
+	 * @param array       $data
+	 * @param string|null $indexBy
+	 *
+	 * @return array
+	 */
+	public static function populateModels($data, $indexBy = null)
+	{
+		$models = array();
+
+		if (is_array($data))
+		{
+			foreach ($data as $values)
+			{
+				$model = static::populateModel($values);
+
+				if ($indexBy)
+				{
+					$models[$model->$indexBy] = $model;
+				}
+				else
+				{
+					$models[] = $model;
+				}
+			}
+		}
+
+		return $models;
+	}
+
+	/**
 	 * Treats attributes defined by defineAttributes() as array offsets.
 	 *
 	 * @param mixed $offset
-	 * @return boolean
+	 *
+	 * @return bool
 	 */
 	public function offsetExists($offset)
 	{
@@ -156,16 +232,6 @@ abstract class BaseModel extends \CModel
 		}
 
 		return $this->_classHandle;
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array();
 	}
 
 	/**
@@ -207,7 +273,9 @@ abstract class BaseModel extends \CModel
 	 * Returns an array of attribute values.
 	 *
 	 * @param null $names
-	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to array, etc. Useful for saving to DB or sending over a web service.
+	 * @param bool $flattenValues Will change a DateTime object to a timestamp,
+	 *                            Mixed to array, etc. Useful for saving to DB or
+	 *                            sending over a web service.
 	 *
 	 * @return array
 	 */
@@ -230,7 +298,8 @@ abstract class BaseModel extends \CModel
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param bool $flattenValue
+	 * @param bool   $flattenValue
+	 *
 	 * @return mixed
 	 */
 	public function getAttribute($name, $flattenValue = false)
@@ -252,7 +321,8 @@ abstract class BaseModel extends \CModel
 	 * Sets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param mixed $value
+	 * @param mixed  $value
+	 *
 	 * @return bool
 	 */
 	public function setAttribute($name, $value)
@@ -327,6 +397,8 @@ abstract class BaseModel extends \CModel
 	 * Sets multiple attribute values at once.
 	 *
 	 * @param mixed $values
+	 *
+	 * @return null
 	 */
 	public function setAttributes($values)
 	{
@@ -368,6 +440,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
+	 *
 	 * @return bool
 	 */
 	public function validate($attributes = null, $clearErrors = true)
@@ -416,46 +489,16 @@ abstract class BaseModel extends \CModel
 		return new $class($this->getAttributes());
 	}
 
-	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @param mixed $values
-	 * @return BaseModel
-	 */
-	public static function populateModel($values)
-	{
-		$class = get_called_class();
-		return new $class($values);
-	}
+	// Protected Methods
+	// =========================================================================
 
 	/**
-	 * Mass-populates models based on an array of attribute arrays.
+	 * Defines this model's attributes.
 	 *
-	 * @param array $data
-	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public static function populateModels($data, $indexBy = null)
+	protected function defineAttributes()
 	{
-		$models = array();
-
-		if (is_array($data))
-		{
-			foreach ($data as $values)
-			{
-				$model = static::populateModel($values);
-
-				if ($indexBy)
-				{
-					$models[$model->$indexBy] = $model;
-				}
-				else
-				{
-					$models[] = $model;
-				}
-			}
-		}
-
-		return $models;
+		return array();
 	}
 }

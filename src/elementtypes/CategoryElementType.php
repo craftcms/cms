@@ -2,17 +2,21 @@
 namespace Craft;
 
 /**
- * Category element type.
+ * The CategoryElementType class is responsible for implementing and defining
+ * categories as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     2.0
  */
 class CategoryElementType extends BaseElementType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the element type name.
 	 *
@@ -297,7 +301,7 @@ class CategoryElementType extends BaseElementType
 	 * @param BaseElementModel $element
 	 * @param int              $structureId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
@@ -307,7 +311,8 @@ class CategoryElementType extends BaseElementType
 			// Update its URI
 			craft()->elements->updateElementSlugAndUri($element);
 
-			// Make sure that each of the category's ancestors are related wherever the category is related
+			// Make sure that each of the category's ancestors are related
+			// wherever the category is related
 			$newRelationValues = array();
 
 			$ancestorIds = $element->getAncestors()->ids();

@@ -2,17 +2,25 @@
 namespace Craft;
 
 /**
- * Handles asset transform tasks.
+ * The AssetTransformsController class is a controller that handles various
+ * actions related to asset transformations, such as creating, editing and
+ * deleting transforms.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class AssetTransformsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Shows the asset transform list.
 	 */

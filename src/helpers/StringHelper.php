@@ -7,23 +7,41 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class StringHelper
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private static $_asciiCharMap;
+
+	/**
+	 * @var
+	 */
 	private static $_asciiPunctuation;
+
+	/**
+	 * @var
+	 */
 	private static $_iconv;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the character at a specific point in a potentially multibyte string.
 	 *
 	 * @param  string $str
 	 * @param  int    $i
-	 * @return string
+	 *
 	 * @see http://stackoverflow.com/questions/10360764/there-are-simple-way-to-get-a-character-from-multibyte-string-in-php
+	 * @return string
 	 */
 	public static function getCharAt($str, $i)
 	{
@@ -35,6 +53,7 @@ class StringHelper
 	 *
 	 * @param mixed  $arr
 	 * @param string $glue
+	 *
 	 * @return string
 	 */
 	public static function arrayToString($arr, $glue = ',')
@@ -91,6 +110,7 @@ class StringHelper
 	/**
 	 * @param int  $length
 	 * @param bool $extendedChars
+	 *
 	 * @return string
 	 */
 	public static function randomString($length = 36, $extendedChars = false)
@@ -106,7 +126,8 @@ class StringHelper
 
 		$randomString = '';
 
-		// count the number of chars in the valid chars string so we know how many choices we have
+		// count the number of chars in the valid chars string so we know how
+		// many choices we have
 		$numValidChars = mb_strlen($validChars);
 
 		// repeat the steps until we've created a string of the right length
@@ -154,6 +175,7 @@ class StringHelper
 	 * Returns is the given string matches a UUID pattern.
 	 *
 	 * @param $uuid
+	 *
 	 * @return bool
 	 */
 	public static function isUUID($uuid)
@@ -163,6 +185,7 @@ class StringHelper
 
 	/**
 	 * @param $string
+	 *
 	 * @return mixed
 	 */
 	public static function escapeRegexChars($string)
@@ -240,6 +263,7 @@ class StringHelper
 	 * Converts extended ASCII characters to ASCII.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function asciiString($str)
@@ -280,8 +304,9 @@ class StringHelper
 	/**
 	 * Normalizes search keywords.
 	 *
-	 * @param string  $str The dirty keywords.
+	 * @param string $str    The dirty keywords.
 	 * @param array  $ignore Ignore words to strip out.
+	 *
 	 * @return string The cleansed keywords.
 	 */
 	public static function normalizeKeywords($str, $ignore = array())
@@ -328,6 +353,7 @@ class StringHelper
 	 * Runs a string through Markdown.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function parseMarkdown($str)
@@ -345,11 +371,13 @@ class StringHelper
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
 	 * @param      $string
+	 *
 	 * @return bool|string
 	 */
 	public static function convertToUTF8($string)
 	{
-		// Don't wrap in a class_exists in case the server already has it's own version of HTMLPurifier and they have open_basedir restrictions
+		// Don't wrap in a class_exists in case the server already has it's own
+		// version of HTMLPurifier and they have open_basedir restrictions
 		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
 
 		// If it's already a UTF8 string, just clean and return it
@@ -391,7 +419,8 @@ class StringHelper
 			static::$_iconv = false;
 
 			// Check if iconv is installed.
-			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they don't consider iconv "installed" if it's there but "unusable".
+			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable()
+			//because they don't consider iconv "installed" if it's there but "unusable".
 			if (!function_exists('iconv'))
 			{
 				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
@@ -413,6 +442,7 @@ class StringHelper
 	 * Checks if the given string is UTF-8 encoded.
 	 *
 	 * @param $string The string to check.
+	 *
 	 * @return bool
 	 */
 	public static function isUTF8($string)
@@ -423,7 +453,8 @@ class StringHelper
 	/**
 	 * Gets the current encoding of the given string.
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function getEncoding($string)
@@ -432,27 +463,33 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware upper-case version of a string.
-	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 * Returns a multibyte aware upper-case version of a string. Note: Not using
+	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function toUpperCase($string)
 	{
 		return mb_convert_case($string, MB_CASE_UPPER, "UTF-8");
 	}
+
 	/**
-	 * Returns a multibyte aware lower-case version of a string.
-	 * Note: Not using mb_strtoupper because of https://bugs.php.net/bug.php?id=47742
+	 * Returns a multibyte aware lower-case version of a string. Note: Not using
+	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
-	 * @param $string
+	 * @param string $string
+	 *
 	 * @return string
 	 */
 	public static function toLowerCase($string)
 	{
 		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Get array of chars to be used for conversion.
@@ -487,6 +524,7 @@ class StringHelper
 	 * Custom alternative to chr().
 	 *
 	 * @param int $int
+	 *
 	 * @return string
 	 */
 	private static function _chr($int)

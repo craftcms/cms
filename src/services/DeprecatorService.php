@@ -7,22 +7,39 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     2.0
  */
 class DeprecatorService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
+	private static $_tableName = 'deprecationerrors';
+
+	/**
+	 * @var array
+	 */
 	private $_fingerprints = array();
+
+	/**
+	 * @var
+	 */
 	private $_allLogs;
 
-	private static $_tableName = 'deprecationerrors';
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Logs a new deprecation error.
 	 *
-	 * @param $key
-	 * @param $message
+	 * @param string $key
+	 * @param string $message
+	 *
 	 * @return bool
 	 */
 	public function log($key, $message)
@@ -77,6 +94,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Get 'em all.
 	 *
 	 * @param int $limit
+	 *
 	 * @return array
 	 */
 	public function getLogs($limit = 100)
@@ -100,6 +118,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Returns a log by its ID.
 	 *
 	 * @param $logId
+	 *
 	 * @return DeprecationErrorModel|null
 	 */
 	public function getLogById($logId)
@@ -120,6 +139,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Deletes a log by its ID.
 	 *
 	 * @param $id
+	 *
 	 * @return bool
 	 */
 	public function deleteLogById($id)
@@ -139,14 +159,20 @@ class DeprecatorService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Populates a DeprecationErrorModel with data pulled from the PHP stack trace.
 	 *
 	 * @param DeprecationErrorModel $log
+	 *
+	 * @return null
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
-		// Get the stack trace, but skip the first one, since it's just the call to this private function
+		// Get the stack trace, but skip the first one, since it's just the call
+		// to this private function
 		$traces = debug_backtrace();
 		array_shift($traces);
 
@@ -268,6 +294,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 * Adapted from CErrorHandler::argumentsToString(), but this one's less destructive
 	 *
 	 * @param $args array
+	 *
 	 * @return string
 	 */
 	private function _argsToString($args)

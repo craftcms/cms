@@ -7,25 +7,59 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.3
  */
 class MatrixService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_blockTypesById;
+
+	/**
+	 * @var
+	 */
 	private $_blockTypesByFieldId;
+
+	/**
+	 * @var
+	 */
 	private $_fetchedAllBlockTypesForFieldId;
+
+	/**
+	 * @var
+	 */
 	private $_blockTypeRecordsById;
+
+	/**
+	 * @var
+	 */
 	private $_blockRecordsById;
+
+	/**
+	 * @var
+	 */
 	private $_uniqueBlockTypeAndFieldHandles;
+
+	/**
+	 * @var
+	 */
 	private $_parentMatrixFields;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the block types for a given Matrix field.
 	 *
-	 * @param int $fieldId
+	 * @param int         $fieldId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getBlockTypesByFieldId($fieldId, $indexBy = null)
@@ -69,6 +103,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns a block type by its ID.
 	 *
 	 * @param int $blockTypeId
+	 *
 	 * @return MatrixBlockTypeModel|null
 	 */
 	public function getBlockTypeById($blockTypeId)
@@ -98,6 +133,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Validates a block type.
 	 *
 	 * @param MatrixBlockTypeModel $blockType
+	 *
 	 * @return bool
 	 */
 	public function validateBlockType(MatrixBlockTypeModel $blockType)
@@ -116,9 +152,10 @@ class MatrixService extends BaseApplicationComponent
 			$blockType->addErrors($blockTypeRecord->getErrors());
 		}
 
-		// Can't validate multiple new rows at once so we'll need to give these a temporary context
-		// to avioid false unique handle validation errors, and just validate those manually.
-		// Also apply the future fieldColumnPrefix so that field handle validation takes its length into account.
+		// Can't validate multiple new rows at once so we'll need to give these
+		// a temporary context to avoid false unique handle validation errors,
+		// and just validate those manually. Also apply the future fieldColumnPrefix
+		// so that field handle validation takes its length into account.
 		$contentService = craft()->content;
 		$originalFieldContext      = $contentService->fieldContext;
 		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
@@ -130,17 +167,19 @@ class MatrixService extends BaseApplicationComponent
 		{
 			craft()->fields->validateField($field);
 
-			// Make sure the block type handle + field handle combo is unique for the whole field.
-			// This prevents us from worying about content column conflicts like "a" + "b_c" == "a_b" + "c".
+			// Make sure the block type handle + field handle combo is unique for
+			// the whole field. This prevents us from worrying about content column
+			// conflicts like "a" + "b_c" == "a_b" + "c".
 			if ($blockType->handle && $field->handle)
 			{
 				$blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
 
 				if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles))
 				{
-					// This error *might* not be entirely accurate, but it's such an edge case
-					// that it's probably better for the error to be worded for the common problem
-					// (two duplicate handles within the same block type).
+					// This error *might* not be entirely accurate, but it's such
+					// an edge case that it's probably better for the error to be
+					// worded for the common problem (two duplicate handles within
+					// the same block type).
 					$error = Craft::t('{attribute} "{value}" has already been taken.', array(
 						'attribute' => Craft::t('Handle'),
 						'value' => $field->handle
@@ -171,7 +210,9 @@ class MatrixService extends BaseApplicationComponent
 	 * Saves a block type.
 	 *
 	 * @param MatrixBlockTypeModel $blockType
-	 * @param bool $validate
+	 * @param bool                 $validate
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
@@ -247,7 +288,8 @@ class MatrixService extends BaseApplicationComponent
 				$fieldLayoutFields = array();
 				$sortOrder = 0;
 
-				// Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
+				// Resetting the fieldContext here might be redundant if this isn't
+				// a new blocktype but whatever
 				$contentService->fieldContext      = 'matrixBlockType:'.$blockType->id;
 				$contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
@@ -316,6 +358,8 @@ class MatrixService extends BaseApplicationComponent
 	 * Deletes a block type.
 	 *
 	 * @param MatrixBlockTypeModel $blockType
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteBlockType(MatrixBlockTypeModel $blockType)
@@ -371,6 +415,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Validates a Matrix field's settings.
 	 *
 	 * @param MatrixSettingsModel $settings
+	 *
 	 * @return bool
 	 */
 	public function validateFieldSettings(MatrixSettingsModel $settings)
@@ -383,8 +428,8 @@ class MatrixService extends BaseApplicationComponent
 		{
 			if (!$this->validateBlockType($blockType))
 			{
-				// Don't break out of the loop because we still want to get validation errors
-				// for the remaining block types.
+				// Don't break out of the loop because we still want to get
+				// validation errors for the remaining block types.
 				$validates = false;
 			}
 		}
@@ -396,7 +441,9 @@ class MatrixService extends BaseApplicationComponent
 	 * Saves a Matrix field's settings.
 	 *
 	 * @param MatrixSettingsModel $settings
-	 * @param bool $validate
+	 * @param bool                $validate
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveSettings(MatrixSettingsModel $settings, $validate = true)
@@ -491,6 +538,8 @@ class MatrixService extends BaseApplicationComponent
 	 * Deletes a Matrix field.
 	 *
 	 * @param FieldModel $matrixField
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteMatrixField(FieldModel $matrixField)
@@ -537,7 +586,8 @@ class MatrixService extends BaseApplicationComponent
 	 * Returns the content table name for a given Matrix field.
 	 *
 	 * @param FieldModel $matrixField
-	 * @param bool $useOldHandle
+	 * @param bool       $useOldHandle
+	 *
 	 * @return string|false
 	 */
 	public function getContentTableName(FieldModel $matrixField, $useOldHandle = false)
@@ -570,8 +620,9 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block by its ID.
 	 *
-	 * @param int $blockId
+	 * @param int         $blockId
 	 * @param string|null $localeId
+	 *
 	 * @return MatrixBlockModel|null
 	 */
 	public function getBlockById($blockId, $localeId = null)
@@ -583,6 +634,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Validates a block.
 	 *
 	 * @param MatrixBlockModel $block
+	 *
 	 * @return bool
 	 */
 	public function validateBlock(MatrixBlockModel $block)
@@ -601,8 +653,6 @@ class MatrixService extends BaseApplicationComponent
 
 		$originalFieldContext = craft()->content->fieldContext;
 		craft()->content->fieldContext = 'matrixBlockType:'.$block->typeId;
-
-		$fieldLayout = $block->getType()->getFieldLayout();
 
 		if (!craft()->content->validateContent($block))
 		{
@@ -674,6 +724,7 @@ class MatrixService extends BaseApplicationComponent
 	 * Deletes a block(s) by its ID.
 	 *
 	 * @param int|array $blockIds
+	 *
 	 * @return bool
 	 */
 	public function deleteBlockById($blockIds)
@@ -727,7 +778,8 @@ class MatrixService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation setting
+			// First thing's first. Let's make sure that the blocks for this
+			// field/owner respect the field's translation setting
 			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
 			$blockIds = array();
@@ -804,25 +856,11 @@ class MatrixService extends BaseApplicationComponent
 		return true;
 	}
 
-	// Private methods
-
-	/**
-	 * Returns a DbCommand object prepped for retrieving block types.
-	 *
-	 * @return DbCommand
-	 */
-	private function _createBlockTypeQuery()
-	{
-		return craft()->db->createCommand()
-			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
-			->from('matrixblocktypes')
-			->order('sortOrder');
-	}
-
 	/**
 	 * Returns the parent Matrix field, if any.
 	 *
-	 * @param FieldModel       $matrixField
+	 * @param FieldModel $matrixField
+	 *
 	 * @return FieldModel|null
 	 */
 	public function getParentMatrixField(FieldModel $matrixField)
@@ -851,10 +889,26 @@ class MatrixService extends BaseApplicationComponent
 		return $this->_parentMatrixFields[$matrixField->id];
 	}
 
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Returns a DbCommand object prepped for retrieving block types.
+	 *
+	 * @return DbCommand
+	 */
+	private function _createBlockTypeQuery()
+	{
+		return craft()->db->createCommand()
+			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
+			->from('matrixblocktypes')
+			->order('sortOrder');
+	}
+
 	/**
 	 * Returns a block type record by its ID or creates a new one.
 	 *
-	 * @param  MatrixBlockTypeModel $blockType
+	 * @param MatrixBlockTypeModel $blockType
 	 *
 	 * @throws Exception
 	 * @return MatrixBlockTypeRecord
@@ -886,7 +940,7 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block record by its ID or creates a new one.
 	 *
-	 * @param  MatrixBlockModel $block
+	 * @param MatrixBlockModel $block
 	 *
 	 * @throws Exception
 	 * @return MatrixBlockRecord
@@ -919,6 +973,8 @@ class MatrixService extends BaseApplicationComponent
 	 * Creates the content table for a Matrix field.
 	 *
 	 * @param string $name
+	 *
+	 * @return null
 	 */
 	private function _createContentTable($name)
 	{
@@ -938,6 +994,8 @@ class MatrixService extends BaseApplicationComponent
 	 * @param BaseElementModel $owner
 	 * @param FieldModel       $field
 	 * @param array            $blocks
+	 *
+	 * @return null
 	 */
 	private function _applyFieldTranslationSetting($owner, $field, $blocks)
 	{
@@ -1002,7 +1060,8 @@ class MatrixService extends BaseApplicationComponent
 				{
 					$newBlockIds = array();
 
-					// Duplicate the other-locale blocks so each locale has their own unique set of blocks
+					// Duplicate the other-locale blocks so each locale has their
+					// own unique set of blocks
 					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
 					{
 						foreach ($blocksInOtherLocale as $blockInOtherLocale)
@@ -1018,8 +1077,8 @@ class MatrixService extends BaseApplicationComponent
 						}
 					}
 
-					// Duplicate the relations, too
-					// First by getting all of the existing relations for the original blocks
+					// Duplicate the relations, too.  First by getting all of the
+					// existing relations for the original blocks
 					$relations = craft()->db->createCommand()
 						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 						->from('relations')

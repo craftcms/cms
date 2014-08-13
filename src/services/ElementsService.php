@@ -7,20 +7,23 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class ElementsService extends BaseApplicationComponent
 {
+	// METHODS
+	// =========================================================================
+
 	// Finding Elements
-	// ================
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns an element criteria model for a given element type.
 	 *
 	 * @param string $type
-	 * @param mixed $attributes
+	 * @param mixed  $attributes
 	 *
 	 * @throws Exception
 	 * @return ElementCriteriaModel
@@ -40,9 +43,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its ID.
 	 *
-	 * @param int $elementId
-	 * @param string|null $type
+	 * @param int         $elementId
+	 * @param null        $elementType
 	 * @param string|null $localeId
+	 *
 	 * @return BaseElementModel|null
 	 */
 	public function getElementById($elementId, $elementType = null, $localeId = null)
@@ -73,8 +77,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its URI.
 	 *
-	 * @param string $uri
+	 * @param string      $uri
 	 * @param string|null $localeId
+	 * @param bool        $enabledOnly
+	 *
 	 * @return BaseElementModel|null
 	 */
 	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
@@ -126,6 +132,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the element type(s) used by the element of a given ID(s).
 	 *
 	 * @param int|array $elementId
+	 *
 	 * @return string|array|null
 	 */
 	public function getElementTypeById($elementId)
@@ -152,7 +159,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Finds elements.
 	 *
 	 * @param mixed $criteria
-	 * @param bool $justIds
+	 * @param bool  $justIds
+	 *
 	 * @return array
 	 */
 	public function findElements($criteria = null, $justIds = false)
@@ -162,27 +170,6 @@ class ElementsService extends BaseApplicationComponent
 
 		if ($query)
 		{
-			if ($criteria->search)
-			{
-				$elementIds = $this->_getElementIdsFromQuery($query);
-				$scoredSearchResults = ($criteria->order == 'score');
-				$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
-
-				// No results?
-				if (!$filteredElementIds)
-				{
-					return array();
-				}
-
-				$query->andWhere(array('in', 'elements.id', $filteredElementIds));
-
-				if ($scoredSearchResults)
-				{
-					// Order the elements in the exact order that SearchService returned them in
-					$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
-				}
-			}
-
 			if ($justIds)
 			{
 				$query->select('elements.id');
@@ -208,7 +195,8 @@ class ElementsService extends BaseApplicationComponent
 					// Add the field column prefixes
 					foreach ($fieldColumns as $column)
 					{
-						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or "column_name desc"
+						// Avoid matching fields named "asc" or "desc" in the string
+						// "column_name asc" or "column_name desc"
 						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
@@ -264,8 +252,10 @@ class ElementsService extends BaseApplicationComponent
 							{
 								foreach ($fieldColumns as $column)
 								{
-									// Account for results where multiple fields have the same handle, but from different columns
-									// e.g. two Matrix block types that each have a field with the same handle
+									// Account for results where multiple fields have
+									// the same handle, but from different columns
+									// e.g. two Matrix block types that each have a
+									// field with the same handle
 
 									$colName = $column['column'];
 									$fieldHandle = $column['handle'];
@@ -328,6 +318,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the total number of elements that match a given criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return int
 	 */
 	public function getTotalElements($criteria = null)
@@ -352,11 +343,13 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
+	 * Returns a DbCommand instance ready to search for elements based on a given
+	 * element criteria.
 	 *
 	 * @param mixed &$criteria
 	 * @param null  &$contentTable
 	 * @param null  &$fieldColumns
+	 *
 	 * @return DbCommand|false
 	 */
 	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
@@ -380,6 +373,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Set up the query
+		// ---------------------------------------------------------------------
 
 		$query = craft()->db->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
@@ -415,8 +409,10 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Basic element params
+		// ---------------------------------------------------------------------
 
-		// If the 'id' parameter is set to any empty value besides `null`, don't return anything
+		// If the 'id' parameter is set to any empty value besides `null`,
+		// don't return anything
 		if ($criteria->id !== null && empty($criteria->id))
 		{
 			return false;
@@ -504,6 +500,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// i18n params
+		// ---------------------------------------------------------------------
 
 		if ($criteria->slug)
 		{
@@ -521,6 +518,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Relational params
+		// ---------------------------------------------------------------------
 
 		// Convert the old childOf and parentOf params to the relatedTo param
 		// childOf(element)  => relatedTo({ source: element })
@@ -554,8 +552,8 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->andWhere($relConditions);
 
-			// If there's only one relation criteria and it's specifically for grabbing target elements,
-			// allow the query to order by the relation sort order
+			// If there's only one relation criteria and it's specifically for
+			// grabbing target elements, allow the query to order by the relation sort order
 			if ($relationParamParser->isRelationFieldQuery())
 			{
 				$query->addSelect('sources1.sortOrder');
@@ -563,6 +561,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give field types a chance to make changes
+		// ---------------------------------------------------------------------
 
 		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
 		{
@@ -579,6 +578,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Give the element type a chance to make changes
+		// ---------------------------------------------------------------------
 
 		if ($elementType->modifyElementsQuery($query, $criteria) === false)
 		{
@@ -586,6 +586,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 
 		// Structure params
+		// ---------------------------------------------------------------------
 
 		if ($query->isJoined('structureelements'))
 		{
@@ -756,14 +757,40 @@ class ElementsService extends BaseApplicationComponent
 			}
 		}
 
+		// Search
+		// ---------------------------------------------------------------------
+
+		if ($criteria->search)
+		{
+			$elementIds = $this->_getElementIdsFromQuery($query);
+			$scoredSearchResults = ($criteria->order == 'score');
+			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+
+			// No results?
+			if (!$filteredElementIds)
+			{
+				return array();
+			}
+
+			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+
+			if ($scoredSearchResults)
+			{
+				// Order the elements in the exact order that SearchService
+				// returned them in
+				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
+			}
+		}
+
 		return $query;
 	}
 
 	/**
 	 * Returns an element's URI for a given locale.
 	 *
-	 * @param int $elementId
+	 * @param int    $elementId
 	 * @param string $localeId
+	 *
 	 * @return string
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
@@ -779,6 +806,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the locales that a given element is enabled in.
 	 *
 	 * @param int $elementId
+	 *
 	 * @return array
 	 */
 	public function getEnabledLocalesForElement($elementId)
@@ -791,13 +819,16 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	// Saving Elements
-	// ===============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves an element.
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
-	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it will depend on whether the element is enabled or not.
+	 * @param bool|null        $validateContent Whether the element's content should
+	 *                                          be validated. If left 'null', it
+	 *                                          will depend on whether the element is
+	 *                                          enabled or not.
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -899,8 +930,9 @@ class ElementsService extends BaseApplicationComponent
 
 				// Update the locale records and content
 
-				// We're saving all of the element's locales here to ensure that they all exist
-				// and to update the URI in the event that the URL format includes some value that just changed
+				// We're saving all of the element's locales here to ensure that
+				// they all exist and to update the URI in the event that the URL
+				// format includes some value that just changed
 
 				$localeRecords = array();
 
@@ -1079,7 +1111,8 @@ class ElementsService extends BaseApplicationComponent
 					}
 
 					// Finally, delete any caches involving this element
-					// (Even do this for new elements, since they might pop up in a cached criteria.)
+					// (Even do this for new elements, since they might pop up in
+					// a cached criteria.)
 					craft()->templateCache->deleteCachesByElement($element);
 				}
 			}
@@ -1124,8 +1157,10 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's slug and URI, along with any descendants.
 	 *
 	 * @param BaseElementModel $element
-	 * @param bool $updateOtherLocales
-	 * @param bool $updateDescendants
+	 * @param bool             $updateOtherLocales
+	 * @param bool             $updateDescendants
+	 *
+	 * @return null
 	 */
 	public function updateElementSlugAndUri(BaseElementModel $element, $updateOtherLocales = true, $updateDescendants = true)
 	{
@@ -1157,6 +1192,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's slug and URI, for any locales besides the given one.
 	 *
 	 * @param BaseElementModel $element
+	 *
+	 * @return null
 	 */
 	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
 	{
@@ -1180,6 +1217,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Updates an element's descendants' slugs and URIs.
 	 *
 	 * @param BaseElementModel $element
+	 *
+	 * @return null
 	 */
 	public function updateDescendantSlugsAndUris(BaseElementModel $element)
 	{
@@ -1201,6 +1240,8 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param int $mergedElementId
 	 * @param int $prevailingElementId
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
@@ -1315,6 +1356,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Deletes an element(s) by its ID(s).
 	 *
 	 * @param int|array $elementIds
+	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteElementById($elementIds)
@@ -1332,8 +1375,9 @@ class ElementsService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing.
-			// We need to go one-by-one in case one of theme deletes the record of another in the process.
+			// First delete any structure nodes with these elements, so NestedSetBehavior
+			// can do its thing. We need to go one-by-one in case one of theme deletes
+			// the record of another in the process.
 			foreach ($elementIds as $elementId)
 			{
 				$records = StructureElementRecord::model()->findAllByAttributes(array(
@@ -1347,7 +1391,8 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			// Delete the caches before they drop their elementId relations
-			// (passing `false` because there's no chance this element is suddenly going to show up in a new query)
+			// (passing `false` because there's no chance this element is suddenly
+			// going to show up in a new query)
 			craft()->templateCache->deleteCachesByElementId($elementIds, false);
 
 			// Fire an 'onBeforeDeleteElements' event
@@ -1389,6 +1434,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Deletes elements by a given type.
 	 *
 	 * @param string $type
+	 *
 	 * @return bool
 	 */
 	public function deleteElementsByType($type)
@@ -1410,7 +1456,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	// Element types
-	// =============
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all installed element types.
@@ -1426,6 +1472,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns an element type.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseElementType|null
 	 */
 	public function getElementType($class)
@@ -1434,12 +1481,13 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	// Misc
-	// ====
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Parses a string for element reference tags.
 	 *
 	 * @param string $str
+	 *
 	 * @return string|array
 	 */
 	public function parseRefs($str)
@@ -1569,6 +1617,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Fires an 'onPopulateElement' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onPopulateElement(Event $event)
 	{
@@ -1579,6 +1629,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Fires an 'onMergeElements' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onMergeElements(Event $event)
 	{
@@ -1589,14 +1641,16 @@ class ElementsService extends BaseApplicationComponent
 	 * Fires an 'onBeforeDeleteElements' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeDeleteElements(Event $event)
 	{
 		$this->raiseEvent('onBeforeDeleteElements', $event);
 	}
 
-	// Private functions
-	// =================
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the unique element IDs that match a given element query.

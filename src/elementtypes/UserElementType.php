@@ -2,17 +2,21 @@
 namespace Craft;
 
 /**
- * User element type.
+ * The UserElementType class is responsible for implementing and defining
+ * users as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     1.0
  */
 class UserElementType extends BaseElementType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the element type name.
 	 *
@@ -260,11 +264,13 @@ class UserElementType extends BaseElementType
 					->queryScalar();
 			}
 
-			// Find the users that have that permission, either directly or thorugh a group
+			// Find the users that have that permission, either directly or
+			// through a group
 			$permittedUserIds = array();
 
-			// If the permission hasn't been assigned to any groups/users before, it won't have an ID.
-			// Don't bail though, since we still want to look for admins.
+			// If the permission hasn't been assigned to any groups/users before,
+			// it won't have an ID. Don't bail though, since we still want to
+			// look for admins.
 			if ($permissionId)
 			{
 				// Get the user groups that have that permission
@@ -311,7 +317,8 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large arrays.
+			// TODO: MySQL specific. Manually building the string because
+			// DbHelper::parseParam() chokes with large arrays.
 			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 
@@ -332,7 +339,8 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large arrays.
+			// TODO: MySQL specific. Manually building the string because
+			// DbHelper::parseParam() chokes with large arrays.
 			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 
@@ -378,6 +386,9 @@ class UserElementType extends BaseElementType
 	{
 		return UserModel::populateModel($row);
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param $groupIds

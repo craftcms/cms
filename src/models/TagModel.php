@@ -7,33 +7,31 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.1
  */
 class TagModel extends BaseElementModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::Tag;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the tag name as its string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'groupId' => AttributeType::Number,
-			'name'    => AttributeType::String,
-		));
 	}
 
 	/**
@@ -79,8 +77,8 @@ class TagModel extends BaseElementModel
 	/**
 	 * Returns the tag group's ID.
 	 *
+	 * @deprecated Deprecated in 2.0. Use 'groupId' instead.
 	 * @return int|null
-	 * @deprecated Deprecated in 2.0.
 	 */
 	public function setId()
 	{
@@ -91,12 +89,26 @@ class TagModel extends BaseElementModel
 	/**
 	 * Returns the tag's group.
 	 *
+	 * @deprecated Deprecated in 2.0. Use {@link getGroup()} instead.
 	 * @return TagGroupModel|null
-	 * @deprecated Deprecated in 2.0.
 	 */
 	public function getSet()
 	{
 		craft()->deprecator->log('TagModel::getSet()', 'TagModel::getSet() has been deprecated. Use getGroup() instead.');
 		return $this->getGroup();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'groupId' => AttributeType::Number,
+			'name'    => AttributeType::String,
+		));
 	}
 }

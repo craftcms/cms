@@ -2,21 +2,27 @@
 namespace Craft;
 
 /**
- * Query generator console command.
+ * The query generator console command.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.consolecommands
  * @since     1.0
  */
 class QuerygenCommand extends BaseCommand
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var string
 	 */
 	public $defaultAction = 'all';
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $args
@@ -58,7 +64,8 @@ class QuerygenCommand extends BaseCommand
 			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			// (foreign keys already get indexed, so we're only concerned with
+			// whether it should be unique)
 			if (!empty($config['unique']))
 			{
 				$indexes[] = array('columns' => array($columnName), 'unique' => true);
@@ -202,6 +209,9 @@ class QuerygenCommand extends BaseCommand
 		return 1;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns a record instance by its class name.
 	 *
@@ -252,7 +262,7 @@ class QuerygenCommand extends BaseCommand
 
 				if ($showingKeys)
 				{
-					$return .= $this->_varExport($key) . ' => ';
+					$return .= $this->_varExport($key).' => ';
 				}
 
 				$return .= $this->_varExport($value);

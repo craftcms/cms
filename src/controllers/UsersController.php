@@ -2,31 +2,55 @@
 namespace Craft;
 
 /**
- * Handles user account related tasks.
+ * The UsersController class is a controller that handles various user account
+ * related tasks such as logging-in, impersonating a user, logging out,
+ * forgetting passwords, setting passwords, validating accounts, activating
+ * accounts, creating users, saving users, processing user avatars, deleting,
+ * suspending and un-suspending users.
+ *
+ * Note that all actions in the controller, except {@link actionLogin},
+ * {@link actionForgotPassword}, {@link actionValidate}, {@link actionSetPassword}
+ * and {@link actionSaveUser} require an authenticated Craft session via
+ * {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class UsersController extends BaseController
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Displays the login template, and handles login post requests.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionLogin()
 	{
@@ -50,7 +74,8 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					// Already logged in, but can't access the CP?  Send them to the front-end home page.
+					// Already logged in, but can't access the CP?  Send them to
+					// the front-end home page.
 					$this->redirect(UrlHelper::getSiteUrl());
 				}
 			}
@@ -109,7 +134,7 @@ class UsersController extends BaseController
 	/**
 	 * Logs a user in for impersonation.  Requires you to be an administrator.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionImpersonate()
 	{
@@ -140,7 +165,7 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function actionLogout()
 	{
@@ -151,7 +176,7 @@ class UsersController extends BaseController
 	/**
 	 * Sends a Forgot Password email.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionForgotPassword()
 	{
@@ -211,7 +236,7 @@ class UsersController extends BaseController
 	 * Sets a user's password once they've verified they have access to their email.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSetPassword()
 	{
@@ -255,7 +280,8 @@ class UsersController extends BaseController
 						craft()->userSession->impersonate($user->id);
 					}
 
-					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
+					// If the user can't access the CP, then send them to the
+					// front-end setPasswordSuccessPath.
 					if (!$user->can('accessCp'))
 					{
 						$url = UrlHelper::getSiteUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
@@ -301,7 +327,7 @@ class UsersController extends BaseController
 	 * Validate that a user has access to an email address.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionValidate()
 	{
@@ -340,7 +366,8 @@ class UsersController extends BaseController
 			// If the current user is logged in
 			if (($currentUser = craft()->userSession->getUser()) !== null)
 			{
-				// If they are validating an account that doesn't belong to them, log them out of their current account.
+				// If they are validating an account that doesn't belong to them,
+				// log them out of their current account.
 				if ($currentUser->id !== $userToValidate->id)
 				{
 					craft()->userSession->logout();
@@ -349,7 +376,8 @@ class UsersController extends BaseController
 
 			if (craft()->users->activateUser($userToValidate))
 			{
-				// Successfully activated user, do they require a password reset or is their password empty? If so, send them through the password logic.
+				// Successfully activated user, do they require a password reset
+				// or is their password empty? If so, send them through the password logic.
 				if ($userToValidate->passwordResetRequired || !$userToValidate->password)
 				{
 					// All users that go through account activation will need to set their password.
@@ -372,7 +400,8 @@ class UsersController extends BaseController
 						craft()->userSession->impersonate($userToValidate->id);
 					}
 
-					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
+					// If the user can't access the CP, then send them to the
+					// front-end activateAccountSuccessPath.
 					if (!$userToValidate->can('accessCp'))
 					{
 						$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
@@ -399,12 +428,14 @@ class UsersController extends BaseController
 
 				if ($url === '')
 				{
-					// Failed to validate user and there is no custom validation failure path.  Throw an exception.
+					// Failed to validate user and there is no custom validation
+					// failure path.  Throw an exception.
 					throw new HttpException('200', Craft::t('There was a problem activating this account.'));
 				}
 				else
 				{
-					// Failed to activate user and there is a custom validate failure path set, so use it.
+					// Failed to activate user and there is a custom validate
+					// failure path set, so use it.
 					$url = UrlHelper::getSiteUrl($url);
 				}
 			}
@@ -427,7 +458,7 @@ class UsersController extends BaseController
 	/**
 	 * Manually activates a user account.  Only admins have access.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionActivateUser()
 	{
@@ -461,7 +492,7 @@ class UsersController extends BaseController
 	 * @param string|null $account
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditUser(array $variables = array(), $account = null)
 	{
@@ -562,7 +593,8 @@ class UsersController extends BaseController
 				)
 			);
 
-			// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields
+			// No need to show the Profile tab if it's a new user (can't have an
+			// avatar yet) and there's no user fields
 			if (!$variables['isNewAccount'] || $variables['account']->getFieldLayout()->getFields())
 			{
 				$variables['tabs']['profile'] = array(
@@ -615,7 +647,7 @@ class UsersController extends BaseController
 	 * Registers a new user, or saves an existing user's account settings.
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveUser()
 	{
@@ -659,7 +691,8 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// Make sure this is Craft Pro, since that's required for having multiple user accounts
+			// Make sure this is Craft Pro, since that's required for having
+			// multiple user accounts
 			craft()->requireEdition(Craft::Pro);
 
 			// Is someone logged in?
@@ -693,7 +726,8 @@ class UsersController extends BaseController
 				$newEmail = null;
 			}
 
-			// You must pass your current password to change these fields for an existing user
+			// You must pass your current password to change these fields for an
+			// existing user
 			if (!$isNewUser && ($newEmail || $newPassword))
 			{
 				// Make sure the correct current password has been submitted
@@ -705,13 +739,15 @@ class UsersController extends BaseController
 					Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 
-					// We'll let the script keep executing in case we find any other validation errors...
+					// We'll let the script keep executing in case we find any
+					// other validation errors...
 				}
 			}
 
 			if ($thisIsPublicRegistration || $newPassword)
 			{
-				// Don't worry about new password validation. That will be taken care of in the service.
+				// Don't worry about new password validation. That will be taken
+				// care of in the service.
 				$user->newPassword = $newPassword;
 			}
 
@@ -823,9 +859,8 @@ class UsersController extends BaseController
 	/**
 	 * Saves a user's profile.
 	 *
-	 * @return void
-	 *
-	 * @deprecated Deprecated in 2.0.
+	 * @deprecated Deprecated in 2.0. Use {@link UsersController::saveUser()} instead.
+	 * @return null
 	 */
 	public function actionSaveProfile()
 	{
@@ -836,7 +871,7 @@ class UsersController extends BaseController
 	/**
 	 * Upload a user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadUserPhoto()
 	{
@@ -912,7 +947,7 @@ class UsersController extends BaseController
 	/**
 	 * Crop user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCropUserPhoto()
 	{
@@ -980,7 +1015,7 @@ class UsersController extends BaseController
 	/**
 	 * Delete all the photos for current user.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUserPhoto()
 	{
@@ -1011,7 +1046,7 @@ class UsersController extends BaseController
 	/**
 	 * Sends a new activation email to a user.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSendActivationEmail()
 	{
@@ -1042,7 +1077,7 @@ class UsersController extends BaseController
 	 * Unlocks a user, bypassing the cooldown phase.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionUnlockUser()
 	{
@@ -1058,7 +1093,8 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
+		// Even if you have administrateUsers permissions, only and admin should
+		// be able to unlock another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1076,7 +1112,7 @@ class UsersController extends BaseController
 	 * Suspends a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionSuspendUser()
 	{
@@ -1092,7 +1128,8 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
+		// Even if you have administrateUsers permissions, only and admin should
+		// be able to suspend another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1110,7 +1147,7 @@ class UsersController extends BaseController
 	 * Deletes a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUser()
 	{
@@ -1127,7 +1164,8 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have deleteUser permissions, only and admin should be able to delete another admin.
+		// Even if you have deleteUser permissions, only and admin should be able
+		// to delete another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1146,7 +1184,7 @@ class UsersController extends BaseController
 	 * Unsuspends a user.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionUnsuspendUser()
 	{
@@ -1162,7 +1200,8 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should be able to unsuspend another admin.
+		// Even if you have administrateUsers permissions, only and admin should
+		// be able to unsuspend another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1179,7 +1218,7 @@ class UsersController extends BaseController
 	/**
 	 * Saves the asset field layout.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveFieldLayout()
 	{
@@ -1226,10 +1265,13 @@ class UsersController extends BaseController
 		$this->returnErrorJson(Craft::t('Invalid password.'));
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @param $user
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processSetPasswordPath($user)
 	{
@@ -1246,7 +1288,8 @@ class UsersController extends BaseController
 				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 			}
 		}
-		// The user can access the CP, so send them to Craft's set password template in the dashboard.
+		// The user can access the CP, so send them to Craft's set password
+		// template in the dashboard.
 		else
 		{
 			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
@@ -1259,7 +1302,7 @@ class UsersController extends BaseController
 	 * @param int $userId
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _noUserExists($userId)
 	{
@@ -1269,7 +1312,7 @@ class UsersController extends BaseController
 	/**
 	 * @param $userId
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _assignDefaultGroupToUser($userId)
 	{
@@ -1285,7 +1328,7 @@ class UsersController extends BaseController
 	/**
 	 * @param $user
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserPhoto($user)
 	{
@@ -1318,7 +1361,7 @@ class UsersController extends BaseController
 	 * @param $user
 	 * @param $currentUser
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserGroupsPermissions($user, $currentUser)
 	{

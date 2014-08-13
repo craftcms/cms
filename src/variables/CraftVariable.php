@@ -7,16 +7,26 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class CraftVariable
 {
-	private $_rebrandVariable;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @param $name
+	 * @var
+	 */
+	private $_rebrandVariable;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @param string $name
+	 *
 	 * @return mixed
 	 */
 	public function __get($name)
@@ -28,7 +38,8 @@ class CraftVariable
 			$pluginName = $plugin->getClassHandle();
 			$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
 
-			// Variables should already be imported by the plugin service, but let's double check.
+			// Variables should already be imported by the plugin service, but
+			// let's double check.
 			if (!class_exists($className))
 			{
 				Craft::import('plugins.'.StringHelper::toLowerCase($pluginName).'.variables.'.$pluginName.'Variable');
@@ -39,7 +50,8 @@ class CraftVariable
 	}
 
 	/**
-	 * @param $name
+	 * @param string $name
+	 *
 	 * @return bool
 	 */
 	public function __isset($name)
@@ -79,18 +91,19 @@ class CraftVariable
 	/**
 	 * Returns whether a package is included in the Craft build.
 	 *
-	 * @param $packageName;
+	 * @param string $packageName;
+	 *
+	 * @deprecated Deprecated in 2.0.
 	 * @return bool
-	 * @Deprecated Deprecated in 2.0
+	 *
 	 */
 	public function hasPackage($packageName)
 	{
 		return craft()->hasPackage($packageName);
 	}
 
-	// -------------------------------------------
-	//  Template variable classes
-	// -------------------------------------------
+	// Template variable classes
+	// -------------------------------------------------------------------------
 
 	/**
 	 * @return AppVariable
@@ -102,6 +115,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function assets($criteria = null)
@@ -111,6 +125,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function categories($criteria = null)
@@ -179,6 +194,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function entries($criteria = null)
@@ -287,6 +303,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function tags($criteria = null)
@@ -312,6 +329,7 @@ class CraftVariable
 
 	/**
 	 * @param array|null $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function users($criteria = null)

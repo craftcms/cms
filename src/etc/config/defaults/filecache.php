@@ -11,12 +11,15 @@
 
 return array(
 	/**
-	 * The file system path to use for caching. If empty, Craft will default to craft/app/storage/runtime/cache.
+	 * The file system path to use for caching. If empty, Craft will default to
+	 * craft/app/storage/runtime/cache.
 	 */
 	'cachePath' => '',
 
 	/**
-	 * The probability (parts per million) that garbage collection (GC) should be performed when storing a piece of data in the cache. Defaults to 100, meaning 0.01% chance.
+	 * The probability (parts per million) that garbage collection (GC) should
+	 * be performed when storing a piece of data in the cache. Defaults to 100,
+	 * meaning 0.01% chance.
 	 */
 	'gcProbability' => 100,
 );

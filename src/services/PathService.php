@@ -7,13 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class PathService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_templatesPath;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return string
@@ -128,7 +137,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsImageSourcePath()
 	{
-		$path = $this->getAssetsPath() . 'sources/';
+		$path = $this->getAssetsPath().'sources/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -138,7 +147,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsThumbsPath()
 	{
-		$path = $this->getAssetsPath() . 'thumbs/';
+		$path = $this->getAssetsPath().'thumbs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -148,7 +157,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getAssetsIconsPath()
 	{
-		$path = $this->getAssetsPath() . 'icons/';
+		$path = $this->getAssetsPath().'icons/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -198,7 +207,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param null $pluginHandle
+	 * @param string|null $pluginHandle
+	 *
 	 * @return string
 	 */
 	public function getMigrationsPath($pluginHandle = null)
@@ -228,7 +238,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the current templates path, taking into account whether this is a CP or Site request.
+	 * Returns the current templates path, taking into account whether this is a
+	 * CP or Site request.
 	 *
 	 * @return string
 	 */
@@ -280,24 +291,8 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the path to the offline template by first checking to see if they have set a custom path in config.
-	 * If that is not set, it will fall back on the default CP offline template.
-	 *
-	 * @return mixed
-	 */
-	public function getOfflineTemplatePath()
-	{
-		// If the user has set offlinePath config item, let's use it.
-		if (($path = craft()->config->get('offlinePath')) !== null)
-		{
-			return mb_substr($path, 0, mb_strlen($path) - mb_strlen(IOHelper::getFileName($path)));
-		}
-
-		return $this->getCpTemplatesPath();
-	}
-
-	/**
-	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
+	 * Returns the current parsed templates path, taking into account whether this
+	 * is a CP or Site request.
 	 *
 	 * @return mixed
 	 */
@@ -336,6 +331,8 @@ class PathService extends BaseApplicationComponent
 
 	/**
 	 * Returns the path to the license key file.
+	 *
+	 * @return string
 	 */
 	public function getLicenseKeyPath()
 	{

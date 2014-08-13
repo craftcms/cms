@@ -2,17 +2,21 @@
 namespace Craft;
 
 /**
- * Tag element type.
+ * The TagElementType class is responsible for implementing and defining
+ * tags as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     1.1
  */
 class TagElementType extends BaseElementType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the element type name.
 	 *

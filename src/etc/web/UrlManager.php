@@ -7,33 +7,63 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.web
  * @since     1.0
  */
 class UrlManager extends \CUrlManager
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	public $cpRoutes;
+
+	/**
+	 * @var
+	 */
 	public $pathParam;
 
 	/**
-	 * @var array List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 * List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 *
+	 * @var array
 	 */
 	private $_routeVariables;
 
+	/**
+	 * @var
+	 */
 	private $_routeAction;
-	private $_routeParams;
-	private $_matchedElement;
-	private $_matchedElementRoute;
 
 	/**
-	 *
+	 * @var
+	 */
+	private $_routeParams;
+
+	/**
+	 * @var
+	 */
+	private $_matchedElement;
+
+	/**
+	 * @var
+	 */
+	private $_matchedElementRoute;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @return null
 	 */
 	public function init()
 	{
 		parent::init();
 
-		// set this to false so extra query string parameters don't get the path treatment
+		// Set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
@@ -53,6 +83,8 @@ class UrlManager extends \CUrlManager
 	 * Sets variables to be passed to the routed controllers action's $variables argument.
 	 *
 	 * @param array $variables
+	 *
+	 * @return null
 	 */
 	public function setRouteVariables($variables)
 	{
@@ -60,12 +92,14 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Determines which controller/action to route the request to.
-	 * Routing candidates include actual template paths, elements with URIs, and registered URL routes.
+	 * Determines which controller/action to route the request to.  Routing
+	 * candidates include actual template paths, elements with URIs, and registered
+	 * URL routes.
 	 *
 	 * @param HttpRequestService $request
 	 *
-	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
+	 * @throws HttpException Throws a 404 in the event that we can't figure out
+	 *                       where to route the request.
 	 * @return string The controller/action path.
 	 */
 	public function parseUrl($request)
@@ -159,10 +193,15 @@ class UrlManager extends \CUrlManager
 		return $this->_matchedElement;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Sets the route.
 	 *
 	 * @param mixed $route
+	 *
+	 * @return null
 	 */
 	private function _setRoute($route)
 	{
@@ -186,6 +225,7 @@ class UrlManager extends \CUrlManager
 	 * Normalizes a route.
 	 *
 	 * @param mixed $route
+	 *
 	 * @return array
 	 */
 	private function _normalizeRoute($route)
@@ -215,6 +255,7 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with an element in the database.
 	 *
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedElementRoute($path)
@@ -249,6 +290,7 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with the registered URL routes.
 	 *
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedUrlRoute($path)
@@ -311,7 +353,8 @@ class UrlManager extends \CUrlManager
 	 * Attempts to match a path with a set of given URL routes.
 	 *
 	 * @param string $path
-	 * @param array $routes
+	 * @param array  $routes
+	 *
 	 * @return mixed
 	 */
 	private function _matchUrlRoutes($path, $routes)
@@ -319,7 +362,8 @@ class UrlManager extends \CUrlManager
 		foreach ($routes as $pattern => $route)
 		{
 			// Escape any unescaped forward slashes
-			// Dumb ol' PHP is having trouble with this one when you use single quotes and don't escape the backslashes.
+			// Dumb ol' PHP is having trouble with this one when you use single
+			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
 
 			// Parse {handle} tokens
@@ -356,7 +400,8 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
+	 * Returns whether the current path is "public" (no segments that start with
+	 * the privateTemplateTrigger).
 	 *
 	 * @return bool
 	 */

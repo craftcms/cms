@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class DateTimeHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return DateTime
 	 */
@@ -35,20 +38,21 @@ class DateTimeHelper
 	 */
 	public static function currentTimeForDb()
 	{
-		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
-		// For now, it's MySQL only.
+		// Eventually this will return the time in the appropriate database
+		// format for MySQL, Postgre, etc. For now, it's MySQL only.
 		$date = static::currentUTCDateTime();
 		return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
 
 	/**
 	 * @param $timeStamp
+	 *
 	 * @return DateTime
 	 */
 	public static function formatTimeForDb($timeStamp = null)
 	{
-		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
-		// For now, it's MySQL only.
+		// Eventually this will accept a database parameter and format the timestamp
+		// for the given database date/time datatype. For now, it's MySQL only.
 
 		if ($timeStamp)
 		{
@@ -74,8 +78,9 @@ class DateTimeHelper
 	}
 
 	/**
-	 * @param int $seconds The number of seconds
+	 * @param int  $seconds     The number of seconds
 	 * @param bool $showSeconds Whether to output seconds or not
+	 *
 	 * @return string
 	 */
 	public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
@@ -137,6 +142,7 @@ class DateTimeHelper
 
 	/**
 	 * @param $timestamp
+	 *
 	 * @return bool
 	 */
 	public static function isValidTimeStamp($timestamp)
@@ -147,7 +153,8 @@ class DateTimeHelper
 	/**
 	 * Returns a nicely formatted date string for given Datetime string.
 	 *
-	 * @param string     $dateString Datetime string
+	 * @param string $dateString The date string.
+	 *
 	 * @return string Formatted date string
 	 */
 	public static function nice($dateString = null)
@@ -180,6 +187,7 @@ class DateTimeHelper
 	 * include mention of the year.
 	 *
 	 * @param string $dateString Datetime string or Unix timestamp
+	 *
 	 * @return string Described, relative date string
 	 */
 	public static function niceShort($dateString = null)
@@ -208,7 +216,8 @@ class DateTimeHelper
 	 * Returns true if given date is today.
 	 *
 	 * @param string $date Unix timestamp
-	 * @return boolean True if date is today
+	 *
+	 * @return boolboolean true if date is today, false otherwise.
 	 */
 	public static function isToday($date)
 	{
@@ -219,7 +228,8 @@ class DateTimeHelper
 	 * Returns true if given date was yesterday
 	 *
 	 * @param string $date Unix timestamp
-	 * @return boolean True if date was yesterday
+	 *
+	 * @return bool true if date was yesterday, false otherwise.
 	 */
 	public static function wasYesterday($date)
 	{
@@ -230,7 +240,8 @@ class DateTimeHelper
 	 * Returns true if given date is in this year
 	 *
 	 * @param string $date Unix timestamp
-	 * @return boolean True if date is in this year
+	 *
+	 * @return bool true if date is in this year, false otherwise.
 	 */
 	public static function isThisYear($date)
 	{
@@ -241,7 +252,8 @@ class DateTimeHelper
 	 * Returns true if given date is in this week
 	 *
 	 * @param string $date Unix timestamp
-	 * @return boolean True if date is in this week
+	 *
+	 * @return bool true if date is in this week, false otherwise.
 	 */
 	public static function isThisWeek($date)
 	{
@@ -252,7 +264,8 @@ class DateTimeHelper
 	 * Returns true if given date is in this month
 	 *
 	 * @param string $date Unix timestamp
-	 * @return boolean True if date is in this month
+	 *
+	 * @return bool True if date is in this month, false otherwise.
 	 */
 	public static function isThisMonth($date)
 	{
@@ -262,11 +275,12 @@ class DateTimeHelper
 	/**
 	 * Returns either a relative date or a formatted date depending
 	 * on the difference between the current time and given datetime.
-	 * $datetime should be in a <i>strtotime</i>-parsable format, like MySQL's datetime datatype.
+	 * $datetime should be in a <i>strtotime</i>-parsable format, like MySQL's
+	 * datetime datatype.
 	 *
 	 * Options:
-	 *  'format' => a fall back format if the relative time is longer than the duration specified by end
-	 *  'end' =>  The end of relative time telling
+	 *  * 'format' => a fall back format if the relative time is longer than the duration specified by end
+	 *  * 'end' =>  The end of relative time telling
 	 *
 	 * Relative dates look something like this:
 	 *  3 weeks, 4 days ago
@@ -274,14 +288,13 @@ class DateTimeHelper
 	 * Formatted dates look like this:
 	 *  on 02/18/2004
 	 *
-	 * The returned string includes 'ago' or 'on' and assumes you'll properly add a word
-	 * like 'Posted ' before the function output.
+	 * The returned string includes 'ago' or 'on' and assumes you'll properly
+	 * add a word  like 'Posted ' before the function output.
 	 *
 	 * @param       $dateTime
 	 * @param array $options Default format if timestamp is used in $dateString
 	 *
-	 * @internal param string $dateString Datetime string
-	 * @return string Relative time string.
+	 * @return string The relative time string.
 	 */
 	public static function timeAgoInWords($dateTime, $options = array())
 	{
@@ -483,10 +496,12 @@ class DateTimeHelper
 	/**
 	 * Returns true if specified datetime was within the interval specified, else false.
 	 *
-	 * @param mixed $timeInterval the numeric value with space then time type. Example of valid types: 6 hours, 2 days, 1 minute.
-	 * @param mixed $dateString the datestring or unix timestamp to compare
-	 * @param int $userOffset User's offset from GMT (in hours)
-	 * @return bool whether the $dateString was within the specified $timeInterval
+	 * @param mixed $timeInterval The numeric value with space then time type. E
+	 *                            xample of valid types: 6 hours, 2 days, 1 minute.
+	 * @param mixed $dateString   The datestring or unix timestamp to compare
+	 * @param int   $userOffset   User's offset from GMT (in hours)
+	 *
+	 * @return bool Whether the $dateString was within the specified $timeInterval.
 	 */
 	public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
 	{
@@ -510,10 +525,11 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns true if the specified date was in the past, else false.
+	 * Returns true if the specified date was in the past, otherwise false.
 	 *
-	 * @param mixed $date the datestring (a valid strtotime) or unix timestamp to check
-	 * @return boolean if the specified date was in the past
+	 * @param mixed $date The datestring (a valid strtotime) or unix timestamp to check.
+	 *
+	 * @return bool true if the specified date was in the past, false otherwise.
 	 */
 	public static function wasInThePast($date)
 	{
@@ -521,11 +537,13 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid strtotime() date string.
+	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid
+	 * strtotime() date string.
 	 *
 	 * @param string $dateString Datetime string
-	 * @param int $userOffset User's offset from GMT (in hours)
-	 * @return string Parsed timestamp
+	 * @param int    $userOffset User's offset from GMT (in hours)
+	 *
+	 * @return string The parsed timestamp.
 	 */
 	public static function fromString($dateString, $userOffset = null)
 	{
@@ -558,9 +576,10 @@ class DateTimeHelper
 
 	/**
 	 * Takes a PHP time format string and converts it to seconds.
-	 * http://www.php.net/manual/en/datetime.formats.time.php
+	 * {@see http://www.php.net/manual/en/datetime.formats.time.php}
 	 *
 	 * @param $timeFormatString
+	 *
 	 * @return string
 	 */
 	public static function timeFormatToSeconds($timeFormatString)
@@ -573,6 +592,7 @@ class DateTimeHelper
 	 * Returns true if interval string is a valid interval.
 	 *
 	 * @param $intervalString
+	 *
 	 * @return bool
 	 */
 	public static function isValidIntervalString($intervalString)

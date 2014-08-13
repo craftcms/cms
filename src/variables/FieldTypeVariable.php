@@ -7,17 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class FieldTypeVariable extends BaseComponentTypeVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $handle
-	 * @param mixed $value
+	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($handle, $value)
@@ -29,6 +33,7 @@ class FieldTypeVariable extends BaseComponentTypeVariable
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)

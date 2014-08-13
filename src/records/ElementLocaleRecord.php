@@ -7,31 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     1.0
  */
 class ElementLocaleRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'elements_i18n';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'  => array(AttributeType::Locale, 'required' => true),
-			'slug'    => array(AttributeType::String),
-			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
-			'enabled' => array(AttributeType::Bool, 'default' => true),
-		);
 	}
 
 	/**
@@ -55,6 +45,22 @@ class ElementLocaleRecord extends BaseRecord
 			array('columns' => array('slug', 'locale')),
 			array('columns' => array('uri', 'locale'), 'unique' => true),
 			array('columns' => array('enabled')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'  => array(AttributeType::Locale, 'required' => true),
+			'slug'    => array(AttributeType::String),
+			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
+			'enabled' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 }

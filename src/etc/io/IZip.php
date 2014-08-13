@@ -7,19 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.io
  * @since     1.0
  */
 interface IZip
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip
 	 *
 	 * @return mixed
 	 */
-	function zip($sourceFolder, $destZip);
+	public function zip($sourceFolder, $destZip);
 
 	/**
 	 * @param $sourceZip
@@ -27,7 +30,7 @@ interface IZip
 	 *
 	 * @return mixed
 	 */
-	function unzip($sourceZip, $destFolder);
+	public function unzip($sourceZip, $destFolder);
 
 	/**
 	 * @param      $sourceZip
@@ -37,5 +40,5 @@ interface IZip
 	 *
 	 * @return mixed
 	 */
-	function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
+	public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
 }

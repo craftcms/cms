@@ -2,23 +2,30 @@
 namespace Craft;
 
 /**
- * Handles structure management tasks.
+ * The StructuresController class is a controller that handles structure related
+ * tasks such as moving an element within a structure.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     2.0
  */
 class StructuresController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Moves an element within a structure.
 	 *
 	 * @param array $variables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionMoveElement(array $variables = array())
 	{

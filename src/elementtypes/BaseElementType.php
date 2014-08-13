@@ -2,19 +2,26 @@
 namespace Craft;
 
 /**
- * Element type base class.
+ * The base class for all Craft element types. Any element type must extend
+ * this class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
  * @since     1.0
  */
 abstract class BaseElementType extends BaseComponentType implements IElementType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by
+	 * the component type's base class.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'ElementType';
 
@@ -23,9 +30,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 */
 	private $_sourcesByContext;
 
+	// Public Methods
+	// =========================================================================
 
 	// Basic info methods
-	// ----------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns whether this element type has content.
@@ -122,9 +131,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return array();
 	}
 
-
 	// Element index methods
-	// ----------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element index HTML.
@@ -223,7 +231,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					}
 					else
 					{
-						// Add some <wbr> tags in there so it doesn't all have to be on one line
+						// Add some <wbr> tags in there so it doesn't all have
+						// to be on one line
 						$find = array('/');
 						$replace = array('/<wbr>');
 
@@ -278,7 +287,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 
 	// Methods for customizing the content table
-	// ----------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Returns the content table name that should be joined in for an elements query.
@@ -317,9 +326,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		return $columns;
 	}
 
-
-	// Methods for customizing ElementCriteriaModel's for this element type
-	// ----------------------------------------------------------------------
+	// Methods for customizing ElementCriteriaModel's for this element type...
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the element query condition for a custom status criteria.
@@ -433,9 +441,8 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	{
 	}
 
-
-	// Private methods
-	// ----------------------------------------------------------------------
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Finds a source by its key, even if it's nested.

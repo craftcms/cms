@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * MemCache implements a cache application component based on {@link http://memcached.org/ memcached}.
+ * MemCache implements a cache application component based on
+ * {@link http://memcached.org/ memcached}.
  *
  * MemCache can be configured with a list of memcache servers.  By default, MemCache assumes
  * there is a memcache server running on localhost at port 11211.
@@ -16,7 +17,7 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.cache
  * @since     2.0
  */

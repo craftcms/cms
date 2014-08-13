@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db.schemas
  * @since     1.0
  */
 class MysqlSchema extends \CMysqlSchema
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @var int The maximum length that objects' names can be.
 	 */
@@ -104,9 +107,9 @@ class MysqlSchema extends \CMysqlSchema
 			$newName = $column;
 		}
 
-		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
-			. $this->quoteColumnName($column) . ' '
-			. $this->quoteColumnName($newName) . ' '
+		return 'ALTER TABLE '.$this->quoteTableName($table).' CHANGE '
+			. $this->quoteColumnName($column).' '
+			. $this->quoteColumnName($newName).' '
 			. $this->getColumnType($type)
 			. ($after ? ' AFTER '.$this->quoteColumnName($after) : '');
 	}
@@ -168,10 +171,12 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
-	 * @param string $table   The name of the table (including prefix, or wrapped in "{{" and "}}").
+	 * @param string $table   The name of the table (including prefix, or
+	 *                        wrapped in "{{" and "}}").
 	 * @param array  $columns An array of columns.
 	 * @param string $options Any additional SQL to append to the end of the query.
-	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM"). Default is "InnoDb".
+	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM").
+	 *                        Default is "InnoDb".
 	 *
 	 * @return string The full SQL for creating a table.
 	 */
@@ -258,6 +263,9 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		return '`'.$name.'`';
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns all table names in the database which start with the tablePrefix.

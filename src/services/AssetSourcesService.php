@@ -7,19 +7,45 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class AssetSourcesService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_allSourceIds;
+
+	/**
+	 * @var
+	 */
 	private $_viewableSourceIds;
+
+	/**
+	 * @var
+	 */
 	private $_viewableSources;
+
+	/**
+	 * @var
+	 */
 	private $_sourcesById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllSources = false;
 
-	/* Source Types */
+	// Public Methods
+	// =========================================================================
+
+	// Source Types
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all available source types.
@@ -42,6 +68,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns an asset source type by its class handle.
 	 *
 	 * @param string $class
+	 *
 	 * @return BaseAssetSourceType|null
 	 */
 	public function getSourceType($class)
@@ -53,6 +80,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates an asset source type with a given source.
 	 *
 	 * @param AssetSourceModel $source
+	 *
 	 * @return BaseAssetSourceType|null
 	 */
 	public function populateSourceType(AssetSourceModel $source)
@@ -64,6 +92,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns a source type by a given source ID.
 	 *
 	 * @param $sourceId
+	 *
 	 * @return BaseAssetSourceType
 	 */
 	public function getSourceTypeById($sourceId)
@@ -72,7 +101,8 @@ class AssetSourcesService extends BaseApplicationComponent
 		return $this->populateSourceType($source);
 	}
 
-	/* Sources */
+	// Sources
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the source IDs.
@@ -126,6 +156,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns all sources that are viewable by the current user.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getViewableSources($indexBy = null)
@@ -184,6 +215,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns all sources.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSources($indexBy = null)
@@ -228,6 +260,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Returns a source by its ID.
 	 *
 	 * @param int $sourceId
+	 *
 	 * @return AssetSourceModel|null
 	 */
 	public function getSourceById($sourceId)
@@ -239,7 +272,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			$source->id = $sourceId;
 			$source->name = TempAssetSourceType::sourceName;
 			$source->type = TempAssetSourceType::sourceType;
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets') . '/');
+			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');
 			return $source;
 		}
 		else
@@ -472,7 +505,8 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 	}
 
-	// Private methods
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sources.
@@ -491,6 +525,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates a source from its DB result.
 	 *
 	 * @param array $result
+	 *
 	 * @return AssetSourceModel
 	 */
 	private function _populateSource($result)

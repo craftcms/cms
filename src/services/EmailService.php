@@ -7,20 +7,34 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class EmailService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_settings;
+
+	/**
+	 * @var int
+	 */
 	private $_defaultEmailTimeout = 10;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sends an email.
 	 *
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
+	 *
 	 * @return bool
 	 */
 	public function sendEmail(EmailModel $emailModel, $variables = array())
@@ -42,8 +56,8 @@ class EmailService extends BaseApplicationComponent
 	 * Sends an email by its key.
 	 *
 	 * @param UserModel $user
-	 * @param string $key
-	 * @param array $variables
+	 * @param string    $key
+	 * @param array     $variables
 	 *
 	 * @throws Exception
 	 * @return bool
@@ -125,7 +139,10 @@ class EmailService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $settings
+	 * Sends a test email.
+	 *
+	 * @param array $settings
+	 *
 	 * @return bool
 	 */
 	public function sendTestEmail($settings)
@@ -153,6 +170,9 @@ class EmailService extends BaseApplicationComponent
 
 		return $success;
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Fires an 'onBeforeSendEmail' event.
@@ -194,7 +214,8 @@ class EmailService extends BaseApplicationComponent
 		// Default the charset to UTF-8
 		$email->CharSet = 'UTF-8';
 
-		// Add a reply to (if any).  Make sure it’s set before setting From, because email is dumb.
+		// Add a reply to (if any).  Make sure it’s set before setting From,
+		// because email is dumb.
 		if (!empty($emailModel->replyTo))
 		{
 			$email->addReplyTo($emailModel->replyTo);
@@ -252,7 +273,8 @@ class EmailService extends BaseApplicationComponent
 			}
 		}
 
-		// If they have the test email config var set to something, use it instead of the supplied email.
+		// If they have the test email config var set to something, use it
+		// instead of the supplied email.
 		if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
 		{
 			$email->addAddress($testToEmail, 'Test Email');
@@ -357,6 +379,7 @@ class EmailService extends BaseApplicationComponent
 	 * @param $emailSettings
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
 	{

@@ -2,17 +2,25 @@
 namespace Craft;
 
 /**
- * Class PatchManifestFileAction
+ * The PatchManifestFileAction class is an abstract class that defines all of
+ * the different path manifest file actions that are available in Craft during
+ * an auto-update.
+ *
+ * This class is a poor man's version of an enum, since PHP does not have
+ * support for native enumerations.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.enums
  * @since     1.0
  */
 abstract class PatchManifestFileAction extends BaseEnum
 {
+	// Constants
+	// =========================================================================
+
 	const Add    = 'Add';
 	const Remove = 'Remove';
 }

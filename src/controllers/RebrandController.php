@@ -4,21 +4,29 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
- * Handles rebranding tasks.
+ * The RebrandController class is a controller that handles various control
+ * panel re-branding tasks such as uploading, cropping and delete custom logos
+ * for displaying on the login page.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class RebrandController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Upload a logo for the admin panel.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionUploadLogo()
 	{
@@ -84,7 +92,7 @@ class RebrandController extends BaseController
 	/**
 	 * Crop user photo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCropLogo()
 	{
@@ -138,7 +146,7 @@ class RebrandController extends BaseController
 	/**
 	 * Delete logo.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteLogo()
 	{

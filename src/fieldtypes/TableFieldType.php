@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class TableFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -31,19 +34,6 @@ class TableFieldType extends BaseFieldType
 	public function defineContentAttribute()
 	{
 		return AttributeType::Mixed;
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'columns' => AttributeType::Mixed,
-			'defaults' => AttributeType::Mixed,
-		);
 	}
 
 	/**
@@ -133,7 +123,7 @@ class TableFieldType extends BaseFieldType
 			)
 		));
 
-		return $columnsField . $defaultsField;
+		return $columnsField.$defaultsField;
 	}
 
 	/**
@@ -141,6 +131,7 @@ class TableFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -161,6 +152,7 @@ class TableFieldType extends BaseFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($value)
@@ -176,6 +168,7 @@ class TableFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValue($value)
@@ -202,6 +195,7 @@ class TableFieldType extends BaseFieldType
 	 * Returns static HTML for the field's value.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return string
 	 */
 	public function getStaticHtml($value)
@@ -209,12 +203,32 @@ class TableFieldType extends BaseFieldType
 		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'columns' => AttributeType::Mixed,
+			'defaults' => AttributeType::Mixed,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the field's input HTML.
 	 *
 	 * @param string $name
 	 * @param mixed  $value
-	 * @param bool $static
+	 * @param bool  $static
+	 *
 	 * @return string
 	 */
 	private function _getInputHtml($name, $value, $static)

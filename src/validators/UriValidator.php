@@ -7,17 +7,28 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.validators
  * @since     1.0
  */
 class UriValidator extends \CValidator
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	public $pattern = '/^[^\s]+$/';
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

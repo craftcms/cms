@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.requirements
  * @since     1.2
  */
 class Requirements
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return array
 	 */
@@ -137,6 +140,9 @@ class Requirements
 		);
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
@@ -199,6 +205,9 @@ class Requirements
  */
 class Requirement extends \CComponent
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var null|string
 	 */
@@ -229,6 +238,9 @@ class Requirement extends \CComponent
 	 */
 	private $_result;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Constructor
 	 *
@@ -240,34 +252,13 @@ class Requirement extends \CComponent
 	 *
 	 * @return Requirement
 	 */
-	function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
+	public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
 	{
 		$this->_name = $name;
 		$this->_condition = $condition;
 		$this->_required = $required;
 		$this->_requiredBy = $requiredBy;
 		$this->_notes = $notes;
-	}
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if ($this->_condition)
-		{
-			return RequirementResult::Success;
-		}
-		else if ($this->_required)
-		{
-			return RequirementResult::Failed;
-		}
-		else
-		{
-			return RequirementResult::Warning;
-		}
 	}
 
 	/**
@@ -300,7 +291,7 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getRequiredBy()
 	{
@@ -308,11 +299,35 @@ class Requirement extends \CComponent
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{
 		return $this->_notes;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		if ($this->_condition)
+		{
+			return RequirementResult::Success;
+		}
+		else if ($this->_required)
+		{
+			return RequirementResult::Failed;
+		}
+		else
+		{
+			return RequirementResult::Warning;
+		}
 	}
 }
 
@@ -323,12 +338,18 @@ class Requirement extends \CComponent
  */
 class PhpVersionRequirement extends Requirement
 {
+	// Constants
+	// =========================================================================
+
 	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return PhpVersionRequirement
 	 */
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct(
 			Craft::t('PHP Version'),
@@ -339,7 +360,7 @@ class PhpVersionRequirement extends Requirement
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	public function getNotes()
 	{
@@ -358,6 +379,9 @@ class PhpVersionRequirement extends Requirement
 		}
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Calculates the result of this requirement.
 	 *
@@ -367,7 +391,8 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_doesMinVersionPass())
 		{
-			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning, due to the PHP hijack bug:
+			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning,
+			// due to the PHP hijack bug:
 			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
 			if ($this->_isBadPhpVersion())
 			{
@@ -383,6 +408,9 @@ class PhpVersionRequirement extends Requirement
 			return RequirementResult::Failed;
 		}
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether this is past the min PHP version.

@@ -9,28 +9,21 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.3
  */
 class BaseEntryRevisionModel extends EntryModel
 {
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'creatorId'   => AttributeType::Number,
-			'dateUpdated' => AttributeType::DateTime,
-			'dateCreated' => AttributeType::DateTime,
-		));
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sets the revision content.
 	 *
 	 * @param array $content
+	 *
+	 * @return null
 	 */
 	public function setContentFromRevision($content)
 	{
@@ -74,5 +67,20 @@ class BaseEntryRevisionModel extends EntryModel
 		}
 
 		return parent::getUrl();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'creatorId'   => AttributeType::Number,
+			'dateUpdated' => AttributeType::DateTime,
+			'dateCreated' => AttributeType::DateTime,
+		));
 	}
 }

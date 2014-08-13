@@ -3,18 +3,20 @@ namespace Craft;
 
 /**
  * UserIdentity represents the data needed to identify a user.
- * It contains the authentication method that checks if the provided data can identity the user.
+ * It contains the authentication method that checks if the provided data can
+ * identity the user.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.users
  * @since     1.0
  */
 class UserIdentity extends \CUserIdentity
 {
-	private $_id;
+	// Constants
+	// =========================================================================
 
 	const ERROR_ACCOUNT_LOCKED          = 50;
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
@@ -23,10 +25,21 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_NO_CP_ACCESS            = 54;
 	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
 
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var int
+	 */
+	private $_id;
+
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Authenticates a user against the database.
 	 *
-	 * @return boolean whether authentication succeeds.
+	 * @return bool true, if authentication succeeds, false otherwise.
 	 */
 	public function authenticate()
 	{
@@ -45,7 +58,7 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @return mixed
+	 * @return int
 	 */
 	public function getId()
 	{
@@ -53,10 +66,25 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
+	 * @param $user
+	 *
+	 * @return null
+	 */
+	public function logUserIn($user)
+	{
+		$this->_id = $user->id;
+		$this->username = $user->username;
+		$this->errorCode = static::ERROR_NONE;
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
 	 * @param UserModel $user
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _processUserStatus(UserModel $user)
 	{
@@ -132,17 +160,8 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @param $user
-	 */
-	public function logUserIn($user)
-	{
-		$this->_id = $user->id;
-		$this->username = $user->username;
-		$this->errorCode = static::ERROR_NONE;
-	}
-
-	/**
-	 * Returns the proper Account Locked error code, based on the system's Invalid Login Mode
+	 * Returns the proper Account Locked error code, based on the system's
+	 * Invalid Login Mode
 	 *
 	 * @return int
 	 */

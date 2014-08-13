@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.et
  * @since     1.0
  */
 class Et
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var string
 	 */
@@ -43,55 +46,8 @@ class Et
 	 */
 	private $_destinationFileName;
 
-	/**
-	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait indefinitely.
-	 *
-	 * @return int
-	 */
-	public function getTimeout()
-	{
-		return $this->_timeout;
-	}
-
-	/**
-	 * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
-	 *
-	 * @return int
-	 */
-	public function getConnectTimeout()
-	{
-		return $this->_connectTimeout;
-	}
-
-	/**
-	 * Whether or not to follow redirects on the request.  Defaults to true.
-	 *
-	 * @param $allowRedirects
-	 *
-	 * @return void
-	 */
-	public function setAllowRedirects($allowRedirects)
-	{
-		$this->_allowRedirects = $allowRedirects;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function getAllowRedirects()
-	{
-		return $this->_allowRedirects;
-	}
-
-	/**
-	 * @param $destinationFileName
-	 *
-	 * @return void
-	 */
-	public function setDestinationFileName($destinationFileName)
-	{
-		$this->_destinationFileName = $destinationFileName;
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param     $endpoint
@@ -100,7 +56,7 @@ class Et
 	 *
 	 * @return Et
 	 */
-	function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
 		$endpoint .= craft()->config->get('endpointSuffix');
 
@@ -125,6 +81,58 @@ class Et
 	}
 
 	/**
+	 * The maximum number of seconds to allow for an entire transfer to take place
+	 * before timing out.  Set 0 to wait indefinitely.
+	 *
+	 * @return int
+	 */
+	public function getTimeout()
+	{
+		return $this->_timeout;
+	}
+
+	/**
+	 * The maximum number of seconds to wait while trying to connect. Set to 0
+	 * to wait indefinitely.
+	 *
+	 * @return int
+	 */
+	public function getConnectTimeout()
+	{
+		return $this->_connectTimeout;
+	}
+
+	/**
+	 * Whether or not to follow redirects on the request.  Defaults to true.
+	 *
+	 * @param $allowRedirects
+	 *
+	 * @return null
+	 */
+	public function setAllowRedirects($allowRedirects)
+	{
+		$this->_allowRedirects = $allowRedirects;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getAllowRedirects()
+	{
+		return $this->_allowRedirects;
+	}
+
+	/**
+	 * @param $destinationFileName
+	 *
+	 * @return null
+	 */
+	public function setDestinationFileName($destinationFileName)
+	{
+		$this->_destinationFileName = $destinationFileName;
+	}
+
+	/**
 	 * @return EtModel
 	 */
 	public function getModel()
@@ -137,7 +145,7 @@ class Et
 	 *
 	 * @param $data
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setData($data)
 	{
@@ -154,7 +162,8 @@ class Et
 		{
 			$missingLicenseKey = empty($this->_model->licenseKey);
 
-			// No craft/config/license.key file and we can't even write to the config folder.  Don't even make the call home.
+			// No craft/config/license.key file and we can't even write to the
+			// config folder.  Don't even make the call home.
 			if ($missingLicenseKey && !$this->_isConfigFolderWritable())
 			{
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
@@ -270,8 +279,11 @@ class Et
 		return null;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
-	 * @return void|string
+	 * @return null|string
 	 */
 	private function _getLicenseKey()
 	{

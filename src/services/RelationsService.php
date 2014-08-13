@@ -7,18 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class RelationsService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Saves some relations for a field.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldModel       $field
 	 * @param BaseElementModel $source
-	 * @param array $targetIds
+	 * @param array            $targetIds
 	 *
 	 * @throws \Exception
 	 * @return bool

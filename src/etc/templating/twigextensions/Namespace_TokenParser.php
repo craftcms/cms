@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.templating.twigextensions
  * @since     1.3
  */
 class Namespace_TokenParser extends \Twig_TokenParser
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Defines the tag name.
 	 *
@@ -27,6 +30,7 @@ class Namespace_TokenParser extends \Twig_TokenParser
 	 * Parses {% namespace %}...{% endnamespace %} tags.
 	 *
 	 * @param \Twig_Token $token
+	 *
 	 * @return Namespace_Node
 	 */
 	public function parse(\Twig_Token $token)
@@ -43,6 +47,7 @@ class Namespace_TokenParser extends \Twig_TokenParser
 
 	/**
 	 * @param \Twig_Token $token
+	 *
 	 * @return bool
 	 */
 	public function decideNamespaceEnd(\Twig_Token $token)

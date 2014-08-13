@@ -2,21 +2,29 @@
 namespace Craft;
 
 /**
- * Class CategoriesController
+ * The CategoriesController class is a controller that handles various
+ * actions related to categories and category groups, such as creating, editing
+ * and deleting them.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     2.0
  */
 class CategoriesController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Category groups index.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGroupIndex()
 	{
@@ -35,7 +43,7 @@ class CategoriesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditCategoryGroup(array $variables = array())
 	{
@@ -85,7 +93,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Save a category group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveGroup()
 	{
@@ -102,7 +110,7 @@ class CategoriesController extends BaseController
 		$group->template  = craft()->request->getPost('template');
 		$group->maxLevels = craft()->request->getPost('maxLevels');
 
-		// Locale-spceific URL formats
+		// Locale-specific URL formats
 		$locales = array();
 
 		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
@@ -141,7 +149,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Deletes a category group.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteCategoryGroup()
 	{
@@ -158,7 +166,7 @@ class CategoriesController extends BaseController
 	/**
 	 * Saves a category.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCreateCategory()
 	{
@@ -196,7 +204,7 @@ class CategoriesController extends BaseController
 	 * Deletes a category.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteCategory()
 	{

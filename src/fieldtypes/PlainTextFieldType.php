@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class PlainTextFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -21,21 +24,6 @@ class PlainTextFieldType extends BaseFieldType
 	public function getName()
 	{
 		return Craft::t('Plain Text');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'placeholder'   => array(AttributeType::String),
-			'multiline'     => array(AttributeType::Bool),
-			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
-			'maxLength'     => array(AttributeType::Number, 'min' => 0),
-		);
 	}
 
 	/**
@@ -89,6 +77,7 @@ class PlainTextFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -98,5 +87,23 @@ class PlainTextFieldType extends BaseFieldType
 			'value'    => $value,
 			'settings' => $this->getSettings()
 		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'placeholder'   => array(AttributeType::String),
+			'multiline'     => array(AttributeType::Bool),
+			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
+			'maxLength'     => array(AttributeType::Number, 'min' => 0),
+		);
 	}
 }

@@ -7,17 +7,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.1
  */
 class TagsService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_allTagGroupIds;
+
+	/**
+	 * @var
+	 */
 	private $_tagGroupsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllTagGroups = false;
 
+	// Public Methods
+	// =========================================================================
+
 	// Tag groups
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns all of the group IDs.
@@ -48,6 +66,7 @@ class TagsService extends BaseApplicationComponent
 	 * Returns all tag groups.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllTagGroups($indexBy = null)
@@ -93,7 +112,8 @@ class TagsService extends BaseApplicationComponent
 	/**
 	 * Returns a group by its ID.
 	 *
-	 * @param $groupId
+	 * @param int $groupId
+	 *
 	 * @return TagGroupModel|null
 	 */
 	public function getTagGroupById($groupId)
@@ -119,6 +139,7 @@ class TagsService extends BaseApplicationComponent
 	 * Gets a group by its handle.
 	 *
 	 * @param string $groupHandle
+	 *
 	 * @return TagGroupModel|null
 	 */
 	public function getTagGroupByHandle($groupHandle)
@@ -281,12 +302,14 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Tags
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a tag by its ID.
 	 *
-	 * @param int $tagId
+	 * @param int         $tagId
 	 * @param string|null $localeId
+	 *
 	 * @return TagModel|null
 	 */
 	public function getTagById($tagId, $localeId)
@@ -401,11 +424,14 @@ class TagsService extends BaseApplicationComponent
 	}
 
 	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onBeforeSaveTag' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeSaveTag(Event $event)
 	{
@@ -416,6 +442,8 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTag' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveTag(Event $event)
 	{
@@ -426,7 +454,9 @@ class TagsService extends BaseApplicationComponent
 	 * Fires an 'onSaveTagContent' event.
 	 *
 	 * @param Event $event
-	 * @deprecated Deprecated in 2.0.
+	 *
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveTag() tags.onSaveTag} instead.
+	 * @return null
 	 */
 	public function onSaveTagContent(Event $event)
 	{

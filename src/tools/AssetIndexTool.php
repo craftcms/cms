@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.tools
  * @since     1.0
  */
 class AssetIndexTool extends BaseTool
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the tool name.
 	 *
@@ -61,7 +64,8 @@ class AssetIndexTool extends BaseTool
 	 * Perform the tool's action.
 	 *
 	 * @param array $params
-	 * @return array|void
+	 *
+	 * @return array|null
 	 */
 	public function performAction($params = array())
 	{
@@ -82,6 +86,7 @@ class AssetIndexTool extends BaseTool
 			}
 
 			$missingFolders = array();
+
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list
@@ -165,7 +170,8 @@ class AssetIndexTool extends BaseTool
 						$responseArray['confirm'] = craft()->templates->render('assets/_missing_items', array('missingFiles' => $missingFiles, 'missingFolders' => $missingFolders));
 						$responseArray['params'] = array('finish' => 1);
 					}
-					// Clean up stale indexing data (all sessions that have all recordIds set)
+					// Clean up stale indexing data (all sessions that have all
+					// recordIds set)
 					$sessionsInProgress = craft()->db->createCommand()
 											->select('sessionId')
 											->from('assetindexdata')

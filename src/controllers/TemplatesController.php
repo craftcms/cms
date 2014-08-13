@@ -2,28 +2,46 @@
 namespace Craft;
 
 /**
- * Class TemplatesController
+ * The TemplatesController class is a controller that handles various template
+ * rendering related tasks for both the control panel and front-end of a Craft
+ * site.
+ *
+ * Note that all actions in the controller are open to do not require an
+ * authenticated Craft session in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class TemplatesController extends BaseController
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
 	 *
-	 * Any permissions not covered in actionRender() should be handled byt the templates.
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
 	public $allowAnonymous = true;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Renders a template.
@@ -32,7 +50,7 @@ class TemplatesController extends BaseController
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionRender($template, array $variables = array())
 	{
@@ -48,9 +66,27 @@ class TemplatesController extends BaseController
 	}
 
 	/**
+	 * Shows the 'offline' template.
+	 *
+	 * @return null
+	 */
+	public function actionOffline()
+	{
+		// If this is a site request, make sure the offline template exists
+		if (craft()->request->isSiteRequest() && !craft()->templates->doesTemplateExist('offline'))
+		{
+			// Set PathService to use the CP templates path instead
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+		}
+
+		// Output the offline template
+		$this->renderTemplate('offline');
+	}
+
+	/**
 	 * Renders the Manual Update notification template.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionManualUpdateNotification()
 	{
@@ -60,7 +96,7 @@ class TemplatesController extends BaseController
 	/**
 	 * Renders the Manual Update template.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionManualUpdate()
 	{
@@ -71,7 +107,7 @@ class TemplatesController extends BaseController
 
 	/**
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRequirementsCheck()
 	{
@@ -115,7 +151,7 @@ class TemplatesController extends BaseController
 	 * Renders an error template.
 	 *
 	 * @throws \Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionRenderError()
 	{

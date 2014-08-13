@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class ElementTypeVariable extends BaseComponentTypeVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns whether this element type stores data on a per-locale basis.
 	 *
@@ -47,6 +50,7 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	 * Return a key/label list of the element type's sources.
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -68,7 +72,8 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)

@@ -7,12 +7,56 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class EmailModel extends BaseModel
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Adds a string or binary attachment (non-filesystem) to the list. This
+	 * method can be used to attach ascii or binary data, such as a BLOB record
+	 * from a database.
+	 *
+	 * @param string $string   String attachment data.
+	 * @param string $fileName Name of the attachment.
+	 * @param string $encoding File encoding
+	 * @param string $type     File extension MIME type.
+	 *
+	 * @return null
+	 */
+	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
+	{
+		$existingAttachments = $this->stringAttachments;
+		$existingAttachments[] = array('string' => $string, 'fileName' => $fileName, 'encoding' => $encoding, 'type' => $type);
+		$this->stringAttachments = $existingAttachments;
+	}
+
+	/**
+	 * Adds an attachment from a path on the filesystem. Returns false if the
+	 * file could not be found or accessed.
+	 *
+	 * @param string $path     Path to the attachment.
+	 * @param string $name     Overrides the attachment name.
+	 * @param string $encoding File encoding (see $Encoding).
+	 * @param string $type     File extension (MIME) type.
+	 *
+	 * @throws phpmailerException
+	 * @return bool
+	 */
+	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
+	{
+		$existingAttachments = $this->attachments;
+		$existingAttachments[] = array('path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type);
+		$this->attachments = $existingAttachments;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * @return array
 	 */
@@ -40,39 +84,5 @@ class EmailModel extends BaseModel
 			'attachments'       => array(AttributeType::Mixed),
 			'customHeaders'     => array(AttributeType::Mixed),
 		);
-	}
-
-	/**
-	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or binary data, such as a BLOB record from a database.
-	 *
-	 * @param string $string String attachment data.
-	 * @param string $fileName Name of the attachment.
-	 * @param string $encoding File encoding
-	 * @param string $type File extension MIME type.
-	 * @return void
-	 */
-	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
-	{
-		$existingAttachments = $this->stringAttachments;
-		$existingAttachments[] = array('string' => $string, 'fileName' => $fileName, 'encoding' => $encoding, 'type' => $type);
-		$this->stringAttachments = $existingAttachments;
-	}
-
-	/**
-	 * Adds an attachment from a path on the filesystem. Returns false if the file could not be found or accessed.
-	 *
-	 * @param string $path Path to the attachment.
-	 * @param string $name Overrides the attachment name.
-	 * @param string $encoding File encoding (see $Encoding).
-	 * @param string $type File extension (MIME) type.
-	 *
-	 * @throws phpmailerException
-	 * @return bool
-	 */
-	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
-	{
-		$existingAttachments = $this->attachments;
-		$existingAttachments[] = array('path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type);
-		$this->attachments = $existingAttachments;
 	}
 }

@@ -7,29 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     1.0
  */
 class FieldLayoutFieldRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'fieldlayoutfields';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		);
 	}
 
 	/**
@@ -52,6 +44,20 @@ class FieldLayoutFieldRecord extends BaseRecord
 		return array(
 			array('columns' => array('layoutId', 'fieldId'), 'unique' => true),
 			array('columns' => array('sortOrder')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'required'  => AttributeType::Bool,
+			'sortOrder' => AttributeType::SortOrder,
 		);
 	}
 }

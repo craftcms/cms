@@ -7,13 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.widgets
  * @since     1.0
  */
 class RecentEntriesWidget extends BaseWidget
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -23,19 +32,6 @@ class RecentEntriesWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Recent Entries');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section' => array(AttributeType::Mixed, 'default' => '*'),
-			'limit'   => array(AttributeType::Number, 'default' => 10),
-		);
 	}
 
 	/**
@@ -107,6 +103,25 @@ class RecentEntriesWidget extends BaseWidget
 			'entries' => $entries
 		));
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section' => array(AttributeType::Mixed, 'default' => '*'),
+			'limit'   => array(AttributeType::Number, 'default' => 10),
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the recent entries, based on the widget settings and user permissions.

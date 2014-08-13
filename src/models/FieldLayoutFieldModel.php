@@ -7,31 +7,25 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class FieldLayoutFieldModel extends BaseModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_layout;
 
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'tabId'     => AttributeType::Number,
-			'fieldId'   => AttributeType::Name,
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the tab's layout.
+	 * Returns the field's layout.
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -56,9 +50,11 @@ class FieldLayoutFieldModel extends BaseModel
 	}
 
 	/**
-	 * Sets the tab's layout.
+	 * Sets the field's layout.
 	 *
 	 * @param FieldLayoutModel $layout
+	 *
+	 * @return null
 	 */
 	public function setLayout(FieldLayoutModel $layout)
 	{
@@ -76,5 +72,23 @@ class FieldLayoutFieldModel extends BaseModel
 		{
 			return craft()->fields->getFieldById($this->fieldId);
 		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'        => AttributeType::Number,
+			'layoutId'  => AttributeType::Number,
+			'tabId'     => AttributeType::Number,
+			'fieldId'   => AttributeType::Name,
+			'required'  => AttributeType::Bool,
+			'sortOrder' => AttributeType::SortOrder,
+		);
 	}
 }

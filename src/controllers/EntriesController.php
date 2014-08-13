@@ -2,34 +2,54 @@
 namespace Craft;
 
 /**
- * Handles entry tasks.
+ * The EntriesController class is a controller that handles various entry
+ * related tasks such as retrieving, saving, swapping between entry types,
+ * previewing, deleting and sharing entries.
+ *
+ * Note that all actions in the controller except {@link actionViewSharedEntry}
+ * require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class EntriesController extends BaseEntriesController
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = array('actionViewSharedEntry');
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Edit an entry.
+	 * Called when a user beings up an entry for editing before being displayed.
 	 *
 	 * @param array $variables
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
@@ -287,7 +307,8 @@ class EntriesController extends BaseEntriesController
 			{
 				$classHandle = $variables['entry']->getClassHandle();
 
-				// If we're looking at the live version of an entry, just use the entry's main URL as its share URL
+				// If we're looking at the live version of an entry, just use
+				// the entry's main URL as its share URL
 				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
 				{
 					$variables['shareUrl'] = $variables['entry']->getUrl();
@@ -323,7 +344,9 @@ class EntriesController extends BaseEntriesController
 		}
 
 		// Set the base CP edit URL
-		// - Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
+
+		// Can't just use the entry's getCpEditUrl() because that might
+		// include the locale ID when we don't want it
 		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}';
 
 		// Set the "Continue Editing" URL
@@ -348,7 +371,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Switches between two entry types.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSwitchEntryType()
 	{
@@ -379,7 +402,7 @@ class EntriesController extends BaseEntriesController
 	 * Previews an entry.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionPreviewEntry()
 	{
@@ -412,7 +435,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Saves an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveEntry()
 	{
@@ -506,7 +529,7 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Deletes an entry.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteEntry()
 	{
@@ -565,7 +588,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -631,7 +654,7 @@ class EntriesController extends BaseEntriesController
 	 * @param mixed $versionId
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
 	{
@@ -658,13 +681,16 @@ class EntriesController extends BaseEntriesController
 		$this->_showEntry($entry);
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Preps entry edit variables.
 	 *
 	 * @param array &$variables
 	 *
 	 * @throws HttpException|Exception
-	 * @return void
+	 * @return null
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
@@ -849,11 +875,12 @@ class EntriesController extends BaseEntriesController
 	 *
 	 * @param EntryModel $entry
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _populateEntryModel(EntryModel $entry)
 	{
-		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
+		// Set the entry attributes, defaulting to the existing values for
+		// whatever is missing from the post data
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
 		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
 		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);
@@ -877,7 +904,7 @@ class EntriesController extends BaseEntriesController
 	 * @param EntryModel $entry
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _showEntry(EntryModel $entry)
 	{

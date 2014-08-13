@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class DateFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the type of field this is.
 	 *
@@ -31,19 +34,6 @@ class DateFieldType extends BaseFieldType
 	public function defineContentAttribute()
 	{
 		return AttributeType::DateTime;
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'showDate' => array(AttributeType::Bool, 'default' => true),
-			'showTime' => AttributeType::Bool,
-		);
 	}
 
 	/**
@@ -93,6 +83,7 @@ class DateFieldType extends BaseFieldType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -128,6 +119,7 @@ class DateFieldType extends BaseFieldType
 	 * Preps the field value for use.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return DateTime
 	 */
 	public function prepValue($value)
@@ -147,7 +139,8 @@ class DateFieldType extends BaseFieldType
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
-	 * @return void|false
+	 *
+	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
 	{
@@ -160,6 +153,7 @@ class DateFieldType extends BaseFieldType
 
 	/**
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -196,5 +190,21 @@ class DateFieldType extends BaseFieldType
 		}
 
 		return $settings;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'showDate' => array(AttributeType::Bool, 'default' => true),
+			'showTime' => AttributeType::Bool,
+		);
 	}
 }

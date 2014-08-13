@@ -7,24 +7,32 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.fieldtypes
  * @since     1.0
  */
 class AssetsFieldType extends BaseElementFieldType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Asset';
 
 	/**
-	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
 	 */
 	protected $inputJsClass = 'Craft.AssetSelectInput';
 
 	/**
-	 * Template to use for field rendering
+	 * Template to use for field rendering.
+	 *
 	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Assets/input';
@@ -36,33 +44,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private $_failedFiles = array();
 
-	/**
-	 * Returns the label for the "Add" button.
-	 *
-	 * @return string
-	 */
-	protected function getAddButtonLabel()
-	{
-		return Craft::t('Add an asset');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array_merge(parent::defineSettings(), array(
-			'useSingleFolder'              => AttributeType::Bool,
-			'defaultUploadLocationSource'  => AttributeType::Number,
-			'defaultUploadLocationSubpath' => AttributeType::String,
-			'singleUploadLocationSource'   => AttributeType::Number,
-			'singleUploadLocationSubpath'  => AttributeType::String,
-			'restrictFiles'                => AttributeType::Bool,
-			'allowedKinds'                 => AttributeType::Mixed,
-		));
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field's settings HTML.
@@ -71,7 +54,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		// Create a list of folder options for the main Source setting, and source options for the upload location settings.
+		// Create a list of folder options for the main Source setting, and source
+		// options for the upload location settings.
 		$folderOptions = array();
 		$sourceOptions = array();
 
@@ -109,6 +93,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Returns the input value as it should be saved to the database.
 	 *
 	 * @param mixed $value
+	 *
 	 * @return mixed
 	 */
 	public function prepValueFromPost($value)
@@ -171,37 +156,55 @@ class AssetsFieldType extends BaseElementFieldType
 		return parent::prepValueFromPost($value);
 	}
 
-
 	/**
 	 * Handle file moves between folders for dynamic single folder settings.
+	 *
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{
 		$handle = $this->model->handle;
-		$filesToMove = $this->element->getContent()->{$handle};
+		$elementFiles = $this->element->{$handle};
 
-		if (is_array($filesToMove) && count($filesToMove))
+		if (is_object($elementFiles))
+		{
+			$elementFiles = $elementFiles->find();
+		}
+
+		if (is_array($elementFiles) && count($elementFiles))
 		{
 
+			$fileIds = array();
+
+			foreach ($elementFiles as $elementFile)
+			{
+				$fileIds[] = $elementFile->id;
+			}
+
 			$settings = $this->getSettings();
+
 			if ($this->getSettings()->useSingleFolder)
 			{
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+
+				// Move all the files for single upload directories.
+				$filesToMove = $fileIds;
 			}
 			else
 			{
 				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
 
+				// Find the files with temp sources and just move those.
 				$criteria = array(
-					'id' => array_merge(array('in'), $filesToMove),
+					'id' => array_merge(array('in'), $fileIds),
 					'sourceId' => ':empty:'
 				);
 				$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 
-				$files = $criteria->find();
+				$filesInTempSource = $criteria->find();
 				$filesToMove = array();
 
-				foreach ($files as $file)
+				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
 				}
@@ -224,6 +227,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Returns 'true' or any custom validation errors.
 	 *
 	 * @param array $value
+	 *
 	 * @return true|string|array
 	 */
 	public function validate($value)
@@ -266,6 +270,7 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 	}
 
+
 	/**
 	 * Resolve source path for uploading for this field.
 	 *
@@ -276,8 +281,40 @@ class AssetsFieldType extends BaseElementFieldType
 		return $this->_determineUploadFolderId($this->getSettings());
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * Returns an array of the source keys the field should be able to select elements from.
+	 * Returns the label for the "Add" button.
+	 *
+	 * @return string
+	 */
+	protected function getAddButtonLabel()
+	{
+		return Craft::t('Add an asset');
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array_merge(parent::defineSettings(), array(
+			'useSingleFolder'              => AttributeType::Bool,
+			'defaultUploadLocationSource'  => AttributeType::Number,
+			'defaultUploadLocationSubpath' => AttributeType::String,
+			'singleUploadLocationSource'   => AttributeType::Number,
+			'singleUploadLocationSubpath'  => AttributeType::String,
+			'restrictFiles'                => AttributeType::Bool,
+			'allowedKinds'                 => AttributeType::Mixed,
+		));
+	}
+
+	/**
+	 * Returns an array of the source keys the field should be able to select
+	 * elements from.
 	 *
 	 * @throws Exception
 	 * @return array
@@ -316,7 +353,8 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 * Returns any additional criteria parameters limiting which elements the
+	 * field should be able to select.
 	 *
 	 * @return array
 	 */
@@ -333,10 +371,14 @@ class AssetsFieldType extends BaseElementFieldType
 		return array('kind' => $allowedKinds);
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
-	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
+	 * Resolve a source path to it's folder ID by the source path and the matched
+	 * source beginning.
 	 *
-	 * @param int $sourceId
+	 * @param int    $sourceId
 	 * @param string $subpath
 	 *
 	 * @throws Exception
@@ -379,7 +421,7 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 		else
 		{
-			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path . $subpath);
+			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path.$subpath);
 			$existingFolder = craft()->assets->findFolder($folderCriteria);
 		}
 
@@ -420,6 +462,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 *
 	 * @param $currentFolder
 	 * @param $folderName
+	 *
 	 * @return mixed|null
 	 */
 	private function _createSubFolder($currentFolder, $folderName)
@@ -428,13 +471,14 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if ($response->isError() || $response->isConflict())
 		{
-			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
+			// If folder doesn't exist in DB, but we can't create it, it probably
+			// exists on the server.
 			$newFolder = new AssetFolderModel(
 				array(
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
 					'sourceId' => $currentFolder->sourceId,
-					'path' => trim($currentFolder->path . '/' . $folderName, '/') . '/'
+					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				)
 			);
 			$folderId = craft()->assets->storeFolder($newFolder);
@@ -451,6 +495,7 @@ class AssetsFieldType extends BaseElementFieldType
 	 * Get a list of allowed extensions for a list of file kinds.
 	 *
 	 * @param array $allowedKinds
+	 *
 	 * @return array
 	 */
 	private function _getAllowedExtensions($allowedKinds)
@@ -472,7 +517,8 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
+	 * Determine an upload folder id by looking at the settings and whether Element
+	 * this field belongs to is new or not.
 	 *
 	 * @param $settings
 	 *
@@ -481,7 +527,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _determineUploadFolderId($settings)
 	{
-		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real folder
+		// If there's no dynamic tags in the set path, or if the element has
+		// already been saved, we con use the real folder
 		if (!empty($this->element->id)
 			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
 			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)
@@ -504,7 +551,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 			$userFolder = craft()->assets->getUserFolder($userModel);
 
-			$folderName = 'field_' . $this->model->id;
+			$folderName = 'field_'.$this->model->id;
 			$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
 
 			if (!$elementFolder)

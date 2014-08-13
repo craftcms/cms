@@ -7,16 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     2.0
  */
 class ElementHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Sets a valid slug on a given element.
 	 *
 	 * @param BaseElementModel $element
+	 *
+	 * @return null
 	 */
 	public static function setValidSlug(BaseElementModel $element)
 	{
@@ -34,6 +39,7 @@ class ElementHelper
 	 * Creates a slug based on a given string.
 	 *
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function createSlug($str)
@@ -60,8 +66,7 @@ class ElementHelper
 	}
 
 	/**
-	 * Sets the URI on an element using a given URL format,
-	 * tweaking its slug if necessary to ensure it's unique.
+	 * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -78,7 +83,8 @@ class ElementHelper
 			return;
 		}
 
-		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
+		// No slug, or a URL format with no {slug}, just parse the URL format
+		// and get on with our lives
 		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
 		{
 			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
@@ -172,19 +178,23 @@ class ElementHelper
 	 * Returns whether a given URL format has a proper {slug} tag.
 	 *
 	 * @param string $urlFormat
+	 *
 	 * @return bool
 	 */
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
 		$element = (object) array('slug' => StringHelper::randomString());
 		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+
 		return (strpos($uri, $element->slug) !== false);
 	}
 
 	/**
-	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
+	 * Returns whether the given element is editable by the current user, taking
+	 * user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public static function isElementEditable(BaseElementModel $element)
@@ -216,9 +226,11 @@ class ElementHelper
 	}
 
 	/**
-	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
+	 * Returns the editable locale IDs for a given element, taking user locale
+	 * permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return array
 	 */
 	public static function getEditableLocaleIdsForElement(BaseElementModel $element)

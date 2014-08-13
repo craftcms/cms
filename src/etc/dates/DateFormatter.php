@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.dates
  * @since     1.0
  */
 class DateFormatter extends \CDateFormatter
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var
 	 */
@@ -37,6 +40,9 @@ class DateFormatter extends \CDateFormatter
 	 * @var
 	 */
 	private $_timepickerPhpFormat;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the jQuery UI Datepicker date format.
@@ -134,6 +140,9 @@ class DateFormatter extends \CDateFormatter
 
 		return parent::formatDateTime($timestamp, $dateWidth, $timeWidth);
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the date format used by the datepicker.  Similar to 'short' except we want to use 4 digit years instead of 2.

@@ -7,15 +7,18 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class CpHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @param null $path
-	 * @param bool $fetch
+	 * @param string|null $path
+	 * @param bool        $fetch
 	 *
 	 * @return array
 	 */
@@ -31,8 +34,8 @@ class CpHelper
 
 		if (craft()->updates->isUpdateInfoCached() || $fetch)
 		{
-			// Fetch the updates regardless of whether we're on the Updates page or not,
-			// because the other alerts are relying on cached Elliott info
+			// Fetch the updates regardless of whether we're on the Updates page
+			// or not, because the other alerts are relying on cached Elliott info
 			$updateModel = craft()->updates->getUpdates();
 
 			if ($path != 'updates' && $user->can('performUpdates'))

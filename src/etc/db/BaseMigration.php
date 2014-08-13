@@ -7,17 +7,20 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db
  * @since     1.0
  */
 abstract class BaseMigration extends \CDbMigration
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * This method contains the logic to be executed when applying this migration.
 	 * Child classes may implement this method to provide actual migration logic.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function up()
 	{
@@ -61,21 +64,26 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for creating a new DB table.
 	 *
-	 * The columns in the new  table should be specified as name-definition pairs (e.g. 'name'=>'string'),
-	 * where name stands for a column name which will be properly quoted by the method, and definition
-	 * stands for the column type which can contain an abstract DB type.
-	 * The {@link getColumnType} method will be invoked to convert any abstract type into a physical one.
+	 * The columns in the new  table should be specified as name-definition pairs
+	 * (e.g. 'name'=>'string'), where name stands for a column name which will be
+	 * properly quoted by the method, and definition stands for the column type
+	 * which can contain an abstract DB type. The {@link getColumnType} method
+	 * will be invoked to convert any abstract type into a physical one.
 	 *
-	 * If a column is specified with definition only (e.g. 'PRIMARY KEY (name, type)'), it will be directly
-	 * inserted into the generated SQL.
+	 * If a column is specified with definition only (e.g. 'PRIMARY KEY (name, type)'),
+	 * it will be directly inserted into the generated SQL.
 	 *
-	 * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
+	 * @param string $table           The name of the table to be created. The name
+	 *                                will be properly quoted by the method.
 	 * @param array  $columns         The columns (name=>definition) in the new table.
-	 * @param string $options         Additional SQL fragment that will be appended to the generated SQL.
-	 * @param bool   $addIdColumn     Whether to add an auto-incrementing primary key id column to the table.
-	 * @param bool   $addAuditColumns Whether to append auditing columns to the end of the table (dateCreated, dateUpdated, uid)
+	 * @param string $options         Additional SQL fragment that will be appended to
+	 *                                the generated SQL.
+	 * @param bool   $addIdColumn     Whether to add an auto-incrementing primary
+	 *                                key id column to the table.
+	 * @param bool   $addAuditColumns Whether to append auditing columns to the
+	 *                                end of the table (dateCreated, dateUpdated, uid)
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
@@ -92,7 +100,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param $vals
 	 * @param bool
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function insertAll($table, $columns, $vals, $includeAuditColumns = true)
 	{
@@ -106,7 +114,7 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * @param $table
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropTableIfExists($table)
 	{
@@ -120,13 +128,18 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for adding a new DB column.
 	 *
-	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-	 * @param string $column The name of the new column. The name will be properly quoted by the method.
-	 * @param string $type The column type. The {@link getColumnType} method will be invoked to convert abstract column type (if any)
-	 *                     into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-	 *                     For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
+	 * @param string $table  The table that the new column will be added to.
+	 *                       The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly
+	 *                       quoted by the method.
+	 * @param string $type   The column type. The {@link getColumnType} method will
+	 *                       be invoked to convert abstract column type (if any)
+	 *                       into the physical one. Anything that is not recognized
+	 *                       as abstract type will be kept in the generated SQL.
+	 *                       For example, 'string' will be turned into 'varchar(255)',
+	 *                       while 'string not null' will become 'varchar(255) not null'.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addColumn($table, $column, $type)
 	{
@@ -142,7 +155,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param $column
 	 * @param $type
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
@@ -159,7 +172,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param $type
 	 * @param $before
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
@@ -176,7 +189,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param $type
 	 * @param $after
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
@@ -194,7 +207,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param null $newName
 	 * @param null $after
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
@@ -213,7 +226,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param null $delete
 	 * @param null $update
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete = null, $update = null)
 	{
@@ -228,7 +241,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table
 	 * @param string $columns
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropForeignKey($table, $columns)
 	{
@@ -244,7 +257,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param      $columns
 	 * @param bool $unique
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function createIndex($table, $columns, $unique = false)
 	{
@@ -260,7 +273,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $columns
 	 * @param bool   $unique
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropIndex($table, $columns, $unique = false)
 	{
@@ -275,7 +288,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table
 	 * @param string $columns
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function addPrimaryKey($table, $columns)
 	{
@@ -290,7 +303,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table
 	 * @param string $columns
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropPrimaryKey($table, $columns)
 	{
@@ -302,7 +315,7 @@ abstract class BaseMigration extends \CDbMigration
 	}
 
 	/**
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	public function down()
 	{
@@ -310,7 +323,7 @@ abstract class BaseMigration extends \CDbMigration
 	}
 
 	/**
-	 * @return bool|void
+	 * @return bool|null
 	 */
 	public function safeDown()
 	{
@@ -322,9 +335,10 @@ abstract class BaseMigration extends \CDbMigration
 	 * This method executes the specified SQL statement using {@link dbConnection}.
 	 *
 	 * @param string $sql    The SQL statement to be executed
-	 * @param array  $params Input parameters (name=>value) for the SQL execution. See {@link CDbCommand::execute} for more details.
+	 * @param array  $params Input parameters (name=>value) for the SQL execution.
+	 *                       See {@link CDbCommand::execute} for more details.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function execute($sql, $params=array())
 	{
@@ -341,10 +355,12 @@ abstract class BaseMigration extends \CDbMigration
 	 * The method will properly escape the column names, and bind the values to be inserted.
 	 *
 	 * @param string $table               The table that new rows will be inserted into.
-	 * @param array  $columns             The column data (name=>value) to be inserted into the table.
-	 * @param bool   $includeAuditColumns Whether to include the data for the audit columns (dateCreated, dateUpdated, uid).
+	 * @param array  $columns             The column data (name=>value) to be
+	 *                                    inserted into the table.
+	 * @param bool  $includeAuditColumns  Whether to include the data for the audit
+	 *                                    columns (dateCreated, dateUpdated, uid).
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function insert($table, $columns, $includeAuditColumns = true)
 	{
@@ -361,11 +377,14 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @param string $table               The table to be updated.
 	 * @param array  $columns             The column data (name=>value) to be updated.
-	 * @param mixed  $conditions          The conditions that will be put in the WHERE part. Please refer to {@link CDbCommand::where} on how to specify conditions.
+	 * @param mixed  $conditions          The conditions that will be put in the WHERE part.
+	 *                                    Please refer to {@link CDbCommand::where} on
+	 *                                    how to specify conditions.
 	 * @param array  $params              The parameters to be bound to the query.
-	 * @param bool   $includeAuditColumns Whether to include the data for the audit columns (dateCreated, dateUpdated, uid).
+	 * @param bool  $includeAuditColumns  Whether to include the data for the audit
+	 *                                    columns (dateCreated, dateUpdated, uid).
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function update($table, $columns, $conditions = '', $params = array(), $includeAuditColumns = true)
 	{
@@ -382,7 +401,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param array  $updateColumns
 	 * @param bool   $includeAuditColumns
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
 	{
@@ -397,10 +416,12 @@ abstract class BaseMigration extends \CDbMigration
 	 * Creates and executes a DELETE SQL statement.
 	 *
 	 * @param string $table      The table where the data will be deleted from.
-	 * @param mixed  $conditions The conditions that will be put in the WHERE part. Please refer to {@link CDbCommand::where} on how to specify conditions.
+	 * @param mixed  $conditions The conditions that will be put in the WHERE part.
+	 *                           Please refer to {@link CDbCommand::where} on how
+	 *                           to specify conditions.
 	 * @param array  $params     The parameters to be bound to the query.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function delete($table, $conditions = '', $params = array())
 	{
@@ -414,10 +435,12 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for renaming a DB table.
 	 *
-	 * @param string $table   The table to be renamed. The name will be properly quoted by the method.
-	 * @param string $newName The new table name. The name will be properly quoted by the method.
+	 * @param string $table   The table to be renamed. The name will be properly
+	 *                        quoted by the method.
+	 * @param string $newName The new table name. The name will be properly quoted
+	 *                        by the method.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function renameTable($table, $newName)
 	{
@@ -431,9 +454,10 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for dropping a DB table.
 	 *
-	 * @param string $table The table to be dropped. The name will be properly quoted by the method.
+	 * @param string $table The table to be dropped. The name will be properly
+	 *                      quoted by the method.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropTable($table)
 	{
@@ -447,9 +471,10 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for truncating a DB table.
 	 *
-	 * @param string $table The table to be truncated. The name will be properly quoted by the method.
+	 * @param string $table The table to be truncated. The name will be properly
+	 *                      quoted by the method.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function truncateTable($table)
 	{
@@ -463,10 +488,12 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for dropping a DB column.
 	 *
-	 * @param string $table  The table whose column is to be dropped. The name will be properly quoted by the method.
-	 * @param string $column The name of the column to be dropped. The name will be properly quoted by the method.
+	 * @param string $table  The table whose column is to be dropped. The name will
+	 *                       be properly quoted by the method.
+	 * @param string $column The name of the column to be dropped. The name will
+	 *                       be properly quoted by the method.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function dropColumn($table, $column)
 	{
@@ -480,11 +507,14 @@ abstract class BaseMigration extends \CDbMigration
 	/**
 	 * Builds and executes a SQL statement for renaming a column.
 	 *
-	 * @param string $table   The table whose column is to be renamed. The name will be properly quoted by the method.
-	 * @param string $name    The old name of the column. The name will be properly quoted by the method.
-	 * @param string $newName The new name of the column. The name will be properly quoted by the method.
+	 * @param string $table   The table whose column is to be renamed. The name
+	 *                        will be properly quoted by the method.
+	 * @param string $name    The old name of the column. The name will be properly
+	 *                        quoted by the method.
+	 * @param string $newName The new name of the column. The name will be properly
+	 *                        quoted by the method.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function renameColumn($table, $name, $newName)
 	{
@@ -500,7 +530,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @param string $table The name of the table to refresh
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function refreshTableSchema($table)
 	{
@@ -512,10 +542,13 @@ abstract class BaseMigration extends \CDbMigration
 		$this->_processDoneTime($time);
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @param $time
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processDoneTime($time)
 	{

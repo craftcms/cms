@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.io
  * @since     1.0
  */
 class ZipArchive implements IZip
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip
@@ -97,12 +100,17 @@ class ZipArchive implements IZip
 	}
 
 	/**
-	 * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents recursively.
+	 * Will add either a file or a folder to an existing zip file.  If it is a
+	 * folder, it will add the contents recursively.
 	 *
 	 * @param string $sourceZip  The zip file to be added to.
-	 * @param string $pathToAdd  A file or a folder to add.  If it is a folder, it will recursively add the contents of the folder to the zip.
-	 * @param string $basePath   The root path of the file(s) to be added that will be removed before adding.
-	 * @param string $pathPrefix A path to be prepended to each file before it is added to the zip.
+	 * @param string $pathToAdd  A file or a folder to add.  If it is a folder,
+	 *                           it will recursively add the contents of the folder
+	 *                           to the zip.
+	 * @param string $basePath   The root path of the file(s) to be added that
+	 *                           will be removed before adding.
+	 * @param string $pathPrefix A path to be prepended to each file before it
+	 *                           is added to the zip.
 	 *
 	 * @return bool
 	 */
@@ -148,7 +156,8 @@ class ZipArchive implements IZip
 				}
 				elseif (IOHelper::fileExists($itemToZip))
 				{
-					// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
+					// We can't use $zip->addFile() here but it's a terrible,
+					// horrible, POS method that's buggy on Windows.
 					$fileContents = IOHelper::getFileContents($itemToZip);
 
 					if (!$zip->addFromString($relFilePath, $fileContents))

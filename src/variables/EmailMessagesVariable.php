@@ -9,12 +9,15 @@ craft()->requireEdition(Craft::Client);
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class EmailMessagesVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all of the system email messages.
 	 *
@@ -28,8 +31,9 @@ class EmailMessagesVariable
 	/**
 	 * Returns a system email message by its key.
 	 *
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $language
+	 *
 	 * @return RebrandEmailModel|null
 	 */
 	public function getMessage($key, $language = null)

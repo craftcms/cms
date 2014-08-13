@@ -7,33 +7,35 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class AssetOperationResponseModel extends BaseModel
 {
+	// Constants
+	// =========================================================================
+
 	const StatusError = 'error';
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
-	private $_data = array();
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @return array
+	 * @var array
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
-			'errorMessage'	=> AttributeType::String
-		);
-	}
+	private $_data = array();
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Set an error message.
 	 *
 	 * @param $message
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setError($message)
@@ -45,6 +47,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Set status to success.
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setSuccess()
@@ -57,6 +60,7 @@ class AssetOperationResponseModel extends BaseModel
 	 * Set prompt data array.
 	 *
 	 * @param $promptData
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setPrompt($promptData)
@@ -71,6 +75,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 * @param $value
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setDataItem($name, $value)
@@ -83,7 +88,8 @@ class AssetOperationResponseModel extends BaseModel
 	 * Get a data item.
 	 *
 	 * @param $name
-	 * @return void
+	 *
+	 * @return null
 	 */
 	public function getDataItem($name)
 	{
@@ -99,6 +105,8 @@ class AssetOperationResponseModel extends BaseModel
 	 * Delete a data item.
 	 *
 	 * @param $name
+	 *
+	 * @return null
 	 */
 	public function deleteDataItem($name)
 	{
@@ -134,6 +142,8 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Return a response array ready to be transported.
+	 *
+	 * @return array
 	 */
 	public function getResponseData()
 	{
@@ -157,5 +167,19 @@ class AssetOperationResponseModel extends BaseModel
 		}
 
 		return array();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
+			'errorMessage'	=> AttributeType::String
+		);
 	}
 }

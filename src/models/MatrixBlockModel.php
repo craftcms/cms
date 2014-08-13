@@ -7,30 +7,27 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.3
  */
 class MatrixBlockModel extends BaseElementModel
 {
-	protected $elementType = ElementType::MatrixBlock;
-	private $_owner;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @return array
+	 * @var string
 	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'fieldId'     => AttributeType::Number,
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number,
+	protected $elementType = ElementType::MatrixBlock;
 
-			'collapsed'   => AttributeType::Bool,
-		));
-	}
+	/**
+	 * @var
+	 */
+	private $_owner;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field layout used by this element.
@@ -54,8 +51,9 @@ class MatrixBlockModel extends BaseElementModel
 	 */
 	public function getLocales()
 	{
-		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't translatable.
-		// Otherwise all blocks belong to all locales, and their content is translatable.
+		// If the Matrix field is translatable, than each individual block is
+		// tied to a single locale, and thus aren't translatable. Otherwise all
+		// blocks belong to all locales, and their content is translatable.
 
 		if ($this->ownerLocale)
 		{
@@ -67,7 +65,8 @@ class MatrixBlockModel extends BaseElementModel
 
 			if ($owner)
 			{
-				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+				// Just send back an array of locale IDs -- don't pass along
+				// enabledByDefault configs
 				$localeIds = array();
 
 				foreach ($owner->getLocales() as $localeId => $localeInfo)
@@ -166,6 +165,28 @@ class MatrixBlockModel extends BaseElementModel
 	{
 		return 'matrixBlockType:'.$this->typeId;
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'fieldId'     => AttributeType::Number,
+			'ownerId'     => AttributeType::Number,
+			'ownerLocale' => AttributeType::Locale,
+			'typeId'      => AttributeType::Number,
+			'sortOrder'   => AttributeType::Number,
+
+			'collapsed'   => AttributeType::Bool,
+		));
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the Matrix field.

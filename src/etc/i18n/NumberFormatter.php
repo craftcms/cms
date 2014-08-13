@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.i18n
  * @since     1.3
  */
 class NumberFormatter extends \CNumberFormatter
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Formats a number using the decimal format defined in the locale.
 	 *
@@ -23,7 +26,8 @@ class NumberFormatter extends \CNumberFormatter
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
 	{
-		// Let's make sure the decimal format matches the number of decimal places specified in the value.
+		// Let's make sure the decimal format matches the number of decimal
+		// places specified in the value.
 		$decimalFormat = $this->_locale->getDecimalFormat();
 
 		// Find the starting decimal position in the format.

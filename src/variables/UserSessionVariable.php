@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.variables
  * @since     1.0
  */
 class UserSessionVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns whether the user is logged in.
 	 *
@@ -47,6 +50,7 @@ class UserSessionVariable
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
 	 * @param string $defaultUrl
+	 *
 	 * @return mixed
 	 */
 	public function getReturnUrl($defaultUrl = '')
@@ -58,6 +62,7 @@ class UserSessionVariable
 	 * Returns all flash data for the user.
 	 *
 	 * @param bool $delete
+	 *
 	 * @return array
 	 */
 	public function getFlashes($delete = true)
@@ -71,6 +76,8 @@ class UserSessionVariable
 	 * @param string $key
 	 * @param mixed  $defaultValue
 	 * @param bool   $delete
+	 *
+	 * @return mixed
 	 */
 	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
@@ -81,6 +88,7 @@ class UserSessionVariable
 	 * Returns whether a flash message exists by a given key.
 	 *
 	 * @param string $key
+	 *
 	 * @return mixed
 	 */
 	public function hasFlash($key)

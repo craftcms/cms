@@ -7,16 +7,26 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class UpdatesService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var UpdateModel
+	 */
 	private $_updateModel;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param $craftReleases
+	 *
 	 * @return bool
 	 */
 	public function criticalCraftUpdateAvailable($craftReleases)
@@ -34,6 +44,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param $plugins
+	 *
 	 * @return bool
 	 */
 	public function criticalPluginUpdateAvailable($plugins)
@@ -125,6 +136,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param bool $forceRefresh
+	 *
 	 * @return UpdateModel|false
 	 */
 	public function getUpdates($forceRefresh = false)
@@ -182,6 +194,7 @@ class UpdatesService extends BaseApplicationComponent
 
 	/**
 	 * @param BasePlugin $plugin
+	 *
 	 * @return bool
 	 */
 	public function setNewPluginInfo(BasePlugin $plugin)
@@ -227,7 +240,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Checks to see if Craft can write to a defined set of folders/files that are needed for auto-update to work.
+	 * Checks to see if Craft can write to a defined set of folders/files that are
+	 * needed for auto-update to work.
 	 *
 	 * @return array|null
 	 */
@@ -254,6 +268,7 @@ class UpdatesService extends BaseApplicationComponent
 	/**
 	 * @param $manual
 	 * @param $handle
+	 *
 	 * @return array
 	 */
 	public function prepareUpdate($manual, $handle)
@@ -293,7 +308,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $md5
+	 * @param string $md5
+	 *
 	 * @return array
 	 */
 	public function processUpdateDownload($md5)
@@ -316,7 +332,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $uid
+	 * @param string $uid
+	 *
 	 * @return array
 	 */
 	public function backupFiles($uid)
@@ -338,7 +355,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $uid
+	 * @param string $uid
+	 *
 	 * @return array
 	 */
 	public function updateFiles($uid)
@@ -389,7 +407,7 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param      $handle
+	 * @param string $handle
 	 *
 	 * @throws Exception
 	 * @return array
@@ -433,8 +451,9 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $uid
-	 * @param $handle
+	 * @param string $uid
+	 * @param string $handle
+	 *
 	 * @return array
 	 */
 	public function updateCleanUp($uid, $handle)
@@ -465,8 +484,9 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param        $uid
-	 * @param  bool  $dbBackupPath
+	 * @param string $uid
+	 * @param bool   $dbBackupPath
+	 *
 	 * @return array
 	 */
 	public function rollbackUpdate($uid, $dbBackupPath = false)
@@ -545,8 +565,9 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns true is the build stored in craft_info is less than the minimum required build on the file system.
-	 * This effectively makes sure that a user cannot manually update past a manual breakpoint.
+	 * Returns true is the build stored in craft_info is less than the minimum
+	 * required build on the file system. This effectively makes sure that a user
+	 * cannot manually update past a manual breakpoint.
 	 *
 	 * @return bool
 	 */
@@ -556,7 +577,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the uploaded DB schema is equal to or greater than the installed schema
+	 * Returns whether the uploaded DB schema is equal to or greater than the
+	 * installed schema
 	 *
 	 * @return bool
 	 */
@@ -588,6 +610,7 @@ class UpdatesService extends BaseApplicationComponent
 		$info->schemaVersion = CRAFT_SCHEMA_VERSION;
 		$info->track = CRAFT_TRACK;
 		$info->releaseDate = CRAFT_RELEASE_DATE;
+
 		return craft()->saveInfo($info);
 	}
 
@@ -617,6 +640,8 @@ class UpdatesService extends BaseApplicationComponent
 	 * Fires an 'onBeginUpdate' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeginUpdate(Event $event)
 	{
@@ -627,6 +652,8 @@ class UpdatesService extends BaseApplicationComponent
 	 * Fires an 'onEndUpdate' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onEndUpdate(Event $event)
 	{

@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     2.1
  */
 class TokenRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
@@ -20,6 +23,20 @@ class TokenRecord extends BaseRecord
 	{
 		return 'tokens';
 	}
+
+	/**
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('token'), 'unique' => true),
+			array('columns' => array('expiryDate')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -32,17 +49,6 @@ class TokenRecord extends BaseRecord
 			'usageLimit' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
 			'usageCount' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
 			'expiryDate' => array(AttributeType::DateTime, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => array('token'), 'unique' => true),
-			array('columns' => array('expiryDate')),
 		);
 	}
 }

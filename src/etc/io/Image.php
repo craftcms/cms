@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.io
  * @since     1.0
  */
 class Image
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var string
 	 */
@@ -43,10 +46,13 @@ class Image
 	 */
 	private $_instance;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return Image
 	 */
-	function __construct()
+	public function __construct()
 	{
 		$extension = mb_strtolower(craft()->config->get('imageDriver'));
 
@@ -159,7 +165,8 @@ class Image
 		if ($this->_isAnimatedGif)
 		{
 
-			// Create a new image instance to avoid object references messing up our dimensions.
+			// Create a new image instance to avoid object references messing
+			// up our dimensions.
 			$newSize = new \Imagine\Image\Box($width, $height);
 			$startingPoint = new \Imagine\Image\Point($x1, $y1);
 			$gif = $this->_instance->create($newSize);
@@ -297,7 +304,8 @@ class Image
 	}
 
 	/**
-	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.
+	 * Re-sizes the image. If $height is not specified, it will default to $width,
+	 * creating a square.
 	 *
 	 * @param int      $targetWidth
 	 * @param int|null $targetHeight
@@ -311,7 +319,8 @@ class Image
 		if ($this->_isAnimatedGif)
 		{
 
-			// Create a new image instance to avoid object references messing up our dimensions.
+			// Create a new image instance to avoid object references messing
+			// up our dimensions.
 			$newSize = new \Imagine\Image\Box($targetWidth, $targetHeight);
 			$gif = $this->_instance->create($newSize);
 			$gif->layers()->remove(0);
@@ -348,12 +357,10 @@ class Image
 	/**
 	 * Saves the image to the target path.
 	 *
-	 * @param string $targetPath
-	 * @param bool   $sanitizeAndAutoQuality
+	 * @param string      $targetPath
+	 * @param bool        $sanitizeAndAutoQuality
+	 * @param string|null $extension
 	 *
-	 * @param      $targetPath
-	 * @param bool $sanitizeAndAutoQuality
-	 * @param string $extension
 	 * @return bool
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false, $extension = null)
@@ -379,10 +386,14 @@ class Image
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
-	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
-	 * @param int|string $width
+	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we
+	 * calculate the missing dimension.
 	 *
+	 * @param int|string $width
 	 * @param int|string $height
 	 *
 	 * @throws Exception
@@ -424,7 +435,8 @@ class Image
 		// Find our target quality by splitting the min and max qualities
 		$midQuality = (int)ceil($minQuality + (($maxQuality - $minQuality) / 2));
 
-		// Set the min and max acceptable ranges. .10 means anything between 90% and 110% of the original file size is acceptable.
+		// Set the min and max acceptable ranges. .10 means anything between 90%
+		// and 110% of the original file size is acceptable.
 		$acceptableRange = .10;
 
 		clearstatcache();
@@ -433,7 +445,8 @@ class Image
 		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
 		$newFileSize = IOHelper::getFileSize($tempFileName);
 
-		// If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1), let's use the current image.
+		// If we're on step 10 OR we're within our acceptable range threshold OR
+		// midQuality = maxQuality (1 == 1), let's use the current image.
 		if ($step == 10 || abs(1 - $originalSize / $newFileSize) < $acceptableRange || $midQuality == $maxQuality)
 		{
 			clearstatcache();
@@ -488,8 +501,8 @@ class Image
 				$options = array('animated' => $this->_isAnimatedGif);
 				if ($this->_isAnimatedGif)
 				{
-					// Imagine library does not provide this value anda arbitrarily divides it by 10, when assigning
-					// So we have to improvise a little
+					// Imagine library does not provide this value and arbitrarily
+					// divides it by 10, when assigning, so we have to improvise a little
 					$options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
 				}
 				return $options;
@@ -497,9 +510,11 @@ class Image
 
 			case 'png':
 			{
-				// Valid PNG quality settings are 0-9, so normalize since we're calculating based on 0-200.
+				// Valid PNG quality settings are 0-9, so normalize since we're
+				// calculating based on 0-200.
 				$percentage = ($quality * 100) / 200;
 				$normalizedQuality = round(($percentage / 100) * 9);
+
 				return array('quality' => $normalizedQuality, 'flatten' => false);
 			}
 

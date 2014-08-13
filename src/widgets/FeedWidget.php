@@ -7,13 +7,22 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.widgets
  * @since     1.0
  */
 class FeedWidget extends BaseWidget
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var bool
+	 */
 	public $multipleInstances = true;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the type of widget this is.
@@ -23,20 +32,6 @@ class FeedWidget extends BaseWidget
 	public function getName()
 	{
 		return Craft::t('Feed');
-	}
-
-	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
-			'title' => array(AttributeType::Name, 'required' => true),
-			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
-		);
 	}
 
 	/**
@@ -80,5 +75,22 @@ class FeedWidget extends BaseWidget
 		return craft()->templates->render('_components/widgets/Feed/body', array(
 			'limit' => $limit
 		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
+			'title' => array(AttributeType::Name, 'required' => true),
+			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
+		);
 	}
 }

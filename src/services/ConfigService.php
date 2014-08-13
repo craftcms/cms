@@ -7,22 +7,44 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class ConfigService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_cacheDuration;
+
+	/**
+	 * @var
+	 */
 	private $_omitScriptNameInUrls;
+
+	/**
+	 * @var
+	 */
 	private $_usePathInfo;
+
+	/**
+	 * @var array
+	 */
 	private $_loadedConfigFiles = array();
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a config item value, or null if it doesn't exist.
 	 *
 	 * @param string $item
 	 * @param string $file
+	 *
 	 * @return mixed
 	 */
 	public function get($item, $file = ConfigFile::General)
@@ -32,7 +54,8 @@ class ConfigService extends BaseApplicationComponent
 			$this->_loadConfigFile($file);
 		}
 
-		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like devMode is turned on.
+		// If we're looking for devMode and we it looks like we're on the installer
+		// and it's a CP request, pretend like devMode is turned on.
 		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
 		{
 			return true;
@@ -52,6 +75,8 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string $item
 	 * @param mixed  $value
 	 * @param string $file
+	 *
+	 * @return null
 	 */
 	public function set($item, $value, $file = ConfigFile::General)
 	{
@@ -69,6 +94,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param string      $item
 	 * @param string|null $localeId
 	 * @param string      $file
+	 *
 	 * @return mixed
 	 */
 	public function getLocalized($item, $localeId = null, $file = ConfigFile::General)
@@ -104,12 +130,13 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param      $item
 	 * @param null $default
+	 *
+	 * @deprecated Deprecated in 2.0. Use {@link ConfigService::getDbItem() get('key', ConfigFile::Db)} instead.
 	 * @return string
-	 * @deprecated Deprecated in 2.0.
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(<item>, ConfigFile::Db) instead.');
+		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(\'key\', ConfigFile::Db) instead.');
 
 		if ($value = craft()->config->get($item, Config::Db))
 		{
@@ -124,6 +151,7 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * @param        $item
 	 * @param string $file
+	 *
 	 * @return bool
 	 */
 	public function exists($item, $file = ConfigFile::General)
@@ -193,15 +221,17 @@ class ConfigService extends BaseApplicationComponent
 				}
 				else
 				{
-					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-					// *unless* the URI looks like a file, in which case it'll just throw a 404.
+					// PHP Dev Server does omit the script name from 404s without
+					// any help from a redirect script, *unless* the URI looks like
+					// a file, in which case it'll just throw a 404.
 					if (AppHelper::isPhpDevServer())
 					{
 						$this->_omitScriptNameInUrls = false;
 					}
 					else
 					{
-						// Cache it early so the testScriptNameRedirect request isn't checking for it too
+						// Cache it early so the testScriptNameRedirect request
+						// isn't checking for it too
 						craft()->cache->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
@@ -268,15 +298,16 @@ class ConfigService extends BaseApplicationComponent
 					{
 						$this->_usePathInfo = 'y';
 					}
-					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
-					// so we need to explicitly check for that.
+					// PHP Dev Server supports path info, and doesn't support
+					// simultaneous requests, so we need to explicitly check for that.
 					else if (AppHelper::isPhpDevServer())
 					{
 						$this->_usePathInfo = 'y';
 					}
 					else
 					{
-						// Cache it early so the testPathInfo request isn't checking for it too
+						// Cache it early so the testPathInfo request isn't
+						// checking for it too
 						craft()->cache->set('usePathInfo', 'n');
 
 						// Test the server for it
@@ -308,6 +339,8 @@ class ConfigService extends BaseApplicationComponent
 
 	/**
 	 * For when you have to give it all you can.
+	 *
+	 * @return null
 	 */
 	public function maxPowerCaptain()
 	{
@@ -351,9 +384,10 @@ class ConfigService extends BaseApplicationComponent
 	/**
 	 * Gets the account verification URL for a user account.
 	 *
-	 * @param       $code
-	 * @param       $uid
-	 * @param  bool $full
+	 * @param string $code
+	 * @param string $uid
+	 * @param bool   $full
+	 *
 	 * @return string
 	 */
 	public function getActivateAccountPath($code, $uid, $full = true)
@@ -387,6 +421,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param       $uid
 	 * @param       $user
 	 * @param  bool $full
+	 *
 	 * @return string
 	 */
 	public function getSetPasswordPath($code, $uid, $user, $full = false)
@@ -471,6 +506,7 @@ class ConfigService extends BaseApplicationComponent
 	 * Parses a string for any environment variable tags.
 	 *
 	 * @param string $str
+	 *
 	 * @return string $str
 	 */
 	public function parseEnvironmentString($str)
@@ -500,6 +536,9 @@ class ConfigService extends BaseApplicationComponent
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @param $name
 	 */
@@ -528,7 +567,8 @@ class ConfigService extends BaseApplicationComponent
 		// Little extra logic for the general config file.
 		if ($name == ConfigFile::General)
 		{
-			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
+			// Does craft/config/general.php exist? (It used to be called
+			// blocks.php so maybe not.)
 			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
 			{
 				if (is_array($customConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
@@ -538,7 +578,8 @@ class ConfigService extends BaseApplicationComponent
 			}
 			else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
 			{
-				// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+				// Originally blocks.php defined a $blocksConfig variable, and
+				// then later returned an array directly.
 				if (is_array($customConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
 				{
 					$this->_mergeConfigs($defaultsConfig, $customConfig);
@@ -575,10 +616,13 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Merges a base config array with a custom config array, taking environment-specific configs into account.
+	 * Merges a base config array with a custom config array, taking
+	 * environment-specific configs into account.
 	 *
 	 * @param array &$baseConfig
 	 * @param array $customConfig
+	 *
+	 * @return null
 	 */
 	private function _mergeConfigs(&$baseConfig, $customConfig)
 	{

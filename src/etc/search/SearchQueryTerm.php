@@ -9,31 +9,34 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.search
  * @since     1.0
  */
 class SearchQueryTerm
 {
-	/**
-	 * @var bool
-	 */
-	public $exclude   = false;
+	// Properties
+	// =========================================================================
 
 	/**
 	 * @var bool
 	 */
-	public $exact     = false;
+	public $exclude = false;
 
 	/**
 	 * @var bool
 	 */
-	public $subLeft   = false;
+	public $exact = false;
 
 	/**
 	 * @var bool
 	 */
-	public $subRight  = false;
+	public $subLeft = false;
+
+	/**
+	 * @var bool
+	 */
+	public $subRight = false;
 
 	/**
 	 * @var null
@@ -43,5 +46,5 @@ class SearchQueryTerm
 	/**
 	 * @var null
 	 */
-	public $term      = null;
+	public $term = null;
 }

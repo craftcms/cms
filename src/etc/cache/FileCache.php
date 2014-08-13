@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.cache
  * @since     1.0
  */
 class FileCache extends \CFileCache
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var bool
 	 */
@@ -23,10 +26,13 @@ class FileCache extends \CFileCache
 	 */
 	private $_originalKey;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Override so we can set a custom file cache path.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -47,7 +53,7 @@ class FileCache extends \CFileCache
 	 * @param  integer          $expire      The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
 	 *
-	 * @return boolean True if the value is successfully stored into cache, false otherwise
+	 * @return bool True if the value is successfully stored into cache, false otherwise
 	 */
 	public function set($id, $value, $expire = null, $dependency = null)
 	{
@@ -65,7 +71,7 @@ class FileCache extends \CFileCache
 	 * @param  integer           $expire     The number of seconds in which the cached value will expire. 0 means never expire.
 	 * @param  \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is labeled invalid.
 	 *
-	 * @return boolean True if the value is successfully stored into cache, false otherwise
+	 * @return bool true if the value is successfully stored into cache, false otherwise
 	 */
 	public function add($id, $value, $expire = null, $dependency = null)
 	{
@@ -74,6 +80,9 @@ class FileCache extends \CFileCache
 		return parent::add($id, $value, $expire, $dependency);
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Stores a value identified by a key in cache. This is the implementation of the method declared in the parent class.
 	 *
@@ -81,7 +90,7 @@ class FileCache extends \CFileCache
 	 * @param  string  $value  The value to be cached
 	 * @param  integer $expire The number of seconds in which the cached value will expire. 0 means never expire.
 	 *
-	 * @return boolean true If the value is successfully stored into cache, false otherwise
+	 * @return bool true If the value is successfully stored into cache, false otherwise
 	 */
 	protected function setValue($key, $value, $expire)
 	{

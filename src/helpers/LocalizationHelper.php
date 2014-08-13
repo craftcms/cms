@@ -7,21 +7,33 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.helpers
  * @since     1.0
  */
 class LocalizationHelper
 {
-	private static $_translations;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Normalizes a user-submitted number for use in code and/or to be saved into the database.
+	 * @var
+	 */
+	private static $_translations;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Normalizes a user-submitted number for use in code and/or to be saved into
+	 * the database.
 	 *
-	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current locale uses something else.
+	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are
+	 * converted to a periods, if the current locale uses something else.
 	 *
-	 * @param mixed  $number The number that should be normalized.
-	 * @return mixed         The normalized number.
+	 * @param mixed $number The number that should be normalized.
+	 *
+	 * @return mixed The normalized number.
 	 */
 	public static function normalizeNumber($number)
 	{
@@ -46,10 +58,13 @@ class LocalizationHelper
 	 * Looks for a missing translation string in Yii's core translations.
 	 *
 	 * @param \CMissingTranslationEvent $event
+	 *
+	 * @return null
 	 */
 	public static function findMissingTranslation(\CMissingTranslationEvent $event)
 	{
-		// Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
+		// Look for translation file from most to least specific.  So nl_nl.php
+		// gets checked before nl.php, for example.
 		$translationFiles = array();
 		$parts = explode('_', $event->language);
 		$totalParts = count($parts);

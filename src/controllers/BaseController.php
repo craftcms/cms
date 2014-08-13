@@ -2,29 +2,47 @@
 namespace Craft;
 
 /**
- * Class BaseController
+ * BaseController is a base class that all controllers in Craft extend.
+ *
+ * It extend's Yii's {@link CController} overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 abstract class BaseController extends \CController
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
-	 * If set to true, anonymous access is allowed for all of the given controller's actions.
-	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
-	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use craft()->userSession->requireLogin() in the individual methods.
+	 * If set to false, you are required to be logged in to execute any of the
+	 * given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given
+	 * controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for
+	 * any action method except for the ones in the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will
+	 * be anonymous, but you only want require login on a few, it's best to use
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
 	protected $allowAnonymous = false;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Include any route params gathered by UrlManager as controller action params.
+	 * Include any route params gathered by {@link UrlManager} as controller
+	 * action params.
 	 *
 	 * @return array
 	 */
@@ -43,7 +61,8 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the folder containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to craft().
+	 * Craft overrides this since {@link CController}'s version defaults
+	 * $module to craft().
 	 *
 	 * @return string The folder containing the view files for this controller.
 	 */
@@ -60,7 +79,8 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param mixed $template      The name of the template to load, or a StringTemplate object.
+	 * @param mixed $template      The name of the template to load, or a
+	 *                             {@link StringTemplate} object.
 	 * @param array $variables     The variables that should be available to the template
 	 * @param bool  $return        Whether to return the results, rather than output them
 	 * @param bool  $processOutput
@@ -83,12 +103,15 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				// Set the MIME type for the request based on the matched template's file extension
-				// (unless the Content-Type header was already set, perhaps by the template via the {% header %} tag)
+				// Set the MIME type for the request based on the matched template's
+				// file extension (unless the Content-Type header was already set,
+				// perhaps by the template via the {% header %} tag)
 				if (!HeaderHelper::isHeaderSet('Content-Type'))
 				{
-					// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
-					// If the template didn't exist, a TemplateLoaderException would have been thrown when calling craft()->templates->render().
+					// Safe to assume that findTemplate() will return an actual
+					// template path here, and not `false`. If the template didn't
+					// exist, a TemplateLoaderException would have been thrown
+					// when calling craft()->templates->render().
 					$templateFile = craft()->templates->findTemplate($template);
 					$extension = IOHelper::getExtension($templateFile, 'html');
 
@@ -114,7 +137,7 @@ abstract class BaseController extends \CController
 					{
 						if (($endHeadPos = mb_stripos($output, '</head>')) !== false)
 						{
-							$output = mb_substr($output, 0, $endHeadPos) . $headHtml . mb_substr($output, $endHeadPos);
+							$output = mb_substr($output, 0, $endHeadPos).$headHtml.mb_substr($output, $endHeadPos);
 						}
 						else
 						{
@@ -126,7 +149,7 @@ abstract class BaseController extends \CController
 					{
 						if (($endBodyPos = mb_stripos($output, '</body>')) !== false)
 						{
-							$output = mb_substr($output, 0, $endBodyPos) . $footHtml . mb_substr($output, $endBodyPos);
+							$output = mb_substr($output, 0, $endBodyPos).$footHtml.mb_substr($output, $endBodyPos);
 						}
 						else
 						{
@@ -135,7 +158,9 @@ abstract class BaseController extends \CController
 					}
 				}
 
-				// Output to the browser!
+				// Output it into a buffer, in case TasksService wants to
+				// close the connection prematurely
+				ob_start();
 				echo $output;
 
 				// End the request
@@ -151,7 +176,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects user to the login template if they're not logged in.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function requireLogin()
 	{
@@ -165,7 +190,7 @@ abstract class BaseController extends \CController
 	 * Requires the current user to be logged in as an admin.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAdmin()
 	{
@@ -179,7 +204,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't a POST request
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requirePostRequest()
 	{
@@ -193,7 +218,7 @@ abstract class BaseController extends \CController
 	 * Returns a 400 if this isn't an Ajax request.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireAjaxRequest()
 	{
@@ -207,7 +232,7 @@ abstract class BaseController extends \CController
 	 * Requires the current request to include a token.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function requireToken()
 	{
@@ -224,7 +249,7 @@ abstract class BaseController extends \CController
 	 * @param bool $terminate
 	 * @param int  $statusCode
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
@@ -242,9 +267,10 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param mixed $object Object containing properties that should be parsed for in the URL.
+	 * @param mixed $object Object containing properties that should be parsed
+	 *                      for in the URL.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function redirectToPostedUrl($object = null)
 	{
@@ -268,7 +294,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param array|null $var The array to JSON-encode and return
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnJson($var = array())
 	{
@@ -282,7 +308,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @param string $error The error message
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function returnErrorJson($error)
 	{
@@ -290,8 +316,8 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access to
-	 * or as a bool that applies to all actions.
+	 * Checks if a controller has overridden allowAnonymous either as an array with
+	 * actions to allow anonymous access to or as a bool that applies to all actions.
 	 *
 	 * @param \CAction $action
 	 *
@@ -322,5 +348,6 @@ abstract class BaseController extends \CController
 	 */
 	public function filters()
 	{
+
 	}
 }

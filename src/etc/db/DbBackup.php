@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db
  * @since     1.0
  */
 class DbBackup
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var
 	 */
@@ -27,6 +30,9 @@ class DbBackup
 	 * @var string
 	 */
 	private $_filePath;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Dump all tables
@@ -56,7 +62,7 @@ class DbBackup
 	 * @param $filePath
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function restore($filePath)
 	{
@@ -85,12 +91,15 @@ class DbBackup
 	/**
 	 * @param $value
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function trimValue(&$value)
 	{
 		$value = trim($value);
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @param array $sql
@@ -132,7 +141,7 @@ class DbBackup
 	}
 
 	/**
-	 * @return void
+	 * @return null
 	 */
 	private function _nukeDb()
 	{
@@ -160,7 +169,7 @@ class DbBackup
 	/**
 	 * Generate the foreign key constraints for all tables
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processConstraints()
 	{
@@ -207,7 +216,7 @@ class DbBackup
 	/**
 	 * Set sql file header
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processHeader()
 	{
@@ -225,7 +234,7 @@ class DbBackup
 	/**j
 	 * Set sql file footer
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processFooter()
 	{
@@ -238,7 +247,7 @@ class DbBackup
 	 *
 	 * @param $tableName
 	 *
-	 * @return void
+	 * @return null
 	 */
 	private function _processTable($tableName)
 	{

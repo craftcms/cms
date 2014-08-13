@@ -2,21 +2,29 @@
 namespace Craft;
 
 /**
- * Class DashboardController
+ * The DashboardController class is a controller that handles various dashboard
+ * related actions including managing widgets, getting {@link FeedWidget} feeds
+ * and sending {@link GetHelpWidget} support ticket requests.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class DashboardController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Saves a widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveUserWidget()
 	{
@@ -47,7 +55,7 @@ class DashboardController extends BaseController
 	/**
 	 * Deletes a widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionDeleteUserWidget()
 	{
@@ -63,7 +71,7 @@ class DashboardController extends BaseController
 	/**
 	 * Reorders widgets.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionReorderUserWidgets()
 	{
@@ -79,7 +87,7 @@ class DashboardController extends BaseController
 	/**
 	 * Returns the items for the Feed widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetFeedItems()
 	{
@@ -108,7 +116,7 @@ class DashboardController extends BaseController
 	/**
 	 * Creates a new support ticket for the GetHelp widget.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSendSupportRequest()
 	{
@@ -273,7 +281,8 @@ class DashboardController extends BaseController
 			{
 				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), LogLevel::Warning);
 
-				// There was a problem zipping, so reset the params and just send the email without the attachment.
+				// There was a problem zipping, so reset the params and just
+				// send the email without the attachment.
 				$requestParams = $requestParamDefaults;
 			}
 
@@ -319,6 +328,9 @@ class DashboardController extends BaseController
 			)
 		);
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return string

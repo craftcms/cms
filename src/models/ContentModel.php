@@ -7,14 +7,130 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     2.0
  */
 class ContentModel extends BaseModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_requiredFields;
+
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Returns this model's normalized attribute configs.
+	 *
+	 * @return array
+	 */
+	public function getAttributeConfigs()
+	{
+		if (!isset($this->_attributeConfigs))
+		{
+			$this->_attributeConfigs = parent::getAttributeConfigs();
+		}
+
+		return $this->_attributeConfigs;
+	}
+
+	/**
+	 * Sets the required fields.
+	 *
+	 * @param array $requiredFields
+	 *
+	 * @return null
+	 */
+	public function setRequiredFields($requiredFields)
+	{
+		$this->_requiredFields = $requiredFields;
+
+		// Have the attributes already been defined?
+		if (isset($this->_attributeConfigs))
+		{
+			foreach (craft()->fields->getAllFields() as $field)
+			{
+				if (in_array($field->id, $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle]))
+				{
+					$this->_attributeConfigs[$field->handle]['required'] = true;
+				}
+			}
+
+			if (in_array('title', $this->_requiredFields))
+			{
+				$this->_attributeConfigs['title']['required'] = true;
+			}
+		}
+	}
+
+	/**
+	 * Validates the custom fields.
+	 *
+	 * @param array|null $attributes
+	 * @param bool       $clearErrors
+	 *
+	 * @return bool
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		$validates = parent::validate($attributes, $clearErrors);
+
+		foreach (craft()->fields->getAllFields() as $field)
+		{
+			$handle = $field->handle;
+
+			if (is_array($attributes) && !in_array($handle, $attributes))
+			{
+				continue;
+			}
+
+			$value = $this->getAttribute($handle);
+
+			// Don't worry about blank values. Those will already be caught by
+			// required field validation.
+			if ($value)
+			{
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
+				{
+					$errors = $fieldType->validate($value);
+
+					if ($errors !== true)
+					{
+						if (is_string($errors))
+						{
+							$this->addError($handle, $errors);
+						}
+						else if (is_array($errors))
+						{
+							foreach ($errors as $error)
+							{
+								$this->addError($handle, $error);
+							}
+						}
+
+						$validates = false;
+					}
+				}
+			}
+		}
+
+		return $validates;
+	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array
@@ -60,101 +176,5 @@ class ContentModel extends BaseModel
 		}
 
 		return $attributes;
-	}
-
-	/**
-	 * Returns this model's normalized attribute configs.
-	 *
-	 * @return array
-	 */
-	public function getAttributeConfigs()
-	{
-		if (!isset($this->_attributeConfigs))
-		{
-			$this->_attributeConfigs = parent::getAttributeConfigs();
-		}
-
-		return $this->_attributeConfigs;
-	}
-
-	/**
-	 * Sets the required fields.
-	 *
-	 * @param array $requiredFields
-	 */
-	public function setRequiredFields($requiredFields)
-	{
-		$this->_requiredFields = $requiredFields;
-
-		// Have the attributes already been defined?
-		if (isset($this->_attributeConfigs))
-		{
-			foreach (craft()->fields->getAllFields() as $field)
-			{
-				if (in_array($field->id, $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle]))
-				{
-					$this->_attributeConfigs[$field->handle]['required'] = true;
-				}
-			}
-
-			if (in_array('title', $this->_requiredFields))
-			{
-				$this->_attributeConfigs['title']['required'] = true;
-			}
-		}
-	}
-
-	/**
-	 * Validates the custom fields.
-	 *
-	 * @param array|null $attributes
-	 * @param bool $clearErrors
-	 * @return bool
-	 */
-	public function validate($attributes = null, $clearErrors = true)
-	{
-		$validates = parent::validate($attributes, $clearErrors);
-
-		foreach (craft()->fields->getAllFields() as $field)
-		{
-			$handle = $field->handle;
-
-			if (is_array($attributes) && !in_array($handle, $attributes))
-			{
-				continue;
-			}
-
-			$value = $this->getAttribute($handle);
-
-			// Don't worry about blank values. Those will already be caught by required field validation.
-			if ($value)
-			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType)
-				{
-					$errors = $fieldType->validate($value);
-
-					if ($errors !== true)
-					{
-						if (is_string($errors))
-						{
-							$this->addError($handle, $errors);
-						}
-						else if (is_array($errors))
-						{
-							foreach ($errors as $error)
-							{
-								$this->addError($handle, $error);
-							}
-						}
-
-						$validates = false;
-					}
-				}
-			}
-		}
-
-		return $validates;
 	}
 }

@@ -3,27 +3,40 @@
 namespace Craft;
 
 /**
- * Class BaseEnum
+ * The BaseEnum class is an abstract class that all enums in Craft inherit.  It
+ * provides some functionality that mimics first-class citizen enum support in
+ * PHP.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.enums
  * @since     2.0
  */
 abstract class BaseEnum
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var null
+	 * Holds the reflected constants for the enum.
+	 *
+	 * @var array|null
 	 */
 	private static $_constants = null;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @param      $name
-	 * @param bool $strict
+	 * Checks to see if the given name is valid in the enum.
 	 *
-	 * @return bool
+	 * @param      $name   The name to search for.
+	 * @param bool $strict Defaults to false. If set to true, will do a case
+	 *                     sensitive search for the name.
+	 *
+	 * @return bool true if it is a valid name, false otherwise.
 	 */
 	public static function isValidName($name, $strict = false)
 	{
@@ -39,16 +52,22 @@ abstract class BaseEnum
 	}
 
 	/**
-	 * @param      $value
-	 * @param bool $strict
+	 * Checks to see if the given value is valid in the enum.
 	 *
-	 * @return bool
+	 * @param      $value  The value to search for.
+	 * @param bool $strict Defaults to false. If set the true, will do a case
+	 *                     sensitive search for the value.
+	 *
+	 * @return bool true if it is a valid value, false otherwise.
 	 */
 	public static function isValidValue($value, $strict = false)
 	{
 		$values = array_values(static::_getConstants());
 		return in_array($value, $values, $strict);
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return array|null

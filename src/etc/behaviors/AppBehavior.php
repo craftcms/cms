@@ -7,12 +7,15 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.bahaviors
  * @since     1.2
  */
 class AppBehavior extends BaseBehavior
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var
 	 */
@@ -47,6 +50,9 @@ class AppBehavior extends BaseBehavior
 	 * @var bool
 	 */
 	private $_isDbConnectionValid = false;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Determines if Craft is installed by checking if the info table exists.
@@ -87,7 +93,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Tells Craft that it's installed now.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function setIsInstalled()
 	{
@@ -183,7 +189,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the edition Craft is actually licensed to run in.
 	 *
-	 * @return int|void
+	 * @return int|null
 	 */
 	public function getLicensedEdition()
 	{
@@ -198,7 +204,7 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the name of the edition Craft is actually licensed to run in.
 	 *
-	 * @return string|void
+	 * @return string|null
 	 */
 	public function getLicensedEditionName()
 	{
@@ -274,7 +280,8 @@ class AppBehavior extends BaseBehavior
 				return true;
 			}
 
-			// Base this off of what they're actually licensed to use, not what's currently running
+			// Base this off of what they're actually licensed to use, not
+			// what's currently running
 			$licensedEdition = $this->getLicensedEdition();
 			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
 		}
@@ -313,7 +320,9 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the site URL (with a trailing slash).
 	 *
-	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to whatever's in the Site URL setting.
+	 * @param string|null $protocol The protocol to use (http or https). If none
+	 *                              is specified, it will default to whatever's
+	 *                              in the Site URL setting.
 	 *
 	 * @return string
 	 */
@@ -357,6 +366,8 @@ class AppBehavior extends BaseBehavior
 	 * Sets the site URL, while ensuring that the given URL ends with a trailing slash.
 	 *
 	 * @param string $siteUrl
+	 *
+	 * @return null
 	 */
 	public function setSiteUrl($siteUrl)
 	{
@@ -507,10 +518,11 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
-	 * Make sure the basics are in place in the db connection file before we actually try to connect later on.
+	 * Make sure the basics are in place in the db connection file before we
+	 * actually try to connect later on.
 	 *
 	 * @throws DbConnectException
-	 * @return void
+	 * @return null
 	 */
 	public function validateDbConfigFile()
 	{
@@ -594,16 +606,17 @@ class AppBehavior extends BaseBehavior
 	 *
 	 * @param $packageName
 	 *
+	 * @deprecated Deprecated in 2.0. To get the installed Craft edition, use
+	 *             {@link AppBehavior::getEdition() craft()->getEdition()}.
 	 * @return bool
-	 *
-	 * @deprecated Deprecated in 2.0
 	 */
 	public function hasPackage($packageName)
 	{
 		return $this->getEdition() == Craft::Pro;
 	}
 
-	// Private methods
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Enables or disables Maintenance Mode

@@ -7,18 +7,24 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.console
  * @since     1.0
  */
 class ConsoleApp extends \CConsoleApplication
 {
+	// Properties
+	// =========================================================================
+
 	public $componentAliases;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Initializes the console app by creating the command runner.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -54,7 +60,8 @@ class ConsoleApp extends \CConsoleApplication
 		// Validate some basics on the database configuration file.
 		craft()->validateDbConfigFile();
 
-		// Call parent::init before the plugin console command logic so craft()->commandRunner will be available to us.
+		// Call parent::init before the plugin console command logic so
+		// craft()->commandRunner will be available to us.
 		parent::init();
 
 		foreach (craft()->plugins->getPlugins() as $plugin)
@@ -68,12 +75,13 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
-	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
+	 * Attaches an event listener, or remembers it for later if the component
+	 * has not been initialized yet.
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function on($event, $handler)
 	{
@@ -91,14 +99,6 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
-	 * @return ConsoleCommandRunner
-	 */
-	protected function createCommandRunner()
-	{
-		return new ConsoleCommandRunner();
-	}
-
-	/**
 	 * Returns whether we are executing in the context on a console app.
 	 *
 	 * @return bool
@@ -106,5 +106,16 @@ class ConsoleApp extends \CConsoleApplication
 	public function isConsole()
 	{
 		return true;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return ConsoleCommandRunner
+	 */
+	protected function createCommandRunner()
+	{
+		return new ConsoleCommandRunner();
 	}
 }

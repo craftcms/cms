@@ -7,21 +7,27 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.models
  * @since     1.0
  */
 class AssetIndexDataModel extends BaseComponentModel
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Use the translated source name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->uri;
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @return array

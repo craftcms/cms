@@ -7,17 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.services
  * @since     1.0
  */
 class EntriesService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns an entry by its ID.
 	 *
-	 * @param int $entryId
+	 * @param int         $entryId
 	 * @param string|null $localeId
+	 *
 	 * @return EntryModel|null
 	 */
 	public function getEntryById($entryId, $localeId = null)
@@ -160,7 +164,8 @@ class EntriesService extends BaseApplicationComponent
 							}
 						}
 
-						// Update the entry's descendants, who may be using this entry's URI in their own URIs
+						// Update the entry's descendants, who may be using this
+						// entry's URI in their own URIs
 						craft()->elements->updateDescendantSlugsAndUris($entry);
 					}
 
@@ -313,6 +318,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Deletes an entry(s) by its ID.
 	 *
 	 * @param int|array $entryId
+	 *
 	 * @return bool
 	 */
 	public function deleteEntryById($entryId)
@@ -339,13 +345,12 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 
-	// Events
-	// ======
-
 	/**
 	 * Fires an 'onBeforeSaveEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeSaveEntry(Event $event)
 	{
@@ -356,6 +361,8 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onSaveEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveEntry(Event $event)
 	{
@@ -366,6 +373,8 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onBeforeDeleteEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeDeleteEntry(Event $event)
 	{
@@ -376,19 +385,22 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onDeleteEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onDeleteEntry(Event $event)
 	{
 		$this->raiseEvent('onDeleteEntry', $event);
 	}
 
-	// Private methods
-	// ===============
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Checks if an entry was submitted with a new parent entry selected.
 	 *
 	 * @param EntryModel $entry
+	 *
 	 * @return bool
 	 */
 	private function _checkForNewParent(EntryModel $entry)

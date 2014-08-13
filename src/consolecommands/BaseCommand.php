@@ -28,14 +28,16 @@ namespace Craft;
  *         }
  *     }
  *
- * The return value of action methods will be used as application exit code if it is an integer value.
+ * The return value of action methods will be used as application exit code if it
+ * is an integer value.
  *
- * A Craft plugin can add its own custom commands by adding a 'consolecommands' folder and adding a class that extends BaseCommand.
+ * A Craft plugin can add its own custom commands by adding a 'consolecommands'
+ * folder and adding a class that extends BaseCommand.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.consolecommands
  * @since     2.0
  */

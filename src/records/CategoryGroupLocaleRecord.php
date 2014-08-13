@@ -7,30 +7,21 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.records
  * @since     2.0
  */
 class CategoryGroupLocaleRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
 		return 'categorygroups_i18n';
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'required' => true),
-			'urlFormat'       => AttributeType::UrlFormat,
-			'nestedUrlFormat' => AttributeType::UrlFormat,
-		);
 	}
 
 	/**
@@ -51,6 +42,21 @@ class CategoryGroupLocaleRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('groupId', 'locale'), 'unique' => true),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'required' => true),
+			'urlFormat'       => AttributeType::UrlFormat,
+			'nestedUrlFormat' => AttributeType::UrlFormat,
 		);
 	}
 }

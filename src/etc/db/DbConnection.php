@@ -7,22 +7,27 @@ namespace Craft;
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.etc.db
  * @since     1.0
  */
 class DbConnection extends \CDbConnection
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
-	 * This method is required by {@link IApplicationComponent} and is invoked by Craft when the `craft()-db` is first used.
+	 * This method is required by {@link IApplicationComponent} and is invoked by
+	 * Craft when the `craft()-db` is first used.
 	 *
-	 * This method does it's best to make sure it can connect to the database with the supplied credentials and configurations and
-	 * gracefully handle the cases where it can't.
+	 * This method does it's best to make sure it can connect to the database with
+	 * the supplied credentials and configurations and gracefully handle the cases
+	 * where it can't.
 	 *
 	 * @throws DbConnectException
-	 * @return void
+	 * @return null
 	 */
 	public function init()
 	{
@@ -75,7 +80,8 @@ class DbConnection extends \CDbConnection
 
 		craft()->setIsDbConnectionValid(true);
 
-		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
+		// Now that we've validated the config and connection, set extra db logging
+		// if devMode is enabled.
 		if (craft()->config->get('devMode'))
 		{
 			$this->enableProfiling = true;
@@ -121,8 +127,8 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns whether a table exists.
 	 *
-	 * @param string      $table
-	 * @param bool|null   $refresh
+	 * @param string    $table
+	 * @param bool|null $refresh
 	 *
 	 * @return bool
 	 */
@@ -135,6 +141,7 @@ class DbConnection extends \CDbConnection
 		}
 
 		$table = $this->addTablePrefix($table);
+
 		return in_array($table, $this->getSchema()->getTableNames());
 	}
 
@@ -175,6 +182,7 @@ class DbConnection extends \CDbConnection
 	{
 		// Table prefixes cannot be longer than 5 characters
 		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+
 		if ($tablePrefix)
 		{
 			if (strlen($tablePrefix) > 5)
@@ -196,7 +204,8 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Adds the table prefix to the passed-in table name(s).
 	 *
-	 * @param string|aray $table The table name or an array of table names
+	 * @param string|array $table The table name or an array of table names
+	 *
 	 * @return string|array The modified table name(s)
 	 */
 	public function addTablePrefix($table)
@@ -219,23 +228,27 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns a foreign key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
+	 *
 	 * @return string
 	 */
 	public function getForeignKeyName($table, $columns)
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+
 		return $this->trimObjectName($name);
 	}
 
 	/**
-	 * Returns an index name based on the table, column names, and whether it should be unique.
+	 * Returns an index name based on the table, column names, and whether
+	 * it should be unique.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 * @param bool         $unique
+	 *
 	 * @return string
 	 */
 	public function getIndexName($table, $columns, $unique = false)
@@ -248,15 +261,16 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns a primary key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 *
 	 * @return string
 	 */
 	public function getPrimaryKeyName($table, $columns)
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+
 		return $this->trimObjectName($name);
 	}
 
@@ -308,14 +322,19 @@ class DbConnection extends \CDbConnection
 		return $name;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
-	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+	 * Returns the correct connection string depending on whether a unixSocket
+	 * is specific or not in the db config.
 	 *
 	 * @return string
 	 */
 	private function _processConnectionString()
 	{
 		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
+
 		if (!empty($unixSocket))
 		{
 			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';

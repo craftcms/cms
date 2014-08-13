@@ -2,21 +2,29 @@
 namespace Craft;
 
 /**
- * Element actions.
+ * The ElementsController class is a controller that handles various element
+ * related actions including retrieving and saving element and their corresponding
+ * HTML.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class ElementsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetModalBody()
 	{
@@ -111,7 +119,9 @@ class ElementsController extends BaseController
 
 		if ($criteria->limit)
 		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of 50 elements, rather than running two separate element queries
+			// We'll risk a pointless additional Ajax request in the unlikely
+			// event that there are exactly a factor of 50 elements, rather than
+			// running two separate element queries
 			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else
@@ -132,7 +142,7 @@ class ElementsController extends BaseController
 	 * Returns the HTML for an element editor HUD.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetEditorHtml()
 	{
@@ -157,7 +167,7 @@ class ElementsController extends BaseController
 	 * Saves an element.
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	public function actionSaveElement()
 	{
@@ -208,6 +218,9 @@ class ElementsController extends BaseController
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the element type based on the posted element type class.
 	 *
@@ -234,7 +247,7 @@ class ElementsController extends BaseController
 	 * @param bool             $includeLocales
 	 *
 	 * @throws HttpException
-	 * @return void
+	 * @return null
 	 */
 	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{

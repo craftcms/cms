@@ -2,21 +2,29 @@
 namespace Craft;
 
 /**
- * Class AppController
+ * The AppController class is a controller that handles various actions for
+ * Craft updates, control panel requests, upgrading Craft editions and license
+ * requests.
+ *
+ * Note that all actions in the controller require an authenticated Craft
+ * session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
  * @since     1.0
  */
 class AppController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns update info.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionCheckForUpdates()
 	{
@@ -34,7 +42,7 @@ class AppController extends BaseController
 	/**
 	 * Loads any CP alerts.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetCpAlerts()
 	{
@@ -51,7 +59,7 @@ class AppController extends BaseController
 	/**
 	 * Shuns a CP alert for 24 hours.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionShunCpAlert()
 	{
@@ -79,7 +87,7 @@ class AppController extends BaseController
 	/**
 	 * Transfers the Craft license to the current domain.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionTransferLicenseToCurrentDomain()
 	{
@@ -104,7 +112,7 @@ class AppController extends BaseController
 	/**
 	 * Returns the edition upgrade modal.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionGetUpgradeModal()
 	{
@@ -118,7 +126,8 @@ class AppController extends BaseController
 			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
 		}
 
-		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
+		// Make sure we've got a valid license key (mismatched domain is OK
+		// for these purposes)
 		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
 		{
 			$this->returnErrorJson(Craft::t('Your license key is invalid.'));
@@ -168,7 +177,7 @@ class AppController extends BaseController
 	/**
 	 * Passes along a given CC token to Elliott to purchase a Craft edition.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionPurchaseUpgrade()
 	{
@@ -201,7 +210,7 @@ class AppController extends BaseController
 	 * Tries a Craft edition on for size.
 	 *
 	 * @throws Exception
-	 * @return void
+	 * @return null
 	 */
 	public function actionTestUpgrade()
 	{
@@ -225,7 +234,7 @@ class AppController extends BaseController
 	/**
 	 * Switches Craft to the edition it's licensed for.
 	 *
-	 * @return void
+	 * @return null
 	 */
 	public function actionSwitchToLicensedEdition()
 	{
