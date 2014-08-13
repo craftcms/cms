@@ -848,7 +848,7 @@ class AssetsService extends BaseApplicationComponent
 
 				if ($originalSourceType && $newSourceType)
 				{
-				if ( !$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
+					if (!$response = $newSourceType->moveFileInsideSource($originalSourceType, $file, $folder, $filename, $actions[$i]))
 					{
 						$response = $this->_moveFileBetweenSources($originalSourceType, $newSourceType, $file, $folder, $actions[$i]);
 					}
