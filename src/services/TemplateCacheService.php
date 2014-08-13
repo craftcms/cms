@@ -518,6 +518,8 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
+		$this->_deletedAllCaches = true;
+
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}
