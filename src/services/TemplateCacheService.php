@@ -72,8 +72,8 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Returns a cached template by its key.
 	 *
-	 * @param string $key
-	 * @param bool   $global
+	 * @param string $key    The template cache key
+	 * @param bool   $global Whether the cache would have been stored globally.
 	 *
 	 * @return string|null
 	 */
@@ -106,7 +106,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Starts a new template cache.
 	 *
-	 * @param string $key
+	 * @param string $key The template cache key
 	 *
 	 * @return null
 	 */
@@ -123,7 +123,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Includes an element criteria in any active caches.
 	 *
-	 * @param ElementCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria The element criteria
 	 *
 	 * @return null
 	 */
@@ -143,7 +143,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Includes an element in any active caches.
 	 *
-	 * @param int $elementId
+	 * @param int $elementId The element ID
 	 *
 	 * @return null
 	 */
@@ -164,11 +164,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Ends a template cache.
 	 *
-	 * @param string      $key
-	 * @param bool        $global
-	 * @param string|null $duration
-	 * @param mixed|null  $expiration
-	 * @param string      $body
+	 * @param string      $key        The template cache key
+	 * @param bool        $global     Whether the cache should be stored globally
+	 * @param string|null $duration   How long the cache should be stored for
+	 * @param mixed|null  $expiration When the cache should expire
+	 * @param string      $body       The contents of the cache
 	 *
 	 * @throws \Exception
 	 * @return null
@@ -266,7 +266,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes a cache by its ID(s).
 	 *
-	 * @param int|array $cacheId
+	 * @param int|array $cacheId The cache ID
 	 *
 	 * @return bool
 	 */
@@ -295,7 +295,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches by a given element type.
 	 *
-	 * @param string $elementType
+	 * @param string $elementType The element type handle
 	 *
 	 * @return bool
 	 */
@@ -306,17 +306,16 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
-
 		$this->_deletedCachesByElementType[$elementType] = true;
 
+		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
 		return (bool) $affectedRows;
 	}
 
 	/**
 	 * Deletes caches that include a given element(s).
 	 *
-	 * @param BaseElementModel|array $elements
+	 * @param BaseElementModel|BaseElementModel[] $elements The element(s) whose caches should be deleted.
 	 *
 	 * @return bool
 	 */
@@ -354,12 +353,10 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches that include an a given element ID(s).
 	 *
-	 * @param int|array $elementId         The ID of the element whose caches
-	 *                                     should be cleared.
-	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches
-	 *                                     task should be created, deleting any query
-	 *                                     caches that may now involve this element,
-	 *                                     but hadn't previously. (Defaults to `true`.)
+	 * @param int|array $elementId         The ID of the element(s) whose caches should be cleared.
+	 * @param bool      $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any
+	 *                                     query caches that may now involve this element, but hadn't previously.
+	 *                                     (Defaults to `true`.)
 	 *
 	 * @return bool
 	 */
@@ -442,7 +439,8 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches that include elements that match a given criteria.
 	 *
-	 * @param ElementCriteriaModel $criteria
+	 * @param ElementCriteriaModel $criteria The criteria that should be used to find elements whose caches should be
+	 *                                       deleted.
 	 *
 	 * @return bool
 	 */
@@ -521,6 +519,8 @@ class TemplateCacheService extends BaseApplicationComponent
 		{
 			return false;
 		}
+
+		$this->_deletedAllCaches = true;
 
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
