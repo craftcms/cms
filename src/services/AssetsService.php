@@ -683,7 +683,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param string $localPath
 	 * @param string $fileName
 	 * @param int    $folderId
-	 * @param mixed  $conflictResolution either null or one of AssetsHelper::Action* constants
+	 * @param mixed  $conflictResolution What action should be taken in the event of a filename conflict
 	 *
 	 * @return AssetOperationResponseModel
 	 */
