@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Handles entry tasks.
+ * The EntriesController class is a controller that handles various entry
+ * related tasks such as retrieving, saving, swapping between entry types,
+ * previewing, deleting and sharing entries.
+ *
+ * Note that all actions in the controller except {@link actionViewSharedEntry}
+ * require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -28,7 +33,8 @@ class EntriesController extends BaseEntriesController
 	 *
 	 * If you have a controller that where the majority of action methods will
 	 * be anonymous, but you only want require login on a few, it's best to use
-	 * craft()->userSession->requireLogin() in the individual methods.
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
@@ -38,7 +44,7 @@ class EntriesController extends BaseEntriesController
 	// =========================================================================
 
 	/**
-	 * Edit an entry.
+	 * Called when a user beings up an entry for editing before being displayed.
 	 *
 	 * @param array $variables
 	 *

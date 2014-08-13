@@ -2,7 +2,14 @@
 namespace Craft;
 
 /**
- * Class UpdateController
+ * The UpdateController class is a controller that handles various update
+ * related tasks such as checking for available updates and running manual and
+ * auto-updates.
+ *
+ * Note that all actions in the controller, except for {@link actionPrepare},
+ * {@link actionBackupDatabase}, {@link actionUpdateDatabase},
+ * {@link actionCleanUp} and {@link actionRollback} require an authenticated
+ * Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -28,11 +35,12 @@ class UpdateController extends BaseController
 	 *
 	 * If you have a controller that where the majority of action methods will
 	 * be anonymous, but you only want require login on a few, it's best to use
-	 * craft()->userSession->requireLogin() in the individual methods.
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionManualUpdate', 'actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
+	protected $allowAnonymous = array('actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
 
 	// Public Methods
 	// =========================================================================
@@ -151,10 +159,9 @@ class UpdateController extends BaseController
 		}
 	}
 
-	// Manual Updates
-	// -------------------------------------------------------------------------
-
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionPrepare()
@@ -200,6 +207,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionProcessDownload()
@@ -229,6 +238,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionBackupFiles()
@@ -256,6 +267,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during an auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionUpdateFiles()
@@ -283,6 +296,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionBackupDatabase()
@@ -331,6 +346,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Called during both a manual and auto-update.
+	 *
 	 * @return null
 	 */
 	public function actionUpdateDatabase()
@@ -372,6 +389,8 @@ class UpdateController extends BaseController
 
 	/**
 	 * Performs maintenance and clean up tasks after an update.
+	 *
+	 * Called during both a manual and auto-update.
 	 *
 	 * @return null
 	 */
@@ -426,6 +445,8 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Can be called during both a manual and auto-update.
+	 *
 	 * @throws Exception
 	 * @return null
 	 */

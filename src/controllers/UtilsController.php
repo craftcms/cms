@@ -2,7 +2,12 @@
 namespace Craft;
 
 /**
- * Handles utility related tasks.
+ * The UtilsController class is a controller that handles various utility
+ * related tasks such as displaying server info, php info, log files and
+ * deprecation errors in the control panel.
+ *
+ * Note that all actions in this controller require administrator access in
+ * order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

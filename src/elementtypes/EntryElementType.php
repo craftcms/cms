@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Entry element type.
+ * The EntryElementType class is responsible for implementing and defining
+ * entries as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

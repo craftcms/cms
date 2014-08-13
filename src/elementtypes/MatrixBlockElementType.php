@@ -2,7 +2,8 @@
 namespace Craft;
 
 /**
- * Matrix block element type.
+ * The MatrixBlockElementType class is responsible for implementing and defining
+ * Matrix blocks as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

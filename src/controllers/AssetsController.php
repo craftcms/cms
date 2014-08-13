@@ -6,6 +6,9 @@ namespace Craft;
  * to asset tasks, such as uploading files and creating/deleting/renaming files
  * and folders.
  *
+ * Note that all actions in the controller except {@link actionGenerateTransform}
+ * require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
@@ -30,7 +33,8 @@ class AssetsController extends BaseController
 	 *
 	 * If you have a controller that where the majority of action methods will
 	 * be anonymous, but you only want require login on a few, it's best to use
-	 * craft()->userSession->requireLogin() in the individual methods.
+	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
+	 * individual methods.
 	 *
 	 * @var bool
 	 */
