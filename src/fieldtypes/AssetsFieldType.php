@@ -213,7 +213,7 @@ class AssetsFieldType extends BaseElementFieldType
 			if (!empty($filesToMove))
 			{
 				// Resolve all conflicts by keeping both
-				$actions = array_fill(0, count($filesToMove), AssetsHelper::ActionKeepBoth);
+				$actions = array_fill(0, count($filesToMove), AssetConflictResolution::KeepBoth);
 				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
 			}
 		}

@@ -157,7 +157,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			// Strip the prefix, so we don't index the parent folders
 			$file->name = mb_substr($file->name, mb_strlen($prefix));
 
-			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file->name))
+			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file->name))
 			{
 				// So in Rackspace a folder may or may not exist. For path
 				// a/path/to/file.jpg, any of those folders may or may not exist.

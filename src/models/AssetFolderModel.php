@@ -87,6 +87,43 @@ class AssetFolderModel extends BaseModel
 		$this->_children[] = $folder;
 	}
 
+	/**
+	 * Sets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 *
+	 * @return bool
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'path' && !empty($value))
+		{
+			$value = rtrim($value, '/').'/';
+		}
+		return parent::setAttribute($name, $value);
+	}
+
+	/**
+	 * Gets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param bool   $flattenValue
+	 *
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		$value = parent::getAttribute($name, $flattenValue);
+
+		if ($name == 'path' && !empty($value))
+		{
+			$value = rtrim($value, '/').'/';
+		}
+
+		return $value;
+	}
+
 	// Protected Methods
 	// =========================================================================
 

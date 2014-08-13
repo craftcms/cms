@@ -154,7 +154,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *                                 be uploaded to.
 	 *
 	 * @throws Exception
-	 * @return object
+	 * @return AssetOperationResponseModel
 	 */
 	public function uploadFile(AssetFolderModel $folder)
 	{
@@ -258,7 +258,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// Check if we stored a conflict response originally - send that back then.
 			if (isset($conflictResponse))
 			{
-				$response = $conflictResponse->setDataItem('additionalInfo', $folder->id.':'.$fileModel->id)->setDataItem('newFileId', $fileModel->id);
+				$response = $conflictResponse;
 			}
 
 			$response->setDataItem('fileId', $fileModel->id);
@@ -272,24 +272,22 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
-	 * @param string           $localCopy The local copy of the file to transfer.
-	 * @param AssetFolderModel $folder    The assetFolderModel that contains the
-	 *                                    file to transfer.
-	 * @param AssetFileModel   $file      The assetFileModel that represents the
-	 *                                    file to transfer.
-	 * @param string           $action    The action to perform during the transfer.
+	 * @param string           $localCopy          The local copy of the file to transfer.
+	 * @param AssetFolderModel $folder             The assetFolderModel that contains the file to transfer.
+	 * @param AssetFileModel   $file               The assetFileModel that represents the file to transfer.
+	 * @param string           $conflictResolution The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $action)
+	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $conflictResolution)
 	{
 		$filename = AssetsHelper::cleanAssetName($file->filename);
 
-		if (!empty($action))
+		if (!empty($conflictResolution))
 		{
-			switch ($action)
+			switch ($conflictResolution)
 			{
-				case AssetsHelper::ActionReplace:
+				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
 					if ($fileToReplace)
@@ -303,7 +301,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					break;
 				}
 
-				case AssetsHelper::ActionKeepBoth:
+				case AssetConflictResolution::KeepBoth:
 				{
 					$filename = $this->getNameReplacement($folder, $filename);
 					break;
@@ -312,6 +310,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		$response = $this->insertFileInFolder($folder, $localCopy, $filename);
+
 		if ($response->isSuccess())
 		{
 			$file->folderId = $folder->id;
@@ -332,15 +331,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Move file from one path to another if it's possible. Return false on failure.
 	 *
-	 * @param BaseAssetSourceType $originalSource The original source of the file being moved.
-	 * @param AssetFileModel $file                The assetFileModel representing the file to move.
-	 * @param AssetFolderModel $targetFolder      The assetFolderModel representing the target folder.
-	 * @param string $filename                    The file name of the file to move.
-	 * @param string $action                      The action to perform during the file move.
+	 * @param BaseAssetSourceType $originalSource     The original source of the file
+	 *                                                being moved.
+	 * @param AssetFileModel      $file               The assetFileModel representing
+	 *                                                the file to move.
+	 * @param AssetFolderModel    $targetFolder       The assetFolderModel representing
+	 *                                                the target folder.
+	 * @param string              $filename           The file name of the file to move.
+	 * @param string              $conflictResolution The action to perform during
+	 *                                                the file move.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $action = '')
+	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $conflictResolution = null)
 	{
 		if (!$this->canMoveFileFrom($originalSource))
 		{
@@ -356,11 +359,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$mergeFiles = false;
 
 		// If this is a revisited conflict, perform the appropriate actions
-		if (!empty($action))
+		if (!empty($conflictResolution))
 		{
-			switch ($action)
+			switch ($conflictResolution)
 			{
-				case AssetsHelper::ActionReplace:
+				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
 					if ($fileToReplace)
@@ -377,7 +380,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					break;
 				}
 
-				case AssetsHelper::ActionKeepBoth:
+				case AssetConflictResolution::KeepBoth:
 				{
 					$filename = $this->getNameReplacement($targetFolder, $filename);
 					break;
@@ -862,9 +865,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		return (object) array(
 			'message' => Craft::t('File “{file}” already exists at target location.', array('file' => $fileName)),
 			'choices' => array(
-				array('value' => AssetsHelper::ActionKeepBoth, 'title' => Craft::t('Keep both')),
-				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace it')),
-				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Cancel'))
+				array('value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('Keep both')),
+				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace it')),
+				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel'))
 			)
 		);
 	}
@@ -883,8 +886,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			'message' => Craft::t('Folder “{folder}” already exists at target location', array('folder' => $folderName)),
 			'file_name' => $folderId,
 			'choices' => array(
-				array('value' => AssetsHelper::ActionReplace, 'title' => Craft::t('Replace the existing folder')),
-				array('value' => AssetsHelper::ActionCancel, 'title' => Craft::t('Cancel the folder move.'))
+				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace the existing folder')),
+				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel the folder move.'))
 			)
 		);
 	}

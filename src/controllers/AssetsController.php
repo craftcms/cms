@@ -55,7 +55,7 @@ class AssetsController extends BaseController
 
 		// Conflict resolution data
 		$userResponse = craft()->request->getPost('userResponse');
-		$responseInfo = craft()->request->getPost('additionalInfo');
+		$theNewFileId = craft()->request->getPost('newFileId', 0);
 		$fileName = craft()->request->getPost('fileName');
 
 		// For a conflict resolution, the folder ID is no longer there and no
@@ -72,7 +72,7 @@ class AssetsController extends BaseController
 			}
 		}
 
-		$response = craft()->assets->uploadFile($folderId, $userResponse, $responseInfo, $fileName);
+		$response = craft()->assets->uploadFile($folderId, $userResponse, $theNewFileId, $fileName);
 
 		$this->returnJson($response->getResponseData());
 	}
@@ -121,7 +121,8 @@ class AssetsController extends BaseController
 		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
-		$fileId = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId);
+		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+		$fileId = $response->getDataItem('fileId');
 
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);

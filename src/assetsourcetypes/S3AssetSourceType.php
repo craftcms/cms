@@ -161,7 +161,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			// Strip the prefix, so we don't index the parent folders
 			$file['name'] = mb_substr($file['name'], mb_strlen($prefix));
 
-			if (!preg_match(AssetsHelper::IndexSkipItemsPattern, $file['name']))
+			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['name']))
 			{
 				// In S3, it's possible to have files in folders that don't
 				// exist. E.g. - one/two/three.jpg. If folder "one" is empty,

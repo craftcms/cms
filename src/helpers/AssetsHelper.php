@@ -16,10 +16,7 @@ class AssetsHelper
 	// Constants
 	// =========================================================================
 
-	const ActionKeepBoth = 'keep_both';
-	const ActionReplace = 'replace';
-	const ActionCancel = 'cancel';
-	const IndexSkipItemsPattern = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+	const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
 	// Public Methods
 	// =========================================================================
