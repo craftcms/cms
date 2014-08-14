@@ -73,6 +73,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$data = json_decode($extractedResponse);
 
 		$returnData = array();
+
 		if (is_array($data))
 		{
 			foreach ($data as $container)
@@ -110,7 +111,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Starts an indexing session.
 	 *
-	 * @param $sessionId
+	 * @param string $sessionId Indexing session id.
 	 *
 	 * @throws Exception
 	 * @return array
@@ -225,8 +226,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Process an indexing session.
 	 *
-	 * @param $sessionId
-	 * @param $offset
+	 * @param string $sessionId Indexing session id.
+	 * @param int    $offset    The offset of the item to index.
 	 *
 	 * @return mixed
 	 */
@@ -318,7 +319,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Make a local copy of the file and return the path to it.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel $file The file to get a local copy of.
 	 *
 	 * @return mixed
 	 */
@@ -576,10 +577,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Create a folder on Rackspace, return true on success.
+	 * Create a physical folder, return true on success.
 	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param string           $folderName
+	 * @param AssetFolderModel $parentFolder The folder in which to create it.
+	 * @param string           $folderName   The name of the new folder.
 	 *
 	 * @return bool
 	 */
@@ -600,8 +601,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Rename a source folder.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param                  $newName
+	 * @param AssetFolderModel $folder  The folder to rename.
+	 * @param string           $newName The new name.
 	 *
 	 * @return bool
 	 */
@@ -638,8 +639,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete the source folder.
 	 *
-	 * @param AssetFolderModel $parentFolder
-	 * @param string           $folderName
+	 * @param AssetFolderModel $parentFolder The parent folder.
+	 * @param string           $folderName   THe folder to delete.
 	 *
 	 * @return bool
 	 */
@@ -661,7 +662,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Determines if a file can be moved internally from original source.
 	 *
-	 * @param BaseAssetSourceType $originalSource
+	 * @param BaseAssetSourceType $originalSource The source with whom to test.
 	 *
 	 * @return mixed
 	 */
@@ -684,8 +685,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Purge a file from Akamai CDN.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param $filename
+	 * @param AssetFolderModel $folder   The folder containing the file.
+	 * @param string           $filename The filename of the file.
 	 *
 	 * @return null
 	 */

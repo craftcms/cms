@@ -49,7 +49,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param string $sessionId The unique session id to keep track of this
 	 *                          indexing operation.
-	 * @param int $offset    The offset of this index.
+	 * @param int    $offset    The offset of this index.
 	 *
 	 * @return mixed
 	 */
@@ -241,8 +241,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
 	 * @param string           $localCopy          The local copy of the file to transfer.
-	 * @param AssetFolderModel $folder             The assetFolderModel that contains the file to transfer.
-	 * @param AssetFileModel   $file               The assetFileModel that represents the file to transfer.
+	 * @param AssetFolderModel $folder             The assetFolderModel that contains
+	 *                                             the file to transfer.
+	 * @param AssetFileModel   $file               The assetFileModel that represents
+	 *                                             the file to transfer.
 	 * @param string           $conflictResolution The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
