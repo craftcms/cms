@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The AppController class is a controller that handles various actions for
- * Craft updates, control panel requests, upgrading Craft editions and license
- * requests.
+ * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
+ * upgrading Craft editions and license requests.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -126,8 +124,7 @@ class AppController extends BaseController
 			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
 		}
 
-		// Make sure we've got a valid license key (mismatched domain is OK
-		// for these purposes)
+		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
 		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
 		{
 			$this->returnErrorJson(Craft::t('Your license key is invalid.'));

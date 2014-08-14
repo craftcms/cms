@@ -4,12 +4,10 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * The LocalizationController class is a controller that handles various
- * localization related tasks such adding, deleting and re-ordering locales in
- * the control panel.
+ * The LocalizationController class is a controller that handles various localization related tasks such adding,
+ * deleting and re-ordering locales in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

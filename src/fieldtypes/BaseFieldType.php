@@ -152,8 +152,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
 	 *
 	 * @param mixed $value
 	 *

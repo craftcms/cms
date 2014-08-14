@@ -107,8 +107,7 @@ class HeaderHelper
 	}
 
 	/**
-	 * Tells the browser not to request this content again the next $sec seconds
-	 * but use the browser cached content.
+	 * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
 	 *
 	 * @param int $seconds Time in seconds to hold in browser cache
 	 *
@@ -185,9 +184,8 @@ class HeaderHelper
 
 
 	/**
-	 * Tells the browser the length of the following content. This mostly makes
-	 * sense when using the download function so the browser can calculate how
-	 * many bytes are left during the process.
+	 * Tells the browser the length of the following content. This mostly makes sense when using the download function
+	 * so the browser can calculate how many bytes are left during the process.
 	 *
 	 * @param int $sizeInBytes The content size in bytes
 	 *

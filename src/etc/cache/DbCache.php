@@ -4,12 +4,11 @@ namespace Craft;
 /**
  * DbCache implements a cache application component by storing cached data in a database.
  *
- * DbCache stores cache data in a DB table named {@link cacheTableName}.
- * If the table does not exist, it will be automatically created.
+ * DbCache stores cache data in a DB table named {@link cacheTableName}. If the table does not exist, it will be
+ * automatically created.
  *
- * DbCache relies on {@link http://www.php.net/manual/en/ref.pdo.php PDO} to
- * access database. By default, it will use the database connection information
- * stored in your craft/config/db.php file.
+ * DbCache relies on {@link http://www.php.net/manual/en/ref.pdo.php PDO} to access database. By default, it will use
+ * the database connection information stored in your craft/config/db.php file.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

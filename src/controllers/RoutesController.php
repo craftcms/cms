@@ -2,11 +2,10 @@
 namespace Craft;
 
 /**
- * The RoutesController class is a controller that handles various route related
- * tasks such as saving, deleting and re-ordering routes in the control panel.
+ * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
+ * re-ordering routes in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

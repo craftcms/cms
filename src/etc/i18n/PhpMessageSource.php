@@ -17,9 +17,9 @@ class PhpMessageSource extends \CPhpMessageSource
 	// =========================================================================
 
 	/**
-	 * Whether to force message translation when the source and target languages
-	 * are the same. Yii defaults this to false, meaning translation is only performed
-	 * when source and target languages are different, but Craft defaults it to true.
+	 * Whether to force message translation when the source and target languages are the same. Yii defaults this to
+	 * false, meaning translation is only performed when source and target languages are different, but Craft defaults
+	 * it to true.
 	 *
 	 * @var boolean
 	 */
@@ -55,8 +55,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			// Plugin translations get added first so they always lose out for conflicts
 			if (craft()->isInstalled() && !craft()->isInMaintenanceMode())
 			{
-				// Don't use PluginService, but go straight to the file system.
-				// Who cares if they are disabled.
+				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
 				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
 
 				if ($pluginPaths)
@@ -77,8 +76,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			// Site translations take the highest precidence, so they get added last
 			$paths[] = craft()->path->getSiteTranslationsPath();
 
-			// Look for translation file from least to most specific.
-			// So nl.php gets loaded before nl_nl.php, for example.
+			// Look for translation file from least to most specific. For example, nl.php gets loaded before nl_nl.php.
 			$translationFiles = array();
 			$parts = explode('_', $language);
 			$totalParts = count($parts);
@@ -88,8 +86,7 @@ class PhpMessageSource extends \CPhpMessageSource
 				$translationFiles[] = implode('_', array_slice($parts, 0, $i));
 			}
 
-			// Now loop through all of the paths and translation files and import
-			// the ones that exist
+			// Now loop through all of the paths and translation files and import the ones that exist
 			foreach ($paths as $folderPath)
 			{
 				if (IOHelper::folderExists($folderPath))
@@ -105,8 +102,7 @@ class PhpMessageSource extends \CPhpMessageSource
 
 							if (is_array($translations))
 							{
-								// If this is framework data and we're not on en_us,
-								// then do some special processing.
+								// If this is framework data and we're not on en_us, then do some special processing.
 								if (strpos($path, 'framework/i18n/data') !== false && $file !== 'en_us')
 								{
 									$translations = $this->_processFrameworkData($file);

@@ -277,8 +277,8 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 		else
 		{
-			// If we've already fetched all sources we can save ourselves a trip to the DB
-			// for source IDs that don't exist
+			// If we've already fetched all sources we can save ourselves a trip to the DB for source IDs that don't
+			// exist
 			if (!$this->_fetchedAllSources &&
 				(!isset($this->_sourcesById) || !array_key_exists($sourceId, $this->_sourcesById))
 			)

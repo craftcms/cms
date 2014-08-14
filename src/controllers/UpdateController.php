@@ -2,14 +2,12 @@
 namespace Craft;
 
 /**
- * The UpdateController class is a controller that handles various update
- * related tasks such as checking for available updates and running manual and
- * auto-updates.
+ * The UpdateController class is a controller that handles various update related tasks such as checking for available
+ * updates and running manual and auto-updates.
  *
- * Note that all actions in the controller, except for {@link actionPrepare},
- * {@link actionBackupDatabase}, {@link actionUpdateDatabase},
- * {@link actionCleanUp} and {@link actionRollback} require an authenticated
- * Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller, except for {@link actionPrepare}, {@link actionBackupDatabase},
+ * {@link actionUpdateDatabase}, {@link actionCleanUp} and {@link actionRollback} require an authenticated Craft session
+ * via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -24,19 +22,16 @@ class UpdateController extends BaseController
 	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the
-	 * given controller's actions.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 *
-	 * If set to true, anonymous access is allowed for all of the given
-	 * controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 *
-	 * If the value is an array of action names, then you must be logged in for
-	 * any action method except for the ones in the array list.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
 	 *
-	 * If you have a controller that where the majority of action methods will
-	 * be anonymous, but you only want require login on a few, it's best to use
-	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
-	 * individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -324,8 +319,7 @@ class UpdateController extends BaseController
 		{
 			$plugin = craft()->plugins->getPlugin($handle);
 
-			// If this a plugin, make sure it actually has new migrations before
-			// backing up the database.
+			// If this a plugin, make sure it actually has new migrations before backing up the database.
 			if ($handle == 'craft' || ($plugin && craft()->migrations->getNewMigrations($plugin)))
 			{
 				$return = craft()->updates->backupDatabase();

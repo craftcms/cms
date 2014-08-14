@@ -5,8 +5,7 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into
- * craft/config/rediscache.php, and make your change there.
+ * If you want to change any of these settings, copy it into craft/config/rediscache.php, and make your change there.
  */
 
 return array(
@@ -21,8 +20,7 @@ return array(
 	'port' => 6379,
 
 	/**
-	 * The password to use to authenticate with the redis server. If not set,
-	 * no AUTH command will be sent.
+	 * The password to use to authenticate with the redis server. If not set, no AUTH command will be sent.
 	 */
 	'password' => '',
 
@@ -32,8 +30,8 @@ return array(
 	'database' => 0,
 
 	/**
-	 * Timeout to use for connection to redis. If not set the timeout set in
-	 * php.ini will be used: ini_get("default_socket_timeout")
+	 * Timeout to use for connection to redis. If not set the timeout set in php.ini will be used:
+	 * ini_get("default_socket_timeout")
 	 */
 	'timeout' => null,
 );

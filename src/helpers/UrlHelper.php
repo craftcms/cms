@@ -227,9 +227,8 @@ class UrlHelper
 	 *
 	 * @param string            $path
 	 * @param array|string|null $params
-	 * @param string|null       $protocol The protocol to use (e.g. http, https).
-	 *                                    If empty, the protocol used for the current
-	 *                                    request will be used.
+	 * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the
+	 *                                    current request will be used.
 	 *
 	 * @return string
 	 */
@@ -239,9 +238,8 @@ class UrlHelper
 
 		if ($path)
 		{
-			// If we've served this resource before, we should have a cached copy
-			// of the server path already. Use that to get its timestamp, and add
-			// timestamp to the resource URL so ResourcesService sends it with
+			// If we've served this resource before, we should have a cached copy of the server path already. Use that
+			// to get its timestamp, and add timestamp to the resource URL so ResourcesService sends it with
 			// a Pragma: Cache header.
 
 			$realPath = craft()->resources->getCachedResourcePath($path);
@@ -265,8 +263,8 @@ class UrlHelper
 	/**
 	 * @param string $path
 	 * @param null   $params
-	 * @param string $protocol The protocol to use (e.g. http, https). If empty, the
-	 *                         protocol used for the current request will be used.
+	 * @param string $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the current
+	 *                         request will be used.
 	 *
 	 * @return array|string
 	 */

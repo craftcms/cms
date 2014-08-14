@@ -81,8 +81,8 @@ class Et
 	}
 
 	/**
-	 * The maximum number of seconds to allow for an entire transfer to take place
-	 * before timing out.  Set 0 to wait indefinitely.
+	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait
+	 * indefinitely.
 	 *
 	 * @return int
 	 */
@@ -92,8 +92,7 @@ class Et
 	}
 
 	/**
-	 * The maximum number of seconds to wait while trying to connect. Set to 0
-	 * to wait indefinitely.
+	 * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
 	 *
 	 * @return int
 	 */
@@ -162,8 +161,7 @@ class Et
 		{
 			$missingLicenseKey = empty($this->_model->licenseKey);
 
-			// No craft/config/license.key file and we can't even write to the
-			// config folder.  Don't even make the call home.
+			// No craft/config/license.key file and we can't write to the config folder. Don't even make the call home.
 			if ($missingLicenseKey && !$this->_isConfigFolderWritable())
 			{
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);

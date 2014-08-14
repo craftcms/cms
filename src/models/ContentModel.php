@@ -96,8 +96,7 @@ class ContentModel extends BaseModel
 
 			$value = $this->getAttribute($handle);
 
-			// Don't worry about blank values. Those will already be caught by
-			// required field validation.
+			// Don't worry about blank values. Those will already be caught by required field validation.
 			if ($value)
 			{
 				$fieldType = $field->getFieldType();

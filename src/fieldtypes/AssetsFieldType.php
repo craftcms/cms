@@ -54,8 +54,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		// Create a list of folder options for the main Source setting, and source
-		// options for the upload location settings.
+		// Create a list of folder options for the main Source setting, and source options for the upload location
+		// settings.
 		$folderOptions = array();
 		$sourceOptions = array();
 
@@ -130,8 +130,7 @@ class AssetsFieldType extends BaseElementFieldType
 					}
 				}
 
-				// If we got here either there are no restrictions or all files are valid
-				// So let's turn them into Assets
+				// If we got here either there are no restrictions or all files are valid so let's turn them into Assets
 				$fileIds = array();
 
 
@@ -222,9 +221,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Validates the value.
-	 *
-	 * Returns 'true' or any custom validation errors.
+	 * Validates the value. Returns 'true' or any custom validation errors.
 	 *
 	 * @param array $value
 	 *
@@ -353,8 +350,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the
-	 * field should be able to select.
+	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
 	 *
 	 * @return array
 	 */
@@ -375,8 +371,7 @@ class AssetsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Resolve a source path to it's folder ID by the source path and the matched
-	 * source beginning.
+	 * Resolve a source path to it's folder ID by the source path and the matched source beginning.
 	 *
 	 * @param int    $sourceId
 	 * @param string $subpath
@@ -471,8 +466,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if ($response->isError() || $response->isConflict())
 		{
-			// If folder doesn't exist in DB, but we can't create it, it probably
-			// exists on the server.
+			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
 			$newFolder = new AssetFolderModel(
 				array(
 					'parentId' => $currentFolder->id,
@@ -481,6 +475,7 @@ class AssetsFieldType extends BaseElementFieldType
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				)
 			);
+
 			$folderId = craft()->assets->storeFolder($newFolder);
 			return $folderId;
 		}
@@ -517,8 +512,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Determine an upload folder id by looking at the settings and whether Element
-	 * this field belongs to is new or not.
+	 * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
 	 *
 	 * @param $settings
 	 *
@@ -527,8 +521,8 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private function _determineUploadFolderId($settings)
 	{
-		// If there's no dynamic tags in the set path, or if the element has
-		// already been saved, we con use the real folder
+		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real
+		// folder
 		if (!empty($this->element->id)
 			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
 			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)

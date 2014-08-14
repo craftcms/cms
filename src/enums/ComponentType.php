@@ -2,11 +2,9 @@
 namespace Craft;
 
 /**
- * The ComponentType class is an abstract class that defines all of the
- * component types that are available in Craft.
+ * The ComponentType class is an abstract class that defines all of the component types that are available in Craft.
  *
- * This class is a poor man's version of an enum, since PHP does not have
- * support for native enumerations.
+ * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

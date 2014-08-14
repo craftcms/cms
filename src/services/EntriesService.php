@@ -164,8 +164,7 @@ class EntriesService extends BaseApplicationComponent
 							}
 						}
 
-						// Update the entry's descendants, who may be using this
-						// entry's URI in their own URIs
+						// Update the entry's descendants, who may be using this entry's URI in their own URIs
 						craft()->elements->updateDescendantSlugsAndUris($entry);
 					}
 

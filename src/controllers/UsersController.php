@@ -2,15 +2,12 @@
 namespace Craft;
 
 /**
- * The UsersController class is a controller that handles various user account
- * related tasks such as logging-in, impersonating a user, logging out,
- * forgetting passwords, setting passwords, validating accounts, activating
- * accounts, creating users, saving users, processing user avatars, deleting,
- * suspending and un-suspending users.
+ * The UsersController class is a controller that handles various user account related tasks such as logging-in,
+ * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
+ * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
- * Note that all actions in the controller, except {@link actionLogin},
- * {@link actionForgotPassword}, {@link actionValidate}, {@link actionSetPassword}
- * and {@link actionSaveUser} require an authenticated Craft session via
+ * Note that all actions in the controller, except {@link actionLogin}, {@link actionForgotPassword}, {@link actionValidate},
+ * {@link actionSetPassword} and {@link actionSaveUser} require an authenticated Craft session via
  * {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -26,19 +23,16 @@ class UsersController extends BaseController
 	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the
-	 * given controller's actions.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 *
-	 * If set to true, anonymous access is allowed for all of the given
-	 * controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 *
-	 * If the value is an array of action names, then you must be logged in for
-	 * any action method except for the ones in the array list.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
 	 *
-	 * If you have a controller that where the majority of action methods will
-	 * be anonymous, but you only want require login on a few, it's best to use
-	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
-	 * individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -280,8 +274,7 @@ class UsersController extends BaseController
 						craft()->userSession->impersonate($user->id);
 					}
 
-					// If the user can't access the CP, then send them to the
-					// front-end setPasswordSuccessPath.
+					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 					if (!$user->can('accessCp'))
 					{
 						$url = UrlHelper::getSiteUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
@@ -376,8 +369,8 @@ class UsersController extends BaseController
 
 			if (craft()->users->activateUser($userToValidate))
 			{
-				// Successfully activated user, do they require a password reset
-				// or is their password empty? If so, send them through the password logic.
+				// Successfully activated user, do they require a password reset or is their password empty? If so, send
+				// them through the password logic.
 				if ($userToValidate->passwordResetRequired || !$userToValidate->password)
 				{
 					// All users that go through account activation will need to set their password.
@@ -400,8 +393,7 @@ class UsersController extends BaseController
 						craft()->userSession->impersonate($userToValidate->id);
 					}
 
-					// If the user can't access the CP, then send them to the
-					// front-end activateAccountSuccessPath.
+					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
 					if (!$userToValidate->can('accessCp'))
 					{
 						$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
@@ -428,14 +420,12 @@ class UsersController extends BaseController
 
 				if ($url === '')
 				{
-					// Failed to validate user and there is no custom validation
-					// failure path.  Throw an exception.
+					// Failed to validate user and there is no custom validation failure path.  Throw an exception.
 					throw new HttpException('200', Craft::t('There was a problem activating this account.'));
 				}
 				else
 				{
-					// Failed to activate user and there is a custom validate
-					// failure path set, so use it.
+					// Failed to activate user and there is a custom validate failure path set, so use it.
 					$url = UrlHelper::getSiteUrl($url);
 				}
 			}
@@ -593,8 +583,7 @@ class UsersController extends BaseController
 				)
 			);
 
-			// No need to show the Profile tab if it's a new user (can't have an
-			// avatar yet) and there's no user fields
+			// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
 			if (!$variables['isNewAccount'] || $variables['account']->getFieldLayout()->getFields())
 			{
 				$variables['tabs']['profile'] = array(
@@ -691,8 +680,7 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// Make sure this is Craft Pro, since that's required for having
-			// multiple user accounts
+			// Make sure this is Craft Pro, since that's required for having multiple user accounts
 			craft()->requireEdition(Craft::Pro);
 
 			// Is someone logged in?
@@ -726,8 +714,7 @@ class UsersController extends BaseController
 				$newEmail = null;
 			}
 
-			// You must pass your current password to change these fields for an
-			// existing user
+			// You must pass your current password to change these fields for an existing user
 			if (!$isNewUser && ($newEmail || $newPassword))
 			{
 				// Make sure the correct current password has been submitted
@@ -739,15 +726,13 @@ class UsersController extends BaseController
 					Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
 					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 
-					// We'll let the script keep executing in case we find any
-					// other validation errors...
+					// We'll let the script keep executing in case we find any other validation errors...
 				}
 			}
 
 			if ($thisIsPublicRegistration || $newPassword)
 			{
-				// Don't worry about new password validation. That will be taken
-				// care of in the service.
+				// Don't worry about new password validation. That will be taken care of in the service.
 				$user->newPassword = $newPassword;
 			}
 
@@ -1093,8 +1078,7 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should
-		// be able to unlock another admin.
+		// Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1128,8 +1112,7 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should
-		// be able to suspend another admin.
+		// Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1164,8 +1147,7 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have deleteUser permissions, only and admin should be able
-		// to delete another admin.
+		// Even if you have deleteUser permissions, only and admin should be able to delete another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1200,8 +1182,7 @@ class UsersController extends BaseController
 			$this->_noUserExists($userId);
 		}
 
-		// Even if you have administrateUsers permissions, only and admin should
-		// be able to unsuspend another admin.
+		// Even if you have administrateUsers permissions, only and admin should be able to un-suspend another admin.
 		$currentUser = craft()->userSession->getUser();
 
 		if ($user->admin && !$currentUser->admin)
@@ -1288,8 +1269,7 @@ class UsersController extends BaseController
 				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 			}
 		}
-		// The user can access the CP, so send them to Craft's set password
-		// template in the dashboard.
+		// The user can access the CP, so send them to Craft's set password template in the dashboard.
 		else
 		{
 			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());

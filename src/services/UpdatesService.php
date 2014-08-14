@@ -565,9 +565,8 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns true is the build stored in craft_info is less than the minimum
-	 * required build on the file system. This effectively makes sure that a user
-	 * cannot manually update past a manual breakpoint.
+	 * Returns true is the build stored in craft_info is less than the minimum required build on the file system. This
+	 * effectively makes sure that a user cannot manually update past a manual breakpoint.
 	 *
 	 * @return bool
 	 */
@@ -577,8 +576,7 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the uploaded DB schema is equal to or greater than the
-	 * installed schema
+	 * Returns whether the uploaded DB schema is equal to or greater than the installed schema
 	 *
 	 * @return bool
 	 */

@@ -17,8 +17,7 @@ class UrlValidator extends \CUrlValidator
 	// =========================================================================
 
 	/**
-	 * Override the $pattern regex so that a TLD is not required, and the protocol
-	 * may be relative.
+	 * Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
 	 *
 	 * @var string
 	 */
@@ -28,8 +27,7 @@ class UrlValidator extends \CUrlValidator
 	// =========================================================================
 
 	/**
-	 * Add support for protocol-relative URLs.
-	 * {@see http://paulirish.com/2010/the-protocol-relative-url/}
+	 * Add support for protocol-relative URLs. {@see http://paulirish.com/2010/the-protocol-relative-url/}
 	 *
 	 * @param string $value
 	 *

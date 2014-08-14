@@ -2,8 +2,8 @@
 namespace Craft;
 
 /**
- * The GlobalSetElementType class is responsible for implementing and defining
- * globals as a native element type in Craft.
+ * The GlobalSetElementType class is responsible for implementing and defining globals as a native element type in
+ * Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -280,8 +280,7 @@ class AppBehavior extends BaseBehavior
 				return true;
 			}
 
-			// Base this off of what they're actually licensed to use, not
-			// what's currently running
+			// Base this off of what they're actually licensed to use, not what's currently running
 			$licensedEdition = $this->getLicensedEdition();
 			return ($licensedEdition !== null && $licensedEdition < Craft::Pro);
 		}
@@ -320,9 +319,8 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the site URL (with a trailing slash).
 	 *
-	 * @param string|null $protocol The protocol to use (http or https). If none
-	 *                              is specified, it will default to whatever's
-	 *                              in the Site URL setting.
+	 * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to
+	 *                              whatever's in the Site URL setting.
 	 *
 	 * @return string
 	 */

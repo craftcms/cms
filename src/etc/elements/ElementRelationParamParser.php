@@ -59,8 +59,7 @@ class ElementRelationParamParser
 	}
 
 	/**
-	 * Parses a relatedTo criteria param and returns the condition(s) or 'false'
-	 * if there's an issue.
+	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
 	 *
 	 * @param mixed     $relatedTo
 	 * @param DbCommand $query
@@ -90,8 +89,7 @@ class ElementRelationParamParser
 
 		if ($glue == 'or')
 		{
-			// Group all of the unspecified elements, so we avoid adding massive
-			// JOINs to the query
+			// Group all of the unspecified elements, so we avoid adding massive JOINs to the query
 			$unspecifiedElements = array();
 
 			foreach ($relatedTo as $i => $relCriteria)
@@ -146,8 +144,7 @@ class ElementRelationParamParser
 	}
 
 	/**
-	 * Returns whether the relatedTo value appears to be for selecting the targets
-	 * of a single relation field.
+	 * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
 	 *
 	 * @return bool
 	 */
@@ -165,8 +162,7 @@ class ElementRelationParamParser
 	// =========================================================================
 
 	/**
-	 * Parses a part of a relatedTo criteria param and returns the condition or
-	 * 'false' if there's an issue.
+	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
 	 *
 	 * @param mixed     $relCriteria
 	 * @param DbCommand $query
@@ -233,8 +229,7 @@ class ElementRelationParamParser
 
 		if (!empty($relCriteria['field']))
 		{
-			// Loop through all of the fields in this rel criteria,
-			// create the Matrix-specific conditions right away
+			// Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
 			// and save the normal field IDs for later
 			$fields = ArrayHelper::stringToArray($relCriteria['field']);
 
@@ -266,8 +261,8 @@ class ElementRelationParamParser
 					// Searching by a specific block type field?
 					if (isset($fieldHandleParts[1]))
 					{
-						// There could be more than one block type field with this handle,
-						// so we must loop through all of the block types on this Matrix field
+						// There could be more than one block type field with this handle, so we must loop through all
+						// of the block types on this Matrix field
 						$blockTypes = craft()->matrix->getBlockTypesByFieldId($fieldModel->id);
 
 						foreach ($blockTypes as $blockType)
@@ -362,9 +357,8 @@ class ElementRelationParamParser
 			}
 		}
 
-		// If there were no fields, or there are some non-Matrix fields, add the
-		// normal relation condition. (Basically, run this code if the rel criteria
-		// wasn't exclusively for Matrix.)
+		// If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
+		// run this code if the rel criteria wasn't exclusively for Matrix.)
 		if (empty($relCriteria['field']) || $normalFieldIds)
 		{
 			if (isset($relCriteria['sourceElement']))

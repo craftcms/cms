@@ -434,9 +434,8 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds `id`, `dateCreated`, `date_update`, and `uid` columns to $columns,
-	 * packages up the column definitions into strings,
-	 * and then passes it back to CDbCommand->createTable()
+	 * Adds `id`, `dateCreated`, `date_update`, and `uid` columns to $columns, packages up the column definitions into
+	 * strings, and then passes it back to CDbCommand->createTable().
 	 *
 	 * @param string $table
 	 * @param array  $columns
@@ -727,9 +726,8 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds support for array('column' => 'value') conditional syntax.
-	 * Supports nested conditionals, e.g. array('or', array('column' => 'value'),
-	 * array('column2' => 'value2'))
+	 * Adds support for array('column' => 'value') conditional syntax. Supports nested conditionals, e.g.
+	 * array('or', array('column' => 'value'), array('column2' => 'value2'))
 	 *
 	 * @param mixed $conditions
 	 * @param array &$params

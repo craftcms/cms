@@ -112,13 +112,13 @@ class AssetFileModel extends BaseElementModel
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
-	 * @param bool $flattenValue
+	 * @param bool   $flattenValue
+	 *
 	 * @return mixed
 	 */
 	public function getAttribute($name, $flattenValue = false)
 	{
-		// Override 'width' and 'height' with getWidth() and getHeight()
-		// in case $this->_transform is set.
+		// Override 'width' and 'height' with getWidth() and getHeight() in case $this->_transform is set.
 		if ($name == 'width')
 		{
 			return $this->getWidth();
@@ -135,6 +135,7 @@ class AssetFileModel extends BaseElementModel
 
 	/**
 	 * Return the file's field layout.
+	 *
 	 * @return FieldLayoutModel|null
 	 */
 	public function getFieldLayout()
@@ -191,6 +192,7 @@ class AssetFileModel extends BaseElementModel
 	 * Sets the transform.
 	 *
 	 * @param mixed $transform
+	 *
 	 * @return AssetFileModel
 	 */
 	public function setTransform($transform)
@@ -203,6 +205,7 @@ class AssetFileModel extends BaseElementModel
 	 * Returns the URL to the file.
 	 *
 	 * @param string|null $transform
+	 *
 	 * @return mixed
 	 */
 	public function getUrl($transform = null)
@@ -219,6 +222,7 @@ class AssetFileModel extends BaseElementModel
 	 * Get the thumb's URL.
 	 *
 	 * @param int $size
+	 *
 	 * @return string
 	 */
 	public function getThumbUrl($size = 125)
@@ -237,6 +241,7 @@ class AssetFileModel extends BaseElementModel
 	 * Get the icons URL.
 	 *
 	 * @param int $size
+	 *
 	 * @return string
 	 */
 	public function getIconUrl($size = 125)
@@ -293,7 +298,8 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Get image height.
 	 *
-	 * @param string $transform optional transform handle for which to get thumbnail.
+	 * @param string|null $transform The optional transform handle for which to get thumbnail.
+	 *
 	 * @return bool|float|mixed
 	 */
 
@@ -305,7 +311,8 @@ class AssetFileModel extends BaseElementModel
 	/**
 	 * Get image width.
 	 *
-	 * @param string $transform optional transform handle for which to get thumbnail.
+	 * @param string|null $transform The optional transform handle for which to get thumbnail.
+	 *
 	 * @return bool|float|mixed
 	 */
 	public function getWidth($transform = null)
@@ -348,8 +355,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the actual height attribute, since $this->height gets routed to
-	 * getHeight() now.
+	 * Returns the actual height attribute, since $this->height gets routed to getHeight() now.
 	 *
 	 * @return mixed
 	 */
@@ -395,8 +401,7 @@ class AssetFileModel extends BaseElementModel
 			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
 		}
 
-		// Special case for 'fit' since that's the only one whose dimensions
-		// vary from the transform dimensions
+		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
 			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);

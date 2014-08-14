@@ -57,8 +57,7 @@ class ResaveElementsTask extends BaseTask
 	{
 		$settings = $this->getSettings();
 
-		// Let's save ourselves some trouble and just clear all the caches for
-		// this element type
+		// Let's save ourselves some trouble and just clear all the caches for this element type
 		craft()->templateCache->deleteCachesByElementType($settings->elementType);
 
 		// Now find the affected element IDs

@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The SystemSettingsController class is a controller that handles various
- * control panel settings related tasks such as displaying, saving and testing
- * Craft settings in the control panel.
+ * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
+ * displaying, saving and testing Craft settings in the control panel.
  *
- * Note that all actions in this controller require administrator access in
- * order to execute.
+ * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -22,8 +20,7 @@ class SystemSettingsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before
-	 * the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -70,8 +67,7 @@ class SystemSettingsController extends BaseController
 			$variables['info'] = craft()->getInfo();
 		}
 
-		// Assemble the timezone options array
-		// (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
+		// Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
 		$variables['timezoneOptions'] = array();
 
 		$utc = new DateTime();

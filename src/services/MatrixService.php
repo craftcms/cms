@@ -152,10 +152,9 @@ class MatrixService extends BaseApplicationComponent
 			$blockType->addErrors($blockTypeRecord->getErrors());
 		}
 
-		// Can't validate multiple new rows at once so we'll need to give these
-		// a temporary context to avoid false unique handle validation errors,
-		// and just validate those manually. Also apply the future fieldColumnPrefix
-		// so that field handle validation takes its length into account.
+		// Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
+		// handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
+		// field handle validation takes its length into account.
 		$contentService = craft()->content;
 		$originalFieldContext      = $contentService->fieldContext;
 		$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
@@ -167,19 +166,17 @@ class MatrixService extends BaseApplicationComponent
 		{
 			craft()->fields->validateField($field);
 
-			// Make sure the block type handle + field handle combo is unique for
-			// the whole field. This prevents us from worrying about content column
-			// conflicts like "a" + "b_c" == "a_b" + "c".
+			// Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
+			// worrying about content column conflicts like "a" + "b_c" == "a_b" + "c".
 			if ($blockType->handle && $field->handle)
 			{
 				$blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
 
 				if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles))
 				{
-					// This error *might* not be entirely accurate, but it's such
-					// an edge case that it's probably better for the error to be
-					// worded for the common problem (two duplicate handles within
-					// the same block type).
+					// This error *might* not be entirely accurate, but it's such an edge case that it's probably better
+					// for the error to be worded for the common problem (two duplicate handles within the same block
+					// type).
 					$error = Craft::t('{attribute} "{value}" has already been taken.', array(
 						'attribute' => Craft::t('Handle'),
 						'value' => $field->handle
@@ -288,8 +285,7 @@ class MatrixService extends BaseApplicationComponent
 				$fieldLayoutFields = array();
 				$sortOrder = 0;
 
-				// Resetting the fieldContext here might be redundant if this isn't
-				// a new blocktype but whatever
+				// Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
 				$contentService->fieldContext      = 'matrixBlockType:'.$blockType->id;
 				$contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
@@ -428,8 +424,8 @@ class MatrixService extends BaseApplicationComponent
 		{
 			if (!$this->validateBlockType($blockType))
 			{
-				// Don't break out of the loop because we still want to get
-				// validation errors for the remaining block types.
+				// Don't break out of the loop because we still want to get validation errors for the remaining block
+				// types.
 				$validates = false;
 			}
 		}
@@ -472,8 +468,7 @@ class MatrixService extends BaseApplicationComponent
 					}
 				}
 
-				// Delete the old block types first,
-				// in case there's a handle conflict with one of the new ones
+				// Delete the old block types first, in case there's a handle conflict with one of the new ones
 				$oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
 				$oldBlockTypesById = array();
 
@@ -778,8 +773,8 @@ class MatrixService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// First thing's first. Let's make sure that the blocks for this
-			// field/owner respect the field's translation setting
+			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
+			// setting
 			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
 			$blockIds = array();
@@ -1016,8 +1011,8 @@ class MatrixService extends BaseApplicationComponent
 
 		if ($applyNewTranslationSetting)
 		{
-			// Get all of the blocks for this field/owner that use the other locales,
-			// whose ownerLocale attribute is set incorrectly
+			// Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
+			// incorrectly
 			$blocksInOtherLocales = array();
 
 			$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
@@ -1060,8 +1055,7 @@ class MatrixService extends BaseApplicationComponent
 				{
 					$newBlockIds = array();
 
-					// Duplicate the other-locale blocks so each locale has their
-					// own unique set of blocks
+					// Duplicate the other-locale blocks so each locale has their own unique set of blocks
 					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
 					{
 						foreach ($blocksInOtherLocale as $blockInOtherLocale)
@@ -1077,8 +1071,8 @@ class MatrixService extends BaseApplicationComponent
 						}
 					}
 
-					// Duplicate the relations, too.  First by getting all of the
-					// existing relations for the original blocks
+					// Duplicate the relations, too.  First by getting all of the existing relations for the original
+					// blocks
 					$relations = craft()->db->createCommand()
 						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 						->from('relations')

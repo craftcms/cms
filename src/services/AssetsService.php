@@ -306,8 +306,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
-		// Super unlikely, but would be very awkward if this happened without
-		// any contingency plans in place.
+		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
 			$sourceTopFolder = new AssetFolderModel();

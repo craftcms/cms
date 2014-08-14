@@ -83,8 +83,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function getTransformByHandle($handle)
 	{
-		// If we've already fetched all transforms we can save ourselves a trip
-		// to the DB for transform handles that don't exist
+		// If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
+		// don't exist
 		if (!$this->_fetchedAllTransforms &&
 			(!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))
 		)
@@ -219,9 +219,8 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			$timeModified = $sourceType->getTimeTransformModified($file, $transformLocation);
 
-			// Create the transform if the file doesn't exist, or if it was 
-			// created before the image was last updated or if the transform 
-			// dimensions have changed since it was last created
+			// Create the transform if the file doesn't exist, or if it was created before the image was last updated
+			// or if the transform dimensions have changed since it was last created
 			if (!$timeModified || $timeModified < $file->dateModified || $timeModified < $transform->dimensionChangeTime)
 			{
 				$image = craft()->images->loadImage($imageSource);
@@ -288,8 +287,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		if ($entry)
 		{
-			// If the file has been indexed after any changes impacting the
-			// transform, return the record
+			// If the file has been indexed after any changes impacting the transform, return the record
 			$indexedAfterFileModified = $entry['dateIndexed'] >= $file->dateModified->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 			$indexedAfterTransformParameterChange = (!$transform->isNamedTransform() || ($transform->isNamedTransform() && $entry['dateIndexed'] >= $transform->dimensionChangeTime->format(DateTime::MYSQL_DATETIME, DateTime::UTC)));
 
@@ -335,8 +333,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
 		}
 
-		// Make sure we're not in the middle of working on this transform from
-		// a separate request
+		// Make sure we're not in the middle of working on this transform from a separate request
 		if ($index->inProgress)
 		{
 			for ($safety = 0; $safety < 100; $safety++)
@@ -350,8 +347,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				// Is it being worked on right now?
 				if ($index->inProgress)
 				{
-					// Make sure it hasn't been working for more than 30 seconds.
-					// Otherwise give up on the other request.
+					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
 					$time = new DateTime();
 
 					if ($time->getTimestamp() - $index->dateUpdated->getTimestamp() < 30)
@@ -455,8 +451,8 @@ class AssetTransformsService extends BaseApplicationComponent
 			{
 				if (!$transform->isNamedTransform() || ($transform->isNamedTransform() && $existingFileTimeModified >= $transform->dimensionChangeTime))
 				{
-					// We have a satisfactory match and the record has been
-					// inserted already. Now copy the file to the new home.
+					// We have a satisfactory match and the record has been inserted already. Now copy the file to the
+					// new home.
 					$sourceType->copyTransform($file, $alternateLocation, $index->location);
 					return true;
 				}
@@ -636,12 +632,12 @@ class AssetTransformsService extends BaseApplicationComponent
 		// Create URL to the image
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$transformPath = $this->getTransformSubpath($transform);
+
 		return AssetsHelper::generateUrl($sourceType, $file, $transformPath);
 	}
 
 	/**
-	 * Cleans up transforms for a source by making sure that all indexed
-	 * transforms actually exist.
+	 * Cleans up transforms for a source by making sure that all indexed transforms actually exist.
 	 *
 	 * @param int $sourceId
 	 *

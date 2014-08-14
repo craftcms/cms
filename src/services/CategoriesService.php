@@ -414,8 +414,8 @@ class CategoriesService extends BaseApplicationComponent
 
 				if (!$isNewCategoryGroup)
 				{
-					// Drop any locales that are no longer being used, as well
-					// as the associated category/element locale rows
+					// Drop any locales that are no longer being used, as well as the associated category/element
+					// locale rows
 
 					$droppedLocaleIds = array_diff(array_keys($oldLocales), array_keys($groupLocales));
 
@@ -460,8 +460,8 @@ class CategoriesService extends BaseApplicationComponent
 							{
 								craft()->config->maxPowerCaptain();
 
-								// Loop through each of the changed locales and
-								// update all of the categories’ slugs and URIs
+								// Loop through each of the changed locales and update all of the categories’ slugs and
+								// URIs
 								foreach ($changedLocaleIds as $localeId)
 								{
 									$criteria = craft()->elements->getCriteria(ElementType::Category);
@@ -470,7 +470,7 @@ class CategoriesService extends BaseApplicationComponent
 									$criteria->status = null;
 									$category = $criteria->first();
 
-									// todo: replace the getContent()->id check with the 'strictLocale' param once it's added
+									// todo: replace the getContent()->id check with 'strictLocale' param once it's added
 									if ($category && $category->getContent()->id)
 									{
 										craft()->elements->updateElementSlugAndUri($category, false, false);

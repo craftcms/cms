@@ -64,8 +64,7 @@ class DbHelper
 	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, merges in the default config settings
-	 * for the column type, and renames 'maxLength' to 'length'.
+	 * This function normalizes on the 3rd, merges in the default config settings for the column type, and renames 'maxLength' to 'length'.
 	 *
 	 * @param string|array $config
 	 *
@@ -274,8 +273,7 @@ class DbHelper
 	}
 
 	/**
-	 * Returns an index name based on the table, column names, and whether it
-	 * should be unique.
+	 * Returns an index name based on the table, column names, and whether it should be unique.
 	 *
 	 * @param string       $table
 	 * @param string|array $columns
@@ -288,6 +286,7 @@ class DbHelper
 	{
 		// TODO: Add deprecation log in 3.0
 		return craft()->db->getIndexName($table, $columns, $unique);
+
 	}
 
 	/**

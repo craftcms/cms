@@ -130,8 +130,8 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	private function _getEntries()
 	{
-		// Make sure that the user is actually allowed to edit entries in the current locale.
-		// Otherwise grab entries in their first editable locale.
+		// Make sure that the user is actually allowed to edit entries in the current locale. Otherwise grab entries in
+		// their first editable locale.
 		$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
 		$targetLocale = craft()->language;
 

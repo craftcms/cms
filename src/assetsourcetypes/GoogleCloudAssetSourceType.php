@@ -4,8 +4,8 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * The Google Cloud asset source type class. Handles the implementation of Google
- * Cloud as an asset source type in Craft.
+ * The Google Cloud asset source type class. Handles the implementation of Google Cloud as an asset source type in
+ * Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -132,12 +132,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['name']))
 			{
-				// In S3, it's possible to have files in folders that don't exist.
-				// e.g. - one/two/three.jpg. If folder "one" is empty, except for
-				// folder "two", then "one" won't show up in this list so we work around it.
+				// In S3, it's possible to have files in folders that don't exist. e.g. - one/two/three.jpg. If folder
+				// "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
 
-				// Matches all paths with folders, except if folder is last
-				// or no folder at all.
+				// Matches all paths with folders, except if folder is last or no folder at all.
 				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
@@ -325,8 +323,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and handle using the provided path
-	 * to the source image.
+	 * Put an image transform for the File and handle using the provided path to the source image.
 	 *
 	 * @param AssetFileModel $fileModel
 	 * @param                $handle
@@ -531,7 +528,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite If True, will overwrite target destination.
+	 * @param bool             $overwrite If true, will overwrite target destination.
 	 *
 	 * @return mixed
 	 */
@@ -591,12 +588,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 			foreach ($transforms as $location)
 			{
-				// Suppress errors when trying to move image transforms. Maybe
-				// the user hasn't updated them yet.
+				// Suppress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
 				$copyResult = @$this->_googleCloud->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \GC::ACL_PUBLIC_READ);
 
-				// If we failed to copy, that's because source wasn't there. Skip
-				// delete and save time - everyone's a winner!
+				// If we failed to copy, that's because source wasn't there. Skip delete and save time.
 				if ($copyResult)
 				{
 					@$this->_googleCloud->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
@@ -730,8 +725,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings The settings to use. If null, will use
-	 *                              current settings.
+	 * @param object|null $settings The settings to use. If null, will use current settings.
 	 *
 	 * @return string
 	 */
