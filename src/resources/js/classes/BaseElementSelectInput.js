@@ -299,6 +299,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	onSelectElements: function()
 	{
 		this.trigger('selectElements');
-	},
+	}
 
 });
