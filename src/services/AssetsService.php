@@ -1203,7 +1203,7 @@ class AssetsService extends BaseApplicationComponent
 				$fileId = $targetFile->id;
 			}
 			// Falling through to delete the file
-			case AssetsHelper::ActionCancel:
+			case AssetConflictResolution::Cancel:
 			{
 				$this->deleteFiles($theNewFileId);
 				break;

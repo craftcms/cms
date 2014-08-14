@@ -27,7 +27,7 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		$groupRecords = UserGroupRecord::model()->findAll();
+		$groupRecords = UserGroupRecord::model()->ordered()->findAll();
 		return UserGroupModel::populateModels($groupRecords, $indexBy);
 	}
 
