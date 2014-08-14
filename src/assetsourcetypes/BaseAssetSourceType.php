@@ -56,7 +56,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function processIndex($sessionId, $offset);
 
 	/**
-	 * Get the image source path with the optional handle name.
+	 * Get the image source path
 	 *
 	 * @param AssetFileModel $fileModel The assetFileModel for the image source path.
 	 *
@@ -65,27 +65,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
-	 * Get the timestamp of when a file transform was last modified.
+	 * Put an image transform for the File and Transform Index using the
+	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel $fileModel The assetFileModel for the timestamp of
-	 *                                  the last time the transform was modified.
-	 * @param string $transformLocation The location of the transform.
-	 *
-	 * @return mixed
-	 */
-	abstract public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation);
-
-	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
-	 *
-	 * @param AssetFileModel $fileModel   The assetFileModel to put the image
-	 *                                    transform in.
-	 * @param string         $handle      The handle of the transform.
-	 * @param string         $sourceImage The source image.
+	 * @param AssetFileModel           $file        The assetFileModel to put the image transform in.
+	 * @param AssetTransformIndexModel $index       The handle of the transform.
+	 * @param string                   $sourceImage The source image.
 	 *
 	 * @return mixed
 	 */
-	abstract public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage);
+	abstract public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage);
 
 	/**
 	 * Make a local copy of the file and return the path to it.
@@ -96,27 +85,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @return mixed
 	 */
 	abstract public function getLocalCopy(AssetFileModel $file);
-
-	/**
-	 * Copy a transform for a file from source location to target location.
-	 *
-	 * @param AssetFileModel $file   The assetFileModel that has the transform to copy.
-	 * @param string         $source The source location of the transform.
-	 * @param string         $target The destination target of the transform.
-	 *
-	 * @return mixed
-	 */
-	abstract public function copyTransform(AssetFileModel $file, $source, $target);
-
-	/**
-	 * Return true if a transform exists at the location for a file.
-	 *
-	 * @param AssetFileModel $file     The assetFileModel to check if a transform exists.
-	 * @param string         $location The location of the transform.
-	 *
-	 * @return mixed
-	 */
-	abstract public function transformExists(AssetFileModel $file, $location);
 
 	/**
 	 * Return true if a physical folder exists.
@@ -290,14 +258,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
+
 					if ($fileToReplace)
 					{
 						$this->mergeFile($file, $fileToReplace);
 					}
 					else
 					{
-						$this->deleteSourceFile($folder, $filename);
+						$this->deleteSourceFile($folder->path.$filename);
 					}
+
 					break;
 				}
 
@@ -366,6 +336,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				case AssetConflictResolution::Replace:
 				{
 					$fileToReplace = craft()->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
+
 					if ($fileToReplace)
 					{
 						$this->mergeFile($file, $fileToReplace);
@@ -374,9 +345,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 					}
 					else
 					{
-						$this->deleteSourceFile($targetFolder, $filename);
+						$this->deleteSourceFile($targetFolder->path.$filename);
 						$this->purgeCachedSourceFile($targetFolder, $filename);
 					}
+
 					break;
 				}
 
@@ -425,17 +397,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if ($oldFile->kind == 'image')
 		{
 			$this->deleteGeneratedThumbnails($oldFile);
-			$this->deleteSourceFile($oldFile->getFolder(), $oldFile->filename);
+			$this->deleteSourceFile($oldFile->getFolder()->path.$oldFile->filename);
 			$this->purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
 			// For remote sources, fetch the source image and move it in the old one's place
 			if (!$this->isSourceLocal())
 			{
 				$localCopy = $this->getLocalCopy($replaceWith);
+
 				if ($oldFile->kind == "image")
 				{
 					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
 				}
+
 				IOHelper::deleteFile($localCopy);
 			}
 		}
@@ -465,9 +439,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Delete DB record and the file itself.
 		craft()->elements->deleteElementById($file->id);
 
-		$this->deleteSourceFile($file->getFolder(), $file->filename);
+		$this->deleteSourceFile($file->getFolder()->path.$file->filename);
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess();
 	}
 
@@ -488,9 +463,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Delete DB record and the file itself.
 		craft()->elements->mergeElementsByIds($targetFile->id, $sourceFile->id);
 
-		$this->deleteSourceFile($targetFile->getFolder(), $targetFile->filename);
+		$this->deleteSourceFile($targetFile->getFolder()->path.$targetFile->filename);
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess();
 	}
 
@@ -507,6 +483,41 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$this->deleteGeneratedImageTransforms($file);
 		$this->deleteGeneratedThumbnails($file);
 	}
+
+	/**
+	 * Delete a generated transform for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @param AssetTransformIndexModel $index
+	 *
+	 * @return null
+	 */
+	public function deleteTransform(AssetFileModel $file, AssetTransformIndexModel $index)
+	{
+		$folder = $file->getFolder();
+
+		$this->deleteSourceFile($folder->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+	}
+
+	/**
+	 * Copy a transform for a file from source location to target location.
+	 *
+	 * @param AssetFileModel           $file   The assetFileModel that has the transform to copy.
+	 * @param AssetTransformIndexModel $source The source transform index data.
+	 * @param AssetTransformIndexModel $target The destination transform index data.
+	 *
+	 * @return mixed
+	 */
+	public function copyTransform(AssetFileModel $file, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
+	{
+		$folder = $file->getFolder();
+
+		$sourceTransformPath = $folder->path.craft()->assetTransforms->getTransformSubpath($file, $source);
+		$targetTransformPath = $folder->path.craft()->assetTransforms->getTransformSubpath($file, $target);
+
+		return $this->copySourceFile($sourceTransformPath, $targetTransformPath);
+	}
+
 
 	/**
 	 * Create a folder.
@@ -543,6 +554,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$folderId = craft()->assets->storeFolder($newFolder);
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess()
 				->setDataItem('folderId', $folderId)
 				->setDataItem('parentId', $parentFolder->id)
@@ -585,6 +597,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		// Find all folders with affected fullPaths and update them.
 		$folders = craft()->assets->getAllDescendantFolders($folder);
+
 		foreach ($folders as $folderModel)
 		{
 			$folderModel->path = preg_replace('#^'.$oldFullPath.'#', $newFullPath, $folderModel->path);
@@ -598,6 +611,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		// All set, Scotty!
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess()->setDataItem('newName', $newName);
 	}
 
@@ -615,17 +629,20 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function moveFolder(AssetFolderModel $folder, AssetFolderModel $newParentFolder, $overwriteTarget = false)
 	{
 		$response = new AssetOperationResponseModel();
+
 		if ($folder->id == $newParentFolder->id)
 		{
 			return $response->setSuccess();
 		}
 
 		$removeFromTree = '';
+
 		if ($this->folderExists($newParentFolder, $folder->name))
 		{
 			if ($overwriteTarget)
 			{
 				$existingFolder = craft()->assets->findFolder(array('parentId' => $newParentFolder->id, 'name' => $folder->name));
+
 				if ($existingFolder)
 				{
 					$removeFromTree = $existingFolder->id;
@@ -654,6 +671,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$files = $criteria->find();
 
 		$transferList = array();
+
 		foreach ($files as $file)
 		{
 			$transferList[] = array(
@@ -688,6 +706,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		// Delete children folders
 		$childFolders = craft()->assets->findFolders(array('parentId' => $folder->id));
+
 		foreach ($childFolders as $childFolder)
 		{
 			$this->deleteFolder($childFolder);
@@ -699,6 +718,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		craft()->assets->deleteFolderRecord($folder->id);
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess();
 	}
 
@@ -718,11 +738,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @param AssetFileModel $file The assetFileModel representing the file
 	 *                             we're finalizing the transfer for.
 	 *
-	 * @return mixed
+	 * @return null
 	 */
 	public function finalizeTransfer(AssetFileModel $file)
 	{
-		$this->deleteSourceFile($file->getFolder(), $file->filename);
+		$this->deleteSourceFile($file->getFolder()->path.$file->filename);
 	}
 
 	/**
@@ -782,11 +802,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete just the file inside of a source for an Assets File.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel that contains the
-	 *                                   file to be deleted.
-	 * @param string           $filename The name of the file to be deleted.
+	 * @param string $subpath The subpath of the file to delete within the source
 	 */
-	abstract protected function deleteSourceFile(AssetFolderModel $folder, $filename);
+	abstract protected function deleteSourceFile($subpath);
 
 	/**
 	 * Move a file in source.
@@ -800,6 +818,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @return AssetOperationResponseModel
 	 */
 	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
+
+	/**
+	 * Copy a physical file inside the source.
+	 *
+	 * @param string $sourceUri source subpath
+	 * @param string $targetUri target subpath
+	 *
+	 * @return bool
+	 */
+	abstract protected function copySourceFile($sourceUri, $targetUri);
 
 	/**
 	 * Delete generated image transforms for a File.
@@ -927,6 +955,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			// Look up the parent folder
 			$parentFolder = craft()->assets->findFolder($parameters);
+
 			if (is_null($parentFolder))
 			{
 				$parentId = ':empty:';
@@ -1051,6 +1080,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function deleteGeneratedThumbnails(AssetFileModel $file)
 	{
 		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
+
 		foreach ($thumbFolders as $folder)
 		{
 			if (is_dir($folder))
@@ -1075,6 +1105,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
 
 		$filePath = craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+
 		if (IOHelper::fileExists($filePath))
 		{
 			IOHelper::deleteFile($filePath);

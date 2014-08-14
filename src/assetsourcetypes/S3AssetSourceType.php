@@ -266,7 +266,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				// Store the local source or delete - maxCacheCloudImageSize
 				// is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
-				craft()->assetTransforms->deleteSourceIfNecessary($targetPath);
+				craft()->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;
@@ -282,36 +282,32 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get the image source path with the optional handle name.
 	 *
-	 * @param AssetFileModel $fileModel
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFileModel $fileModel)
+	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
+		return craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
 
 	/**
-	 * Get the timestamp of when a file transform was last modified.
+	 * Put an image transform for the File and Transform Index using the
+	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $transformLocation
+	 * @param AssetFileModel           $file        The assetFileModel to put
+	 *                                              the image transform in.
+	 * @param AssetTransformIndexModel $index       The handle of the transform.
+	 * @param string                   $sourceImage The source image.
 	 *
 	 * @return mixed
 	 */
-	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
+	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
-		$folder = $fileModel->getFolder();
-		$path = $this->_getPathPrefix().$folder->path.$transformLocation.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
-		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
+		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
 
-		if (empty($info))
-		{
-			return false;
-		}
-
-		return new DateTime('@'.$info['time']);
+		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -322,23 +318,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public function isRemote()
 	{
 		return true;
-	}
-
-	/**
-	 * Copy a transform for a file from source location to target location.
-	 *
-	 * @param AssetFileModel $file
-	 * @param                $source
-	 * @param                $target
-	 *
-	 * @return mixed
-	 */
-	public function copyTransform(AssetFileModel $file, $source, $target)
-	{
-		$this->_prepareForRequests();
-		$basePath = $this->_getPathPrefix().$file->getFolder()->path;
-		$bucket = $this->getSettings()->bucket;
-		@$this->_s3->copyObject($bucket, $basePath.$source.'/'.$file->filename, $bucket, $basePath.$target.'/'.$file->filename, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -395,24 +374,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/').'/');
-	}
-
-	/**
-	 * Put an image transform for the File and handle using the provided path to
-	 * the source image.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param                $handle
-	 * @param                $sourceImage
-	 *
-	 * @return mixed
-	 */
-	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
-	{
-		$this->_prepareForRequests();
-		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
-
-		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	// Protected Methods
@@ -516,15 +477,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param                  $filename
+	 * @param string $subpath The subpath of the file to delete within the source
 	 *
 	 * @return null
 	 */
-	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
+	protected function deleteSourceFile($subpath)
 	{
 		$this->_prepareForRequests();
-		@$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path.$filename);
+		@$this->_s3->deleteObject($this->getSettings()->bucket, $this->_getPathPrefix().$subpath);
 	}
 
 	/**
@@ -638,13 +598,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Create a physical folder, return true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder
-	 * @param                  $folderName
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
 	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
+
 		return $this->putObject('', $this->getSettings()->bucket, $this->_getPathPrefix().rtrim($parentFolder->path.$folderName, '/').'/', \S3::ACL_PUBLIC_READ);
 	}
 
@@ -745,6 +706,20 @@ class S3AssetSourceType extends BaseAssetSourceType
 		}
 
 		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
+	}
+
+	/**
+	 * Copy a physical file inside the source.
+	 *
+	 * @param $sourceUri
+	 * @param $targetUri
+	 * @return bool
+	 */
+	protected function copySourceFile($sourceUri, $targetUri)
+	{
+		$bucket = $this->getSettings()->bucket;
+
+		return (bool) @$this->_s3->copyObject($bucket, $sourceUri, $bucket, $targetUri, \S3::ACL_PUBLIC_READ);
 	}
 
 	// Private Methods

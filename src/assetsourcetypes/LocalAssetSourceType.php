@@ -191,68 +191,33 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Copy a transform for a file from source location to target location.
+	 * Put an image transform for the File and Transform Index using the
+	 * provided path to the source image.
+	 *
+	 * @param AssetFileModel           $file        The assetFileModel to put the image transform in.
+	 * @param AssetTransformIndexModel $index       The handle of the transform.
+	 * @param string                   $sourceImage The source image.
+	 *
+	 * @return mixed
+	 */
+	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
+	{
+		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
+		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
+
+		return IOHelper::copyFile($sourceImage, $targetPath);
+	}
+
+	/**
+	 * Get the image source path
 	 *
 	 * @param AssetFileModel $file
-	 * @param                $source
-	 * @param                $target
 	 *
 	 * @return mixed
 	 */
-	public function copyTransform(AssetFileModel $file, $source, $target)
+	public function getImageSourcePath(AssetFileModel $file)
 	{
-		$fileFolder = $file->getFolder();
-		$basePath = $this->getSourceFileSystemPath().$fileFolder->path;
-
-		IOHelper::copyFile($basePath.$source.'/'.$file->filename, $basePath.$target.'/'.$file->filename);
-	}
-
-	/**
-	 * Get the timestamp of when a file transform was last modified.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $transformLocation
-	 *
-	 * @return mixed
-	 */
-	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
-	{
-		$path = $this->_getImageServerPath($fileModel, $transformLocation);
-
-		if (!IOHelper::fileExists($path))
-		{
-			return false;
-		}
-
-		return IOHelper::getLastTimeModified($path);
-	}
-
-	/**
-	 * Put an image transform for the File and handle using the provided path to
-	 * the source image.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param                $handle
-	 * @param                $sourceImage
-	 *
-	 * @return mixed
-	 */
-	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
-	{
-		return IOHelper::copyFile($sourceImage, $this->_getImageServerPath($fileModel, $handle));
-	}
-
-	/**
-	 * Get the image source path with the optional handle name.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $handle
-	 *
-	 * @return mixed
-	 */
-	public function getImageSourcePath(AssetFileModel $fileModel, $handle = '')
-	{
-		return $this->_getImageServerPath($fileModel, $handle);
+		return $this->getSourceFileSystemPath().$file->getFolder()->path.$file->filename;
 	}
 
 	/**
@@ -270,19 +235,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		clearstatcache();
 
 		return $location;
-	}
-
-	/**
-	 * Return true if a transform exists at the location for a file.
-	 *
-	 * @param AssetFileModel $file
-	 * @param                $location
-	 *
-	 * @return mixed
-	 */
-	public function transformExists(AssetFileModel $file, $location)
-	{
-		return IOHelper::fileExists($this->_getImageServerPath($file, $location));
 	}
 
 	/**
@@ -306,6 +258,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function getBaseUrl()
 	{
 		$url = $this->getSettings()->url;
+
 		return craft()->config->parseEnvironmentString($url);
 	}
 
@@ -317,6 +270,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	public function getBasePath()
 	{
 		$path = $this->getSettings()->path;
+
 		return craft()->config->parseEnvironmentString($path);
 	}
 
@@ -385,6 +339,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess()->setDataItem('filePath', $targetPath);
 	}
 
@@ -458,14 +413,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Delete just the source file for an Assets File.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param                  $filename
+	 * @param string $subpath The subpath of the file to delete within the source
 	 *
 	 * @return null
-	 */
-	protected function deleteSourceFile(AssetFolderModel $folder, $filename)
+	 */	protected function deleteSourceFile($subpath)
 	{
-		IOHelper::deleteFile($this->getSourceFileSystemPath().$folder->path.$filename);
+		IOHelper::deleteFile($this->_getSourceFileSystemPath().$subpath);
 	}
 
 	/**
@@ -545,9 +498,22 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		}
 
 		$response = new AssetOperationResponseModel();
+
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
 				->setDataItem('newFileName', $fileName);
+	}
+
+	/**
+	 * Copy a physical file inside the source.
+	 *
+	 * @param $sourceUri
+	 * @param $targetUri
+	 * @return bool
+	 */
+	protected function copySourceFile($sourceUri, $targetUri)
+	{
+		return IOHelper::copyFile($this->_getSourceFileSystemPath().$sourceUri, $this->_getSourceFileSystemPath().$targetUri, true);
 	}
 
 	/**
@@ -612,27 +578,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Get the local path for an image, optionally with a size handle.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $transformLocation
-	 *
-	 * @return string
-	 */
-	private function _getImageServerPath(AssetFileModel $fileModel, $transformLocation = '')
-	{
-		if (!empty($transformLocation))
-		{
-			$transformLocation = '_'.ltrim($transformLocation, '_');
-		}
-
-		$targetFolder = $this->getSourceFileSystemPath().$fileModel->getFolder()->path;
-		$targetFolder .= !empty($transformLocation) ? $transformLocation.'/': '';
-
-		return $targetFolder.$fileModel->filename;
-	}
-
-	/**
 	 * Get a file's system path.
 	 *
 	 * @param AssetFileModel $file
@@ -643,6 +588,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$folder = $file->getFolder();
 		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+
 		return $this->getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
 	}
 }
