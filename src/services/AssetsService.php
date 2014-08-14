@@ -918,7 +918,7 @@ class AssetsService extends BaseApplicationComponent
 		// Does the file actually exist?
 		if ($index->fileExists)
 		{
-			return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+			return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
 		}
 		else
 		{
@@ -936,7 +936,7 @@ class AssetsService extends BaseApplicationComponent
 				craft()->assetTransforms->storeTransformIndexData($index);
 
 				// Return the transform URL
-				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+				return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
 			}
 			else
 			{

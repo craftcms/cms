@@ -89,7 +89,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 *
-	 * @return null
+	 * @return mixed
 	 */
 	public function getDataItem($name)
 	{

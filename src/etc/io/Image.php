@@ -386,6 +386,21 @@ class Image
 		}
 	}
 
+	/**
+	 * Returns true if Imagick is installed and says that the iamge is transparent.
+	 *
+	 * @return bool
+	 */
+	public function isTransparent()
+	{
+		if(craft()->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
+		{
+			return $this->_image->getImagineImageInterface()->getImagick()->getImageAlphaChannel();
+		}
+
+		return false;
+	}
+
 	// Private Methods
 	// =========================================================================
 

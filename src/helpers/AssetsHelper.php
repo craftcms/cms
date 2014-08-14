@@ -40,26 +40,38 @@ class AssetsHelper
 	 * Generate a URL for a given Assets file in a Source Type.
 	 *
 	 * @param BaseAssetSourceType $sourceType
-	 * @param AssetFileModel      $file
-	 * @param string              $transformPath
+	 * @param AssetFileModel $file
 	 *
 	 * @return string
 	 */
-	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file, $transformPath = '')
+	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file)
 	{
 		$baseUrl = $sourceType->getBaseUrl();
 		$folderPath = $file->getFolder()->path;
 		$fileName = $file->filename;
+		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
+
+		return $baseUrl.$folderPath.$fileName.$appendix;
+	}
+
+	/**
+	 * Get appendix for an URL based on it's Source caching settings.
+	 *
+	 * @param BaseAssetSourceType $source
+	 * @param AssetFileModel $file
+	 *
+	 * @return string
+	 */
+	public static function getUrlAppendix(BaseAssetSourceType $source, AssetFileModel $file)
+	{
 		$appendix = '';
 
-		$source = craft()->assetSources->getSourceTypeById($file->sourceId);
 		if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
 		{
 			$appendix = '?mtime='.$file->dateModified->format("YmdHis");
 		}
 
-		return $baseUrl.$folderPath.$transformPath.$fileName.$appendix;
-
+		return $appendix;
 	}
 
 	/**

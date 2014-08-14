@@ -35,15 +35,18 @@ class AssetTransformIndexModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'id'           => AttributeType::Number,
-			'fileId'       => AttributeType::Number,
-			'location'     => AttributeType::String,
-			'sourceId'     => AttributeType::Number,
-			'fileExists'   => AttributeType::Bool,
-			'inProgress'   => AttributeType::Bool,
-			'dateIndexed'  => AttributeType::DateTime,
-			'dateUpdated'  => AttributeType::DateTime,
-			'dateCreated'  => AttributeType::DateTime,
+			'id'             => AttributeType::Number,
+			'fileId'         => AttributeType::Number,
+			'filename'       => AttributeType::Number,
+			'format'         => AttributeType::Number,
+			'detectedFormat' => AttributeType::Number,
+			'location'       => AttributeType::String,
+			'sourceId'       => AttributeType::Number,
+			'fileExists'     => AttributeType::Bool,
+			'inProgress'     => AttributeType::Bool,
+			'dateIndexed'    => AttributeType::DateTime,
+			'dateUpdated'    => AttributeType::DateTime,
+			'dateCreated'    => AttributeType::DateTime,
 		);
 	}
 }
