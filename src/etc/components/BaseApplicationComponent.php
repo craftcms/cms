@@ -21,8 +21,7 @@ class BaseApplicationComponent extends \CApplicationComponent
 	 *
 	 * Craft is overriding this for consistency.
 	 *
-	 * @return bool Whether this application component has been initialized
-	 * (i.e., {@link init()} has been invoked).
+	 * @return bool Whether this application component has been initialized (i.e., {@link init()} has been invoked).
 	 */
 	public function isInitialized()
 	{

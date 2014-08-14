@@ -64,8 +64,7 @@ class DbHelper
 	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, merges in the default config settings
-	 * for the column type, and renames 'maxLength' to 'length'.
+	 * This function normalizes on the 3rd, merges in the default config settings for the column type, and renames 'maxLength' to 'length'.
 	 *
 	 * @param string|array $config
 	 *
@@ -284,8 +283,7 @@ class DbHelper
 	}
 
 	/**
-	 * Returns an index name based on the table, column names, and whether it
-	 * should be unique.
+	 * Returns an index name based on the table, column names, and whether it should be unique.
 	 *
 	 * @param string       $table
 	 * @param string|array $columns
@@ -297,6 +295,7 @@ class DbHelper
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+
 		return static::normalizeDbObjectName($name);
 	}
 
@@ -325,8 +324,7 @@ class DbHelper
 	public static function normalizeDbObjectName($name)
 	{
 		// TODO: MySQL specific
-		// MySQL indexes can't be more than 64 characters
-		// (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
+		// MySQL indexes can't be more than 64 characters (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
 		$maxLength = 64;
 
 		$name = trim($name, '_');

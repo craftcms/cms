@@ -186,8 +186,7 @@ class ElementsService extends BaseApplicationComponent
 
 				if ($scoredSearchResults)
 				{
-					// Order the elements in the exact order that SearchService
-					// returned them in
+					// Order the elements in the exact order that SearchService returned them in
 					$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 				}
 			}
@@ -217,8 +216,8 @@ class ElementsService extends BaseApplicationComponent
 					// Add the field column prefixes
 					foreach ($fieldColumns as $column)
 					{
-						// Avoid matching fields named "asc" or "desc" in the string
-						// "column_name asc" or "column_name desc"
+						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+						// "column_name desc"
 						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
 					}
 				}
@@ -274,10 +273,9 @@ class ElementsService extends BaseApplicationComponent
 							{
 								foreach ($fieldColumns as $column)
 								{
-									// Account for results where multiple fields have
-									// the same handle, but from different columns
-									// e.g. two Matrix block types that each have a
-									// field with the same handle
+									// Account for results where multiple fields have the same handle, but from
+									// different columns e.g. two Matrix block types that each have a field with the
+									// same handle
 
 									$colName = $column['column'];
 									$fieldHandle = $column['handle'];
@@ -365,8 +363,7 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a DbCommand instance ready to search for elements based on a given
-	 * element criteria.
+	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
 	 *
 	 * @param mixed &$criteria
 	 * @param null  &$contentTable
@@ -432,8 +429,7 @@ class ElementsService extends BaseApplicationComponent
 		// Basic element params
 		// ---------------------------------------------------------------------
 
-		// If the 'id' parameter is set to any empty value besides `null`,
-		// don't return anything
+		// If the 'id' parameter is set to any empty value besides `null`, don't return anything
 		if ($criteria->id !== null && empty($criteria->id))
 		{
 			return false;
@@ -572,8 +568,8 @@ class ElementsService extends BaseApplicationComponent
 
 			$query->andWhere($relConditions);
 
-			// If there's only one relation criteria and it's specifically for
-			// grabbing target elements, allow the query to order by the relation sort order
+			// If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
+			// to order by the relation sort order
 			if ($relationParamParser->isRelationFieldQuery())
 			{
 				$query->addSelect('sources1.sortOrder');
@@ -817,10 +813,8 @@ class ElementsService extends BaseApplicationComponent
 	 * Saves an element.
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
-	 * @param bool|null        $validateContent Whether the element's content should
-	 *                                          be validated. If left 'null', it
-	 *                                          will depend on whether the element is
-	 *                                          enabled or not.
+	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it
+	 *                                          will depend on whether the element is enabled or not.
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -922,9 +916,8 @@ class ElementsService extends BaseApplicationComponent
 
 				// Update the locale records and content
 
-				// We're saving all of the element's locales here to ensure that
-				// they all exist and to update the URI in the event that the URL
-				// format includes some value that just changed
+				// We're saving all of the element's locales here to ensure that they all exist and to update the URI in
+				// the event that the URL format includes some value that just changed
 
 				$localeRecords = array();
 
@@ -1102,9 +1095,8 @@ class ElementsService extends BaseApplicationComponent
 						}
 					}
 
-					// Finally, delete any caches involving this element
-					// (Even do this for new elements, since they might pop up in
-					// a cached criteria.)
+					// Finally, delete any caches involving this element. (Even do this for new elements, since they
+					// might pop up in a cached criteria.)
 					craft()->templateCache->deleteCachesByElement($element);
 				}
 			}
@@ -1367,9 +1359,8 @@ class ElementsService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// First delete any structure nodes with these elements, so NestedSetBehavior
-			// can do its thing. We need to go one-by-one in case one of theme deletes
-			// the record of another in the process.
+			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
+			// go one-by-one in case one of theme deletes the record of another in the process.
 			foreach ($elementIds as $elementId)
 			{
 				$records = StructureElementRecord::model()->findAllByAttributes(array(
@@ -1382,9 +1373,8 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
-			// Delete the caches before they drop their elementId relations
-			// (passing `false` because there's no chance this element is suddenly
-			// going to show up in a new query)
+			// Delete the caches before they drop their elementId relations (passing `false` because there's no chance
+			// this element is suddenly going to show up in a new query)
 			craft()->templateCache->deleteCachesByElementId($elementIds, false);
 
 			// Now delete the rows in the elements table

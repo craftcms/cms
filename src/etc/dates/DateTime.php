@@ -114,6 +114,7 @@ class DateTime extends \DateTime
 
 				// Check for a two-digit year
 				$altFormat = str_replace('Y', 'y', $format);
+
 				if (static::createFromFormat($altFormat, $date) !== false)
 				{
 					$format = $altFormat;
@@ -204,8 +205,7 @@ class DateTime extends \DateTime
 
 	/**
 	 * @param string $format
-	 * @param mixed  $timezone The timezone to output the date in (defaults to
-	 *                         the current app timezone).
+	 * @param mixed  $timezone The timezone to output the date in (defaults to the current app timezone).
 	 *
 	 * @return string
 	 */
@@ -338,6 +338,7 @@ class DateTime extends \DateTime
 		$localeData = craft()->i18n->getLocaleData(craft()->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getDatepickerPhpFormat();
+
 		return $this->format($format);
 	}
 
@@ -349,6 +350,7 @@ class DateTime extends \DateTime
 		$localeData = craft()->i18n->getLocaleData(craft()->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getTimepickerPhpFormat();
+
 		return $this->format($format);
 	}
 
@@ -404,8 +406,7 @@ class DateTime extends \DateTime
 				if ($interval->s) $spec .= $interval->s.'S';
 			}
 
-			// If $spec is P at this point, the interval was less than a second.
-			// Accuracy be damned.
+			// If $spec is P at this point, the interval was less than a second. Accuracy be damned.
 			if ($spec === 'P')
 			{
 				$spec = 'PT0S';

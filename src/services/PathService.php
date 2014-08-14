@@ -291,8 +291,7 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the current parsed templates path, taking into account whether this
-	 * is a CP or Site request.
+	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
 	 *
 	 * @return mixed
 	 */

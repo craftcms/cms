@@ -27,13 +27,12 @@ class TokensService extends BaseApplicationComponent
 	/**
 	 * Creates a new token and returns it.
 	 *
-	 * @param mixed         $route      Where matching requests should be routed to. If you
-	 *                                  want them to be routed to a controller action, pass:
+	 * @param mixed $route              Where matching requests should be routed to. If you want them to be routed to a
+	 *                                  controller action, pass:
 	 *                                  `array('action' => "controller/action", 'params' => array('foo' => 'bar'))`.
-	 * @param int|null      $usageLimit The maximum number of times this token can
-	 *                                  be used. Defaults to no limit.
-	 * @param DateTime|null $expiryDate The date that the token expires. Defaults
-	 *                                  to the 'defaultTokenDuration' config setting.
+	 * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
+	 * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
+	 *                                  setting.
 	 *
 	 * @return string|false             The generated token, or `false` if there was an error.
 	 */

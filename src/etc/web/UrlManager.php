@@ -92,14 +92,12 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Determines which controller/action to route the request to.  Routing
-	 * candidates include actual template paths, elements with URIs, and registered
-	 * URL routes.
+	 * Determines which controller/action to route the request to. Routing candidates include actual template paths,
+	 * elements with URIs, and registered URL routes.
 	 *
 	 * @param HttpRequestService $request
 	 *
-	 * @throws HttpException Throws a 404 in the event that we can't figure out
-	 *                       where to route the request.
+	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
 	 * @return string The controller/action path.
 	 */
 	public function parseUrl($request)
@@ -361,8 +359,7 @@ class UrlManager extends \CUrlManager
 	{
 		foreach ($routes as $pattern => $route)
 		{
-			// Escape any unescaped forward slashes
-			// Dumb ol' PHP is having trouble with this one when you use single
+			// Escape any unescaped forward slashes. Dumb ol' PHP is having trouble with this one when you use single
 			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
 
@@ -400,8 +397,7 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Returns whether the current path is "public" (no segments that start with
-	 * the privateTemplateTrigger).
+	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
 	 *
 	 * @return bool
 	 */

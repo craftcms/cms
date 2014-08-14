@@ -21,15 +21,11 @@ class Logger extends \CLogger
 	 * via {@link getLogs}.
 	 *
 	 * @param string $message  The message to be logged
-	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error').
-	 *                         It is case-insensitive.
-	 * @param bool   $force    Whether for force the message to be logged regardless
-	 *                         of category or level
-	 * @param string $category The category of the message (e.g. 'system.web').
-	 *                         It is case-insensitive.
-	 * @param string $plugin   The plugin handle that made the log call. If null,
-	 *                         will be set to 'craft'. Use for determining which
-	 *                         log file to write to.
+	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error'). It is case-insensitive.
+	 * @param bool   $force    Whether for force the message to be logged regardless of category or level.
+	 * @param string $category The category of the message (e.g. 'system.web'). It is case-insensitive.
+	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for
+	 *                         determining which log file to write to.
 	 *
 	 * @return null
 	 */
@@ -56,23 +52,20 @@ class Logger extends \CLogger
 	 *
 	 * Messages may be filtered by log levels and/or categories.
 	 *
-	 * A level filter is specified by a list of levels separated by comma or space
-	 * (e.g. 'trace, error'). A category filter is similar to level filter
-	 * (e.g. 'system, system.web'). A difference is that in category filter you
-	 * can use pattern like 'system.*' to indicate all categories starting with 'system'.
+	 * A level filter is specified by a list of levels separated by comma or space (e.g. 'trace, error'). A category
+	 * filter is similar to level filter (e.g. 'system, system.web'). A difference is that in category filter you can
+	 * use pattern like 'system.*' to indicate all categories starting with 'system'.
 	 *
-	 * If you do not specify level filter, it will bring back logs at all levels.
-	 * The same applies to category filter.
+	 * If you do not specify level filter, it will bring back logs at all levels. The same applies to category filter.
 	 *
-	 * Level filter and category filter are combinational, i.e., only messages
-	 * satisfying both filter conditions will be returned.
+	 * Level filter and category filter are combinational, i.e., only messages satisfying both filter conditions will
+	 * be returned.
 	 *
 	 * @param string       $levels     level filter
 	 * @param array|string $categories category filter
 	 * @param array        $except
 	 *
-	 * @return array The list of messages. Each array element represents one message
-	 * with the following structure:
+	 * @return array The list of messages. Each array element represents one message with the following structure:
 	 *
 	 *     array(
 	 *        [0] => message (string)

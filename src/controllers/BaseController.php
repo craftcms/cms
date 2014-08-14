@@ -19,19 +19,16 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the
-	 * given controller's actions.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 *
-	 * If set to true, anonymous access is allowed for all of the given
-	 * controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 *
-	 * If the value is an array of action names, then you must be logged in for
-	 * any action method except for the ones in the array list.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
 	 *
-	 * If you have a controller that where the majority of action methods will
-	 * be anonymous, but you only want require login on a few, it's best to use
-	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
-	 * individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -41,8 +38,7 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * Include any route params gathered by {@link UrlManager} as controller
-	 * action params.
+	 * Include any route params gathered by {@link UrlManager} as controller action params.
 	 *
 	 * @return array
 	 */
@@ -60,9 +56,8 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns the folder containing view files for this controller.
-	 * Craft overrides this since {@link CController}'s version defaults
-	 * $module to craft().
+	 * Returns the folder containing view files for this controller. Craft overrides this since {@link CController}'s
+	 * version defaults $module to craft().
 	 *
 	 * @return string The folder containing the view files for this controller.
 	 */
@@ -79,10 +74,9 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param mixed $template      The name of the template to load, or a
-	 *                             {@link StringTemplate} object.
-	 * @param array $variables     The variables that should be available to the template
-	 * @param bool  $return        Whether to return the results, rather than output them
+	 * @param mixed $template      The name of the template to load, or a {@link StringTemplate} object.
+	 * @param array $variables     The variables that should be available to the template.
+	 * @param bool  $return        Whether to return the results, rather than output them.
 	 * @param bool  $processOutput
 	 *
 	 * @throws HttpException
@@ -105,10 +99,9 @@ abstract class BaseController extends \CController
 			{
 				// Get the template file's MIME type
 
-				// Safe to assume that findTemplate() will return an actual
-				// template path here, and not `false`. the template didn't exist,
-				// a TemplateLoaderException would have been thrown when
-				// calling craft()->templates->render().
+				// Safe to assume that findTemplate() will return an actual template path here, and not `false`. the
+				// template didn't exist, a TemplateLoaderException would have been thrown when calling
+				// craft()->templates->render().
 				$templateFile = craft()->templates->findTemplate($template);
 				$extension = IOHelper::getExtension($templateFile, 'html');
 
@@ -117,8 +110,7 @@ abstract class BaseController extends \CController
 					$extension = 'html';
 				}
 
-				// If Content-Type is set already, presumably the template set
-				// it with the {% header %} tag.
+				// If Content-Type is set already, presumably the template set it with the {% header %} tag.
 				if (!HeaderHelper::isHeaderSet('Content-Type'))
 				{
 					HeaderHelper::setContentTypeByExtension($extension);
@@ -158,8 +150,7 @@ abstract class BaseController extends \CController
 				}
 				else
 				{
-					// If this is a non-HTML, non-Twig request, remove the extra
-					// logging information.
+					// If this is a non-HTML, non-Twig request, remove the extra logging information.
 					craft()->log->removeRoute('WebLogRoute');
 					craft()->log->removeRoute('ProfileLogRoute');
 				}
@@ -271,8 +262,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param mixed $object Object containing properties that should be parsed
-	 *                      for in the URL.
+	 * @param mixed $object Object containing properties that should be parsed for in the URL.
 	 *
 	 * @return null
 	 */
@@ -320,8 +310,8 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Checks if a controller has overridden allowAnonymous either as an array with
-	 * actions to allow anonymous access to or as a bool that applies to all actions.
+	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access
+	 * to or as a bool that applies to all actions.
 	 *
 	 * @param \CAction $action
 	 *

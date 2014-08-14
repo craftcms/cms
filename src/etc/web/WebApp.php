@@ -65,11 +65,11 @@ class WebApp extends \CWebApplication
 	// =========================================================================
 
 	/**
-	 * The language that the application is written in. This mainly refers to the
-	 * language that the messages and view files are in.
+	 * The language that the application is written in. This mainly refers to the language that the messages and view
+	 * files are in.
      *
-	 * Setting it here even though CApplication already defaults to 'en_us', so
-	 * it's clear and in case they change it down the road.
+	 * Setting it here even though CApplication already defaults to 'en_us', so it's clear and in case they change it
+	 * down the road.
 	 *
 	 * @var string
 	 */
@@ -127,8 +127,7 @@ class WebApp extends \CWebApplication
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
 
-		// Initialize Cache, HttpRequestService and LogRouter right away
-		// (order is important)
+		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('request');
 		$this->getComponent('log');
@@ -206,9 +205,8 @@ class WebApp extends \CWebApplication
 		// Set the edition components
 		$this->_setEditionComponents();
 
-		// isCraftDbMigrationNeeded will return true if we're in the middle of a
-		// manual or auto-update for Craft itself. If we're in maintenance mode
-		// and it's not a site request, show the manual update template.
+		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
 			(craft()->isInMaintenanceMode() && $this->request->isCpRequest()) ||
@@ -219,8 +217,7 @@ class WebApp extends \CWebApplication
 			$this->_processUpdateLogic();
 		}
 
-		// If there's a new version, but the schema hasn't changed, just update
-		// the info table
+		// If there's a new version, but the schema hasn't changed, just update the info table
 		if ($this->updates->hasCraftBuildChanged())
 		{
 			$this->updates->updateCraftVersionInfo();
@@ -259,16 +256,14 @@ class WebApp extends \CWebApplication
 				$this->_processUpdateLogic();
 			}
 
-			// If this is a non-login, non-validate, non-setPassword CP request,
-			// make sure the user has access to the CP
+			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
 			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
 			{
 				// Make sure the user has access to the CP
 				$this->userSession->requireLogin();
 				$this->userSession->requirePermission('accessCp');
 
-				// If they're accessing a plugin's section, make sure that they
-				// have permission to do so
+				// If they're accessing a plugin's section, make sure that they have permission to do so
 				$firstSeg = $this->request->getSegment(1);
 
 				if ($firstSeg)
@@ -326,8 +321,7 @@ class WebApp extends \CWebApplication
 			}
 			else
 			{
-				// We tried to get the language, but something went wrong. Use
-				// fallback to prevent infinite loop.
+				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
 				$this->setLanguage($this->_getFallbackLanguage());
 				$this->_gettingLanguage = false;
 			}
@@ -377,8 +371,8 @@ class WebApp extends \CWebApplication
 
 		$routeParts = array_filter(explode('/', $route));
 
-		// First check if the controller class is a combination of the first two segments.
-		// That way FooController won't steal all of Foo_BarController's requests.
+		// First check if the controller class is a combination of the first two segments. That way FooController won't
+		// steal all of Foo_BarController's requests.
 		if (isset($routeParts[1]))
 		{
 			$controllerId = ucfirst($routeParts[0]).'_'.ucfirst($routeParts[1]);
@@ -415,9 +409,8 @@ class WebApp extends \CWebApplication
 	/**
 	 * Gets the viewPath for the incoming request.
 	 *
-	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path
-	 * depends on the request type, which is initialized after web application,
-	 * so we override getViewPath().
+	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path depends on the request type, which is
+	 * initialized after web application, so we override getViewPath().
 	 *
 	 * @return string
 	 */
@@ -505,7 +498,9 @@ class WebApp extends \CWebApplication
 
 			// skip the first 3 stacks as they do not tell the error position
 			if(count($trace) > 3)
+			{
 				$trace = array_slice($trace, 3);
+			}
 
 			foreach($trace as $i => $t)
 			{
@@ -601,8 +596,7 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Attaches an event listener, or remembers it for later if the component
-	 * has not been initialized yet.
+	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
 	 *
 	 * @param string $event
 	 * @param mixed  $handler
@@ -632,8 +626,7 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Override getComponent() so we can attach any pending events if the
-	 * component is getting initialized.
+	 * Override getComponent() so we can attach any pending events if the component is getting initialized.
 	 *
 	 * @param string $id
 	 * @param bool   $createIfNull
@@ -669,8 +662,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior},
-	 * because Yii will check {@link CApplication::getTimeZone()} instead.
+	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior}, because Yii will check
+	 * {@link CApplication::getTimeZone()} instead.
 	 *
 	 * @return string
 	 */
@@ -680,8 +673,7 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Tries to find a match between the browser's preferred locales and the locales
-	 * Craft has been translated into.
+	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
 	 *
 	 * @return string
 	 */
@@ -747,8 +739,7 @@ class WebApp extends \CWebApplication
 			// Don't want to log anything on a resource request.
 			$this->log->removeRoute('FileLogRoute');
 
-			// Get the path segments, except for the first one which we already
-			// know is "resources"
+			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 			$path = implode('/', $segs);
 
@@ -851,8 +842,7 @@ class WebApp extends \CWebApplication
 					// Place this within a try/catch in case userSession is being fussy.
 					try
 					{
-						// If the user is logged in *and* has a primary language
-						// set, use that
+						// If the user is logged in *and* has a primary language set, use that
 						$user = $this->userSession->getUser();
 
 						if ($user && $user->preferredLocale)
@@ -865,8 +855,7 @@ class WebApp extends \CWebApplication
 						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
 					}
 
-					// Otherwise check if the browser's preferred language matches
-					// any of the site locales
+					// Otherwise check if the browser's preferred language matches any of the site locales
 					$browserLanguages = $this->request->getBrowserLanguages();
 
 					if ($browserLanguages)
@@ -905,8 +894,7 @@ class WebApp extends \CWebApplication
 	 */
 	private function _getFallbackLanguage()
 	{
-		// See if we have the CP translated in one of the user's browsers
-		// preferred language(s)
+		// See if we have the CP translated in one of the user's browsers preferred language(s)
 		$language = $this->getTranslatedBrowserLanguage();
 
 		// Default to the source language.
@@ -953,9 +941,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * If there is not cached app path or the existing cached app path does not
-	 * match the current one, let’s run the requirement checker again. This should
-	 * catch the case where an install is deployed to another server that doesn’t
+	 * If there is not cached app path or the existing cached app path does not match the current one, let’s run the
+	 * requirement checker again. This should catch the case where an install is deployed to another server that doesn’t
 	 * meet Craft’s minimum requirements.
 	 *
 	 * @return null
@@ -1040,14 +1027,13 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Use our own error template in case the custom 503 template comes
-			// with any SQL queries we're not ready for
+			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for.
 			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 
 			throw new HttpException(503);
 		}
 
-		// YOU SHALL NOT PASS
+		// <Gandalf> YOU SHALL NOT PASS!
 		$this->end();
 	}
 }

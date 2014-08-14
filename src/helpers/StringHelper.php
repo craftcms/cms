@@ -126,8 +126,7 @@ class StringHelper
 
 		$randomString = '';
 
-		// count the number of chars in the valid chars string so we know how
-		// many choices we have
+		// count the number of chars in the valid chars string so we know how many choices we have
 		$numValidChars = mb_strlen($validChars);
 
 		// repeat the steps until we've created a string of the right length
@@ -162,8 +161,8 @@ class StringHelper
 			// 16 bits for "time_hi_and_version", four most significant bits holds version number 4
 			mt_rand(0, 0x0fff) | 0x4000,
 
-			// 16 bits, 8 bits for "clk_seq_hi_res", 8 bits for "clk_seq_low",
-			// two most significant bits holds zero and one for variant DCE1.1
+			// 16 bits, 8 bits for "clk_seq_hi_res", 8 bits for "clk_seq_low", two most significant bits holds zero and
+			// one for variant DCE1.1
 			mt_rand(0, 0x3fff) | 0x8000,
 
 			// 48 bits for "node"
@@ -272,8 +271,7 @@ class StringHelper
 		$strlen = mb_strlen($str);
 		$asciiCharMap = static::getAsciiCharMap();
 
-		// If this looks funky, it's because mb_strlen is garbage.
-		// For example, it returns 6 for this string: "ü.png"
+		// If this looks funky, it's because mb_strlen is garbage. For example, it returns 6 for this string: "ü.png"
 		for ($counter = 0; $counter < $strlen; $counter++)
 		{
 			if (!isset($str[$counter]))
@@ -376,8 +374,8 @@ class StringHelper
 	 */
 	public static function convertToUTF8($string)
 	{
-		// Don't wrap in a class_exists in case the server already has it's own
-		// version of HTMLPurifier and they have open_basedir restrictions
+		// Don't wrap in a class_exists in case the server already has it's own version of HTMLPurifier and they have
+		// open_basedir restrictions
 		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
 
 		// If it's already a UTF8 string, just clean and return it
@@ -418,9 +416,8 @@ class StringHelper
 		{
 			static::$_iconv = false;
 
-			// Check if iconv is installed.
-			// Note we can't just use HTMLPurifier_Encoder::iconvAvailable()
-			//because they don't consider iconv "installed" if it's there but "unusable".
+			// Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
+			// don't consider iconv "installed" if it's there but "unusable".
 			if (!function_exists('iconv'))
 			{
 				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
@@ -463,8 +460,8 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware upper-case version of a string. Note: Not using
-	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
+	 * Returns a multibyte aware upper-case version of a string. Note: Not using mb_strtoupper because of
+	 * {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
 	 * @param string $string
 	 *
@@ -476,8 +473,8 @@ class StringHelper
 	}
 
 	/**
-	 * Returns a multibyte aware lower-case version of a string. Note: Not using
-	 * mb_strtoupper because of {@see https://bugs.php.net/bug.php?id=47742}.
+	 * Returns a multibyte aware lower-case version of a string. Note: Not using mb_strtoupper because of
+	 * {@see https://bugs.php.net/bug.php?id=47742}.
 	 *
 	 * @param string $string
 	 *

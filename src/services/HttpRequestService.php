@@ -119,8 +119,8 @@ class HttpRequestService extends \CHttpRequest
 		// Is this a paginated request?
 		if ($this->_segments)
 		{
-			// Match against the entire path string as opposed to just the last segment
-			// so that we can support "/page/2"-style pagination URLs
+			// Match against the entire path string as opposed to just the last segment so that we can support
+			// "/page/2"-style pagination URLs
 			$path = implode('/', $this->_segments);
 			$pageTrigger = preg_quote(craft()->config->get('pageTrigger'), '/');
 
@@ -299,10 +299,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET parameter value, or the entire GET array if no name
-	 * is specified. If $name is specified and the GET parameter does not exist,
-	 * $defaultValue will be returned. $name can also represent a nested param
-	 * using dot syntax, e.g. getQuery('fields.body')
+	 * Returns the named GET parameter value, or the entire GET array if no name is specified. If $name is specified and
+	 * the GET parameter does not exist, $defaultValue will be returned. $name can also represent a nested param using
+	 * dot syntax, e.g. getQuery('fields.body')
 	 *
 	 * @param string|null $name
 	 * @param string|null $defaultValue
@@ -315,7 +314,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET parameter value, or throws an exception if it's not set
+	 * Returns the named GET parameter value, or throws an exception if it's not set.
 	 *
 	 * @param string $name
 	 *
@@ -337,10 +336,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named POST parameter value, or the entire POST array if no name
-	 * is specified. If $name is specified and the POST parameter does not exist,
-	 * $defaultValue will be returned. $name can also represent a nested param
-	 * using dot syntax, e.g. getPost('fields.body')
+	 * Returns the named POST parameter value, or the entire POST array if no name is specified. If $name is specified
+	 * and the POST parameter does not exist, $defaultValue will be returned. $name can also represent a nested param
+	 * using dot syntax, e.g. getPost('fields.body').
 	 *
 	 * @param string|null $name
 	 * @param string|null $defaultValue
@@ -353,8 +351,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET or POST parameter value, or throws an exception if
-	 * it's not set.
+	 * Returns the named GET or POST parameter value, or throws an exception if it's not set.
 	 *
 	 * @param string $name
 	 *
@@ -398,8 +395,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET or POST parameter value, or throws an exception if
-	 * it's not set.
+	 * Returns the named GET or POST parameter value, or throws an exception if it's not set.
 	 *
 	 * @param string $name
 	 *
@@ -421,8 +417,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether the request is coming from a mobile browser. Detection
-	 * script courtesy of {@link http://detectmobilebrowsers.com}
+	 * Returns whether the request is coming from a mobile browser. Detection script courtesy of
+	 * {@link http://detectmobilebrowsers.com}
 	 *
 	 * Last updated: 2013-02-04
 	 *
@@ -456,9 +452,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the user preferred languages sorted by preference. The returned
-	 * language IDs will be canonicalized using {@link LocaleData::getCanonicalID}.
-	 * This method returns false if the user does not have language preferences.
+	 * Returns the user preferred languages sorted by preference. The returned language IDs will be canonicalized using
+	 * {@link LocaleData::getCanonicalID}. This method returns false if the user does not have language preferences.
 	 *
 	 * @return array The user preferred languages.
 	 */
@@ -513,8 +508,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Sends a file to the user.
 	 *
-	 * We're overriding this from \CHttpRequest so we can have more control
-	 * over the headers.
+	 * We're overriding this from {@link CHttpRequest::sendFile()} so we can have more control over the headers.
 	 *
 	 * @param string     $path
 	 * @param string     $content
@@ -528,9 +522,8 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$fileName = IOHelper::getFileName($path, true);
 
-		// Clear the output buffer to prevent corrupt downloads.
-		// Need to check the OB status first, or else some PHP versions will
-		// throw an E_NOTICE since we have a custom error handler
+		// Clear the output buffer to prevent corrupt downloads. Need to check the OB status first, or else some PHP
+		// versions will throw an E_NOTICE since we have a custom error handler
 		// (http://pear.php.net/bugs/bug.php?id=9670)
 		if (ob_get_length() !== false)
 		{
@@ -572,8 +565,7 @@ class HttpRequestService extends \CHttpRequest
 
 			$range = str_replace('bytes=', '', $_SERVER['HTTP_RANGE']);
 
-			// range requests starts from "-", so it means that data must be
-			// dumped the end point.
+			// range requests starts from "-", so it means that data must be dumped the end point.
 			if ($range[0] === '-')
 			{
 				$contentStart = $fileSize - mb_substr($range, 1);
@@ -590,9 +582,9 @@ class HttpRequestService extends \CHttpRequest
 				}
 			}
 
-			/* Check the range and make sure it's treated according to the specs.
-			 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-			 */
+			// Check the range and make sure it's treated according to the specs.
+			// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+
 			// End bytes can not be larger than $end.
 			$contentEnd = ($contentEnd > $fileSize) ? $fileSize - 1 : $contentEnd;
 
@@ -656,9 +648,8 @@ class HttpRequestService extends \CHttpRequest
 
 		if ($terminate)
 		{
-			// Clean up the application first because the file downloading could
-			// take long time which may cause timeout of some resources
-			// (such as DB connection)
+			// Clean up the application first because the file downloading could take long time which may cause timeout
+			// of some resources (such as DB connection)
 			ob_start();
 			Craft::app()->end(0, false);
 			ob_end_clean();
@@ -703,9 +694,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	// Rename getIsX() => isX() functions for consistency
-	//  - We realize that these methods could be called as if they're properties
-	//    (using CComponent's magic getter) but we're trying to resist the temptation
-	//    of magic methods for the sake of code obviousness.
+	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter) but
+    //    we're trying to resist the temptation of magic methods for the sake of code obviousness.
 
 	/**
 	 * @return bool
@@ -780,13 +770,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Retrieves the best guess of the client's actual IP address taking into
-	 * account numerous HTTP proxy headers due to variations in how different ISPs
-	 * handle IP addresses in headers between hops.
+	 * Retrieves the best guess of the client's actual IP address taking into account numerous HTTP proxy headers due to
+	 * variations in how different ISPs handle IP addresses in headers between hops.
 	 *
-	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed,
-	 * this method should not be used when you need a trusted source of information
-	 * for you IP address... use $_SERVER['REMOTE_ADDR'] instead.
+	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
+	 * need a trusted source of information for you IP address... use $_SERVER['REMOTE_ADDR'] instead.
 	 */
 	public function getIpAddress()
 	{
@@ -878,8 +866,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the part of the querystring minus any p= parameter regardless of
-	 * whether PATH_INFO is enabled or not.
+	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
 	 *
 	 * @return string
 	 */
@@ -1009,8 +996,8 @@ class HttpRequestService extends \CHttpRequest
 				$this->_isResourceRequest = true;
 			}
 
-			// If the first path segment is the action trigger word, or the logout
-			// trigger word (special case), it's an action request
+			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an
+			// action request
 			else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
 			{
 				$this->_isActionRequest = true;
@@ -1033,8 +1020,7 @@ class HttpRequestService extends \CHttpRequest
 				}
 			}
 
-			// If there's a non-empty 'action' param (either in the query string
-			// or post data), it's an action request
+			// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
 			else if (($action = $this->getParam('action')) !== null)
 			{
 				$this->_isActionRequest = true;

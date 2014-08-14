@@ -2,8 +2,7 @@
 namespace Craft;
 
 /**
- * The TagElementType class is responsible for implementing and defining
- * tags as a native element type in Craft.
+ * The TagElementType class is responsible for implementing and definingtags as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

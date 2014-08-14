@@ -2,8 +2,8 @@
 namespace Craft;
 
 /**
- * The CategoryElementType class is responsible for implementing and defining
- * categories as a native element type in Craft.
+ * The CategoryElementType class is responsible for implementing and defining categories as a native element type in
+ * Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -268,8 +268,7 @@ class CategoryElementType extends BaseElementType
 	 *
 	 * @param BaseElementModel
 	 *
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
+	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element)
@@ -309,8 +308,7 @@ class CategoryElementType extends BaseElementType
 			// Update its URI
 			craft()->elements->updateElementSlugAndUri($element);
 
-			// Make sure that each of the category's ancestors are related
-			// wherever the category is related
+			// Make sure that each of the category's ancestors are related wherever the category is related
 			$newRelationValues = array();
 
 			$ancestorIds = $element->getAncestors()->ids();

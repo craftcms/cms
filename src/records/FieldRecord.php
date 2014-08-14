@@ -140,8 +140,8 @@ class FieldRecord extends BaseRecord
 	{
 		$attributeConfigs = parent::getAttributeConfigs();
 
-		// Field handles must be <= 58 chars so that with "field_" prepended,
-		// they're <= 64 chars (MySQL's column name limit).
+		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column
+		// name limit).
 		$attributeConfigs['handle']['maxLength'] = 64 - strlen(craft()->content->fieldColumnPrefix);
 
 		return $attributeConfigs;

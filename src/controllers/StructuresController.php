@@ -2,11 +2,10 @@
 namespace Craft;
 
 /**
- * The StructuresController class is a controller that handles structure related
- * tasks such as moving an element within a structure.
+ * The StructuresController class is a controller that handles structure related tasks such as moving an element within
+ * a structure.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

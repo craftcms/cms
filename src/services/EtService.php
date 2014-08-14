@@ -228,7 +228,8 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's unknown.
+	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's
+	 * unknown.
 	 *
 	 * @return string|null|false
 	 */

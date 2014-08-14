@@ -166,12 +166,10 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
-	 * @param string $table   The name of the table (including prefix, or
-	 *                        wrapped in "{{" and "}}").
+	 * @param string $table   The name of the table (including prefix, or wrapped in "{{" and "}}").
 	 * @param array  $columns An array of columns.
 	 * @param string $options Any additional SQL to append to the end of the query.
-	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM").
-	 *                        Default is "InnoDb".
+	 * @param string $engine  The engine the table should use ("InnoDb" or "MyISAM"). Default is "InnoDb".
 	 *
 	 * @return string The full SQL for creating a table.
 	 */

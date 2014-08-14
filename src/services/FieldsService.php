@@ -194,8 +194,8 @@ class FieldsService extends BaseApplicationComponent
 			return false;
 		}
 
-		// Manually delete the fields (rather than relying on cascade deletes)
-		// so we have a chance to delete the content columns
+		// Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
+		// content columns
 		foreach ($groupRecord->fields as $fieldRecord)
 		{
 			$field = FieldModel::populateModel($fieldRecord);
@@ -493,8 +493,7 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
-					// Make sure we're working with the latest data in the case
-					// of a renamed field.
+					// Make sure we're working with the latest data in the case of a renamed field.
 					craft()->db->schema->refresh();
 
 					if (craft()->db->columnExists($contentTable, $oldColumnName))
@@ -524,8 +523,7 @@ class FieldsService extends BaseApplicationComponent
 
 				if (!$isNewField)
 				{
-					// Save the old field handle on the model in case the field
-					// type needs to do something with it.
+					// Save the old field handle on the model in case the field type needs to do something with it.
 					$field->oldHandle = $fieldRecord->getOldHandle();
 
 					unset($this->_fieldsByContextAndHandle[$field->context][$field->oldHandle]);

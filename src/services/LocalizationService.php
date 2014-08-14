@@ -35,8 +35,8 @@ class LocalizationService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * Returns an array of all known locales. The list of known locales is based
-	 * on whatever files exist in craft/app/framework/i18n/data/.
+	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in
+	 * craft/app/framework/i18n/data/.
 	 *
 	 * @return array An array of LocaleModel objects.
 	 */
@@ -54,8 +54,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of locales that Craft is translated into. The list of
-	 * locales is based on whatever files exist in craft/app/translations/.
+	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
+	 * in craft/app/translations/.
 	 *
 	 * @return array An array of {@link LocaleModel} objects.
 	 */
@@ -85,8 +85,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the locale IDs which Craft has been translated into.
-	 * The list of locales is based on whatever files exist in craft/app/translations/.
+	 * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
+	 * files exist in craft/app/translations/.
 	 *
 	 * @return array An array of locale IDs.
 	 */
@@ -104,8 +104,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the site locales. The list of locales is based on
-	 * whatever was defined in Settings > Locales in the CP.
+	 * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the control panel.
 	 *
 	 * @return array An array of {@link LocaleModel} objects.
 	 */
@@ -140,8 +140,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale. The primary locale is whatever is listed
-	 * first in Settings > Locales in the CP.
+	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
+	 * control panel.
 	 *
 	 * @return LocaleModel A {@link LocaleModel} object representing the primary locale.
 	 */
@@ -152,8 +152,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale ID. The primary locale is whatever is
-	 * listed first in Settings > Locales in the CP.
+	 * Returns the site's primary locale ID. The primary locale is whatever is listed first in Settings > Locales in the
+	 * control panel.
 	 *
 	 * @return string The primary locale ID.
 	 */
@@ -163,8 +163,8 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the site locale IDs. The list of locales is based on
-	 * whatever was defined in Settings > Locales in the CP.
+	 * Returns an array of the site locale IDs. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the control panel.
 	 *
 	 * @return array An array of locale IDs.
 	 */
@@ -332,9 +332,8 @@ class LocalizationService extends BaseApplicationComponent
 
 				if ($elementIds)
 				{
-					// To be sure we don't hit any unique constraint MySQL errors,
-					// first make sure there are no rows for these elements that don't
-					// currently use the old primary locale
+					// To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
+					// these elements that don't currently use the old primary locale
 					$deleteConditions = array('and', array('in', 'elementId', $elementIds), 'locale != :locale');
 					$deleteParams = array(':locale' => $oldPrimaryLocaleId);
 

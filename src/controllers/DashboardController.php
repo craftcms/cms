@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The DashboardController class is a controller that handles various dashboard
- * related actions including managing widgets, getting {@link FeedWidget} feeds
- * and sending {@link GetHelpWidget} support ticket requests.
+ * The DashboardController class is a controller that handles various dashboardrelated actions including managing
+ * widgets, getting {@link FeedWidget} feeds and sending {@link GetHelpWidget} support ticket requests.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -281,8 +279,7 @@ class DashboardController extends BaseController
 			{
 				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), LogLevel::Warning);
 
-				// There was a problem zipping, so reset the params and just
-				// send the email without the attachment.
+				// There was a problem zipping, so reset the params and just send the email without the attachment.
 				$requestParams = $requestParamDefaults;
 			}
 

@@ -208,8 +208,7 @@ class SectionsService extends BaseApplicationComponent
 	 */
 	public function getSectionById($sectionId)
 	{
-		// If we've already fetched all sections we can save ourselves a trip to
-		// the DB for section IDs that don't exist
+		// If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
 		if (!$this->_fetchedAllSections &&
 			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
 		)
@@ -253,6 +252,7 @@ class SectionsService extends BaseApplicationComponent
 		{
 			$section = new SectionModel($result);
 			$this->_sectionsById[$section->id] = $section;
+
 			return $section;
 		}
 	}
@@ -455,9 +455,8 @@ class SectionsService extends BaseApplicationComponent
 					}
 				}
 
-				// Might as well update our cache of the section while we have it.
-				// (It's possible that the URL format includes {section.handle}
-				// or something...)
+				// Might as well update our cache of the section while we have it. (It's possible that the URL format
+				//includes {section.handle} or something...)
 				$this->_sectionsById[$section->id] = $section;
 
 				// Update the sections_i18n table
@@ -505,8 +504,8 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Drop any locales that are no longer being used,
-					// as well as the associated entry/element locale rows
+					// Drop any locales that are no longer being used, as well as the associated entry/element locale
+					// rows
 
 					$droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
@@ -524,8 +523,7 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Let's grab all of the entry type IDs to save ourselves a
-					// query down the road if this is a Single
+					// Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
 					$entryTypeIds = craft()->db->createCommand()
 						->select('id')
 						->from('entrytypes')
@@ -550,16 +548,15 @@ class SectionsService extends BaseApplicationComponent
 					$entryTypeId = $entryType->id;
 				}
 
-				// Now, regardless of whether the section type changed or not,
-				// let the section type make sure everything's cool
+				// Now, regardless of whether the section type changed or not, let the section type make sure
+				// everything's cool
 
 				switch ($section->type)
 				{
 					case SectionType::Single:
 					{
-						// In a nut, we want to make sure that there is one and
-						// only one Entry Type and Entry for this section. We also
-						// want to make sure the entry has rows in the i18n tables
+						// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this
+						// section. We also want to make sure the entry has rows in the i18n tables
 						// for each of the sections' locales.
 
 						$singleEntryId = null;
@@ -781,8 +778,7 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether a section's entries have URLs, and if the section's
-	 * template path is valid.
+	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
 	 *
 	 * @param SectionModel $section
 	 *
@@ -1088,6 +1084,7 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	// General stuff
+	// ------------------------------------------------------------------------
 
 	/**
 	 * Returns whether a homepage section exists.

@@ -76,6 +76,7 @@ class SectionsVariable
 	 * Returns a section by its handle.
 	 *
 	 * @param string $handle
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionByHandle($handle)

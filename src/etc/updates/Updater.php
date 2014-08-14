@@ -410,9 +410,8 @@ class Updater
 	}
 
 	/**
-	 * Attempt to backup each of the update manifest files by copying them to a
-	 * file with the same name with a .bak extension. If there is an exception
-	 * thrown, we attempt to roll back all of the changes.
+	 * Attempt to backup each of the update manifest files by copying them to a file with the same name with a .bak
+	 * extension. If there is an exception thrown, we attempt to roll back all of the changes.
 	 *
 	 * @param string $unzipFolder
 	 *

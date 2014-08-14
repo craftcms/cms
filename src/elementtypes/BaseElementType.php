@@ -2,8 +2,7 @@
 namespace Craft;
 
 /**
- * The base class for all Craft element types. Any element type must extend
- * this class.
+ * The base class for all Craft element types. Any element type must extend this class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -18,8 +17,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// =========================================================================
 
 	/**
-	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by
-	 * the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
 	 *
 	 * @var string
 	 */
@@ -231,8 +229,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					}
 					else
 					{
-						// Add some <wbr> tags in there so it doesn't all have
-						// to be on one line
+						// Add some <wbr> tags in there so it doesn't all have to be on one line
 						$find = array('/');
 						$replace = array('/<wbr>');
 
@@ -418,8 +415,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 *
 	 * @param BaseElementModel
 	 *
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
+	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element)

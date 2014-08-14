@@ -84,8 +84,7 @@ class RichTextFieldType extends BaseFieldType
 	{
 		if ($value)
 		{
-			// Prevent everyone from having to use the |raw filter when
-			// outputting RTE content
+			// Prevent everyone from having to use the |raw filter when outputting RTE content
 			$charset = craft()->templates->getTwig()->getCharset();
 			return new RichTextData($value, $charset);
 		}
@@ -124,8 +123,7 @@ class RichTextFieldType extends BaseFieldType
 
 		if (strpos($value, '{') !== false)
 		{
-			// Preserve the ref tags with hashes
-			// {type:id:url} => {type:id:url}#type:id
+			// Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
 			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})\2/', function($matches)
 			{
 				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];

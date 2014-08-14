@@ -15,6 +15,7 @@ abstract class BaseElementModel extends BaseModel
 {
 	// Constants
 	// =========================================================================
+
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
@@ -163,8 +164,8 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public static function populateModel($values)
 	{
-		// Strip out the element record attributes if this is getting called from
-		// a child class based on an Active Record result eager-loaded with the ElementRecord
+		// Strip out the element record attributes if this is getting called from a child class based on an Active
+		// Record result eager-loaded with the ElementRecord
 		if (isset($values['element']))
 		{
 			$elementAttributes = $values['element'];
@@ -274,7 +275,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns an anchor prefilled with this element's URL and title.
+	 * Returns an anchor pre-filled with this element's URL and title.
 	 *
 	 * @return \Twig_Markup
 	 */
@@ -523,17 +524,16 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's children.
 	 *
-	 * @param mixed $field If this function is being used in the deprecated
-	 *                     relationship-focused way, $field defines which field
-	 *                     (if any) to limit the relationships by.
+	 * @param mixed $field If this function is being used in the deprecated relationship-focused way, $field defines
+	 *                     which field (if any) to limit the relationships by.
 	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getChildren($field = null)
 	{
 		// TODO: deprecated
-		// Maintain support for the deprecated relationship-focussed getChildren()
-		// function for the element types that were around before Craft 1.3
+		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that
+		// were around before Craft 1.3
 		if (
 			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
 			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
@@ -848,8 +848,8 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (is_string($content))
 		{
-			// Keep track of where the post data is coming from,
-			// in case any field types need to know where to look in $_FILES
+			// Keep track of where the post data is coming from, in case any field types need to know where to
+			// look in $_FILES
 			$this->setContentPostLocation($content);
 
 			$content = craft()->request->getPost($content, array());
@@ -905,8 +905,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns the raw content from the post data, before it was passed through
-	 * {@link prepValueFromPost()}.
+	 * Returns the raw content from the post data, before it was passed through {@link prepValueFromPost()}.
 	 *
 	 * @return array
 	 */
@@ -1082,11 +1081,12 @@ abstract class BaseElementModel extends BaseModel
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
 			{
-				// Create a new criteria regardless of whether they passed in an
-				// ElementCriteriaModel so that our 'id' modification doesn't stick
+				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel so that our 'id'
+				// modification doesn't stick
 				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
 
 				$criteria->id = $elementIds[$key+$dir];
+
 				return $criteria->first();
 			}
 		}

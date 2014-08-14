@@ -2,8 +2,7 @@
 namespace Craft;
 
 /**
- * The EntryElementType class is responsible for implementing and defining
- * entries as a native element type in Craft.
+ * The EntryElementType class is responsible for implementing and defining entries as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -544,8 +543,7 @@ class EntryElementType extends BaseElementType
 	 *
 	 * @param BaseElementModel $element
 	 *
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
+	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element)

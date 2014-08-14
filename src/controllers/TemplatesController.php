@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The TemplatesController class is a controller that handles various template
- * rendering related tasks for both the control panel and front-end of a Craft
- * site.
+ * The TemplatesController class is a controller that handles various template rendering related tasks for both the
+ * control panel and front-end of a Craft site.
  *
- * Note that all actions in the controller are open to do not require an
- * authenticated Craft session in order to execute.
+ * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -22,19 +20,16 @@ class TemplatesController extends BaseController
 	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the
-	 * given controller's actions.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 *
-	 * If set to true, anonymous access is allowed for all of the given
-	 * controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 *
-	 * If the value is an array of action names, then you must be logged in for
-	 * any action method except for the ones in the array list.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
 	 *
-	 * If you have a controller that where the majority of action methods will
-	 * be anonymous, but you only want require login on a few, it's best to use
-	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
-	 * individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
 	 *
 	 * @var bool
 	 */

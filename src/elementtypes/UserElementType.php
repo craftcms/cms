@@ -2,8 +2,7 @@
 namespace Craft;
 
 /**
- * The UserElementType class is responsible for implementing and defining
- * users as a native element type in Craft.
+ * The UserElementType class is responsible for implementing and defining users as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -264,13 +263,11 @@ class UserElementType extends BaseElementType
 					->queryScalar();
 			}
 
-			// Find the users that have that permission, either directly or
-			// through a group
+			// Find the users that have that permission, either directly or through a group
 			$permittedUserIds = array();
 
-			// If the permission hasn't been assigned to any groups/users before,
-			// it won't have an ID. Don't bail though, since we still want to
-			// look for admins.
+			// If the permission hasn't been assigned to any groups/users before, it won't have an ID. Don't bail
+			// though, since we still want to look for admins.
 			if ($permissionId)
 			{
 				// Get the user groups that have that permission
@@ -317,8 +314,8 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because
-			// DbHelper::parseParam() chokes with large arrays.
+			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
+			// arrays.
 			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 
@@ -339,8 +336,8 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because
-			// DbHelper::parseParam() chokes with large arrays.
+			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
+			// arrays.
 			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 

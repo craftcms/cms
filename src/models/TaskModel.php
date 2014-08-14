@@ -31,7 +31,7 @@ class TaskModel extends BaseComponentModel
 	 */
 	public function getDescription()
 	{
-		// Was a description explicitely set when creating this task?
+		// Was a description explicitly set when creating this task?
 		$description = $this->getAttribute('description');
 
 		if (!$description)

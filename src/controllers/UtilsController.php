@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The UtilsController class is a controller that handles various utility
- * related tasks such as displaying server info, php info, log files and
- * deprecation errors in the control panel.
+ * The UtilsController class is a controller that handles various utility related tasks such as displaying server info,
+ * php info, log files and deprecation errors in the control panel.
  *
- * Note that all actions in this controller require administrator access in
- * order to execute.
+ * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -22,8 +20,7 @@ class UtilsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before
-	 * the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -295,8 +292,7 @@ class UtilsController extends BaseController
 
 							$logEntryModel->server = $this->_cleanUpArray(array_slice($rowContents, $serverStart, $profileStart - $serverStart - 1));
 
-							// We can't just grab the profile info, we need to do
-							// some extra processing on it.
+							// We can't just grab the profile info, we need to do some extra processing on it.
 							$tempProfile = array_slice($rowContents, $profileStart);
 
 							$profile = array();

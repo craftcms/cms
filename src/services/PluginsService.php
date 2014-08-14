@@ -130,8 +130,7 @@ class PluginsService extends BaseApplicationComponent
 				// Sort plugins by name
 				array_multisort($names, $this->_enabledPlugins);
 
-				// Now that all of the components have been imported,
-				// initialize all the plugins
+				// Now that all of the components have been imported, initialize all the plugins
 				foreach ($this->_enabledPlugins as $plugin)
 				{
 					$plugin->init();
@@ -396,9 +395,8 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Uninstalls a plugin by removing it's record from the database, deleting
-	 * it's tables and foreign keys and running the plugin's uninstall method if
-	 * it exists.
+	 * Uninstalls a plugin by removing it's record from the database, deleting it's tables and foreign keys and running
+	 * the plugin's uninstall method if it exists.
 	 *
 	 * @param string $handle
 	 *
@@ -570,8 +568,7 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether the given plugin's local version number is greater than
-	 * the record we have in the database.
+	 * Returns whether the given plugin's local version number is greater than the record we have in the database.
 	 *
 	 * @param BasePlugin $plugin
 	 *
@@ -733,8 +730,7 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * If the plugin already had a migrations folder with migrations in it, let's
-	 * save them in the db.
+	 * If the plugin already had a migrations folder with migrations in it, let's save them in the db.
 	 *
 	 * @param int    $pluginId
 	 * @param string $pluginHandle

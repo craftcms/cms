@@ -33,9 +33,10 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
  * Path constants and validation
  */
 
-// We're already in the app/ folder, so let's use that as the starting point.
-// Make sure it doesn't look like we're on a network share that starts with \\
+// We're already in the app/ folder, so let's use that as the starting point. Make sure it doesn't look like we're on
+// a network share that starts with \\
 $appPath = realpath(dirname(__FILE__));
+
 if (isset($appPath[0]) && isset($appPath[1]))
 {
 	if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
@@ -108,8 +109,7 @@ craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/', true);
 // Set the environment
 defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
 
-// We need to special case devMode in the config because YII_DEBUG has to be set
-// as early as possible.
+// We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
 $devMode = false;
 $generalConfigPath = CRAFT_CONFIG_PATH.'general.php';
 
@@ -125,8 +125,7 @@ if (file_exists($generalConfigPath))
 			$generalConfig = array('*' => $generalConfig);
 		}
 
-		// Loop through all of the environment configs, figuring out what the
-		// final word is on Dev Mode
+		// Loop through all of the environment configs, figuring out what the final word is on Dev Mode
 		foreach ($generalConfig as $env => $envConfig)
 		{
 			if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
@@ -164,9 +163,7 @@ if (!class_exists('Yii', false))
 	require CRAFT_APP_PATH.'framework/yii.php';
 }
 
-// Guzzle makes use of these PHP constants, but they aren't actually defined in
-// some compilations of PHP.
-
+// Guzzle makes use of these PHP constants, but they aren't actually defined in some compilations of PHP.
 // See http://it.blog.adclick.pt/php/fixing-php-notice-use-of-undefined-constant-curlopt_timeout_ms-assumed-curlopt_timeout_ms/
 defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
