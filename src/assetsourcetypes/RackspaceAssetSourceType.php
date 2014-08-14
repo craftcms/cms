@@ -352,43 +352,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Copy a transform for a file from source location to target location.
+	 * Return true if a physical folder exists.
 	 *
-	 * @param AssetFileModel $file
-	 * @param                $source
-	 * @param                $target
-	 *
-	 * @return mixed
-	 */
-	public function copyTransform(AssetFileModel $file, $source, $target)
-	{
-		$container = $this->getSettings()->container;
-		$basePath = $this->_getPathPrefix().$file->getFolder()->path;
-
-		$sourceUri = $this->_prepareRequestURI($container, $basePath.$source.'/'.$file->filename);
-		$targetUri = $this->_prepareRequestURI($container, $basePath.$target.'/'.$file->filename);
-
-		$this->_copyFile($sourceUri, $targetUri);
-	}
-
-	/**
-	 * Return true if a transform exists at the location for a file.
-	 *
-	 * @param AssetFileModel $file
-	 * @param                $location
-	 *
-	 * @return mixed
-	 */
-	public function transformExists(AssetFileModel $file, $location)
-	{
-		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
-	}
-
-	/**
-	 * Return true if a folder exists on Rackspace.
-	 *
-	 * @param string $parentPath
-	 * @param string $folderName
+	 * @param AssetFolderModel $parentPath
+	 * @param string           $folderName
 	 *
 	 * @return boolean
 	 */
@@ -403,10 +370,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
-	 * @param AssetFolderModel $folder
-	 * @param                  $fileName
+	 * @param AssetFolderModel $folder   The folder to check.
+	 * @param string           $fileName The filename to check.
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
