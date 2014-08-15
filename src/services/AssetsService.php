@@ -306,8 +306,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
-		// Super unlikely, but would be very awkward if this happened without
-		// any contingency plans in place.
+		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
 			$sourceTopFolder = new AssetFolderModel();
@@ -1203,7 +1202,7 @@ class AssetsService extends BaseApplicationComponent
 				$fileId = $targetFile->id;
 			}
 			// Falling through to delete the file
-			case AssetsHelper::ActionCancel:
+			case AssetConflictResolution::Cancel:
 			{
 				$this->deleteFiles($theNewFileId);
 				break;

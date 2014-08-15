@@ -5,8 +5,7 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into
- * craft/config/memcache.php, and make your change there.
+ * If you want to change any of these settings, copy it into craft/config/memcache.php, and make your change there.
  */
 
 return array(
@@ -54,8 +53,11 @@ return array(
 
 	/**
 	 * Whether to use memcached or memcache as the underlying caching extension.
+	 *
 	 * If true {@link http://pecl.php.net/package/memcached memcached} will be used.
+	 *
 	 * If false {@link http://pecl.php.net/package/memcache memcache}. will be used.
+	 *
 	 * Defaults to false.
 	 */
 	'useMemcached' => false,

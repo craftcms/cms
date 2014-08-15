@@ -4,11 +4,10 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
- * The EmailMessagesController class is a controller that handles various email
- * message tasks such as saving email messages.
+ * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
+ * messages.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The FieldsController class is a controller that handles various field and
- * field group related tasks such as saving and deleting both fields and field
- * groups.
+ * The FieldsController class is a controller that handles various field and field group related tasks such as saving
+ * and deleting both fields and field groups.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

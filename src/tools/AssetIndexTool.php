@@ -170,8 +170,7 @@ class AssetIndexTool extends BaseTool
 						$responseArray['confirm'] = craft()->templates->render('assets/_missing_items', array('missingFiles' => $missingFiles, 'missingFolders' => $missingFolders));
 						$responseArray['params'] = array('finish' => 1);
 					}
-					// Clean up stale indexing data (all sessions that have all
-					// recordIds set)
+					// Clean up stale indexing data (all sessions that have all recordIds set)
 					$sessionsInProgress = craft()->db->createCommand()
 											->select('sessionId')
 											->from('assetindexdata')

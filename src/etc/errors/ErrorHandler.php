@@ -4,25 +4,21 @@ namespace Craft;
 /**
  * ErrorHandler handles uncaught PHP errors and exceptions.
  *
- * It displays these errors using appropriate views based on the
- * nature of the error and the mode the application runs at.
- * It also chooses the most preferred language for displaying the error.
+ * It displays these errors using appropriate views based on the nature of the error and the mode the application runs
+ * at. It also chooses the most preferred language for displaying the error.
  *
  * ErrorHandler uses two sets of views:
  *
  * * development templates, named as `exception.php`;
  * * production templates, named as `error<StatusCode>.php`;
  *
- * where <StatusCode> stands for the HTTP error code (e.g. error500.php).
- * Localized templates are named similarly but located under a subdirectory
- * whose name is the language code (e.g. zh_cn/error500.php).
+ * where <StatusCode> stands for the HTTP error code (e.g. error500.php). Localized templates are named similarly but
+ * located under a subdirectory whose name is the language code (e.g. zh_cn/error500.php).
  *
- * Development templates are displayed when the application is in dev mode
- * (i.e. craft()->config->get('devMode') = true). Detailed error information with source code
- * are displayed in these templates. Production templates are meant to be shown
- * to end-users and are used when the application is in production mode.
- * For security reasons, they only display the error message without any
- * sensitive information.
+ * Development templates are displayed when the application is in dev mode (i.e. craft()->config->get('devMode') = true).
+ * Detailed error information with source code are displayed in these templates. Production templates are meant to be
+ * shown to end-users and are used when the application is in production mode. For security reasons, they only display
+ * the error message without any sensitive information.
  *
  * ErrorHandler looks for the templates from the following locations in order:
  *
@@ -30,15 +26,10 @@ namespace Craft;
  * * `craft/app/templates/errors`
  * * `craft/app/framework/views`
  *
- * If the template is not found in a directory, it will be looked for in the next directory.
+ * If the template is not found in a directory, it will be looked for in the next directory. The property
+ * {@link maxSourceLines} can be changed to specify the number of source code lines to be displayed in development views.
  *
- * The property {@link maxSourceLines} can be changed to specify the number
- * of source code lines to be displayed in development views.
- *
- * ErrorHandler is a core application component that can be accessed via
- * {@link CApplication::getErrorHandler()}.
- *
- * @property array $error The error details. Null if there is no error.
+ * ErrorHandler is a core application component that can be accessed via {@link CApplication::getErrorHandler()}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -81,8 +72,7 @@ class ErrorHandler extends \CErrorHandler
 	// =========================================================================
 
 	/**
-	 * Handles a thrown exception.  Will also log extra information if the exception
-	 * happens to by a MySql deadlock.
+	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
 	 *
 	 * @param Exception $exception The exception captured.
 	 *
@@ -242,8 +232,7 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
-	 * Returns server version information. If the site is in non-dev mode, an
-	 * empty string is returned.
+	 * Returns server version information. If the site is in non-dev mode, an empty string is returned.
 	 *
 	 * @return string The server version information. Empty if in non-dev mode.
 	 */

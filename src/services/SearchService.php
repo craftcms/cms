@@ -110,12 +110,9 @@ class SearchService extends BaseApplicationComponent
 	/**
 	 * Filters a list of element IDs by a given search query.
 	 *
-	 * @param array $elementIds   The list of element IDs to filter by the search
-	 *                            query.
-	 * @param mixed $query        The search query (either a string or a
-	 *                            SearchQuery instance)
-	 * @param bool  $scoreResults Whether to order the results based on how closely
-	 *                            they match the query.
+	 * @param array $elementIds   The list of element IDs to filter by the search query.
+	 * @param mixed $query        The search query (either a string or a SearchQuery instance)
+	 * @param bool  $scoreResults Whether to order the results based on how closely they match the query.
 	 *
 	 * @return array The filtered list of element IDs.
 	 */
@@ -319,8 +316,7 @@ class SearchService extends BaseApplicationComponent
 		// Loop through each group of OR-terms
 		foreach ($this->_groups as $terms)
 		{
-			// OR-terms are weighted less
-			// depending on the amount of OR terms in the group
+			// OR-terms are weighted less depending on the amount of OR terms in the group
 			$weight = 1 / count($terms);
 
 			// Get the score for each term and add it to the total
@@ -344,9 +340,8 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _scoreTerm($term, $row, $weight = 1)
 	{
-		// Skip these terms: locale and exact filtering is just that,
-		// no weighted search applies since all elements will already
-		// apply for these filters.
+		// Skip these terms: locale and exact filtering is just that, no weighted search applies since all elements will
+		// already apply for these filters.
 		if (
 			$term->attribute == 'locale' ||
 			$term->exact ||
@@ -567,8 +562,7 @@ class SearchService extends BaseApplicationComponent
 						$keywords = '-'.$keywords;
 					}
 
-					// Only create an SQL clause if there's a subselect
-					// Otherwise, return the keywords
+					// Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
 					if ($subSelect)
 					{
 						// If there is a subselect, create the MATCH AGAINST bit
@@ -599,15 +593,14 @@ class SearchService extends BaseApplicationComponent
 		}
 		else
 		{
-			// Support for attribute:* syntax to just check if something has *any*
-			// keyword value
+			// Support for attribute:* syntax to just check if something has *any* keyword value.
 			if ($term->subLeft)
 			{
 				$sql = $this->_sqlWhere('keywords', '!=', '');
 			}
 		}
 
-		// If we have a where clause in the subselect, add the keyword bit to it
+		// If we have a where clause in the subselect, add the keyword bit to it.
 		if ($subSelect && $sql)
 		{
 			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
@@ -736,8 +729,7 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private function _sqlSubSelect($where)
 	{
-		// FULLTEXT indexes are not used in queries with subselects, so let's
-		// do this as its own query.
+		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
 		$elementIds = craft()->db->createCommand()
 			->select('elementId')
 			->from('searchindex')

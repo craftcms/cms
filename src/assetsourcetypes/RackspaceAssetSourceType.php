@@ -4,8 +4,7 @@ namespace Craft;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * The Rackspace asset source type class. Handles the implementation of Rackspace
- * as an asset source type in Craft.
+ * The Rackspace asset source type class. Handles the implementation of Rackspace as an asset source type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -99,7 +98,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$this->_refreshConnectionInformation();
 		$regions = array();
 
-		foreach (self::$_accessStore as $key => $information)
+		foreach (static::$_accessStore as $key => $information)
 		{
 			$parts = explode('#', $key);
 			$regions[] = end($parts);
@@ -160,13 +159,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file->name))
 			{
-				// So in Rackspace a folder may or may not exist. For path
-				// a/path/to/file.jpg, any of those folders may or may not exist.
-				// So we have to add all the segments to $containerFolders to
-				// make sure we index them
+				// So in Rackspace a folder may or may not exist. For path a/path/to/file.jpg, any of those folders may
+				// or may not exist. So we have to add all the segments to $containerFolders to make sure we index them
 
-				// Matches all paths with folders, except if there if no folder
-				// at all.
+				// Matches all paths with folders, except if there if no folder at all.
 				if (preg_match('/(.*\/).+$/', $file->name, $matches))
 				{
 					$folders = explode('/', rtrim($matches[1], '/'));
@@ -508,8 +504,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite    If true, will overwrite target
-	 *                                       destination
+	 * @param bool             $overwrite    If true, will overwrite target destination
 	 *
 	 * @return mixed
 	 */
@@ -890,8 +885,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Return a prefix for S3 path for settings.
 	 *
-	 * @param object|null $settings The settings to use.  If null, will use the
-	 *                              current settings.
+	 * @param object|null $settings The settings to use. If null, will use the current settings.
 	 *
 	 * @return string
 	 */
@@ -987,7 +981,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			$data = array('token' => $token, 'storageUrl' => $data['storageUrl'], 'cdnUrl' => $data['cdnUrl']);
 
 			// Store this in the access store
-			self::$_accessStore[$connection_key] = $data;
+			static::$_accessStore[$connection_key] = $data;
 			$this->_updateAccessData($connection_key, $data);
 
 		}
@@ -1019,12 +1013,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	/**
 	 * Do an authenticated request against Rackspace severs.
 	 *
-	 * @param string $operationType Operation type so we know which server to
-	 *                              target.
+	 * @param string $operationType Operation type so we know which server to target.
 	 * @param string $target        URI target on the Rackspace server.
 	 * @param string $method        GET/POST/PUT/DELETE
-	 * @param array  $headers       Array of headers. Authorization token will
-	 *                              be appended to this before request.
+	 * @param array  $headers       Array of headers. Authorization token will be appended to this before request.
 	 * @param array  $curlOptions   Additional curl options to set.
 	 *
 	 * @throws Exception
@@ -1130,8 +1122,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Download a file to the target location. The file will be downloaded using
-	 * the public URL, instead of cURL.
+	 * Download a file to the target location. The file will be downloaded using the public URL, instead of cURL.
 	 *
 	 * @param $path
 	 * @param $targetFile

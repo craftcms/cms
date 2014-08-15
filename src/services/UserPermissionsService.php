@@ -504,9 +504,8 @@ class UserPermissionsService extends BaseApplicationComponent
 	 * Filters out any orphaned permissions.
 	 *
 	 * @param array $postedPermissions The posted permissions.
-	 * @param array $groupPermissions  Permissions the user is already assigned to
-	 *                                 via their group, if we're saving a user's
-	 *                                 permissions.
+	 * @param array $groupPermissions  Permissions the user is already assigned to via their group, if we're saving a
+	 *                                 user's permissions.
 	 *
 	 * @return array $filteredPermissions The permissions we'll actually let them save.
 	 */
@@ -539,8 +538,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	{
 		foreach ($permissionsGroup as $name => $data)
 		{
-			// Was this permission in the post data, or do they already have it
-			// via their group?
+			// Was this permission in the post data, or do they already have it via their group?
 			if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions))
 			{
 				// If it was in the post data, give it to them directly now
@@ -558,8 +556,7 @@ class UserPermissionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a permission record based on its name. If a record doesn't
-	 * exist, it will be created.
+	 * Returns a permission record based on its name. If a record doesn't exist, it will be created.
 	 *
 	 * @param string $permissionName
 	 *

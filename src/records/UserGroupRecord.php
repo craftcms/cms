@@ -36,6 +36,16 @@ class UserGroupRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
+	public function scopes()
+	{
+		return array(
+			'ordered' => array('order' => 'name'),
+		);
+	}
+
 	// Protected Methods
 	// =========================================================================
 

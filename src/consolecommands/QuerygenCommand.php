@@ -63,9 +63,8 @@ class QuerygenCommand extends BaseCommand
 			$required = !empty($config['required']);
 			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
-			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with
-			// whether it should be unique)
+			// Add unique index for this column? (foreign keys already get indexed, so we're only concerned with whether
+			// it should be unique)
 			if (!empty($config['unique']))
 			{
 				$indexes[] = array('columns' => array($columnName), 'unique' => true);

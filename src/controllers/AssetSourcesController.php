@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The AssetSourcesController class is a controller that handles various actions
- * related to asset sources, such as creating, editing, renaming and reordering
- * them.
+ * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
+ * creating, editing, renaming and reordering them.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -234,8 +232,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables
-			// around, such as location), we'll have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
+			// to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
 			/** @var RackspaceAssetSourceType $source */
@@ -264,8 +262,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables
-			/// around, such as location), we'll have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
+			// to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var RackspaceAssetSourceType $source */

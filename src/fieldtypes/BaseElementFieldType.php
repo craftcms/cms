@@ -109,8 +109,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the content
-	 * attribute.  Returns 'true' or any custom validation errors.
+	 * Validates the value beyond the checks that were assumed based on the content attribute.  Returns 'true' or any
+	 * custom validation errors.
 	 *
 	 * @param array $value
 	 *
@@ -154,8 +154,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$criteria = craft()->elements->getCriteria($this->elementType);
 		$criteria->locale = $this->getTargetLocale();
 
-		// $value will be an array of element IDs if there was a validation error
-		// or we're loading a draft/version.
+		// $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
 		if (is_array($value))
 		{
 			$criteria->id = array_values(array_filter($value));
@@ -210,8 +209,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -348,8 +346,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns an array of the source keys the field should be able to select
-	 * elements from.
+	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
 	 * @return array
 	 */
@@ -368,8 +365,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the
-	 * field should be able to select.
+	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
 	 *
 	 * @return array
 	 */

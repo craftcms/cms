@@ -17,52 +17,72 @@ class TemplateCacheService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @var string The table that template caches are stored in.
+	 * The table that template caches are stored in.
+	 *
+	 * @var string
 	 */
 	private static $_templateCachesTable = 'templatecaches';
 
 	/**
-	 * @var string The table that template cache-element relations are stored in.
+	 * The table that template cache-element relations are stored in.
+	 *
+	 * @var string
 	 */
 	private static $_templateCacheElementsTable = 'templatecacheelements';
 
 	/**
-	 * @var string The table that queries used within template caches are stored in.
+	 * The table that queries used within template caches are stored in.
+	 *
+	 * @var string
 	 */
 	private static $_templateCacheCriteriaTable = 'templatecachecriteria';
 
 	/**
-	 * @var int The duration (in seconds) between the times when Craft will delete any expired template caches.
+	 * The duration (in seconds) between the times when Craft will delete any expired template caches.
+	 *
+	 * @var int
 	 */
 	private static $_lastCleanupDateCacheDuration = 86400;
 
 	/**
-	 * @var string The current request's path, as it will be stored in the templatecaches table.
+	 * The current request's path, as it will be stored in the templatecaches table.
+	 *
+	 * @var string
 	 */
 	private $_path;
 
 	/**
-	 * @var array A list of queries (and their criteria attributes) that are active within the existing caches.
+	 * A list of queries (and their criteria attributes) that are active within the existing caches.
+	 *
+	 * @var array
 	 */
 	private $_cacheCriteria;
 
 	/**
-	 * @var array A list of element IDs that are active within the existing caches.
+	 * A list of element IDs that are active within the existing caches.
+	 *
+	 * @var array
 	 */
 	private $_cacheElementIds;
 
 	/**
-	 * @var bool Whether expired caches have already been deleted in this request.
+	 * Whether expired caches have already been deleted in this request.
+	 *
+	 * @var bool
 	 */
 	private $_deletedExpiredCaches = false;
 
 	/**
-	 * @var bool Whether all caches have been deleted in this request.
+	 * Whether all caches have been deleted in this request.
+	 *
+	 * @var bool
 	 */
 	private $_deletedAllCaches = false;
 
 	/**
-	 * @var bool Whether all caches have been deleted, on a per-element type basis, in this request.
+	 * Whether all caches have been deleted, on a per-element type basis, in this request.
+	 *
+	 * @var bool
 	 */
 	private $_deletedCachesByElementType;
 
@@ -106,7 +126,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Starts a new template cache.
 	 *
-	 * @param string $key The template cache key
+	 * @param string $key The template cache key.
 	 *
 	 * @return null
 	 */
@@ -123,7 +143,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Includes an element criteria in any active caches.
 	 *
-	 * @param ElementCriteriaModel $criteria The element criteria
+	 * @param ElementCriteriaModel $criteria The element criteria.
 	 *
 	 * @return null
 	 */
@@ -143,7 +163,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Includes an element in any active caches.
 	 *
-	 * @param int $elementId The element ID
+	 * @param int $elementId The element ID.
 	 *
 	 * @return null
 	 */
@@ -164,11 +184,11 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Ends a template cache.
 	 *
-	 * @param string      $key        The template cache key
-	 * @param bool        $global     Whether the cache should be stored globally
-	 * @param string|null $duration   How long the cache should be stored for
-	 * @param mixed|null  $expiration When the cache should expire
-	 * @param string      $body       The contents of the cache
+	 * @param string      $key        The template cache key.
+	 * @param bool        $global     Whether the cache should be stored globally.
+	 * @param string|null $duration   How long the cache should be stored for.
+	 * @param mixed|null  $expiration When the cache should expire.
+	 * @param string      $body       The contents of the cache.
 	 *
 	 * @throws \Exception
 	 * @return null
@@ -266,7 +286,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes a cache by its ID(s).
 	 *
-	 * @param int|array $cacheId The cache ID
+	 * @param int|array $cacheId The cache ID.
 	 *
 	 * @return bool
 	 */
@@ -295,7 +315,7 @@ class TemplateCacheService extends BaseApplicationComponent
 	/**
 	 * Deletes caches by a given element type.
 	 *
-	 * @param string $elementType The element type handle
+	 * @param string $elementType The element type handle.
 	 *
 	 * @return bool
 	 */
@@ -374,8 +394,7 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
-			// If there are any pending DeleteStaleTemplateCaches tasks, just
-			// append this element to it
+			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
 			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))

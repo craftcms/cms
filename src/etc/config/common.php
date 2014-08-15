@@ -45,9 +45,8 @@ $configArray = array(
 	)
 );
 
-// -------------------------------------------
-//  CP routes
-// -------------------------------------------
+// CP routes
+// ----------------------------------------------------------------------------
 
 $cpRoutes['categories/(?P<groupHandle>{handle})'] = 'categories';
 
@@ -129,9 +128,8 @@ $cpRoutes['editionRoutes'][2]['settings/users']                                 
 $cpRoutes['editionRoutes'][2]['settings/users/groups/new']                                                        = 'settings/users/groups/_settings';
 $cpRoutes['editionRoutes'][2]['settings/users/groups/(?P<groupId>\d+)']                                           = 'settings/users/groups/_settings';
 
-// -------------------------------------------
 //  Component config
-// -------------------------------------------
+// ----------------------------------------------------------------------------
 
 $components['users']['class']                = 'Craft\UsersService';
 $components['assets']['class']               = 'Craft\AssetsService';

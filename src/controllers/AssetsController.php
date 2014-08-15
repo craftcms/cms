@@ -2,12 +2,11 @@
 namespace Craft;
 
 /**
- * The AssetsController class is a controller that handles various actions related
- * to asset tasks, such as uploading files and creating/deleting/renaming files
- * and folders.
+ * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
+ * files and creating/deleting/renaming files and folders.
  *
- * Note that all actions in the controller except {@link actionGenerateTransform}
- * require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller except {@link actionGenerateTransform} require an authenticated Craft session
+ * via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -22,19 +21,16 @@ class AssetsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * If set to false, you are required to be logged in to execute any of the
-	 * given controller's actions.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
 	 *
-	 * If set to true, anonymous access is allowed for all of the given
-	 * controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
 	 *
-	 * If the value is an array of action names, then you must be logged in for
-	 * any action method except for the ones in the array list.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
 	 *
-	 * If you have a controller that where the majority of action methods will
-	 * be anonymous, but you only want require login on a few, it's best to use
-	 * {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()} in the
-	 * individual methods.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -58,8 +54,7 @@ class AssetsController extends BaseController
 		$theNewFileId = craft()->request->getPost('newFileId', 0);
 		$fileName = craft()->request->getPost('fileName');
 
-		// For a conflict resolution, the folder ID is no longer there and no
-		// file is actually being uploaded
+		// For a conflict resolution, the folder ID is no longer there and no file is actually being uploaded
 		if (!empty($folderId) && empty($userResponse))
 		{
 			try
@@ -128,6 +123,7 @@ class AssetsController extends BaseController
 		$element = craft()->elements->getElementById($fileId);
 		$html = craft()->templates->render('_elements/element', array('element' => $element));
 		$css = craft()->templates->getHeadHtml();
+
 		$this->returnJson(array('html' => $html, 'css' => $css));
 	}
 
@@ -365,8 +361,7 @@ class AssetsController extends BaseController
 	{
 		$folder = craft()->assets->getFolderById($folderId);
 
-		// if folder exists and the source ID is null, it's a temp source and
-		// we always allow uploads there.
+		// if folder exists and the source ID is null, it's a temp source and we always allow uploads there.
 		if (!(is_object($folder) && is_null($folder->sourceId)))
 		{
 			craft()->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');

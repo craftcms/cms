@@ -22,8 +22,7 @@ namespace Craft;
  *
  *     yiic migrate up PluginHandle
  *
- * Note that PluginHandle is optional in these examples and if it is not presented,
- * the command will run against Craft itself.
+ * Note that PluginHandle is optional in these examples and if it is not presented, the command will run against Craft.
  *
  * Craft explicitly disables support for Yii's "down", "redo" and "mark" actions.
  *
@@ -59,8 +58,7 @@ class MigrateCommand extends \MigrateCommand
 	{
 		if ($action == 'create')
 		{
-			// If the 1st dimension is the 1st index, then we know it's a plugin.
-			// No need to make them specify the path.
+			// If the 1st dimension is the 1st index, then we know it's a plugin. No need to make them specify the path.
 			if (isset($params[0][1]))
 			{
 				$plugin = $params[0][1];
@@ -143,8 +141,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *    yiic migrate create MigrationDescription PluginHandle
 	 *
-	 * If PluginHandle is omitted, the migration is created for Craft in craft/app/migrations.
-	 * If it is available, the migration is created in craft/plugins/PluginHandle/migrations.
+	 * If PluginHandle is omitted, the migration is created for Craft in craft/app/migrations. If it is available, the
+	 * migration is created in craft/plugins/PluginHandle/migrations.
 	 *
 	 * The migration description can only contain letters, digits and/or underscore characters.
 	 *
@@ -221,9 +219,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate up PluginHandle
 	 *
-	 * If PluginHandle is omitted, any new migrations that haven't ran yet in
-	 * craft/app/migrations will be ran. If it is available, any new migrations
-	 * in craft/plugins/PluginHandle/migrations that haven't ran yet, will run.
+	 * If PluginHandle is omitted, any new migrations that haven't ran yet in craft/app/migrations will be ran. If it is
+	 * available, any new migrations in craft/plugins/PluginHandle/migrations that haven't ran yet, will run.
 	 *
 	 * @param array $args The arguments passed in.
 	 *
@@ -265,9 +262,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate history PluginHandle
 	 *
-	 * If PluginHandle is omitted, it will display all of Craft's migrations
-	 * that have already ran. If it is available, it will display all of PluginHandle's
-	 * migrations that have already ran.
+	 * If PluginHandle is omitted, it will display all of Craft's migrations that have already ran. If it is available,
+	 * it will display all of PluginHandle's migrations that have already ran.
 	 *
 	 * @param array $args The arguments passed in.
 	 *
@@ -349,9 +345,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 *     yiic migrate new PluginHandle
 	 *
-	 * If PluginHandle is omitted, it will display any new Craft migrations that
-	 * have not run, yet. If it is available, it will display all of PluginHandle's
-	 * migrations that have not run, yet.
+	 * If PluginHandle is omitted, it will display any new Craft migrations that have not run, yet. If it is available,
+	 * it will display all of PluginHandle's migrations that have not run, yet.
 	 *
 	 * @param array $args The arguments passed in.
 	 *
@@ -408,9 +403,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * Overriding Yii's implementation with Craft specific logic.
 	 *
-	 * @param BasePlugin|null $plugin If null, will get Craft's migration history.
-	 *                                If a plugin instance, will get the plugin's
-	 *                                migration history.
+	 * @param BasePlugin|null $plugin If null, will get Craft's migration history. If a plugin instance, will get the
+	 *                                plugin's migration history.
 	 *
 	 * @return mixed
 	 */
@@ -432,8 +426,8 @@ class MigrateCommand extends \MigrateCommand
 	 *
 	 * Overriding Yii's implementation with Craft specific logic.
 	 *
-	 * @param BasePlugin|null $plugin If null, will get any new Craft migrations.
-	 *                                If a plugin instance, will get new plugin migrations.
+	 * @param BasePlugin|null $plugin If null, will get any new Craft migrations. If a plugin instance, will get new
+	 *                                plugin migrations.
 	 *
 	 * @return array
 	 */
@@ -446,8 +440,7 @@ class MigrateCommand extends \MigrateCommand
 	// =========================================================================
 
 	/**
-	 * Given a plugin handle, will retrieve it, or display an error if it
-	 * doesn't exist or is disabled.
+	 * Given a plugin handle, will retrieve it, or display an error if it doesn't exist or is disabled.
 	 *
 	 * @param string $pluginHandle The handle of the plugin to search for.
 	 *

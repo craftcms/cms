@@ -26,8 +26,7 @@ class NumberFormatter extends \CNumberFormatter
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
 	{
-		// Let's make sure the decimal format matches the number of decimal
-		// places specified in the value.
+		// Let's make sure the decimal format matches the number of decimal places specified in the value.
 		$decimalFormat = $this->_locale->getDecimalFormat();
 
 		// Find the starting decimal position in the format.

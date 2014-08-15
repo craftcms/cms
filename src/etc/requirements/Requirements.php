@@ -391,8 +391,7 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_doesMinVersionPass())
 		{
-			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning,
-			// due to the PHP hijack bug:
+			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning, due to the PHP hijack bug:
 			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
 			if ($this->_isBadPhpVersion())
 			{

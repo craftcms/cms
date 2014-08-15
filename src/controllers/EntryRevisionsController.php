@@ -4,12 +4,10 @@ namespace Craft;
 craft()->requireEdition(Craft::Client);
 
 /**
- * The EntryRevisionsController class is a controller that handles various entry
- * version and draft related tasks such as retrieving, saving, deleting,
- * publishing and reverting entry drafts and versions.
+ * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
+ * retrieving, saving, deleting, publishing and reverting entry drafts and versions.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -62,8 +60,7 @@ class EntryRevisionsController extends BaseEntriesController
 		{
 			// Attempt to create a new entry
 
-			// Manually validate 'title' since ElementsService will just give
-			// it a title automatically
+			// Manually validate 'title' since ElementsService will just give it a title automatically
 			$fields = array('title');
 			$content = $draft->getContent();
 			$content->setRequiredFields($fields);

@@ -2,11 +2,9 @@
 namespace Craft;
 
 /**
- * The VersionUpdateStatus class is an abstract class that defines the different
- * update status states available in Craft.
+ * The VersionUpdateStatus class is an abstract class that defines the different update status states available in Craft.
  *
- * This class is a poor man's version of an enum, since PHP does not have
- * support for native enumerations.
+ * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

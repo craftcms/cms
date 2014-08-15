@@ -94,9 +94,8 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Checks to see if a verification code is valid for the given user.  First
-	 * it checks if the code has expired past the “verificationCodeDuration” config
-	 * setting. If it is still valid then, the checks the validity of the contents
+	 * Checks to see if a verification code is valid for the given user.  First it checks if the code has expired past
+	 * the “verificationCodeDuration” config setting. If it is still valid then, the checks the validity of the contents
 	 * of the code. If both of those are true, it will return true, otherwise, false.
 	 *
 	 * @param UserModel $user The user to check the code for.
@@ -119,8 +118,8 @@ class UsersService extends BaseApplicationComponent
 
 			if (!$valid)
 			{
-				// It's expired, go ahead and remove it from the record so if
-				// they click the link again, it'll throw an Exception.
+				// It's expired, go ahead and remove it from the record so if they click the link again, it'll throw an
+				// Exception.
 				$userRecord = $this->_getUserRecordById($user->id);
 				$userRecord->verificationCodeIssuedDate = null;
 				$userRecord->verificationCode = null;
@@ -148,8 +147,7 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the "Client" account if they're running Craft Client. Returns null
-	 * if one is not found.
+	 * Returns the "Client" account if they're running Craft Client. Returns nullif one is not found.
 	 *
 	 * @return UserModel|null
 	 */
@@ -257,8 +255,8 @@ class UsersService extends BaseApplicationComponent
 
 					if ($user->unverifiedEmail)
 					{
-						// Temporarily set the unverified email on the UserModel
-						// so the verification email goes to the right place
+						// Temporarily set the unverified email on the UserModel so the verification email goes to the
+						// right place
 						$originalEmail = $user->email;
 						$user->email = $user->unverifiedEmail;
 
@@ -362,8 +360,8 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sends a new account activation email for a user, regardless of their status.
-	 * A new verification code will generated for the user overwriting any existing one.
+	 * Sends a new account activation email for a user, regardless of their status. A new verification code will
+	 * generated for the user overwriting any existing one.
 	 *
 	 * @param UserModel $user The user to send the activation email to.
 	 *
@@ -572,8 +570,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->verificationCodeIssuedDate = null;
 		$userRecord->lockoutDate = null;
 
-		// If they have an unverified email address, now is the time to set it to
-		// their primary email address
+		// If they have an unverified email address, now is the time to set it to their primary email address
 		if ($user->unverifiedEmail)
 		{
 			$userRecord->email = $user->unverifiedEmail;
@@ -879,8 +876,8 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * If the purgePendingUsersDuration config setting has a valid duration, this
-	 * method will delete any users in a pending state that as past the duration.
+	 * If the purgePendingUsersDuration config setting has a valid duration, this method will delete any users in a
+	 * pending state that as past the duration.
 	 *
 	 * @return null
 	 */
@@ -1168,8 +1165,7 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			// If it's a new user AND we allow public registration, set it on
-			// the 'password' field and not 'newpassword'.
+			// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
 			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
 			{
 				$user->addErrors(array(

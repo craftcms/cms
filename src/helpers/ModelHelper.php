@@ -62,9 +62,8 @@ class ModelHelper
 	 * 2. array(AttributeType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('type' => AttributeType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, and merges in the default config
-	 * settings for the attribute type, merges in the default column settings if
-	 * 'column' is set, and sets the 'unsigned', 'min', and 'max' values for integers.
+	 * This function normalizes on the 3rd, and merges in the default config settings for the attribute type, merges in
+	 * the default column settings if 'column' is set, and sets the 'unsigned', 'min', and 'max' values for integers.
 	 *
 	 * @param string|array $config
 	 *
@@ -138,8 +137,7 @@ class ModelHelper
 	}
 
 	/**
-	 * Returns a number attribute config, taking the min, max, and number of
-	 * decimal points into account.
+	 * Returns a number attribute config, taking the min, max, and number of decimal points into account.
 	 *
 	 * @param int $min
 	 * @param int $max
@@ -375,9 +373,8 @@ class ModelHelper
 			}
 		}
 
-		// If this is a BaseRecord instance, catch any unique/required indexes.
-		// We don't validate required BELONGS_TO relations because they might
-		// not get set until after validation.
+		// If this is a BaseRecord instance, catch any unique/required indexes. We don't validate required BELONGS_TO
+		// relations because they mightnot get set until after validation.
 		if ($model instanceof BaseRecord)
 		{
 			foreach ($model->defineIndexes() as $config)
@@ -504,8 +501,8 @@ class ModelHelper
 	}
 
 	/**
-	 * Takes an attribute's config and value and "normalizes" them either for
-	 * saving to db or sending across a web service.
+	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web
+	 * service.
 	 *
 	 * @param mixed $value
 	 * @param bool  $jsonEncodeArrays

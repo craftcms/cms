@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The CategoriesController class is a controller that handles various
- * actions related to categories and category groups, such as creating, editing
- * and deleting them.
+ * The CategoriesController class is a controller that handles various actions related to categories and category
+ * groups, such as creating, editing and deleting them.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,8 +2,7 @@
 namespace Craft;
 
 /**
- * The AssetElementType class is responsible for implementing and defining
- * assets as a native element type in Craft.
+ * The AssetElementType class is responsible for implementing and defining assets as a native element type in Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

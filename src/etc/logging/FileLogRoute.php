@@ -17,8 +17,7 @@ class FileLogRoute extends \CFileLogRoute
 	// =========================================================================
 
 	/**
-	 * Initializes the log route.  This method is invoked after the log route is
-	 * created by the route manager.
+	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
 	 *
 	 * @return null
 	 */
@@ -137,13 +136,13 @@ class FileLogRoute extends \CFileLogRoute
 	/**
 	 * Formats a log message given different fields.
 	 *
-	 * @param  string  $message  The message content
-	 * @param  integer $level    The message level
-	 * @param  string  $category The message category
-	 * @param  integer $time     The message timestamp
-	 * @param  bool    $force    Whether the message was forced or not
+	 * @param string $message  The message content.
+	 * @param int    $level    The message level.
+	 * @param string $category The message category.
+	 * @param int    $time     The message timestamp.
+	 * @param  bool  $force    Whether the message was forced or not.
 	 *
-	 * @return string            The formatted message
+	 * @return string The formatted message.
 	 */
 	protected function formatLogMessageWithForce($message, $level, $category, $time, $force)
 	{

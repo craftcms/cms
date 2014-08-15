@@ -4,8 +4,7 @@ namespace Craft;
 /**
  * Class AssetFileRecord
  *
- * @todo Create save function which calls parent::save and then updates the meta
- *       data table (keywords, author, etc)
+ * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

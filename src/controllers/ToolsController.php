@@ -2,11 +2,9 @@
 namespace Craft;
 
 /**
- * The ToolsController class is a controller that handles various tools related
- * tasks such as trigger tool actions.
+ * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.
  *
- * Note that all actions in this controller require administrator access in
- * order to execute.
+ * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -21,8 +19,7 @@ class ToolsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before
-	 * the controller starts to execute.
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
 	 *
 	 * @throws HttpException
 	 * @return null

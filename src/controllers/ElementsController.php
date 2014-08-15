@@ -2,12 +2,10 @@
 namespace Craft;
 
 /**
- * The ElementsController class is a controller that handles various element
- * related actions including retrieving and saving element and their corresponding
- * HTML.
+ * The ElementsController class is a controller that handles various element related actions including retrieving and
+ * saving element and their corresponding HTML.
  *
- * Note that all actions in the controller require an authenticated Craft
- * session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -119,9 +117,8 @@ class ElementsController extends BaseController
 
 		if ($criteria->limit)
 		{
-			// We'll risk a pointless additional Ajax request in the unlikely
-			// event that there are exactly a factor of 50 elements, rather than
-			// running two separate element queries
+			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
+			// 50 elements, rather than running two separate element queries
 			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else

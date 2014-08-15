@@ -41,7 +41,8 @@ class AssetOperationResponseModel extends BaseModel
 	public function setError($message)
 	{
 		$this->setAttribute('errorMessage', $message);
-		$this->setAttribute('status', self::StatusError);
+		$this->setAttribute('status', static::StatusError);
+
 		return $this;
 	}
 
@@ -52,7 +53,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function setSuccess()
 	{
-		$this->setAttribute('status', self::StatusSuccess);
+		$this->setAttribute('status', static::StatusSuccess);
 		return $this;
 	}
 
@@ -65,7 +66,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function setPrompt($promptData)
 	{
-		$this->setAttribute('status', self::StatusConflict);
+		$this->setAttribute('status', static::StatusConflict);
 		$this->setDataItem('prompt', $promptData);
 		return $this;
 	}
@@ -121,7 +122,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isConflict()
 	{
-		return $this->getAttribute('status') == self::StatusConflict;
+		return $this->getAttribute('status') == static::StatusConflict;
 	}
 
 	/**
@@ -129,7 +130,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isSuccess()
 	{
-		return $this->getAttribute('status') == self::StatusSuccess;
+		return $this->getAttribute('status') == static::StatusSuccess;
 	}
 
 	/**
@@ -137,7 +138,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isError()
 	{
-		return $this->getAttribute('status') == self::StatusError;
+		return $this->getAttribute('status') == static::StatusError;
 	}
 
 	/**
@@ -149,17 +150,17 @@ class AssetOperationResponseModel extends BaseModel
 	{
 		switch ($this->getAttribute('status'))
 		{
-			case self::StatusError:
+			case static::StatusError:
 			{
-				return array_merge($this->_data, array(self::StatusError => $this->getAttribute('errorMessage')));
+				return array_merge($this->_data, array(static::StatusError => $this->getAttribute('errorMessage')));
 			}
 
-			case self::StatusSuccess:
+			case static::StatusSuccess:
 			{
-				return array_merge($this->_data, array(self::StatusSuccess => true));
+				return array_merge($this->_data, array(static::StatusSuccess => true));
 			}
 
-			case self::StatusConflict:
+			case static::StatusConflict:
 			{
 				return $this->_data;
 			}
@@ -178,7 +179,7 @@ class AssetOperationResponseModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
+			'status'		=> array(AttributeType::Enum, 'values' => array(static::StatusError, static::StatusSuccess, static::StatusConflict)),
 			'errorMessage'	=> AttributeType::String
 		);
 	}

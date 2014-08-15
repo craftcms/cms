@@ -88,8 +88,8 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function getTransformByHandle($handle)
 	{
-		// If we've already fetched all transforms we can save ourselves a trip
-		// to the DB for transform handles that don't exist
+		// If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
+		// don't exist
 		if (!$this->_fetchedAllTransforms &&
 			(!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))
 		)
@@ -194,6 +194,82 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Update the asset transforms for the FileModel.
+	 *
+	 * @param AssetFileModel      $file
+	 * @param array|object|string $transformsToUpdate
+	 *
+	 * @return bool
+	 */
+	public function updateTransforms(AssetFileModel $file, $transformsToUpdate)
+	{
+		if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
+		{
+			return true;
+		}
+
+		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$imageSource = $this->getLocalImageSource($file);
+
+		if (!is_array($transformsToUpdate))
+		{
+			$transformsToUpdate = array($transformsToUpdate);
+		}
+
+		foreach ($transformsToUpdate as $transform)
+		{
+			$transform = $this->normalizeTransform($transform);
+			$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
+			$transformLocation = $this->_getTransformFolderName($transform);
+
+			$timeModified = $sourceType->getTimeTransformModified($file, $transformLocation);
+
+			// Create the transform if the file doesn't exist, or if it was created before the image was last updated
+			// or if the transform dimensions have changed since it was last created
+			if (!$timeModified || $timeModified < $file->dateModified || $timeModified < $transform->dimensionChangeTime)
+			{
+				$image = craft()->images->loadImage($imageSource);
+				$image->setQuality($quality);
+
+				switch ($transform->mode)
+				{
+					case 'fit':
+					{
+						$image->scaleToFit($transform->width, $transform->height);
+						break;
+					}
+
+					case 'stretch':
+					{
+						$image->resize($transform->width, $transform->height);
+						break;
+					}
+
+					default:
+					{
+						$image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
+						break;
+					}
+				}
+
+				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($file->filename));
+				$image->saveAs($targetFile);
+
+				clearstatcache(true, $targetFile);
+				$sourceType->putImageTransform($file, $transformLocation, $targetFile);
+				IOHelper::deleteFile($targetFile);
+			}
+		}
+
+		if (craft()->assetSources->populateSourceType($file->getSource())->isRemote())
+		{
+			$this->deleteSourceIfNecessary($imageSource);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Get a transform index row. If it doesn't exist - create one.
 	 *
 	 * @param AssetFileModel $file
@@ -214,7 +290,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$formatWhereCondition = array('filename IS NOT NULL AND format = :format', array(':format' => $transform->format));
 		}
-
 
 		// Check if an entry exists already
 		$entry =  craft()->db->createCommand()
@@ -277,8 +352,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
 		}
 
-		// Make sure we're not in the middle of working on this transform from
-		// a separate request
+		// Make sure we're not in the middle of working on this transform from a separate request
 		if ($index->inProgress)
 		{
 			for ($safety = 0; $safety < 100; $safety++)
@@ -292,8 +366,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				// Is it being worked on right now?
 				if ($index->inProgress)
 				{
-					// Make sure it hasn't been working for more than 30 seconds.
-					// Otherwise give up on the other request.
+					// Make sure it hasn't been working for more than 30 seconds. Otherwise give up on the other request.
 					$time = new DateTime();
 
 					if ($time->getTimestamp() - $index->dateUpdated->getTimestamp() < 30)
@@ -399,6 +472,8 @@ class AssetTransformsService extends BaseApplicationComponent
 				// last changed, this is a stale transform and needs to go.
 				if ($index->isNamedTransform() && $result['dateIndexed'] < $index->dimensionChangeTime)
 				{
+					// We have a satisfactory match and the record has been inserted already. Now copy the file to the
+					// new home.
 					$source->deleteTransform($file, new AssetTransformIndexModel($result));
 					$this->deleteTransform($result['id']);
 				}
@@ -584,8 +659,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Cleans up transforms for a source by making sure that all indexed
-	 * transforms actually exist.
+	 * Cleans up transforms for a source by making sure that all indexed transforms actually exist.
 	 *
 	 * @param int $sourceId
 	 *

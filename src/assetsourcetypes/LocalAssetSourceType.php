@@ -2,8 +2,8 @@
 namespace Craft;
 
 /**
- * The local asset source type class. Handles the implementation of the local
- * filesystem as an asset source type in Craft.
+ * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in
+ * Craft.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -206,6 +206,17 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
 		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
 
+	/**
+	 * Put an image transform for the File and handle using the provided path to the source image.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param                $handle
+	 * @param                $sourceImage
+	 *
+	 * @return mixed
+	 */
+	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
+	{
 		return IOHelper::copyFile($sourceImage, $targetPath);
 	}
 
@@ -448,7 +459,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * @param AssetFolderModel $targetFolder The folder where to move the file.
 	 * @param string           $fileName     The filename to use.
 	 * @param bool             $overwrite    If true, will overwrite target
-	 *                                       destination.
 	 *
 	 * @return mixed
 	 */

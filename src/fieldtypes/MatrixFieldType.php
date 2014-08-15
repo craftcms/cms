@@ -169,8 +169,8 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// $value will be an array of block data or an empty string if there was
-		// a validation error or we're loading a draft/version.
+		// $value will be an array of block data or an empty string if there was a validation error or we're loading a
+		// draft/version.
 		if (is_array($value))
 		{
 			return $value;
@@ -217,6 +217,7 @@ class MatrixFieldType extends BaseFieldType
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
 		craft()->templates->includeJsResource('js/MatrixInput.js');
+
 		craft()->templates->includeJs('new Craft.MatrixInput(' .
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo).', ' .
@@ -321,7 +322,7 @@ class MatrixFieldType extends BaseFieldType
 				$block->ownerId = $ownerId;
 				$block->locale  = $this->element->locale;
 
-				// Preserve the collapsed state, which the browser can't remember on its own for neww blocks
+				// Preserve the collapsed state, which the browser can't remember on its own for new blocks
 				$block->collapsed = !empty($blockData['collapsed']);
 			}
 			else

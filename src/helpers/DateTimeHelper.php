@@ -38,8 +38,8 @@ class DateTimeHelper
 	 */
 	public static function currentTimeForDb()
 	{
-		// Eventually this will return the time in the appropriate database
-		// format for MySQL, Postgre, etc. For now, it's MySQL only.
+		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc. For now,
+		// it's MySQL only.
 		$date = static::currentUTCDateTime();
 		return $date->format(DateTime::MYSQL_DATETIME, DateTime::UTC);
 	}
@@ -51,8 +51,8 @@ class DateTimeHelper
 	 */
 	public static function formatTimeForDb($timeStamp = null)
 	{
-		// Eventually this will accept a database parameter and format the timestamp
-		// for the given database date/time datatype. For now, it's MySQL only.
+		// Eventually this will accept a database parameter and format the timestamp for the given database date/time
+		// datatype. For now, it's MySQL only.
 
 		if ($timeStamp)
 		{
@@ -181,10 +181,9 @@ class DateTimeHelper
 	/**
 	 * Returns a formatted descriptive date string for given datetime string.
 	 *
-	 * If the given date is today, the returned string could be "Today, 6:54 pm".
-	 * If the given date was yesterday, the returned string could be "Yesterday, 6:54 pm".
-	 * If $dateString's year is the current year, the returned string does not
-	 * include mention of the year.
+	 * If the given date is today, the returned string could be "Today, 6:54 pm". If the given date was yesterday, the
+	 * returned string could be "Yesterday, 6:54 pm". If $dateString's year is the current year, the returned string
+	 * does not include mention of the year.
 	 *
 	 * @param string $dateString Datetime string or Unix timestamp
 	 *
@@ -273,9 +272,8 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns either a relative date or a formatted date depending
-	 * on the difference between the current time and given datetime.
-	 * $datetime should be in a <i>strtotime</i>-parsable format, like MySQL's
+	 * Returns either a relative date or a formatted date depending on the difference between the current time and given
+	 * datetime. $datetime should be in a **strtotime**-parsable format, like MySQL's
 	 * datetime datatype.
 	 *
 	 * Options:
@@ -288,8 +286,8 @@ class DateTimeHelper
 	 * Formatted dates look like this:
 	 *  on 02/18/2004
 	 *
-	 * The returned string includes 'ago' or 'on' and assumes you'll properly
-	 * add a word  like 'Posted ' before the function output.
+	 * The returned string includes 'ago' or 'on' and assumes you'll properly add a word  like 'Posted ' before the
+	 * function output.
 	 *
 	 * @param       $dateTime
 	 * @param array $options Default format if timestamp is used in $dateString
@@ -496,8 +494,8 @@ class DateTimeHelper
 	/**
 	 * Returns true if specified datetime was within the interval specified, else false.
 	 *
-	 * @param mixed $timeInterval The numeric value with space then time type. E
-	 *                            xample of valid types: 6 hours, 2 days, 1 minute.
+	 * @param mixed $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
+	 *                            1 minute.
 	 * @param mixed $dateString   The datestring or unix timestamp to compare
 	 * @param int   $userOffset   User's offset from GMT (in hours)
 	 *
@@ -537,8 +535,7 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid
-	 * strtotime() date string.
+	 * Returns a UNIX timestamp, given either a UNIX timestamp or a valid strtotime() date string.
 	 *
 	 * @param string $dateString Datetime string
 	 * @param int    $userOffset User's offset from GMT (in hours)
@@ -598,10 +595,12 @@ class DateTimeHelper
 	public static function isValidIntervalString($intervalString)
 	{
 		$interval = DateInterval::createFromDateString($intervalString);
+
 		if ($interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0)
 		{
 			return true;
 		}
+
 		return false;
 	}
 }

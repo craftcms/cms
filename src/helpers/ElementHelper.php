@@ -56,8 +56,8 @@ class ElementHelper
 			$slug = StringHelper::toLowerCase($slug, 'UTF-8');
 		}
 
-		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Periods, underscores and hyphens get a pass.
+		// Get the "words".  Split on anything that is not a unicode letter or number. Periods, underscores and hyphens
+		// get a pass.
 		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
 		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
@@ -83,8 +83,7 @@ class ElementHelper
 			return;
 		}
 
-		// No slug, or a URL format with no {slug}, just parse the URL format
-		// and get on with our lives
+		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
 		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
 		{
 			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
@@ -190,8 +189,7 @@ class ElementHelper
 	}
 
 	/**
-	 * Returns whether the given element is editable by the current user, taking
-	 * user locale permissions into account.
+	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -226,8 +224,7 @@ class ElementHelper
 	}
 
 	/**
-	 * Returns the editable locale IDs for a given element, taking user locale
-	 * permissions into account.
+	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
 	 *

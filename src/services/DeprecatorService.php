@@ -171,8 +171,7 @@ class DeprecatorService extends BaseApplicationComponent
 	 */
 	private function _populateLogWithStackTraceData(DeprecationErrorModel $log)
 	{
-		// Get the stack trace, but skip the first one, since it's just the call
-		// to this private function
+		// Get the stack trace, but skip the first one, since it's just the call to this private function
 		$traces = debug_backtrace();
 		array_shift($traces);
 
@@ -291,7 +290,7 @@ class DeprecatorService extends BaseApplicationComponent
 	/**
 	 * Converts an array of method arguments to a string.
 	 *
-	 * Adapted from CErrorHandler::argumentsToString(), but this one's less destructive
+	 * Adapted from {@link CErrorHandler::argumentsToString()}, but this one's less destructive
 	 *
 	 * @param $args array
 	 *

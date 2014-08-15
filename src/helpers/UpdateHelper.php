@@ -203,6 +203,7 @@ class UpdateHelper
 			$parts = explode(';', $manifestData[0]);
 			$index = mb_strrpos($parts[0], '.');
 			$build = mb_substr($parts[0], 2, $index - 2);
+
 			return $build;
 		}
 
@@ -224,8 +225,7 @@ class UpdateHelper
 	}
 
 	/**
-	 * Returns the relevant lines from the update manifest file starting with the
-	 * current local version/build.
+	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
 	 *
 	 * @param $manifestDataPath
 	 *

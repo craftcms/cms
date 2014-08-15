@@ -174,8 +174,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object for selecting criteria that could be dropped
-	 * by this task.
+	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.
 	 *
 	 * @return DbCommand
 	 */

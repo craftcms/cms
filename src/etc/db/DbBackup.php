@@ -267,10 +267,12 @@ class DbBackup
 		$createQuery = preg_replace($pattern, '', $createQuery);
 
 		$removed = false;
+
 		foreach ($createQuery as $key => $statement)
 		{
 			// Stupid PHP.
 			$temp = trim($createQuery[$key]);
+
 			if (empty($temp))
 			{
 				unset($createQuery[$key]);
@@ -298,6 +300,7 @@ class DbBackup
 
 		// See if we have any data.
 		$totalRows =  $db->createCommand('SELECT count(*) FROM '.$db->quoteTableName($tableName).';')->queryScalar();
+
 		if ($totalRows == 0)
 		{
 			return;
