@@ -194,8 +194,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 * Put an image transform for the File and Transform Index using the
 	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put the 
-	 *                                              image transform in.
+	 * @param AssetFileModel           $file        The AssetFileModel that the
+	 *                                              transform belongs to
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *
@@ -205,18 +205,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
 		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
-
-	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param                $handle
-	 * @param                $sourceImage
-	 *
-	 * @return mixed
-	 */
-	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
-	{
 		return IOHelper::copyFile($sourceImage, $targetPath);
 	}
 

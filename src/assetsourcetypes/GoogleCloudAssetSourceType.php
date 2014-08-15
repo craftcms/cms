@@ -271,18 +271,6 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the image source path
-	 *
-	 * @param AssetFileModel $fileModel
-	 *
-	 * @return mixed
-	 */
-	public function getImageSourcePath(AssetFileModel $fileModel)
-	{
-		return craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
-	}
-
-	/**
 	 * Get the timestamp of when a file transform was last modified.
 	 *
 	 * @param AssetFileModel $fileModel
@@ -647,8 +635,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Put an image transform for the File and Transform Index using the
 	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put
-	 *                                              the image transform in.
+	 * @param AssetFileModel           $file        The AssetFileModel that the
+	 *                                              transform belongs to
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *

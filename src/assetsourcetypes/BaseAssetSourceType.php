@@ -62,21 +62,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
-	 * Get the timestamp of when a file transform was last modified.
-	 *
-	 * @param AssetFileModel $fileModel         The assetFileModel for the timestamp of the last time the transform was modified.
-	 * @param string         $transformLocation The location of the transform.
-	 *
-	 * @return mixed
-	 */
-	abstract public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation);
-
-	/**
 	 * Put an image transform for the File and Transform Index using the
 	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put the image transform in.
-	 * @param AssetTransformIndexModel $index       The handle of the transform.
+	 * @param AssetFileModel           $file        The AssetFileModel that the
+	 *                                              transform belongs to
+	 * @param AssetTransformIndexModel $index       The Transform Index data.
 	 * @param string                   $sourceImage The source image.
 	 *
 	 * @return mixed
@@ -827,7 +818,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract protected function deleteGeneratedImageTransforms(AssetFileModel $file);
 
 	/**
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the
 	 * Creates a physical folder, returns true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.

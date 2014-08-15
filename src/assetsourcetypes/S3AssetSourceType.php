@@ -162,8 +162,10 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['name']))
 			{
-				// In S3, it's possible to have files in folders that don't exist. E.g. - one/two/three.jpg. If folder
-				// "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
+				// In S3, it's possible to have files in folders that don't
+				// exist. E.g. - one/two/three.jpg. If folder "one" is empty,
+				// except for folder "two", then "one" won't show up in this
+				//list so we work around it.
 
 				// Matches all paths with folders, except if folder is last or no folder at all.
 				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
@@ -290,8 +292,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Put an image transform for the File and Transform Index using the
 	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put
-	 *                                              the image transform in.
+	 * @param AssetFileModel           $file        The AssetFileModel that the
+	 *                                              transform belongs to
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *
@@ -302,7 +304,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
 
-		return $this->_putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
+		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	/**
@@ -369,23 +371,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/').'/');
-	}
-
-	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
-	 *
-	 * @param AssetFileModel $fileModel
-	 * @param                $handle
-	 * @param                $sourceImage
-	 *
-	 * @return mixed
-	 */
-	public function putImageTransform(AssetFileModel $fileModel, $handle, $sourceImage)
-	{
-		$this->_prepareForRequests();
-		$targetFile = $this->_getPathPrefix().$fileModel->getFolder()->path.'_'.ltrim($handle, '_').'/'.$fileModel->filename;
-
-		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
 
 	// Protected Methods
