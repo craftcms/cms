@@ -30,7 +30,11 @@ class ImagesService extends BaseApplicationComponent
 	{
 		if ($this->_isGd === null)
 		{
-			if (extension_loaded('imagick'))
+			if (craft()->config->get('imageDriver') == 'gd')
+			{
+				$this->_isGd = true;
+			}
+			else if (extension_loaded('imagick'))
 			{
 				// Taken from Imagick\Imagine() constructor.
 				$imagick = new \Imagick();
