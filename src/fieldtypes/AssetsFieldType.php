@@ -143,7 +143,7 @@ class AssetsFieldType extends BaseElementFieldType
 					{
 						$tempPath = AssetsHelper::getTempFilePath($file->getName());
 						move_uploaded_file($file->getTempName(), $tempPath);
-						$response =  craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
+						$response = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 						$fileIds[] = $response->getDataItem('fileId');
 					}
 
