@@ -511,6 +511,9 @@ class MatrixService extends BaseApplicationComponent
 					$transaction->commit();
 				}
 
+				// Update our cache of this field's block types
+				$this->_blockTypesByFieldId[$settings->getField()->id] = $settings->getBlockTypes();
+
 				return true;
 			}
 			catch (\Exception $e)

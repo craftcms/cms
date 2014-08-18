@@ -112,15 +112,15 @@ class AppHelper
 		}
 
 		// Multiply! Falling through here is intentional.
-		switch ($matches[1])
+		switch (strtolower($matches[1]))
 		{
-			case 'T':
+			case 't':
 				$value *= 1024;
-			case 'G':
+			case 'g':
 				$value *= 1024;
-			case 'M':
+			case 'm':
 				$value *= 1024;
-			case 'K':
+			case 'k':
 				$value *= 1024;
 		}
 
