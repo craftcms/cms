@@ -104,18 +104,21 @@ class AssetsFieldType extends BaseElementFieldType
 		if ($contentPostLocation)
 		{
 			$uploadedFiles = UploadedFile::getInstancesByName($contentPostLocation);
+
 			if (!empty($uploadedFiles))
 			{
 				// See if we have to validate against fileKinds
 				$settings = $this->getSettings();
+
 				if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
 				{
 					$allowedExtensions = static::_getAllowedExtensions($settings->allowedKinds);
-
 					$failedFiles = array();
+
 					foreach ($uploadedFiles as $uploadedFile)
 					{
 						$extension = IOHelper::getExtension($uploadedFile->getName());
+
 						if (!in_array($extension, $allowedExtensions))
 						{
 							$failedFiles[] = $uploadedFile;
@@ -132,21 +135,23 @@ class AssetsFieldType extends BaseElementFieldType
 
 				// If we got here either there are no restrictions or all files are valid so let's turn them into Assets
 				$fileIds = array();
-
-
 				$targetFolderId = $this->_determineUploadFolderId($settings);
+
 				if (!empty($targetFolderId))
 				{
 					foreach ($uploadedFiles as $file)
 					{
 						$tempPath = AssetsHelper::getTempFilePath($file->getName());
 						move_uploaded_file($file->getTempName(), $tempPath);
-						$fileIds[] = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
+						$response =  craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
+						$fileIds[] = $response->getDataItem('fileId');
 					}
+
 					if (is_array($value) && is_array($fileIds))
 					{
 						$fileIds = array_merge($value, $fileIds);
 					}
+
 					return $fileIds;
 				}
 			}
@@ -184,23 +189,26 @@ class AssetsFieldType extends BaseElementFieldType
 
 			if ($this->getSettings()->useSingleFolder)
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->singleUploadLocationSource, $settings->singleUploadLocationSubpath);
+				$targetFolderId = $this->_resolveSourcePathToFolderId(
+					$settings->singleUploadLocationSource,
+					$settings->singleUploadLocationSubpath);
 
 				// Move all the files for single upload directories.
 				$filesToMove = $fileIds;
 			}
 			else
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId($settings->defaultUploadLocationSource, $settings->defaultUploadLocationSubpath);
+				$targetFolderId = $this->_resolveSourcePathToFolderId(
+					$settings->defaultUploadLocationSource,
+					$settings->defaultUploadLocationSubpath);
 
 				// Find the files with temp sources and just move those.
-				$criteria = array(
+				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
 					'sourceId' => ':empty:'
 				);
-				$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 
-				$filesInTempSource = $criteria->find();
+				$filesInTempSource = craft()->elements->getCriteria(ElementType::Asset, $criteria)->find();
 				$filesToMove = array();
 
 				foreach ($filesInTempSource as $file)
@@ -242,9 +250,11 @@ class AssetsFieldType extends BaseElementFieldType
 		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds) && is_array($value) && !empty($value))
 		{
 			$allowedExtensions = static::_getAllowedExtensions($settings->allowedKinds);
+
 			foreach ($value as $fileId)
 			{
 				$file = craft()->assets->getFileById($fileId);
+
 				if ($file && !in_array(IOHelper::getExtension($file->filename), $allowedExtensions))
 				{
 					$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->filename));
@@ -428,19 +438,23 @@ class AssetsFieldType extends BaseElementFieldType
 
 			// Now make sure that every folder in the path exists.
 			$currentFolder = $folder;
+
 			foreach ($parts as $part)
 			{
 				if (empty($part))
 				{
 					continue;
 				}
+
 				$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
 				$existingFolder = craft()->assets->findFolder($folderCriteria);
+
 				if (!$existingFolder)
 				{
 					$folderId = $this->_createSubFolder($currentFolder, $part);
 					$existingFolder = craft()->assets->getFolderById($folderId);
 				}
+
 				$currentFolder = $existingFolder;
 			}
 		}
@@ -475,13 +489,14 @@ class AssetsFieldType extends BaseElementFieldType
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				)
 			);
-
 			$folderId = craft()->assets->storeFolder($newFolder);
+
 			return $folderId;
 		}
 		else
 		{
 			$folderId = $response->getDataItem('folderId');
+
 			return $folderId;
 		}
 	}
