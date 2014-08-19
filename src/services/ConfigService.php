@@ -131,7 +131,7 @@ class ConfigService extends BaseApplicationComponent
 	 * @param      $item
 	 * @param null $default
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link ConfigService::getDbItem() get('key', ConfigFile::Db)} instead.
+	 * @deprecated Deprecated in 2.0. Use {@link get() `get('key', ConfigFile::Db)`} instead.
 	 * @return string
 	 */
 	public function getDbItem($item, $default = null)
