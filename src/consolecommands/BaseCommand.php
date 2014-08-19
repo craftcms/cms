@@ -3,14 +3,16 @@
 namespace Craft;
 
 /**
- * BaseCommand extends Yii's {@link CConsoleCommand} and represents an executable console command.
+ * BaseCommand extends Yii's {@link \CConsoleCommand} and represents an executable console command.
  *
- * It works like {@link CController} by parsing command line options and dispatching the request to a specific action
+ * It works like {@link \CController} by parsing command line options and dispatching the request to a specific action
  * with appropriate option values.
  *
  * Users call a console command via the following command format:
  *
- *     yiic CommandName ActionName --Option1=Value1 --Option2=Value2 ...
+ * ```bash
+ * yiic CommandName ActionName --Option1=Value1 --Option2=Value2 ...
+ * ```
  *
  * Child classes mainly needs to implement various action methods whose name must be prefixed with "action". The
  * parameters to an action method are considered as options for that specific action. The action specified as
@@ -19,13 +21,15 @@ namespace Craft;
  * Options are bound to action parameters via parameter names. For example, the following action method will allow us to
  * run a command with <code>yiic sitemap --type=News</code>:
  *
- *     class SitemapCommand extends BaseCommand
+ * ```php
+ * class SitemapCommand extends BaseCommand
+ * {
+ *     public function actionIndex($type)
  *     {
- *         public function actionIndex($type)
- *         {
- *             ....
- *         }
+ *         ....
  *     }
+ * }
+ * ```
  *
  * The return value of action methods will be used as application exit code if it is an integer value.
  *

@@ -13,7 +13,7 @@ namespace Craft;
  *                                 will be automatically deleted by PHP after the current request is processed.
  * @property string $type          The MIME-type of the uploaded file (such as "image/gif"). Since this MIME type is not
  *                                 checked on the server side, do not take this value for granted. Instead, use
- *                                 {@link CFileHelper::getMimeType} to determine the exact MIME type.
+ *                                 {@link \CFileHelper::getMimeType} to determine the exact MIME type.
  * @property int    $size          The actual size of the uploaded file in bytes.
  * @property int    $error         The error code.
  * @property bool   $hasError      Whether there is an error with the uploaded file. Check {@link error} for the

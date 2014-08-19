@@ -159,7 +159,7 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns a {@link CHttpCookie} if it exists, otherwise, null.
+	 * Returns a {@link \CHttpCookie} if it exists, otherwise, null.
 	 *
 	 * @param $name
 	 *

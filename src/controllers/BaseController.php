@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * BaseController is a base class that all controllers in Craft extend.
  *
- * It extend's Yii's {@link CController} overwriting specific methods as required.
+ * It extend's Yii's {@link \CController} overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -56,7 +56,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns the folder containing view files for this controller. Craft overrides this since {@link CController}'s
+	 * Returns the folder containing view files for this controller. Craft overrides this since {@link \CController}'s
 	 * version defaults $module to craft().
 	 *
 	 * @return string The folder containing the view files for this controller.

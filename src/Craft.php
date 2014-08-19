@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * It encapsulates {@link Yii} and ultimately {@link YiiBase}, which provides the actual implementation.
+ * It encapsulates {@link \Yii} and ultimately {@link \YiiBase}, which provides the actual implementation.
  *
  * It also defines the global craft() method, which is a wrapper for the Craft::app() singleton.
  *

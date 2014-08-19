@@ -327,7 +327,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * Executes a SQL statement. This method executes the specified SQL statement using {@link dbConnection}.
 	 *
 	 * @param string $sql    The SQL statement to be executed.
-	 * @param array  $params Input parameters (name=>value) for the SQL execution. See {@link CDbCommand::execute} for
+	 * @param array  $params Input parameters (name=>value) for the SQL execution. See {@link \CDbCommand::execute} for
 	 *                       more details.
 	 *
 	 * @return null
@@ -369,7 +369,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table               The table to be updated.
 	 * @param array  $columns             The column data (name=>value) to be updated.
 	 * @param mixed  $conditions          The conditions that will be put in the WHERE part. Please refer to
-	 *                                    {@link CDbCommand::where} on how to specify conditions.
+	 *                                    {@link \CDbCommand::where} on how to specify conditions.
 	 * @param array  $params              The parameters to be bound to the query.
 	 * @param bool   $includeAuditColumns Whether to include the data for the audit columns (dateCreated, dateUpdated, uid).
 	 *
@@ -406,7 +406,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @param string $table      The table where the data will be deleted from.
 	 * @param mixed  $conditions The conditions that will be put in the WHERE part. Please refer to
-	 *                           {@link CDbCommand::where} on how to specify conditions.
+	 *                           {@link \CDbCommand::where} on how to specify conditions.
 	 * @param array  $params     The parameters to be bound to the query.
 	 *
 	 * @return null
