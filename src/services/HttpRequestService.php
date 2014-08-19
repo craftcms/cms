@@ -508,7 +508,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Sends a file to the user.
 	 *
-	 * We're overriding this from {@link CHttpRequest::sendFile()} so we can have more control over the headers.
+	 * We're overriding this from {@link \CHttpRequest::sendFile()} so we can have more control over the headers.
 	 *
 	 * @param string     $path
 	 * @param string     $content

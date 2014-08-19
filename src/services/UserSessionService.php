@@ -315,7 +315,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Pointless Wrapper for {@link requireLogin()}, but {@link CWebUser} uses {@link loginRequired()} so we must
+	 * Pointless Wrapper for {@link requireLogin()}, but {@link \CWebUser} uses {@link loginRequired()} so we must
 	 * support it as well.
 	 *
 	 * @return null

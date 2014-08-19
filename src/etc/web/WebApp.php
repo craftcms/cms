@@ -663,7 +663,7 @@ class WebApp extends \CWebApplication
 
 	/**
 	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior}, because Yii will check
-	 * {@link CApplication::getTimeZone()} instead.
+	 * {@link \CApplication::getTimeZone()} instead.
 	 *
 	 * @return string
 	 */
