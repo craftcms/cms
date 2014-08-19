@@ -82,8 +82,8 @@ class DateTime extends \DateTime
 	 *  - Unix timestamps
 	 *
 	 * @param string|array $date
-	 * @param stirng|null  $timezone The PHP timezone identifier, if not specified in $date.
-	 *                               Defaults to UTC. (See {@link http://php.net/manual/en/timezones.php})
+	 * @param stirng|null  $timezone The [PHP timezone identifier](http://php.net/manual/en/timezones.php),
+	 *                               if not specified in $date. Defaults to 'UTC'.
 	 *
 	 * @return DateTime|null|false
 	 */

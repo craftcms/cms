@@ -7,7 +7,7 @@ namespace Craft;
  * DbCache stores cache data in a DB table named {@link cacheTableName}. If the table does not exist, it will be
  * automatically created.
  *
- * DbCache relies on {@link http://www.php.net/manual/en/ref.pdo.php PDO} to access database. By default, it will use
+ * DbCache relies on [PDO](http://www.php.net/manual/en/ref.pdo.php) to access database. By default, it will use
  * the database connection information stored in your craft/config/db.php file.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>

@@ -417,10 +417,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether the request is coming from a mobile browser. Detection script courtesy of
-	 * {@link http://detectmobilebrowsers.com}
+	 * Returns whether the request is coming from a mobile browser.
 	 *
-	 * Last updated: 2013-02-04
+	 * The detection script is provided by http://detectmobilebrowsers.com. It was last updated on 2013-02-04.
 	 *
 	 * @param bool $detectTablets
 	 *

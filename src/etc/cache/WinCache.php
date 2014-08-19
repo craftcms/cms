@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * WinCache implements a cache application component based on {@link http://www.iis.net/expand/wincacheforphp WinCache}.
+ * WinCache implements a cache application component based on [WinCache](http://www.iis.net/expand/wincacheforphp).
  *
  * To use this application component, the WinCache PHP extension must be loaded.
  *
