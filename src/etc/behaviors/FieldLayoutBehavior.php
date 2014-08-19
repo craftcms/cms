@@ -8,7 +8,7 @@ namespace Craft;
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.etc.bahaviors
+ * @package   craft.app.etc.behaviors
  * @since     1.2
  */
 class FieldLayoutBehavior extends BaseBehavior
