@@ -29,7 +29,7 @@ namespace Craft;
  * If the template is not found in a directory, it will be looked for in the next directory. The property
  * {@link maxSourceLines} can be changed to specify the number of source code lines to be displayed in development views.
  *
- * ErrorHandler is a core application component that can be accessed via {@link CApplication::getErrorHandler()}.
+ * ErrorHandler is a core application component that can be accessed via {@link \CApplication::getErrorHandler()}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

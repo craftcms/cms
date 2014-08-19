@@ -3,9 +3,9 @@
 namespace Craft;
 
 /**
- * BaseCommand extends Yii's {@link CConsoleCommand} and represents an executable console command.
+ * BaseCommand extends Yii's {@link \CConsoleCommand} and represents an executable console command.
  *
- * It works like {@link CController} by parsing command line options and dispatching the request to a specific action
+ * It works like {@link \CController} by parsing command line options and dispatching the request to a specific action
  * with appropriate option values.
  *
  * Users call a console command via the following command format:

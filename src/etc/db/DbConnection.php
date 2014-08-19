@@ -19,7 +19,7 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Initializes the DbConnection (`craft()->db`) component.
 	 *
-	 * This method is required by {@link IApplicationComponent} and is invoked by Craft when the `craft()-db` is first
+	 * This method is required by {@link \IApplicationComponent} and is invoked by Craft when the `craft()-db` is first
 	 * used.
 	 *
 	 * This method does it's best to make sure it can connect to the database with the supplied credentials and
