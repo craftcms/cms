@@ -74,7 +74,7 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
 	 *
-	 * @param Exception $exception The exception captured.
+	 * @param \Exception $exception The exception captured.
 	 *
 	 * @return null
 	 */
