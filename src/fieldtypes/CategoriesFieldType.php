@@ -8,7 +8,7 @@ namespace Craft;
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
- * @package   craft.app.etc.fieldtypes
+ * @package   craft.app.fieldtypes
  * @since     2.0
  */
 class CategoriesFieldType extends BaseElementFieldType
