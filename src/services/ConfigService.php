@@ -5,7 +5,7 @@ namespace Craft;
  * ConfigService provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of ConfigService is globally accessible in Craft via `craft()->config`.
+ * An instance of ConfigService is globally accessible in Craft via {@link WebApp::config `craft()->config`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

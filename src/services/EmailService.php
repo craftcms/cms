@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * EmailService provides APIs for sending email in Craft.
  *
- * An instance of EmailService is globally accessible in Craft via `craft()->email`.
+ * An instance of EmailService is globally accessible in Craft via {@link WebApp::email `craft()->email`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
