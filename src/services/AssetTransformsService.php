@@ -937,9 +937,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
 	{
 		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
-		       '_'.($transform->mode) .
-		       '_'.($transform->position) .
-		       ($transform->quality ? '_'.$transform->quality : '');
+			'_'.($transform->mode) .
+			'_'.($transform->position) .
+			($transform->quality ? '_'.$transform->quality : '');
 	}
 
 	/**
