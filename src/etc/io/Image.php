@@ -363,10 +363,10 @@ class Image
 	{
 		$extension = IOHelper::getExtension($targetPath);
 
-		$options = $this->_getSaveOptions(false);
+		$options = $this->_getSaveOptions(false, $extension);
 
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
-		
+
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
@@ -448,7 +448,7 @@ class Image
 		clearstatcache();
 
 		// Generate a new temp image and get it's file size.
-		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
+		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality, $extension));
 		$newFileSize = IOHelper::getFileSize($tempFileName);
 
 		// If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
@@ -488,13 +488,15 @@ class Image
 	 * Get save options.
 	 *
 	 * @param int|null $quality
+	 * @param string   $extension
 	 * @return array
 	 */
-	private function _getSaveOptions($quality = null)
+	private function _getSaveOptions($quality = null, $extension = null)
 	{
 		$quality = (!$quality ? $this->_quality : $quality);
+		$extension = (!$extension ? $this->getExtension() : $extension);
 
-		switch ($this->getExtension())
+		switch ($extension)
 		{
 			case 'jpeg':
 			case 'jpg':
