@@ -127,6 +127,7 @@ class Image
 		}
 
 		$imageInfo = @getimagesize($path);
+
 		if (!is_array($imageInfo))
 		{
 			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
@@ -285,6 +286,7 @@ class Image
 						break;
 					}
 				}
+
 				$x1 = 0;
 				$x2 = $x1 + $targetWidth;
 			}
@@ -357,14 +359,12 @@ class Image
 	 * @param string $targetPath
 	 * @param bool   $sanitizeAndAutoQuality
 	 *
-	 * @return bool
+	 * @return null
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
 		$extension = IOHelper::getExtension($targetPath);
-
 		$options = $this->_getSaveOptions(false, $extension);
-
 		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
@@ -375,7 +375,7 @@ class Image
 		}
 		else
 		{
-			return $this->_image->save($targetPath, $options);
+			$this->_image->save($targetPath, $options);
 		}
 	}
 
