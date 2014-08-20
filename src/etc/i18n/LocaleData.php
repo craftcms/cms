@@ -61,7 +61,7 @@ class LocaleData extends \CLocale
 	 * Converts a locale ID to a language ID.  Language ID consists of only the first group of letters before an
 	 * underscore or dash.
 	 *
-	 * Craft overrides the parent method from {@link CLocale} because this is where we want to chop off the territory
+	 * Craft overrides the parent method from {@link \CLocale} because this is where we want to chop off the territory
 	 * half of a locale ID.
 	 *
 	 * @param string $id The locale ID to be converted

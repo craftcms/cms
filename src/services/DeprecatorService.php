@@ -290,7 +290,7 @@ class DeprecatorService extends BaseApplicationComponent
 	/**
 	 * Converts an array of method arguments to a string.
 	 *
-	 * Adapted from {@link CErrorHandler::argumentsToString()}, but this one's less destructive
+	 * Adapted from {@link \CErrorHandler::argumentsToString()}, but this one's less destructive
 	 *
 	 * @param $args array
 	 *

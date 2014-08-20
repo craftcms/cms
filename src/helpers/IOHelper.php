@@ -334,8 +334,8 @@ class IOHelper
 	}
 
 	/**
-	 * If the path points to a real file, we call {@link CFileHelper::getMimeType}, otherwise
-	 * {@link CFileHelper::getMimeTypeByExtension}
+	 * If the path points to a real file, we call {@link \CFileHelper::getMimeType}, otherwise
+	 * {@link \CFileHelper::getMimeTypeByExtension}
 	 *
 	 * @param string $path The path to test.
 	 *

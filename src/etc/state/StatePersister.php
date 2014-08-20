@@ -23,7 +23,7 @@ namespace Craft;
  * {@link WebApp::getStatePersister()}.
  *
  *
- * Craft overrides the default {@link CStatePersister} so it can set a custom path at runtime for our state file.
+ * Craft overrides the default {@link \CStatePersister} so it can set a custom path at runtime for our state file.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
