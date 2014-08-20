@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Class MatrixService
+ * MatrixService provides APIs for managing Matrix fields.
+ *
+ * An instance of MatrixService is globally accessible in Craft via {@link WebApp::matrix `craft()->matrix`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -57,10 +59,10 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns the block types for a given Matrix field.
 	 *
-	 * @param int         $fieldId
-	 * @param string|null $indexBy
+	 * @param int    $fieldId The Matrix field ID.
+	 * @param string $indexBy The property the block types should be indexed by. Defaults to `null`.
 	 *
-	 * @return array
+	 * @return MatrixBlockTypeModel[] An array of block types.
 	 */
 	public function getBlockTypesByFieldId($fieldId, $indexBy = null)
 	{
@@ -102,9 +104,9 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block type by its ID.
 	 *
-	 * @param int $blockTypeId
+	 * @param int $blockTypeId The block type ID.
 	 *
-	 * @return MatrixBlockTypeModel|null
+	 * @return MatrixBlockTypeModel|null The block type, or `null` if it didn’t exist.
 	 */
 	public function getBlockTypeById($blockTypeId)
 	{
@@ -132,9 +134,11 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Validates a block type.
 	 *
-	 * @param MatrixBlockTypeModel $blockType
+	 * If the block type doesn’t validate, any validation errors will be stored on the block type.
 	 *
-	 * @return bool
+	 * @param MatrixBlockTypeModel $blockType The block type.
+	 *
+	 * @return bool Whether the block type validated.
 	 */
 	public function validateBlockType(MatrixBlockTypeModel $blockType)
 	{
@@ -206,11 +210,12 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a block type.
 	 *
-	 * @param MatrixBlockTypeModel $blockType
-	 * @param bool                 $validate
+	 * @param MatrixBlockTypeModel $blockType The block type to be saved.
+	 * @param bool                 $validate  Whether the block type should be validated before being saved.
+	 *                                        Defaults to `true`.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the block type was saved successfully.
 	 */
 	public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
 	{
@@ -353,10 +358,10 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Deletes a block type.
 	 *
-	 * @param MatrixBlockTypeModel $blockType
+	 * @param MatrixBlockTypeModel $blockType The block type.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the block type was deleted successfully.
 	 */
 	public function deleteBlockType(MatrixBlockTypeModel $blockType)
 	{
@@ -410,9 +415,11 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Validates a Matrix field's settings.
 	 *
-	 * @param MatrixSettingsModel $settings
+	 * If the settings don’t validate, any validation errors will be stored on the settings model.
 	 *
-	 * @return bool
+	 * @param MatrixSettingsModel $settings The settings model.
+	 *
+	 * @return bool Whether the settings validated.
 	 */
 	public function validateFieldSettings(MatrixSettingsModel $settings)
 	{
@@ -436,11 +443,11 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a Matrix field's settings.
 	 *
-	 * @param MatrixSettingsModel $settings
-	 * @param bool                $validate
+	 * @param MatrixSettingsModel $settings The settings model.
+	 * @param bool                $validate Whether the settings should be validated before being saved.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the settings saved successfully.
 	 */
 	public function saveSettings(MatrixSettingsModel $settings, $validate = true)
 	{
@@ -535,10 +542,10 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Deletes a Matrix field.
 	 *
-	 * @param FieldModel $matrixField
+	 * @param FieldModel $matrixField The Matrix field.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the field was deleted successfully.
 	 */
 	public function deleteMatrixField(FieldModel $matrixField)
 	{
@@ -583,10 +590,11 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns the content table name for a given Matrix field.
 	 *
-	 * @param FieldModel $matrixField
-	 * @param bool       $useOldHandle
+	 * @param FieldModel $matrixField  The Matrix field.
+	 * @param bool       $useOldHandle Whether the method should use the field’s old handle when determining the table
+	 *                                 name (e.g. to get the existing table name, rather than the new one).
 	 *
-	 * @return string|false
+	 * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
 	 */
 	public function getContentTableName(FieldModel $matrixField, $useOldHandle = false)
 	{
@@ -618,10 +626,10 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns a block by its ID.
 	 *
-	 * @param int         $blockId
-	 * @param string|null $localeId
+	 * @param int    $blockId  The Matrix block’s ID.
+	 * @param string $localeId The locale ID to return. Defaults to {@link WebApp::language `craft()->language`}.
 	 *
-	 * @return MatrixBlockModel|null
+	 * @return MatrixBlockModel|null The Matrix block, or `null` if it didn’t exist.
 	 */
 	public function getBlockById($blockId, $localeId = null)
 	{
@@ -631,9 +639,11 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Validates a block.
 	 *
-	 * @param MatrixBlockModel $block
+	 * If the block doesn’t validate, any validation errors will be stored on the block.
 	 *
-	 * @return bool
+	 * @param MatrixBlockModel $block The Matrix block to validate.
+	 *
+	 * @return bool Whether the block validated.
 	 */
 	public function validateBlock(MatrixBlockModel $block)
 	{
@@ -665,11 +675,12 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a block.
 	 *
-	 * @param MatrixBlockModel $block
-	 * @param bool             $validate
+	 * @param MatrixBlockModel $block    The Matrix block.
+	 * @param bool             $validate Whether the block should be validated before being saved.
+	 *                                   Defaults to `true`.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the block was saved successfully.
 	 */
 	public function saveBlock(MatrixBlockModel $block, $validate = true)
 	{
@@ -721,9 +732,9 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Deletes a block(s) by its ID.
 	 *
-	 * @param int|array $blockIds
+	 * @param int|array $blockIds The Matrix block ID(s).
 	 *
-	 * @return bool
+	 * @return bool Whether the block(s) were deleted successfully.
 	 */
 	public function deleteBlockById($blockIds)
 	{
@@ -752,10 +763,10 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a Matrix field.
 	 *
-	 * @param MatrixFieldType $fieldType
+	 * @param MatrixFieldType $fieldType The Matrix field type.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the field was saved successfully.
 	 */
 	public function saveField(MatrixFieldType $fieldType)
 	{
@@ -857,9 +868,9 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Returns the parent Matrix field, if any.
 	 *
-	 * @param FieldModel $matrixField
+	 * @param FieldModel $matrixField The Matrix field.
 	 *
-	 * @return FieldModel|null
+	 * @return FieldModel|null The Matrix field’s parent Matrix field, or `null` if there is none.
 	 */
 	public function getParentMatrixField(FieldModel $matrixField)
 	{
