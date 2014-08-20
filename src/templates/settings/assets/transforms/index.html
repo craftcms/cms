@@ -16,6 +16,7 @@
 			<th scope="col">{{ "Handle"|t }}</th>
 			<th scope="col">{{ "Mode"|t }}</th>
 			<th scope="col">{{ "Dimensions"|t }}</th>
+			<th scope="col">{{ "Format"|t }}</th>
 			<td class="thin"></td>
 		</thead>
 		<tbody>
@@ -29,6 +30,7 @@
 					{%  endif %}
 				</td>
 				<td data-title="{{ 'Dimensions'|t }}">{{ transform.width ? transform.width : 'Auto'|t }} &times; {{ transform.height ? transform.height : 'Auto'|t }}</td>
+				<td data-title="{{ 'Format'|t }}">{{ transform.format ? transform.format|capitalize : 'Auto'|t }}</td>
 				<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 			</tr>
 		{% endfor %}

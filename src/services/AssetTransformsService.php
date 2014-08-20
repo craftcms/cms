@@ -152,11 +152,12 @@ class AssetTransformsService extends BaseApplicationComponent
 			$transformRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
 
-		$transformRecord->mode = $transform->mode;
+		$transformRecord->mode     = $transform->mode;
 		$transformRecord->position = $transform->position;
-		$transformRecord->width = $transform->width;
-		$transformRecord->height = $transform->height;
-		$transformRecord->quality = $transform->quality;
+		$transformRecord->width    = $transform->width;
+		$transformRecord->height   = $transform->height;
+		$transformRecord->quality  = $transform->quality;
+		$transformRecord->format   = $transform->format;
 
 		$recordValidates = $transformRecord->validate();
 

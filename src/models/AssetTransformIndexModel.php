@@ -39,7 +39,6 @@ class AssetTransformIndexModel extends BaseModel
 			'fileId'         => AttributeType::Number,
 			'filename'       => AttributeType::Number,
 			'format'         => AttributeType::Number,
-			'detectedFormat' => AttributeType::Number,
 			'location'       => AttributeType::String,
 			'sourceId'       => AttributeType::Number,
 			'fileExists'     => AttributeType::Bool,
@@ -47,6 +46,12 @@ class AssetTransformIndexModel extends BaseModel
 			'dateIndexed'    => AttributeType::DateTime,
 			'dateUpdated'    => AttributeType::DateTime,
 			'dateCreated'    => AttributeType::DateTime,
+
+			// Format detected for auto transform
+			'detectedFormat' => AttributeType::Number,
+
+			// The AssetTransform that defines the transformation to make
+			'transform'      => AttributeType::Mixed
 		);
 	}
 }
