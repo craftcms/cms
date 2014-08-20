@@ -374,7 +374,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformFilename = IOHelper::getFileName($file->filename, false).'.'.$index->detectedFormat;
 		$index->filename = $transformFilename;
 
-		$transformCreated = false;
+		$usableTransforms = array();
 
 		// If the detected format matches the file's format, we can use the
 		// old-style formats as well so we can dig through existing files
@@ -410,24 +410,62 @@ class AssetTransformsService extends BaseApplicationComponent
 				// Any other should do.
 				else
 				{
-					// Copy that transform into it's new place and update the records.
-					$source->copyTransform($file, new AssetTransformIndexModel($result), $index);
-					$transformCreated = true;
-
-					// Only set the format for old-style transform indexes.
-					if (empty($result['filename']))
-					{
-						$result['format'] = $index->format;
-					}
-
-					$result['filename'] = $transformFilename;
-					$this->storeTransformIndexData(new AssetTransformIndexModel($result));
+					$usableTransforms[] = $result;
 				}
 			}
 		}
 
-		// Okay, let's make one
-		if (!$transformCreated)
+		if (!empty($usableTransforms))
+		{
+			foreach ($usableTransforms as $key => $usableTransform)
+			{
+				// Copy the first transform in it's new home
+				if ($key == 0)
+				{
+					$source->copyTransform($file, new AssetTransformIndexModel($usableTransform), $index);
+				}
+
+				// For all transforms that matched - if this is the old style
+				// then duplicate this both for AUTO and the appropriate format
+				if (empty($usableTransform['filename']))
+				{
+					// Delete the old record
+					$this->deleteTransformIndex($usableTransform['id']);
+
+					unset ($usableTransform['id']);
+					$newIndex = new AssetTransformIndexModel($usableTransform);
+					$newIndex->filename = $transformFilename;
+
+					// And add the two new ones.
+
+					// This is correct, because, for example, JPG file format
+					// detection will resolve to "jpg" anyway, so we can store
+					// the AUTO version as well.
+					$newIndex->format = null;
+
+					// Since we're making new transforms, chances are we're
+					// stepping on the toes of the transform index that started
+					// this. Make sure we don't make one copy too many.
+					if ($newIndex->location != $index->location || $newIndex->format != $index->format)
+					{
+						$this->storeTransformIndexData($newIndex);
+					}
+
+					// And one for detected as well.
+					$newIndex->id = null;
+					$newIndex->format = $index->detectedFormat;
+
+					if ($newIndex->location != $index->location || $newIndex->format != $index->format)
+					{
+						$this->storeTransformIndexData($newIndex);
+					}
+
+					$result['format'] = $index->format;
+				}
+			}
+
+		}
+		else
 		{
 			$this->_createTransformForFile($file, $index);
 		}
@@ -650,11 +688,22 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @return null
 	 */
-	public function deleteTransformRecordsByFileId($fileId)
+	public function deleteTransformIndexDataByFileId($fileId)
 	{
 		craft()->db->createCommand()->delete('assettransformindex', 'fileId = :fileId', array(':fileId' => $fileId));
 	}
 
+	/**
+	 * Delete a transform index by.
+	 *
+	 * @param int $indexId
+	 *
+	 * @return null
+	 */
+	public function deleteTransformIndex($indexId)
+	{
+		craft()->db->createCommand()->delete('assettransformindex', 'id = :id', array(':id' => $indexId));
+	}
 	/**
 	 * Get a thumb server path by file model and size.
 	 *

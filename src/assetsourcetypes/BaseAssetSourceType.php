@@ -1073,7 +1073,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		// Delete all the created images, such as transforms, thumbnails
 		$this->deleteCreatedImages($file);
-		craft()->assetTransforms->deleteTransformRecordsByFileId($file->id);
+		craft()->assetTransforms->deleteTransformIndexDataByFileId($file->id);
 
 		$filePath = craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 
