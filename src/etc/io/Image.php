@@ -354,18 +354,14 @@ class Image
 	/**
 	 * Saves the image to the target path.
 	 *
-	 * @param string      $targetPath
-	 * @param bool        $sanitizeAndAutoQuality
-	 * @param string|null $extension
+	 * @param string $targetPath
+	 * @param bool   $sanitizeAndAutoQuality
 	 *
 	 * @return bool
 	 */
-	public function saveAs($targetPath, $sanitizeAndAutoQuality = false, $extension = null)
+	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
-		if (empty($extension))
-		{
-			$extension = $this->getExtension();
-		}
+		$extension = IOHelper::getExtension($targetPath);
 
 		$options = $this->_getSaveOptions(false);
 
