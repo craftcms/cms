@@ -10,7 +10,7 @@ Craft.Structure = Garnish.Base.extend(
 	structureDrag: null,
 
 	/**
-	 * Init
+	 * Initializes the application component.
 	 */
 	init: function(id, container, settings)
 	{

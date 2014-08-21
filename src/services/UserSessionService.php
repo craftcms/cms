@@ -50,7 +50,7 @@ class UserSessionService extends \CWebUser
 	// =========================================================================
 
 	/**
-	 * Init
+	 * Initializes the application component.
 	 *
 	 * @return null
 	 */

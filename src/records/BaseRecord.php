@@ -51,7 +51,7 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Init
+	 * Initializes the application component.
 	 *
 	 * @return null
 	 */
