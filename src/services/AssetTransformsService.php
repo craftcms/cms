@@ -835,6 +835,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Detect the auto web-safe format for the Assets file. Returns null, if the file is not an image.
 	 *
 	 * @param AssetFileModel $file
+	 * 
 	 * @return mixed|string
 	 * @throws Exception
 	 */
@@ -889,8 +890,9 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Return a subfolder used by the Transform Index for the File.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel          $file
 	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return mixed|string
 	 */
 	public function getTransformSubfolder(AssetFileModel $file, AssetTransformIndexModel $index)
@@ -908,11 +910,12 @@ class AssetTransformsService extends BaseApplicationComponent
 	/**
 	 * Return the filename used by the Transform Index for the File.
 	 *
-	 * @param $file
-	 * @param $index
+	 * @param AssetFileModel          $file
+	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return mixed
 	 */
-	public function getTransformFilename($file, $index)
+	public function getTransformFilename(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		if (empty($index->filename))
 		{
@@ -924,7 +927,15 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 	}
 
-	public function getTransformSubpath($file, $index)
+	/**
+	 * Get a transform subpath used by the Transform Index for the File.
+	 *
+	 * @param AssetFileModel          $file
+	 * @param AssetTransformIndexModel $index
+	 *
+	 * @return string
+	 */
+	public function getTransformSubpath(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		return $this->getTransformSubfolder($file, $index).'/'.$this->getTransformFilename($file, $index);
 	}
