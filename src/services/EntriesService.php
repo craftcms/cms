@@ -25,7 +25,7 @@ class EntriesService extends BaseApplicationComponent
 	 * $entry = craft()->entries->getEntryById($entryId);
 	 * ```
 	 *
-	 * @param int    $entryId  The entry ID.
+	 * @param int    $entryId  The entry’s ID.
 	 * @param string $localeId The locale to fetch the entry in. Defaults to {@link WebApp::language `craft()->language`}.
 	 *
 	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
