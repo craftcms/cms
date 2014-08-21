@@ -1139,9 +1139,9 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Merge a conflicting uploaded file.
 	 *
-	 * @param string $conflictResolution  User response to conflict
-	 * @param int    $theNewFileId        The id of the new file that is conflicting
-	 * @param string $fileName            The filename that is in the conflict
+	 * @param string $conflictResolution  User response to conflict.
+	 * @param int    $theNewFileId        The id of the new file that is conflicting.
+	 * @param string $fileName            The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -1194,28 +1194,28 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Move a file between sources.
 	 *
-	 * @param BaseAssetSourceType $originalSource
-	 * @param BaseAssetSourceType $newSource
+	 * @param BaseAssetSourceType $originatingSource
+	 * @param BaseAssetSourceType $targetSource
 	 * @param AssetFileModel      $file
 	 * @param AssetFolderModel    $folder
 	 * @param string              $action
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
 	{
-		$localCopy = $originalSource->getLocalCopy($file);
+		$localCopy = $originatingSource->getLocalCopy($file);
 
 		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
 		$oldFileModel = clone $file;
 
-		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+		$response = $targetSource->transferFileIntoSource($localCopy, $folder, $file, $action);
 
 		if ($response->isSuccess())
 		{
 			// Use the previous data to clean up
-			$originalSource->deleteCreatedImages($oldFileModel);
-			$originalSource->finalizeTransfer($oldFileModel);
+			$originatingSource->deleteCreatedImages($oldFileModel);
+			$originatingSource->finalizeTransfer($oldFileModel);
 			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
@@ -1226,9 +1226,9 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Do an upload conflict resolution with merging.
 	 *
-	 * @param $conflictResolution
-	 * @param $theNewFileId
-	 * @param $fileName
+	 * @param string $conflictResolution User response to conflict.
+	 * @param int    $theNewFileId       The id of the new file that is conflicting.
+	 * @param string $fileName           Filename of the conflicting file.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
