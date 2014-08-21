@@ -265,7 +265,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		if (craft()->assetSources->populateSourceType($file->getSource())->isRemote())
 		{
-			$this->deleteSourceIfNecessary($imageSource);
+			$this->queueSourceForDeletingIfNecessary($imageSource);
 		}
 
 		return true;

@@ -1237,8 +1237,8 @@ class AssetsService extends BaseApplicationComponent
 		if ($response->isSuccess())
 		{
 			// Use the previous data to clean up
-			$originalSource->deleteCreatedImages($oldFileModel);
-			$originalSource->finalizeTransfer($oldFileModel);
+			$originatingSource->deleteCreatedImages($oldFileModel);
+			$originatingSource->finalizeTransfer($oldFileModel);
 			craft()->assetTransforms->deleteTransformIndexDataByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
