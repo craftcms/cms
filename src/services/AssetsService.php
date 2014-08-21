@@ -231,8 +231,8 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
 	 * @return null
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
 	 */
 	public function onSaveFileContent(Event $event)
 	{
@@ -284,12 +284,14 @@ class AssetsService extends BaseApplicationComponent
 		$tree = $this->_getFolderTreeByFolders($folders);
 
 		$sort = array();
+
 		foreach ($tree as $topFolder)
 		{
 			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
+
 		return $tree;
 	}
 
@@ -322,12 +324,14 @@ class AssetsService extends BaseApplicationComponent
 			// A little obfuscation never hurt anyone
 			$folderName = 'user_'.sha1(craft()->httpSession->getSessionID());
 		}
+
 		$folderCriteria = new FolderCriteriaModel(array(
 			'name' => $folderName,
 			'parentId' => $sourceTopFolder->id
 		));
 
 		$folder = $this->findFolder($folderCriteria);
+
 		if (!$folder)
 		{
 			$folder = new AssetFolderModel();
@@ -470,6 +474,7 @@ class AssetsService extends BaseApplicationComponent
 		try
 		{
 			$folder = $this->getFolderById($folderId);
+
 			if (empty($folder))
 			{
 				throw new Exception(Craft::t("Can’t find the folder!"));
@@ -869,7 +874,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Get URL for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param                $transform
+	 * @param string         $transform
 	 *
 	 * @return string
 	 */
@@ -950,6 +955,7 @@ class AssetsService extends BaseApplicationComponent
 		foreach ($folderIds as $folderId)
 		{
 			$folderModel = $this->getFolderById($folderId);
+
 			if (!$folderModel)
 			{
 				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
@@ -981,6 +987,7 @@ class AssetsService extends BaseApplicationComponent
 		foreach ($fileIds as $fileId)
 		{
 			$fileModel = $this->getFileById($fileId);
+
 			if (!$fileModel)
 			{
 				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
@@ -1034,12 +1041,14 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		$sort = array();
+
 		foreach ($tree as $topFolder)
 		{
 			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
+
 		return $tree;
 	}
 
