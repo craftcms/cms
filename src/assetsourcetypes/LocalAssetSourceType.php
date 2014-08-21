@@ -11,7 +11,7 @@ namespace Craft;
  * @see       http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
  * @since     1.0
- * @deprecated This method will likely be modified or removed in a future update.
+ * @deprecated This class will most likely be removed in Craft 3.0.
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
