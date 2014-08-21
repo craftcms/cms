@@ -455,7 +455,7 @@ class TagsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveTag() tags.onSaveTag} instead.
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveTag() `tags.onSaveTag`} instead.
 	 * @return null
 	 */
 	public function onSaveTagContent(Event $event)

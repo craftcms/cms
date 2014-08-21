@@ -231,8 +231,8 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() assets.onSaveAsset} instead.
 	 * @return null
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
 	 */
 	public function onSaveFileContent(Event $event)
 	{
@@ -284,12 +284,14 @@ class AssetsService extends BaseApplicationComponent
 		$tree = $this->_getFolderTreeByFolders($folders);
 
 		$sort = array();
+
 		foreach ($tree as $topFolder)
 		{
 			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
+
 		return $tree;
 	}
 
@@ -322,12 +324,14 @@ class AssetsService extends BaseApplicationComponent
 			// A little obfuscation never hurt anyone
 			$folderName = 'user_'.sha1(craft()->httpSession->getSessionID());
 		}
+
 		$folderCriteria = new FolderCriteriaModel(array(
 			'name' => $folderName,
 			'parentId' => $sourceTopFolder->id
 		));
 
 		$folder = $this->findFolder($folderCriteria);
+
 		if (!$folder)
 		{
 			$folder = new AssetFolderModel();
@@ -470,6 +474,7 @@ class AssetsService extends BaseApplicationComponent
 		try
 		{
 			$folder = $this->getFolderById($folderId);
+
 			if (empty($folder))
 			{
 				throw new Exception(Craft::t("Can’t find the folder!"));
@@ -711,24 +716,6 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Do an upload conflict resolution with merging.
-	 *
-	 * @param $conflictResolution
-	 * @param $theNewFileId
-	 * @param $fileName
-	 *
-	 * @return AssetOperationResponseModel
-	 */
-	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
-	{
-		$this->_startMergeProcess();
-		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
-		$this->_finishMergeProcess();
-
-		return $response;
-	}
-
-	/**
 	 * Returns true, if a file is in the process os being merged.
 	 *
 	 * @return bool
@@ -898,7 +885,7 @@ class AssetsService extends BaseApplicationComponent
 	 * Get URL for a file.
 	 *
 	 * @param AssetFileModel $file
-	 * @param                $transform
+	 * @param string         $transform
 	 *
 	 * @return string
 	 */
@@ -990,6 +977,7 @@ class AssetsService extends BaseApplicationComponent
 		foreach ($folderIds as $folderId)
 		{
 			$folderModel = $this->getFolderById($folderId);
+
 			if (!$folderModel)
 			{
 				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
@@ -1076,12 +1064,14 @@ class AssetsService extends BaseApplicationComponent
 		}
 
 		$sort = array();
+
 		foreach ($tree as $topFolder)
 		{
 			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
+
 		return $tree;
 	}
 
@@ -1172,9 +1162,9 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Merge a conflicting uploaded file.
 	 *
-	 * @param string $conflictResolution  User response to conflict
-	 * @param int    $theNewFileId        The id of the new file that is conflicting
-	 * @param string $fileName            The filename that is in the conflict
+	 * @param string $conflictResolution  User response to conflict.
+	 * @param int    $theNewFileId        The id of the new file that is conflicting.
+	 * @param string $fileName            The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -1227,22 +1217,22 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Move a file between sources.
 	 *
-	 * @param BaseAssetSourceType $originalSource
-	 * @param BaseAssetSourceType $newSource
+	 * @param BaseAssetSourceType $originatingSource
+	 * @param BaseAssetSourceType $targetSource
 	 * @param AssetFileModel      $file
 	 * @param AssetFolderModel    $folder
 	 * @param string              $action
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	private function _moveFileBetweenSources(BaseAssetSourceType $originalSource, BaseAssetSourceType $newSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
 	{
-		$localCopy = $originalSource->getLocalCopy($file);
+		$localCopy = $originatingSource->getLocalCopy($file);
 
 		// File model will be updated in the process, but we need the old data in order to finalize the transfer.
 		$oldFileModel = clone $file;
 
-		$response = $newSource->transferFileIntoSource($localCopy, $folder, $file, $action);
+		$response = $targetSource->transferFileIntoSource($localCopy, $folder, $file, $action);
 
 		if ($response->isSuccess())
 		{
@@ -1252,6 +1242,24 @@ class AssetsService extends BaseApplicationComponent
 			craft()->assetTransforms->deleteTransformIndexDataByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
+
+		return $response;
+	}
+
+	/**
+	 * Do an upload conflict resolution with merging.
+	 *
+	 * @param string $conflictResolution User response to conflict.
+	 * @param int    $theNewFileId       The id of the new file that is conflicting.
+	 * @param string $fileName           Filename of the conflicting file.
+	 *
+	 * @return AssetOperationResponseModel
+	 */
+	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
+	{
+		$this->_startMergeProcess();
+		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
+		$this->_finishMergeProcess();
 
 		return $response;
 	}

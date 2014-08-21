@@ -54,9 +54,9 @@ return array(
 	/**
 	 * Whether to use memcached or memcache as the underlying caching extension.
 	 *
-	 * If true {@link http://pecl.php.net/package/memcached memcached} will be used.
+	 * If true [memcached](http://pecl.php.net/package/memcached) will be used.
 	 *
-	 * If false {@link http://pecl.php.net/package/memcache memcache}. will be used.
+	 * If false [memcache](http://pecl.php.net/package/memcache). will be used.
 	 *
 	 * Defaults to false.
 	 */
