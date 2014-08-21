@@ -13,6 +13,7 @@ craft()->requireEdition(Craft::Pro);
  * @see       http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
  * @since     1.0
+ * @deprecated This method will likely be modified or removed in a future update.
  */
 class GoogleCloudAssetSourceType extends BaseAssetSourceType
 {

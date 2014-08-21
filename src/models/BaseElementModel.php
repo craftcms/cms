@@ -1026,7 +1026,7 @@ abstract class BaseElementModel extends BaseModel
 	 *
 	 * @param mixed $field
 	 *
-	 * @deprecated Deprecated in 1.3. Use the {@link http://buildwithcraft.com/docs/relations#the-relatedTo-param relatedTo}
+	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://buildwithcraft.com/docs/relations#the-relatedTo-param)
 	 *             param instead.
 	 *
 	 * @return ElementCriteriaModel
