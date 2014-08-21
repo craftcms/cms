@@ -10,6 +10,7 @@ namespace Craft;
  * @see       http://buildwithcraft.com
  * @package   craft.app.assetsourcetypes
  * @since     1.0
+ * @deprecated This class will likely be modified.
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
