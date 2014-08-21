@@ -220,7 +220,7 @@ class InstallService extends BaseApplicationComponent
 			'sourceId'     => array('column' => ColumnType::Int, 'null' => false),
 			'sourceLocale' => array('column' => ColumnType::Locale),
 			'targetId'     => array('column' => ColumnType::Int, 'null' => false),
-			'sortOrder'    => array('column' => ColumnType::TinyInt),
+			'sortOrder'    => array('column' => ColumnType::SmallInt),
 		));
 
 		craft()->db->createCommand()->createIndex('relations', 'fieldId,sourceId,sourceLocale,targetId', true);
