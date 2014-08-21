@@ -195,6 +195,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param array|object|string $transformsToUpdate
 	 *
 	 * @return bool
+	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function updateTransforms(AssetFileModel $fileModel, $transformsToUpdate)
 	{
@@ -401,6 +402,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param AssetTransformIndexModel $transformIndexData
 	 *
 	 * @return bool
+	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function generateTransform(AssetTransformIndexModel $transformIndexData)
 	{
@@ -468,6 +470,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $transform
 	 *
 	 * @return string
+	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function getTransformSubpath($transform)
 	{
@@ -608,6 +611,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param                $transform
 	 *
 	 * @return string
+	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function getUrlforTransformByFile($file, $transform)
 	{
@@ -750,6 +754,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param $imageSource
 	 *
 	 * @return null
+	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function deleteSourceIfNecessary($imageSource)
 	{
