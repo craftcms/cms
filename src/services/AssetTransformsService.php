@@ -595,7 +595,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param AssetTransformIndexModel $transformIndexModel
 	 *
-	 * @deprecated This method will likely be modified or removed in a future update.
 	 * @return string
 	 */
 	public function getUrlForTransformByTransformIndex(AssetTransformIndexModel $transformIndexModel)
