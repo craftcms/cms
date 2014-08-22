@@ -507,13 +507,11 @@ class AssetTransformsService extends BaseApplicationComponent
 				// then update it to be the new style
 				if (empty($usableTransform['filename']))
 				{
-
 					$indexToUpdate = new AssetTransformIndexModel($usableTransform);
 					$indexToUpdate->filename = $transformFilename;
 					$indexToUpdate->format = $index->format;
 
 					$this->storeTransformIndexData($indexToUpdate);
-
 				}
 			}
 
