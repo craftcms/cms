@@ -60,7 +60,7 @@ class FieldRecord extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * Init
+	 * Initializes the application component.
 	 *
 	 * @return null
 	 */

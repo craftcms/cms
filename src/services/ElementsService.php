@@ -2,7 +2,9 @@
 namespace Craft;
 
 /**
- * Class ElementsService
+ * ElementsService provides APIs for managing elements.
+ *
+ * An instance of ElementsService is globally accessible in Craft via {@link WebApp::elements `craft()->elements`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +15,7 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
-	// METHODS
+	// Public Methods
 	// =========================================================================
 
 	// Finding Elements
@@ -22,11 +24,19 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element criteria model for a given element type.
 	 *
-	 * @param string $type
-	 * @param mixed  $attributes
+	 * This should be the starting point any time you want to fetch elements in Craft.
+	 *
+	 * ```php
+	 * $criteria = craft()->elements->getCriteria(ElementType::Entry);
+	 * $criteria->section = 'news';
+	 * $entries = $criteria->find();
+	 * ```
+	 *
+	 * @param string $type       The element type class handle (e.g. one of the values in the {@link ElementType} enum).
+	 * @param mixed  $attributes Any criteria attribute values that should be pre-populated on the criteria model.
 	 *
 	 * @throws Exception
-	 * @return ElementCriteriaModel
+	 * @return ElementCriteriaModel An element criteria model, wired to fetch elements of the given $type.
 	 */
 	public function getCriteria($type, $attributes = null)
 	{
@@ -43,11 +53,17 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its ID.
 	 *
-	 * @param int         $elementId
-	 * @param null        $elementType
-	 * @param string|null $localeId
+	 * If no element type is provided, the method will first have to run a DB query to determine what type of element
+	 * the $elementId is, so you should definitely pass it if it’s known.
 	 *
-	 * @return BaseElementModel|null
+	 * The element’s status will not be a factor when usisng this method.
+	 *
+	 * @param int    $elementId   The element’s ID.
+	 * @param null   $elementType The element type’s class handle.
+	 * @param string $localeId    The locale to fetch the element in.
+	 *                            Defaults to {@link WebApp::language `craft()->language`}.
+	 *
+	 * @return BaseElementModel|null The matching element, or `null`.
 	 */
 	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
@@ -77,11 +93,12 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns an element by its URI.
 	 *
-	 * @param string      $uri
-	 * @param string|null $localeId
-	 * @param bool        $enabledOnly
+	 * @param string      $uri         The element’s URI.
+	 * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
+	 *                                 Defaults to {@link WebApp::language `craft()->language`}.
+	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
-	 * @return BaseElementModel|null
+	 * @return BaseElementModel|null The matching element, or `null`.
 	 */
 	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
 	{
@@ -131,9 +148,14 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns the element type(s) used by the element of a given ID(s).
 	 *
-	 * @param int|array $elementId
+	 * If a single ID is passed in (an int), then a single element type will be returned (a string), or `null` if
+	 * no element exists by that ID.
 	 *
-	 * @return string|array|null
+	 * If an array is passed in, then an array will be returned.
+	 *
+	 * @param int|array $elementId An element’s ID, or an array of elements’ IDs.
+	 *
+	 * @return string|array|null The element type(s).
 	 */
 	public function getElementTypeById($elementId)
 	{
@@ -158,10 +180,12 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Finds elements.
 	 *
-	 * @param mixed $criteria
-	 * @param bool  $justIds
+	 * @param ElementCriteriaModel $criteria An element criteria model that defines the praameters for the elemetns
+	 *                                       we should be looking for.
+	 * @param bool                 $justIds  Whether the method should only return an array of the IDs of the matched
+	 *                                       elements. Defaults to `false`.
 	 *
-	 * @return array
+	 * @return array The matched elements, or their IDs, depending on $justIds.
 	 */
 	public function findElements($criteria = null, $justIds = false)
 	{
@@ -316,9 +340,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns the total number of elements that match a given criteria.
 	 *
-	 * @param mixed $criteria
+	 * @param ElementCriteriaModel $criteria An element criteria model that defines the praameters for the elemetns
+	 *                                       we should be counting.
 	 *
-	 * @return int
+	 * @return int The total number of elements that match the criteria.
 	 */
 	public function getTotalElements($criteria = null)
 	{
@@ -342,13 +367,20 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a DbCommand instance ready to search for elements based on a given element criteria.
+	 * Preps a {@link DbCommand} object for querying for elements, based on a given element criteria.
 	 *
-	 * @param mixed &$criteria
-	 * @param null  &$contentTable
-	 * @param null  &$fieldColumns
+	 * @param ElementCriteriaModel &$criteria     The element criteria model
+	 * @param string               &$contentTable The content table that should be joined in. (This variable will
+	 *                                            actually get defined by buildElementsQuery(), and is passed by
+	 *                                            reference so whatever’s calling the method will have access to its
+	 *                                            value.)
+	 * @param array                &$fieldColumns Info about the content field columns being selected. (This variable
+	 *                                            will actually get defined by buildElementsQuery(), and is passed by
+	 *                                            reference so whatever’s calling the method will have access to its
+	 *                                            value.)
 	 *
-	 * @return DbCommand|false
+	 * @return DbCommand|false The DbCommand object, or `false` if the method was able to determine ahead of time that
+	 *                         there’s no chance any elements are going to be found with the given parameters.
 	 */
 	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
 	{
@@ -782,12 +814,12 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an element's URI for a given locale.
+	 * Returns an element’s URI for a given locale.
 	 *
-	 * @param int    $elementId
-	 * @param string $localeId
+	 * @param int    $elementId The element’s ID.
+	 * @param string $localeId  The locale to search for the element’s URI in.
 	 *
-	 * @return string
+	 * @return string|null The element’s URI, or `null`.
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
 	{
@@ -801,9 +833,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns the locales that a given element is enabled in.
 	 *
-	 * @param int $elementId
+	 * @param int $elementId The element’s ID.
 	 *
-	 * @return array
+	 * @return array The locales that the element is enabled in. If the element could not be found, an empty array
+	 *               will be returned.
 	 */
 	public function getEnabledLocalesForElement($elementId)
 	{
@@ -818,7 +851,27 @@ class ElementsService extends BaseApplicationComponent
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Saves an element.
+	 * Handles all of the routine tasks that go along with saving elements.
+	 *
+	 * Those tasks include:
+	 *
+	 * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
+	 * - Ensuring the element has a title if its type {@link BaseElementType::hasTitles() has titles}, and giving it a
+	 *   default title in the event that $validateContent is set to `false`
+	 * - Saving a row in the `elements` table
+	 * - Assigning the element’s ID on the element model, if it’s a new element
+	 * - Assigning the element’s ID on the element’s content model, if there is one and it’s a new set of content
+	 * - Updating the search index with new keywords from the element’s content
+	 * - Setting a unique URI on the element, if it’s supposed to have one.
+	 * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
+	 * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
+	 * - Calling the field types’ {@link BaseFieldType::onAfterElementSave() onAfterElementSave()} methods
+	 * - Cleaing any template caches that the element was involved in
+	 *
+	 * This method should be called by a service’s “saveX()” method, _after_ it is done validating any attributes on
+	 * the element that are of particular concern to its element type. For example, if the element were an entry,
+	 * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
+	 * ensure that they point to valid section and entry type IDs.
 	 *
 	 * @param BaseElementModel $element         The element that is being saved
 	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it
@@ -1146,11 +1199,11 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Updates an element's slug and URI, along with any descendants.
+	 * Updates an element’s slug and URI, along with any descendants.
 	 *
-	 * @param BaseElementModel $element
-	 * @param bool             $updateOtherLocales
-	 * @param bool             $updateDescendants
+	 * @param BaseElementModel $element            The element to update.
+	 * @param bool             $updateOtherLocales Whether the element’s other locales should also be updated.
+	 * @param bool             $updateDescendants  Whether the element’s descendants should also be updated.
 	 *
 	 * @return null
 	 */
@@ -1181,9 +1234,9 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Updates an element's slug and URI, for any locales besides the given one.
+	 * Updates an element’s slug and URI, for any locales besides the given one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param BaseElementModel $element The element to update.
 	 *
 	 * @return null
 	 */
@@ -1206,9 +1259,9 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Updates an element's descendants' slugs and URIs.
+	 * Updates an element’s descendants’ slugs and URIs.
 	 *
-	 * @param BaseElementModel $element
+	 * @param BaseElementModel $element The element whose descendants should be updated.
 	 *
 	 * @return null
 	 */
@@ -1230,11 +1283,17 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Merges two elements together.
 	 *
-	 * @param int $mergedElementId
-	 * @param int $prevailingElementId
+	 * This method will upddate the following:
+	 *
+	 * - Any relations involving the merged elmeent
+	 * - Any structures that contain the merged element
+	 * - Any reference tags in textual custom fields referencing the merged element
+	 *
+	 * @param int $mergedElementId     The ID of the element that is going away.
+	 * @param int $prevailingElementId The ID of the element that is sticking around.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the elements were merged successfully.
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
 	{
@@ -1347,10 +1406,10 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Deletes an element(s) by its ID(s).
 	 *
-	 * @param int|array $elementIds
+	 * @param int|array $elementIds The element’s ID, or an array of elements’ IDs.
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the element(s) were deleted successfully.
 	 */
 	public function deleteElementById($elementIds)
 	{
@@ -1423,9 +1482,9 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Deletes elements by a given type.
 	 *
-	 * @param string $type
+	 * @param string $type The element type class handle.
 	 *
-	 * @return bool
+	 * @return bool Whether the elements were deleted successfully.
 	 */
 	public function deleteElementsByType($type)
 	{
@@ -1451,7 +1510,7 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns all installed element types.
 	 *
-	 * @return array
+	 * @return BaseElementType[] The installed element types.
 	 */
 	public function getAllElementTypes()
 	{
@@ -1459,11 +1518,11 @@ class ElementsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an element type.
+	 * Returns an element type by its class handle.
 	 *
-	 * @param string $class
+	 * @param string $class The element type class handle.
 	 *
-	 * @return BaseElementType|null
+	 * @return BaseElementType|null The element type, or `null`.
 	 */
 	public function getElementType($class)
 	{
@@ -1474,11 +1533,11 @@ class ElementsService extends BaseApplicationComponent
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Parses a string for element reference tags.
+	 * Parses a string for element [reference tags](http://buildwithcraft.com/docs/reference-tags).
 	 *
-	 * @param string $str
+	 * @param string $str The string to parse.
 	 *
-	 * @return string|array
+	 * @return string The parsed string.
 	 */
 	public function parseRefs($str)
 	{

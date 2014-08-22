@@ -241,7 +241,6 @@ class AssetsService extends BaseApplicationComponent
 		$this->raiseEvent('onSaveFileContent', $event);
 	}
 
-	// -------------------------------------------
 	//  Folders
 	// -------------------------------------------
 
@@ -376,6 +375,7 @@ class AssetsService extends BaseApplicationComponent
 		try
 		{
 			$parentFolder = $this->getFolderById($parentId);
+
 			if (empty($parentFolder))
 			{
 				throw new Exception(Craft::t("Can’t find the parent folder!"));
@@ -383,7 +383,6 @@ class AssetsService extends BaseApplicationComponent
 
 			$source = craft()->assetSources->getSourceTypeById($parentFolder->sourceId);
 			$response = $source->createFolder($parentFolder, $folderName);
-
 		}
 		catch (Exception $exception)
 		{
@@ -408,6 +407,7 @@ class AssetsService extends BaseApplicationComponent
 		try
 		{
 			$folder = $this->getFolderById($folderId);
+
 			if (empty($folder))
 			{
 				throw new Exception(Craft::t("Can’t find the folder to rename!"));
@@ -415,7 +415,6 @@ class AssetsService extends BaseApplicationComponent
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
 			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName));
-
 		}
 		catch (Exception $exception)
 		{
@@ -678,6 +677,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			$response = new AssetOperationResponseModel();
 			$response->setError(Craft::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+
 			return $response;
 		}
 	}
@@ -688,8 +688,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param string $localPath
 	 * @param string $fileName
 	 * @param int    $folderId
-	 * @param mixed  $conflictResolution What action should be taken in the event
-	 *                                   of a filename conflict.
+	 * @param mixed  $conflictResolution What action should be taken in the event of a filename conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -1240,6 +1239,7 @@ class AssetsService extends BaseApplicationComponent
 			// Use the previous data to clean up
 			$originatingSource->deleteCreatedImages($oldFileModel);
 			$originatingSource->finalizeTransfer($oldFileModel);
+
 			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
