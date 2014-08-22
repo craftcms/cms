@@ -208,7 +208,13 @@ class AppVariable
 		$maxPost = AppHelper::getByteValueFromPhpSizeString(ini_get('post_max_size'));
 		$memoryLimit = AppHelper::getByteValueFromPhpSizeString(ini_get('memory_limit'));
 
-		$uploadInBytes = min($maxUpload, $maxPost, $memoryLimit);
+		$uploadInBytes = min($maxUpload, $maxPost);
+
+		if ($memoryLimit > 0)
+		{
+			$uploadInBytes = min($uploadInBytes, $memoryLimit);
+		}
+
 		$configLimit = (int) craft()->config->get('maxUploadFileSize');
 
 		if ($configLimit)
