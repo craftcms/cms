@@ -494,6 +494,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		else if (is_string($transform))
 		{
 			$transformModel =  $this->getTransformByHandle($transform);
+
 			if ($transformModel)
 			{
 				return $transformModel;

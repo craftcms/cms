@@ -231,8 +231,8 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param Event $event
 	 *
-	 * @return null
 	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
+	 * @return null
 	 */
 	public function onSaveFileContent(Event $event)
 	{
@@ -1094,7 +1094,7 @@ class AssetsService extends BaseApplicationComponent
 				$condition = DbHelper::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);
 				$lastKey = key(array_slice($whereParams, -1, 1, true));
 
-				// Now unescape it.
+				// Now un-escape it.
 				$whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
 			}
 			else
