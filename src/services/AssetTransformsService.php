@@ -760,7 +760,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Deletes an image local source if required by config.
 	 *
 	 * @param $imageSource
-	 * 
+	 *
 	 * @return null
 	 */
 	public function queueSourceForDeletingIfNecessary($imageSource)
