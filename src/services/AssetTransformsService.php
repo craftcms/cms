@@ -374,7 +374,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$transformFilename = IOHelper::getFileName($file->filename, false).'.'.$index->detectedFormat;
 		$index->filename = $transformFilename;
 
-		$usableTransforms = array();
+		$matchFound = false;
 
 		// If the detected format matches the file's format, we can use the
 		// old-style formats as well so we can dig through existing files
@@ -410,34 +410,15 @@ class AssetTransformsService extends BaseApplicationComponent
 				// Any other should do.
 				else
 				{
-					$usableTransforms[] = $result;
+					$matchFound = $result;
 				}
 			}
 		}
 
 		// Loop through reusable transforms.
-		if (!empty($usableTransforms))
+		if ($matchFound)
 		{
-			foreach ($usableTransforms as $key => $usableTransform)
-			{
-				// Copy the first transform in it's new home
-				if ($key == 0)
-				{
-					$source->copyTransform($file, new AssetTransformIndexModel($usableTransform), $index);
-				}
-
-				// For all transforms that matched - if this is the old style
-				// then update it to be the new style
-				if (empty($usableTransform['filename']))
-				{
-					$indexToUpdate = new AssetTransformIndexModel($usableTransform);
-					$indexToUpdate->filename = $transformFilename;
-					$indexToUpdate->format = $index->format;
-
-					$this->storeTransformIndexData($indexToUpdate);
-				}
-			}
-
+			$source->copyTransform($file, new AssetTransformIndexModel($matchFound), $index);
 		}
 		else
 		{
