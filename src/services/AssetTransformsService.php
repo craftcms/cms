@@ -493,6 +493,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 
+		// Loop through reusable transforms.
 		if (!empty($usableTransforms))
 		{
 			foreach ($usableTransforms as $key => $usableTransform)
@@ -680,10 +681,9 @@ class AssetTransformsService extends BaseApplicationComponent
 		$file = craft()->assets->getFileById($transformIndexModel->fileId);
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$baseUrl = $sourceType->getBaseUrl();
-		$folderPath = $file->getFolder()->path;
 		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
 
-		return $baseUrl.$folderPath.$transformIndexModel->location.'/'.$file->id.'/'.$transformIndexModel->filename . $appendix;
+		return $baseUrl . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
 	}
 
 	/**
