@@ -195,83 +195,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Update the asset transforms for the FileModel.
-	 *
-	 * @param AssetFileModel      $file
-	 * @param array|object|string $transformsToUpdate
-	 *
-	 * @return bool
-	 * @deprecated This method will likely be modified or removed in a future update.
-	 */
-	public function updateTransforms(AssetFileModel $file, $transformsToUpdate)
-	{
-		if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
-		{
-			return true;
-		}
-
-		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
-		$imageSource = $this->getLocalImageSource($file);
-
-		if (!is_array($transformsToUpdate))
-		{
-			$transformsToUpdate = array($transformsToUpdate);
-		}
-
-		foreach ($transformsToUpdate as $transform)
-		{
-			$transform = $this->normalizeTransform($transform);
-			$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
-			$transformLocation = $this->_getTransformFolderName($transform);
-
-			$timeModified = $sourceType->getTimeTransformModified($file, $transformLocation);
-
-			// Create the transform if the file doesn't exist, or if it was created before the image was last updated
-			// or if the transform dimensions have changed since it was last created
-			if (!$timeModified || $timeModified < $file->dateModified || $timeModified < $transform->dimensionChangeTime)
-			{
-				$image = craft()->images->loadImage($imageSource);
-				$image->setQuality($quality);
-
-				switch ($transform->mode)
-				{
-					case 'fit':
-					{
-						$image->scaleToFit($transform->width, $transform->height);
-						break;
-					}
-
-					case 'stretch':
-					{
-						$image->resize($transform->width, $transform->height);
-						break;
-					}
-
-					default:
-					{
-						$image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
-						break;
-					}
-				}
-
-				$targetFile = AssetsHelper::getTempFilePath(IOHelper::getExtension($file->filename));
-				$image->saveAs($targetFile);
-
-				clearstatcache(true, $targetFile);
-				$sourceType->putImageTransform($file, $transformLocation, $targetFile);
-				IOHelper::deleteFile($targetFile);
-			}
-		}
-
-		if (craft()->assetSources->populateSourceType($file->getSource())->isRemote())
-		{
-			$this->queueSourceForDeletingIfNecessary($imageSource);
-		}
-
-		return true;
-	}
-
-	/**
 	 * Get a transform index row. If it doesn't exist - create one.
 	 *
 	 * @param AssetFileModel $file
@@ -423,7 +346,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param AssetTransformIndexModel $index
 	 * @return null
-	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function generateTransform(AssetTransformIndexModel $index)
 	{
@@ -674,7 +596,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param AssetTransformIndexModel $transformIndexModel
 	 *
 	 * @return string
-	 * @deprecated This method will likely be modified or removed in a future update.
 	 */
 	public function getUrlForTransformByTransformIndex(AssetTransformIndexModel $transformIndexModel)
 	{
