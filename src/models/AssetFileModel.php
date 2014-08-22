@@ -26,6 +26,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	private $_transform;
 
+	/**
+	 * @var string
+	 */
+	private $_transformSource = '';
+
 	// Public Methods
 	// =========================================================================
 
@@ -339,6 +344,29 @@ class AssetFileModel extends BaseElementModel
 			'size'			=> AttributeType::Number,
 			'dateModified'  => AttributeType::DateTime
 		));
+	}
+
+	/**
+	 * Set a source to use for transforms for this Assets File.
+	 *
+	 * @param $uri
+	 */
+	public function setTransformSource($uri)
+	{
+		$this->_transformSource = $uri;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTransformSource()
+	{
+		if (!$this->_transformSource)
+		{
+			craft()->assetTransforms->getLocalImageSource($this);
+		}
+
+		return $this->_transformSource;
 	}
 
 	// Private Methods

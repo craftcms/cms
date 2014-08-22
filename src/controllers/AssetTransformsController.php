@@ -78,16 +78,30 @@ class AssetTransformsController extends BaseController
 		$transform->mode = craft()->request->getPost('mode');
 		$transform->position = craft()->request->getPost('position');
 		$transform->quality = craft()->request->getPost('quality');
+		$transform->format = craft()->request->getPost('format');
+
+		if (empty($transform->format))
+		{
+			$transform->format = null;
+		}
 
 		$errors = false;
+
 		if (empty($transform->width) && empty($transform->height))
 		{
 			craft()->userSession->setError(Craft::t('You must set at least one of the dimensions.'));
 			$errors = true;
 		}
+
 		if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1))
 		{
 			craft()->userSession->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
+			$errors = true;
+		}
+
+		if (!empty($transform->format) && !in_array($transform->format, ImageHelper::getWebSafeFormats()))
+		{
+			craft()->userSession->setError(Craft::t('That is not an allowed format.'));
 			$errors = true;
 		}
 

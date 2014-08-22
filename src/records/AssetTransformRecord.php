@@ -60,6 +60,7 @@ class AssetTransformRecord extends BaseRecord
 			'position'            => array(AttributeType::Enum, 'values' => array('top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'), 'required' => true, 'default' => 'center-center'),
 			'height'              => AttributeType::Number,
 			'width'               => AttributeType::Number,
+			'format'              => AttributeType::String,
 			'quality'             => array(AttributeType::Number, 'required' => false),
 			'dimensionChangeTime' => AttributeType::DateTime
 		);

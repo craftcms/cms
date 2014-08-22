@@ -174,8 +174,7 @@ class AssetsService extends BaseApplicationComponent
 
 					// Fire an 'onSaveAsset' event
 					$this->onSaveAsset(new Event($this, array(
-						'asset'      => $file,
-						'isNewAsset' => $isNewFile
+						'asset'      => $file
 					)));
 
 					if ($this->hasEventHandler('onSaveFileContent'))
@@ -903,7 +902,7 @@ class AssetsService extends BaseApplicationComponent
 		// Does the file actually exist?
 		if ($index->fileExists)
 		{
-			return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+			return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
 		}
 		else
 		{
@@ -921,7 +920,7 @@ class AssetsService extends BaseApplicationComponent
 				craft()->assetTransforms->storeTransformIndexData($index);
 
 				// Return the transform URL
-				return craft()->assetTransforms->getUrlforTransformByFile($file, $transform);
+				return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
 			}
 			else
 			{
@@ -1240,7 +1239,7 @@ class AssetsService extends BaseApplicationComponent
 			$originatingSource->deleteCreatedImages($oldFileModel);
 			$originatingSource->finalizeTransfer($oldFileModel);
 
-			craft()->assetTransforms->deleteTransformRecordsByFileId($oldFileModel);
+			craft()->assetTransforms->deleteTransformIndexDataByFileId($oldFileModel);
 			IOHelper::deleteFile($localCopy);
 		}
 

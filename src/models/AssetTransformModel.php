@@ -64,6 +64,7 @@ class AssetTransformModel extends BaseModel
 			'handle'              => AttributeType::Handle,
 			'width'               => AttributeType::Number,
 			'height'              => AttributeType::Number,
+			'format'              => AttributeType::String,
 			'dimensionChangeTime' => AttributeType::DateTime,
 			'mode'                => array(AttributeType::String, 'default' => 'crop'),
 			'position'            => array(AttributeType::String, 'default' => 'center-center'),
