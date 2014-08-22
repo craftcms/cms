@@ -216,11 +216,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		if (is_null($transform->format))
 		{
 			// A generated auto-transform will have it's format set to null, but the filename will be populated.
-			$query->andWhere('ti.filename IS NOT NULL AND format IS NULL');
+			$query->andWhere('format IS NULL');
 		}
 		else
 		{
-			$query->andWhere('ti.filename IS NOT NULL AND format = :format', array(':format' => $transform->format));
+			$query->andWhere('format = :format', array(':format' => $transform->format));
 		}
 
 		$entry = $query->queryRow();
