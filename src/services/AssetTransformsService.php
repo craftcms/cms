@@ -415,10 +415,10 @@ class AssetTransformsService extends BaseApplicationComponent
 			}
 		}
 
-		// Loop through reusable transforms.
+		// If we have a match, copy the file.
 		if ($matchFound)
 		{
-			$source->copyTransform($file, new AssetTransformIndexModel($matchFound), $index);
+			$source->copyTransform($file, $file->getFolder(), new AssetTransformIndexModel($matchFound), $index);
 		}
 		else
 		{
@@ -616,23 +616,6 @@ class AssetTransformsService extends BaseApplicationComponent
 				craft()->db->createCommand()->delete('assettransformindex', 'id = '.$row['id']);
 			}*/
 		}
-	}
-
-	/**
-	 * Get generated transform locations for a file.
-	 *
-	 * @param AssetFileModel $file
-	 *
-	 * @return array|\CDbDataReader
-	 */
-	public function getGeneratedTransformLocationsForFile(AssetFileModel $file)
-	{
-		return craft()->db->createCommand()
-			->where('sourceId = :sourceId AND fileExists = 1 AND fileId = :fileId',
-				array(':sourceId' => $file->sourceId, ':fileId' => $file->id))
-			->select('location')
-			->from('assettransformindex')
-			->queryColumn();
 	}
 
 	/**
@@ -894,6 +877,77 @@ class AssetTransformsService extends BaseApplicationComponent
 	public function getTransformSubpath(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		return $this->getTransformSubfolder($file, $index).'/'.$this->getTransformFilename($file, $index);
+	}
+
+	/**
+	 * Delete *ALL* transform data (including thumbs and sources) associated with file.
+	 *
+	 * @param AssetFileModel $file
+	 *
+	 * @return null
+	 */
+	public function deleteAllTransformData(AssetFileModel $file)
+	{
+		$this->deleteThumbnailsForFile($file);
+		$this->deleteCreatedTransformsForFile($file);
+		$this->deleteTransformIndexDataByFileId($file->id);
+
+		IOHelper::deleteFile(craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename), true);
+	}
+
+	/**
+	 * Delete all the generated thumbnails for the file.
+	 *
+	 * @param AssetFileModel $file
+	 *
+	 * @return null
+	 */
+	public function deleteThumbnailsForFile(AssetFileModel $file)
+	{
+		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
+
+		foreach ($thumbFolders as $folder)
+		{
+			if (is_dir($folder))
+			{
+				IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
+			}
+		}
+	}
+
+	/**
+	 * Delete created transforms for a file.
+	 *
+	 * @param AssetFileModel $file
+	 */
+	public function deleteCreatedTransformsForFile(AssetFileModel $file)
+	{
+		$indexModels = $this->getAllCreatedTransformsForFile($file);
+
+		$source = craft()->assetSources->populateSourceType($file->getSource());
+
+		foreach ($indexModels as $index)
+		{
+			$source->deleteTransform($file, $index);
+		}
+	}
+
+	/**
+	 * Get an array of AssetIndexDataModel for all created transforms for a file.
+	 *
+	 * @param AssetFileModel $file
+	 *
+	 * @return array
+	 */
+	public function getAllCreatedTransformsForFile(AssetFileModel $file)
+	{
+		$records = craft()->db->createCommand()
+			->select('*')
+			->from('assettransformindex')
+			->where('fileId = :fileId', array(':fileId' => $file->id))
+			->queryAll();
+
+		return AssetTransformIndexModel::populateModels($records);
 	}
 
 	// Private Methods

@@ -352,6 +352,16 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
+	 * Return the source's base path.
+	 *
+	 * @return mixed
+	 */
+	public function getBasePath()
+	{
+		return $this->_getPathPrefix();
+	}
+
+	/**
 	 * Return true if a physical folder exists.
 	 *
 	 * @param AssetFolderModel $parentPath
@@ -484,24 +494,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete all the generated image transforms for this file.
-	 *
-	 * @param AssetFileModel $file
-	 *
-	 * @return null
-	 */
-	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
-	{
-		$folder = craft()->assets->getFolderById($file->folderId);
-		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-
-		foreach ($transforms as $location)
-		{
-			$this->_deleteObject($this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->path.$location.'/'.$file->filename));
-		}
-	}
-
-	/**
 	 * Move a file in source.
 	 *
 	 * @param AssetFileModel   $file
@@ -550,20 +542,16 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->deleteGeneratedThumbnails($file);
+			craft()->assetTransforms->deleteThumbnailsForFile($file);
+
+			$baseFromPath = $this->getBasePath().$file->getFolder()->path;
+			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
-			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-
-			$baseFromPath = $originatingSettings->subfolder.$sourceFolder->path;
-			$baseToPath = $this->_getPathPrefix().$targetFolder->path;
-
-			foreach ($transforms as $location)
+			foreach ($transforms as $index)
 			{
-				$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $baseFromPath.$location.'/'.$file->filename);
-				$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $baseToPath.$location.'/'.$fileName);
-				$this->_copyFile($sourceUri, $targetUri);
-				$this->_deleteObject($sourceUri);
+				$this->copyTransform($file, $targetFolder, $index, $index);
+				$this->deleteSourceFile($baseFromPath.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 
