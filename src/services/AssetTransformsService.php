@@ -504,41 +504,16 @@ class AssetTransformsService extends BaseApplicationComponent
 				}
 
 				// For all transforms that matched - if this is the old style
-				// then duplicate this both for AUTO and the appropriate format
+				// then update it to be the new style
 				if (empty($usableTransform['filename']))
 				{
-					// Delete the old record
-					$this->deleteTransformIndex($usableTransform['id']);
 
-					unset ($usableTransform['id']);
-					$newIndex = new AssetTransformIndexModel($usableTransform);
-					$newIndex->filename = $transformFilename;
+					$indexToUpdate = new AssetTransformIndexModel($usableTransform);
+					$indexToUpdate->filename = $transformFilename;
+					$indexToUpdate->format = $index->format;
 
-					// And add the two new ones.
+					$this->storeTransformIndexData($indexToUpdate);
 
-					// This is correct, because, for example, JPG file format
-					// detection will resolve to "jpg" anyway, so we can store
-					// the AUTO version as well.
-					$newIndex->format = null;
-
-					// Since we're making new transforms, chances are we're
-					// stepping on the toes of the transform index that started
-					// this. Make sure we don't make one copy too many.
-					if ($newIndex->location != $index->location || $newIndex->format != $index->format)
-					{
-						$this->storeTransformIndexData($newIndex);
-					}
-
-					// And one for detected as well.
-					$newIndex->id = null;
-					$newIndex->format = $index->detectedFormat;
-
-					if ($newIndex->location != $index->location || $newIndex->format != $index->format)
-					{
-						$this->storeTransformIndexData($newIndex);
-					}
-
-					$result['format'] = $index->format;
 				}
 			}
 
@@ -978,7 +953,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		$path = $index->location;
 
-		if (!empty($index->filename))
+		if (!empty($index->filename) && $index->filename != $file->filename)
 		{
 			$path .= '/'.$file->id;
 		}
