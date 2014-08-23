@@ -575,7 +575,7 @@ class UsersService extends BaseApplicationComponent
 				$userRecord->invalidLoginCount++;
 
 				// Was that one bad password too many?
-				if ($userRecord->invalidLoginCount >= $maxInvalidLogins)
+				if ($userRecord->invalidLoginCount > $maxInvalidLogins)
 				{
 					$userRecord->status = $user->status = UserStatus::Locked;
 					$userRecord->invalidLoginCount = null;
