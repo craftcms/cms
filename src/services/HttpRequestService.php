@@ -594,22 +594,16 @@ class HttpRequestService extends \CHttpRequest
 
 			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && preg_match_all('/([\w\-_]+)\s*(?:;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches, PREG_SET_ORDER))
 			{
-				$languages = array();
 				$weights = array();
 
 				foreach ($matches as $match)
 				{
-					$languages[] = $match[1];
+					$this->_browserLanguages[] = LocaleData::getCanonicalID($match[1]);
 					$weights[] = !empty($match[2]) ? floatval($match[2]) : 1;
 				}
 
-				// Sort the languages by their weird
-				array_multisort($weights, SORT_NUMERIC, SORT_DESC, $languages);
-
-				foreach ($languages as $language)
-				{
-					$this->_browserLanguages[] = LocaleData::getCanonicalID($language);
-				}
+				// Sort the languages by their weight
+				array_multisort($weights, SORT_NUMERIC, SORT_DESC, $this->_browserLanguages);
 			}
 		}
 
