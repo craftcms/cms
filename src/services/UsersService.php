@@ -566,28 +566,33 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
 		$userRecord->lastLoginAttemptIPAddress = craft()->request->getUserHostAddress();
 
-		if ($this->_isUserInsideInvalidLoginWindow($userRecord))
-		{
-			$userRecord->invalidLoginCount++;
+		$maxInvalidLogins = craft()->config->get('maxInvalidLogins');
 
-			// Was that one bad password too many?
-			if ($userRecord->invalidLoginCount >= craft()->config->get('maxInvalidLogins'))
+		if ($maxInvalidLogins)
+		{
+			if ($this->_isUserInsideInvalidLoginWindow($userRecord))
 			{
-				$userRecord->status = $user->status = UserStatus::Locked;
-				$userRecord->invalidLoginCount = null;
-				$userRecord->invalidLoginWindowStart = null;
-				$userRecord->lockoutDate = $user->lockoutDate = $currentTime;
-			}
-		}
-		else
-		{
-			// Start the invalid login window and counter
-			$userRecord->invalidLoginWindowStart = $currentTime;
-			$userRecord->invalidLoginCount = 1;
-		}
+				$userRecord->invalidLoginCount++;
 
-		// Update the counter on the user model
-		$user->invalidLoginCount = $userRecord->invalidLoginCount;
+				// Was that one bad password too many?
+				if ($userRecord->invalidLoginCount >= $maxInvalidLogins)
+				{
+					$userRecord->status = $user->status = UserStatus::Locked;
+					$userRecord->invalidLoginCount = null;
+					$userRecord->invalidLoginWindowStart = null;
+					$userRecord->lockoutDate = $user->lockoutDate = $currentTime;
+				}
+			}
+			else
+			{
+				// Start the invalid login window and counter
+				$userRecord->invalidLoginWindowStart = $currentTime;
+				$userRecord->invalidLoginCount = 1;
+			}
+
+			// Update the counter on the user model
+			$user->invalidLoginCount = $userRecord->invalidLoginCount;
+		}
 
 		return $userRecord->save();
 	}
