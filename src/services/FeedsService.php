@@ -61,7 +61,7 @@ class FeedsService extends BaseApplicationComponent
 	 * @param int    $offset        The number of items to skip. Defaults to 0.
 	 * @param string $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
 	 *
-	 * @return array The list of feed items.
+	 * @return array|string The list of feed items.
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
 	{
@@ -87,6 +87,13 @@ class FeedsService extends BaseApplicationComponent
 		$feed->set_cache_location(craft()->path->getCachePath());
 		$feed->set_cache_duration($cacheDuration);
 		$feed->init();
+
+		// Something went wrong.
+		if ($feed->error())
+		{
+			Craft:log('There was a problem parsing the feed: '.$feed->error(), LogLevel::Warning);
+			return array();
+		}
 
 		foreach ($feed->get_items($offset, $limit) as $item)
 		{
