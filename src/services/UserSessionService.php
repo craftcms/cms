@@ -659,17 +659,17 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Sets a cookie on the browser.
 	 *
-	 * @param string $cookieName The name of the cookie.
-	 * @param mixed  $data       The data that should be stored on the cookie.
-	 * @param int    $duration   The duration that the cookie should be stored for, in seconds.
+	 * @param string $name     The name of the cookie.
+	 * @param mixed  $data     The data that should be stored on the cookie.
+	 * @param int    $duration The duration that the cookie should be stored for, in seconds.
 	 *
 	 * @todo Set domain to wildcard?  .example.com, .example.co.uk, .too.many.subdomains.com
 	 * @return null
 	 */
-	public function saveCookie($cookieName, $data, $duration = 0)
+	public function saveCookie($name, $data, $duration = 0)
 	{
-		$cookieName = $this->getStateKeyPrefix().$cookieName;
-		$cookie = new \CHttpCookie($cookieName, '');
+		$name = $this->getStateKeyPrefix().$name;
+		$cookie = new \CHttpCookie($name, '');
 		$cookie->httpOnly = true;
 		$cookie->expire = time() + $duration;
 
@@ -679,27 +679,75 @@ class UserSessionService extends \CWebUser
 		}
 
 		$cookie->value = craft()->security->hashData(base64_encode(serialize($data)));
-		craft()->getRequest()->getCookies()->add($cookie->name, $cookie);
+		craft()->request->getCookies()->add($cookie->name, $cookie);
 	}
 
 	/**
-	 * Returns the value of a cookie by its name.
+	 * Returns a cookie that was stored for the current application state.
 	 *
-	 * @param string $cookieName The name of the cookie.
+	 * @param string $name The cookie name.
 	 *
-	 * @return mixed The value of the cookie, or `null` if the cookie doesn’t exist.
+	 * @return \CHttpCookie|null The cookie, or `null` if it didn’t exist.
 	 */
-	public function getCookieValue($cookieName)
+	public function getCookie($name)
 	{
-		$cookie = craft()->request->getCookie($this->getStateKeyPrefix().$cookieName);
+		$name = $this->getStateKeyPrefix().$name;
+		return craft()->request->getCookies()->itemAt($name);
+	}
+
+	/**
+	 * Returns the value of a cookie by its name, ensuring that the data hasn’t been tampered with.
+	 *
+	 * @param \CHttpCookie|string $cookie The cookie, or the name of the cookie.
+	 *
+	 * @return mixed The value of the cookie if it exists and hasn’t been tampered with, or `null`.
+	 */
+	public function getCookieValue($cookie)
+	{
+		if (is_string($cookie))
+		{
+			$cookie = $this->getCookie($cookie);
+		}
 
 		if ($cookie && !empty($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
 		{
-			$data = @unserialize(base64_decode($data));
-			return $data;
+			return @unserialize(base64_decode($data));
+		}
+	}
+
+	/**
+	 * Returns the current user identity cookie, if there is one.
+	 *
+	 * @return \CHttpCookie|null The user identity cookie.
+	 */
+	public function getIdentityCookie()
+	{
+		return $this->getCookie('');
+	}
+
+	/**
+	 * Returns the current user identity cookie’s value, if there is one.
+	 *
+	 * @param \CHttpCookie|null The user identity cookie, or `null` if you don’t have it on hand.
+	 *
+	 * @return array|null The user identity cookie’s data, or `null` if it didn’t exist.
+	 */
+	public function getIdentityCookieValue(\CHttpCookie $cookie = null)
+	{
+		if (!$cookie)
+		{
+			$cookie = $this->getIdentityCookie();
 		}
 
-		return null;
+		if (
+			$cookie &&
+			($data = $this->getCookieValue($cookie)) &&
+			is_array($data) &&
+			isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5])
+		)
+		{
+			return $data;
+		}
 	}
 
 	/**
@@ -819,15 +867,13 @@ class UserSessionService extends \CWebUser
 	{
 		$this->_checkVitals();
 
-		$cookies = craft()->request->getCookies();
-		$cookie = $cookies->itemAt($this->getStateKeyPrefix());
+		$cookie = $this->getIdentityCookie();
 
-		// Check the identity cookie and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
+		if ($cookie)
 		{
-			$data = $this->getCookieValue('');
+			$data = $this->getIdentityCookieValue($cookie);
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
+			if ($data)
 			{
 				$savedUserAgent = $data[4];
 				$currentUserAgent = craft()->request->userAgent;
@@ -837,7 +883,7 @@ class UserSessionService extends \CWebUser
 				// Bump the expiration time.
 				$expiration = time() + $data[3];
 				$cookie->expire = $expiration;
-				$cookies->add($cookie->name, $cookie);
+				craft()->request->getCookies()->add($cookie->name, $cookie);
 
 				$this->authTimeout = $data[3];
 				$this->setState(static::AUTH_TIMEOUT_VAR, $expiration);
@@ -861,15 +907,13 @@ class UserSessionService extends \CWebUser
 		}
 
 		// See if they have an existing identity cookie.
-		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
+		$cookie = $this->getIdentityCookie();
 
-		// Grab the identity cookie and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
+		if ($cookie)
 		{
-			// Grab the data
-			$data = $this->getCookieValue('');
+			$data = $this->getIdentityCookieValue($cookie);
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
+			if ($data)
 			{
 				$loginName = $data[0];
 				$currentSessionToken = $data[1];
@@ -927,21 +971,21 @@ class UserSessionService extends \CWebUser
 					}
 					else
 					{
-						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', LogLevel::Error);
+						Craft::log('Tried to restore session from a cookie, but the given hashed database token value does not appear to belong to the given login name. Hashed db value: '.$dbHashedToken.' and loginName: '.$loginName.'.', LogLevel::Warning);
 						// Forcing logout here clears the identity cookie helping to prevent session fixation.
 						$this->logout();
 					}
 				}
 				else
 				{
-					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', LogLevel::Error);
+					Craft::log('Tried to restore session from a cookie, but the given login name does not match the given uid. UID: '.$uid.' and loginName: '.$loginName.'.', LogLevel::Warning);
 					// Forcing logout here clears the identity cookie helping to prevent session fixation.
 					$this->logout();
 				}
 			}
 			else
 			{
-				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Error);
+				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Warning);
 				$this->logout();
 			}
 		}
@@ -957,15 +1001,13 @@ class UserSessionService extends \CWebUser
 		// Fire an 'onBeforeLogout' event
 		$this->onBeforeLogout(new Event($this));
 
-		$cookie = craft()->request->getCookies()->itemAt($this->getStateKeyPrefix());
+		$cookie = $this->getIdentityCookie();
 
-		// Grab the identity cookie information and make sure the data hasn't been tampered with.
-		if ($cookie && !empty($cookie->value) && is_string($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
+		if ($cookie)
 		{
-			// Grab the data
-			$data = $this->getCookieValue('');
+			$data = $this->getIdentityCookieValue($cookie);
 
-			if (is_array($data) && isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5]))
+			if ($data)
 			{
 				$loginName = $data[0];
 				$uid = $data[2];
@@ -980,7 +1022,7 @@ class UserSessionService extends \CWebUser
 			}
 			else
 			{
-				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Error);
+				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Warning);
 			}
 		}
 
@@ -991,7 +1033,7 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Fires an 'onLogout' event after a user has been logged out.
-	 * 
+	 *
 	 * @return null
 	 */
 	protected function afterLogout()
