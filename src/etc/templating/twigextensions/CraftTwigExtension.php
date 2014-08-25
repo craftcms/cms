@@ -144,6 +144,11 @@ class CraftTwigExtension extends \Twig_Extension
 		{
 			return strtr($str, $search);
 		}
+		// Is this a regular expression?
+		else if (preg_match('/^\/(.+)\//$', $search))
+		{
+			return preg_replace($search, $replace, $str);
+		}
 		else
 		{
 			// Otherwise use str_replace
