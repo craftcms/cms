@@ -439,7 +439,7 @@ class MatrixFieldType extends BaseFieldType
 				{
 					$fieldType->element = $block;
 					$handle = $field->handle;
-					$keywords[] = $fieldType->getSearchKeywords($block->$handle);
+					$keywords[] = $fieldType->getSearchKeywords($block->getFieldValue($handle));
 				}
 			}
 
