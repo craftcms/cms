@@ -44,7 +44,7 @@
 		title: 'Tittel',
 		image_position: 'Plassering',
 		none: 'Ingen',
-		left: 'venstre',
+		left: 'Venstre',
 		right: 'H&oslash;yre',
 		image_web_link: 'Bildelink',
 		text: 'Tekst',
@@ -68,7 +68,7 @@
 		underline: 'Understreking',
 		alignment: 'Justering',
 		filename: 'Filnavn (valgfritt)',
-		edit: 'Edit',
-		center: 'Center'
+		edit: 'Endre',
+		center: 'Midten'
 	};
 })(jQuery);
