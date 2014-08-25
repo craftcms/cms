@@ -22,7 +22,9 @@ class UserModel extends BaseElementModel
 	protected $elementType = ElementType::User;
 
 	/**
-	 * @var array The cached list of groups the user belongs to. Set by {@link getGroups()}.
+	 * The cached list of groups the user belongs to. Set by {@link getGroups()}.
+	 *
+	 * @var array
 	 */
 	private $_groups;
 
