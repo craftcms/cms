@@ -464,8 +464,9 @@ class Image
 
 		$step++;
 
-		// Too little.
-		if ($newFileSize > $originalSize)
+		// Too little.  PNGs use "compression_level" (0-9), which is different from quality (1-100), so we have to adjust
+		// The higher the compress_level, the lower the quality.
+		if ($newFileSize > $originalSize && $extension !== 'png')
 		{
 			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
 		}
@@ -501,18 +502,20 @@ class Image
 			case 'jpeg':
 			case 'jpg':
 			{
-				return array('quality' => $quality, 'flatten' => true);
+				return array('jpeg_quality' => $quality, 'flatten' => true);
 			}
 
 			case 'gif':
 			{
 				$options = array('animated' => $this->_isAnimatedGif);
+
 				if ($this->_isAnimatedGif)
 				{
 					// Imagine library does not provide this value and arbitrarily divides it by 10, when assigning,
 					// so we have to improvise a little
 					$options['animated.delay'] = $this->_image->getImagick()->getImageDelay() * 10;
 				}
+
 				return $options;
 			}
 
@@ -522,7 +525,7 @@ class Image
 				$percentage = ($quality * 100) / 200;
 				$normalizedQuality = round(($percentage / 100) * 9);
 
-				return array('quality' => $normalizedQuality, 'flatten' => false);
+				return array('png_compression_level' => $normalizedQuality, 'flatten' => false);
 			}
 
 			default:
