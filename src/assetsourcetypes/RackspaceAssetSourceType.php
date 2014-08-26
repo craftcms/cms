@@ -254,7 +254,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
 
-			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
+			if ($fileModel->kind == 'image' && ($fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath)))
 			{
 				$this->_downloadFile($this->_getPathPrefix().$uriPath, $targetPath);
 
