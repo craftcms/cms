@@ -539,7 +539,14 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			// Move transforms
 			foreach ($transforms as $index)
 			{
-				$this->copyTransform($file, $targetFolder, $index, $index);
+				// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
+				$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+				$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceTransformPath);
+
+				$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+				$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
+				$this->_copyFile($sourceTransformPath, $targetTransformPath);
+
 				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
