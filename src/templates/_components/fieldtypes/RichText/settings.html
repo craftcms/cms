@@ -30,3 +30,11 @@
 	name: 'cleanupHtml',
 	checked: settings.cleanupHtml
 }) }}
+
+{{ forms.checkboxField({
+	label: "Purify HTML?"|t,
+	instructions: 'Runs the submitted HTML through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a> before saving to the database removing any potentially malicious code.'|t,
+	id: 'purifyHtml',
+	name: 'purifyHtml',
+	checked: settings.purifyHtml
+}) }}
