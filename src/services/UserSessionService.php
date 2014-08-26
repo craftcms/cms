@@ -68,6 +68,11 @@ class UserSessionService extends \CWebUser
 	{
 		if (!craft()->isConsole())
 		{
+				// Set the authTimeout based on whether the current identity was created with "Remember Me" checked.
+				// We have to do this before calling parent::init() so that updateAuthStatus() will be able to know
+				// whether it should log the user out
+				$data = $this->getIdentityCookieValue();
+				$this->authTimeout = $this->_getSessionDuration($data ? $data[3] : false);
 
 			parent::init();
 		}
