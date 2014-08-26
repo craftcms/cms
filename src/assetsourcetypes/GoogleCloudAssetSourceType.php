@@ -224,7 +224,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 			$timeModified = new DateTime('@'.$fileInfo['time']);
 
-			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
+			if ($fileModel->kind == 'image' && ($fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath)))
 			{
 				$this->_googleCloud->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
