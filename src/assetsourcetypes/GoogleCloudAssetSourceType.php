@@ -345,16 +345,6 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return the source's base path.
-	 *
-	 * @return mixed
-	 */
-	public function getBasePath()
-	{
-		return $this->_getPathPrefix();
-	}
-
-	/**
 	 * Return true if the source is a remote source.
 	 *
 	 * @return bool
@@ -531,14 +521,13 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		{
 			craft()->assetTransforms->deleteThumbnailsForFile($file);
 
-			$baseFromPath = $this->getBasePath().$file->getFolder()->path;
 			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
 			foreach ($transforms as $index)
 			{
 				$this->copyTransform($file, $targetFolder, $index, $index);
-				$this->deleteSourceFile($baseFromPath.craft()->assetTransforms->getTransformSubpath($file, $index));
+				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 

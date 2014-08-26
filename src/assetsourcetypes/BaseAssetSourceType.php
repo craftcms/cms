@@ -104,13 +104,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function getBaseUrl();
 
 	/**
-	 * Return the source's base path.
-	 *
-	 * @return mixed
-	 */
-	abstract public function getBasePath();
-
-	/**
 	 * Returns true if this is a valid source. Used for type-specific validations.
 	 *
 	 * @return array

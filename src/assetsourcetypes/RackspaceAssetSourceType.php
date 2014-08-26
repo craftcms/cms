@@ -352,16 +352,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return the source's base path.
-	 *
-	 * @return mixed
-	 */
-	public function getBasePath()
-	{
-		return $this->_getPathPrefix();
-	}
-
-	/**
 	 * Return true if a physical folder exists.
 	 *
 	 * @param AssetFolderModel $parentPath
@@ -544,14 +534,13 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		{
 			craft()->assetTransforms->deleteThumbnailsForFile($file);
 
-			$baseFromPath = $this->getBasePath().$file->getFolder()->path;
 			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
 			foreach ($transforms as $index)
 			{
 				$this->copyTransform($file, $targetFolder, $index, $index);
-				$this->deleteSourceFile($baseFromPath.craft()->assetTransforms->getTransformSubpath($file, $index));
+				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 

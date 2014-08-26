@@ -465,14 +465,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		{
 			craft()->assetTransforms->deleteThumbnailsForFile($file);
 
-			$baseFromPath = $this->getBasePath().$file->getFolder()->path;
 			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
 			foreach ($transforms as $index)
 			{
 				$this->copyTransform($file, $targetFolder, $index, $index);
-				$this->deleteSourceFile($baseFromPath.craft()->assetTransforms->getTransformSubpath($file, $index));
+				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 
