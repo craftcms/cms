@@ -585,7 +585,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$baseUrl = $sourceType->getBaseUrl();
 		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
 
-		return $baseUrl . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
+		return $baseUrl . $file->getFolder()->path . $this->getTransformSubpath($file, $transformIndexModel) . $appendix;
 	}
 
 	/**
