@@ -92,6 +92,8 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="sections/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
+		{{ getCsrfInput() }}
+
 		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
 		{{ forms.textField({

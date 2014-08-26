@@ -16,36 +16,37 @@
 {% set content %}
 	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="userSettings/saveUserSettings">
+		{{ getCsrfInput() }}
 
-			{{ forms.checkboxField({
-				label: "Verify email addresses?"|t,
-				instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
-				name: 'requireEmailVerification',
-				checked: settings.requireEmailVerification,
+		{{ forms.checkboxField({
+			label: "Verify email addresses?"|t,
+			instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t,
+			name: 'requireEmailVerification',
+			checked: settings.requireEmailVerification,
+		}) }}
+
+		{{ forms.checkboxField({
+			first: true,
+			label: "Allow public registration?"|t,
+			name: 'allowPublicRegistration',
+			checked: settings.allowPublicRegistration,
+			toggle: 'publicRegistrationSettings'
+		}) }}
+
+		<div id="publicRegistrationSettings"{% if not settings.allowPublicRegistration %} class="hidden"{% endif %}>
+			{% set groups = [{ label: "None"|t, value: '' }] %}
+			{% for group in craft.userGroups.getAllGroups() %}
+				{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
+			{% endfor %}
+
+			{{ forms.selectField({
+				label: "Default User Group"|t,
+				instructions: "Choose a user group that publicly-registered members will be added to by default."|t,
+				name: 'defaultGroup',
+				options: groups,
+				value: settings.defaultGroup
 			}) }}
-
-			{{ forms.checkboxField({
-				first: true,
-				label: "Allow public registration?"|t,
-				name: 'allowPublicRegistration',
-				checked: settings.allowPublicRegistration,
-				toggle: 'publicRegistrationSettings'
-			}) }}
-
-			<div id="publicRegistrationSettings"{% if not settings.allowPublicRegistration %} class="hidden"{% endif %}>
-				{% set groups = [{ label: "None"|t, value: '' }] %}
-				{% for group in craft.userGroups.getAllGroups() %}
-					{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
-				{% endfor %}
-
-				{{ forms.selectField({
-					label: "Default User Group"|t,
-					instructions: "Choose a user group that publicly-registered members will be added to by default."|t,
-					name: 'defaultGroup',
-					options: groups,
-					value: settings.defaultGroup
-				}) }}
-			</div>
+		</div>
 
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

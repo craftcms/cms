@@ -60,6 +60,7 @@
 			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut="1">
 				<input type="hidden" name="action" value="users/saveUser">
 				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
+				{{ getCsrfInput() }}
 				{{ hiddenInputs }}
 
 				{% include "_includes/tabs" %}
@@ -285,6 +286,7 @@
 			<div class="item" data-position="right" data-colspan="1">
 				<form class="pane" method="post" accept-charset="UTF-8">
 					{{ hiddenInputs }}
+					{{ getCsrfInput() }}
 
 					<h5 class="first">{{ "Account Status"|t }}</h5>
 					<p>
@@ -332,6 +334,7 @@
 				{% if not account.isCurrent and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
 					<form class="pane" method="post" accept-charset="UTF-8">
 						{{ hiddenInputs }}
+						{{ getCsrfInput() }}
 
 						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}
 							<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">

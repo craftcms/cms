@@ -69,7 +69,12 @@
 			isLocalized:          {{ craft.isLocalized() ? 'true' : 'false' }},
 			translations:         {{ getTranslations()|raw }},
 			maxUploadSize:        {{ craft.app.getMaxUploadSize() }},
+			{% if craft.config.enableCsrfProtection %}
+				csrfTokenValue:       "{{ craft.request.getCsrfToken() }}",
+				csrfTokenName:        "{{ craft.config.csrfTokenName }}",
+			{% endif %}
 			slugWordSeparator:    "{{ craft.config.slugWordSeparator|e('js') }}"
+
 		};
 
 		window.Craft.fileKinds = {};

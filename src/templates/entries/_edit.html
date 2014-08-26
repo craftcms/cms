@@ -14,6 +14,8 @@
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload="1">
+		{{ getCsrfInput() }}
+
 		{% if not isVersion %}
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 			{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}

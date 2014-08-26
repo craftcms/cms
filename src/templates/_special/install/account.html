@@ -5,6 +5,7 @@
 	<h1>{{ "Create your account"|t }}</h1>
 
 	<form id="accountform" accept-charset="UTF-8">
+		{{ getCsrfInput() }}
 		{% if not craft.config.useEmailAsUsername %}
 			{{ forms.textField({ label: "Username"|t, id: 'username', maxlength: 255 }) }}
 		{% endif %}

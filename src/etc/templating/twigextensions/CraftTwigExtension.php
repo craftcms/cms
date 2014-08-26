@@ -279,6 +279,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'cpUrl'                => new \Twig_Function_Function('\Craft\UrlHelper::getCpUrl'),
 			'ceil'                 => new \Twig_Function_Function('ceil'),
 			'floor'                => new \Twig_Function_Function('floor'),
+			'getCsrfInput'         => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
 			'getHeadHtml'          => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
 			'getFootHtml'          => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
 			'getTranslations'      => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
@@ -291,6 +292,17 @@ class CraftTwigExtension extends \Twig_Extension
 			'siteUrl'              => new \Twig_Function_Function('\Craft\UrlHelper::getSiteUrl'),
 			'url'                  => new \Twig_Function_Function('\Craft\UrlHelper::getUrl'),
 		);
+	}
+
+	/**
+	 * Returns getCsrfInput() wrapped in a \Twig_Markup object.
+	 *
+	 * @return \Twig_Markup
+	 */
+	public function getCsrfInputFunction()
+	{
+		$html = craft()->templates->getCsrfInput();
+		return TemplateHelper::getRaw($html);
 	}
 
 	/**

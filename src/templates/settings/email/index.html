@@ -31,6 +31,8 @@
 		<input type="hidden" name="action" value="systemSettings/saveEmailSettings">
 		<input type="hidden" name="redirect" value="settings">
 
+		{{ getCsrfInput() }}
+
 		{{ forms.textField({
 			first: true,
 			label: "System Email Address"|t,

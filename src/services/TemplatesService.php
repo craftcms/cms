@@ -667,11 +667,23 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Prepares translations for inclusion in the template, to be used by the JS.
+	 * Returns the HTML for the CSRF hidden input token.  Used for when the config setting
+	 * [enableCsrfValidation](http://buildwithcraft.com/docs/config-settings#enableCsrfValidation) is set to true.
 	 *
-	 * @param string $message1 A message in the source langauge.
-	 * @param string $message2 Another message in the source language. (Optional)
-	 * @param string $message3 ...
+	 * @return string If 'enabledCsrfProtection' is enabled, the HTML for the hidden input, otherwise an empty string.
+	 */
+	public function getCsrfInput()
+	{
+		if (craft()->config->get('enableCsrfProtection') === true)
+		{
+			return '<input type="hidden" name="'.craft()->config->get('csrfTokenName').'" value="'.craft()->request->getCsrfToken().'">';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Prepares translations for inclusion in the template, to be used by the JS.
 	 *
 	 * @return null
 	 */
