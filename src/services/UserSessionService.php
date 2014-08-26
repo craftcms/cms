@@ -33,6 +33,13 @@ class UserSessionService extends \CWebUser
 	private $_identity;
 
 	/**
+	 * Stores the user identity cookie.
+	 *
+	 * @var \CHttpCookie
+	 */
+	private $_identityCookie;
+
+	/**
 	 * Stores the current user model.
 	 *
 	 * @var UserModel
@@ -722,7 +729,25 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getIdentityCookie()
 	{
-		return $this->getCookie('');
+		if (!isset($this->_identityCookie))
+		{
+			$cookie = $this->getCookie('');
+
+			if ($cookie)
+			{
+				$this->_identityCookie = $cookie;
+			}
+			else
+			{
+				$this->_identityCookie = false;
+			}
+		}
+
+		// Don't return false if that's what it is
+		if ($this->_identityCookie)
+		{
+			return $this->_identityCookie;
+		}
 	}
 
 	/**
