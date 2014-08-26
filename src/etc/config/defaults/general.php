@@ -140,6 +140,11 @@ return array(
 	'cpTrigger' => 'admin',
 
 	/**
+	 * The name of CSRF token used for CSRF validation if the 'enableCsrfProtection' is set to true.
+	 */
+	'csrfTokenName' => 'CRAFT_CSRF_TOKEN',
+
+	/**
 	 * Any custom ASCII character mappings.
 	 *
 	 * This array is merged into the default one in StringHelper::getAsciiCharMap().
@@ -173,6 +178,14 @@ return array(
 	 * Determines whether the system is in Dev Mode or not.
 	 */
 	'devMode' => false,
+
+	/**
+	 * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to false,
+	 * for now, for backwards compatibility, but will eventually default to true.
+	 *
+	 * Also, see the 'csrfTokenName' config setting.
+	 */
+	'enableCsrfProtection' => false,
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
