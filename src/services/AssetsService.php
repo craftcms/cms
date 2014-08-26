@@ -797,7 +797,7 @@ class AssetsService extends BaseApplicationComponent
 		// Does the source folder exist?
 		$parent = $folder->getParent();
 
-		if (!$newSourceType->folderExists(($parent ? $parent->path : ''), $folder->name))
+		if ($parent && $folder->parentId && !$newSourceType->folderExists(($parent ? $parent->path : ''), $folder->name))
 		{
 			$response->setError(Craft::t("The target folder does not exist!"));
 		}

@@ -388,7 +388,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if ($oldFile->kind == 'image')
 		{
-			$this->deleteGeneratedThumbnails($oldFile);
+			craft()->assetTransforms->deleteThumbnailsForFile§($oldFile);
 			$this->deleteSourceFile($oldFile->getFolder()->path.$oldFile->filename);
 			$this->purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
@@ -426,7 +426,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function deleteFile(AssetFileModel $file)
 	{
-		$this->deleteTransformData($file);
+		craft()->assetTransforms->deleteAllTransformData($file);
 
 		// Delete DB record and the file itself.
 		craft()->elements->deleteElementById($file->id);
@@ -448,7 +448,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function mergeFile(AssetFileModel $sourceFile, AssetFileModel $targetFile)
 	{
-		$this->deleteTransformData($targetFile);
+		craft()->assetTransforms->deleteAllTransformData($targetFile);
 
 		// Delete DB record and the file itself.
 		craft()->elements->mergeElementsByIds($targetFile->id, $sourceFile->id);
@@ -470,7 +470,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function deleteCreatedImages(AssetFileModel $file)
 	{
 		$this->deleteGeneratedImageTransforms($file);
-		$this->deleteGeneratedThumbnails($file);
+		craft()->assetTransforms->deleteThumbnailsForFile($file);
 	}
 
 	/**
@@ -491,18 +491,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Copy a transform for a file from source location to target location.
 	 *
-	 * @param AssetFileModel           $file   The assetFileModel that has the transform to copy.
-	 * @param AssetTransformIndexModel $source The source transform index data.
-	 * @param AssetTransformIndexModel $target The destination transform index data.
+	 * @param AssetFileModel           $file         The assetFileModel that has the transform to copy.
+	 * @param AssetFolderModel         $targetFolder The target folder.
+	 * @param AssetTransformIndexModel $source       The source transform index data.
+	 * @param AssetTransformIndexModel $target       The destination transform index data.
 	 *
 	 * @return mixed
 	 */
-	public function copyTransform(AssetFileModel $file, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
+	public function copyTransform(AssetFileModel $file, AssetFolderModel $targetFolder, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
 	{
 		$folder = $file->getFolder();
 
 		$sourceTransformPath = $folder->path.craft()->assetTransforms->getTransformSubpath($file, $source);
-		$targetTransformPath = $folder->path.craft()->assetTransforms->getTransformSubpath($file, $target);
+		$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $target);
 
 		return $this->copySourceFile($sourceTransformPath, $targetTransformPath);
 	}
@@ -810,15 +811,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract protected function copySourceFile($sourceUri, $targetUri);
 
 	/**
-	 * Delete generated image transforms for a File.
-	 *
-	 * @param AssetFileModel $file The assetFileModel that has the images to delete the transforms for
-	 *
-	 * @return mixed
-	 */
-	abstract protected function deleteGeneratedImageTransforms(AssetFileModel $file);
-
-	/**
 	 * Creates a physical folder, returns true on success.
 	 *
 	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the parent folder of the folder to create.
@@ -1060,27 +1052,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
 			}
-		}
-	}
-
-	/**
-	 * Delete transform-related data for file.
-	 *
-	 * @param AssetFileModel $file The assetFileModel that represents the file to delete any transformed data for.
-	 *
-	 * @return null
-	 */
-	protected function deleteTransformData(AssetFileModel $file)
-	{
-		// Delete all the created images, such as transforms, thumbnails
-		$this->deleteCreatedImages($file);
-		craft()->assetTransforms->deleteTransformIndexDataByFileId($file->id);
-
-		$filePath = craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
-
-		if (IOHelper::fileExists($filePath))
-		{
-			IOHelper::deleteFile($filePath);
 		}
 	}
 

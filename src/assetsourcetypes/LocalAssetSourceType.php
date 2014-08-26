@@ -420,25 +420,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function deleteSourceFile($subpath)
 	{
-		IOHelper::deleteFile($this->getSourceFileSystemPath().$subpath);
-	}
-
-	/**
-	 * Delete all the generated image transforms for this file.
-	 *
-	 * @param AssetFileModel $file
-	 *
-	 * @return null
-	 */
-	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
-	{
-		$transformLocations = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-		$folder = $file->getFolder();
-
-		foreach ($transformLocations as $location)
-		{
-			IOHelper::deleteFile($this->getSourceFileSystemPath().$folder->path.$location.'/'.$file->filename);
-		}
+		IOHelper::deleteFile($this->getSourceFileSystemPath().$subpath, true);
 	}
 
 	/**
@@ -481,20 +463,15 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->deleteGeneratedThumbnails($file);
+			craft()->assetTransforms->deleteThumbnailsForFile($file);
+
+			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
-			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-			$baseFromPath = $this->getSourceFileSystemPath().$file->getFolder()->path;
-			$baseToPath = $this->getSourceFileSystemPath().$targetFolder->path;
-
-			foreach ($transforms as $location)
+			foreach ($transforms as $index)
 			{
-				if (IOHelper::fileExists($baseFromPath.$location.'/'.$file->filename))
-				{
-					IOHelper::ensureFolderExists($baseToPath.$location);
-					IOHelper::move($baseFromPath.$location.'/'.$file->filename, $baseToPath.$location.'/'.$fileName);
-				}
+				$this->copyTransform($file, $targetFolder, $index, $index);
+				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 

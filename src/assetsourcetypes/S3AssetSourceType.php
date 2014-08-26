@@ -256,7 +256,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			$timeModified = new DateTime('@'.$fileInfo['time']);
 
-			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
+			if ($fileModel->kind == 'image' && ($fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath)))
 			{
 				$this->_s3->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
@@ -486,27 +486,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete all the generated image transforms for this file.
-	 *
-	 * @param AssetFileModel $file
-	 *
-	 * @return null
-	 */
-	protected function deleteGeneratedImageTransforms(AssetFileModel $file)
-	{
-		$folder = craft()->assets->getFolderById($file->folderId);
-		$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-		$this->_prepareForRequests();
-
-		$bucket = $this->getSettings()->bucket;
-
-		foreach ($transforms as $location)
-		{
-			@$this->_s3->deleteObject($bucket, $this->_getPathPrefix().$folder->path.$location.'/'.$file->filename);
-		}
-	}
-
-	/**
 	 * Move a file in source.
 	 *
 	 * @param AssetFileModel   $file
@@ -563,24 +542,15 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$this->deleteGeneratedThumbnails($file);
+			craft()->assetTransforms->deleteThumbnailsForFile($file);
+
+			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
-			$transforms = craft()->assetTransforms->getGeneratedTransformLocationsForFile($file);
-
-			$baseFromPath = $this->_getPathPrefix().$file->getFolder()->path;
-			$baseToPath = $this->_getPathPrefix().$targetFolder->path;
-
-			foreach ($transforms as $location)
+			foreach ($transforms as $index)
 			{
-				// Suppress errors when trying to move image transforms. Maybe the user hasn't updated them yet.
-				$copyResult = @$this->_s3->copyObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename, $bucket, $baseToPath.$location.'/'.$fileName, \S3::ACL_PUBLIC_READ);
-
-				// If we failed to copy, that's because source wasn't there. Skip delete and save time.
-				if ($copyResult)
-				{
-					@$this->_s3->deleteObject($sourceBucket, $baseFromPath.$location.'/'.$file->filename);
-				}
+				$this->copyTransform($file, $targetFolder, $index, $index);
+				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
 			}
 		}
 
