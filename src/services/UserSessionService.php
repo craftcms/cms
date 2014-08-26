@@ -68,17 +68,6 @@ class UserSessionService extends \CWebUser
 	{
 		if (!craft()->isConsole())
 		{
-			craft()->getSession()->open();
-
-			// Let's set our own state key prefix. Leaving identical to CWebUser for the key so people won't get logged
-			// out when updating.
-			$this->setStateKeyPrefix(md5('Yii.Craft\UserSessionService.'.craft()->getId()));
-
-			$rememberMe = craft()->request->getCookie('rememberMe') !== null ? true : false;
-			$seconds = $this->_getSessionDuration($rememberMe);
-			$this->authTimeout = $seconds;
-
-			$this->updateAuthStatus();
 
 			parent::init();
 		}
@@ -402,37 +391,16 @@ class UserSessionService extends \CWebUser
 
 				if ($rememberUsernameDuration)
 				{
-					$interval = new DateInterval($rememberUsernameDuration);
-					$expire = new DateTime();
-					$expire->add($interval);
-
-					// Save the username cookie.
-					$this->saveCookie('username', $username, $expire->getTimestamp());
+					$this->saveCookie('username', $username, DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration));
 				}
-
-				// If there is a remember me cookie, but $rememberMe is false, they logged in with an unchecked remember
-				// me box, so let's remove the cookie.
-				if (craft()->request->getCookie('rememberMe') !== null && !$rememberMe)
+				else
 				{
-					craft()->request->deleteCookie('rememberMe');
-				}
-
-				if ($rememberMe)
-				{
-					$rememberMeSessionDuration = craft()->config->get('rememberedUserSessionDuration');
-					if ($rememberMeSessionDuration)
-					{
-						$interval = new DateInterval($rememberMeSessionDuration);
-						$expire = new DateTime();
-						$expire->add($interval);
-
-						// Save the username cookie.
-						$this->saveCookie('rememberMe', true, $expire->getTimestamp());
-					}
+					// Just in case...
+					$this->deleteStateCookie('username');
 				}
 
 				// Get how long this session is supposed to last.
-				$seconds = $this->_getSessionDuration($rememberMe);
+				$sessionDuration = $this->_getSessionDuration($rememberMe);
 
 				$id = $this->_identity->getId();
 				$states = $this->_identity->getPersistentStates();
@@ -452,7 +420,7 @@ class UserSessionService extends \CWebUser
 						'username'      => $usernameModel->username,
 					)));
 
-					if ($seconds > 0)
+					if ($sessionDuration)
 					{
 						if ($this->allowAutoLogin)
 						{
@@ -470,12 +438,12 @@ class UserSessionService extends \CWebUser
 									$this->getName(),
 									$sessionToken,
 									$uid,
-									$seconds,
+									($rememberMe ? 1 : 0),
 									$userAgent,
 									$this->saveIdentityStates(),
 								);
 
-								$this->saveCookie('', $data, $seconds);
+								$this->saveCookie('', $data, $sessionDuration);
 							}
 							else
 							{
@@ -650,7 +618,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRememberedUsername()
 	{
-		return $this->getCookieValue('username');
+		return $this->getStateCookieValue('username');
 	}
 
 	/**
@@ -690,16 +658,29 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Deletes a cookie on the browser that was stored for the current application state.
+	 *
+	 * @param string $name The name of the cookie.
+	 *
+	 * @return null
+	 */
+	public function deleteStateCookie($name)
+	{
+		$name = $this->getStateKeyPrefix().$name;
+		craft()->request->deleteCookie($name);
+	}
+
+	/**
 	 * Returns a cookie that was stored for the current application state.
 	 *
 	 * @param string $name The cookie name.
 	 *
 	 * @return \CHttpCookie|null The cookie, or `null` if it didn’t exist.
 	 */
-	public function getCookie($name)
+	public function getStateCookie($name)
 	{
 		$name = $this->getStateKeyPrefix().$name;
-		return craft()->request->getCookies()->itemAt($name);
+		return craft()->request->getCookie($name);
 	}
 
 	/**
@@ -709,11 +690,11 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @return mixed The value of the cookie if it exists and hasn’t been tampered with, or `null`.
 	 */
-	public function getCookieValue($cookie)
+	public function getStateCookieValue($cookie)
 	{
 		if (is_string($cookie))
 		{
-			$cookie = $this->getCookie($cookie);
+			$cookie = $this->getStateCookie($cookie);
 		}
 
 		if ($cookie && !empty($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
@@ -731,7 +712,7 @@ class UserSessionService extends \CWebUser
 	{
 		if (!isset($this->_identityCookie))
 		{
-			$cookie = $this->getCookie('');
+			$cookie = $this->getStateCookie('');
 
 			if ($cookie)
 			{
@@ -766,11 +747,34 @@ class UserSessionService extends \CWebUser
 
 		if (
 			$cookie &&
-			($data = $this->getCookieValue($cookie)) &&
+			($data = $this->getStateCookieValue($cookie)) &&
 			is_array($data) &&
 			isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5])
 		)
 		{
+			// TODO: remove this code after a while
+
+			// If $data[3] is something besides 0 or 1, it was created before Craft 2.2, and represents the auth timeout
+			// rather than whether Remember Me was checked. Let's fix that.
+			if ($data[3] != 0 && $data[3] != 1)
+			{
+				// Delete the old rememberMe cookie(s)
+				craft()->request->deleteCookie('rememberMe');
+				$this->deleteStateCookie('rememberMe');
+
+				// Replace $data[3]'s value with a 0 or 1
+				$duration = craft()->config->get('rememberedUserSessionDuration');
+
+				if (is_numeric($data[3]) && $data[3] >= DateTimeHelper::timeFormatToSeconds($duration))
+				{
+					$data[3] = 1;
+				}
+				else
+				{
+					$data[3] = 0;
+				}
+			}
+
 			return $data;
 		}
 	}
@@ -886,6 +890,11 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Renews the user’s identity cookie.
 	 *
+	 * This function extends the identity cookie's expiration time based on either the
+	 * [userSessionDuration](http://buildwithcraft.com/docs/config-settings#userSessionDuration) or
+	 * [rememberedUserSessionDuration](http://buildwithcraft.com/docs/config-settings#rememberedUserSessionDuration)
+	 * config setting, depending on whether Remember Me was checked when they logged in.
+	 *
 	 * @return null
 	 */
 	protected function renewCookie()
@@ -905,13 +914,18 @@ class UserSessionService extends \CWebUser
 
 				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
-				// Bump the expiration time.
-				$expiration = time() + $data[3];
-				$cookie->expire = $expiration;
-				craft()->request->getCookies()->add($cookie->name, $cookie);
+				// Extend the expiration time.
+				$sessionDuration = $this->_getSessionDuration($data[3]);
 
-				$this->authTimeout = $data[3];
-				$this->setState(static::AUTH_TIMEOUT_VAR, $expiration);
+				if ($sessionDuration)
+				{
+					$expiration = time() + $sessionDuration;
+					$cookie->expire = $expiration;
+					$cookie->httpOnly = true;
+					craft()->request->getCookies()->add($cookie->name, $cookie);
+
+					$this->authTimeout = $sessionDuration;
+				}
 			}
 		}
 	}
@@ -943,10 +957,11 @@ class UserSessionService extends \CWebUser
 				$loginName = $data[0];
 				$currentSessionToken = $data[1];
 				$uid = $data[2];
-				$seconds = $data[3];
+				$rememberMe = $data[3];
 				$savedUserAgent = $data[4];
 				$states = $data[5];
 				$currentUserAgent = craft()->request->userAgent;
+				$sessionDuration = $this->_getSessionDuration($rememberMe);
 
 				$this->_checkUserAgentString($currentUserAgent, $savedUserAgent);
 
@@ -980,13 +995,13 @@ class UserSessionService extends \CWebUser
 									$this->getName(),
 									$newSessionToken,
 									$uid,
-									$seconds,
+									($rememberMe ? 1 : 0),
 									$currentUserAgent,
 									$states,
 								);
 
-								$this->saveCookie('', $data, $seconds);
-								$this->authTimeout = $seconds;
+								$this->saveCookie('', $data, $sessionDuration);
+								$this->authTimeout = $sessionDuration;
 								$this->_sessionRestoredFromCookie = true;
 								$this->_userRow = null;
 							}
@@ -1121,9 +1136,13 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param string $rememberMe
+	 * Returns the session duration in seconds.
 	 *
-	 * @return int
+	 * @param bool $rememberMe Set to `true` to use the rememberedUserSessionDuration config setting, or `false` to use
+	 *                         the userSessionDuration config setting.
+	 *
+	 * @return int|null The session duration in seconds, or `null` if sessions are only meant to last as long as the
+	 *                  HTTP session.
 	 */
 	private function _getSessionDuration($rememberMe)
 	{
@@ -1131,26 +1150,18 @@ class UserSessionService extends \CWebUser
 		{
 			$duration = craft()->config->get('rememberedUserSessionDuration');
 		}
-		else
+
+		// Even if $rememberMe = true, it's possible that they've disabled long-term user sessions
+		// by setting rememberedUserSessionDuration = 0 in config/general.php
+		if (empty($duration))
 		{
 			$duration = craft()->config->get('userSessionDuration');
 		}
 
-		// Calculate how long the session should last.
 		if ($duration)
 		{
-			$interval = new DateInterval($duration);
-			$expire = DateTimeHelper::currentUTCDateTime();
-			$currentTimeStamp = $expire->getTimestamp();
-			$futureTimeStamp = $expire->add($interval)->getTimestamp();
-			$seconds = $futureTimeStamp - $currentTimeStamp;
+			return DateTimeHelper::timeFormatToSeconds($duration);
 		}
-		else
-		{
-			$seconds = null;
-		}
-
-		return $seconds;
 	}
 
 	/**
