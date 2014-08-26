@@ -99,11 +99,23 @@ class DbConnection extends \CDbConnection
 	}
 
 	/**
-	 * @return bool|string
+	 * Performs a database backup.
+	 *
+	 * @param array|null $ignoreDataTables If set to an empty array, a full database backup will be performed. If set
+	 *                                     to an array or database table names, they will get merged with the default
+	 *                                     list of table names whose data is to be ignored during a database backup.
+	 *
+	 * @return bool|string The file path to the database backup, or false if something went wrong.
 	 */
-	public function backup()
+	public function backup($ignoreDataTables = null)
 	{
 		$backup = new DbBackup();
+
+		if ($ignoreDataTables !== null)
+		{
+			$backup->setIgnoreDataTables($ignoreDataTables);
+		}
+
 		if (($backupFile = $backup->run()) !== false)
 		{
 			return $backupFile;

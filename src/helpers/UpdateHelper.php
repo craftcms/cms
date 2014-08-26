@@ -77,7 +77,7 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$fullBackupPath= craft()->path->getDbBackupPath().$backupPath.'.sql';
+		$fullBackupPath = craft()->path->getDbBackupPath().$backupPath.'.sql';
 		$dbBackup->restore($fullBackupPath);
 	}
 

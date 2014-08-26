@@ -198,8 +198,9 @@ class DashboardController extends BaseController
 
 					if ($getHelpModel->attachDbBackup && IOHelper::folderExists(craft()->path->getDbBackupPath()))
 					{
-						// Make a fresh database backup of the current schema/data.
-						craft()->db->backup();
+						// Make a fresh database backup of the current schema/data. We want all data from all tables
+						// for debugging.
+						craft()->db->backup(array());
 
 						$backups = IOHelper::getLastModifiedFiles(craft()->path->getDbBackupPath(), 3);
 
