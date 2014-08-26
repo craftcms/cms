@@ -588,33 +588,33 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function getBrowserLanguages()
 	{
-		if ($this->_browserLanguages === null)
+		if (!isset($this->_browserLanguages))
 		{
-			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($n = preg_match_all('/([\w\-_]+)\s*(;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches)) > 0)
-			{
-				$languages = array();
+			$this->_browserLanguages = array();
 
-				for ($i = 0; $i < $n; ++$i)
+			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && preg_match_all('/([\w\-_]+)\s*(?:;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches, PREG_SET_ORDER))
+			{
+				$weights = array();
+
+				foreach ($matches as $match)
 				{
-					$languages[$matches[1][$i]] = empty($matches[3][$i]) ? 1.0 : floatval($matches[3][$i]);
+					$this->_browserLanguages[] = LocaleData::getCanonicalID($match[1]);
+					$weights[] = !empty($match[2]) ? floatval($match[2]) : 1;
 				}
 
-				// Sort by it's weight.
-				arsort($languages);
-
-				foreach ($languages as $language => $pref)
-				{
-					$this->_browserLanguages[] = LocaleData::getCanonicalID($language);
-				}
-			}
-
-			if ($this->_browserLanguages === null)
-			{
-				return false;
+				// Sort the languages by their weight
+				array_multisort($weights, SORT_NUMERIC, SORT_DESC, $this->_browserLanguages);
 			}
 		}
 
-		return $this->_browserLanguages;
+		if ($this->_browserLanguages)
+		{
+			return $this->_browserLanguages;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**

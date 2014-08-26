@@ -115,7 +115,7 @@ class SearchIndexTool extends BaseTool
 										$handle = $field->handle;
 
 										// Set the keywords for the content's locale
-										$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+										$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
 										$keywords[$field->id] = $fieldSearchKeywords;
 									}
 								}

@@ -1,14 +1,14 @@
 {
     "require": {
-        "guzzle/guzzle": "v3.9.1",
-        "twig/twig": "v1.15.1",
+        "guzzle/guzzle": "v3.9.2",
+        "twig/twig": "v1.16.0",
         "simplepie/simplepie": "1.3.1",
         "phpmailer/phpmailer": "v5.2.8",
-        "imagine/imagine": "v0.5.0",
-        "phpunit/phpunit": "4.1.1",
+        "imagine/imagine": "v0.6.1",
+        "phpunit/phpunit": "4.2.2",
         "mockery/mockery": "0.9.1",
         "phpunit/dbunit": "1.3.1",
-        "phpunit/phpunit-selenium": "1.3.3",
+        "phpunit/phpunit-selenium": "1.4.1",
         "phpunit/phpunit-story": "1.0.2"
     }
 }

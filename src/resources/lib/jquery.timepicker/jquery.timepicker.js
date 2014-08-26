@@ -1,5 +1,5 @@
 /************************
-jquery-timepicker v1.3.5
+jquery-timepicker v1.4.6
 http://jonthornton.github.com/jquery-timepicker/
 
 requires jQuery 1.7+
@@ -24,9 +24,9 @@ requires jQuery 1.7+
 		durationTime: null,
 		step: 30,
 		showDuration: false,
+		showOnFocus: true,
 		timeFormat: 'g:ia',
-		scrollDefaultNow: false,
-		scrollDefaultTime: false,
+		scrollDefault: null,
 		selectOnBlur: false,
 		disableTouchKeyboard: false,
 		forceRoundTime: false,
@@ -58,7 +58,7 @@ requires jQuery 1.7+
 
 				// pick up settings from data attributes
 				var attributeOptions = [];
-				for (key in _defaults) {
+				for (var key in _defaults) {
 					if (self.data(key))  {
 						attributeOptions[key] = self.data(key);
 					}
@@ -90,12 +90,16 @@ requires jQuery 1.7+
 
 		show: function(e)
 		{
-			if (e) {
-				e.preventDefault();
-			}
-
 			var self = $(this);
 			var settings = self.data('timepicker-settings');
+
+			if (e) {
+				if (!settings.showOnFocus) {
+					return true;
+				}
+
+				e.preventDefault();
+			}
 
 			if (settings.useSelect) {
 				self.data('timepicker-list').focus();
@@ -155,10 +159,8 @@ requires jQuery 1.7+
 			if (!selected.length) {
 				if (_getTimeValue(self)) {
 					selected = _findRow(self, list, _time2int(_getTimeValue(self)));
-				} else if (settings.scrollDefaultNow) {
-					selected = _findRow(self, list, _time2int(new Date()));
-				} else if (settings.scrollDefaultTime !== false) {
-					selected = _findRow(self, list, _time2int(settings.scrollDefaultTime));
+				} else if (settings.scrollDefault) {
+					selected = _findRow(self, list, settings.scrollDefault);
 				}
 			}
 
@@ -207,34 +209,34 @@ requires jQuery 1.7+
 
 		option: function(key, value)
 		{
-			var self = this;
-			var settings = self.data('timepicker-settings');
-			var list = self.data('timepicker-list');
+			return this.each(function(){
+				var self = $(this);
+				var settings = self.data('timepicker-settings');
+				var list = self.data('timepicker-list');
 
-			if (typeof key == 'object') {
-				settings = $.extend(settings, key);
+				if (typeof key == 'object') {
+					settings = $.extend(settings, key);
 
-			} else if (typeof key == 'string' && typeof value != 'undefined') {
-				settings[key] = value;
+				} else if (typeof key == 'string' && typeof value != 'undefined') {
+					settings[key] = value;
 
-			} else if (typeof key == 'string') {
-				return settings[key];
-			}
+				} else if (typeof key == 'string') {
+					return settings[key];
+				}
 
-			settings = _parseSettings(settings);
+				settings = _parseSettings(settings);
 
-			self.data('timepicker-settings', settings);
+				self.data('timepicker-settings', settings);
 
-			if (list) {
-				list.remove();
-				self.data('timepicker-list', false);
-			}
+				if (list) {
+					list.remove();
+					self.data('timepicker-list', false);
+				}
 
-			if (settings.useSelect) {
-				_render(self);
-			}
-
-			return this;
+				if (settings.useSelect) {
+					_render(self);
+				}
+			});
 		},
 
 		getSecondsFromMidnight: function()
@@ -269,7 +271,13 @@ requires jQuery 1.7+
 		setTime: function(value)
 		{
 			var self = this;
-			var prettyTime = _int2time(_time2int(value), self.data('timepicker-settings').timeFormat);
+			var settings = self.data('timepicker-settings');
+
+			if (settings.forceRoundTime) {
+				var prettyTime = _roundAndFormatTime(value, settings)
+			} else {
+				var prettyTime = _int2time(_time2int(value), settings.timeFormat);
+			}
 
 			_setTimeValue(self, prettyTime);
 			if (self.data('timepicker-list')) {
@@ -288,6 +296,7 @@ requires jQuery 1.7+
 				return;
 			}
 
+			var settings = self.data('timepicker-settings');
 			self.removeAttr('autocomplete', 'off');
 			self.removeClass('ui-timepicker-input');
 			self.removeData('timepicker-settings');
@@ -296,6 +305,10 @@ requires jQuery 1.7+
 			// timepicker-list won't be present unless the user has interacted with this timepicker
 			if (self.data('timepicker-list')) {
 				self.data('timepicker-list').remove();
+			}
+
+			if (settings.useSelect) {
+				self.show();
 			}
 
 			self.removeData('timepicker-list');
@@ -318,6 +331,22 @@ requires jQuery 1.7+
 
 		if (settings.durationTime && typeof settings.durationTime !== 'function') {
 			settings.durationTime = _time2int(settings.durationTime);
+		}
+
+		if (settings.scrollDefault == 'now') {
+			settings.scrollDefault = _time2int(new Date());
+		} else if (settings.scrollDefault) {
+			settings.scrollDefault = _time2int(settings.scrollDefault);
+		} else if (settings.minTime) {
+			settings.scrollDefault = settings.minTime;
+		}
+
+		if (settings.scrollDefault) {
+			settings.scrollDefault = _roundTime(settings.scrollDefault, settings);
+		}
+
+		if (settings.timeFormat.match(/[gh]/)) {
+			settings._twelveHourTime = true;
 		}
 
 		if (settings.disableTimeRanges.length > 0) {
@@ -376,8 +405,10 @@ requires jQuery 1.7+
 
 			if ($.isArray(settings.noneOption)) {
 				for (var i in settings.noneOption) {
-					var noneElement = _generateNoneElement(settings.noneOption[i], settings.useSelect);
-					list.append(noneElement);
+					if (parseInt(i, 10) === i){
+						var noneElement = _generateNoneElement(settings.noneOption[i], settings.useSelect);
+						list.append(noneElement);
+					}
 				}
 			} else {
 				var noneElement = _generateNoneElement(settings.noneOption, settings.useSelect);
@@ -391,6 +422,7 @@ requires jQuery 1.7+
 
 		if ((settings.minTime !== null || settings.durationTime !== null) && settings.showDuration) {
 			wrapped_list.addClass('ui-timepicker-with-duration');
+			wrapped_list.addClass('ui-timepicker-step-'+settings.step);
 		}
 
 		var durStart = settings.minTime;
@@ -430,7 +462,7 @@ requires jQuery 1.7+
 			}
 
 			if ((settings.minTime !== null || settings.durationTime !== null) && settings.showDuration) {
-				var durationString = _int2duration(i - durStart);
+				var durationString = _int2duration(i - durStart, settings.step);
 				if (settings.useSelect) {
 					row.text(row.text()+' ('+durationString+')');
 				} else {
@@ -461,7 +493,7 @@ requires jQuery 1.7+
 		self.data('timepicker-list', wrapped_list);
 
 		if (settings.useSelect) {
-			list.val(_roundTime(self.val(), settings));
+			list.val(_roundAndFormatTime(self.val(), settings));
 			list.on('focus', function(){
 				$(this).data('timepicker-input').trigger('showTimepicker');
 			});
@@ -483,7 +515,7 @@ requires jQuery 1.7+
 			appendTo.append(wrapped_list);
 			_setSelected(self, list);
 
-			list.on('click', 'li', function(e) {
+			list.on('mousedown', 'li', function(e) {
 
 				// hack: temporarily disable the focus handler
 				// to deal with the fact that IE fires 'focus'
@@ -538,18 +570,34 @@ requires jQuery 1.7+
 		}
 	}
 
-	function _roundTime(time, settings)
+	function _roundTime(seconds, settings)
 	{
-		if (!$.isNumeric(time)) {
-			time = _time2int(time);
+		if (!$.isNumeric(seconds)) {
+			seconds = _time2int(seconds);
 		}
 
-		if (time === null) {
+		if (seconds === null) {
 			return null;
 		} else {
-			var step = settings.step*60;
-			// round to the nearest step
-			return _int2time(Math.round(time / step) * step, settings.timeFormat);
+			var offset = seconds % (settings.step*60); // step is in minutes
+
+			if (offset >= settings.step*30) {
+				// if offset is larger than a half step, round up
+				seconds += (settings.step*60) - offset;
+			} else {
+				// round down
+				seconds -= offset;
+			}
+
+			return seconds;
+		}
+	}
+
+	function _roundAndFormatTime(seconds, settings)
+	{
+		seconds = _roundTime(seconds, settings);
+		if (seconds !== null) {
+			return _int2time(seconds, settings.timeFormat);
 		}
 	}
 
@@ -608,7 +656,7 @@ requires jQuery 1.7+
 	{
 		list.find('li').removeClass('ui-timepicker-selected');
 
-		var timeValue = _time2int(_getTimeValue(self));
+		var timeValue = _time2int(_getTimeValue(self), self.data('timepicker-settings'));
 		if (timeValue === null) {
 			return;
 		}
@@ -627,7 +675,7 @@ requires jQuery 1.7+
 	}
 
 
-	function _formatValue()
+	function _formatValue(e)
 	{
 		if (this.value === '') {
 			return;
@@ -636,7 +684,7 @@ requires jQuery 1.7+
 		var self = $(this);
 		var list = self.data('timepicker-list');
 
-		if (list && list.is(':visible')) {
+		if (self.is(':focus') && (!e || e.type != 'change')) {
 			return;
 		}
 
@@ -704,7 +752,7 @@ requires jQuery 1.7+
 
 			var settings = self.data('timepicker-settings');
 			if (settings.useSelect) {
-				self.data('timepicker-list').val(_roundTime(value, settings));
+				self.data('timepicker-list').val(_roundAndFormatTime(value, settings));
 			}
 		}
 
@@ -733,6 +781,9 @@ requires jQuery 1.7+
 
 		if (!list || !list.is(':visible')) {
 			if (e.keyCode == 40) {
+				// show the list!
+				methods.show.call(self.get(0));
+				list = self.data('timepicker-list');
 				if (!_hideKeyboard(self)) {
 					self.focus();
 				}
@@ -880,13 +931,6 @@ requires jQuery 1.7+
 		if (cursor.length) {
 			// selected value found
 			timeValue = cursor.data('time');
-
-		} else if (_getTimeValue(self)) {
-
-			// no selected value; fall back on input value
-			timeValue = _time2int(_getTimeValue(self));
-
-			_setSelected(self, list);
 		}
 
 		if (timeValue !== null) {
@@ -902,19 +946,34 @@ requires jQuery 1.7+
 		return true;
 	}
 
-	function _int2duration(seconds)
+	function _int2duration(seconds, step)
 	{
-		var minutes = Math.round(seconds/60);
-		var duration;
+		seconds = Math.abs(seconds);
+		var minutes = Math.round(seconds/60),
+			duration = [],
+			hours, mins;
 
-		if (Math.abs(minutes) < 60) {
+		if (minutes < 60) {
+			// Only show (x mins) under 1 hour
 			duration = [minutes, _lang.mins];
-		} else if (minutes == 60) {
-			duration = ['1', _lang.hr];
 		} else {
-			var hours = (minutes/60).toFixed(1);
-			if (_lang.decimal != '.') hours = hours.replace('.', _lang.decimal);
-			duration = [hours, _lang.hrs];
+			hours = Math.floor(minutes/60);
+			mins = minutes%60;
+
+			// Show decimal notation (eg: 1.5 hrs) for 30 minute steps
+			if (step == 30 && mins == 30) {
+				hours += _lang.decimal + 5;
+			}
+
+			duration.push(hours);
+			duration.push(hours == 1 ? _lang.hr : _lang.hrs);
+
+			// Show remainder minutes notation (eg: 1 hr 15 mins) for non-30 minute steps
+			// and only if there are remainder minutes to show
+			if (step != 30 && mins) {
+				duration.push(mins);
+				duration.push(_lang.mins);
+			}
 		}
 
 		return duration.join(' ');
@@ -934,7 +993,6 @@ requires jQuery 1.7+
 
 		var output = '';
 		var hour, code;
-
 		for (var i=0; i<format.length; i++) {
 
 			code = format.charAt(i);
@@ -983,6 +1041,12 @@ requires jQuery 1.7+
 					output += (seconds > 9) ? seconds : '0'+seconds;
 					break;
 
+				case '\\':
+					// escape character; add the next character and skip ahead
+					i++;
+					output += format.charAt(i);
+					break;
+
 				default:
 					output += code;
 			}
@@ -991,13 +1055,13 @@ requires jQuery 1.7+
 		return output;
 	}
 
-	function _time2int(timeString)
+	function _time2int(timeString, settings)
 	{
 		if (timeString === '') return null;
 		if (!timeString || timeString+0 == timeString) return timeString;
 
 		if (typeof(timeString) == 'object') {
-			timeString = timeString.getHours()+':'+_pad2(timeString.getMinutes())+':'+_pad2(timeString.getSeconds());
+			return timeString.getHours()*3600 + timeString.getMinutes()*60 + timeString.getSeconds();
 		}
 
 		timeString = timeString.toLowerCase();
@@ -1006,38 +1070,37 @@ requires jQuery 1.7+
 		var time;
 
 		// try to parse time input
-		if (timeString.indexOf(":") === -1) {
-			// no colon present
-			time = timeString.match(/^([0-9]):?([0-5][0-9])?:?([0-5][0-9])?\s*([pa]?)m?$/);
-
-			if (!time) {
-				time = timeString.match(/^([0-2][0-9]):?([0-5][0-9])?:?([0-5][0-9])?\s*([pa]?)m?$/);
-			}
-		} else {
-			time = timeString.match(/^(\d{1,2})(?::([0-5][0-9]))?(?::([0-5][0-9]))?\s*([pa]?)m?$/);
-		}
+		time = timeString.match(/^([0-2]?[0-9])\W?([0-5][0-9])?\W?([0-5][0-9])?\s*([pa]?)m?$/);
 
 		if (!time) {
 			return null;
 		}
 
 		var hour = parseInt(time[1]*1, 10);
-		var hours;
+		var ampm = time[4];
+		var hours = hour;
 
-		if (time[4]) {
+		if (ampm) {
 			if (hour == 12) {
 				hours = (time[4] == 'p') ? 12 : 0;
 			} else {
 				hours = (hour + (time[4] == 'p' ? 12 : 0));
 			}
-
-		} else {
-			hours = hour;
 		}
 
 		var minutes = ( time[2]*1 || 0 );
 		var seconds = ( time[3]*1 || 0 );
-		return hours*3600 + minutes*60 + seconds;
+		var timeInt = hours*3600 + minutes*60 + seconds;
+
+		// if no am/pm provided, intelligently guess based on the scrollDefault
+		if (!ampm && settings && settings._twelveHourTime && settings.scrollDefault) {
+			var delta = timeInt - settings.scrollDefault;
+			if (delta < 0 && delta >= _ONE_DAY / -2) {
+				timeInt = (timeInt + (_ONE_DAY / 2)) % _ONE_DAY;
+			}
+		}
+
+		return timeInt
 	}
 
 	function _pad2(n) {

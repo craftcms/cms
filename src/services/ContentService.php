@@ -388,7 +388,7 @@ class ContentService extends BaseApplicationComponent
 					$handle = $field->handle;
 
 					// Set the keywords for the content's locale
-					$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+					$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
 					$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
 					// Should we queue up the other locales' new keywords too?

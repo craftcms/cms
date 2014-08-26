@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% if CraftEdition == CraftPro %}
+{% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
 	{% set crumbs = [
 		{ label: "Users"|t, url: url('users') }
 	] %}

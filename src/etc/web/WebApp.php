@@ -932,12 +932,14 @@ class WebApp extends \CWebApplication
 	 */
 	private function _isSpecialCaseActionRequest()
 	{
+		$segments = $this->request->getActionSegments();
+
 		if (
-			$this->request->getActionSegments() == array('users', 'login') ||
-			$this->request->getActionSegments() == array('users', 'validate') ||
-			$this->request->getActionSegments() == array('users', 'setpassword') ||
-			$this->request->getActionSegments() == array('users', 'forgotpassword') ||
-			$this->request->getActionSegments() == array('users', 'saveUser'))
+			$segments == array('users', 'login') ||
+			$segments == array('users', 'validate') ||
+			$segments == array('users', 'setpassword') ||
+			$segments == array('users', 'forgotpassword') ||
+			$segments == array('users', 'saveUser'))
 		{
 			return true;
 		}
