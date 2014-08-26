@@ -26,6 +26,8 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="categories/saveGroup">
 		<input type="hidden" name="redirect" value="settings/categories">
+		{{ getCsrfInput() }}
+
 		{% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}
 
 		<div id="categorygroup-settings">

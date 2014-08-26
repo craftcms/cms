@@ -8,6 +8,8 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="tags/saveTagGroup">
 		<input type="hidden" name="redirect" value="settings/tags">
+		{{ getCsrfInput() }}
+
 		{% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
 
 		<div id="taggroup-settings">

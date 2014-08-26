@@ -37,6 +37,7 @@
 
 {% set content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+		{{ getCsrfInput() }}
 		<input type="hidden" name="action" value="dashboard/saveUserWidget">
 		<input type="hidden" name="redirect" value="dashboard/settings">
 		{% if not isNewWidget %}<input type="hidden" name="widgetId" value="{{ widget.id }}">{% endif %}

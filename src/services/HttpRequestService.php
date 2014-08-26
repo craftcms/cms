@@ -93,6 +93,16 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function init()
 	{
+		// Is CSRF protection enabled?
+		if (craft()->config->get('enableCsrfProtection') === true)
+		{
+			$this->enableCsrfValidation = true;
+
+			// Grab the token name.
+			$this->csrfTokenName = craft()->config->get('csrfTokenName');
+		}
+
+		// Now initialize Yii's CHttpRequest.
 		parent::init();
 
 		// There is no path.
@@ -527,6 +537,7 @@ class HttpRequestService extends \CHttpRequest
 	 *
 	 * @param string $name The dot-delimited name of the param to be fetched.
 	 *
+	 * @throws HttpException
 	 * @return mixed The value of the corresponding param, or $defaultValue if that value didn’t exist.
 	 */
 	public function getRequiredParam($name)
@@ -1119,6 +1130,33 @@ class HttpRequestService extends \CHttpRequest
 		ob_end_flush();
 		flush();
 		session_write_close();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
+	 * applied to the generated cookie.
+	 *
+	 * @return CHttpCookie the generated cookie
+	 */
+	protected function createCsrfCookie()
+	{
+		$cookie = new \CHttpCookie($this->csrfTokenName, sha1(uniqid(mt_rand(), true)));
+
+		if (is_array($this->csrfCookie))
+		{
+			foreach ($this->csrfCookie as $name => $value)
+			{
+				$cookie->$name = $value;
+			}
+		}
+
+		// Set to HTTP only
+		$cookie->httpOnly = true;
+
+		return $cookie;
 	}
 
 	// Private Methods

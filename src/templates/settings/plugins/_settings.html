@@ -19,6 +19,7 @@
 		<input type="hidden" name="action" value="plugins/savePluginSettings">
 		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 		<input type="hidden" name="redirect" value="settings/plugins">
+		{{ getCsrfInput() }}
 
 		{% namespace 'settings' %}
 			{{ plugin.getSettingsHtml()|raw }}

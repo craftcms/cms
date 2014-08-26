@@ -42,6 +42,8 @@
 						<td data-title="{{ 'Status'|t }}">
 							<form method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+								{{ getCsrfInput() }}
+
 								{% if isEnabled %}
 									<span class="status on"></span> {{ "Enabled"|t }} 
 									<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
@@ -56,6 +58,8 @@
 						<td class="thin rightalign nowrap">
 							<form method="post" accept-charset="UTF-8">
 								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+								{{ getCsrfInput() }}
+
 								{% if isInstalled %}
 									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">
 								{% else %}

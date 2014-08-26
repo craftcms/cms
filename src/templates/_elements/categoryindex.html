@@ -20,6 +20,8 @@
 {% endembed %}
 
 <form class="add-category-form" data-group-id="{{ groupId }}">
+	{{ getCsrfInput() }}
+
 	<div class="texticon add icon">
 		{{ text({
 			placeholder: "Add a category"|t
