@@ -1014,8 +1014,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 *
-	 * @throws Exception if the AssetTransformIndexModel cannot be determined to
-	 *                   have transform
+	 * @throws Exception if the AssetTransformIndexModel cannot be determined to have a transform
 	 * @return null
 	 */
 	private function _createTransformForFile(AssetFileModel $file, AssetTransformIndexModel $index)
@@ -1097,9 +1096,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getThumbExtension(AssetFileModel $file)
 	{
 		// For non-web-safe formats we go with jpg.
-		$extension = StringHelper::toLowerCase(pathinfo($file->filename, PATHINFO_EXTENSION));
-
-		if (!in_array($extension, ImageHelper::getWebSafeFormats()))
+		if (!in_array(IOHelper::getExtension($file->filename), ImageHelper::getWebSafeFormats()))
 		{
 			$extension = 'jpg';
 		}
