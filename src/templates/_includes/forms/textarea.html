@@ -12,6 +12,7 @@
 	{%- if id is defined %} id="{{ id }}"{% endif %}
 	{%- if name is defined %} name="{{ name }}"{% endif %}
 	{%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
+	{%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
 	{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
 	{%- if disabled is defined and disabled %} disabled{% endif %}
 	{%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>{{ value is defined ? value : null }}</textarea>

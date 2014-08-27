@@ -946,6 +946,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 	-webkit-appearance: none;
 }
 
+.chars-left { @include alignright; color: $lighttextcolor; }
+.chars-left.negative-chars-left { color: $errorcolor; }
+
 .field { position: relative; margin: 24px 0; }
 .field .heading { margin-bottom: 4px; }
 .field .locale { display: inline-block; border-radius: 3px; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
