@@ -345,6 +345,15 @@ return array(
 	'purgePendingUsersDuration' => 'P3M',
 
 	/**
+	 * The page to redirect a logged in user to, if they do not have control panel access and they load the login page
+	 * as specified in the 'loginPath' config setting.  If they have control panel access, they will be redirected there.
+	 * By default it is an empty string, which will redirect to the site's home page.
+	 *
+	 * Note that this setting only affects front-end requests.
+	 */
+	'redirectLoginPageIfLoggedIn' => '',
+
+	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.
 	 *
 	 * Set to '0' to disable this feature altogether.

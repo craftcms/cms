@@ -68,9 +68,10 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					// Already logged in, but can't access the CP?  Send them to
-					// the front-end home page.
-					$this->redirect(UrlHelper::getSiteUrl());
+					// Already logged in, but can't access the CP?  Send them to the redirectLoginPageIfLoggedIn config
+					// setting.
+					$redirect = craft()->config->get('redirectLoginPageIfLoggedIn');
+					$this->redirect(UrlHelper::getSiteUrl($redirect));
 				}
 			}
 		}
