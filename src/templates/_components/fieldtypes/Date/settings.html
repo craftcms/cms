@@ -7,11 +7,10 @@
 	value: value
 }) }}
 
-{{ forms.textField({
-	label: "Minute Increment (Number between 1 and 60)"|t,
+{{ forms.selectField({
+	label: "Minute Increment"|t,
 	id: 'minuteIncrement',
 	name: 'minuteIncrement',
+	options: incrementOptions,
 	value: settings.minuteIncrement ? settings.minuteIncrement : 30,
-	size: 2,
-	errors: settings.getErrors('minuteIncrement')
 }) }}

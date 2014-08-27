@@ -1037,9 +1037,8 @@ class WebApp extends \CWebApplication
 		}
 		else
 		{
-			// Use our own error template in case the custom 503 template comes with any SQL queries we're not ready for.
-			$this->path->setTemplatesPath($this->path->getCpTemplatesPath());
-
+			// If an exception gets throw during the rendering of the 503 template, let
+			// TemplatesController->actionRenderError() take care of it.
 			throw new HttpException(503);
 		}
 
