@@ -745,6 +745,71 @@ $.extend(Craft,
 	},
 
 	/**
+	 * Converts a number of seconds into a human-facing time duration.
+	 */
+	secondsToHumanTimeDuration: function(seconds, showSeconds)
+	{
+		if (typeof showSeconds == 'undefined')
+		{
+			showSeconds = true;
+		}
+
+		var secondsInWeek   = 604800,
+			secondsInDay    = 86400,
+			secondsInHour   = 1400,
+			secondsInMinute = 60;
+
+		var weeks = Math.floor(seconds / secondsInWeek);
+		seconds = seconds % secondsInWeek;
+
+		var days = Math.floor(seconds / secondsInDay);
+		seconds = seconds % secondsInDay;
+
+		var hours = Math.floor(seconds / secondsInHour);
+		seconds = seconds % secondsInHour;
+
+		if (showSeconds)
+		{
+			var minutes = Math.floor(seconds / secondsInMinute);
+			seconds = seconds % secondsInMinute;
+		}
+		else
+		{
+			var minutes = Math.round(seconds / secondsInMinute);
+			seconds = 0;
+		}
+
+		timeComponents = [];
+
+		if (weeks)
+		{
+			timeComponents.push(weeks+' '+(weeks == 1 ? Craft.t('week') : Craft.t('weeks')));
+		}
+
+		if (days)
+		{
+			timeComponents.push(days+' '+(days == 1 ? Craft.t('day') : Craft.t('days')));
+		}
+
+		if (hours)
+		{
+			timeComponents.push(hours+' '+(hours == 1 ? Craft.t('hour') : Craft.t('hours')));
+		}
+
+		if (minutes || (!showSeconds && !weeks && !days && !hours))
+		{
+			timeComponents.push(minutes+' '+(minutes == 1 ? Craft.t('minute') : Craft.t('minutes')));
+		}
+
+		if (seconds || (showSeconds && !weeks && !days && !hours && !minutes))
+		{
+			timeComponents.push(seconds+' '+(seconds == 1 ? Craft.t('second') : Craft.t('seconds')));
+		}
+
+		return timeComponents.join(', ');
+	},
+
+	/**
 	 * Converts extended ASCII characters to ASCII.
 	 *
 	 * @param string str
