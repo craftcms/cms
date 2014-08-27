@@ -169,35 +169,41 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		// $value will be an array of block data or an empty string if there was a validation error or we're loading a
-		// draft/version.
-		if (is_array($value))
+		$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
+
+		// Existing element?
+		if (!empty($this->element->id))
 		{
-			return $value;
-		}
-		else if ($value === '')
-		{
-			return array();
+			$criteria->ownerId = $this->element->id;
 		}
 		else
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
-
-			// Existing element?
-			if (!empty($this->element->id))
-			{
-				$criteria->ownerId = $this->element->id;
-			}
-			else
-			{
-				$criteria->id = false;
-			}
-
-			$criteria->fieldId = $this->model->id;
-			$criteria->locale = $this->element->locale;
-
-			return $criteria;
+			$criteria->id = false;
 		}
+
+		$criteria->fieldId = $this->model->id;
+		$criteria->locale = $this->element->locale;
+
+		// Set the initially matched elemetns if $value is already set, which is the case if there was a validation
+		// error or we're loading an entry revision.
+		if (is_array($value) || $value === '')
+		{
+			$criteria->status = null;
+			$criteria->localeEnabled = null;
+			$criteria->limit = null;
+
+			if (is_array($value))
+			{
+				$criteria->setMatchedElements($value);
+			}
+			else if ($value === '')
+			{
+				// Means there were no blocks
+				$criteria->setMatchedElements(array());
+			}
+		}
+
+		return $criteria;
 	}
 
 	/**
