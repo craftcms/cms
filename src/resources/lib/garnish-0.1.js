@@ -3585,20 +3585,27 @@ Garnish.Modal = Garnish.Base.extend({
 
 		this.setSettings(settings, Garnish.Modal.defaults);
 
-        // If container already set, drop the shade below it.
+		// Create the shade
+		this.$shade = $('<div class="'+this.settings.shadeClass+'"/>');
+
+        // If the container is already set, drop the shade below it.
         if (container)
         {
-            this.$shade = $('<div class="modal-shade"/>').insertBefore(container);
+            this.$shade.insertBefore(container);
         }
         else
         {
-            this.$shade = $('<div class="modal-shade"/>').appendTo(Garnish.$bod);
+            this.$shade.appendTo(Garnish.$bod);
         }
 
         if (container)
 		{
 			this.setContainer(container);
-			this.show();
+
+			if (this.settings.autoShow)
+			{
+				this.show();
+			}
 		}
 
 		Garnish.Modal.instances.push(this);
@@ -3665,11 +3672,18 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$shade.fadeIn(50);
 			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
 
-			this.addListener(this.$shade, 'click', 'hide');
+			if (this.settings.hideOnShadeClick)
+			{
+				this.addListener(this.$shade, 'click', 'hide');
+			}
+
 			this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 		}
 
-		Garnish.escManager.register(this, 'hide');
+		if (this.settings.hideOnEsc)
+		{
+			Garnish.escManager.register(this, 'hide');
+		}
 
 		if (!this.visible)
 		{
@@ -3677,6 +3691,17 @@ Garnish.Modal = Garnish.Base.extend({
 			Garnish.Modal.visibleModal = this;
 
 			this.settings.onShow();
+		}
+	},
+
+	quickShow: function()
+	{
+		this.show();
+
+		if (this.$container)
+		{
+			this.$container.finish();
+			this.$shade.finish();
 		}
 	},
 
@@ -3692,14 +3717,34 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.fadeOut('fast');
 			this.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
 
-			this.removeListener(this.$shade, 'click');
+			if (this.settings.hideOnShadeClick)
+			{
+				this.removeListener(this.$shade, 'click');
+			}
+
 			this.removeListener(Garnish.$win, 'resize');
 		}
 
 		this.visible = false;
 		Garnish.Modal.visibleModal = null;
-		Garnish.escManager.unregister(this);
+
+		if (this.settings.hideOnEsc)
+		{
+			Garnish.escManager.unregister(this);
+		}
+
 		this.settings.onHide();
+	},
+
+	quickHide: function()
+	{
+		this.hide();
+
+		if (this.$container)
+		{
+			this.$container.finish();
+			this.$shade.finish();
+		}
 	},
 
 	updateSizeAndPosition: function()
@@ -3831,6 +3876,7 @@ Garnish.Modal = Garnish.Base.extend({
 {
 	relativeElemPadding: 8,
 	defaults: {
+		autoShow: true,
 		draggable: false,
 		dragHandleSelector: null,
 		resizable: false,
@@ -3838,7 +3884,10 @@ Garnish.Modal = Garnish.Base.extend({
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-        closeOtherModals: true
+        closeOtherModals: true,
+        hideOnEsc: true,
+		hideOnShadeClick: true,
+		shadeClass: 'modal-shade'
 	},
 	instances: [],
 	visibleModal: null
