@@ -157,12 +157,16 @@ Craft.FieldToggle = Garnish.Base.extend(
 					this.$toggle.addClass('expanded');
 				}
 
+				var currentHeight = $target.height();
 				$target.height('auto');
 				var height = $target.height();
-				$target.height(0);
-				$target.stop().velocity({height: height}, 'fast', function() {
-					$target.height('auto');
-				});
+				$target
+					.height(currentHeight)
+					.css('overflow', 'hidden')
+					.stop()
+					.velocity({height: height}, 'fast', function() {
+						$target.height('auto');
+					});
 			}
 
 			// Trigger a resize event in case there are any grids in the target that need to initialize
@@ -186,9 +190,12 @@ Craft.FieldToggle = Garnish.Base.extend(
 					this.$toggle.addClass('collapsed');
 				}
 
-				$target.stop().velocity({height: 0}, 'fast', function() {
-					$target.addClass('hidden');
-				});
+				$target
+					.css('overflow', 'hidden')
+					.stop()
+					.velocity({height: 0}, 'fast', function() {
+						$target.addClass('hidden');
+					});
 			}
 		}
 	}
