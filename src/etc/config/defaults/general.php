@@ -507,9 +507,9 @@ return array(
 	/**
 	 * The format to use for web-safe transform generation if Imagick is not available for transparency testing.
 	 *
-	 * Possible values: 'jpg', 'png' and 'gif'. Defaults to 'png'.
+	 * Possible values: 'jpg', 'png' and 'gif'. Defaults to 'jpg'.
 	 */
-	'webSafeImageFallbackFormat' => 'png',
+	'webSafeImageFallbackFormat' => 'jpg',
 
 	/**
 	 * The permissions Craft will use when creating a new file that must be writable on the file system.
