@@ -273,6 +273,17 @@ Garnish = $.extend(Garnish, {
 	},
 
 	/**
+	 * Returns whether an element has an attribute.
+	 *
+	 * @see http://stackoverflow.com/questions/1318076/jquery-hasattr-checking-to-see-if-there-is-an-attribute-on-an-element/1318091#1318091
+	 */
+	hasAttr: function(elem, attr)
+	{
+		var val = $(elem).attr(attr);
+		return (typeof val != 'undefined' && val !== false);
+	},
+
+	/**
 	 * Returns whether something is a text node.
 	 *
 	 * @param object elem
@@ -3902,20 +3913,36 @@ Garnish.NiceText = Garnish.Base.extend({
 	$input: null,
 	$hint: null,
 	$stage: null,
+	$charsLeft: null,
 	autoHeight: null,
-	focussed: false,
+	maxLength: null,
+	showCharsLeft: false,
 	showingHint: false,
 	val: null,
 	inputBoxSizing: 'content-box',
 	height: null,
 	minHeight: null,
-	interval: null,
 	initialized: false,
 
 	init: function(input, settings)
 	{
 		this.$input = $(input);
 		this.settings = $.extend({}, Garnish.NiceText.defaults, settings);
+
+		this.maxLength = this.$input.attr('maxlength');
+
+		if (this.maxLength)
+		{
+			this.maxLength = parseInt(this.maxLength);
+		}
+
+		if (this.maxLength && (this.settings.showCharsLeft || Garnish.hasAttr(this.$input, 'data-show-chars-left')))
+		{
+			this.showCharsLeft = true;
+
+			// Remove the maxlength attribute
+			this.$input.removeAttr('maxlength');
+		}
 
 		// Is this already a transparent text input?
 		if (this.$input.data('nicetext'))
@@ -3929,6 +3956,7 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.getVal();
 
 		this.autoHeight = (this.settings.autoHeight && this.$input.prop('nodeName') == 'TEXTAREA');
+
 		if (this.autoHeight)
 		{
 			this.minHeight = this.getHeightForValue('');
@@ -3963,9 +3991,13 @@ Garnish.NiceText = Garnish.Base.extend({
 			});
 		}
 
-		this.addListener(this.$input, 'focus', 'onFocus');
-		this.addListener(this.$input, 'blur', 'onBlur');
-		this.addListener(this.$input, 'keydown', 'onKeyDown');
+		if (this.showCharsLeft)
+		{
+			this.$charsLeft = $('<div class="'+this.settings.charsLeftClass+'"/>').insertAfter(this.$input);
+			this.updateCharsLeft();
+		}
+
+		this.addListener(this.$input, 'textchange', 'onTextChange');
 
 		this.initialized = true;
 	},
@@ -3988,31 +4020,31 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.showingHint = false;
 	},
 
-	checkInput: function()
+	onTextChange: function()
 	{
-		// Has the value changed?
-		var changed = (this.val !== this.getVal());
-		if (changed)
-		{
-			if (this.$hint)
-			{
-				if (this.showingHint && this.val)
-				{
-					this.hideHint();
-				}
-				else if (!this.showingHint && !this.val)
-				{
-					this.showHint();
-				}
-			}
+		this.getVal();
 
-			if (this.autoHeight)
+		if (this.$hint)
+		{
+			if (this.showingHint && this.val)
 			{
-				this.updateHeight();
+				this.hideHint();
+			}
+			else if (!this.showingHint && !this.val)
+			{
+				this.showHint();
 			}
 		}
 
-		return changed;
+		if (this.autoHeight)
+		{
+			this.updateHeight();
+		}
+
+		if (this.showCharsLeft)
+		{
+			this.updateCharsLeft();
+		}
 	},
 
 	buildStage: function()
@@ -4128,24 +4160,19 @@ Garnish.NiceText = Garnish.Base.extend({
 		this.settings.onHeightChange();
 	},
 
-	onFocus: function()
+	updateCharsLeft: function()
 	{
-		this.focussed = true;
-		this.interval = setInterval($.proxy(this, 'checkInput'), Garnish.NiceText.interval);
-		this.checkInput();
-	},
+		this.updateCharsLeft._charsLeft = this.maxLength - this.val.length;
+		this.$charsLeft.text(this.updateCharsLeft._charsLeft);
 
-	onBlur: function()
-	{
-		this.focussed = false;
-		clearInterval(this.interval);
-
-		this.checkInput();
-	},
-
-	onKeyDown: function()
-	{
-		setTimeout($.proxy(this, 'checkInput'), 1);
+		if (this.updateCharsLeft._charsLeft >= 0)
+		{
+			this.$charsLeft.removeClass(this.settings.negativeCharsLeftClass);
+		}
+		else
+		{
+			this.$charsLeft.addClass(this.settings.negativeCharsLeftClass);
+		}
 	},
 
 	destroy: function()
@@ -4166,8 +4193,11 @@ Garnish.NiceText = Garnish.Base.extend({
 	interval: 100,
 	hintFadeDuration: 50,
 	defaults: {
-		autoHeight:     true,
-		onHeightChange: $.noop
+		autoHeight:             true,
+		showCharsLeft:          false,
+		charsLeftClass:         'chars-left',
+		negativeCharsLeftClass: 'negative-chars-left',
+		onHeightChange:         $.noop
 	}
 });
 
