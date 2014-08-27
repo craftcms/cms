@@ -68,11 +68,20 @@ class UserSessionService extends \CWebUser
 	{
 		if (!craft()->isConsole())
 		{
+			// Should we skip auto login and cookie renewel?
+			if (craft()->request->isCpRequest() && craft()->request->getParam('dontExtendSession'))
+			{
+				$this->allowAutoLogin = false;
+				$this->autoRenewCookie = false;
+			}
+			else
+			{
 				// Set the authTimeout based on whether the current identity was created with "Remember Me" checked.
 				// We have to do this before calling parent::init() so that updateAuthStatus() will be able to know
 				// whether it should log the user out
 				$data = $this->getIdentityCookieValue();
 				$this->authTimeout = $this->_getSessionDuration($data ? $data[3] : false);
+			}
 
 			parent::init();
 		}
