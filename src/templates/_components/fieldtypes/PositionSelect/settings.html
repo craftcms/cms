@@ -1,0 +1,28 @@
+{% import "_includes/forms" as forms %}
+
+{% set input %}
+	<table class="data">
+		{% for option in allOptions %}
+			<tr>
+				<td>
+					{{ forms.lightswitch({
+						 on: (option in settings.options),
+						 small: true,
+						 name: 'options['~option~']'
+					}) }}
+				</td>
+				<td>
+					<span data-icon="pos{{ option|replace('-', '') }}"></span>
+				</td>
+				<td class="code">
+					{{ option }}
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% endset %}
+
+{{ forms.field({
+	label: "Options"|t,
+	instructions: "Choose which position options should be available to your field."|t,
+}, input) }}

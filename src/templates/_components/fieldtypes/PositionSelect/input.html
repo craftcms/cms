@@ -1,0 +1,7 @@
+<div id="{{ id }}" class="btngroup big">
+	{% for option in options %}
+		<div class="btn big {% if option == value %} active{% endif %}" data-icon="pos{{ option|replace('-', '') }}" data-option="{{ option }}"></div>
+	{% endfor %}
+</div>
+
+<input type="hidden" name="{{ name }}" value="{{ value }}">
