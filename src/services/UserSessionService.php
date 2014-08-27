@@ -457,7 +457,7 @@ class UserSessionService extends \CWebUser
 									$this->saveIdentityStates(),
 								);
 
-								$this->saveCookie('', $data, $sessionDuration);
+								$this->_identityCookie = $this->saveCookie('', $data, $sessionDuration);
 							}
 							else
 							{
@@ -653,7 +653,7 @@ class UserSessionService extends \CWebUser
 	 * @param int    $duration The duration that the cookie should be stored for, in seconds.
 	 *
 	 * @todo Set domain to wildcard?  .example.com, .example.co.uk, .too.many.subdomains.com
-	 * @return null
+	 * @return \CHttpCookie The cookie
 	 */
 	public function saveCookie($name, $data, $duration = 0)
 	{
@@ -669,6 +669,8 @@ class UserSessionService extends \CWebUser
 
 		$cookie->value = craft()->security->hashData(base64_encode(serialize($data)));
 		craft()->request->getCookies()->add($cookie->name, $cookie);
+
+		return $cookie;
 	}
 
 	/**
@@ -1014,7 +1016,7 @@ class UserSessionService extends \CWebUser
 									$states,
 								);
 
-								$this->saveCookie('', $data, $sessionDuration);
+								$this->_identityCookie = $this->saveCookie('', $data, $sessionDuration);
 								$this->authTimeout = $sessionDuration;
 								$this->_sessionRestoredFromCookie = true;
 								$this->_userRow = null;
