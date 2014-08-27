@@ -936,10 +936,13 @@ class WebApp extends \CWebApplication
 
 		if (
 			$segments == array('users', 'login') ||
+			$segments == array('users', 'logout') ||
 			$segments == array('users', 'validate') ||
 			$segments == array('users', 'setpassword') ||
 			$segments == array('users', 'forgotpassword') ||
-			$segments == array('users', 'saveUser'))
+			$segments == array('users', 'saveUser') ||
+			$segments == array('users', 'getAuthTimeout')
+		)
 		{
 			return true;
 		}

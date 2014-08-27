@@ -37,6 +37,16 @@ class UserSessionVariable
 	}
 
 	/**
+	 * Returns the number of seconds the user will be logged in for.
+	 *
+	 * @return int
+	 */
+	public function getAuthTimeout()
+	{
+		return craft()->userSession->getAuthTimeout();
+	}
+
+	/**
 	 * Returns the remembered username from cookie.
 	 *
 	 * @return string

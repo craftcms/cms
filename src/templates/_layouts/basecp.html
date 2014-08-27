@@ -62,6 +62,7 @@
 			orientation:          "{{ orientation|e('js') }}",
 			left:                 "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                "{{ orientation == 'ltr' ? 'right' : 'left' }}",
+			authTimeout:          {{ craft.session.getAuthTimeout() }},
 			Personal:             {{ CraftPersonal }},
 			Client:               {{ CraftClient }},
 			Pro:                  {{ CraftPro }},

@@ -809,6 +809,26 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Returns how many seconds are left in the current user session.
+	 *
+	 * @return int The seconds left in the session.
+	 */
+	public function getAuthTimeout()
+	{
+		$authTimestamp = $this->getState(static::AUTH_TIMEOUT_VAR);
+		$currentTime = time();
+
+		if ($authTimestamp && $authTimestamp > $currentTime)
+		{
+			return $authTimestamp - $currentTime;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	/**
 	 * Clears all user identity information from persistent storage.
 	 *
 	 * This will remove the data stored via {@link setState}.

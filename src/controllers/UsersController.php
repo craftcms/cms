@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
 
 	// Public Methods
 	// =========================================================================
@@ -156,6 +156,17 @@ class UsersController extends BaseController
 			craft()->userSession->setError(Craft::t('There was a problem impersonating this user.'));
 			Craft::log(craft()->userSession->getUser()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', LogLevel::Error);
 		}
+	}
+
+	/**
+	 * Returns how many seconds are left in the current user session.
+	 *
+	 * @return null
+	 */
+	public function actionGetAuthTimeout()
+	{
+		echo craft()->userSession->getAuthTimeout();
+		craft()->end();
 	}
 
 	/**
