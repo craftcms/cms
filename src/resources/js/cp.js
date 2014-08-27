@@ -6,6 +6,8 @@
  */
 var CP = Garnish.Base.extend(
 {
+	authManager: null,
+
 	$alerts: null,
 	$header: null,
 	$headerActionsList: null,
@@ -40,6 +42,12 @@ var CP = Garnish.Base.extend(
 
 	init: function()
 	{
+		// Is this session going to expire?
+		if (Craft.authTimeout)
+		{
+			this.authManager = new Craft.AuthManager();
+		}
+
 		// Find all the key elements
 		this.$alerts = $('#alerts');
 		this.$header = $('#header');

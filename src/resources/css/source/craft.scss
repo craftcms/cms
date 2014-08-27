@@ -863,6 +863,13 @@ body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 .element-hud-form .buttons { position: relative; }
 
 
+/* logout warning/login modal */
+#logoutwarningmodal,
+#loginmodal { width: 500px; }
+
+#loginmodal .inputcontainer { position: relative; }
+#loginmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
+
 /* ----------------------------------------
 /*  Menus
 /* ----------------------------------------*/
