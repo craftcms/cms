@@ -10,6 +10,7 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="users/saveFieldLayout">
 		<input type="hidden" name="redirect" value="settings">
+		{{ getCsrfInput() }}
 
 		{% include "_includes/fieldlayoutdesigner" with {
 			fieldLayout: craft.fields.getLayoutByType('User'),

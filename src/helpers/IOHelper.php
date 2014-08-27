@@ -1414,6 +1414,7 @@ class IOHelper
 		return array(
 			'access'      => array('label' => Craft::t('Access'),      'extensions' => array('adp','accdb','mdb','accde','accdt','accdr')),
 			'audio'       => array('label' => Craft::t('Audio'),       'extensions' => array('3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv')),
+			'compressed'  => array('label' => Craft::t('Compressed'),  'extensions' => array('bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx')),
 			'excel'       => array('label' => Craft::t('Excel'),       'extensions' => array('xls', 'xlsx','xlsm','xltx','xltm')),
 			'flash'       => array('label' => Craft::t('Flash'),       'extensions' => array('fla','flv','swf','swt','swc')),
 			'html'        => array('label' => Craft::t('HTML'),        'extensions' => array('html','htm')),

@@ -32,6 +32,8 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
 		<input type="hidden" name="action" value="userSettings/saveGroup">
 		<input type="hidden" name="redirect" value="settings/users">
+		{{ getCsrfInput() }}
+
 		{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 
 		{{ forms.textField({

@@ -27,6 +27,7 @@
 	<form method="post" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="languageSettings/save">
 		<input type="hidden" name="redirect" value="settings">
+		{{ getCsrfInput() }}
 
 		<h2>{{ "Which locales does your content target?"|t }}</h2>
 

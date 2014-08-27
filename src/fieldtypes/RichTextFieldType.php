@@ -166,6 +166,13 @@ class RichTextFieldType extends BaseFieldType
 				// (Leave empty <a> tags though, since they might be defining a standalone #anchor.)
 				$value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u)\s*><\/\1>/', '', $value);
 			}
+
+			if ($this->getSettings()->purifyHtml)
+			{
+				$purifier = new \CHtmlPurifier();
+				$value = $purifier->purify($value);
+
+			}
 		}
 
 		// Find any element URLs and swap them with ref tags
@@ -202,6 +209,7 @@ class RichTextFieldType extends BaseFieldType
 		return array(
 			'configFile'  => AttributeType::String,
 			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
+			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
 		);
 	}
 

@@ -4,6 +4,7 @@
 
 <form method="post" accept-charset="UTF-8">
 	<input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
+	{{ getCsrfInput() }}
 
 	{% if section.type != 'single' and entryType.hasTitleField %}
 		{{ forms.textField({

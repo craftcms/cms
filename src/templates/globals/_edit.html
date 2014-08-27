@@ -31,6 +31,7 @@
 		<input type="hidden" name="action" value="globals/saveContent">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
 		<input type="hidden" name="locale" value="{{ localeId }}">
+		{{ getCsrfInput() }}
 
 		{% if globalSet.getFieldLayout().getFields() | length %}
 			<div>

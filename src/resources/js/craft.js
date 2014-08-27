@@ -323,7 +323,25 @@ $.extend(Craft,
 		{
 			options = callback;
 			callback = data;
-			data = undefined;
+			data = {};
+		}
+
+		if (Craft.csrfTokenValue && Craft.csrfTokenName)
+		{
+			if (typeof data == 'string')
+			{
+				if (data) { data += '&' }
+				data += Craft.csrfTokenName + '=' + Craft.csrfTokenValue
+			}
+			else
+			{
+				if (typeof data !== 'object')
+				{
+					data = {};
+				}
+
+				data[Craft.csrfTokenName] = Craft.csrfTokenValue;
+			}
 		}
 
 		var jqXHR = $.ajax($.extend({
