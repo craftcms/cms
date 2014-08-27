@@ -208,7 +208,11 @@ var LoginForm = Garnish.Base.extend(
 	onForgetPassword: function(event)
 	{
 		event.preventDefault();
-		this.$loginNameInput.focus();
+
+		if (!Garnish.isMobileBrowser())
+		{
+			this.$loginNameInput.focus();
+		}
 
 		if (this.$error)
 		{
