@@ -4,7 +4,7 @@ namespace Craft;
 /**
  * HttpRequestService provides APIs for getting information about the current HTTP request.
  *
- * An instance of HttpRequestService is globally accessible in Craft via {@link WebApp::entries `craft()->request`}.
+ * An instance of HttpRequestService is globally accessible in Craft via {@link WebApp::request `craft()->request`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
