@@ -654,12 +654,8 @@ class AssetTransformsService extends BaseApplicationComponent
 		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
 
-		// For non-web-safe formats we go with jpg.
-		$extension = StringHelper::toLowerCase(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
-		if (!in_array($extension, ImageHelper::getWebSafeFormats()))
-		{
-			$extension = 'jpg';
-		}
+		$extension = $this->_getThumbExtension($fileModel);
+
 		$thumbPath = $thumbFolder.$fileModel->id.'.'.$extension;
 
 		if (!IOHelper::fileExists($thumbPath))
@@ -910,7 +906,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			if (is_dir($folder))
 			{
-				IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
+				IOHelper::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
 			}
 		}
 	}
@@ -1089,5 +1085,25 @@ class AssetTransformsService extends BaseApplicationComponent
 		}
 
 		return;
+	}
+
+	/**
+	 * Return the thumbnail extension for a file.
+	 *
+	 * @param AssetFileModel $file
+	 *
+	 * @return string
+	 */
+	private function _getThumbExtension(AssetFileModel $file)
+	{
+		// For non-web-safe formats we go with jpg.
+		$extension = StringHelper::toLowerCase(pathinfo($file->filename, PATHINFO_EXTENSION));
+
+		if (!in_array($extension, ImageHelper::getWebSafeFormats()))
+		{
+			$extension = 'jpg';
+		}
+
+		return $extension;
 	}
 }
