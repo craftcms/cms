@@ -29,12 +29,12 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	/**
 	 * @var
 	 */
-	private $_cachedElements;
+	private $_matchedElements;
 
 	/**
 	 * @var
 	 */
-	private $_cachedElementsAtOffsets;
+	private $_matchedElementsAtOffsets;
 
 	/**
 	 * @var
@@ -126,7 +126,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		if (is_numeric($offset) && $item instanceof BaseElementModel)
 		{
-			$this->_cachedElementsAtOffsets[$offset] = $item;
+			$this->_matchedElementsAtOffsets[$offset] = $item;
 		}
 		else
 		{
@@ -145,7 +145,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		if (is_numeric($offset))
 		{
-			unset($this->_cachedElementsAtOffsets[$offset]);
+			unset($this->_matchedElementsAtOffsets[$offset]);
 		}
 		else
 		{
@@ -173,10 +173,17 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function setAttribute($name, $value)
 	{
+		// If this is an attribute, and the value is not actually changing, just return true so the matched elements
+		// don't get cleared.
+		if (in_array($name, $this->attributeNames()) && $this->getAttribute($name) === $value)
+		{
+			return true;
+		}
+
 		if (parent::setAttribute($name, $value))
 		{
-			$this->_cachedElements = null;
-			$this->_cachedElementsAtOffsets = null;
+			$this->_matchedElements = null;
+			$this->_matchedElementsAtOffsets = null;
 			$this->_cachedIds = null;
 			$this->_cachedTotal = null;
 			return true;
@@ -223,9 +230,9 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	/**
 	 * Returns all elements that match the criteria.
 	 *
-	 * @param array|null $attributes
+	 * @param array $attributes Any last-minute parameters that should be added.
 	 *
-	 * @return array
+	 * @return array The matched elements.
 	 */
 	public function find($attributes = null)
 	{
@@ -233,33 +240,25 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 		$this->_includeInTemplateCaches();
 
-		if (!isset($this->_cachedElements))
+		if (!isset($this->_matchedElements))
 		{
-			$this->_cachedElements = craft()->elements->findElements($this);
-
-			// Cache 'em
-			$offset = $this->offset;
-
-			foreach ($this->_cachedElements as $element)
-			{
-				$this->_cachedElementsAtOffsets[$offset] = $element;
-				$offset++;
-			}
+			$elements = craft()->elements->findElements($this);
+			$this->setMatchedElements($elements);
 		}
 
-		return $this->_cachedElements;
+		return $this->_matchedElements;
 	}
 
 	/**
 	 * Returns an element at a specific offset.
 	 *
-	 * @param int $offset
+	 * @param int $offset The offset.
 	 *
-	 * @return BaseElementModel|null
+	 * @return BaseElementModel|null The element, if there is one.
 	 */
 	public function nth($offset)
 	{
-		if (!isset($this->_cachedElementsAtOffsets) || !array_key_exists($offset, $this->_cachedElementsAtOffsets))
+		if (!isset($this->_matchedElementsAtOffsets) || !array_key_exists($offset, $this->_matchedElementsAtOffsets))
 		{
 			$criteria = new ElementCriteriaModel($this->getAttributes(), $this->_elementType);
 			$criteria->offset = $offset;
@@ -268,15 +267,15 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 
 			if ($elements)
 			{
-				$this->_cachedElementsAtOffsets[$offset] = $elements[0];
+				$this->_matchedElementsAtOffsets[$offset] = $elements[0];
 			}
 			else
 			{
-				$this->_cachedElementsAtOffsets[$offset] = null;
+				$this->_matchedElementsAtOffsets[$offset] = null;
 			}
 		}
 
-		return $this->_cachedElementsAtOffsets[$offset];
+		return $this->_matchedElementsAtOffsets[$offset];
 	}
 
 	/**
@@ -363,6 +362,27 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	{
 		$class = get_class($this);
 		return new $class($this->getAttributes(), $this->_elementType);
+	}
+
+	/**
+	 * Stores the matched elements to avoid redundant DB queries.
+	 *
+	 * @param array $elements The matched elements.
+	 *
+	 * @return null
+	 */
+	public function setMatchedElements($elements)
+	{
+		$this->_matchedElements = $elements;
+
+		// Store them by offset, too
+		$offset = $this->offset;
+
+		foreach ($this->_matchedElements as $element)
+		{
+			$this->_matchedElementsAtOffsets[$offset] = $element;
+			$offset++;
+		}
 	}
 
 	/**
