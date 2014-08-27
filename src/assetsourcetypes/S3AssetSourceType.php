@@ -542,10 +542,6 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			craft()->assetTransforms->deleteThumbnailsForFile($file);
-
-			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
-
 			// Move transforms
 			foreach ($transforms as $index)
 			{

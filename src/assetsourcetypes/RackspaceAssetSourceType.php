@@ -532,8 +532,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			craft()->assetTransforms->deleteThumbnailsForFile($file);
-
 			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
 			// Move transforms
@@ -545,6 +543,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 				$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $index);
 				$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
+
 				$this->_copyFile($sourceTransformPath, $targetTransformPath);
 
 				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
