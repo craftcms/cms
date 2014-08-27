@@ -30,6 +30,23 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private $_translations;
 
+	/**
+	 * @var array
+	 */
+	private $_messages = array();
+
+	// Public Methods
+	// ------------------------------------------------------------------------
+
+	/**
+	 *
+	 */
+	public function init()
+	{
+		$this->basePath = craft()->path->getFrameworkPath().'messages/';
+		parent::init();
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -43,9 +60,17 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	protected function loadMessages($category, $language)
 	{
-		if ($category != 'craft')
+		if ($category !== 'craft')
 		{
-			return parent::loadMessages($category, $language);
+			$parentMessages = parent::loadMessages($category, $language);
+
+			// See if there any craft/translations for Yii's system messages.
+			if (($filePath = IOHelper::fileExists(craft()->path->getSiteTranslationsPath().$language.'.php')) !== false)
+			{
+				$parentMessages = array_merge($parentMessages, include($filePath));
+			}
+
+			return $parentMessages;
 		}
 
 		if (!isset($this->_translations[$language]))
