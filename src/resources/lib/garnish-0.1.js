@@ -3580,7 +3580,7 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			// (settings)
 			settings = container;
-            container = null;
+			container = null;
 		}
 
 		this.setSettings(settings, Garnish.Modal.defaults);
@@ -3588,17 +3588,17 @@ Garnish.Modal = Garnish.Base.extend({
 		// Create the shade
 		this.$shade = $('<div class="'+this.settings.shadeClass+'"/>');
 
-        // If the container is already set, drop the shade below it.
-        if (container)
-        {
-            this.$shade.insertBefore(container);
-        }
-        else
-        {
-            this.$shade.appendTo(Garnish.$bod);
-        }
+		// If the container is already set, drop the shade below it.
+		if (container)
+		{
+			this.$shade.insertBefore(container);
+		}
+		else
+		{
+			this.$shade.appendTo(Garnish.$bod);
+		}
 
-        if (container)
+		if (container)
 		{
 			this.setContainer(container);
 
@@ -3654,7 +3654,7 @@ Garnish.Modal = Garnish.Base.extend({
 
 	show: function()
 	{
-        // Close other modals as needed
+		// Close other modals as needed
 		if (this.settings.closeOtherModals && Garnish.Modal.visibleModal && Garnish.Modal.visibleModal != this)
 		{
 			Garnish.Modal.visibleModal.hide();
@@ -3884,8 +3884,8 @@ Garnish.Modal = Garnish.Base.extend({
 		onHide: $.noop,
 		onFadeIn: $.noop,
 		onFadeOut: $.noop,
-        closeOtherModals: true,
-        hideOnEsc: true,
+		closeOtherModals: true,
+		hideOnEsc: true,
 		hideOnShadeClick: true,
 		shadeClass: 'modal-shade'
 	},
