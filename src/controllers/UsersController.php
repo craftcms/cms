@@ -648,7 +648,13 @@ class UsersController extends BaseController
 		}
 
 		craft()->templates->includeCssResource('css/account.css');
-		craft()->templates->includeJsResource('js/account.js');
+		craft()->templates->includeJsResource('js/AccountSettingsForm.js');
+		craft()->templates->includeJs('new Craft.AccountSettingsForm('.($variables['account']->isCurrent() ? 'true' : 'false').');');
+
+		craft()->templates->includeTranslations(
+			'Please enter your current password.',
+			'Please enter your password.'
+		);
 
 		$this->renderTemplate('users/_edit', $variables);
 	}
