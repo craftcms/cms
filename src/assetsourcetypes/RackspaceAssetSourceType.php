@@ -532,21 +532,28 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
-
-			// Move transforms
-			foreach ($transforms as $index)
+			if ($targetFolder->sourceId == $file->sourceId)
 			{
-				// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
-				$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-				$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceTransformPath);
+				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
-				$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-				$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
+				// Move transforms
+				foreach ($transforms as $index)
+				{
+					// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
+					$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceTransformPath);
 
-				$this->_copyFile($sourceTransformPath, $targetTransformPath);
+					$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
 
-				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+					$this->_copyFile($sourceTransformPath, $targetTransformPath);
+
+					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+				}
+			}
+			else
+			{
+				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
 			}
 		}
 

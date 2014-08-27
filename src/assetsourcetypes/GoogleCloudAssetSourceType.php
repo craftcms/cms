@@ -519,13 +519,20 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
-
-			// Move transforms
-			foreach ($transforms as $index)
+			if ($targetFolder->sourceId == $file->sourceId)
 			{
-				$this->copyTransform($file, $targetFolder, $index, $index);
-				$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
+
+				// Move transforms
+				foreach ($transforms as $index)
+				{
+					$this->copyTransform($file, $targetFolder, $index, $index);
+					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+				}
+			}
+			else
+			{
+				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
 			}
 		}
 
