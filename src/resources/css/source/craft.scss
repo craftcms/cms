@@ -801,6 +801,9 @@ body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 	body.rtl & { background-image: url(../images/resizehandle_rtl.png); }
 }
 
+.modal.alert .body { padding-left: 76px; }
+.modal.alert .body:before { @include icon; @include margin(-6px, 0, 0, -58px); @include floatleft; content: 'alert'; font-size: 40px; color: $lighttextcolor; }
+
 .hud { position: absolute; display: none; top: 0; }
 .hud .tip { position: absolute; background: no-repeat 0 0; }
 .hud .tip-left { @include left(-15px); width: 15px; height: 30px; background-image: url(../images/hudtip_left.png); }
