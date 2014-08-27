@@ -175,7 +175,17 @@ class UsersController extends BaseController
 	public function actionLogout()
 	{
 		craft()->userSession->logout(false);
-		$this->redirect('');
+
+		if (craft()->request->isAjaxRequest())
+		{
+			$this->returnJson(array(
+				'success' => true
+			));
+		}
+		else
+		{
+			$this->redirect('');
+		}
 	}
 
 	/**
