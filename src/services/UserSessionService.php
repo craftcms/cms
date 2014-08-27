@@ -1048,6 +1048,19 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Called after a user is logged in.
+	 *
+	 * @return null
+	 */
+	protected function afterLogin()
+	{
+		if ($this->authTimeout)
+		{
+			$this->setState(static::AUTH_TIMEOUT_VAR, time()+$this->authTimeout);
+		}
+	}
+
+	/**
 	 * Called before a user is logged out.
 	 *
 	 * @return bool So true.
