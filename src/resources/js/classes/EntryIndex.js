@@ -70,28 +70,31 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			history.replaceState({}, '', Craft.getUrl(uri));
 
 			// Update the New Entry button
-			if (handle == 'singles' || !handle)
+			if (this.$newEntryBtnGroup.length)
 			{
-				if (this.$newEntryBtn)
+				if (handle == 'singles' || !handle)
 				{
-					this.$newEntryBtn.remove();
-					this.$newEntryBtn = null;
-					this.$newEntryMenuBtn.addClass('add icon').text(this.newEntryLabel);
-				}
-			}
-			else
-			{
-				if (this.$newEntryBtn)
-				{
-					this.$newEntryBtn.remove();
+					if (this.$newEntryBtn)
+					{
+						this.$newEntryBtn.remove();
+						this.$newEntryBtn = null;
+						this.$newEntryMenuBtn.addClass('add icon').text(this.newEntryLabel);
+					}
 				}
 				else
 				{
-					this.$newEntryMenuBtn.removeClass('add icon').text('');
-				}
+					if (this.$newEntryBtn)
+					{
+						this.$newEntryBtn.remove();
+					}
+					else
+					{
+						this.$newEntryMenuBtn.removeClass('add icon').text('');
+					}
 
-				this.$newEntryBtn = $('<a class="btn submit add icon"/>').text(this.newEntryLabel).prependTo(this.$newEntryBtnGroup);
-				this.$newEntryBtn.attr('href', Craft.getUrl('entries/'+handle+'/new'));
+					this.$newEntryBtn = $('<a class="btn submit add icon"/>').text(this.newEntryLabel).prependTo(this.$newEntryBtnGroup);
+					this.$newEntryBtn.attr('href', Craft.getUrl('entries/'+handle+'/new'));
+				}
 			}
 		}
 
