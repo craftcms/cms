@@ -184,7 +184,7 @@ class MatrixFieldType extends BaseFieldType
 		$criteria->fieldId = $this->model->id;
 		$criteria->locale = $this->element->locale;
 
-		// Set the initially matched elemetns if $value is already set, which is the case if there was a validation
+		// Set the initially matched elements if $value is already set, which is the case if there was a validation
 		// error or we're loading an entry revision.
 		if (is_array($value) || $value === '')
 		{

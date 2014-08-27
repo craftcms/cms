@@ -186,6 +186,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			$this->_matchedElementsAtOffsets = null;
 			$this->_cachedIds = null;
 			$this->_cachedTotal = null;
+
 			return true;
 		}
 		else
@@ -224,6 +225,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	public function setLanguage($locale)
 	{
 		$this->setAttribute('locale', $locale);
+
 		return $this;
 	}
 
@@ -361,6 +363,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	public function copy()
 	{
 		$class = get_class($this);
+
 		return new $class($this->getAttributes(), $this->_elementType);
 	}
 
