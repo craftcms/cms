@@ -14,6 +14,12 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 		// Make it lowercase
 		sourceVal = sourceVal.toLowerCase();
 
+		if (Craft.limitAutoSlugsToAscii)
+		{
+			// Convert extended ASCII characters to basic ASCII
+			sourceVal = Craft.asciiString(sourceVal);
+		}
+
 		// Get the "words".  Split on anything that is not a unicode letter or number.
 		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}]+')]));
 
