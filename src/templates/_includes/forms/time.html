@@ -27,6 +27,7 @@
 		timeFormat: '{{ craft.i18n.timepickerJsFormat }}',
 		closeOnWindowScroll: false,
 		orientation: '{{ localeData.getOrientation() }}',
+		{% if minuteIncrement is defined %}step: '{{ minuteIncrement }}',{% endif %}
 		lang: {
 			am: '{{ localeData.getAMName() }}',
 			AM: '{{ localeData.getAMName() }}',

@@ -1,0 +1,17 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.radioGroupField({
+	id: 'dateTime',
+	name: 'dateTime',
+	options: options,
+	value: value
+}) }}
+
+{{ forms.textField({
+	label: "Minute Increment (Number between 1 and 60)"|t,
+	id: 'minuteIncrement',
+	name: 'minuteIncrement',
+	value: settings.minuteIncrement ? settings.minuteIncrement : 30,
+	size: 2,
+	errors: settings.getErrors('minuteIncrement')
+}) }}
