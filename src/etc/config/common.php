@@ -227,6 +227,7 @@ $components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPer
 
 $components['file']['class'] = 'Craft\File';
 $components['messages']['class'] = 'Craft\PhpMessageSource';
+$components['coreMessages']['class'] = 'Craft\PhpMessageSource';
 $components['request']['class'] = 'Craft\HttpRequestService';
 $components['request']['enableCookieValidation'] = true;
 $components['viewRenderer']['class'] = 'Craft\TemplateProcessor';
