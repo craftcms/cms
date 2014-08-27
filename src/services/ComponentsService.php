@@ -247,10 +247,15 @@ class ComponentsService extends BaseApplicationComponent
 
 			if ($component && $component->isSelectable())
 			{
-				// Save it
 				$classHandle = $component->getClassHandle();
-				$components[$classHandle] = $component;
-				$names[] = $component->getName();
+
+				// Make sure we don't have another component with the exact same class name
+				if (!isset($components[$classHandle]))
+				{
+					// Save it
+					$components[$classHandle] = $component;
+					$names[] = $component->getName();
+				}
 			}
 		}
 
