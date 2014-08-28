@@ -83,6 +83,11 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private $_ipAddress;
 
+	/**
+	 * @var
+	 */
+	private $_cookies;
+
 	// Public Methods
 	// =========================================================================
 
@@ -821,6 +826,25 @@ class HttpRequestService extends \CHttpRequest
 		if (isset($this->cookies[$name]))
 		{
 			return $this->cookies[$name];
+		}
+	}
+
+	/**
+	 * Returns the cookie collection. The result can be used like an associative array. Adding {@link HttpCookie} objects
+	 * to the collection will send the cookies to the client; and removing the objects from the collection will delete
+	 * those cookies on the client.
+	 *
+	 * @return CookieCollection The cookie collection.
+	 */
+	public function getCookies()
+	{
+		if ($this->_cookies !== null)
+		{
+			return $this->_cookies;
+		}
+		else
+		{
+			return $this->_cookies = new CookieCollection($this);
 		}
 	}
 
