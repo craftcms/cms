@@ -289,7 +289,11 @@ abstract class BaseController extends \CController
 	public function returnJson($var = array())
 	{
 		JsonHelper::sendJsonHeaders();
+
+		// Output it into a buffer, in case TasksService wants to close the connection prematurely
+		ob_start();
 		echo JsonHelper::encode($var);
+
 		craft()->end();
 	}
 

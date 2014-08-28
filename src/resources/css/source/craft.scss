@@ -885,7 +885,7 @@ body .redactor_dropdown { z-index: 100; margin-bottom: 10px; border-radius: 3px;
 body .redactor_dropdown { padding: 4px 14px; }
 
 .menu ul li a,
-body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; }
+body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }

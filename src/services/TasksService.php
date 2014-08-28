@@ -137,11 +137,15 @@ class TasksService extends BaseApplicationComponent
 		// Make sure a future call to craft()->end() dosen't trigger this a second time
 		craft()->detachEventHandler('onEndRequest', array($this, 'closeAndRun'));
 
-		// Close the client connection
-		craft()->request->close();
+		// Make sure nothing has been output to the browser yet
+		if (!headers_sent())
+		{
+			// Close the client connection
+			craft()->request->close();
 
-		// Run any pending tasks
-		$this->runPendingTasks();
+			// Run any pending tasks
+			$this->runPendingTasks();
+		}
 	}
 
 	/**

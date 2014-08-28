@@ -2869,6 +2869,20 @@ Garnish.Menu = Garnish.Base.extend({
 	$options: null,
 	$trigger: null,
 
+	_windowWidth: null,
+	_windowHeight: null,
+	_windowScrollLeft: null,
+	_windowScrollTop: null,
+
+	_triggerOffset: null,
+	_triggerWidth: null,
+	_triggerHeight: null,
+	_triggerOffsetRight: null,
+	_triggerOffsetBottom: null,
+
+	_menuWidth: null,
+	_menuHeight: null,
+
 	/**
 	 * Constructor
 	 */
@@ -2901,72 +2915,75 @@ Garnish.Menu = Garnish.Base.extend({
 
 	setPositionRelativeToTrigger: function()
 	{
-		var windowHeight = Garnish.$win.height(),
-			windowScrollTop = Garnish.$win.scrollTop(),
+		this._windowWidth = Garnish.$win.width();
+		this._windowHeight = Garnish.$win.height();
+		this._windowScrollLeft = Garnish.$win.scrollLeft();
+		this._windowScrollTop = Garnish.$win.scrollTop();
 
-			triggerOffset = this.$trigger.offset(),
-			triggerWidth = this.$trigger.outerWidth(),
-			triggerHeight = this.$trigger.outerHeight(),
-			triggerOffsetBottom = triggerOffset.top + triggerHeight,
-			triggerOffsetTop = triggerOffset.top,
+		this._triggerOffset = this.$trigger.offset();
+		this._triggerWidth = this.$trigger.outerWidth();
+		this._triggerHeight = this.$trigger.outerHeight();
+		this._triggerOffsetRight = this._triggerOffset.left + this._triggerHeight;
+		this._triggerOffsetBottom = this._triggerOffset.top + this._triggerHeight;
 
-			menuHeight = this.$container.outerHeight(),
+		this.$container.css('minWidth', 0);
+		this.$container.css('minWidth', this._triggerWidth - (this.$container.outerWidth() - this.$container.width()));
 
-			bottomClearance = windowHeight + windowScrollTop - triggerOffsetBottom,
-			topClearance = triggerOffsetTop - windowScrollTop;
-
-		var css = {
-			minWidth: triggerWidth - (this.$container.outerWidth() - this.$container.width())
-		};
+		this._menuWidth = this.$container.outerWidth();
+		this._menuHeight = this.$container.outerHeight();
 
 		// Is there room for the menu below the trigger?
-		if (bottomClearance >= menuHeight || bottomClearance >= topClearance)
+		var topClearance = this._triggerOffset.top - this._windowScrollTop,
+			bottomClearance = this._windowHeight + this._windowScrollTop - this._triggerOffsetBottom;
+
+		if (bottomClearance >= this._menuHeight || bottomClearance >= topClearance)
 		{
-			css.top = triggerOffsetBottom;
+			this.$container.css('top', this._triggerOffsetBottom);
 		}
 		else
 		{
-			css.top = triggerOffsetTop - menuHeight;
+			this.$container.css('top', this._triggerOffset.top - this._menuHeight);
 		}
 
+		// Figure out how we're aliging it
 		var align = this.$container.data('align');
 
-		if (!align)
+		if (align != 'left' && align != 'center' && align != 'right')
 		{
 			align = 'left';
 		}
 
-		if (Garnish.rtl)
+		if (align == 'center')
 		{
-			if (align == 'left')
+			this._alignCenter();
+		}
+		else
+		{
+			// Figure out which options are actually possible
+			var rightClearance = this._windowWidth + this._windowScrollLeft - (this._triggerOffset.left + this._menuWidth),
+				leftClearance = this._triggerOffsetRight - this._menuWidth;
+
+			if (align == 'right' && leftClearance >= 0 || rightClearance < 0)
 			{
-				align = 'right';
+				this._alignRight();
 			}
-			else if (align == 'right')
+			else
 			{
-				align = 'left';
+				this._alignLeft();
 			}
 		}
 
-		switch (align)
-		{
-			case 'right':
-			{
-				css.right = Garnish.$win.width() - (triggerOffset.left + triggerWidth);
-				break;
-			}
-			case 'center':
-			{
-				css.left = Math.round((triggerOffset.left + triggerWidth / 2) - (this.$container.outerWidth() / 2));
-				break;
-			}
-			case 'left':
-			{
-				css.left = triggerOffset.left;
-			}
-		}
-
-		this.$container.css(css);
+		delete this._windowWidth;
+		delete this._windowHeight;
+		delete this._windowScrollLeft;
+		delete this._windowScrollTop;
+		delete this._triggerOffset;
+		delete this._triggerWidth;
+		delete this._triggerHeight;
+		delete this._triggerOffsetRight;
+		delete this._triggerOffsetBottom;
+		delete this._menuWidth;
+		delete this._menuHeight;
 	},
 
 	show: function()
@@ -2998,6 +3015,34 @@ Garnish.Menu = Garnish.Base.extend({
 		this.settings.onOptionSelect(ev.currentTarget);
 		this.trigger('optionselect', { selectedOption: ev.currentTarget });
 		this.hide();
+	},
+
+	_alignLeft: function()
+	{
+		this.$container.css({
+			left: this._triggerOffset.left,
+			right: 'auto'
+		});
+	},
+
+	_alignRight: function()
+	{
+		this.$container.css({
+			right: this._windowWidth - (this._triggerOffset.left + this._triggerWidth),
+			left: 'auto'
+		});
+	},
+
+	_alignCenter: function()
+	{
+		var left = Math.round((this._triggerOffset.left + this._triggerWidth / 2) - (this._menuWidth / 2));
+
+		if (left < 0)
+		{
+			left = 0;
+		}
+
+		this.$container.css('left', left);
 	}
 
 },

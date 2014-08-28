@@ -256,7 +256,7 @@ class HeaderHelper
 	public static function setHeader($header)
 	{
 		// Don't try to set headers when it's already too late
-		if (true === headers_sent())
+		if (headers_sent())
 		{
 			return false;
 		}
