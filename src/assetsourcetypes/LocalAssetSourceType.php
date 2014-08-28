@@ -337,7 +337,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
-		IOHelper::changePermissions($targetPath, IOHelper::getWritableFilePermissions());
+		IOHelper::changePermissions($targetPath, IOHelper::getDefaultFilePermissions());
 
 		$response = new AssetOperationResponseModel();
 
@@ -514,7 +514,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			return false;
 		}
 
-		return IOHelper::createFolder($this->getSourceFileSystemPath().$parentFolder->path.$folderName, IOHelper::getWritableFolderPermissions());
+		return IOHelper::createFolder($this->getSourceFileSystemPath().$parentFolder->path.$folderName);
 	}
 
 	/**

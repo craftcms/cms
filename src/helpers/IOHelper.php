@@ -1468,7 +1468,7 @@ class IOHelper
 	{
 		if (!IOHelper::folderExists($folderPath, $suppressErrors))
 		{
-			IOHelper::createFolder($folderPath, static::getWritableFolderPermissions(), $suppressErrors);
+			IOHelper::createFolder($folderPath, static::getDefaultFolderPermissions(), $suppressErrors);
 		}
 	}
 
@@ -1541,23 +1541,13 @@ class IOHelper
 	}
 
 	/**
-	 * Gets the writable folder permissions from the config service.
+	 * Gets the default file permissions from the config service.
 	 *
 	 * @return mixed
 	 */
-	public static function getWritableFolderPermissions()
+	public static function getDefaultFilePermissions()
 	{
-		return craft()->config->get('writableFolderPermissions');
-	}
-
-	/**
-	 * Gets the writable file permissions from the config service.
-	 *
-	 * @return mixed
-	 */
-	public static function getWritableFilePermissions()
-	{
-		return craft()->config->get('writableFilePermissions');
+		return craft()->config->get('defaultFilePermissions');
 	}
 
 	/**
