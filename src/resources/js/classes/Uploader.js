@@ -45,14 +45,6 @@ Craft.Uploader = Garnish.Base.extend(
 			this.uploader.on(event, events[event]);
 		}
 
-		if (settings.dropZone != null)
-		{
-			$(document).bind('drop dragover', function(e)
-			{
-				e.preventDefault();
-			});
-		}
-
 		this.settings = settings;
 
 		this.uploader.on('fileuploadadd', $.proxy(this, 'onFileAdd'));
