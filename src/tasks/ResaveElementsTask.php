@@ -82,22 +82,29 @@ class ResaveElementsTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
-		$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
-
-		if (!$element || craft()->elements->saveElement($element, false))
+		try
 		{
-			return true;
-		}
-		else
-		{
-			$error = 'Encountered the following validation errors when trying to save '.strtolower($element->getElementType()).' element "'.$element.'" with the ID "'.$element->id.'":';
+			$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
 
-			foreach ($element->getAllErrors() as $attributeError)
+			if (!$element || craft()->elements->saveElement($element, false))
 			{
-				$error .= "\n - {$attributeError}";
+				return true;
 			}
+			else
+			{
+				$error = 'Encountered the following validation errors when trying to save '.strtolower($element->getElementType()).' element "'.$element.'" with the ID "'.$element->id.'":';
 
-			return $error;
+				foreach ($element->getAllErrors() as $attributeError)
+				{
+					$error .= "\n - {$attributeError}";
+				}
+
+				return $error;
+			}
+		}
+		catch (\Exception $e)
+		{
+			return 'An exception was thrown while trying to save the '.$this->_elementType.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
 		}
 	}
 
