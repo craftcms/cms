@@ -152,6 +152,13 @@ return array(
 	'customAsciiCharMappings' => array(),
 
 	/**
+	 * Used to set a custom domain on any cookies that Craft creates. Defaults to an empty string, which leaves it
+	 * up to the browser to determine which domain to use (almost always the current). If you want the cookies to work
+	 * for all subdomains, for example, you could set this to '.domain.com'.
+	 */
+	'defaultCookieDomain' => '',
+
+	/**
 	 * The default permissions Craft will use when creating a file on the file system.
 	 */
 	'defaultFilePermissions' => 0664,

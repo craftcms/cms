@@ -814,7 +814,7 @@ class HttpRequestService extends \CHttpRequest
 	 *
 	 * @param string $name The cookie name.
 	 *
-	 * @return \CHttpCookie|null The cookie, or `null` if it didn’t exist.
+	 * @return HttpCookie|null The cookie, or `null` if it didn’t exist.
 	 */
 	public function getCookie($name)
 	{
@@ -1146,11 +1146,11 @@ class HttpRequestService extends \CHttpRequest
 	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
 	 * applied to the generated cookie.
 	 *
-	 * @return CHttpCookie the generated cookie
+	 * @return HttpCookie the generated cookie
 	 */
 	protected function createCsrfCookie()
 	{
-		$cookie = new \CHttpCookie($this->csrfTokenName, sha1(uniqid(mt_rand(), true)));
+		$cookie = new HttpCookie($this->csrfTokenName, sha1(uniqid(mt_rand(), true)));
 
 		if (is_array($this->csrfCookie))
 		{

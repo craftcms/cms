@@ -35,7 +35,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Stores the user identity cookie.
 	 *
-	 * @var \CHttpCookie
+	 * @var HttpCookie
 	 */
 	private $_identityCookie;
 
@@ -68,7 +68,7 @@ class UserSessionService extends \CWebUser
 	{
 		if (!craft()->isConsole())
 		{
-			// Should we skip auto login and cookie renewel?
+			// Should we skip auto login and cookie renewal?
 			if (craft()->request->isCpRequest() && craft()->request->getParam('dontExtendSession'))
 			{
 				$this->allowAutoLogin = false;
@@ -653,13 +653,12 @@ class UserSessionService extends \CWebUser
 	 * @param mixed  $data     The data that should be stored on the cookie.
 	 * @param int    $duration The duration that the cookie should be stored for, in seconds.
 	 *
-	 * @todo Set domain to wildcard?  .example.com, .example.co.uk, .too.many.subdomains.com
-	 * @return \CHttpCookie The cookie
+	 * @return HttpCookie The cookie.
 	 */
 	public function saveCookie($name, $data, $duration = 0)
 	{
 		$name = $this->getStateKeyPrefix().$name;
-		$cookie = new \CHttpCookie($name, '');
+		$cookie = new HttpCookie($name, '');
 		$cookie->httpOnly = true;
 		$cookie->expire = time() + $duration;
 
@@ -692,7 +691,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @param string $name The cookie name.
 	 *
-	 * @return \CHttpCookie|null The cookie, or `null` if it didn’t exist.
+	 * @return HttpCookie|null The cookie, or `null` if it didn’t exist.
 	 */
 	public function getStateCookie($name)
 	{
@@ -703,7 +702,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Returns the value of a cookie by its name, ensuring that the data hasn’t been tampered with.
 	 *
-	 * @param \CHttpCookie|string $cookie The cookie, or the name of the cookie.
+	 * @param HttpCookie|string $cookie The cookie, or the name of the cookie.
 	 *
 	 * @return mixed The value of the cookie if it exists and hasn’t been tampered with, or `null`.
 	 */
@@ -723,7 +722,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Returns the current user identity cookie, if there is one.
 	 *
-	 * @return \CHttpCookie|null The user identity cookie.
+	 * @return HttpCookie|null The user identity cookie.
 	 */
 	public function getIdentityCookie()
 	{
@@ -751,11 +750,11 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Returns the current user identity cookie’s value, if there is one.
 	 *
-	 * @param \CHttpCookie|null The user identity cookie, or `null` if you don’t have it on hand.
+	 * @param HttpCookie|null The user identity cookie, or `null` if you don’t have it on hand.
 	 *
 	 * @return array|null The user identity cookie’s data, or `null` if it didn’t exist.
 	 */
-	public function getIdentityCookieValue(\CHttpCookie $cookie = null)
+	public function getIdentityCookieValue(HttpCookie $cookie = null)
 	{
 		if (!$cookie)
 		{
