@@ -508,9 +508,4 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'verificationCodeDuration' => 'P1D',
-
-	/**
-	 * The permissions Craft will use when creating a new file that must be writable on the file system.
-	 */
-	'writableFilePermissions' => 0777,
 );
