@@ -43,7 +43,14 @@ class UserSessionVariable
 	 */
 	public function getAuthTimeout()
 	{
-		return craft()->userSession->getAuthTimeout();
+		if (craft()->isInstalled())
+		{
+			return craft()->userSession->getAuthTimeout();
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/**
