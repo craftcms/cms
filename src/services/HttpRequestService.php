@@ -1108,8 +1108,8 @@ class HttpRequestService extends \CHttpRequest
 		// Prepend any current OB content
 		while (ob_get_length() !== false)
 		{
-			// If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag,
-			// ob_get_clean() will cause a PHP notice and return false.
+			// If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+			// and return false.
 			$obContent = @ob_get_clean();
 
 			if ($obContent !== false)
