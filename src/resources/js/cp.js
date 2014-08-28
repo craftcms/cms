@@ -648,6 +648,7 @@ var CP = Garnish.Base.extend(
 			{
 				this.taskProgressIcon.hideFailMode();
 				this.taskProgressIcon.complete();
+				delete this.taskProgressIcon;
 			}
 		}
 	},
