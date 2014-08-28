@@ -123,7 +123,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, IOHelper::getDefaultFilePermissions());
+				IOHelper::changePermissions($cacheFile, craft()->config->get('defaultFilePermissions'));
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
@@ -135,7 +135,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $this->embedExpiry ? $expire.$value : $value) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, IOHelper::getDefaultFilePermissions());
+				IOHelper::changePermissions($cacheFile, craft()->config->get('defaultFilePermissions'));
 				return $this->embedExpiry ? true : IOHelper::touch($cacheFile, $expire);
 			}
 			else
