@@ -754,7 +754,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @return array|null The user identity cookie’s data, or `null` if it didn’t exist.
 	 */
-	public function getIdentityCookieValue($cookie = null)
+	public function getIdentityCookieValue(HttpCookie $cookie = null)
 	{
 		if (!$cookie)
 		{
