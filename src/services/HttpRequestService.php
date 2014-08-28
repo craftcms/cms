@@ -1091,10 +1091,17 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string|null $content
 	 *
 	 * @see http://stackoverflow.com/a/141026
+	 * @throws Exception An exception will be thrown if content has already been output.
 	 * @return null
 	 */
 	public function close($content = '')
 	{
+		// Make sure nothing has been output yet
+		if (headers_sent())
+		{
+			throw new Exception(Craft::t('HttpRequestService::close() cannot be called after content has been output.'));
+		}
+
 		// Prevent the script from ending when the browser closes the connection
 		ignore_user_abort(true);
 
