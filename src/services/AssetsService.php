@@ -774,7 +774,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if ($filename && is_array($fileIds) && count($fileIds) > 1)
 		{
-			throw new Exception(Craft::t("It's not possible to rename multiple files!"));
+			throw new Exception(Craft::t("It’s not possible to rename multiple files!"));
 		}
 
 		if (!is_array($fileIds))

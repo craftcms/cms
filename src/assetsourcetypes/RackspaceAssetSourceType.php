@@ -1025,7 +1025,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if (empty($region) || $region == '-')
 		{
-			throw new Exception(Craft::t("Please update your Rackspace source settings, including the container's region information for this source to work."));
+			throw new Exception(Craft::t("Please update your Rackspace source settings, including the container’s region information for this source to work."));
 		}
 
 		$connectionKey = $this->_getConnectionKey($username, $apiKey, $region);
