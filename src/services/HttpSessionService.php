@@ -23,8 +23,15 @@ class HttpSessionService extends \CHttpSession
 	 */
 	public function init()
 	{
+		$cookieParams = array('httponly' => true);
+
+		if (($defaultCookieDomain = craft()->config->get('defaultCookieDomain')) !== '')
+		{
+			$cookieParams['domain'] = $defaultCookieDomain;
+		}
+
 		// Set the PHP session cookie to HTTP only.
-		$this->setCookieParams(array('httponly' => true));
+		$this->setCookieParams($cookieParams);
 
 		// Check if the config value has actually been set to true/false
 		$configVal = craft()->config->get('overridePHPSessionLocation');
