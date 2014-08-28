@@ -589,36 +589,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Cleans up transforms for a source by making sure that all indexed transforms actually exist.
-	 *
-	 * @param int $sourceId
-	 *
-	 * @return null
-	 */
-	public function cleanUpTransformsForSource($sourceId)
-	{
-		$transformList = craft()->db->createCommand()
-		        ->where('sourceId = :sourceId AND fileExists = 1', array(':sourceId' => $sourceId))
-		        ->select('*')
-		        ->from('assettransformindex')
-		        ->queryAll();
-
-		$sourceType = craft()->assetSources->getSourceTypeById($sourceId);
-
-		// TODO: implement this.
-
-		foreach ($transformList as $row)
-		{
-			$file = craft()->assets->getFileById($row['fileId']);
-
-			/*if (!$file || !$sourceType->transformExists($file, $row['location']))
-			{
-				craft()->db->createCommand()->delete('assettransformindex', 'id = '.$row['id']);
-			}*/
-		}
-	}
-
-	/**
 	 * Delete transform records by a file id.
 	 *
 	 * @param int $fileId

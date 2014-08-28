@@ -150,9 +150,6 @@ class AssetIndexTool extends BaseTool
 			}
 			else
 			{
-				// This was the last file.
-				craft()->assetTransforms->cleanUpTransformsForSource($params['sourceId']);
-
 				// Increment the amount of sources indexed
 				craft()->httpSession->add('assetsTotalSourcesIndexed', craft()->httpSession->get('assetsTotalSourcesIndexed', 0) + 1);
 
