@@ -1192,59 +1192,65 @@ class HttpRequestService extends \CHttpRequest
 			return;
 		}
 
-		$resourceTrigger = craft()->config->getResourceTrigger();
-		$actionTrigger = craft()->config->get('actionTrigger');
-		$frontEndLoginPath = trim(craft()->config->getLocalized('loginPath'), '/');
-		$frontEndLogoutPath = trim(craft()->config->getLocalized('logoutPath'), '/');
-		$frontEndSetPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
-		$cpLoginPath = craft()->config->getCpLoginPath();
-		$cpLogoutPath = craft()->config->getCpLogoutPath();
-		$cpSetPasswordPath = craft()->config->getCpSetPasswordPath();
-
-		$firstSegment = $this->getSegment(1);
-
-		// If there's a token in the query string, then that should take
-		// precedence over everything else
+		// If there's a token in the query string, then that should take precedence over everything else
 		if (!$this->getQuery(craft()->config->get('tokenParam')))
 		{
-			// If the first path segment is the resource trigger word, it's a resource request.
-			if ($firstSegment === $resourceTrigger)
+			$firstSegment = $this->getSegment(1);
+
+			// Is this a resource request?
+			if ($firstSegment == craft()->config->getResourceTrigger())
 			{
 				$this->_isResourceRequest = true;
 			}
-
-			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an
-			// action request
-			else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
+			else
 			{
-				$this->_isActionRequest = true;
-
-				if (in_array($this->_path, array($cpLoginPath, $frontEndLoginPath)))
+				// Is this an action request?
+				if ($this->_isCpRequest)
 				{
-					$this->_actionSegments = array('users', 'login');
-				}
-				else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
-				{
-					$this->_actionSegments = array('users', 'setpassword');
-				}
-				else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
-				{
-					$this->_actionSegments = array('users', 'logout');
+					$loginPath       = craft()->config->getCpLoginPath();
+					$logoutPath      = craft()->config->getCpLogoutPath();
+					$setPasswordPath = craft()->config->getCpSetPasswordPath();
 				}
 				else
 				{
-					$this->_actionSegments = array_slice($this->_segments, 1);
+					$loginPath       = trim(craft()->config->getLocalized('loginPath'), '/');
+					$logoutPath      = trim(craft()->config->getLocalized('logoutPath'), '/');
+					$setPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
 				}
-			}
 
-			// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-			else if (($action = $this->getParam('action')) !== null)
-			{
-				$this->_isActionRequest = true;
+				if (
+					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath))) ||
+					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
+					($actionParam = $this->getParam('action')) !== null
+				)
+				{
+					$this->_isActionRequest = true;
 
-				// Sanitize
-				$action = $this->decodePathInfo($action);
-				$this->_actionSegments = array_filter(explode('/', $action));
+					if ($specialPath)
+					{
+						if ($this->_path == $loginPath)
+						{
+							$this->_actionSegments = array('users', 'login');
+						}
+						else if ($this->_path == $logoutPath)
+						{
+							$this->_actionSegments = array('users', 'logout');
+						}
+						else
+						{
+							$this->_actionSegments = array('users', 'setpassword');
+						}
+					}
+					else if ($triggerMatch)
+					{
+						$this->_actionSegments = array_slice($this->_segments, 1);
+					}
+					else
+					{
+						$actionParam = $this->decodePathInfo($actionParam);
+						$this->_actionSegments = array_filter(explode('/', $actionParam));
+					}
+				}
 			}
 		}
 

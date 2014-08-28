@@ -61,8 +61,8 @@ class UsersController extends BaseController
 				// They are already logged in.
 				$currentUser = craft()->userSession->getUser();
 
-				// If they can access the control panel, redirect them to the dashboard.
-				if ($currentUser->can('accessCp'))
+				// If this is a CP request and they can access the control panel, redirect them to the dashboard.
+				if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
 				{
 					$this->redirect(UrlHelper::getCpUrl('dashboard'));
 				}
