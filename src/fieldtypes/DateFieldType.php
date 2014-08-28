@@ -57,7 +57,7 @@ class DateFieldType extends BaseFieldType
 			$dateTimeValue = 'showTime';
 		}
 
-		$options = range(5, 60, 5);
+		$options = array(15, 30, 60);
 		$options = array_combine($options, $options);
 
 		return craft()->templates->render('_components/fieldtypes/Date/settings', array(
