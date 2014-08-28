@@ -814,7 +814,7 @@ class TemplatesService extends BaseApplicationComponent
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Get the latest template base path
-		$templatesPath = craft()->path->getTemplatesPath();
+		$templatesPath = rtrim(craft()->path->getTemplatesPath(), '/').'/';
 
 		$key = $templatesPath.':'.$name;
 
