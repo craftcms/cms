@@ -97,7 +97,7 @@ class UserSessionService extends \CWebUser
 		// Does a user appear to be logged in?
 		if (craft()->isInstalled() && $this->getState('__id') !== null)
 		{
-			if (!isset($this->_user))
+			if (!isset($this->_userModel))
 			{
 				$userRow = $this->_getUserRow($this->getId());
 
