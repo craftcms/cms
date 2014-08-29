@@ -631,7 +631,8 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Override getComponent() so we can attach any pending events if the component is getting initialized.
+	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
+	 * do some special logic around creating the `craft()->db` application component.
 	 *
 	 * @param string $id
 	 * @param bool   $createIfNull
@@ -644,6 +645,12 @@ class WebApp extends \CWebApplication
 
 		if (!$component && $createIfNull)
 		{
+			if ($id === 'db')
+			{
+				$dbConnection = $this->asa('AppBehavior')->createDbConnection();
+				$this->setComponent('db', $dbConnection);
+			}
+
 			$component = parent::getComponent($id, true);
 			$this->_attachEventListeners($id);
 		}
