@@ -585,6 +585,8 @@ abstract class BaseElementModel extends BaseModel
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->prevSiblingOf = $this;
 			$criteria->locale        = $this->locale;
+			$criteria->status        = null;
+			$criteria->localeEnabled = null;
 			$this->_prevSibling = $criteria->first();
 		}
 
@@ -603,6 +605,8 @@ abstract class BaseElementModel extends BaseModel
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->nextSiblingOf = $this;
 			$criteria->locale        = $this->locale;
+			$criteria->status        = null;
+			$criteria->localeEnabled = null;
 			$this->_nextSibling = $criteria->first();
 		}
 
