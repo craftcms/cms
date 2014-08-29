@@ -8,8 +8,11 @@
 {% endset %}
 
 {% set sectionHandle = section.handle %}
+{% set isSingle = section.type == 'single' %}
 {% set isVersion = entry.getClassHandle() == 'EntryVersion' %}
 {% set isDraft = entry.id and entry.getClassHandle() == 'EntryDraft' %}
+
+{% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 
 
 {% block main %}
@@ -60,7 +63,8 @@
 									{{ forms.lightswitch({
 										name: 'localeEnabled',
 										on:   entry.localeEnabled,
-										small: true
+										small: true,
+										disabled: isVersion
 									}) }}
 								{%- else -%}
 									<a href="{{ url('entries/'~sectionHandle~'/'~craft.request.getSegment(3))~'/'~localeId }}">{{ localeName }}</a>
@@ -71,70 +75,71 @@
 					</ul>
 				{% endif %}
 
-				{% if section.type != 'single' %}
+				{% if not isSingle or canPublish %}
 					<div id="settings" class="pane">
 
-						{% if showEntryTypes %}
-							{{ forms.selectField({
-								label: "Entry Type"|t,
-								id: 'entryType',
-								name: 'typeId',
-								value: entryType.id,
-								options: entryTypeOptions
+						{% if not isSingle %}
+							{% if showEntryTypes %}
+								{{ forms.selectField({
+									label: "Entry Type"|t,
+									id: 'entryType',
+									name: 'typeId',
+									value: entryType.id,
+									options: entryTypeOptions
+								}) }}
+							{% endif %}
+
+							{{ forms.textField({
+								label: "Slug"|t,
+								locale: entry.locale,
+								id: 'slug',
+								name: 'slug',
+								value: entry.slug,
+								errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+								disabled: isVersion
 							}) }}
-						{% endif %}
 
-						{{ forms.textField({
-							label: "Slug"|t,
-							locale: entry.locale,
-							id: 'slug',
-							name: 'slug',
-							value: entry.slug,
-							errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-							disabled: isVersion
-						}) }}
+							{% if section.type == 'structure' and parentOptions|length > 1 %}
+								{{ forms.selectField({
+									label: "Parent Entry"|t,
+									id: 'parentId',
+									name: 'parentId',
+									options: parentOptions,
+									value: parentId,
+									disabled: isVersion
+								}) }}
+							{% endif %}
 
-						{% if section.type == 'structure' and parentOptions|length > 1 %}
-							{{ forms.selectField({
-								label: "Parent Entry"|t,
-								id: 'parentId',
-								name: 'parentId',
-								options: parentOptions,
-								value: parentId,
+							{% if CraftEdition >= CraftClient %}
+								{{ forms.selectField({
+									label: "Author"|t,
+									id: 'author',
+									name: 'author',
+									options: authorOptions,
+									value: entry.authorId,
+									disabled: isVersion
+								}) }}
+							{% endif %}
+
+							{{ forms.dateTimeField({
+								label: "Post Date"|t,
+								id: 'postDate',
+								name: 'postDate',
+								value: (entry.postDate ? entry.postDate : null),
+								errors: entry.getErrors('postDate'),
+								disabled: isVersion
+							}) }}
+
+							{{ forms.dateTimeField({
+								label: "Expiration Date"|t,
+								id: 'expiryDate',
+								name: 'expiryDate',
+								value: (entry.expiryDate ? entry.expiryDate : null),
+								errors: entry.getErrors('expiryDate'),
 								disabled: isVersion
 							}) }}
 						{% endif %}
 
-						{% if CraftEdition >= CraftClient %}
-							{{ forms.selectField({
-								label: "Author"|t,
-								id: 'author',
-								name: 'author',
-								options: authorOptions,
-								value: entry.authorId,
-								disabled: isVersion
-							}) }}
-						{% endif %}
-
-						{{ forms.dateTimeField({
-							label: "Post Date"|t,
-							id: 'postDate',
-							name: 'postDate',
-							value: (entry.postDate ? entry.postDate : null),
-							errors: entry.getErrors('postDate'),
-							disabled: isVersion
-						}) }}
-
-						{{ forms.dateTimeField({
-							label: "Expiration Date"|t,
-							id: 'expiryDate',
-							name: 'expiryDate',
-							value: (entry.expiryDate ? entry.expiryDate : null),
-							errors: entry.getErrors('expiryDate'),
-							disabled: isVersion
-						}) }}
-
-						{% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 						{% if canPublish or (not isVersion and canDeleteEntry) %}
 
 							{% set statusInput %}
@@ -149,7 +154,7 @@
 									</div>
 								{% endif %}
 
-								{% if not isVersion and canDeleteEntry %}
+								{% if not isSingle and not isVersion and canDeleteEntry %}
 									<div class="right">
 										<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 											data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
@@ -190,8 +195,8 @@
 
 						{# Are they allowed to publish this draft? #}
 						{% if
-							currentUser.can('publishEntries'~permissionSuffix) and
-							(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
+							canPublish and
+							(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
 							(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 						%}
 							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
@@ -209,8 +214,8 @@
 
 					{# Are they allowed to publish changes? #}
 					{% if
-						currentUser.can('publishEntries'~permissionSuffix) and
-						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+						canPublish and
+						(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 
 						<hr>
@@ -229,8 +234,8 @@
 					{# Are they allowed to save this entry? #}
 					{% if
 						(entry.id or currentUser.can('createEntries'~permissionSuffix)) and
-						(not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix)) and
-						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+						(not entry.id or not entry.enabled or canPublish) and
+						(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 						<hr>
 
@@ -256,7 +261,7 @@
 													{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
 												{% endif %}
 
-												{% if section.type != 'single' %}
+												{% if not isSingle %}
 													<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
 												{% endif %}
 
