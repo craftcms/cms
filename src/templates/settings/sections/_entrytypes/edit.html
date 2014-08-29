@@ -16,64 +16,66 @@
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}
 
-		{{ forms.textField({
-			first: true,
-			label: "Name"|t,
-			instructions: "What this entry type will be called in the CP."|t,
-			id: 'name',
-			name: 'name',
-			value: entryType.name,
-			errors: entryType.getErrors('name'),
-			autofocus: true,
-			required: true
-		}) }}
-
-		{{ forms.textField({
-			label: "Handle"|t,
-			instructions: "How you’ll refer to this entry type in the templates."|t,
-			id: 'handle',
-			class: 'code',
-			name: 'handle',
-			value: entryType.handle,
-			errors: entryType.getErrors('handle'),
-			required: true
-		}) }}
-
 		{% if section.type != 'single' %}
-			<hr>
-
-			{{ forms.checkboxField({
-				label: "Show title fields"|t,
-				name: 'hasTitleField',
-				toggle: 'titleLabel-container',
-				reverseToggle: 'titleFormat-container',
-				checked: entryType.hasTitleField
+			{{ forms.textField({
+				first: true,
+				label: "Name"|t,
+				instructions: "What this entry type will be called in the CP."|t,
+				id: 'name',
+				name: 'name',
+				value: entryType.name,
+				errors: entryType.getErrors('name'),
+				autofocus: true,
+				required: true
 			}) }}
 
-			<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
-				{{ forms.textField({
-					label: "Title Field Label"|t,
-					instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
-					id: 'titleLabel',
-					name: 'titleLabel',
-					value: entryType.titleLabel,
-					errors: entryType.getErrors('titleLabel'),
-					required: true
-				}) }}
-			</div>
+			{{ forms.textField({
+				label: "Handle"|t,
+				instructions: "How you’ll refer to this entry type in the templates."|t,
+				id: 'handle',
+				class: 'code',
+				name: 'handle',
+				value: entryType.handle,
+				errors: entryType.getErrors('handle'),
+				required: true
+			}) }}
 
-			<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
-				{{ forms.textField({
-					label: "Title Format"|t,
-					instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
-					id: 'titleFormat',
-					name: 'titleFormat',
-					value: entryType.titleFormat,
-					errors: entryType.getErrors('titleFormat'),
-					required: true
-				}) }}
-			</div>
+			<hr>
+
 		{% endif %}
+
+		{{ forms.checkboxField({
+			first: (section.type == 'single'),
+			label: "Show the Title field?"|t,
+			name: 'hasTitleField',
+			toggle: 'titleLabel-container',
+			reverseToggle: 'titleFormat-container',
+			checked: entryType.hasTitleField
+		}) }}
+
+		<div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
+			{{ forms.textField({
+				label: "Title Field Label"|t,
+				instructions: "What do you want the Title field to be called?"|t,
+				id: 'titleLabel',
+				name: 'titleLabel',
+				value: entryType.titleLabel,
+				errors: entryType.getErrors('titleLabel'),
+				required: true
+			}) }}
+		</div>
+
+		<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
+			{{ forms.textField({
+				label: "Title Format"|t,
+				instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+				id: 'titleFormat',
+				name: 'titleFormat',
+				value: entryType.titleFormat,
+				errors: entryType.getErrors('titleFormat'),
+				required: true
+			}) }}
+		</div>
 
 		<hr>
 

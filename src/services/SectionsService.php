@@ -539,10 +539,24 @@ class SectionsService extends BaseApplicationComponent
 				if (!$entryTypeId)
 				{
 					$entryType = new EntryTypeModel();
+
 					$entryType->sectionId  = $section->id;
 					$entryType->name       = $section->name;
 					$entryType->handle     = $section->handle;
-					$entryType->titleLabel = Craft::t('Title');
+
+					if ($section->type == SectionType::Single)
+					{
+						$entryType->hasTitleField = false;
+						$entryType->titleLabel = null;
+						$entryType->titleFormat = '{section.name|raw}';
+					}
+					else
+					{
+						$entryType->hasTitleField = true;
+						$entryType->titleLabel = Craft::t('Title');
+						$entryType->titleFormat = null;
+					}
+
 					$this->saveEntryType($entryType);
 
 					$entryTypeId = $entryType->id;
