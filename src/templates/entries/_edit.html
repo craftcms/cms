@@ -8,6 +8,7 @@
 {% endset %}
 
 {% set sectionHandle = section.handle %}
+{% set isSingle = section.type == 'single' %}
 {% set isVersion = entry.getClassHandle() == 'EntryVersion' %}
 {% set isDraft = entry.id and entry.getClassHandle() == 'EntryDraft' %}
 
@@ -73,7 +74,7 @@
 					</ul>
 				{% endif %}
 
-				{% if section.type != 'single' %}
+				{% if not isSingle %}
 					<div id="settings" class="pane">
 
 						{% if showEntryTypes %}
@@ -192,7 +193,7 @@
 						{# Are they allowed to publish this draft? #}
 						{% if
 							canPublish and
-							(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
+							(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
 							(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 						%}
 							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
@@ -211,7 +212,7 @@
 					{# Are they allowed to publish changes? #}
 					{% if
 						canPublish and
-						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+						(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 
 						<hr>
@@ -231,7 +232,7 @@
 					{% if
 						(entry.id or currentUser.can('createEntries'~permissionSuffix)) and
 						(not entry.id or not entry.enabled or canPublish) and
-						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+						(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 						<hr>
 
@@ -257,7 +258,7 @@
 													{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
 												{% endif %}
 
-												{% if section.type != 'single' %}
+												{% if not isSingle %}
 													<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t }}</a></li>
 												{% endif %}
 
