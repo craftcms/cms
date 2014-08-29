@@ -43,7 +43,7 @@ var CP = Garnish.Base.extend(
 	init: function()
 	{
 		// Is this session going to expire?
-		if (Craft.authTimeout)
+		if (Craft.authTimeout != 0)
 		{
 			this.authManager = new Craft.AuthManager();
 		}

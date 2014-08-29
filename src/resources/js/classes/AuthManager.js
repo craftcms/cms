@@ -60,7 +60,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		this.authTimeout = parseInt(authTimeout);
 
 		// Are we within the warning window?
-		if (this.authTimeout < Craft.AuthManager.minSafeAuthTimeout)
+		if (this.authTimeout != -1 && this.authTimeout < Craft.AuthManager.minSafeAuthTimeout)
 		{
 			// Is there still time to renew the session?
 			if (this.authTimeout)
@@ -97,7 +97,7 @@ Craft.AuthManager = Garnish.Base.extend(
 			this.hideLogoutWarningModal();
 			this.hideLoginModal();
 
-			// Check again in 30 seconds
+			// Check again in 15 seconds
 			this.setCheckAuthTimeoutTimer(Craft.AuthManager.normalCheckInterval);
 		}
 	},
