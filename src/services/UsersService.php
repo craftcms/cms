@@ -262,115 +262,121 @@ class UsersService extends BaseApplicationComponent
 			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}
 
-		if (!$user->hasErrors())
+		if ($user->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
-			{
-				// If we're going through account verification, in whatever form
-				if ($user->unverifiedEmail)
-				{
-					$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-				}
-
-				// Set a default status of pending, if one wasn't supplied.
-				if (!$user->status)
-				{
-					$user->status = UserStatus::Pending;
-				}
-
-				// Fire an 'onBeforeSaveUser' event
-				$this->onBeforeSaveUser(new Event($this, array(
-					'user'      => $user,
-					'isNewUser' => $isNewUser
-				)));
-
-				if (craft()->elements->saveElement($user, false))
-				{
-					// Now that we have an element ID, save it on the other stuff
-					if ($isNewUser)
-					{
-						$userRecord->id = $user->id;
-					}
-
-					$userRecord->save(false);
-
-					if ($user->unverifiedEmail)
-					{
-						// Temporarily set the unverified email on the UserModel so the verification email goes to the
-						// right place
-						$originalEmail = $user->email;
-						$user->email = $user->unverifiedEmail;
-
-						try
-						{
-							craft()->email->sendEmailByKey($user, 'account_activation', array(
-								'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
-							));
-						}
-						catch (\phpmailerException $e)
-						{
-							craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
-						}
-
-						$user->email = $originalEmail;
-					}
-
-					if (!$isNewUser)
-					{
-						// Has the username changed?
-						if ($user->username != $oldUsername)
-						{
-							// Rename the user's photo directory
-							$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
-							$newFolder = craft()->path->getUserPhotosPath().$user->username;
-
-							if (IOHelper::folderExists($newFolder))
-							{
-								IOHelper::deleteFolder($newFolder);
-							}
-
-							if (IOHelper::folderExists($oldFolder))
-							{
-								IOHelper::rename($oldFolder, $newFolder);
-							}
-						}
-					}
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
-
-					// Fire an 'onSaveUser' event
-					$this->onSaveUser(new Event($this, array(
-						'user'      => $user,
-						'isNewUser' => $isNewUser
-					)));
-
-					if ($this->hasEventHandler('onSaveProfile'))
-					{
-						// Fire an 'onSaveProfile' event (deprecated)
-						$this->onSaveProfile(new Event($this, array(
-							'user' => $user
-						)));
-					}
-
-					return true;
-				}
-			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				throw $e;
-			}
+			return false;
 		}
 
-		return false;
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// If we're going through account verification, in whatever form
+			if ($user->unverifiedEmail)
+			{
+				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+			}
+
+			// Set a default status of pending, if one wasn't supplied.
+			if (!$user->status)
+			{
+				$user->status = UserStatus::Pending;
+			}
+
+			// Fire an 'onBeforeSaveUser' event
+			$this->onBeforeSaveUser(new Event($this, array(
+				'user'      => $user,
+				'isNewUser' => $isNewUser
+			)));
+
+			if (craft()->elements->saveElement($user, false))
+			{
+				// Now that we have an element ID, save it on the other stuff
+				if ($isNewUser)
+				{
+					$userRecord->id = $user->id;
+				}
+
+				$userRecord->save(false);
+
+				if ($user->unverifiedEmail)
+				{
+					// Temporarily set the unverified email on the UserModel so the verification email goes to the
+					// right place
+					$originalEmail = $user->email;
+					$user->email = $user->unverifiedEmail;
+
+					try
+					{
+						craft()->email->sendEmailByKey($user, 'account_activation', array(
+							'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
+						));
+					}
+					catch (\phpmailerException $e)
+					{
+						craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
+					}
+
+					$user->email = $originalEmail;
+				}
+
+				if (!$isNewUser)
+				{
+					// Has the username changed?
+					if ($user->username != $oldUsername)
+					{
+						// Rename the user's photo directory
+						$oldFolder = craft()->path->getUserPhotosPath().$oldUsername;
+						$newFolder = craft()->path->getUserPhotosPath().$user->username;
+
+						if (IOHelper::folderExists($newFolder))
+						{
+							IOHelper::deleteFolder($newFolder);
+						}
+
+						if (IOHelper::folderExists($oldFolder))
+						{
+							IOHelper::rename($oldFolder, $newFolder);
+						}
+					}
+				}
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		// If we've made it here, everything has been successful so far.
+
+		// Fire an 'onSaveUser' event
+		$this->onSaveUser(new Event($this, array(
+			'user'      => $user,
+			'isNewUser' => $isNewUser
+		)));
+
+		if ($this->hasEventHandler('onSaveProfile'))
+		{
+			// Fire an 'onSaveProfile' event (deprecated)
+			$this->onSaveProfile(new Event($this, array(
+				'user' => $user
+			)));
+		}
+
+		return true;
 	}
 
 	/**
@@ -446,7 +452,7 @@ class UsersService extends BaseApplicationComponent
 
 		if ($result)
 		{
-			IOHelper::changePermissions($targetPath, IOHelper::getDefaultFilePermissions());
+			IOHelper::changePermissions($targetPath, craft()->config->get('defaultFilePermissions'));
 			$record = UserRecord::model()->findById($user->id);
 			$record->photo = $fileName;
 			$record->save();

@@ -366,61 +366,67 @@ class TagsService extends BaseApplicationComponent
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
 
-		if (!$tag->hasErrors())
+		if ($tag->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
-			{
-				// Fire an 'onBeforeSaveTag' event
-				$this->onBeforeSaveTag(new Event($this, array(
-					'tag'      => $tag,
-					'isNewTag' => $isNewTag
-				)));
-
-				if (craft()->elements->saveElement($tag, false))
-				{
-					// Now that we have an element ID, save it on the other stuff
-					if ($isNewTag)
-					{
-						$tagRecord->id = $tag->id;
-					}
-
-					$tagRecord->save(false);
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
-
-					// Fire an 'onSaveTag' event
-					$this->onSaveTag(new Event($this, array(
-						'tag'      => $tag,
-						'isNewTag' => $isNewTag
-					)));
-
-					if ($this->hasEventHandler('onSaveTagContent'))
-					{
-						// Fire an 'onSaveTagContent' event (deprecated)
-						$this->onSaveTagContent(new Event($this, array(
-							'tag' => $tag
-						)));
-					}
-
-					return true;
-				}
-			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				throw $e;
-			}
+			return false;
 		}
 
-		return false;
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Fire an 'onBeforeSaveTag' event
+			$this->onBeforeSaveTag(new Event($this, array(
+				'tag'      => $tag,
+				'isNewTag' => $isNewTag
+			)));
+
+			if (craft()->elements->saveElement($tag, false))
+			{
+				// Now that we have an element ID, save it on the other stuff
+				if ($isNewTag)
+				{
+					$tagRecord->id = $tag->id;
+				}
+
+				$tagRecord->save(false);
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		// If we've made it here, everything has been successful so far.
+
+		// Fire an 'onSaveTag' event
+		$this->onSaveTag(new Event($this, array(
+			'tag'      => $tag,
+			'isNewTag' => $isNewTag
+		)));
+
+		if ($this->hasEventHandler('onSaveTagContent'))
+		{
+			// Fire an 'onSaveTagContent' event (deprecated)
+			$this->onSaveTagContent(new Event($this, array(
+				'tag' => $tag
+			)));
+		}
+
+		return true;
 	}
 
 	// Events

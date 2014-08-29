@@ -593,6 +593,8 @@ var CP = Garnish.Base.extend(
 
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
+			this.trackTaskProgressTimeout = null;
+
 			Craft.queueActionRequest('tasks/getRunningTaskInfo', $.proxy(function(taskInfo, textStatus)
 			{
 				if (textStatus == 'success')
@@ -646,6 +648,7 @@ var CP = Garnish.Base.extend(
 			{
 				this.taskProgressIcon.hideFailMode();
 				this.taskProgressIcon.complete();
+				delete this.taskProgressIcon;
 			}
 		}
 	},

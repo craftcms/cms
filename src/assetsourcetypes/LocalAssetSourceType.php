@@ -337,7 +337,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
-		IOHelper::changePermissions($targetPath, IOHelper::getDefaultFilePermissions());
+		IOHelper::changePermissions($targetPath, craft()->config->get('defaultFilePermissions'));
 
 		$response = new AssetOperationResponseModel();
 
