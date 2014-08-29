@@ -863,6 +863,16 @@ class HttpRequestService extends \CHttpRequest
 		}
 	}
 
+	/**
+	 * Returns whether this is a GET request.
+	 *
+	 * @return bool Whether this is a GET request.
+	 */
+	public function getIsGetRequest()
+	{
+		return ($this->getRequestType() == 'GET');
+	}
+
 	// Rename getIsX() => isX() functions for consistency
 	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter) but
     //    we're trying to resist the temptation of magic methods for the sake of code obviousness.
@@ -905,6 +915,14 @@ class HttpRequestService extends \CHttpRequest
 	public function isDeleteViaPostRequest()
 	{
 		return $this->getIsDeleteViaPostRequest();
+	}
+
+	/**
+	 * Alias of {@link getIsGetRequest()}.
+	 */
+	public function isGetRequest()
+	{
+		return $this->getIsGetRequest();
 	}
 
 	/**
