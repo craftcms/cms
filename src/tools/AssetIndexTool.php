@@ -87,10 +87,13 @@ class AssetIndexTool extends BaseTool
 
 			$missingFolders = array();
 
+			$grandTotal = 0;
+
 			foreach ($sourceIds as $sourceId)
 			{
 				// Get the indexing list
 				$indexList = craft()->assetIndexing->getIndexListForSource($sessionId, $sourceId);
+
 				if (!empty($indexList['error']))
 				{
 					return $indexList;
@@ -101,18 +104,22 @@ class AssetIndexTool extends BaseTool
 					$missingFolders += $indexList['missingFolders'];
 				}
 
-				// Add the initial request
-				$batches[] = array(
-						array(
-							'params' => array(
-								'sessionId' => $sessionId,
-								'sourceId' => $sourceId,
-								'total' => $indexList['total'],
-								'offset' => 0,
-								'process' => 1
-							)
-						)
-					);
+				$batch = array();
+
+				for ($i = 0; $i < $indexList['total']; $i++)
+				{
+					$batch[] = array(
+									'params' => array(
+										'sessionId' => $sessionId,
+										'sourceId' => $sourceId,
+										'total' => $indexList['total'],
+										'offset' => $i,
+										'process' => 1
+									)
+								);
+				}
+
+				$batches[] = $batch;
 			}
 
 			craft()->httpSession->add('assetsSourcesBeingIndexed', $sourceIds);
@@ -121,7 +128,8 @@ class AssetIndexTool extends BaseTool
 			craft()->httpSession->add('assetsTotalSourcesIndexed', 0);
 
 			return array(
-				'batches' => $batches
+				'batches' => $batches,
+				'total'   => $grandTotal
 			);
 		}
 		else if (!empty($params['process']))
@@ -133,19 +141,7 @@ class AssetIndexTool extends BaseTool
 			if (++$params['offset'] < $params['total'])
 			{
 				return array(
-					'batches' => array(
-						array(
-							array(
-								'params' => array (
-									'sessionId' => $params['sessionId'],
-									'sourceId' => $params['sourceId'],
-									'total' => $params['total'],
-									'offset' => $params['offset'],
-									'process' => 1
-								)
-							)
-						)
-					)
+					'success' => true
 				);
 			}
 			else
