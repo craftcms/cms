@@ -631,6 +631,7 @@ class AppBehavior extends BaseBehavior
 			$dbConnection->password         = craft()->config->get('password', ConfigFile::Db);
 			$dbConnection->charset          = craft()->config->get('charset', ConfigFile::Db);
 			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
+			$dbConnection->driverMap        = array('mysql' => 'Craft\MysqlSchema');
 
 			$dbConnection->init();
 		}
