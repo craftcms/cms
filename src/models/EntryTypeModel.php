@@ -46,6 +46,19 @@ class EntryTypeModel extends BaseModel
 		return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
 	}
 
+	/**
+	 * Returns the entry type’s section.
+	 *
+	 * @return SectionModel|null
+	 */
+	public function getSection()
+	{
+		if ($this->sectionId)
+		{
+			return craft()->sections->getSectionById($this->sectionId);
+		}
+	}
+
 	// Protected Methods
 	// =========================================================================
 
