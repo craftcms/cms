@@ -75,68 +75,70 @@
 					</ul>
 				{% endif %}
 
-				{% if not isSingle %}
+				{% if not isSingle or canPublish %}
 					<div id="settings" class="pane">
 
-						{% if showEntryTypes %}
-							{{ forms.selectField({
-								label: "Entry Type"|t,
-								id: 'entryType',
-								name: 'typeId',
-								value: entryType.id,
-								options: entryTypeOptions
+						{% if not isSingle %}
+							{% if showEntryTypes %}
+								{{ forms.selectField({
+									label: "Entry Type"|t,
+									id: 'entryType',
+									name: 'typeId',
+									value: entryType.id,
+									options: entryTypeOptions
+								}) }}
+							{% endif %}
+
+							{{ forms.textField({
+								label: "Slug"|t,
+								locale: entry.locale,
+								id: 'slug',
+								name: 'slug',
+								value: entry.slug,
+								errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
+								disabled: isVersion
 							}) }}
-						{% endif %}
 
-						{{ forms.textField({
-							label: "Slug"|t,
-							locale: entry.locale,
-							id: 'slug',
-							name: 'slug',
-							value: entry.slug,
-							errors: (not isVersion ? entry.getErrors('slug')|merge(entry.getErrors('uri'))),
-							disabled: isVersion
-						}) }}
+							{% if section.type == 'structure' and parentOptions|length > 1 %}
+								{{ forms.selectField({
+									label: "Parent Entry"|t,
+									id: 'parentId',
+									name: 'parentId',
+									options: parentOptions,
+									value: parentId,
+									disabled: isVersion
+								}) }}
+							{% endif %}
 
-						{% if section.type == 'structure' and parentOptions|length > 1 %}
-							{{ forms.selectField({
-								label: "Parent Entry"|t,
-								id: 'parentId',
-								name: 'parentId',
-								options: parentOptions,
-								value: parentId,
+							{% if CraftEdition >= CraftClient %}
+								{{ forms.selectField({
+									label: "Author"|t,
+									id: 'author',
+									name: 'author',
+									options: authorOptions,
+									value: entry.authorId,
+									disabled: isVersion
+								}) }}
+							{% endif %}
+
+							{{ forms.dateTimeField({
+								label: "Post Date"|t,
+								id: 'postDate',
+								name: 'postDate',
+								value: (entry.postDate ? entry.postDate : null),
+								errors: entry.getErrors('postDate'),
+								disabled: isVersion
+							}) }}
+
+							{{ forms.dateTimeField({
+								label: "Expiration Date"|t,
+								id: 'expiryDate',
+								name: 'expiryDate',
+								value: (entry.expiryDate ? entry.expiryDate : null),
+								errors: entry.getErrors('expiryDate'),
 								disabled: isVersion
 							}) }}
 						{% endif %}
-
-						{% if CraftEdition >= CraftClient %}
-							{{ forms.selectField({
-								label: "Author"|t,
-								id: 'author',
-								name: 'author',
-								options: authorOptions,
-								value: entry.authorId,
-								disabled: isVersion
-							}) }}
-						{% endif %}
-
-						{{ forms.dateTimeField({
-							label: "Post Date"|t,
-							id: 'postDate',
-							name: 'postDate',
-							value: (entry.postDate ? entry.postDate : null),
-							errors: entry.getErrors('postDate'),
-							disabled: isVersion
-						}) }}
-
-						{{ forms.dateTimeField({
-							label: "Expiration Date"|t,
-							id: 'expiryDate',
-							name: 'expiryDate',
-							value: (entry.expiryDate ? entry.expiryDate : null),
-							errors: entry.getErrors('expiryDate'),
-							disabled: isVersion
-						}) }}
 
 						{% if canPublish or (not isVersion and canDeleteEntry) %}
 
@@ -152,7 +154,7 @@
 									</div>
 								{% endif %}
 
-								{% if not isVersion and canDeleteEntry %}
+								{% if not isSingle and not isVersion and canDeleteEntry %}
 									<div class="right">
 										<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="entries/deleteEntry"
 											data-confirm="{{ 'Are you sure you want to delete this entry?'|t }}"
