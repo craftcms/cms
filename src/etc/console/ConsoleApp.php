@@ -107,6 +107,34 @@ class ConsoleApp extends \CConsoleApplication
 		return true;
 	}
 
+	/**
+	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
+	 * do some special logic around creating the `craft()->db` application component.
+	 *
+	 * @param string $id
+	 * @param bool   $createIfNull
+	 *
+	 * @return mixed
+	 */
+	public function getComponent($id, $createIfNull = true)
+	{
+		$component = parent::getComponent($id, false);
+
+		if (!$component && $createIfNull)
+		{
+			if ($id === 'db')
+			{
+				$dbConnection = $this->asa('Craft\AppBehavior')->createDbConnection();
+				$this->setComponent('db', $dbConnection);
+			}
+
+			$component = parent::getComponent($id, true);
+			$this->_attachEventListeners($id);
+		}
+
+		return $component;
+	}
+
 	// Protected Methods
 	// =========================================================================
 

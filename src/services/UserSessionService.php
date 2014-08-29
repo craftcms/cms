@@ -89,6 +89,7 @@ class UserSessionService extends \CWebUser
 				$request->isCpRequest() &&
 				$request->getParam('dontExtendSession')
 			);
+
 			$this->autoRenewCookie = !$this->_dontExtendSession;
 
 			parent::init();
@@ -1066,6 +1067,7 @@ class UserSessionService extends \CWebUser
 
 					// Make sure the given session token matches what we have in the db.
 					$checkHashedToken= craft()->security->hashData(base64_encode(serialize($currentSessionToken)));
+
 					if (strcmp($checkHashedToken, $dbHashedToken) === 0)
 					{
 						// It's all good.
@@ -1283,13 +1285,13 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Enforces the requireMatchingUserAgentForSession config setting by verifing that the user agent string on the
+	 * Enforces the requireMatchingUserAgentForSession config setting by verifying that the user agent string on the
 	 * identity cookie matches the current request's user agent string.
 	 *
 	 * If they don't match, a warning will be logged and the user will be logged out.
 	 *
 	 * @param string $userAgent  The user agent string stored in the cookie.
-	 * @param bool   $autoLogout Whether the user should be logged out if the user agents don't match
+	 * @param bool   $autoLogout Whether the user should be logged out if the user agents don't match.
 	 *
 	 * @return bool Whether the user agent strings matched.
 	 */
