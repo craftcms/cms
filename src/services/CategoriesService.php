@@ -611,59 +611,65 @@ class CategoriesService extends BaseApplicationComponent
 		$categoryRecord->validate();
 		$category->addErrors($categoryRecord->getErrors());
 
-		if (!$category->hasErrors())
+		if ($category->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
-			{
-				// Fire an 'onBeforeSaveCategory' event
-				$this->onBeforeSaveCategory(new Event($this, array(
-					'category'      => $category,
-					'isNewCategory' => $isNewCategory
-				)));
-
-				if (craft()->elements->saveElement($category, false))
-				{
-					// Now that we have an element ID, save it on the other stuff
-					if ($isNewCategory)
-					{
-						$categoryRecord->id = $category->id;
-					}
-
-					$categoryRecord->save(false);
-
-					if ($isNewCategory)
-					{
-						// Add it to the group's structure
-						craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
-					}
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
-
-					// Fire an 'onSaveCategory' event
-					$this->onSaveCategory(new Event($this, array(
-						'category'      => $category,
-						'isNewCategory' => $isNewCategory
-					)));
-
-					return true;
-				}
-			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				throw $e;
-			}
+			return false;
 		}
 
-		return false;
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Fire an 'onBeforeSaveCategory' event
+			$this->onBeforeSaveCategory(new Event($this, array(
+				'category'      => $category,
+				'isNewCategory' => $isNewCategory
+			)));
+
+			if (craft()->elements->saveElement($category, false))
+			{
+				// Now that we have an element ID, save it on the other stuff
+				if ($isNewCategory)
+				{
+					$categoryRecord->id = $category->id;
+				}
+
+				$categoryRecord->save(false);
+
+				if ($isNewCategory)
+				{
+					// Add it to the group's structure
+					craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+				}
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		// If we've made it here, everything has been successful so far.
+
+		// Fire an 'onSaveCategory' event
+		$this->onSaveCategory(new Event($this, array(
+			'category'      => $category,
+			'isNewCategory' => $isNewCategory
+		)));
+
+		return true;
 	}
 
 	/**
