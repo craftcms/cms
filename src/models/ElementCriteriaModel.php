@@ -429,6 +429,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 			'nextSiblingOf'    => AttributeType::Mixed,
 			'offset'           => array(AttributeType::Number, 'default' => 0),
 			'order'            => array(AttributeType::String, 'default' => 'elements.dateCreated desc'),
+			'positionedAfter'  => AttributeType::Mixed,
+			'positionedBefore' => AttributeType::Mixed,
 			'prevSiblingOf'    => AttributeType::Mixed,
 			'relatedTo'        => AttributeType::Mixed,
 			'ref'              => AttributeType::String,
