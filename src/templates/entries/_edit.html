@@ -11,6 +11,8 @@
 {% set isVersion = entry.getClassHandle() == 'EntryVersion' %}
 {% set isDraft = entry.id and entry.getClassHandle() == 'EntryDraft' %}
 
+{% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
+
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut="1" data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload="1">
@@ -134,7 +136,6 @@
 							disabled: isVersion
 						}) }}
 
-						{% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 						{% if canPublish or (not isVersion and canDeleteEntry) %}
 
 							{% set statusInput %}
@@ -190,7 +191,7 @@
 
 						{# Are they allowed to publish this draft? #}
 						{% if
-							currentUser.can('publishEntries'~permissionSuffix) and
+							canPublish and
 							(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
 							(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 						%}
@@ -209,7 +210,7 @@
 
 					{# Are they allowed to publish changes? #}
 					{% if
-						currentUser.can('publishEntries'~permissionSuffix) and
+						canPublish and
 						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 
@@ -229,7 +230,7 @@
 					{# Are they allowed to save this entry? #}
 					{% if
 						(entry.id or currentUser.can('createEntries'~permissionSuffix)) and
-						(not entry.id or not entry.enabled or currentUser.can('publishEntries'~permissionSuffix)) and
+						(not entry.id or not entry.enabled or canPublish) and
 						(section.type == 'single' or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
 					%}
 						<hr>
