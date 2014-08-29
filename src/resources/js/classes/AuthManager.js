@@ -236,7 +236,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		if (!this.loginModal)
 		{
 			var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-				$body = $('<div class="body"><h2>'+Craft.t('Your session has expired.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
+				$body = $('<div class="body"><h2>'+Craft.t('Your session has ended.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
