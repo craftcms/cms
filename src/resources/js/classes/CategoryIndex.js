@@ -133,7 +133,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			{
 				this.$noCats.addClass('hidden');
 
-				var $element = $('<div class="element" data-editable="1"' +
+				var $element = $('<div class="element" data-editable' +
 					'data-id="'+response.id+'" ' +
 					'data-locale="'+Craft.locale+'" ' +
 					'data-status="'+response.status+'" ' +

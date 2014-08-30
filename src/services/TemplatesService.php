@@ -1390,7 +1390,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($isEditable)
 		{
-			$html .= ' data-editable="1"';
+			$html .= ' data-editable';
 		}
 
 		$html .= '>';
