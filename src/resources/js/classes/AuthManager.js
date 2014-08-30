@@ -97,8 +97,15 @@ Craft.AuthManager = Garnish.Base.extend(
 			this.hideLogoutWarningModal();
 			this.hideLoginModal();
 
-			// Check again in 15 seconds
-			this.setCheckAuthTimeoutTimer(Craft.AuthManager.normalCheckInterval);
+			// Will be be within the minSafeAuthTimeout before the next update?
+			if (this.authTimeout != -1 && this.authTimeout < (Craft.AuthManager.minSafeAuthTimeout + Craft.AuthManager.normalCheckInterval))
+			{
+				this.setCheckAuthTimeoutTimer(this.authTimeout - Craft.AuthManager.minSafeAuthTimeout + 1);
+			}
+			else
+			{
+				this.setCheckAuthTimeoutTimer(Craft.AuthManager.normalCheckInterval);
+			}
 		}
 	},
 
@@ -411,7 +418,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	}
 },
 {
-	normalCheckInterval: 15,
+	normalCheckInterval: 60,
 	quickCheckInterval: 5,
 	minSafeAuthTimeout: 120
 });
