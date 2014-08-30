@@ -74,8 +74,8 @@
 							name: 'username',
 							value: (account is defined ? account.username : null),
 							autofocus: true,
-							required: (isNewAccount or (currentUser.admin or account.isCurrent) ? true : false),
-							disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
+							required: (isNewAccount or (currentUser.admin or account.isCurrent()) ? true : false),
+							disabled: (isNewAccount or (currentUser.admin or account.isCurrent()) ? false : true),
 							errors: (account is defined ? account.getErrors('username') : null)
 						}) }}
 					{% endif %}
@@ -122,7 +122,7 @@
 							}) }}
 						{% endif %}
 
-					{% elseif account.isCurrent or currentUser.admin %}
+					{% elseif account.isCurrent() or currentUser.admin %}
 
 						{% set emailInput %}
 							<table class="fullwidth inputs">
@@ -190,7 +190,7 @@
 							<div class="select">
 								<select id="preferredLocale" name="preferredLocale">
 									{% set allSiteLocales = craft.i18n.getSiteLocales %}
-									{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent ? craft.locale : allSiteLocales[0]) %}
+									{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
 
 									{% for locale in allSiteLocales %}
 										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getName() }}</option>
@@ -332,7 +332,7 @@
 					{% endif %}
 				</form>
 
-				{% if not account.isCurrent and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
+				{% if not account.isCurrent() and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
 					<form class="pane" method="post" accept-charset="UTF-8">
 						{{ hiddenInputs }}
 						{{ getCsrfInput() }}
@@ -347,7 +347,7 @@
 									   data-redirect="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
 						{% endif %}
 
-						{% if currentUser.admin and not account.isCurrent %}
+						{% if currentUser.admin and not account.isCurrent() %}
 							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
 						{% endif %}
 					</form>
