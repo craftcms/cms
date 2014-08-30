@@ -102,7 +102,7 @@ Craft.Grid = Garnish.Base.extend(
 		}
 
 		// Same number of columns as before?
-		if (!force && this.totalCols === this.refreshCols._totalCols)
+		if (force !== true && this.totalCols === this.refreshCols._totalCols)
 		{
 			return;
 		}
