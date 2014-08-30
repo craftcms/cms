@@ -138,7 +138,7 @@ var CP = Garnish.Base.extend(
 		}
 
 		// Listen for save shortcuts in primary forms
-		var $primaryForm = $('form[data-saveshortcut="1"]:first');
+		var $primaryForm = $('form[data-saveshortcut]:first');
 
 		if ($primaryForm.length == 1)
 		{
