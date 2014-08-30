@@ -16,7 +16,7 @@
 
 
 {% block main %}
-	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload="1">
+	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
 		{{ getCsrfInput() }}
 
 		{% if not isVersion %}

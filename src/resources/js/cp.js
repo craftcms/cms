@@ -165,7 +165,7 @@ var CP = Garnish.Base.extend(
 		Garnish.$win.on('load', $.proxy(function()
 		{
 			// Look for forms that we should watch for changes on
-			this.$confirmUnloadForms = $('form[data-confirm-unload="1"]');
+			this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
 			if (this.$confirmUnloadForms.length)
 			{
