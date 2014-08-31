@@ -317,17 +317,17 @@
 					{% endif %}
 
 					<h5>{{ "Registration Date"|t }}</h5>
-					<p>{{ account.dateCreated.nice }}</p>
+					<p>{{ account.dateCreated.localeDate() }} {{ account.dateCreated.localeTime() }}</p>
 
 					{% if account.status != 'pending' %}
 						<h5>{{ "Last Login Date"|t }}</h5>
-						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Last Invalid Login Date"|t }}</h5>
-						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Last Password Change Date"|t }}</h5>
-						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Invalid Login Count"|t }}</h5>
 						<p>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
