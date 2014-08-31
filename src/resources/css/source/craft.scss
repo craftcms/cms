@@ -960,7 +960,9 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .nested-fields > .field:last-child { padding-bottom: 24px; }
 
 /* checkbox */
-.field.checkbox + .field.checkbox { margin-top: -22px; }
+.field.checkbox { margin: 0; }
+.field.checkbox .instructions { margin-bottom: 24px; }
+.field.checkbox + .field.checkbox { margin-top: 2px; }
 
 .text,
 .textline,
