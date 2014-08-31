@@ -68,7 +68,7 @@ return array(
 	/**
 	 * The string to use to separate words when uploading Assets. If set to anything but a string, spaces will be left alone.
 	 */
-	'assetFilenameWordSeparator' => '-',
+	'filenameWordSeparator' => '-',
 
 	/**
 	 * If set to true, will automatically log the user in after successful account activation.
