@@ -315,22 +315,12 @@ class AssetTransformsService extends BaseApplicationComponent
 			$this->storeTransformIndexData($index);
 
 			// Generate the transform
-			$result = $this->generateTransform($index);
+			$this->generateTransform($index);
 
 			// Update the index
 			$index->inProgress = 0;
-
-			if ($result)
-			{
-				$index->fileExists = 1;
-			}
-
+			$index->fileExists = 1;
 			$this->storeTransformIndexData($index);
-
-			if (!$result)
-			{
-				throw new Exception(Craft::t("The requested image could not be found!"));
-			}
 		}
 
 		return $this->getUrlForTransformByIndexId($index->id);
@@ -340,6 +330,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Generate a transform by a created index.
 	 *
 	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return null
 	 */
 	public function generateTransform(AssetTransformIndexModel $index)
