@@ -770,7 +770,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Detect the auto web-safe format for the Assets file. Returns null, if the file is not an image.
 	 *
 	 * @param AssetFileModel $file
-	 * 
+	 *
 	 * @return mixed|string
 	 * @throws Exception
 	 */
@@ -1098,9 +1098,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(IOHelper::getExtension($file->filename), ImageHelper::getWebSafeFormats()))
 		{
-			$extension = 'jpg';
+			return 'jpg';
 		}
-
-		return $extension;
+		else
+		{
+			return $file->getExtension();
+		}
 	}
 }
