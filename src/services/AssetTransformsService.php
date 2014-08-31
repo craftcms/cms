@@ -272,11 +272,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function ensureTransformUrlByIndexModel(AssetTransformIndexModel $index)
 	{
-		if (!$index)
-		{
-			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
-		}
-
 		// Make sure we're not in the middle of working on this transform from a separate request
 		if ($index->inProgress)
 		{
