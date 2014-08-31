@@ -165,7 +165,7 @@ class ArrayHelper
 	 *
 	 * @return mixed|null
 	 */
-	public function getFirstValue($arr)
+	public static function getFirstValue($arr)
 	{
 		if (count($arr))
 		{
