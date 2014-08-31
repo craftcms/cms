@@ -138,68 +138,74 @@ class AssetsService extends BaseApplicationComponent
 		$fileRecord->validate();
 		$file->addErrors($fileRecord->getErrors());
 
-		if (!$file->hasErrors())
+		if ($file->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
-			{
-				if ($isNewFile && !$file->getContent()->title)
-				{
-					// Give it a default title based on the file name
-					$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-				}
-
-				// Fire an 'onBeforeSaveAsset' event
-				$this->onBeforeSaveAsset(new Event($this, array(
-					'asset'      => $file,
-					'isNewAsset' => $isNewFile
-				)));
-
-				// Save the element
-				if (craft()->elements->saveElement($file, false))
-				{
-					// Now that we have an element ID, save it on the other stuff
-					if ($isNewFile)
-					{
-						$fileRecord->id = $file->id;
-					}
-
-					// Save the file row
-					$fileRecord->save(false);
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
-
-					// Fire an 'onSaveAsset' event
-					$this->onSaveAsset(new Event($this, array(
-						'asset'      => $file
-					)));
-
-					if ($this->hasEventHandler('onSaveFileContent'))
-					{
-						// Fire an 'onSaveFileContent' event (deprecated)
-						$this->onSaveFileContent(new Event($this, array(
-							'file' => $file
-						)));
-					}
-
-					return true;
-				}
-			}
-			catch (\Exception $e)
-			{
-				if ($transaction !== null)
-				{
-					$transaction->rollback();
-				}
-
-				throw $e;
-			}
+			return false;
 		}
 
-		return false;
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			if ($isNewFile && !$file->getContent()->title)
+			{
+				// Give it a default title based on the file name
+				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+			}
+
+			// Fire an 'onBeforeSaveAsset' event
+			$this->onBeforeSaveAsset(new Event($this, array(
+				'asset'      => $file,
+				'isNewAsset' => $isNewFile
+			)));
+
+			// Save the element
+			if (craft()->elements->saveElement($file, false))
+			{
+				// Now that we have an element ID, save it on the other stuff
+				if ($isNewFile)
+				{
+					$fileRecord->id = $file->id;
+				}
+
+				// Save the file row
+				$fileRecord->save(false);
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		// If we've made it here, everything has been successful so far.
+
+		// Fire an 'onSaveAsset' event
+		$this->onSaveAsset(new Event($this, array(
+			'asset'      => $file
+		)));
+
+		if ($this->hasEventHandler('onSaveFileContent'))
+		{
+			// Fire an 'onSaveFileContent' event (deprecated)
+			$this->onSaveFileContent(new Event($this, array(
+				'file' => $file
+			)));
+		}
+
+		return true;
 	}
 
 	/**
@@ -774,7 +780,7 @@ class AssetsService extends BaseApplicationComponent
 	{
 		if ($filename && is_array($fileIds) && count($fileIds) > 1)
 		{
-			throw new Exception(Craft::t("It's not possible to rename multiple files!"));
+			throw new Exception(Craft::t("It’s not possible to rename multiple files!"));
 		}
 
 		if (!is_array($fileIds))

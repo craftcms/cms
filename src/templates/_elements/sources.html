@@ -5,8 +5,8 @@
 		{% else %}
 			<li>
 				<a data-key="{{ key }}"
-					{%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs="1"{% endif %}
-					{%- if source.structureId is defined and source.structureId %} data-has-structure="1" data-structure-id="{{ source.structureId }}"{% endif %}
+					{%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
+					{%- if source.structureId is defined and source.structureId %} data-has-structure{% endif %}
 					{%- if source.data is defined -%}
 						{% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
 					{%- endif -%}

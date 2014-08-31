@@ -344,16 +344,29 @@ class SectionsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entryType = new EntryTypeModel();
+		$entryTypeId = craft()->request->getPost('entryTypeId');
+
+		if ($entryTypeId)
+		{
+			$entryType = craft()->sections->getEntryTypeById($entryTypeId);
+
+			if (!$entryType)
+			{
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryTypeId)));
+			}
+		}
+		else
+		{
+			$entryType = new EntryTypeModel();
+		}
 
 		// Set the simple stuff
-		$entryType->id            = craft()->request->getPost('entryTypeId');
-		$entryType->sectionId     = craft()->request->getRequiredPost('sectionId');
-		$entryType->name          = craft()->request->getPost('name');
-		$entryType->handle        = craft()->request->getPost('handle');
-		$entryType->hasTitleField = (bool) craft()->request->getPost('hasTitleField', true);
-		$entryType->titleLabel    = craft()->request->getPost('titleLabel');
-		$entryType->titleFormat   = craft()->request->getPost('titleFormat');
+		$entryType->sectionId     = craft()->request->getRequiredPost('sectionId', $entryType->sectionId);
+		$entryType->name          = craft()->request->getPost('name', $entryType->name);
+		$entryType->handle        = craft()->request->getPost('handle', $entryType->handle);
+		$entryType->hasTitleField = (bool) craft()->request->getPost('hasTitleField', $entryType->hasTitleField);
+		$entryType->titleLabel    = craft()->request->getPost('titleLabel', $entryType->titleLabel);
+		$entryType->titleFormat   = craft()->request->getPost('titleFormat', $entryType->titleFormat);
 
 		// Set the field layout
 		$fieldLayout = craft()->fields->assembleLayoutFromPost();

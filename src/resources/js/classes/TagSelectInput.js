@@ -174,7 +174,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			id = $option.data('id'),
 			name = $option.text();
 
-		var $element = $('<div class="element removable" data-id="'+id+'" data-editable="1"/>').appendTo(this.$elementsContainer),
+		var $element = $('<div class="element removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);

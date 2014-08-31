@@ -317,7 +317,7 @@ var MatrixBlock = Garnish.Base.extend(
 		menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
 
 		// Was this block already collapsed?
-		if (this.$container.data('collapsed'))
+		if (Garnish.hasAttr(this.$container, 'data-collapsed'))
 		{
 			this.collapse();
 		}

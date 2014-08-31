@@ -6,7 +6,7 @@
 
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="assetSources/saveSource">
 		<input type="hidden" name="redirect" value="settings/assets">
 		{% if not isNewSource %}<input type="hidden" name="sourceId" value="{{ source.id }}">{% endif %}

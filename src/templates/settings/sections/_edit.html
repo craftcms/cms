@@ -89,7 +89,7 @@
 {% from _self import urlFormatInput, hasUrlsField, templateField %}
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="sections/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
 		{{ getCsrfInput() }}

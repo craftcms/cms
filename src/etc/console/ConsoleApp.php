@@ -16,7 +16,15 @@ class ConsoleApp extends \CConsoleApplication
 	// Properties
 	// =========================================================================
 
+	/**
+	 * @var
+	 */
 	public $componentAliases;
+
+	/**
+	 * @var
+	 */
+	private $_pendingEvents;
 
 	// Public Methods
 	// =========================================================================
@@ -31,18 +39,21 @@ class ConsoleApp extends \CConsoleApplication
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
+		// Import all the built-in components
 		foreach ($this->componentAliases as $alias)
 		{
 			Craft::import($alias);
 		}
 
-		// So we can try to translate Yii framework strings
-		craft()->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
-
-		craft()->getComponent('log');
-
 		// Attach our Craft app behavior.
 		$this->attachBehavior('AppBehavior', new AppBehavior());
+
+		// Initialize Cache and LogRouter right away (order is important)
+		$this->getComponent('cache');
+		$this->getComponent('log');
+
+		// So we can try to translate Yii framework strings
+		$this->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath(craft()->path->getRuntimePath());
@@ -107,6 +118,34 @@ class ConsoleApp extends \CConsoleApplication
 		return true;
 	}
 
+	/**
+	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
+	 * do some special logic around creating the `craft()->db` application component.
+	 *
+	 * @param string $id
+	 * @param bool   $createIfNull
+	 *
+	 * @return mixed
+	 */
+	public function getComponent($id, $createIfNull = true)
+	{
+		$component = parent::getComponent($id, false);
+
+		if (!$component && $createIfNull)
+		{
+			if ($id === 'db')
+			{
+				$dbConnection = $this->asa('AppBehavior')->createDbConnection();
+				$this->setComponent('db', $dbConnection);
+			}
+
+			$component = parent::getComponent($id, true);
+			$this->_attachEventListeners($id);
+		}
+
+		return $component;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -116,5 +155,34 @@ class ConsoleApp extends \CConsoleApplication
 	protected function createCommandRunner()
 	{
 		return new ConsoleCommandRunner();
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Attaches any pending event listeners to the newly-initialized component.
+	 *
+	 * @param string $componentId
+	 *
+	 * @return null
+	 */
+	private function _attachEventListeners($componentId)
+	{
+		if (isset($this->_pendingEvents[$componentId]))
+		{
+			$component = $this->getComponent($componentId, false);
+
+			if ($component)
+			{
+				foreach ($this->_pendingEvents[$componentId] as $eventName => $handlers)
+				{
+					foreach ($handlers as $handler)
+					{
+						$component->$eventName = $handler;
+					}
+				}
+			}
+		}
 	}
 }

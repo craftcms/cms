@@ -742,9 +742,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Finds a template on the file system and returns its path.
 	 *
-	 * If the template name includes a file extension, that file will be searched for directly. Otherwise, all of the
-	 * following files will be searched for, in this order:
+	 * All of the following files will be searched for, in this order:
 	 *
+	 * - TemplateName
 	 * - TemplateName.html
 	 * - TemplateName.twig
 	 * - TemplateName/index.html
@@ -763,6 +763,7 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * then the following files would be searched for instead:
 	 *
+	 * - TemplateName
 	 * - TemplateName.htm
 	 * - TemplateName/default.htm
 	 *
@@ -784,10 +785,12 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * - Front-end site requests:
 	 *
+	 *     - craft/templates/LocaleID/foo/bar
 	 *     - craft/templates/LocaleID/foo/bar.html
 	 *     - craft/templates/LocaleID/foo/bar.twig
 	 *     - craft/templates/LocaleID/foo/bar/index.html
 	 *     - craft/templates/LocaleID/foo/bar/index.twig
+	 *     - craft/templates/foo/bar
 	 *     - craft/templates/foo/bar.html
 	 *     - craft/templates/foo/bar.twig
 	 *     - craft/templates/foo/bar/index.html
@@ -795,10 +798,12 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * - Control Panel requests:
 	 *
+	 *     - craft/app/templates/foo/bar
 	 *     - craft/app/templates/foo/bar.html
 	 *     - craft/app/templates/foo/bar.twig
 	 *     - craft/app/templates/foo/bar/index.html
 	 *     - craft/app/templates/foo/bar/index.twig
+	 *     - craft/plugins/foo/templates/bar
 	 *     - craft/plugins/foo/templates/bar.html
 	 *     - craft/plugins/foo/templates/bar.twig
 	 *     - craft/plugins/foo/templates/bar/index.html
@@ -814,7 +819,7 @@ class TemplatesService extends BaseApplicationComponent
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Get the latest template base path
-		$templatesPath = craft()->path->getTemplatesPath();
+		$templatesPath = rtrim(craft()->path->getTemplatesPath(), '/').'/';
 
 		$key = $templatesPath.':'.$name;
 
@@ -840,7 +845,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		foreach ($basePaths as $basePath)
 		{
-			if (($path = $this->_findTemplate($basePath.$name)) !== null)
+			if (($path = $this->_findTemplate($basePath, $name)) !== null)
 			{
 				return $this->_templatePaths[$key] = $path;
 			}
@@ -862,10 +867,10 @@ class TemplatesService extends BaseApplicationComponent
 				// Get the template path for the plugin.
 				$basePath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/templates/';
 
-				// Chop off the plugin segment, since that's already covered by $basePath
+				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);
 
-				if (($path = $this->_findTemplate($basePath.$tempName)) !== null)
+				if (($path = $this->_findTemplate($basePath, $tempName)) !== null)
 				{
 					return $this->_templatePaths[$key] = $path;
 				}
@@ -1175,65 +1180,68 @@ class TemplatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Searches for localized template files, and returns the first match if
-	 * there is one.
+	 * Searches for a template files, and returns the first match if there is one.
 	 *
-	 * @param string $path
+	 * @param string $basePath The base path to be looking in.
+	 * @param string $name     The name of the template to be looking for.
 	 *
-	 * @return mixed
+	 * @return string|null The matching file path, or `null`.
 	 */
-	private function _findTemplate($path)
+	private function _findTemplate($basePath, $name)
 	{
-		// Get the extension on the path, if there is one
-		$extension = IOHelper::getExtension($path);
+		// Normalize the path and name
+		$basePath = rtrim(IOHelper::normalizePathSeparators($basePath), '/').'/';
+		$name = trim(IOHelper::normalizePathSeparators($name), '/');
 
-		$path = rtrim(IOHelper::normalizePathSeparators($path), '/');
-
-		if ($extension)
+		// Set the defaultTemplateExtensions and indexTemplateFilenames vars
+		if (!isset($this->_defaultTemplateExtensions))
 		{
-			$testPaths = array($path);
-		}
-		else
-		{
-			if (!isset($this->_defaultTemplateExtensions))
+			if (craft()->request->isCpRequest())
 			{
-				if (craft()->request->isCpRequest())
-				{
-					$this->_defaultTemplateExtensions = array('html', 'twig');
-					$this->_indexTemplateFilenames = array('index');
-				}
-				else
-				{
-					$this->_defaultTemplateExtensions = craft()->config->get('defaultTemplateExtensions');
-					$this->_indexTemplateFilenames = craft()->config->get('indexTemplateFilenames');
-				}
+				$this->_defaultTemplateExtensions = array('html', 'twig');
+				$this->_indexTemplateFilenames = array('index');
 			}
+			else
+			{
+				$this->_defaultTemplateExtensions = craft()->config->get('defaultTemplateExtensions');
+				$this->_indexTemplateFilenames = craft()->config->get('indexTemplateFilenames');
+			}
+		}
 
-			$testPaths = array();
+		// $name could be an empty string (e.g. to load the homepage template)
+		if ($name)
+		{
+			// Maybe $name is already the full file path
+			$testPath = $basePath.$name;
+
+			if (IOHelper::fileExists($testPath))
+			{
+				return $testPath;
+			}
 
 			foreach ($this->_defaultTemplateExtensions as $extension)
 			{
-				$testPaths[] = $path.'.'.$extension;
-			}
+				$testPath = $basePath.$name.'.'.$extension;
 
-			foreach ($this->_indexTemplateFilenames as $filename)
-			{
-				foreach ($this->_defaultTemplateExtensions as $extension)
+				if (IOHelper::fileExists($testPath))
 				{
-					$testPaths[] = $path.'/'.$filename.'.'.$extension;
+					return $testPath;
 				}
 			}
 		}
 
-		foreach ($testPaths as $path)
+		foreach ($this->_indexTemplateFilenames as $filename)
 		{
-			if (IOHelper::fileExists(craft()->findLocalizedFile($path)))
+			foreach ($this->_defaultTemplateExtensions as $extension)
 			{
-				return $path;
+				$testPath = $basePath.($name ? $name.'/' : '').$filename.'.'.$extension;
+
+				if (IOHelper::fileExists($testPath))
+				{
+					return $testPath;
+				}
 			}
 		}
-
-		return null;
 	}
 
 	/**
@@ -1382,7 +1390,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($isEditable)
 		{
-			$html .= ' data-editable="1"';
+			$html .= ' data-editable';
 		}
 
 		$html .= '>';

@@ -134,7 +134,7 @@ html { overflow-y: scroll; }
 /* grids */
 .grid { position: relative; margin: 23px -7px; }
 .grid:after { @include clearafter; }
-.grid > .item { display: none; position: absolute; padding: 7px; @include box-sizing(border-box); }
+.grid > .item { display: none; padding: 7px; @include box-sizing(border-box); }
 
 /* footer */
 #footer { margin: 24px 0; text-align: center; font-size: 0; }
