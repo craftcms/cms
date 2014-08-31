@@ -307,7 +307,7 @@ class UsersService extends BaseApplicationComponent
 
 					try
 					{
-						craft()->email->sendEmailByKey($user, 'account_activation', array(
+						craft()->email->sendEmailByKey($user, $isNewUser ? 'account_activation' : 'verify_new_email', array(
 							'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
 						));
 					}
