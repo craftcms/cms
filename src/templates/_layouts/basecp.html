@@ -63,7 +63,7 @@
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
-			authTimeout:           {{ craft.session.getAuthTimeout() }},
+			authTimeout:           {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getAuthTimeout() : 0 }},
 			Personal:              {{ CraftPersonal }},
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},
