@@ -166,6 +166,9 @@ Craft.ImageHandler = Garnish.Base.extend(
 			acceptFileTypes: /(jpg|jpeg|gif|png)/
 		};
 
+		// Add the CSRF token
+		options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
+
 		this.uploader = new Craft.Uploader(element, options);
 
 
