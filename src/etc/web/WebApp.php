@@ -1016,6 +1016,7 @@ class WebApp extends \CWebApplication
 	/**
 	 * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
 	 *
+	 * @throws HttpException
 	 * @return null
 	 */
 	private function _enforceSystemStatusPermissions()
