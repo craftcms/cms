@@ -478,13 +478,23 @@ class SearchService extends BaseApplicationComponent
 			$where[] = $this->_sqlMatch($words);
 		}
 
-		// Implode WHERE clause to a string
-		$where = implode($andor, $where);
-
-		// And group together for non-inclusive queries
-		if (!$inclusive)
+		// If we have valid where clauses now, stringify them
+		if (!empty($where))
 		{
-			$where = "({$where})";
+			// Implode WHERE clause to a string
+			$where = implode($andor, $where);
+
+			// And group together for non-inclusive queries
+			if (!$inclusive)
+			{
+				$where = "({$where})";
+			}
+		}
+		else
+		{
+			// If the tokens didn't produce a valid where clause,
+			// make sure we return false
+			$where = false;
 		}
 
 		return $where;
@@ -492,6 +502,7 @@ class SearchService extends BaseApplicationComponent
 
 	/**
 	 * Generates a piece of WHERE clause for fallback (LIKE) search from search term
+	 * or returns keywords to use in a MATCH AGAINST clause
 	 *
 	 * @param  SearchQueryTerm $term
 	 *
@@ -604,6 +615,9 @@ class SearchService extends BaseApplicationComponent
 		if ($subSelect && $sql)
 		{
 			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
+
+			// We need to reset keywords even if the subselect ended up in no results.
+			$keywords = null;			
 		}
 
 		return array($sql, $keywords);
