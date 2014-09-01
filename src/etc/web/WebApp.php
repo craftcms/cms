@@ -1022,21 +1022,31 @@ class WebApp extends \CWebApplication
 	{
 		if (!$this->_checkSystemStatusPermissions())
 		{
-			// Log out the user
+			$error = null;
+
 			if ($this->userSession->isLoggedIn())
 			{
-				$this->userSession->logout(false);
-			}
+				if ($this->request->isCpRequest())
+				{
+					$error = Craft::t('Your account doesn’t have permission to access the Control Panel when the system is offline.');
+				}
+				else
+				{
+					$error = Craft::t('Your account doesn’t have permission to access the site when the system is offline.');
+				}
 
-			if ($this->request->isCpRequest())
-			{
-				// Redirect them to the login screen
-				$this->userSession->requireLogin();
+				$error .= ' <a href="'.UrlHelper::getUrl(craft()->config->getLogoutPath()).'">'.Craft::t('Log out?').'</a>';
 			}
 			else
 			{
-				throw new HttpException(503);
+				// If this is a CP request, redirect to the Login page
+				if ($this->request->isCpRequest())
+				{
+					$this->userSession->requireLogin();
+				}
 			}
+
+			throw new HttpException(503, $error);
 		}
 	}
 
@@ -1068,6 +1078,7 @@ class WebApp extends \CWebApplication
 
 			if ($actionSegs && (
 				$actionSegs == array('users', 'login') ||
+				$actionSegs == array('users', 'logout') ||
 				$actionSegs == array('users', 'forgotpassword') ||
 				$actionSegs == array('users', 'setpassword') ||
 				$actionSegs == array('users', 'validate') ||
