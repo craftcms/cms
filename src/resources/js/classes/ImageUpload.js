@@ -102,7 +102,7 @@ Craft.ImageHandler = Garnish.Base.extend(
 
 			element:    this.settings.uploadButton[0],
 			action:     Craft.actionUrl + '/' + this.settings.uploadAction,
-			formData:   this.settings.postParameters,
+			formData:   typeof this.settings.postParameters === 'object' ? this.settings.postParameters : {},
 			events:     {
 				fileuploadstart: $.proxy(function()
 				{
