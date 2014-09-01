@@ -33,7 +33,7 @@
 
 {{ forms.checkboxField({
 	label: "Purify HTML?"|t,
-	instructions: 'Runs the submitted HTML through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a> before saving to the database removing any potentially malicious code.'|t,
+	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t,
 	id: 'purifyHtml',
 	name: 'purifyHtml',
 	checked: settings.purifyHtml

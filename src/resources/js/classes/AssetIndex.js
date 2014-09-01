@@ -722,7 +722,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="btn submit assets-upload-button" data-icon="↑" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
+			this.$uploadButton = $('<div class="btn submit assets-upload-button" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
 			this.addButton(this.$uploadButton);
 
 			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -768,7 +768,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	onSelectSource: function()
 	{
 		this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(this.sourceKey)});
-		if (!this.$source.data('upload'))
+		if (!this.$source.attr('data-upload'))
 		{
 			this.$uploadButton.addClass('disabled');
 		}
@@ -1360,12 +1360,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					this._prepareParentForChildren($parentFolder);
 
-					var $subFolder = $('<li><a ' +
-							'data-key="folder:' + data.folderId + '" ' +
-							'data-has-thumbs="' + $parentFolder.data('has-thumbs') + '" ' +
-							'data-upload="' + $parentFolder.data('upload') + '">' +
+					var $subFolder = $(
+						'<li>' +
+							'<a data-key="folder:'+data.folderId+'"' +
+								(Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
+								' data-upload="'+$parentFolder.attr('data-upload')+'"' +
+							'>' +
 								data.folderName +
-						'</a></li>');
+							'</a>' +
+						'</li>'
+					);
 
 					var $a = $subFolder.find('a');
 					this._addSubfolder($parentFolder, $subFolder);

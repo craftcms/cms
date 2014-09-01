@@ -23,7 +23,6 @@ $configArray = array(
 	'components' => array(
 
 		'db' => array(
-			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
 			'class'             => 'Craft\DbConnection',
 		),
 

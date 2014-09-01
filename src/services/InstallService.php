@@ -297,7 +297,7 @@ class InstallService extends BaseApplicationComponent
 		Craft::log('Creating the templatecaches table.');
 
 		craft()->db->createCommand()->createTable('templatecaches', array(
-			'cacheKey'   => array('column' => ColumnType::Varchar, 'length' => 36, 'null' => false),
+			'cacheKey'   => array('column' => ColumnType::Varchar, 'null' => false),
 			'locale'     => array('column' => ColumnType::Locale, 'null' => false),
 			'path'       => array('column' => ColumnType::Varchar),
 			'expiryDate' => array('column' => ColumnType::DateTime, 'null' => false),

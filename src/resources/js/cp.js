@@ -43,7 +43,7 @@ var CP = Garnish.Base.extend(
 	init: function()
 	{
 		// Is this session going to expire?
-		if (Craft.authTimeout)
+		if (Craft.authTimeout != 0)
 		{
 			this.authManager = new Craft.AuthManager();
 		}
@@ -138,7 +138,7 @@ var CP = Garnish.Base.extend(
 		}
 
 		// Listen for save shortcuts in primary forms
-		var $primaryForm = $('form[data-saveshortcut="1"]:first');
+		var $primaryForm = $('form[data-saveshortcut]:first');
 
 		if ($primaryForm.length == 1)
 		{
@@ -165,7 +165,7 @@ var CP = Garnish.Base.extend(
 		Garnish.$win.on('load', $.proxy(function()
 		{
 			// Look for forms that we should watch for changes on
-			this.$confirmUnloadForms = $('form[data-confirm-unload="1"]');
+			this.$confirmUnloadForms = $('form[data-confirm-unload]');
 
 			if (this.$confirmUnloadForms.length)
 			{

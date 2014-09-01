@@ -778,6 +778,50 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
+			if ($criteria->positionedBefore)
+			{
+				if (!$criteria->positionedBefore instanceof BaseElementModel)
+				{
+					$criteria->positionedBefore = craft()->elements->getElementById($criteria->positionedBefore, $elementType->getClassHandle());
+				}
+
+				if ($criteria->positionedBefore)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.rgt < :positionedBefore_rgt',
+							'structureelements.root = :positionedBefore_root'
+						),
+						array(
+							':positionedBefore_rgt'   => $criteria->positionedBefore->lft,
+							':positionedBefore_root'  => $criteria->positionedBefore->root
+						)
+					);
+				}
+			}
+
+			if ($criteria->positionedAfter)
+			{
+				if (!$criteria->positionedAfter instanceof BaseElementModel)
+				{
+					$criteria->positionedAfter = craft()->elements->getElementById($criteria->positionedAfter, $elementType->getClassHandle());
+				}
+
+				if ($criteria->positionedAfter)
+				{
+					$query->andWhere(
+						array('and',
+							'structureelements.lft > :positionedAfter_lft',
+							'structureelements.root = :positionedAfter_root'
+						),
+						array(
+							':positionedAfter_lft'   => $criteria->positionedAfter->rgt,
+							':positionedAfter_root'  => $criteria->positionedAfter->root
+						)
+					);
+				}
+			}
+
 			if ($criteria->level || $criteria->depth)
 			{
 				// TODO: 'depth' is deprecated; use 'level' instead.

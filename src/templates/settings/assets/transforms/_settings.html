@@ -22,7 +22,7 @@
 
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="assetTransforms/saveTransform">
 		<input type="hidden" name="redirect" value="settings/assets/transforms">
 		{{ getCsrfInput() }}
@@ -132,10 +132,10 @@
         ] %}
 
         {{ forms.selectField({
-            label: "Image format"|t,
+            label: "Image Format"|t,
             id: "format",
             name: "format",
-            instructions: 'Format to use for transforms.',
+            instructions: 'The image format that transformed images should use.',
             value: (transform is defined ? transform.format : null),
             errors: (transform is defined ? transform.getErrors('format') : null),
             options: formatOptions,

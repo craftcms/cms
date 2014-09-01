@@ -1253,9 +1253,20 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
-		if (craft()->plugins->arePluginsLoaded())
+		// Check if the PluginsService has been loaded yet
+		$pluginsService = craft()->getComponent('plugins', false);
+
+		if (!$pluginsService)
 		{
-			$pluginExtensions = craft()->plugins->call('addTwigExtension');
+			// It hasn't, so let's load it and call loadPlugins()
+			$pluginsService = craft()->getComponent('plugins');
+			$pluginsService->loadPlugins();
+		}
+
+		// Make sure that loadPlugins() has finished
+		if ($pluginsService->arePluginsLoaded())
+		{
+			$pluginExtensions = $pluginsService->call('addTwigExtension');
 
 			try
 			{
@@ -1390,7 +1401,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($isEditable)
 		{
-			$html .= ' data-editable="1"';
+			$html .= ' data-editable';
 		}
 
 		$html .= '>';

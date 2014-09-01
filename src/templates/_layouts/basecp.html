@@ -25,7 +25,7 @@
 {%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
 {%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/jquery.placeholder'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includeJsResource 'lib/jquery.placeholder.js' first %}
 {%- includeJsResource 'lib/jquery.velocity'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includeJsResource 'lib/jquery-2.1.1'~(useCompressedJs ? '.min')~'.js' first %}
@@ -63,7 +63,7 @@
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
-			authTimeout:           {{ craft.session.getAuthTimeout() }},
+			authTimeout:           {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getAuthTimeout() : 0 }},
 			Personal:              {{ CraftPersonal }},
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},

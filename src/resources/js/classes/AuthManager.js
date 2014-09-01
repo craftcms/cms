@@ -60,7 +60,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		this.authTimeout = parseInt(authTimeout);
 
 		// Are we within the warning window?
-		if (this.authTimeout < Craft.AuthManager.minSafeAuthTimeout)
+		if (this.authTimeout != -1 && this.authTimeout < Craft.AuthManager.minSafeAuthTimeout)
 		{
 			// Is there still time to renew the session?
 			if (this.authTimeout)
@@ -97,8 +97,15 @@ Craft.AuthManager = Garnish.Base.extend(
 			this.hideLogoutWarningModal();
 			this.hideLoginModal();
 
-			// Check again in 30 seconds
-			this.setCheckAuthTimeoutTimer(Craft.AuthManager.normalCheckInterval);
+			// Will be be within the minSafeAuthTimeout before the next update?
+			if (this.authTimeout != -1 && this.authTimeout < (Craft.AuthManager.minSafeAuthTimeout + Craft.AuthManager.normalCheckInterval))
+			{
+				this.setCheckAuthTimeoutTimer(this.authTimeout - Craft.AuthManager.minSafeAuthTimeout + 1);
+			}
+			else
+			{
+				this.setCheckAuthTimeoutTimer(Craft.AuthManager.normalCheckInterval);
+			}
 		}
 	},
 
@@ -236,7 +243,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		if (!this.loginModal)
 		{
 			var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-				$body = $('<div class="body"><h2>'+Craft.t('Your session has expired.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
+				$body = $('<div class="body"><h2>'+Craft.t('Your session has ended.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
@@ -411,7 +418,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	}
 },
 {
-	normalCheckInterval: 15,
+	normalCheckInterval: 60,
 	quickCheckInterval: 5,
 	minSafeAuthTimeout: 120
 });

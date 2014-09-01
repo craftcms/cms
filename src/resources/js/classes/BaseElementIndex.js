@@ -624,7 +624,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		if (!viewMode || !this.doesSourceHaveViewMode(viewMode))
 		{
 			// Default to structure view if the source has it
-			if (this.$source.data('has-structure'))
+			if (Garnish.hasAttr(this.$source, 'data-has-structure'))
 			{
 				viewMode = 'structure';
 			}
@@ -651,12 +651,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{ mode: 'table', title: Craft.t('Display in a table'), icon: 'list' }
 		];
 
-		if (this.$source.data('has-structure'))
+		if (Garnish.hasAttr(this.$source, 'data-has-structure'))
 		{
 			viewModes.push({ mode: 'structure', title: Craft.t('Display hierarchically'), icon: 'structure' });
 		}
 
-		if (this.$source.data('has-thumbs'))
+		if (Garnish.hasAttr(this.$source, 'data-has-thumbs'))
 		{
 			viewModes.push({ mode: 'thumbs', title: Craft.t('Display as thumbnails'), icon: 'grid' });
 		}

@@ -147,7 +147,7 @@ class QuickPostWidget extends BaseWidget
 
 		$params = array(
 			'sectionId'   => $section->id,
-			'entryTypeId' => $entryTypeId,
+			'typeId' => $entryTypeId,
 		);
 
 		craft()->templates->startJsBuffer();

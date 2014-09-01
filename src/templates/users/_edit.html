@@ -28,20 +28,22 @@
 
 {% set saveUserButtons %}
 
-	{% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-	{% else %}
-		<div class="btngroup submit">
+	<div class="buttons">
+		{% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-			<div class="btn submit menubtn"></div>
-			<div class="menu">
-				<ul>
-					<li><a class="formsubmit" data-redirect="users/{id}">{{ "Save and continue editing"|t }}</a></li>
-					<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
-				</ul>
+		{% else %}
+			<div class="btngroup submit">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+				<div class="btn submit menubtn"></div>
+				<div class="menu">
+					<ul>
+						<li><a class="formsubmit" data-redirect="users/{id}">{{ "Save and continue editing"|t }}</a></li>
+						<li><a class="formsubmit" data-redirect="users/new">{{ "Save and add another"|t }}</a></li>
+					</ul>
+				</div>
 			</div>
-		</div>
-	{% endif %}
+		{% endif %}
+	</div>
 
 {% endset %}
 
@@ -57,7 +59,7 @@
 {% block main %}
 	<div class="grid">
 		<div class="item" data-position="left">
-			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut="1">
+			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account is defined and account.isCurrent() ? 'myaccount' : 'users/{id}' }}">
 				<input type="hidden" name="action" value="users/saveUser">
 				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
 				{{ getCsrfInput() }}
@@ -74,8 +76,8 @@
 							name: 'username',
 							value: (account is defined ? account.username : null),
 							autofocus: true,
-							required: (isNewAccount or (currentUser.admin or account.isCurrent) ? true : false),
-							disabled: (isNewAccount or (currentUser.admin or account.isCurrent) ? false : true),
+							required: (isNewAccount or (currentUser.admin or account.isCurrent()) ? true : false),
+							disabled: (isNewAccount or (currentUser.admin or account.isCurrent()) ? false : true),
 							errors: (account is defined ? account.getErrors('username') : null)
 						}) }}
 					{% endif %}
@@ -87,7 +89,8 @@
 								id: 'firstName',
 								name: 'firstName',
 								value: (account is defined ? account.firstName : null),
-								errors: (account is defined ? account.getErrors('firstName') : null)
+								errors: (account is defined ? account.getErrors('firstName') : null),
+								autofocus: true
 							}) }}
 						</div>
 						<div class="item" data-colspan="1">
@@ -121,7 +124,7 @@
 							}) }}
 						{% endif %}
 
-					{% elseif account.isCurrent or currentUser.admin %}
+					{% elseif account.isCurrent() or currentUser.admin %}
 
 						{% set emailInput %}
 							<table class="fullwidth inputs">
@@ -189,7 +192,7 @@
 							<div class="select">
 								<select id="preferredLocale" name="preferredLocale">
 									{% set allSiteLocales = craft.i18n.getSiteLocales %}
-									{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent ? craft.locale : allSiteLocales[0]) %}
+									{% set userLocale = account is defined and account.preferredLocale ? account.preferredLocale : (account is defined and account.isCurrent() ? craft.locale : allSiteLocales[0]) %}
 
 									{% for locale in allSiteLocales %}
 										<option value="{{ locale.id }}" {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getName() }}</option>
@@ -314,24 +317,24 @@
 					{% endif %}
 
 					<h5>{{ "Registration Date"|t }}</h5>
-					<p>{{ account.dateCreated.nice }}</p>
+					<p>{{ account.dateCreated.localeDate() }} {{ account.dateCreated.localeTime() }}</p>
 
 					{% if account.status != 'pending' %}
 						<h5>{{ "Last Login Date"|t }}</h5>
-						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Last Invalid Login Date"|t }}</h5>
-						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Last Password Change Date"|t }}</h5>
-						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</p>
+						<p>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t }}{% endif %}</p>
 
 						<h5>{{ "Invalid Login Count"|t }}</h5>
 						<p>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</p>
 					{% endif %}
 				</form>
 
-				{% if not account.isCurrent and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
+				{% if not account.isCurrent() and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
 					<form class="pane" method="post" accept-charset="UTF-8">
 						{{ hiddenInputs }}
 						{{ getCsrfInput() }}
@@ -346,7 +349,7 @@
 									   data-redirect="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
 						{% endif %}
 
-						{% if currentUser.admin and not account.isCurrent %}
+						{% if currentUser.admin and not account.isCurrent() %}
 							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
 						{% endif %}
 					</form>

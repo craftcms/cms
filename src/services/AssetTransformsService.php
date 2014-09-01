@@ -272,11 +272,6 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function ensureTransformUrlByIndexModel(AssetTransformIndexModel $index)
 	{
-		if (!$index)
-		{
-			throw new Exception(Craft::t('No asset image transform exists with that ID.'));
-		}
-
 		// Make sure we're not in the middle of working on this transform from a separate request
 		if ($index->inProgress)
 		{
@@ -320,22 +315,12 @@ class AssetTransformsService extends BaseApplicationComponent
 			$this->storeTransformIndexData($index);
 
 			// Generate the transform
-			$result = $this->generateTransform($index);
+			$this->generateTransform($index);
 
 			// Update the index
 			$index->inProgress = 0;
-
-			if ($result)
-			{
-				$index->fileExists = 1;
-			}
-
+			$index->fileExists = 1;
 			$this->storeTransformIndexData($index);
-
-			if (!$result)
-			{
-				throw new Exception(Craft::t("The requested image could not be found!"));
-			}
 		}
 
 		return $this->getUrlForTransformByIndexId($index->id);
@@ -345,6 +330,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Generate a transform by a created index.
 	 *
 	 * @param AssetTransformIndexModel $index
+	 *
 	 * @return null
 	 */
 	public function generateTransform(AssetTransformIndexModel $index)
@@ -740,7 +726,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 * Detect the auto web-safe format for the Assets file. Returns null, if the file is not an image.
 	 *
 	 * @param AssetFileModel $file
-	 * 
+	 *
 	 * @return mixed|string
 	 * @throws Exception
 	 */
@@ -1068,9 +1054,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(IOHelper::getExtension($file->filename), ImageHelper::getWebSafeFormats()))
 		{
-			$extension = 'jpg';
+			return 'jpg';
 		}
-
-		return $extension;
+		else
+		{
+			return $file->getExtension();
+		}
 	}
 }

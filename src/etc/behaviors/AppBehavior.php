@@ -613,6 +613,76 @@ class AppBehavior extends BaseBehavior
 		return $this->getEdition() == Craft::Pro;
 	}
 
+	/**
+	 * Creates a {@link DbConnection} specifically initialized for Craft's craft()->db instance.
+	 *
+	 * @throws DbConnectException
+	 * @return DbConnection
+	 */
+	public function createDbConnection()
+	{
+		try
+		{
+			$dbConnection = new DbConnection();
+
+			$dbConnection->connectionString = $this->_processConnectionString();
+			$dbConnection->emulatePrepare   = true;
+			$dbConnection->username         = craft()->config->get('user', ConfigFile::Db);
+			$dbConnection->password         = craft()->config->get('password', ConfigFile::Db);
+			$dbConnection->charset          = craft()->config->get('charset', ConfigFile::Db);
+			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
+			$dbConnection->driverMap        = array('mysql' => 'Craft\MysqlSchema');
+
+			$dbConnection->init();
+		}
+		// Most likely missing PDO in general or the specific database PDO driver.
+		catch(\CDbException $e)
+		{
+			Craft::log($e->getMessage(), LogLevel::Error);
+			$missingPdo = false;
+
+			// TODO: Multi-db driver check.
+			if (!extension_loaded('pdo'))
+			{
+				$missingPdo = true;
+				$messages[] = Craft::t('Craft requires the PDO extension to operate.');
+			}
+
+			if (!extension_loaded('pdo_mysql'))
+			{
+				$missingPdo = true;
+				$messages[] = Craft::t('Craft requires the PDO_MYSQL driver to operate.');
+			}
+
+			if (!$missingPdo)
+			{
+				Craft::log($e->getMessage(), LogLevel::Error);
+				$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
+			}
+		}
+		catch (\Exception $e)
+		{
+			Craft::log($e->getMessage(), LogLevel::Error);
+			$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
+		}
+
+		if (!empty($messages))
+		{
+			throw new DbConnectException(Craft::t('{errors}', array('errors' => implode('<br />', $messages))));
+		}
+
+		$this->setIsDbConnectionValid(true);
+
+		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
+		if (craft()->config->get('devMode'))
+		{
+			$dbConnection->enableProfiling = true;
+			$dbConnection->enableParamLogging = true;
+		}
+
+		return $dbConnection;
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -628,5 +698,24 @@ class AppBehavior extends BaseBehavior
 		$info = $this->getInfo();
 		$info->maintenance = $value;
 		return $this->saveInfo($info);
+	}
+
+	/**
+	 * Returns the correct connection string depending on whether a unixSocket is specified or not in the db config.
+	 *
+	 * @return string
+	 */
+	private function _processConnectionString()
+	{
+		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
+
+		if (!empty($unixSocket))
+		{
+			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';
+		}
+		else
+		{
+			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
+		}
 	}
 }

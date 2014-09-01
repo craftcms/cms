@@ -1062,7 +1062,7 @@ $.extend(Craft,
 	 */
 	showElementEditor: function($element)
 	{
-		if ($element.data('editable') && !$element.hasClass('disabled') && !$element.hasClass('loading'))
+		if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading'))
 		{
 			new Craft.ElementEditor($element);
 		}

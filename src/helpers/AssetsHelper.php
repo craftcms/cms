@@ -82,7 +82,8 @@ class AssetsHelper
 	 */
 	public static function cleanAssetName($fileName)
 	{
-		$separator = craft()->config->get('assetFilenameWordSeparator');
+		$separator = craft()->config->get('filenameWordSeparator');
+
 		if (!is_string($separator))
 		{
 			$separator = null;

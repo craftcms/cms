@@ -235,7 +235,16 @@ class ResourcesService extends BaseApplicationComponent
 				{
 					try
 					{
-						$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById((int) $segs[1]);
+						if (!empty($segs[1]))
+						{
+							$transformIndexModel = craft()->assetTransforms->getTransformIndexModelById((int) $segs[1]);
+						}
+
+						if (empty($transformIndexModel))
+						{
+							throw new HttpException(404);
+						}
+
 						$url = craft()->assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
 					}
 					catch (Exception $exception)

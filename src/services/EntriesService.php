@@ -126,7 +126,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			$entryRecord->authorId   = $entry->authorId = null;
 			$entryRecord->expiryDate = $entry->expiryDate = null;
-			$entry->enabled = true;
 		}
 		else
 		{
