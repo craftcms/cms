@@ -230,7 +230,7 @@ class ConfigService extends BaseApplicationComponent
 			$this->_loadConfigFile($file);
 		}
 
-		if (isset($this->_loadedConfigFiles[$file][$item]))
+		if (array_key_exists($item, $this->_loadedConfigFiles[$file]))
 		{
 			return true;
 		}
