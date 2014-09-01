@@ -48,7 +48,22 @@ Craft.AuthManager = Garnish.Base.extend(
 	 */
 	checkAuthTimeout: function(extendSession)
 	{
-		var url = Craft.getActionUrl('users/getAuthTimeout', (extendSession ? null : 'dontExtendSession=1'));
+		$.ajax({
+			url: Craft.getActionUrl('users/getAuthTimeout', (extendSession ? null : 'dontExtendSession=1')),
+			type: 'GET',
+			complete: $.proxy(function(jqXHR, textStatus)
+			{
+				if (textStatus == 'success' && !isNaN(jqXHR.responseText))
+				{
+					this.updateAuthTimeout(jqXHR.responseText);
+				}
+				else
+				{
+					this.updateAuthTimeout(-1);
+				}
+			}, this)
+		});
+
 		$.get(url, $.proxy(this, 'updateAuthTimeout'));
 	},
 
