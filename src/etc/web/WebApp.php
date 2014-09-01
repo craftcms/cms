@@ -229,84 +229,44 @@ class WebApp extends \CWebApplication
 			$this->updates->updateCraftVersionInfo();
 		}
 
-		// Make sure that the system is on...
-		if ($this->isSystemOn() ||
-			// ...or it's a CP request...
-			($this->request->isCpRequest() && (
-				// ...and the user has permission to access the CP when the site is off
-				$this->userSession->checkPermission('accessCpWhenSystemIsOff') ||
-				// ...or this is a manual update request
-				$this->request->getSegment(1) == 'manualupdate' ||
-				// ...or they're accessing the Login, Forgot Password, Set Password, or Validation pages
-				(($actionSegs = $this->request->getActionSegments()) && (
-					$actionSegs == array('users', 'login') ||
-					$actionSegs == array('users', 'forgotpassword') ||
-					$actionSegs == array('users', 'setpassword') ||
-					$actionSegs == array('users', 'validate') ||
-					$actionSegs[0] == 'update'
-				))
-			)) ||
-			// ...or it's a site request...
-			($this->request->isSiteRequest() && (
-				// ...and the user has permission to access the site when it's off
-				$this->userSession->checkPermission('accessSiteWhenSystemIsOff')
-			))
-		)
+		// If the system is offline, make sure they have permission to be here
+		$this->_enforceSystemStatusPermissions();
+
+		// Load the plugins
+		$this->plugins->loadPlugins();
+
+		// Check if a plugin needs to update the database.
+		if ($this->updates->isPluginDbUpdateNeeded())
 		{
-			// Load the plugins
-			$this->plugins->loadPlugins();
+			$this->_processUpdateLogic();
+		}
 
-			// Check if a plugin needs to update the database.
-			if ($this->updates->isPluginDbUpdateNeeded())
+		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+		if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
+		{
+			// Make sure the user has access to the CP
+			$this->userSession->requireLogin();
+			$this->userSession->requirePermission('accessCp');
+
+			// If they're accessing a plugin's section, make sure that they have permission to do so
+			$firstSeg = $this->request->getSegment(1);
+
+			if ($firstSeg)
 			{
-				$this->_processUpdateLogic();
-			}
+				$plugin = $plugin = $this->plugins->getPlugin($firstSeg);
 
-			// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-			if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
-			{
-				// Make sure the user has access to the CP
-				$this->userSession->requireLogin();
-				$this->userSession->requirePermission('accessCp');
-
-				// If they're accessing a plugin's section, make sure that they have permission to do so
-				$firstSeg = $this->request->getSegment(1);
-
-				if ($firstSeg)
+				if ($plugin)
 				{
-					$plugin = $plugin = $this->plugins->getPlugin($firstSeg);
-
-					if ($plugin)
-					{
-						$this->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
-					}
+					$this->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
 				}
 			}
-
-			// If this is an action request, call the controller
-			$this->_processActionRequest();
-
-			// If we're still here, finally let UrlManager do it's thing.
-			parent::processRequest();
 		}
-		else
-		{
-			// Log out the user
-			if ($this->userSession->isLoggedIn())
-			{
-				$this->userSession->logout(false);
-			}
 
-			if ($this->request->isCpRequest())
-			{
-				// Redirect them to the login screen
-				$this->userSession->requireLogin();
-			}
-			else
-			{
-				throw new HttpException(503);
-			}
-		}
+		// If this is an action request, call the controller
+		$this->_processActionRequest();
+
+		// If we're still here, finally let UrlManager do it's thing.
+		parent::processRequest();
 	}
 
 	/**
@@ -1051,5 +1011,80 @@ class WebApp extends \CWebApplication
 
 		// <Gandalf> YOU SHALL NOT PASS!
 		$this->end();
+	}
+
+	/**
+	 * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
+	 *
+	 * @return null
+	 */
+	private function _enforceSystemStatusPermissions()
+	{
+		if (!$this->_checkSystemStatusPermissions())
+		{
+			// Log out the user
+			if ($this->userSession->isLoggedIn())
+			{
+				$this->userSession->logout(false);
+			}
+
+			if ($this->request->isCpRequest())
+			{
+				// Redirect them to the login screen
+				$this->userSession->requireLogin();
+			}
+			else
+			{
+				throw new HttpException(503);
+			}
+		}
+	}
+
+	/**
+	 * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
+	 *
+	 * @return bool
+	 */
+	private function _checkSystemStatusPermissions()
+	{
+		if ($this->isSystemOn())
+		{
+			return true;
+		}
+
+		if ($this->request->isCpRequest())
+		{
+			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
+			{
+				return true;
+			}
+
+			if ($this->request->getSegment(1) == 'manualupdate')
+			{
+				return true;
+			}
+
+			$actionSegs = $this->request->getActionSegments();
+
+			if ($actionSegs && (
+				$actionSegs == array('users', 'login') ||
+				$actionSegs == array('users', 'forgotpassword') ||
+				$actionSegs == array('users', 'setpassword') ||
+				$actionSegs == array('users', 'validate') ||
+				$actionSegs[0] == 'update'
+			))
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if ($this->userSession->checkPermission('accessSiteWhenSystemIsOff'))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
