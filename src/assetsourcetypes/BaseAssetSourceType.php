@@ -388,7 +388,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if ($oldFile->kind == 'image')
 		{
-			craft()->assetTransforms->deleteThumbnailsForFile§($oldFile);
+			craft()->assetTransforms->deleteThumbnailsForFile($oldFile);
 			$this->deleteSourceFile($oldFile->getFolder()->path.$oldFile->filename);
 			$this->purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
