@@ -5,7 +5,7 @@
 	<h2>{{ title }}</h2>
 	<p>
 		{% if message %}
-			{{ message }}
+			{{ message|raw }}
 		{% else %}
 			{{ "Our site is temporarily unavailable. Please try again later."|t }}
 		{% endif %}

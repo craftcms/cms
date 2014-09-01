@@ -5,7 +5,7 @@
 	<h2>{{ title }}</h2>
 	<p>
 		{% if message %}
-			{{ message }}
+			{{ message|raw }}
 		{% else %}
 			{{ "An error occurred while processing your request."|t }}
 		{% endif %}
