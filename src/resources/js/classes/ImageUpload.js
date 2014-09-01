@@ -253,12 +253,12 @@ Craft.ImageModal = Garnish.Modal.extend(
 		{
 			newWidth = this.$container.width() + leftAvailable;
 		}
+
 		// Set the size so that the image always fits into a constraint x constraint box
 		newWidth = Math.min(newWidth, this.constraint, this.constraint * quotient, this.originalWidth);
 		this.$container.width(newWidth);
 
-		var newWidth = this.$container.width(),
-			factor = newWidth / this.originalWidth,
+		var factor = newWidth / this.originalWidth,
 			newHeight = this.originalHeight * factor;
 
 		$img.height(newHeight).width(newWidth);
