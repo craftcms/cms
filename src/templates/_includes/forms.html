@@ -150,10 +150,11 @@
 
 
 {% macro checkboxField(config) %}
-	<div class="field checkbox{% if config.first is defined and config.first %} first{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
+	{% set instructions = config.instructions is defined ? config.instructions -%}
+	<div class="field checkbox{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
-		{% if config.instructions is defined and config.instructions %}
-			<div class="instructions">{{ config.instructions|md }}</div>
+		{% if instructions %}
+			<div class="instructions">{{ instructions|md }}</div>
 		{% endif %}
 	</div>
 {% endmacro %}

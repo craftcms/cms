@@ -33,7 +33,7 @@
 			toggle: 'publicRegistrationSettings'
 		}) }}
 
-		<div id="publicRegistrationSettings"{% if not settings.allowPublicRegistration %} class="hidden"{% endif %}>
+		<div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
 			{% set groups = [{ label: "None"|t, value: '' }] %}
 			{% for group in craft.userGroups.getAllGroups() %}
 				{% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
