@@ -13,6 +13,7 @@
 }
 /* =Selection
 -----------------------------------------------------------------------------*/
+/* BEGIN HACK
 .redactor_box ::selection {
   background: #ffff9e;
 }
@@ -25,6 +26,7 @@
 .redactor_box img::-moz-selection {
   background: transparent;
 }
+END HACK */
 /*
 	BOX
 */
