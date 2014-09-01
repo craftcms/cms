@@ -359,6 +359,7 @@ class Image
 	 * @param string $targetPath
 	 * @param bool   $sanitizeAndAutoQuality
 	 *
+	 * @throws \Imagine\Exception\RuntimeException
 	 * @return null
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
@@ -377,6 +378,8 @@ class Image
 		{
 			$this->_image->save($targetPath, $options);
 		}
+
+		return true;
 	}
 
 	/**
