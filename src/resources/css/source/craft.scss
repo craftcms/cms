@@ -953,6 +953,8 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .field .heading { margin-bottom: 4px; }
 .field .locale { display: inline-block; border-radius: 3px; @include margin-left(3px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field .instructions { font-size: 11px; color: $mediumtextcolor; }
+.field .warning { margin: 4px 0 0; font-size: 11px; }
+.field .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 
 /* toggles and nested fields */
 .nested-fields { margin: -24px; padding: 24px 24px 0; overflow: hidden; }

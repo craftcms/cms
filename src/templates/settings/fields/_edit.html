@@ -130,7 +130,8 @@
 
 		{{ forms.selectField({
 			label: "Field Type"|t,
-			instructions: "What type of field is this?"|t ~ (fieldId is defined ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t~'</span>' : ''),
+			instructions: "What type of field is this?"|t,
+			warning: (fieldId is defined ? "Changing this may result in data loss."|t),
 			id: 'type',
 			name: 'type',
 			options: fieldTypes,

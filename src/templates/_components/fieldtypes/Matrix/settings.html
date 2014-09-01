@@ -105,7 +105,7 @@
 
 								{{ forms.selectField({
 									label: "Field Type"|t,
-									instructions: (field.isNew() ? null : '<span class="error">'~"Careful—changing this may result in data loss."|t~'</span>'),
+									warning: (not field.isNew() ? "Changing this may result in data loss."|t),
 									id: fieldId~'-type',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
 									options: fieldTypes,
