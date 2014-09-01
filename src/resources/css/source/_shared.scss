@@ -68,6 +68,14 @@ $noticecolor: #5286d9;
 	background-image: linear-gradient($params);
 }
 
+@mixin radial-gradient($params...) {
+	background-image: -webkit-radial-gradient($params);
+	background-image: -moz-radial-gradient($params);
+	background-image: -ms-radial-gradient($params);
+	background-image: -o-radial-gradient($params);
+	background-image: radial-gradient($params);
+}
+
 @mixin transform($params...) {
 	-webkit-transform: $params;
 	-moz-transform: $params;
