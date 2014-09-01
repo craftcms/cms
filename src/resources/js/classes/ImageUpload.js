@@ -1,22 +1,22 @@
 /**
- * postParameters    - an object of POST data to pass along with each Ajax request
- * modalClass        - class to add to the modal window to allow customization
- * uploadButton      - jQuery object of the element that should open the file chooser
- * uploadAction      - upload to this location (in form of "controller/action")
- * deleteButton      - jQuery object of the element that starts the image deletion process
- * deleteMessage     - confirmation message presented to the user for image deletion
- * deleteAction      - delete image at this location (in form of "controller/action")
- * cropAction        - crop image at this (in form of "controller/action")
- * areaToolOptions   - object with some options for the area tool selector
- *   aspectRatio     - aspect ration to enforce in form of "width:height". If empty, then select area is freeform
- *   intialRectangle - object with options for the initial rectangle
- *     mode          - if set to auto, then the part selected will be the maximum size in the middle of image
- *     x1            - top left x coordinate of th rectangle, if the mode is not set to auto
- *     x2            - bottom right x coordinate of th rectangle, if the mode is not set to auto
- *     y1            - top left y coordinate of th rectangle, if the mode is not set to auto
- *     y2            - bottom right y coordinate of th rectangle, if the mode is not set to auto
+ * postParameters     - an object of POST data to pass along with each Ajax request
+ * modalClass         - class to add to the modal window to allow customization
+ * uploadButton       - jQuery object of the element that should open the file chooser
+ * uploadAction       - upload to this location (in form of "controller/action")
+ * deleteButton       - jQuery object of the element that starts the image deletion process
+ * deleteMessage      - confirmation message presented to the user for image deletion
+ * deleteAction       - delete image at this location (in form of "controller/action")
+ * cropAction         - crop image at this (in form of "controller/action")
+ * areaToolOptions    - object with some options for the area tool selector
+ *   aspectRatio      - aspect ration to enforce in form of "width:height". If empty, then select area is freeform
+ *   initialRectangle - object with options for the initial rectangle
+ *     mode           - if set to auto, then the part selected will be the maximum size in the middle of image
+ *     x1             - top left x coordinate of th rectangle, if the mode is not set to auto
+ *     x2             - bottom right x coordinate of th rectangle, if the mode is not set to auto
+ *     y1             - top left y coordinate of th rectangle, if the mode is not set to auto
+ *     y2             - bottom right y coordinate of th rectangle, if the mode is not set to auto
  *
- * onImageDelete     - callback to call when image is deleted. First parameter will containt respone data.
+ * onImageDelete     - callback to call when image is deleted. First parameter will contain response data.
  * onImageSave       - callback to call when an cropped image is saved. First parameter will contain response data.
  */
 
@@ -166,8 +166,12 @@ Craft.ImageHandler = Garnish.Base.extend(
 			acceptFileTypes: /(jpg|jpeg|gif|png)/
 		};
 
-		// Add the CSRF token
-		options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		// If CSRF protection isn't enabled, these won't be defined.
+		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+		{
+			// Add the CSRF token
+			options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		}
 
 		this.uploader = new Craft.Uploader(element, options);
 
