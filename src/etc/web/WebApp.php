@@ -183,10 +183,16 @@ class WebApp extends \CWebApplication
 		// Check if the app path has changed.  If so, run the requirements check again.
 		$this->_processRequirementsCheck();
 
-		// Now that we've ran the requirements checker, set MB to use UTF-8
-		mb_internal_encoding('UTF-8');
-		mb_http_input('UTF-8');
-		mb_http_output('UTF-8');
+		// These have been deprecated in PHP 6 in favor of default_charset, which defaults to 'UTF-8'
+		// http://php.net/manual/en/migration56.deprecated.php
+		if (version_compare(PHP_VERSION, '6.0.0') < 0)
+		{
+			// Now that we've ran the requirements checker, set MB to use UTF-8
+			mb_internal_encoding('UTF-8');
+			mb_http_input('UTF-8');
+			mb_http_output('UTF-8');
+		}
+
 		mb_detect_order('auto');
 
 		// Makes sure that the uploaded files are compatible with the current DB schema
