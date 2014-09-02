@@ -65,6 +65,7 @@ class GlobalSetElementType extends BaseElementType
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -83,6 +84,7 @@ class GlobalSetElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)

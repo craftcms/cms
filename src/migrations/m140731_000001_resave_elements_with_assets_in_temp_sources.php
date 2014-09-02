@@ -74,6 +74,7 @@ class m140731_000001_resave_elements_with_assets_in_temp_sources extends BaseMig
 	 * Get affected element Ids for a field.
 	 *
 	 * @param $field
+	 *
 	 * @return array|\CDbDataReader
 	 */
 	private function _getAffectedElements($field)

@@ -42,6 +42,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	 * Runs a task step.
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)

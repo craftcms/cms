@@ -1749,6 +1749,7 @@ class ElementsService extends BaseApplicationComponent
 	 * Returns the unique element IDs that match a given element query.
 	 *
 	 * @param DbCommand $query
+	 *
 	 * @return array
 	 */
 	private function _getElementIdsFromQuery(DbCommand $query)

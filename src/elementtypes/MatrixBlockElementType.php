@@ -161,6 +161,7 @@ class MatrixBlockElementType extends BaseElementType
 	 * Populates an element model based on a query result.
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)

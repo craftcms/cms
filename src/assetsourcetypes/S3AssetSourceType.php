@@ -686,6 +686,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sourceUri
 	 * @param $targetUri
+	 *
 	 * @return bool
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
