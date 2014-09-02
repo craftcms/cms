@@ -332,7 +332,7 @@ class HttpRequestService extends \CHttpRequest
 	 * Returns the MIME type that is going to be included in the response via the Content-Type header.
 	 *
 	 * @return string
-	 * @deprecated Deprecated in 2.2. Use HeaderHelper::getMimeType() instead.
+	 * @deprecated Deprecated in 2.2. Use {@link HeaderHelper::getMimeType()} instead.
 	 */
 	public function getMimeType()
 	{
