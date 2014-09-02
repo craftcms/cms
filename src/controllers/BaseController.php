@@ -258,17 +258,26 @@ abstract class BaseController extends \CController
 	/**
 	 * Redirects to the URI specified in the POST.
 	 *
-	 * @param mixed $object Object containing properties that should be parsed for in the URL.
+	 * @param mixed  $object  Object containing properties that should be parsed for in the URL.
+	 * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
+	 *                        null, then the current request’s path will be used.
 	 *
 	 * @return null
 	 */
-	public function redirectToPostedUrl($object = null)
+	public function redirectToPostedUrl($object = null, $default = null)
 	{
 		$url = craft()->request->getPost('redirect');
 
 		if ($url === null)
 		{
-			$url = craft()->request->getPath();
+			if ($default !== null)
+			{
+				$url = $default;
+			}
+			else
+			{
+				$url = craft()->request->getPath();
+			}
 		}
 
 		if ($object)
