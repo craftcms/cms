@@ -50,30 +50,8 @@ class UsersController extends BaseController
 	{
 		if (craft()->userSession->isLoggedIn())
 		{
-			if (craft()->request->isAjaxRequest())
-			{
-				$this->returnJson(array(
-					'success' => true
-				));
-			}
-			else
-			{
-				// They are already logged in.
-				$currentUser = craft()->userSession->getUser();
-
-				// If this is a CP request and they can access the control panel, redirect them to the dashboard.
-				if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
-				{
-					$this->redirect(UrlHelper::getCpUrl('dashboard'));
-				}
-				else
-				{
-					// Already logged in, but can't access the CP?  Send them to the redirectLoginPageIfLoggedIn config
-					// setting.
-					$redirect = craft()->config->get('redirectLoginPageIfLoggedIn');
-					$this->redirect(UrlHelper::getSiteUrl($redirect));
-				}
-			}
+			// Too easy.
+			$this->_handleSuccessfulLogin(false);
 		}
 
 		if (craft()->request->isPostRequest())
@@ -87,17 +65,7 @@ class UsersController extends BaseController
 
 			if (craft()->userSession->login($loginName, $password, $rememberMe))
 			{
-				if (craft()->request->isAjaxRequest())
-				{
-					$this->returnJson(array(
-						'success' => true
-					));
-				}
-				else
-				{
-					craft()->userSession->setNotice(Craft::t('Logged in.'));
-					$this->redirectToPostedUrl();
-				}
+				$this->_handleSuccessfulLogin(true);
 			}
 			else
 			{
@@ -1276,6 +1244,55 @@ class UsersController extends BaseController
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
+	 * logged in.
+	 *
+	 * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
+	 *
+	 * @return null
+	 */
+	private function _handleSuccessfulLogin($setNotice)
+	{
+		// If this was an Ajax request, just return success:true
+		if (craft()->request->isAjaxRequest())
+		{
+			$this->returnJson(array(
+				'success' => true
+			));
+		}
+		else
+		{
+			if ($setNotice)
+			{
+				craft()->userSession->setNotice(Craft::t('Logged in.'));
+			}
+
+			// Get the current user
+			$currentUser = craft()->userSession->getUser();
+
+			// Were they trying to access a URL beforehand?
+			$defaultUrl = craft()->userSession->getReturnUrl();
+
+			if ($defaultUrl === null)
+			{
+				// If this is a CP request and they can access the control panel, redirect them to the dashboard by default
+				if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
+				{
+					$defaultUrl = UrlHelper::getCpUrl('dashboard');
+				}
+				else
+				{
+					// Otherwise send them wherever postLoginRedirect tells us
+					$postLoginRedirect = craft()->config->get('postLoginRedirect');
+					$defaultUrl = UrlHelper::getSiteUrl($postLoginRedirect);
+				}
+			}
+
+			$this->redirectToPostedUrl($currentUser, $defaultUrl);
+		}
+	}
 
 	/**
 	 * @param $user

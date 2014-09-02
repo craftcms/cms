@@ -343,6 +343,14 @@ return array(
 	'phpMaxMemoryLimit' => '256M',
 
 	/**
+	 * The path that users should be redirected to after logging in from the front-end site.
+	 *
+	 * This setting will also come into effect if the user visits the Login page (as specified by the loginPath config
+	 * setting) when they are already logged in.
+	 */
+	'postLoginRedirect' => '',
+
+	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
 	 * directly accessible via a matching URL.
 	 */
@@ -355,15 +363,6 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'purgePendingUsersDuration' => 'P3M',
-
-	/**
-	 * The page to redirect a logged in user to, if they do not have control panel access and they load the login page
-	 * as specified in the 'loginPath' config setting.  If they have control panel access, they will be redirected there.
-	 * By default it is an empty string, which will redirect to the site's home page.
-	 *
-	 * Note that this setting only affects front-end requests.
-	 */
-	'redirectLoginPageIfLoggedIn' => '',
 
 	/**
 	 * The amount of time Craft will remember a username and pre-populate it on the CP login page.
