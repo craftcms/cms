@@ -53,6 +53,16 @@ class UrlManager extends \CUrlManager
 	 */
 	private $_matchedElementRoute;
 
+	/**
+	 * @var
+	 */
+	private $_regexTokens;
+
+	/**
+	 * @var
+	 */
+	private $_regexTokenPatterns;
+
 	// Public Methods
 	// =========================================================================
 
@@ -363,11 +373,11 @@ class UrlManager extends \CUrlManager
 			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
 
-			// Parse {handle} tokens
-			$regexPattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $regexPattern);
+			// Parse tokens
+			$regexPattern = $this->_parseRegexTokens($regexPattern);
 
 			// Does it match?
-			if (preg_match('/^'.$regexPattern.'$/', $path, $match))
+			if (preg_match('/^'.$regexPattern.'$/u', $path, $match))
 			{
 				// Normalize the route
 				$route = $this->_normalizeRoute($route);
@@ -394,6 +404,39 @@ class UrlManager extends \CUrlManager
 		}
 
 		return false;
+	}
+
+	/**
+	 * Parses any tokens in a given regex pattern.
+	 *
+	 * @param string $pattern
+	 *
+	 * @return string
+	 */
+	private function _parseRegexTokens($pattern)
+	{
+		if (!isset($this->_regexTokens))
+		{
+			$this->_regexTokens = array(
+				'{handle}',
+				'{slug}',
+			);
+
+			$slugChars = array('.', '_', '-');
+			$slugWordSeparator = craft()->config->get('slugWordSeparator');
+
+			if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars))
+			{
+				$slugChars[] = $slugWordSeparator;
+			}
+
+			$this->_regexTokenPatterns = array(
+				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
+				'(?:[\p{L}\p{N}'.preg_quote(implode($slugChars), '/').']+)',
+			);
+		}
+
+		return str_replace($this->_regexTokens, $this->_regexTokenPatterns, $pattern);
 	}
 
 	/**

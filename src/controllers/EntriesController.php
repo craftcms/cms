@@ -342,7 +342,7 @@ class EntriesController extends BaseEntriesController
 		// Set the base CP edit URL
 
 		// Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
-		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}';
+		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}-{slug}';
 
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .

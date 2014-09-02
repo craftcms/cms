@@ -213,7 +213,8 @@ class EntryModel extends BaseElementModel
 
 		if ($section)
 		{
-			$url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id);
+			// The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
+			$url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
 			if (craft()->isLocalized() && $this->locale != craft()->language)
 			{

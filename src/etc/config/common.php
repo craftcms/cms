@@ -54,7 +54,7 @@ $cpRoutes['dashboard/settings/(?P<widgetId>\d+)']                               
 
 $cpRoutes['entries/(?P<sectionHandle>{handle})']                                  = 'entries';
 $cpRoutes['entries/(?P<sectionHandle>{handle})/new']                              = array('action' => 'entries/editEntry');
-$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)']                 = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?']     = array('action' => 'entries/editEntry');
 
 $cpRoutes['globals/(?P<globalSetHandle>{handle})']                                = array('action' => 'globals/editContent');
 
@@ -113,12 +113,12 @@ $cpRoutes['myaccount'] = array('action' => 'users/editUser', 'params' => array('
 
 // Client routes
 $cpRoutes['editionRoutes'][1]['clientaccount']                                                                                = array('action' => 'users/editUser', 'params' => array('account' => 'client'));
-$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/drafts/(?P<draftId>\d+)']                 = array('action' => 'entries/editEntry');
-$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/versions/(?P<versionId>\d+)']             = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug}?)?/drafts/(?P<draftId>\d+)']    = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/versions/(?P<versionId>\d+)'] = array('action' => 'entries/editEntry');
 
 // Pro routes
 $cpRoutes['editionRoutes'][2]['clientaccount']                                                                                = false;
-$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)/(?P<localeId>\w+)']                       = array('action' => 'entries/editEntry');
+$cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/(?P<localeId>\w+)']           = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']                                    = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                                      = array('action' => 'globals/editContent');
 $cpRoutes['editionRoutes'][2]['users/new']                                                                                    = array('action' => 'users/editUser');
