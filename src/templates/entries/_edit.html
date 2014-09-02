@@ -199,14 +199,14 @@
 							(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
 							(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 						%}
-							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
+							<input type="button" class="btn formsubmit" value="{{ 'Publish draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.getCpEditUrl() }}">
 						{% endif %}
 
 						{# Are they allowed to delete this draft? #}
 						{% if entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
 							<input type="button" class="btn formsubmit" value="{{ 'Delete draft'|t }}" data-action="entryRevisions/deleteDraft"
 							   data-confirm="{{ 'Are you sure you want to delete this draft?'|t }}"
-							   data-redirect="{{ entry.cpEditUrl }}"/>
+							   data-redirect="{{ entry.getCpEditUrl() }}"/>
 						{% endif %}
 					</div>
 
@@ -221,7 +221,7 @@
 						<hr>
 
 						<input type="hidden" name="action" value="entryRevisions/revertEntryToVersion">
-						<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}">
+						<input type="hidden" name="redirect" value="{{ entry.getCpEditUrl() }}">
 						<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 
 						<div class="buttons first">
