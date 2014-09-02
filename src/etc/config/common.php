@@ -47,16 +47,16 @@ $configArray = array(
 // CP routes
 // ----------------------------------------------------------------------------
 
-$cpRoutes['categories/(?P<groupHandle>{handle})'] = 'categories';
+$cpRoutes['categories/(?P<groupHandle>{handle})']                                 = 'categories';
 
-$cpRoutes['dashboard/settings/new']               = 'dashboard/settings/_widgetsettings';
-$cpRoutes['dashboard/settings/(?P<widgetId>\d+)'] = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard/settings/new']                                               = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard/settings/(?P<widgetId>\d+)']                                 = 'dashboard/settings/_widgetsettings';
 
-$cpRoutes['entries/(?P<sectionHandle>{handle})']                  = 'entries';
-$cpRoutes['entries/(?P<sectionHandle>{handle})/new']              = array('action' => 'entries/editEntry');
-$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)'] = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})']                                  = 'entries';
+$cpRoutes['entries/(?P<sectionHandle>{handle})/new']                              = array('action' => 'entries/editEntry');
+$cpRoutes['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)']                 = array('action' => 'entries/editEntry');
 
-$cpRoutes['globals/(?P<globalSetHandle>{handle})']                = array('action' => 'globals/editContent');
+$cpRoutes['globals/(?P<globalSetHandle>{handle})']                                = array('action' => 'globals/editContent');
 
 $cpRoutes['updates/go/(?P<handle>[^/]*)'] = 'updates/_go';
 
