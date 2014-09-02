@@ -455,6 +455,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Delete just the source file for an Assets File.
 	 *
 	 * @param string $subpath The subpath of the file to delete within the source
+	 *
 	 * @return void
 	 */
 	protected function deleteSourceFile($subpath)
@@ -680,6 +681,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param $sourceUri
 	 * @param $targetUri
+	 *
 	 * @return bool
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)

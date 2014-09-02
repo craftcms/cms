@@ -357,6 +357,7 @@ class IOHelper
 	 * A wrapper for {@link \CFileHelper::getMimeTypeByExtension}.
 	 *
 	 * @param  string $path The path to test.
+	 *
 	 * @return string       The mime type.
 	 */
 	public static function getMimeTypeByExtension($path)

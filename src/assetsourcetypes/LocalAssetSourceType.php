@@ -492,6 +492,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 *
 	 * @param string $sourceUri The source URI of the file.
 	 * @param string $targetUri The target URI of the file.
+	 *
 	 * @return bool
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)

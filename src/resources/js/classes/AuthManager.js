@@ -63,8 +63,6 @@ Craft.AuthManager = Garnish.Base.extend(
 				}
 			}, this)
 		});
-
-		$.get(url, $.proxy(this, 'updateAuthTimeout'));
 	},
 
 	/**

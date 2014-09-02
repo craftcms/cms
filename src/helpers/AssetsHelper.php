@@ -78,6 +78,7 @@ class AssetsHelper
 	 * Clean an Asset's filename.
 	 *
 	 * @param $fileName
+	 *
 	 * @return mixed
 	 */
 	public static function cleanAssetName($fileName)

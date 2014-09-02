@@ -214,6 +214,7 @@ class UrlHelper
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol
+	 *
 	 * @return string
 	 */
 	public static function getSiteUrl($path = '', $params = null, $protocol = '')
@@ -286,6 +287,7 @@ class UrlHelper
 	 * @param              $protocol
 	 * @param              $cpUrl
 	 * @param              $mustShowScriptName
+	 *
 	 * @return string
 	 */
 	private static function _getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
@@ -395,6 +397,7 @@ class UrlHelper
 	 *
 	 * @param string|array|null $params
 	 * @param string|null       &$anchor
+	 *
 	 * @return string
 	 */
 	private static function _normalizeParams($params, &$anchor = '')

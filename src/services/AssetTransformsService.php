@@ -199,6 +199,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	 *
 	 * @param AssetFileModel $file
 	 * @param string         $transform
+	 *
 	 * @return AssetTransformIndexModel
 	 */
 	public function getTransformIndex(AssetFileModel $file, $transform)
