@@ -1277,10 +1277,12 @@ class UsersController extends BaseController
 
 			if ($defaultUrl === null)
 			{
-				// If this is a CP request and they can access the control panel, redirect them to the dashboard by default
+				// If this is a CP request and they can access the control panel, send them wherever
+				// postCpLoginRedirect tells us
 				if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
 				{
-					$defaultUrl = UrlHelper::getCpUrl('dashboard');
+					$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+					$defaultUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
 				}
 				else
 				{

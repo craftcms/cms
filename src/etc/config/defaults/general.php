@@ -343,6 +343,14 @@ return array(
 	'phpMaxMemoryLimit' => '256M',
 
 	/**
+	 * The path that users should be redirected to after logging in from the Control Panel.
+	 *
+	 * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)
+	 * or the CP’s root URL (/admin) when they are already logged in.
+	 */
+	'postCpLoginRedirect' => 'dashboard',
+
+	/**
 	 * The path that users should be redirected to after logging in from the front-end site.
 	 *
 	 * This setting will also come into effect if the user visits the Login page (as specified by the loginPath config
