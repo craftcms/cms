@@ -111,14 +111,7 @@ class UsersController extends BaseController
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
 
-			if (craft()->userSession->getUser()->can('accessCp'))
-			{
-				$this->redirect(UrlHelper::getCpUrl('dashboard'));
-			}
-			else
-			{
-				$this->redirect(UrlHelper::getSiteUrl(''));
-			}
+			$this->_handleSuccessfulLogin(true);
 		}
 		else
 		{
@@ -267,15 +260,16 @@ class UsersController extends BaseController
 					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
 					if (!$user->can('accessCp'))
 					{
-						$url = UrlHelper::getSiteUrl(craft()->config->getLocalized('setPasswordSuccessPath'));
-						$this->redirect($url);
+						$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
+						$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
 					}
 					else
 					{
-						craft()->userSession->setNotice(Craft::t('Password updated.'));
-						$url = UrlHelper::getCpUrl('dashboard');
-						$this->redirect($url);
+						$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+						$url = UrlHelper::getCpUrl($postCpLoginRedirect);
 					}
+
+					$this->redirect($url);
 				}
 			}
 
