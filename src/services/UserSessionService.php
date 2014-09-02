@@ -132,9 +132,14 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @return string The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = '')
+	public function getReturnUrl($defaultUrl = null)
 	{
-		return $this->getState('__returnUrl', UrlHelper::getUrl($defaultUrl));
+		if ($defaultUrl !== null)
+		{
+			$defaultUrl = UrlHelper::getUrl($defaultUrl);
+		}
+
+		return $this->getState('__returnUrl', $defaultUrl);
 	}
 
 	/**

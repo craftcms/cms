@@ -66,11 +66,11 @@ class UserSessionVariable
 	/**
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
-	 * @param string $defaultUrl
+	 * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
 	 *
-	 * @return mixed
+	 * @return string The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = '')
+	public function getReturnUrl($defaultUrl = null)
 	{
 		return craft()->userSession->getReturnUrl($defaultUrl);
 	}
