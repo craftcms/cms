@@ -429,7 +429,7 @@ class UserSessionService extends \CWebUser
 				}
 
 				// Get how long this session is supposed to last.
-				$authTimeout = craft()->config->getUserSessionDuration($rememberMe);
+				$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
 
 				$id = $this->_identity->getId();
 				$states = $this->_identity->getPersistentStates();
@@ -449,7 +449,7 @@ class UserSessionService extends \CWebUser
 						'username'      => $usernameModel->username,
 					)));
 
-					if ($authTimeout)
+					if ($this->authTimeout)
 					{
 						if ($this->allowAutoLogin)
 						{
@@ -471,7 +471,7 @@ class UserSessionService extends \CWebUser
 									$this->saveIdentityStates(),
 								);
 
-								$this->_identityCookie = $this->saveCookie('', $data, $authTimeout);
+								$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
 							}
 							else
 							{
@@ -1062,7 +1062,7 @@ class UserSessionService extends \CWebUser
 				$rememberMe = $data[3];
 				$states = $data[5];
 				$currentUserAgent = craft()->request->userAgent;
-				$authTimeout = craft()->config->getUserSessionDuration($rememberMe);
+				$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
 
 				// Get the hashed token from the db based on login name and uid.
 				if (($sessionRow = $this->_findSessionToken($loginName, $uid)) !== false)
@@ -1100,8 +1100,7 @@ class UserSessionService extends \CWebUser
 									$states,
 								);
 
-								$this->_identityCookie = $this->saveCookie('', $data, $authTimeout);
-								$this->authTimeout = $authTimeout;
+								$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
 								$this->_sessionRestoredFromCookie = true;
 								$this->_userRow = null;
 							}
