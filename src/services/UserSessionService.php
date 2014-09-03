@@ -328,7 +328,7 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isGuest())
 		{
-			if (craft()->config->get('loginPath') === craft()->request->getPath())
+			if (craft()->request->isSiteRequest() && craft()->config->get('loginPath') == craft()->request->getPath())
 			{
 				throw new Exception(Craft::t('requireLogin was used on the login page, creating an infinite loop.'));
 			}
