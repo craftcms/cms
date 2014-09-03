@@ -55,6 +55,7 @@
 
 				{% if craft.isLocalized() and section.getLocales() | length > 1 %}
 					<ul id="locales" class="pane">
+						{% set parentIdParam = craft.request.getParam('parentId') %}
 						{% for localeId in localeIds %}
 							{% set localeName = craft.i18n.getLocaleById(localeId).name %}
 							<li{% if localeId == entry.locale %} class="sel"{% endif %}>
@@ -67,7 +68,11 @@
 										disabled: isVersion
 									}) }}
 								{%- else -%}
-									<a href="{{ url('entries/'~sectionHandle~'/'~craft.request.getSegment(3))~'/'~localeId }}">{{ localeName }}</a>
+									{% set localeUrl = url(
+										'entries/'~sectionHandle~'/'~craft.request.getSegment(3)~'/'~localeId,
+										(parentIdParam ? { parentId: parentIdParam })
+									) -%}
+									<a href="{{ localeUrl }}">{{ localeName }}</a>
 									<div class="status {{ localeId in enabledLocales ? 'enabled' : 'disabled' }}"></div>
 								{%- endif -%}
 							</li>
