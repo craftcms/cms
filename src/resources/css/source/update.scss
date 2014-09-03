@@ -6,6 +6,7 @@
 #graphic.success { background-image: url(../images/success.png); }
 
 #status { position: absolute; top: 50%; margin-top: 20px; width: 100%; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
+#status #error { margin: 24px auto; border-radius: 3px; border: 1px solid $hrcolor; padding: 24px; width: 600px; max-width: calc(100% - 96px); max-height: 100px; overflow: auto; text-align: left; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),

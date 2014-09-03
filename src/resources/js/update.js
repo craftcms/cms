@@ -98,7 +98,23 @@ Craft.Updater = Garnish.Base.extend(
 	onErrorResponse: function(jqXHR)
 	{
 		this.$graphic.addClass('error');
-		var errorText = Craft.t('An error has occurred.  Please contact {email} and be sure to include the error message.', { email: '<a href="mailto:support@buildwithcraft.com?subject=Craft+Update+Failure">support@buildwithcraft.com</a>'} ) + '<br /><p>' + jqXHR.statusText + '</p><br /><p>' + jqXHR.responseText + '</p>';
+		var errorText =
+			'<p>'+Craft.t('A fatal error has occurred:')+'</p>' +
+			'<div id="error" class="code">' +
+				'<p><strong class="code">'+Craft.t('Status:')+'</strong> '+Craft.escapeHtml(jqXHR.statusText)+'</p>' +
+				'<p><strong class="code">'+Craft.t('Response:')+'</strong> '+Craft.escapeHtml(jqXHR.responseText)+'</p>' +
+			'</div>' +
+			'<a class="btn submit big" href="mailto:support@buildwithcraft.com' +
+				'?subject='+encodeURIComponent('Craft update failure') +
+				'&body='+encodeURIComponent(
+					'Describe what happened here.\n\n' +
+					'-----------------------------------------------------------\n\n' +
+					'Status: '+jqXHR.statusText+'\n\n' +
+					'Response: '+jqXHR.responseText
+				) +
+			'">' +
+				Craft.t('Send for help') +
+			'</a>'
 
 		this.updateStatus(errorText);
 	},

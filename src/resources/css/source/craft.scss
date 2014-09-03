@@ -834,7 +834,7 @@ body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 .elementselectormodal .body .content { height: calc(100% + 48px); }
 .elementselectormodal .body .sidebar { top: 0; @include padding-right(0); @include border-right(1px solid #e5e5e5); height: calc(100% - 48px);; overflow: auto; }
 .elementselectormodal .body .sidebar nav li a.sel { border-radius: 0; }
-.elementselectormodal .body .main { margin: -24px; padding: 24px; height: calc(100% - 48px);; overflow: auto; position: relative; }
+.elementselectormodal .body .main { margin: -24px; padding: 24px; height: calc(100% - 48px); overflow: auto; position: relative; }
 
 .elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
