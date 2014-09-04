@@ -328,9 +328,11 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isGuest())
 		{
+			// Ignore if this was called from the Login page
 			if (craft()->request->isSiteRequest() && craft()->config->get('loginPath') == craft()->request->getPath())
 			{
-				throw new Exception(Craft::t('requireLogin was used on the login page, creating an infinite loop.'));
+				Craft::log('UserSessionService::requireLogin() was called from the Login page.', LogLevel::Warning, true);
+				return;
 			}
 
 			if (!craft()->request->isAjaxRequest())
