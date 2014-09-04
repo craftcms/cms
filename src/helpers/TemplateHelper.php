@@ -57,7 +57,8 @@ class TemplateHelper
 		$paginateVariable->currentPage = $currentPage;
 		$paginateVariable->totalPages = $totalPages;
 
-		// Get the entities
+		// Copy the criteria, set the offset, and get the elements
+		$criteria = $criteria->copy();
 		$criteria->offset = $offset;
 		$entities = $criteria->find();
 
