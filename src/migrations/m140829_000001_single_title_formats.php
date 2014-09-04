@@ -29,7 +29,7 @@ class m140829_000001_single_title_formats extends BaseMigration
 					'titleLabel'    => null,
 					'titleFormat'   => '{section.name|raw}'
 				),
-				array('in', 'id', $singleIds)
+				array('in', 'sectionId', $singleIds)
 			);
 		}
 
