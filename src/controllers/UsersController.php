@@ -1269,7 +1269,7 @@ class UsersController extends BaseController
 			// Were they trying to access a URL beforehand?
 			$defaultUrl = craft()->userSession->getReturnUrl();
 
-			if ($defaultUrl === null)
+			if ($defaultUrl === null || $defaultUrl == craft()->request->getPath())
 			{
 				// If this is a CP request and they can access the control panel, send them wherever
 				// postCpLoginRedirect tells us
