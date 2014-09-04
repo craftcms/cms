@@ -60,9 +60,9 @@ class TemplateHelper
 		// Copy the criteria, set the offset, and get the elements
 		$criteria = $criteria->copy();
 		$criteria->offset = $offset;
-		$entities = $criteria->find();
+		$elements = $criteria->find();
 
-		return array($paginateVariable, $entities);
+		return array($paginateVariable, $elements);
 	}
 
 	/**

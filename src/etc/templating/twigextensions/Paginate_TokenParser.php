@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Paginates entities via a ElementCriteriaModel instance.
+ * Paginates elements via a ElementCriteriaModel instance.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -35,8 +35,8 @@ class Paginate_TokenParser extends \Twig_TokenParser
 		$nodes['body'] = $this->parser->subparse(array($this, 'decidePaginateEnd'), true);
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		$entitiesTarget = $targets->getNode(0);
-		$nodes['entitiesTarget'] = new \Twig_Node_Expression_AssignName($entitiesTarget->getAttribute('name'), $entitiesTarget->getLine());
+		$elementsTarget = $targets->getNode(0);
+		$nodes['elementsTarget'] = new \Twig_Node_Expression_AssignName($elementsTarget->getAttribute('name'), $elementsTarget->getLine());
 
 		return new Paginate_Node($nodes, array(), $lineno, $this->getTag());
 	}
