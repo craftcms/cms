@@ -130,16 +130,29 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
 	 *
-	 * @return string The return URL, or $defaultUrl.
+	 * @return string|null The return URL, or $defaultUrl.
 	 */
 	public function getReturnUrl($defaultUrl = null)
 	{
-		if ($defaultUrl !== null)
+		$returnUrl = $this->getState('__returnUrl');
+
+		if ($returnUrl !== null)
 		{
-			$defaultUrl = UrlHelper::getUrl($defaultUrl);
+			// Strip out any tags that may have gotten in there by accident
+			// i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
+			// so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
+			$returnUrl = str_replace(array('{', '}'), array('', ''), $returnUrl);
 		}
 
-		return $this->getState('__returnUrl', $defaultUrl);
+		if ($returnUrl === null)
+		{
+			$returnUrl = $defaultUrl;
+		}
+
+		if ($returnUrl !== null)
+		{
+			return UrlHelper::getUrl($returnUrl);
+		}
 	}
 
 	/**
