@@ -302,17 +302,6 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 
-		if (!$this->_isManualUpdate($data))
-		{
-			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('performUpdates');
-
-			if (!craft()->config->get('allowAutoUpdates'))
-			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
-			}
-		}
-
 		$handle = $this->_getFixedHandle($data);
 
 		if (craft()->config->get('backupDbOnUpdate'))
@@ -350,17 +339,6 @@ class UpdateController extends BaseController
 		$this->requireAjaxRequest();
 
 		$data = craft()->request->getRequiredPost('data');
-
-		if (!$this->_isManualUpdate($data))
-		{
-			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('performUpdates');
-
-			if (!craft()->config->get('allowAutoUpdates'))
-			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
-			}
-		}
 
 		$handle = $this->_getFixedHandle($data);
 
@@ -401,14 +379,6 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('performUpdates');
-
-			if (!craft()->config->get('allowAutoUpdates'))
-			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
-			}
-
 			$uid = $data['uid'];
 		}
 
@@ -457,14 +427,6 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('performUpdates');
-
-			if (!craft()->config->get('allowAutoUpdates'))
-			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
-			}
-
 			$uid = $data['uid'];
 		}
 
