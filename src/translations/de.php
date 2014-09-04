@@ -283,7 +283,7 @@ return array(
 	'Date Modified' => 'Änderungsdatum',
 	'Date/Time' => 'Datum/Zeit',
 	'Days' => 'Tage',
-	'Decimal Points' => 'Dezimalpunkte',
+	'Decimal Points' => 'Nachkommastellen',
 	'Default' => 'Standardwert?',
 	'Default Status' => 'Standardstatus',
 	'Default Upload Location' => 'Standardverzeichnis fürs Hochladen',
