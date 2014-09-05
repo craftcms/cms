@@ -363,9 +363,8 @@ class AssetTransformsService extends BaseApplicationComponent
 
 		$matchFound = false;
 
-		// If the detected format matches the file's format, we can use the
-		// old-style formats as well so we can dig through existing files
-		// Otherwise, delete all transforms, records of it and create new.
+		// If the detected format matches the file's format, we can use the old-style formats as well so we can dig
+		// through existing files. Otherwise, delete all transforms, records of it and create new.
 		if ($file->getExtension() == $index->detectedFormat)
 		{
 			$possibleLocations = array($this->_getUnnamedTransformFolderName($transform));
@@ -375,8 +374,8 @@ class AssetTransformsService extends BaseApplicationComponent
 				$possibleLocations[] = $this->_getNamedTransformFolderName($transform);
 			}
 
-			// We're looking for transforms that fit the bill and are not the
-			// one we are trying to find/create the image for.
+			// We're looking for transforms that fit the bill and are not the one we are trying to find/create
+			// the image for.
 			$results = craft()->db->createCommand()
 				->select('*')
 				->from('assettransformindex')
@@ -387,8 +386,8 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			foreach ($results as $result)
 			{
-				// If this is a named transform and indexed before dimensions
-				// last changed, this is a stale transform and needs to go.
+				// If this is a named transform and indexed before dimensions last changed, this is a stale transform
+				// and needs to go.
 				if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime)
 				{
 					$source->deleteTransform($file, new AssetTransformIndexModel($result));
