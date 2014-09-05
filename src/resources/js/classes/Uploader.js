@@ -55,6 +55,13 @@ Craft.Uploader = Garnish.Base.extend(
      */
     setParams: function(paramObject)
     {
+		// If CSRF protection isn't enabled, these won't be defined.
+		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+		{
+			// Add the CSRF token
+			paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		}
+
         this.uploader.fileupload('option', {formData: paramObject});
     },
 
