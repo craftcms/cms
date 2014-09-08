@@ -461,19 +461,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	}
 
 	/**
-	 * Finalize an outgoing transfer for a file.
-	 *
-	 * @param AssetFileModel $file The assetFileModel representing the file that will have any created images deleted.
-	 *
-	 * @return null
-	 */
-	public function deleteCreatedImages(AssetFileModel $file)
-	{
-		$this->deleteGeneratedImageTransforms($file);
-		craft()->assetTransforms->deleteThumbnailsForFile($file);
-	}
-
-	/**
 	 * Delete a generated transform for a file.
 	 *
 	 * @param AssetFileModel $file
