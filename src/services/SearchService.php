@@ -382,6 +382,12 @@ class SearchService extends BaseApplicationComponent
 				$mod = 50;
 			}
 
+			// If this is a title, 5X it
+			if ($row['attribute'] == 'title')
+			{
+				$mod *= 5;
+			}
+
 			$score = ($score / $wordCount) * $mod * $weight;
 		}
 
