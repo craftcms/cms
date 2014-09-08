@@ -47,11 +47,6 @@ class SearchService extends BaseApplicationComponent
 	 */
 	private $_groups;
 
-	/**
-	 * @var
-	 */
-	private $_results;
-
 	// Public Methods
 	// =========================================================================
 
@@ -127,7 +122,6 @@ class SearchService extends BaseApplicationComponent
 		$this->_tokens  = $query->getTokens();
 		$this->_terms   = array();
 		$this->_groups  = array();
-		$this->_results = array();
 
 		// Set Terms and Groups based on tokens
 		foreach ($this->_tokens as $obj)
@@ -171,27 +165,29 @@ class SearchService extends BaseApplicationComponent
 		// Are we scoring the results?
 		if ($scoreResults)
 		{
+			$scoresByElementId = array();
+
 			// Loop through results and calculate score per element
 			foreach ($results as $row)
 			{
-				$eId = $row['elementId'];
+				$elementId = $row['elementId'];
 				$score = $this->_scoreRow($row);
 
-				if (!isset($this->_results[$eId]))
+				if (!isset($scoresByElementId[$elementId]))
 				{
-					$this->_results[$eId] = $score;
+					$scoresByElementId[$elementId] = $score;
 				}
 				else
 				{
-					$this->_results[$eId] += $score;
+					$scoresByElementId[$elementId] += $score;
 				}
 			}
 
 			// Sort found elementIds by score
-			arsort($this->_results);
+			arsort($scoresByElementId);
 
 			// Store entry ids in return value
-			$elementIds = array_keys($this->_results);
+			$elementIds = array_keys($scoresByElementId);
 		}
 		else
 		{
@@ -617,7 +613,7 @@ class SearchService extends BaseApplicationComponent
 			$sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
 
 			// We need to reset keywords even if the subselect ended up in no results.
-			$keywords = null;			
+			$keywords = null;
 		}
 
 		return array($sql, $keywords);
