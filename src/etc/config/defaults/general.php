@@ -450,7 +450,8 @@ return array(
 	'slugWordSeparator' => '-',
 
 	/**
-	 * Configures Craft to send all system emails to a single email address, for testing purposes.
+	 * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
+	 * purposes.
 	 */
 	'testToEmailAddress' => '',
 
