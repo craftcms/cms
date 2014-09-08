@@ -467,9 +467,7 @@ class Image
 
 		$step++;
 
-		// Too little.  PNGs use "compression_level" (0-9), which is different from quality (1-100), so we have to adjust
-		// The higher the compress_level, the lower the quality.
-		if ($newFileSize > $originalSize && $extension !== 'png')
+		if ($newFileSize > $originalSize)
 		{
 			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
 		}
@@ -497,7 +495,8 @@ class Image
 	 */
 	private function _getSaveOptions($quality = null, $extension = null)
 	{
-		$quality = (!$quality ? $this->_quality : $quality);
+		// Because it's possible for someone to set the quality to 0.
+		$quality = ($quality === null || $quality === false ? $this->_quality : $quality);
 		$extension = (!$extension ? $this->getExtension() : $extension);
 
 		switch ($extension)
@@ -524,9 +523,10 @@ class Image
 
 			case 'png':
 			{
-				// Valid PNG quality settings are 0-9, so normalize since we're calculating based on 0-200.
-				$percentage = ($quality * 100) / 200;
-				$normalizedQuality = round(($percentage / 100) * 9);
+				// Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
+				// levels, not quality, like jpg and gif.
+				$normalizedQuality = round(($quality * 9) / 100);
+				$normalizedQuality = 9 - $normalizedQuality;
 
 				return array('png_compression_level' => $normalizedQuality, 'flatten' => false);
 			}

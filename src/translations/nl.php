@@ -1127,7 +1127,7 @@ Klik op de volgende link om je wachtwoord voor {{siteName}} te resetten:
 
 Als je deze email niet verwachtte, kun je hem gewoon negeren.',
 	'forgot_password_heading' => 'Als iemand zijn wachtwoord vergeet:',
-	'forgot_password_subject' => 'Reset je wachtwoordHallo',
+	'forgot_password_subject' => 'Reset je wachtwoord',
 	'four' => 'vier',
 	'hour' => 'uur',
 	'hours' => 'uren',

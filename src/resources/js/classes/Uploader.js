@@ -3,17 +3,17 @@
  */
 Craft.Uploader = Garnish.Base.extend(
 {
-    uploader: null,
+	uploader: null,
 	allowedKinds: null,
-	_rejectedFiles: {},
 	$element: null,
+	settings: null,
+	_rejectedFiles: {},
 	_extensionList: null,
 	_totalFileCounter: 0,
 	_validFileCounter: 0,
-	settings: null,
 
-    init: function($element, settings)
-    {
+	init: function($element, settings)
+	{
 		this._rejectedFiles = {"size": [], "type": [], "limit": []};
 		this.$element = $element;
 		this.allowedKinds = null;
@@ -21,7 +21,7 @@ Craft.Uploader = Garnish.Base.extend(
 		this._totalFileCounter = 0;
 		this._validFileCounter = 0;
 
-        settings = $.extend({}, this.defaultSettings, settings);
+		settings = $.extend({}, this.defaultSettings, settings);
 
 		var events = settings.events;
 		delete settings.events;
@@ -50,21 +50,28 @@ Craft.Uploader = Garnish.Base.extend(
 		this.uploader.on('fileuploadadd', $.proxy(this, 'onFileAdd'));
 	},
 
-    /**
-     * Set uploader parameters.
-     */
-    setParams: function(paramObject)
-    {
-        this.uploader.fileupload('option', {formData: paramObject});
-    },
+	/**
+	 * Set uploader parameters.
+	 */
+	setParams: function(paramObject)
+	{
+		// If CSRF protection isn't enabled, these won't be defined.
+		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+		{
+			// Add the CSRF token
+			paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		}
 
-    /**
-     * Get the number of uploads in progress.
-     */
-    getInProgress: function()
-    {
-        return this.uploader.fileupload('active');
-    },
+		this.uploader.fileupload('option', {formData: paramObject});
+	},
+
+	/**
+	 * Get the number of uploads in progress.
+	 */
+	getInProgress: function()
+	{
+		return this.uploader.fileupload('active');
+	},
 
 	/**
 	 * Return true, if this is the last upload.
@@ -205,13 +212,13 @@ Craft.Uploader = Garnish.Base.extend(
 		}
 	},
 
-    defaultSettings: {
-        dropZone: null,
+	defaultSettings: {
+		dropZone: null,
 		pasteZone: null,
 		fileInput: null,
 		sequentialUploads: true,
 		maxFileSize: Craft.maxUploadSize,
-		alloweKinds: null,
+		allowedKinds: null,
 		events: {},
 		canAddMoreFiles: null
 	}
