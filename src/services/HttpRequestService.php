@@ -1178,7 +1178,12 @@ class HttpRequestService extends \CHttpRequest
 		// Output the content, flush it to the browser, and close out the session
 		ob_end_flush();
 		flush();
-		session_write_close();
+
+		// Borrowed from CHttpSession->close() because session_write_close can cause PHP notices in some situations.
+		if (session_id() !== '')
+		{
+			@session_write_close();
+		}
 	}
 
 	// Protected Methods
