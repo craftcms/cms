@@ -337,4 +337,23 @@ class HttpRequestVariable
 		return craft()->request->getCsrfToken();
 	}
 
+	/**
+	 * Returns part of the request URL that is after the question mark.
+	 *
+	 * @return string The part of the request URL that is after the question mark.
+	 */
+	public function getQueryString()
+	{
+		return craft()->request->getQueryString();
+	}
+
+	/**
+	 * Returns the request’s query string, without the p= parameter.
+	 *
+	 * @return string The query string.
+	 */
+	public function getQueryStringWithoutPath()
+	{
+		return craft()->request->getQueryStringWithoutPath();
+	}
 }
