@@ -423,7 +423,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->save();
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
-			'link' => new \Twig_Markup(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid), craft()->templates->getTwig()->getCharset()),
+			'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
 		));
 	}
 
@@ -502,7 +502,7 @@ class UsersService extends BaseApplicationComponent
 
 		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => new \Twig_Markup($url, craft()->templates->getTwig()->getCharset()),
+			'link' => TemplateHelper::getRaw($url),
 		));
 	}
 
