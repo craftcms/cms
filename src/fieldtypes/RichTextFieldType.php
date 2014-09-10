@@ -151,7 +151,7 @@ class RichTextFieldType extends BaseFieldType
 		if ($value)
 		{
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
-			$value = preg_replace('/<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false"\s*(\/)?>/', '<!--pagebreak-->', $value);
+			$value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
 			if ($this->getSettings()->cleanupHtml)
 			{
