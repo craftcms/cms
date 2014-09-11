@@ -296,6 +296,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Temporarily disable strict variables if it's enabled
 		$strictVariables = $twig->isStrictVariables();
+
 		if ($strictVariables)
 		{
 			$twig->disableStrictVariables();
@@ -307,6 +308,7 @@ class TemplatesService extends BaseApplicationComponent
 		$result = $this->_objectTemplates[$template]->render(array(
 			'object' => $object
 		));
+
 		$this->_renderingTemplate = $lastRenderingTemplate;
 
 		// Re-enable strict variables
