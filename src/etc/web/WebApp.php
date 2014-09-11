@@ -142,14 +142,14 @@ class WebApp extends \CWebApplication
 		Craft::setLogger(new Logger());
 
 		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || !$this->userSession->shouldExtendSession())
+		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
 		{
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
 		}
 
 		// Additionally, we don't want these in the log files at all.
-		if (!$this->userSession->shouldExtendSession())
+		if (craft()->isInstalled() && !$this->userSession->shouldExtendSession())
 		{
 			$this->log->removeRoute('FileLogRoute');
 		}
