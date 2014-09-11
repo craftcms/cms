@@ -83,12 +83,7 @@ class UserSessionService extends \CWebUser
 			$this->authTimeout = craft()->config->getUserSessionDuration($data ? $data[3] : false);
 
 			// Should we skip auto login and cookie renewal?
-			$request = craft()->request;
-			$this->_dontExtendSession = (
-				$request->isGetRequest() &&
-				$request->isCpRequest() &&
-				$request->getParam('dontExtendSession')
-			);
+			$this->_dontExtendSession = !$this->shouldExtendSession();
 
 			$this->autoRenewCookie = !$this->_dontExtendSession;
 
@@ -897,6 +892,20 @@ class UserSessionService extends \CWebUser
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns whether the request should extend the current session timeout or not.
+	 *
+	 * @return bool
+	 */
+	public function shouldExtendSession()
+	{
+		return !(
+			craft()->request->isGetRequest() &&
+			craft()->request->isCpRequest() &&
+			craft()->request->getParam('dontExtendSession')
+		);
 	}
 
 	/**
