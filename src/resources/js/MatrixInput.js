@@ -423,14 +423,14 @@ var MatrixBlock = Garnish.Base.extend(
 
 		this.$previewContainer.html(previewHtml);
 
-		this.$previewContainer.stop();
-		this.$fieldsContainer.stop();
-		this.$container.stop();
+		this.$previewContainer.velocity('stop');
+		this.$fieldsContainer.velocity('stop');
+		this.$container.velocity('stop');
 
 		if (animate)
 		{
-			this.$previewContainer.fadeIn('fast');
-			this.$fieldsContainer.fadeOut('fast');
+			this.$previewContainer.velocity('fadeIn', { duration: 'fast' });
+			this.$fieldsContainer.velocity('fadeOut', { duration: 'fast' });
 			this.$container.velocity({ height: 0 }, 'fast');
 		}
 		else
@@ -472,17 +472,17 @@ var MatrixBlock = Garnish.Base.extend(
 			return;
 		}
 
-		this.$previewContainer.stop();
-		this.$fieldsContainer.stop();
-		this.$container.stop();
+		this.$previewContainer.velocity('stop');
+		this.$fieldsContainer.velocity('stop');
+		this.$container.velocity('stop');
 
 		var collapsedContainerHeight = this.$container.height();
 		this.$container.height('auto');
 		this.$fieldsContainer.show();
 		var expandedContainerHeight = this.$container.height();
 		this.$container.height(collapsedContainerHeight);
-		this.$fieldsContainer.hide().fadeIn('fast');
-		this.$previewContainer.fadeOut('fast');
+		this.$fieldsContainer.hide().velocity('fadeIn', { duration: 'fast' });
+		this.$previewContainer.velocity('fadeOut', { duration: 'fast' });
 		this.$container.velocity({ height: expandedContainerHeight }, 'fast', $.proxy(function() {
 			this.$container.height('auto');
 		}, this));

@@ -136,12 +136,12 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			clearTimeout(this.clearCheckoutFormTimeout);
 		}
 
-		this.$compareScreen.stop().animateLeft(-width, 'fast', $.proxy(function()
+		this.$compareScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function()
 		{
 			this.$compareScreen.addClass('hidden');
 		}, this));
 
-		this.$checkoutScreen.stop().css(Craft.left, width).removeClass('hidden').animateLeft(0, 'fast');
+		this.$checkoutScreen.velocity('stop').css(Craft.left, width).removeClass('hidden').animateLeft(0, 'fast');
 	},
 
 	onTestBtnClick: function(ev)
@@ -156,7 +156,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			{
 				var width = this.getWidth();
 
-				this.$compareScreen.stop().animateLeft(-width, 'fast', $.proxy(function()
+				this.$compareScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function()
 				{
 					this.$compareScreen.addClass('hidden');
 				}, this));
@@ -170,8 +170,8 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 	{
 		var width = this.getWidth();
 
-		this.$compareScreen.stop().removeClass('hidden').animateLeft(0, 'fast');
-		this.$checkoutScreen.stop().animateLeft(width, 'fast', $.proxy(function()
+		this.$compareScreen.velocity('stop').removeClass('hidden').animateLeft(0, 'fast');
+		this.$checkoutScreen.velocity('stop').animateLeft(width, 'fast', $.proxy(function()
 		{
 			this.$checkoutScreen.addClass('hidden');
 		}, this))
@@ -282,7 +282,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 			{
 				var width = this.getWidth();
 
-				this.$checkoutScreen.stop().animateLeft(-width, 'fast', $.proxy(function()
+				this.$checkoutScreen.velocity('stop').animateLeft(-width, 'fast', $.proxy(function()
 				{
 					this.$checkoutScreen.addClass('hidden');
 				}, this));

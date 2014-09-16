@@ -78,9 +78,9 @@ Craft.Tool = Garnish.Base.extend(
 		})
 			.removeClass('hidden');
 
-		this.$form.stop().animateLeft(-200, 'fast');
+		this.$form.velocity('stop').animateLeft(-200, 'fast');
 
-		this.progressBar.$progressBar.stop().animateLeft(30, 'fast', $.proxy(function()
+		this.progressBar.$progressBar.velocity('stop').animateLeft(30, 'fast', $.proxy(function()
 		{
 			var postData = Garnish.getPostData(this.$form),
 				params = Craft.expandPostArray(postData);

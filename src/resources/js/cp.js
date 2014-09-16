@@ -92,8 +92,8 @@ var CP = Garnish.Base.extend(
 		var $errorNotifications = this.$notificationContainer.children('.error'),
 			$otherNotifications = this.$notificationContainer.children(':not(.error)');
 
-		$errorNotifications.delay(CP.notificationDuration * 2).fadeOut();
-		$otherNotifications.delay(CP.notificationDuration).fadeOut();
+		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
+		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
 
 		// Secondary form submit buttons
 		this.addListener($('.formsubmit'), 'activate', function(ev)
@@ -402,9 +402,9 @@ var CP = Garnish.Base.extend(
 		$('<div class="notification '+type+'">'+message+'</div>')
 			.appendTo(this.$notificationContainer)
 			.hide()
-			.fadeIn('fast')
+			.velocity('fadeIn', { duration: 'fast' })
 			.delay(notificationDuration)
-			.fadeOut();
+			.velocity('fadeOut');
 	},
 
 	/**
@@ -777,7 +777,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		{
 			this._animateArc(0, 1, $.proxy(function()
 			{
-				this._$bgCanvas.fadeOut();
+				this._$bgCanvas.velocity('fadeOut');
 
 				this._animateArc(1, 1, $.proxy(function()
 				{
@@ -789,7 +789,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		else
 		{
 			this._progressBar.setProgressPercentage(100);
-			this.$a.fadeOut();
+			this.$a.velocity('fadeOut');
 		}
 	},
 

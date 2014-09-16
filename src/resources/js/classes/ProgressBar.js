@@ -89,11 +89,11 @@ Craft.ProgressBar = Garnish.Base.extend(
 
             if (animate)
             {
-                this.$innerProgressBar.stop().velocity({ width: percentage+'%' }, 'fast');
+                this.$innerProgressBar.velocity('stop').velocity({ width: percentage+'%' }, 'fast');
             }
             else
             {
-                this.$innerProgressBar.stop().width(percentage+'%');
+                this.$innerProgressBar.velocity('stop').width(percentage+'%');
             }
 		}
     }

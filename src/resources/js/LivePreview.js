@@ -198,14 +198,14 @@ Craft.LivePreview = Garnish.Base.extend(
 		$('html').addClass('noscroll');
 		this.$spinner.addClass('hidden');
 
-		this.$shade.fadeIn();
+		this.$shade.velocity('fadeIn');
 
-		this.$editor.show().stop().animateLeft(0, 'slow', $.proxy(function()
+		this.$editor.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function()
 		{
 			this.trigger('slideIn');
 			Garnish.$win.trigger('resize');
 		}, this));
-		this.$iframeContainer.show().stop().animateRight(0, 'slow', $.proxy(function()
+		this.$iframeContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function()
 		{
 			this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
@@ -242,9 +242,9 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		var windowWidth = Garnish.$win.width();
 
-		this.$shade.delay(200).fadeOut();
+		this.$shade.delay(200).velocity('fadeOut');
 
-		this.$editor.stop().animateLeft(-this.editorWidth, 'slow', $.proxy(function()
+		this.$editor.velocity('stop').animateLeft(-this.editorWidth, 'slow', $.proxy(function()
 		{
 			for (var i = 0; i < this.fields.length; i++)
 			{
@@ -254,7 +254,7 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.trigger('slideOut');
 		}, this));
 
-		this.$iframeContainer.stop().animateRight(-this.getIframeWidth(), 'slow', $.proxy(function()
+		this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function()
 		{
 			this.$iframeContainer.hide();
 		}, this));

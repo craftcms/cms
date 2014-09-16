@@ -168,7 +168,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 						height: this.showTarget._currentHeight,
 						overflow: 'hidden'
 					});
-				$target.stop()
+				$target.velocity('stop')
 					.velocity({height: this.showTarget._targetHeight}, 'fast', function() {
 						$target.height('auto');
 					});
@@ -201,7 +201,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 
 				$target
 					.css('overflow', 'hidden')
-					.stop()
+					.velocity('stop')
 					.velocity({height: 0}, 'fast', function() {
 						$target.addClass('hidden');
 					});
