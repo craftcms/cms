@@ -31,7 +31,19 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 		if ($draftRecord)
 		{
-			return EntryDraftModel::populateModel($draftRecord);
+			$draft = EntryDraftModel::populateModel($draftRecord);
+
+			// This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
+			// inside of a structured section since the selected URL Format depends on the entry's level, and there's no
+			// reason to store the level along with the other draft data.
+			$entry = craft()->entries->getEntryById($draftRecord->entryId, $draftRecord->locale);
+
+			$draft->root  = $entry->root;
+			$draft->lft   = $entry->lft;
+			$draft->rgt   = $entry->rgt;
+			$draft->level = $entry->level;
+
+			return $draft;
 		}
 	}
 
