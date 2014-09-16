@@ -199,6 +199,7 @@ class DbBackup
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
 		$tables = craft()->db->getSchema()->getTableNames();
+
 		foreach ($tables as $table)
 		{
 			$sql .= 'DROP TABLE IF EXISTS '.craft()->db->quoteDatabaseName($databaseName).'.'.craft()->db->quoteTableName($table).';'.PHP_EOL;

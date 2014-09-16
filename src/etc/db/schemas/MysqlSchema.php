@@ -230,6 +230,7 @@ class MysqlSchema extends \CMysqlSchema
 		}
 
 		$sql .= ')';
+
 		return $sql;
 	}
 
@@ -247,6 +248,7 @@ class MysqlSchema extends \CMysqlSchema
 	{
 		$sql = 'UPDATE '.$this->quoteTableName($table).' SET '.$this->quoteColumnName($column).' = REPLACE('.$this->quoteColumnName($column).',  :find, :replace)';
 		$params = array(':find' => $find, ':replace' => $replace);
+		
 		return array('query' => $sql, 'params' => $params);
 	}
 

@@ -24,6 +24,7 @@ class DbConnection extends \CDbConnection
 	public function createCommand($query = null)
 	{
 		$this->setActive(true);
+
 		return new DbCommand($this, $query);
 	}
 
@@ -194,6 +195,7 @@ class DbConnection extends \CDbConnection
 	{
 		$columns = ArrayHelper::stringToArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+
 		return $this->trimObjectName($name);
 	}
 
