@@ -13,6 +13,16 @@ namespace Craft;
  */
 class MatrixBlockTypeRecord extends BaseRecord
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * Whether the Name and Handle attributes should validated to ensure they’re unique.
+	 *
+	 * @var bool
+	 */
+	protected $validateUniques = true;
+
 	// Public Methods
 	// =========================================================================
 
@@ -44,6 +54,29 @@ class MatrixBlockTypeRecord extends BaseRecord
 			array('columns' => array('name', 'fieldId'), 'unique' => true),
 			array('columns' => array('handle', 'fieldId'), 'unique' => true),
 		);
+	}
+
+	/**
+	 * Returns this model's validation rules.
+	 *
+	 * @return array
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		if (!$this->validateUniques)
+		{
+			foreach ($rules as $i => $rule)
+			{
+				if ($rule[1] == 'Craft\CompositeUniqueValidator')
+				{
+					unset($rules[$i]);
+				}
+			}
+		}
+
+		return $rules;
 	}
 
 	// Protected Methods
