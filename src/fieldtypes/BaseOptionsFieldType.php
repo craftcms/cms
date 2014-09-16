@@ -38,12 +38,14 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	{
 		if ($this->multi)
 		{
-			return AttributeType::Mixed;
+			$type = AttributeType::Mixed;
 		}
 		else
 		{
-			return AttributeType::String;
+			$type = AttributeType::String;
 		}
+
+		return array($type, 'default' => $this->getDefaultValue());
 	}
 
 	/**
