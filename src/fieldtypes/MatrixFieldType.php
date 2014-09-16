@@ -98,9 +98,10 @@ class MatrixFieldType extends BaseFieldType
 			foreach ($settings['blockTypes'] as $blockTypeId => $blockTypeSettings)
 			{
 				$blockType = new MatrixBlockTypeModel();
-				$blockType->id     = $blockTypeId;
-				$blockType->name   = $blockTypeSettings['name'];
-				$blockType->handle = $blockTypeSettings['handle'];
+				$blockType->id      = $blockTypeId;
+				$blockType->fieldId = $this->model->id;
+				$blockType->name    = $blockTypeSettings['name'];
+				$blockType->handle  = $blockTypeSettings['handle'];
 
 				$fields = array();
 
