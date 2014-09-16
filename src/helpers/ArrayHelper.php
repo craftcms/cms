@@ -118,7 +118,23 @@ class ArrayHelper
 		}
 		else if (is_string($str))
 		{
-			return array_merge(array_filter(array_map('trim', preg_split('/(?<!\\\),/', $str))));
+			// Split it on the non-escaped commas
+			$arr = preg_split('/(?<!\\\),/', $str);
+
+			// Remove any of the backslashes used to escape the commas
+			foreach ($arr as $key => $val)
+			{
+				// Remove leading/trailing whitespace
+				$arr[$key] = trim($val);
+
+				// Remove any backslashes used to escape commas
+				$arr[$key] = str_replace('\,', ',', $val);
+			}
+
+			// Remove any empty elements and reset the keys
+			$arr = array_merge(array_filter($arr));
+
+			return $arr;
 		}
 		else
 		{
