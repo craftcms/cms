@@ -158,8 +158,6 @@ class PhpMessageSource extends \CPhpMessageSource
 		$abbreviatedMonthKeys = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
 		$wideWeekdayNameKeys = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
 		$abbreviatedWeekdayNameKeys = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
-		$amNameKey = 'AM';
-		$pmNameKey = 'PM';
 
 		$formattedFrameworkData = array();
 		$locale = \CLocale::getInstance($localeId);
@@ -168,8 +166,13 @@ class PhpMessageSource extends \CPhpMessageSource
 		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedMonthKeys, $locale->getMonthNames('abbreviated')));
 		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideWeekdayNameKeys, $locale->getWeekDayNames()));
 		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedWeekdayNameKeys, $locale->getWeekDayNames('abbreviated')));
-		$formattedFrameworkData[$amNameKey] = $locale->getAMName();
-		$formattedFrameworkData[$pmNameKey] = $locale->getPMName();
+
+		// Because sometimes Twig (ultimately PHP) will return 'pm' or 'am' and sometimes it will return 'PM' or 'AM'
+		// and array indexes are case sensitive.
+		$formattedFrameworkData['AM'] = $locale->getAMName();
+		$formattedFrameworkData['am'] = $locale->getAMName();
+		$formattedFrameworkData['PM'] = $locale->getPMName();
+		$formattedFrameworkData['pm'] = $locale->getPMName();
 
 		return $formattedFrameworkData;
 	}
