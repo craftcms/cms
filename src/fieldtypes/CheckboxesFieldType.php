@@ -49,15 +49,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		// If this is a new entry, look for any default options
 		if ($this->isFresh())
 		{
-			$values = array();
-
-			foreach ($options as $option)
-			{
-				if (!empty($option['default']))
-				{
-					$values[] = $option['value'];
-				}
-			}
+			$values = $this->getDefaultValue();
 		}
 
 		return craft()->templates->render('_includes/forms/checkboxGroup', array(

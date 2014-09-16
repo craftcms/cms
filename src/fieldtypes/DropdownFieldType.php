@@ -41,14 +41,7 @@ class DropdownFieldType extends BaseOptionsFieldType
 		// If this is a new entry, look for a default option
 		if ($this->isFresh())
 		{
-			foreach ($options as $option)
-			{
-				if (!empty($option['default']))
-				{
-					$value = $option['value'];
-					break;
-				}
-			}
+			$value = $this->getDefaultValue();
 		}
 
 		return craft()->templates->render('_includes/forms/select', array(
