@@ -690,7 +690,7 @@ class ConfigService extends BaseApplicationComponent
 	 * [environmentVariables](http://buildwithcraft.com/docs/config-settings#environmentVariables) config setting’s
 	 * value, and replaces any {tag}s in the string that have matching keys with their corresponding values.
 	 *
-	 * @param string $str The string thta should be parsed for environment variables.
+	 * @param string $str The string that should be parsed for environment variables.
 	 *
 	 * @return string The parsed string.
 	 */

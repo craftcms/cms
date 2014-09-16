@@ -87,6 +87,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -104,6 +105,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->insertAll($table, $columns, $vals, $includeAuditColumns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -140,6 +142,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addColumn($table, $column, $type);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -156,6 +159,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addColumnFirst($table, $column, $type);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -173,6 +177,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addColumnBefore($table, $column, $type, $before);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -190,6 +195,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addColumnAfter($table, $column, $type, $after);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -208,6 +214,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->alterColumn($table, $column, $type, $newName, $after);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -227,6 +234,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addForeignKey($table, $columns, $refTable, $refColumns, $delete, $update);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -242,6 +250,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->dropForeignKey($table, $columns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -258,6 +267,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->createIndex($table, $columns, $unique);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -274,6 +284,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->dropIndex($table, $columns, $unique);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -289,6 +300,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->addPrimaryKey($table, $columns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -304,6 +316,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->dropPrimaryKey($table, $columns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -359,6 +372,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->insert($table, $columns, $includeAuditColumns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -381,6 +395,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->update($table, $columns, $conditions, $params, $includeAuditColumns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -398,6 +413,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -417,6 +433,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->delete($table, $conditions, $params);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -434,6 +451,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->renameTable($table, $newName);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -450,6 +468,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->dropTable($table);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -466,6 +485,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->truncateTable($table);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -483,6 +503,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->dropColumn($table, $column);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
@@ -501,6 +522,7 @@ abstract class BaseMigration extends \CDbMigration
 		$time = microtime(true);
 		$return = $this->dbConnection->createCommand()->renameColumn($table, $name, $newName);
 		$this->_processDoneTime($time);
+
 		return $return;
 	}
 
