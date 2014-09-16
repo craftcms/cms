@@ -80,6 +80,11 @@ class AssetsService extends BaseApplicationComponent
 			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
+		if (isset($criteria->filename))
+		{
+			$criteria->filename = StringHelper::escapeStringForCriteriaSearch($criteria->filename);
+		}
+
 		return $criteria->first();
 	}
 

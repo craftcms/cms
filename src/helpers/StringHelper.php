@@ -485,6 +485,18 @@ class StringHelper
 		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
 	}
 
+	/**
+	 * Return a string that has been prepared for use in Criteria search.
+	 *
+	 * @param $string
+	 *
+	 * @return string
+	 */
+	public static function escapeStringForCriteriaSearch($string)
+	{
+		return preg_replace('/(?<!\\\),/', '\,', $string);
+	}
+
 	// Private Methods
 	// =========================================================================
 
