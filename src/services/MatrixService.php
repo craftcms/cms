@@ -136,11 +136,13 @@ class MatrixService extends BaseApplicationComponent
 	 *
 	 * If the block type doesn’t validate, any validation errors will be stored on the block type.
 	 *
-	 * @param MatrixBlockTypeModel $blockType The block type.
+	 * @param MatrixBlockTypeModel $blockType       The block type.
+	 * @param bool                 $validateUniques Whether the Name and Handle attributes should be validated to
+	 *                                              ensure they’re unique. Defaults to `true`.
 	 *
 	 * @return bool Whether the block type validated.
 	 */
-	public function validateBlockType(MatrixBlockTypeModel $blockType)
+	public function validateBlockType(MatrixBlockTypeModel $blockType, $validateUniques = true)
 	{
 		$validates = true;
 
@@ -150,11 +152,15 @@ class MatrixService extends BaseApplicationComponent
 		$blockTypeRecord->name    = $blockType->name;
 		$blockTypeRecord->handle  = $blockType->handle;
 
+		$blockTypeRecord->validateUniques = $validateUniques;
+
 		if (!$blockTypeRecord->validate())
 		{
 			$validates = false;
 			$blockType->addErrors($blockTypeRecord->getErrors());
 		}
+
+		$blockTypeRecord->validateUniques = true;
 
 		// Can't validate multiple new rows at once so we'll need to give these temporary context to avoid false unique
 		// handle validation errors, and just validate those manually. Also apply the future fieldColumnPrefix so that
@@ -427,13 +433,37 @@ class MatrixService extends BaseApplicationComponent
 
 		$this->_uniqueBlockTypeAndFieldHandles = array();
 
+		$uniqueAttributes = array('name', 'handle');
+		$uniqueAttributeValues = array();
+
 		foreach ($settings->getBlockTypes() as $blockType)
 		{
-			if (!$this->validateBlockType($blockType))
+			if (!$this->validateBlockType($blockType, false))
 			{
 				// Don't break out of the loop because we still want to get validation errors for the remaining block
 				// types.
 				$validates = false;
+			}
+
+			// Do our own unique name/handle validation, since the DB-based validation can't be trusted when saving
+			// multiple records at once
+			foreach ($uniqueAttributes as $attribute)
+			{
+				$value = $blockType->$attribute;
+
+				if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute])))
+				{
+					$uniqueAttributeValues[$attribute][] = $value;
+				}
+				else
+				{
+					$blockType->addError($attribute, Craft::t('{attribute} "{value}" has already been taken.', array(
+						'attribute' => $blockType->getAttributeLabel($attribute),
+						'value'     => HtmlHelper::encode($value)
+					)));
+
+					$validates = false;
+				}
 			}
 		}
 
