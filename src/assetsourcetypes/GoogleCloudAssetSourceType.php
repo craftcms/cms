@@ -629,11 +629,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and Transform Index using the
-	 * provided path to the source image.
+	 * Put an image transform for the File and Transform Index using the provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel that the
-	 *                                              transform belongs to
+	 * @param AssetFileModel           $file        The AssetFileModel that the transform belongs to
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *

@@ -63,11 +63,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	abstract public function getImageSourcePath(AssetFileModel $fileModel);
 
 	/**
-	 * Put an image transform for the File and Transform Index using the
-	 * provided path to the source image.
+	 * Put an image transform for the File and Transform Index using the provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel that the
-	 *                                              transform belongs to
+	 * @param AssetFileModel           $file        The AssetFileModel that the transform belongs to
 	 * @param AssetTransformIndexModel $index       The Transform Index data.
 	 * @param string                   $sourceImage The source image.
 	 *
@@ -87,10 +85,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return true if a physical folder exists.
 	 *
-	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the
-	 *                                       folder to check if it exists.
-	 * @param string           $folderName   The name of the folder to check if
-	 *                                       it exists.
+	 * @param AssetFolderModel $parentFolder The assetFolderModel that has the folder to check if it exists.
+	 * @param string           $folderName   The name of the folder to check if it exists.
 	 *
 	 * @return boolean
 	 */
@@ -235,10 +231,8 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
 	 * @param string           $localCopy          The local copy of the file to transfer.
-	 * @param AssetFolderModel $folder             The assetFolderModel that contains
-	 *                                             the file to transfer.
-	 * @param AssetFileModel   $file               The assetFileModel that represents
-	 *                                             the file to transfer.
+	 * @param AssetFolderModel $folder             The assetFolderModel that contains the file to transfer.
+	 * @param AssetFileModel   $file               The assetFileModel that represents the file to transfer.
 	 * @param string           $conflictResolution The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
@@ -1046,8 +1040,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Purge a file from the Source's cache.  Sources that need this should
 	 * override this method.
 	 *
-	 * @param AssetFolderModel $folder   The assetFolderModel representing the f
-	 *                                   older that has the file to purge.
+	 * @param AssetFolderModel $folder   The assetFolderModel representing the folder that has the file to purge.
 	 * @param string           $filename The file to purge.
 	 *
 	 * @return null

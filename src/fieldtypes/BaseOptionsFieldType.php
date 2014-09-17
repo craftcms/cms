@@ -38,12 +38,14 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	{
 		if ($this->multi)
 		{
-			return AttributeType::Mixed;
+			$type = AttributeType::Mixed;
 		}
 		else
 		{
-			return AttributeType::String;
+			$type = AttributeType::String;
 		}
+
+		return array($type, 'default' => $this->getDefaultValue());
 	}
 
 	/**
@@ -247,5 +249,38 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Returns the default field value.
+	 *
+	 * @return array|string|null
+	 */
+	protected function getDefaultValue()
+	{
+		if ($this->multi)
+		{
+			$defaultValues = array();
+		}
+
+		foreach ($this->getOptions() as $option)
+		{
+			if (!empty($option['default']))
+			{
+				if ($this->multi)
+				{
+					$defaultValues[] = $option['value'];
+				}
+				else
+				{
+					return $option['value'];
+				}
+			}
+		}
+
+		if ($this->multi)
+		{
+			return $defaultValues;
+		}
 	}
 }

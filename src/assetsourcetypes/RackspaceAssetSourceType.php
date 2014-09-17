@@ -160,10 +160,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file->name))
 			{
-				// So in Rackspace a folder may or may not exist. For path
-				// a/path/to/file.jpg, any of those folders may or may not exist.
-				// So we have to add all the segments to $containerFolders to
-				// make sure we index them
+				// So in Rackspace a folder may or may not exist. For path /a/path/to/file.jpg, any of those folders
+				// may or may not exist. So we have to add all the segments to $containerFolders to make sure we index them
 
 				// Matches all paths with folders, except if there if no folder at all.
 				if (preg_match('/(.*\/).+$/', $file->name, $matches))
@@ -289,11 +287,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and Transform Index using the
-	 * provided path to the source image.
+	 * Put an image transform for the File and Transform Index using the provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put
-	 *                                              the image transform for.
+	 * @param AssetFileModel           $file        The assetFileModel to put the image transform for.
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *

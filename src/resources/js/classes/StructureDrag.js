@@ -399,7 +399,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 		}
 
 		// Animate things back into place
-		this.$draggee.stop().removeClass('hidden').velocity({
+		this.$draggee.velocity('stop').removeClass('hidden').velocity({
 			height: this.draggeeHeight
 		}, 'fast', $.proxy(function() {
 			this.$draggee.css('height', 'auto');

@@ -169,10 +169,13 @@ class PhpMessageSource extends \CPhpMessageSource
 
 		// Because sometimes Twig (ultimately PHP) will return 'pm' or 'am' and sometimes it will return 'PM' or 'AM'
 		// and array indexes are case sensitive.
-		$formattedFrameworkData['AM'] = $locale->getAMName();
-		$formattedFrameworkData['am'] = $locale->getAMName();
-		$formattedFrameworkData['PM'] = $locale->getPMName();
-		$formattedFrameworkData['pm'] = $locale->getPMName();
+		$amName = $locale->getAMName();
+		$pmName = $locale->getPMName();
+
+		$formattedFrameworkData['AM'] = $amName;
+		$formattedFrameworkData['am'] = $amName;
+		$formattedFrameworkData['PM'] = $pmName;
+		$formattedFrameworkData['pm'] = $pmName;
 
 		return $formattedFrameworkData;
 	}

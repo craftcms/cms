@@ -202,7 +202,7 @@ var LoginForm = Garnish.Base.extend(
 		}
 
 		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
-		this.$error.fadeIn();
+		this.$error.velocity('fadeIn');
 	},
 
 	onForgetPassword: function(event)
