@@ -163,10 +163,8 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['name']))
 			{
-				// In S3, it's possible to have files in folders that don't
-				// exist. E.g. - one/two/three.jpg. If folder "one" is empty,
-				// except for folder "two", then "one" won't show up in this
-				//list so we work around it.
+				// In S3, it's possible to have files in folders that don't exist. E.g. - one/two/three.jpg. If folder
+				// "one" is empty, except for folder "two", then "one" won't show up in this list so we work around it.
 
 				// Matches all paths with folders, except if folder is last or no folder at all.
 				if (preg_match('/(.*\/).+$/', $file['name'], $matches))
@@ -293,8 +291,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Put an image transform for the File and Transform Index using the
 	 * provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel that the
-	 *                                              transform belongs to
+	 * @param AssetFileModel           $file        The AssetFileModel that the transform belongs to
 	 * @param AssetTransformIndexModel $index       The handle of the transform.
 	 * @param string                   $sourceImage The source image.
 	 *
@@ -491,8 +488,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite If true, will overwrite the target
-	 *                                    destination.
+	 * @param bool             $overwrite If true, will overwrite the target destination.
 	 *
 	 * @return mixed
 	 */
