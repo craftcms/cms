@@ -82,7 +82,7 @@ class AssetsService extends BaseApplicationComponent
 
 		if (isset($criteria->filename))
 		{
-			$criteria->filename = StringHelper::escapeStringForCriteriaSearch($criteria->filename);
+			$criteria->filename = StringHelper::escapeCommas($criteria->filename);
 		}
 
 		return $criteria->first();
