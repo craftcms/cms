@@ -486,15 +486,15 @@ class StringHelper
 	}
 
 	/**
-	 * Return a string that has been prepared for use in Criteria search.
+	 * Backslash-escapes any commas in a given string.
 	 *
-	 * @param $string
+	 * @param $str The string.
 	 *
 	 * @return string
 	 */
-	public static function escapeStringForCriteriaSearch($string)
+	public static function escapeCommas($str)
 	{
-		return preg_replace('/(?<!\\\),/', '\,', $string);
+		return preg_replace('/(?<!\\\),/', '\,', $str);
 	}
 
 	// Private Methods
