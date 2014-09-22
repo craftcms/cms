@@ -1,3 +1,5 @@
+{% requireAdmin %}
+
 {% if plugin is not defined %}
 	{% set plugin = craft.plugins.getPlugin(pluginClass) %}
 	{% if not plugin %}{% exit 404 %}{% endif %}
