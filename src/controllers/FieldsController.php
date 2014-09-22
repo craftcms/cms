@@ -19,6 +19,18 @@ class FieldsController extends BaseController
 	// Public Methods
 	// =========================================================================
 
+	/**
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All System Settings actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
 	// Groups
 	// -------------------------------------------------------------------------
 
