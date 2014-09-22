@@ -1,3 +1,5 @@
+{% requireAdmin %}
+
 {% extends (CraftEdition >= CraftClient ? "settings/email/_layout" : "_layouts/cp") %}
 
 {% set crumbs = [
