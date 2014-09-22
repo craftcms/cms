@@ -50,7 +50,7 @@ class SystemSettingsController extends BaseController
 
 		$variables['tools'] = ToolVariable::populateVariables($tools);
 
-		$this->renderTemplate('settings/index', $variables);
+		$this->renderTemplate('settings/_index', $variables);
 	}
 
 	/**
