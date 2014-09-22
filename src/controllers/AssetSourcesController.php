@@ -29,7 +29,7 @@ class AssetSourcesController extends BaseController
 		craft()->userSession->requireAdmin();
 
 		$variables['sources'] = craft()->assetSources->getAllSources();
-		$this->renderTemplate('settings/assets/sources/index', $variables);
+		$this->renderTemplate('settings/assets/sources/_index', $variables);
 	}
 
 	/**
