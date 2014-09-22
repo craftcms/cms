@@ -123,9 +123,9 @@ $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/new/(?P<local
 $cpRoutes['editionRoutes'][2]['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                                      = array('action' => 'globals/editContent');
 $cpRoutes['editionRoutes'][2]['users/new']                                                                                    = array('action' => 'users/editUser');
 $cpRoutes['editionRoutes'][2]['users/(?P<userId>\d+)']                                                                        = array('action' => 'users/editUser');
-$cpRoutes['editionRoutes'][2]['settings/users']                                                                               = 'settings/users/groups';
-$cpRoutes['editionRoutes'][2]['settings/users/groups/new']                                                                    = 'settings/users/groups/_settings';
-$cpRoutes['editionRoutes'][2]['settings/users/groups/(?P<groupId>\d+)']                                                       = 'settings/users/groups/_settings';
+$cpRoutes['editionRoutes'][2]['settings/users']                                                                               = 'settings/users/groups/_index';
+$cpRoutes['editionRoutes'][2]['settings/users/groups/new']                                                                    = 'settings/users/groups/_edit';
+$cpRoutes['editionRoutes'][2]['settings/users/groups/(?P<groupId>\d+)']                                                       = 'settings/users/groups/_edit';
 
 //  Component config
 // ----------------------------------------------------------------------------
