@@ -53,7 +53,7 @@ class SectionsController extends BaseController
 			}
 		}
 
-		$this->renderTemplate('settings/sections/index', $variables);
+		$this->renderTemplate('settings/sections/_index', $variables);
 	}
 
 	/**
