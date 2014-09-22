@@ -108,7 +108,7 @@ class SystemSettingsController extends BaseController
 
 		array_multisort($offsets, $timezoneIds, $variables['timezoneOptions']);
 
-		$this->renderTemplate('settings/general/index', $variables);
+		$this->renderTemplate('settings/general/_index', $variables);
 	}
 
 	/**
