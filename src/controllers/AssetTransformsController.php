@@ -20,12 +20,22 @@ class AssetTransformsController extends BaseController
 	// =========================================================================
 
 	/**
+	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All System Settings actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
+	/**
 	 * Shows the asset transform list.
 	 */
 	public function actionTransformIndex()
 	{
-		craft()->userSession->requireAdmin();
-
 		$variables['transforms'] = craft()->assetTransforms->getAllTransforms();
 		$variables['transformModes'] = AssetTransformModel::getTransformModes();
 
@@ -41,8 +51,6 @@ class AssetTransformsController extends BaseController
 	 */
 	public function actionEditTransform(array $variables = array())
 	{
-		craft()->userSession->requireAdmin();
-
 		if (empty($variables['transform']))
 		{
 			if (!empty($variables['handle']))
