@@ -40,6 +40,7 @@ class CraftTwigExtension extends \Twig_Extension
 			new Nav_TokenParser(),
 			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
+			new RequireAdmin_TokenParser(),
 			new RequireEdition_TokenParser(),
 			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
