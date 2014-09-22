@@ -91,7 +91,7 @@ class FeedsService extends BaseApplicationComponent
 		// Something went wrong.
 		if ($feed->error())
 		{
-			Craft:log('There was a problem parsing the feed: '.$feed->error(), LogLevel::Warning);
+			Craft::log('There was a problem parsing the feed: '.$feed->error(), LogLevel::Warning);
 			return array();
 		}
 

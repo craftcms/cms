@@ -51,7 +51,8 @@ class ImageHelper
 	 */
 	public static function isImageManipulatable($extension)
 	{
-		return in_array($extension, array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm'));
+		return in_array(mb_strtolower($extension), array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm'));
+
 	}
 
 	/**

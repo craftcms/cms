@@ -111,10 +111,15 @@ class WebApp extends \CWebApplication
 	// =========================================================================
 
 	/**
+	 * Initializes the application.
+	 *
 	 * @return null
 	 */
 	public function init()
 	{
+		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
+		// in processRequest() is called.
+
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
@@ -141,19 +146,6 @@ class WebApp extends \CWebApplication
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
-		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
-		{
-			$this->log->removeRoute('WebLogRoute');
-			$this->log->removeRoute('ProfileLogRoute');
-		}
-
-		// Additionally, we don't want these in the log files at all.
-		if (craft()->isInstalled() && !$this->userSession->shouldExtendSession())
-		{
-			$this->log->removeRoute('FileLogRoute');
-		}
-
 		// If there is a custom appId set, apply it here.
 		if ($appId = $this->config->get('appId'))
 		{
@@ -173,6 +165,19 @@ class WebApp extends \CWebApplication
 	{
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
+
+		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
+		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
+		{
+			$this->log->removeRoute('WebLogRoute');
+			$this->log->removeRoute('ProfileLogRoute');
+		}
+
+		// Additionally, we don't want these in the log files at all.
+		if (craft()->isInstalled() && !$this->userSession->shouldExtendSession())
+		{
+			$this->log->removeRoute('FileLogRoute');
+		}
 
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
