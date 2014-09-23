@@ -655,6 +655,12 @@ class AssetTransformsService extends BaseApplicationComponent
 			IOHelper::deleteFile($imageSourcePath, true);
 
 			$localCopy = $sourceType->getLocalCopy($file);
+
+			if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0)
+			{
+				throw new Exception(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
+			}
+
 			$this->storeLocalSource($localCopy, $imageSourcePath);
 			$this->queueSourceForDeletingIfNecessary($imageSourcePath);
 		}
