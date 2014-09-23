@@ -481,7 +481,7 @@ class DbHelper
 		foreach (static::$_operators as $testOperator)
 		{
 			// Does the value start with this operator?
-			$operatorLength = mb_strlen($testOperator);
+			$operatorLength = strlen($testOperator);
 
 			if (strncmp(StringHelper::toLowerCase($value), $testOperator, $operatorLength) == 0)
 			{
