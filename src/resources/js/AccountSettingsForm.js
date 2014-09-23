@@ -82,8 +82,12 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 					if (response.success)
 					{
 						$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
-						$('#email, #newPassword').removeClass('disabled').removeAttr('disabled');
+						var $newPasswordInput = $('#newPassword');
+						$('#email').add($newPasswordInput).removeClass('disabled').removeAttr('disabled');
 						this.$lockBtns.remove();
+
+						new Craft.PasswordInput($newPasswordInput);
+
 						this.modal.hide();
 					}
 					else
