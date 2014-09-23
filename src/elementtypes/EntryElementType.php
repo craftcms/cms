@@ -539,6 +539,15 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritdoc BaseElementType::saveElement()
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		// Route this through EntriesService::saveEntry() so the proper entry events get fired.
+		return craft()->entries->saveEntry($element);
+	}
+
+	/**
 	 * Routes the request when the URI matches an element.
 	 *
 	 * @param BaseElementModel $element
