@@ -1003,6 +1003,25 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
+		if (!IOHelper::fileExists($imageSource) || IOHelper::getFileSize($imageSource) == 0)
+		{
+			if (IOHelper::fileExists($imageSource))
+			{
+				IOHelper::deleteFile($imageSource);
+			}
+
+			// Reset it and try again
+			$file->setTransformSource(null);
+			$imageSource = $file->getTransformSource();
+
+			// Not going to happen.
+			if (!IOHelper::fileExists($imageSource) || IOHelper::getFileSize($imageSource) == 0)
+			{
+				throw new Exception (Craft::t("Cannot get the image source for transforms"));
+			}
+
+		}
+
 		$image = craft()->images->loadImage($imageSource);
 		$image->setQuality($quality);
 
