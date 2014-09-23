@@ -861,6 +861,11 @@ class FieldsService extends BaseApplicationComponent
 			}
 		}
 
+		// Fire an 'onSaveFieldLayout' event
+		$this->onSaveFieldLayout(new Event($this, array(
+			'layout' => $layout,
+		)));
+
 		return true;
 	}
 
@@ -945,6 +950,18 @@ class FieldsService extends BaseApplicationComponent
 			$fieldType->element = $element;
 			return $fieldType;
 		}
+	}
+
+	/**
+	 * Fires an 'onSaveFieldLayout' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSaveFieldLayout(Event $event)
+	{
+		$this->raiseEvent('onSaveFieldLayout', $event);
 	}
 
 	// Private Methods
