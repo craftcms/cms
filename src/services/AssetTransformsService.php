@@ -1052,7 +1052,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	private function _getThumbExtension(AssetFileModel $file)
 	{
 		// For non-web-safe formats we go with jpg.
-		if (!in_array(IOHelper::getExtension($file->filename), ImageHelper::getWebSafeFormats()))
+		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))
 		{
 			return 'jpg';
 		}

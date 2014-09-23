@@ -117,7 +117,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 					foreach ($uploadedFiles as $uploadedFile)
 					{
-						$extension = IOHelper::getExtension($uploadedFile->getName());
+						$extension = mb_strtolower(IOHelper::getExtension($uploadedFile->getName()));
 
 						if (!in_array($extension, $allowedExtensions))
 						{
@@ -255,7 +255,7 @@ class AssetsFieldType extends BaseElementFieldType
 			{
 				$file = craft()->assets->getFileById($fileId);
 
-				if ($file && !in_array(IOHelper::getExtension($file->filename), $allowedExtensions))
+				if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)), $allowedExtensions))
 				{
 					$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->filename));
 				}
