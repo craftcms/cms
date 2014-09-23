@@ -95,10 +95,16 @@ class ImagesService extends BaseApplicationComponent
 	 * @param string $filePath The path to the image file.
 	 * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
 	 *
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
+		if (!IOHelper::fileExists($filePath) || IOHelper::getFileSize($filePath) == 0)
+		{
+			throw new Exception(Craft::t("The image specified does not exist!"));
+		}
+
 		if (!function_exists('memory_get_usage'))
 		{
 			return false;
