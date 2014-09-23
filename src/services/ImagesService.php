@@ -100,11 +100,6 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function checkMemoryForImage($filePath, $toTheMax = false)
 	{
-		if (!IOHelper::fileExists($filePath) || IOHelper::getFileSize($filePath) == 0)
-		{
-			throw new Exception(Craft::t("The image specified does not exist!"));
-		}
-
 		if (!function_exists('memory_get_usage'))
 		{
 			return false;

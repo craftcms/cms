@@ -644,12 +644,16 @@ class AssetTransformsService extends BaseApplicationComponent
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$imageSourcePath = $sourceType->getImageSourcePath($file);
 
-		if (!IOHelper::fileExists($imageSourcePath))
+		if (!IOHelper::fileExists($imageSourcePath) || IOHelper::getFileSize($imageSourcePath) == 0)
 		{
+
 			if (!$sourceType->isRemote())
 			{
 				throw new Exception(Craft::t("Image “{file}” cannot be found.", array('file' => $file->filename)));
 			}
+
+			// Delete it just in case it's a 0-byter
+			IOHelper::deleteFile($imageSourcePath, true);
 
 			$localCopy = $sourceType->getLocalCopy($file);
 			$this->storeLocalSource($localCopy, $imageSourcePath);
@@ -1002,25 +1006,6 @@ class AssetTransformsService extends BaseApplicationComponent
 		$sourceType = craft()->assetSources->populateSourceType($file->getSource());
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
-
-		if (!IOHelper::fileExists($imageSource) || IOHelper::getFileSize($imageSource) == 0)
-		{
-			if (IOHelper::fileExists($imageSource))
-			{
-				IOHelper::deleteFile($imageSource);
-			}
-
-			// Reset it and try again
-			$file->setTransformSource(null);
-			$imageSource = $file->getTransformSource();
-
-			// Not going to happen.
-			if (!IOHelper::fileExists($imageSource) || IOHelper::getFileSize($imageSource) == 0)
-			{
-				throw new Exception (Craft::t("Cannot get the image source for transforms"));
-			}
-
-		}
 
 		$image = craft()->images->loadImage($imageSource);
 		$image->setQuality($quality);
