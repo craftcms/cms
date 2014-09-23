@@ -179,6 +179,13 @@ class WebApp extends \CWebApplication
 			$this->log->removeRoute('FileLogRoute');
 		}
 
+		// If this is a CP request, prevent robots from indexing/following the page
+		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
+		if ($this->request->isCpRequest())
+		{
+			HeaderHelper::setHeader(array('X-Robots-Tag' => 'none'));
+		}
+
 		// Validate some basics on the database configuration file.
 		$this->validateDbConfigFile();
 

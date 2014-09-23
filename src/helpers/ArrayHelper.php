@@ -125,10 +125,12 @@ class ArrayHelper
 			foreach ($arr as $key => $val)
 			{
 				// Remove leading/trailing whitespace
-				$arr[$key] = trim($val);
+				$val = trim($val);
 
 				// Remove any backslashes used to escape commas
-				$arr[$key] = str_replace('\,', ',', $val);
+				$val = str_replace('\,', ',', $val);
+
+				$arr[$key] = $val;
 			}
 
 			// Remove any empty elements and reset the keys

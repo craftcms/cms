@@ -644,14 +644,23 @@ class AssetTransformsService extends BaseApplicationComponent
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$imageSourcePath = $sourceType->getImageSourcePath($file);
 
-		if (!IOHelper::fileExists($imageSourcePath))
+		if (!IOHelper::fileExists($imageSourcePath) || IOHelper::getFileSize($imageSourcePath) == 0)
 		{
 			if (!$sourceType->isRemote())
 			{
-				throw new Exception(Craft::t("Image “{file}” cannot be found.", array('file' => $file->filename)));
+				throw new Exception(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
 			}
 
+			// Delete it just in case it's a 0-byter
+			IOHelper::deleteFile($imageSourcePath, true);
+
 			$localCopy = $sourceType->getLocalCopy($file);
+
+			if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0)
+			{
+				throw new Exception(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
+			}
+
 			$this->storeLocalSource($localCopy, $imageSourcePath);
 			$this->queueSourceForDeletingIfNecessary($imageSourcePath);
 		}
