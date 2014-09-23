@@ -1497,10 +1497,24 @@ class ElementsService extends BaseApplicationComponent
 			if (count($elementIds) == 1)
 			{
 				$condition = array('id' => $elementIds[0]);
+				$matrixBlockCondition = array('ownerId' => $elementIds[0]);
 			}
 			else
 			{
 				$condition = array('in', 'id', $elementIds);
+				$matrixBlockCondition = array('in', 'ownerId', $elementIds);
+			}
+
+			// First delete any Matrix blocks that belong to this element(s)
+			$matrixBlockIds = craft()->db->createCommand()
+				->select('id')
+				->from('matrixblocks')
+				->where($matrixBlockCondition)
+				->queryColumn();
+
+			if ($matrixBlockIds)
+			{
+				craft()->matrix->deleteBlockById($matrixBlockIds);
 			}
 
 			$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
