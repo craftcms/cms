@@ -398,7 +398,7 @@ class IOHelper
 	public static function getFileSize($path, $suppressErrors = false)
 	{
 		clearstatcache();
-		
+
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path, $suppressErrors))
