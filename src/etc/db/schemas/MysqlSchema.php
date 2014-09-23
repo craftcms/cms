@@ -247,7 +247,7 @@ class MysqlSchema extends \CMysqlSchema
 	public function replace($table, $column, $find, $replace)
 	{
 		$sql = 'UPDATE '.$this->quoteTableName($table).' SET '.$this->quoteColumnName($column).' = REPLACE('.$this->quoteColumnName($column).',  :find, :replace)';
-		$params = array(':find' => $find, ':replace' => $replace);
+		$params = array(':find' => (string) $find, ':replace' => (string) $replace);
 		
 		return array('query' => $sql, 'params' => $params);
 	}
