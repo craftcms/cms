@@ -95,7 +95,6 @@ class ImagesService extends BaseApplicationComponent
 	 * @param string $filePath The path to the image file.
 	 * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
 	 *
-	 * @throws Exception
 	 * @return bool
 	 */
 	public function checkMemoryForImage($filePath, $toTheMax = false)
