@@ -46,7 +46,7 @@ class ClearCachesTool extends BaseTool
 		$caches = $this->_getFolders();
 		$caches['assetTransformIndex'] = Craft::t('Asset transform index');
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
-		$caches['assetThumbnails'] = Craft::t('Asset CP thumbnails');
+		$caches['assetThumbnails'] = Craft::t('Asset thumbnails');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
