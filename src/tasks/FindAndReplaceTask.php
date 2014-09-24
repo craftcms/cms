@@ -109,37 +109,47 @@ class FindAndReplaceTask extends BaseTask
 	{
 		$settings = $this->getSettings();
 
-		if (isset($this->_textColumns[$step]))
+		// If replace is null, there is invalid settings JSON in the database. Guard against it so we don't
+		// inadvertently nuke textual content in the database.
+		if ($settings->replace !== null)
 		{
-			craft()->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
-			return true;
-		}
-		else
-		{
-			$step -= count($this->_textColumns);
-
-			if (isset($this->_matrixFieldIds[$step]))
+			if (isset($this->_textColumns[$step]))
 			{
-				$field = craft()->fields->getFieldById($this->_matrixFieldIds[$step]);
-
-				if ($field)
-				{
-					return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', array('field' => $field->name)), array(
-						'find'          => $settings->find,
-						'replace'       => $settings->replace,
-						'matrixFieldId' => $field->id
-					));
-				}
-				else
-				{
-					// Oh what the hell.
-					return true;
-				}
+				craft()->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
+				return true;
 			}
 			else
 			{
-				return false;
+				$step -= count($this->_textColumns);
+
+				if (isset($this->_matrixFieldIds[$step]))
+				{
+					$field = craft()->fields->getFieldById($this->_matrixFieldIds[$step]);
+
+					if ($field)
+					{
+						return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', array('field' => $field->name)), array(
+							'find'          => $settings->find,
+							'replace'       => $settings->replace,
+							'matrixFieldId' => $field->id
+						));
+					}
+					else
+					{
+						// Oh what the hell.
+						return true;
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
+		}
+		else
+		{
+			Craft::log('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', LogLevel::Error);
+			return false;
 		}
 	}
 
