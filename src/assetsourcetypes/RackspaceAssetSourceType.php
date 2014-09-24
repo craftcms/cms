@@ -379,11 +379,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		foreach ($files as $file)
 		{
-			$fileList[$file->name] = true;
+			$fileList[mb_strtolower($file->name)] = true;
 		}
 
 		// Double-check
-		if (!isset($fileList[$fileName]))
+		if (!isset($fileList[mb_strtolower($fileName)]))
 		{
 			return $fileName;
 		}
@@ -394,7 +394,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 		$fileNameStart = join(".", $fileNameParts).'_';
 		$index = 1;
 
-		while ( isset($fileList[$this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension]))
+		while ( isset($fileList[mb_strtolower($prefix.$fileNameStart.$index.'.'.$extension)]))
 		{
 			$index++;
 		}

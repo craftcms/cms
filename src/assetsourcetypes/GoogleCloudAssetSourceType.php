@@ -431,8 +431,10 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$this->_prepareForRequests();
 		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
 
+		$fileList = array_flip(array_map('mb_strtolower', array_keys($fileList)));
+
 		// Double-check
-		if (!isset($fileList[$this->_getPathPrefix().$folder->path.$fileName]))
+		if (!isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileName)]))
 		{
 			return $fileName;
 		}
@@ -443,7 +445,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 		$fileNameStart = join(".", $fileNameParts).'_';
 		$index = 1;
 
-		while ( isset($fileList[$this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension]))
+		while (isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension)]))
 		{
 			$index++;
 		}

@@ -1197,6 +1197,18 @@ class AssetsService extends BaseApplicationComponent
 					'filename' => $fileName
 				));
 
+				// If the file doesn't exist in the index, but just in the source,
+				// quick-index it, so we have a File Model to work with.
+				if (!$targetFile)
+				{
+					$targetFile = new AssetFileModel();
+					$targetFile->sourceId = $folder->sourceId;
+					$targetFile->folderId = $folder->id;
+					$targetFile->filename = $fileName;
+					$targetFile->kind = IOHelper::getFileKind(IOHelper::getExtension($fileName));
+					$this->storeFile($targetFile);
+				}
+
 				$source->replaceFile($targetFile, $theNewFile);
 				$fileId = $targetFile->id;
 			}
