@@ -252,13 +252,13 @@ class ContentService extends BaseApplicationComponent
 		$excludeColumns = array_merge($excludeColumns, array_keys(DbHelper::getAuditColumnConfig()));
 
 		$fullContentTableName = craft()->db->addTablePrefix($this->contentTable);
-		$columnNames = craft()->db->schema->getTable($fullContentTableName)->getColumnNames();
+		$contentTableSchema = craft()->db->schema->getTable($fullContentTableName);
 
-		foreach ($columnNames as $columnName)
+		foreach ($contentTableSchema->columns as $columnSchema)
 		{
-			if (!in_array($columnName, $excludeColumns))
+			if ($columnSchema->allowNull && !in_array($columnSchema->name, $excludeColumns))
 			{
-				$values[$columnName] = null;
+				$values[$columnSchema->name] = null;
 			}
 		}
 
