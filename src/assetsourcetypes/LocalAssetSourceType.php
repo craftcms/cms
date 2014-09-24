@@ -358,11 +358,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		foreach ($fileList as $file)
 		{
-			$existingFiles[IOHelper::getFileName($file)] = true;
+			$existingFiles[mb_strtolower(IOHelper::getFileName($file))] = true;
 		}
 
 		// Double-check
-		if (!isset($existingFiles[$fileName]))
+		if (!isset($existingFiles[mb_strtolower($fileName)]))
 		{
 			return $fileName;
 		}
@@ -373,7 +373,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
+			if (!isset($existingFiles[mb_strtolower($fileName.'_'.$i.'.'.$extension)]))
 			{
 				return $fileName.'_'.$i.'.'.$extension;
 			}
