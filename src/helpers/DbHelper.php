@@ -125,6 +125,12 @@ class DbHelper
 	 */
 	public static function generateColumnDefinition($config)
 	{
+		// Don't do anything to PKs.
+		if ($config === ColumnType::PK)
+		{
+			return $config;
+		}
+
 		$config = static::normalizeAttributeConfig($config);
 
 		// Start the column definition
