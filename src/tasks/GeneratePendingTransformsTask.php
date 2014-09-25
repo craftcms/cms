@@ -16,7 +16,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	private $_indexIds;
 
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -26,7 +26,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	}
 
 	/**
-	 * Gets the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -39,7 +39,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
 	 *

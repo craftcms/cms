@@ -17,6 +17,8 @@ class PluginUpdateModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::setAttribute()
+	 *
 	 * @param string $name
 	 * @param mixed  $value
 	 *
@@ -36,6 +38,8 @@ class PluginUpdateModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

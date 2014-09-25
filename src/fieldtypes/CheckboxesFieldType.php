@@ -25,7 +25,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -35,7 +35,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $values
@@ -63,7 +63,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the label for the Options setting.
+	 * @inheritDoc BaseOptionsFieldType::getOptionsSettingsLabel()
 	 *
 	 * @return string
 	 */

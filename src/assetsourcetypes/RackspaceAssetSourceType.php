@@ -37,7 +37,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Returns the name of the source type.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Returns the component's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -109,9 +109,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Starts an indexing session.
+	 * @inheritDoc BaseAssetSourceType::startIndex()
 	 *
-	 * @param string $sessionId Indexing session id.
+	 * @param string $sessionId
 	 *
 	 * @throws Exception
 	 * @return array
@@ -221,10 +221,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Process an indexing session.
+	 * @inheritDoc BaseAssetSourceType::processIndex()
 	 *
-	 * @param string $sessionId Indexing session id.
-	 * @param int    $offset    The offset of the item to index.
+	 * @param string $sessionId
+	 * @param int    $offset
 	 *
 	 * @return mixed
 	 */
@@ -275,7 +275,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the image source path
+	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
 	 * @param AssetFileModel $file
 	 *
@@ -287,11 +287,11 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and Transform Index using the provided path to the source image.
+	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFileModel           $file        The assetFileModel to put the image transform for.
-	 * @param AssetTransformIndexModel $index       The handle of the transform.
-	 * @param string                   $sourceImage The source image.
+	 * @param AssetFileModel           $file
+	 * @param AssetTransformIndexModel $index
+	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
@@ -312,9 +312,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Make a local copy of the file and return the path to it.
+	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFileModel $file The file to get a local copy of.
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
@@ -328,7 +328,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if the source is a remote source.
+	 * @inheritDoc BaseAssetSourceType::isRemote()
 	 *
 	 * @return bool
 	 */
@@ -338,7 +338,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return the source's base URL.
+	 * @inheritDoc BaseAssetSourceType::getBaseUrl()
 	 *
 	 * @return string
 	 */
@@ -348,7 +348,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if a physical folder exists.
+	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
 	 * @param AssetFolderModel $parentPath
 	 * @param string           $folderName
@@ -364,10 +364,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Get a name replacement for a filename already taken in a folder.
+	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
-	 * @param AssetFolderModel $folder   The folder to check.
-	 * @param string           $fileName The filename to check.
+	 * @param AssetFolderModel $folder
+	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
@@ -403,7 +403,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */
@@ -420,7 +420,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Insert a file from path in folder.
+	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param                  $filePath
@@ -467,9 +467,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete just the source file for an Assets File.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFile()
 	 *
-	 * @param string $subpath The subpath of the file to delete within the source
+	 * @param string $subpath
 	 *
 	 * @return null
 	 */
@@ -480,12 +480,12 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Move a file in source.
+	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite    If true, will overwrite target destination
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
@@ -575,10 +575,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Create a physical folder, return true on success.
+	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
-	 * @param AssetFolderModel $parentFolder The folder in which to create it.
-	 * @param string           $folderName   The name of the new folder.
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
@@ -597,10 +597,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Rename a source folder.
+	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
-	 * @param AssetFolderModel $folder  The folder to rename.
-	 * @param string           $newName The new name.
+	 * @param AssetFolderModel $folder
+	 * @param string           $newName
 	 *
 	 * @return bool
 	 */
@@ -635,10 +635,10 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete the source folder.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
-	 * @param AssetFolderModel $parentFolder The parent folder.
-	 * @param string           $folderName   THe folder to delete.
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
@@ -658,9 +658,9 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Determines if a file can be moved internally from original source.
+	 * @inheritDoc BaseAssetSourceType::canMoveFileFrom()
 	 *
-	 * @param BaseAssetSourceType $originalSource The source with whom to test.
+	 * @param BaseAssetSourceType $originalSource
 	 *
 	 * @return mixed
 	 */
@@ -695,7 +695,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Copy a physical file inside the source.
+	 * @inheritDoc BaseAssetSourceType::copySourceFile()
 	 *
 	 * @param $sourceUri
 	 * @param $targetUri
@@ -887,7 +887,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return a prefix for S3 path for settings.
+	 * Return a prefix for Rackspace path for settings.
 	 *
 	 * @param object|null $settings The settings to use. If null, will use the current settings.
 	 *
@@ -1238,7 +1238,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a file's S3 path.
+	 * Get a file's Rackspace path.
 	 *
 	 * @param AssetFileModel $file
 	 *

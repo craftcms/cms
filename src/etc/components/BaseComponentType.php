@@ -17,7 +17,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	// =========================================================================
 
 	/**
-	 * The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
 	 *
 	 * @var string
 	 */
@@ -34,7 +34,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	// =========================================================================
 
 	/**
-	 * Returns the component’s name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -44,7 +44,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	}
 
 	/**
-	 * Get the class name, sans namespace and suffix.
+	 * @inheritDoc IComponentType::getClassHandle()
 	 *
 	 * @return string
 	 */
@@ -70,7 +70,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	}
 
 	/**
-	 * Returns whether this component should be selectable when choosing a component of this type.
+	 * @inheritDoc IComponentType::isSelectable()
 	 *
 	 * @return bool
 	 */

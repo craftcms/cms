@@ -48,7 +48,7 @@ class AssetsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -90,7 +90,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns the input value as it should be saved to the database.
+	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *
@@ -161,7 +161,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Handle file moves between folders for dynamic single folder settings.
+	 * @inheritDoc IFieldType::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -229,7 +229,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Validates the value. Returns 'true' or any custom validation errors.
+	 * @inheritDoc IFieldType::validate()
 	 *
 	 * @param array $value
 	 *
@@ -277,7 +277,6 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 	}
 
-
 	/**
 	 * Resolve source path for uploading for this field.
 	 *
@@ -292,7 +291,7 @@ class AssetsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the label for the "Add" button.
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
 	 *
 	 * @return string
 	 */
@@ -302,7 +301,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */
@@ -320,8 +319,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns an array of the source keys the field should be able to select
-	 * elements from.
+	 * @inheritDoc BaseElementFieldType::getInputSources()
 	 *
 	 * @throws Exception
 	 * @return array
@@ -360,7 +358,7 @@ class AssetsFieldType extends BaseElementFieldType
 	}
 
 	/**
-	 * Returns any additional criteria parameters limiting which elements the field should be able to select.
+	 * @inheritDoc BaseElementFieldType::getInputSelectionCriteria()
 	 *
 	 * @return array
 	 */

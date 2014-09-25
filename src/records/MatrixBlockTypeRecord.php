@@ -27,6 +27,8 @@ class MatrixBlockTypeRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -35,6 +37,8 @@ class MatrixBlockTypeRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -46,6 +50,8 @@ class MatrixBlockTypeRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -57,7 +63,7 @@ class MatrixBlockTypeRecord extends BaseRecord
 	}
 
 	/**
-	 * Returns this model's validation rules.
+	 * @inheritDoc BaseRecord::rules()
 	 *
 	 * @return array
 	 */
@@ -83,6 +89,8 @@ class MatrixBlockTypeRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

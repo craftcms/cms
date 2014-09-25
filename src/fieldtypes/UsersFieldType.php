@@ -27,7 +27,7 @@ class UsersFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the label for the "Add" button.
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
 	 *
 	 * @return string
 	 */

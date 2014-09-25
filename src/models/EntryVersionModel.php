@@ -19,7 +19,7 @@ class EntryVersionModel extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * Populates a new model instance with a given set of attributes.
+	 * @inheritDoc BaseModel::populateModel()
 	 *
 	 * @param mixed $attributes
 	 *
@@ -59,6 +59,8 @@ class EntryVersionModel extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

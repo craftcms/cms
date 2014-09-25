@@ -50,7 +50,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -60,7 +60,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	}
 
 	/**
-	 * Gets the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -95,7 +95,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
 	 *
@@ -159,7 +159,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */

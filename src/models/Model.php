@@ -41,7 +41,7 @@ class Model extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Defines this model's attributeDefs.
+	 * @inheritDoc BaseModel::defineAttributes()
 	 *
 	 * @return array
 	 */

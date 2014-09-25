@@ -30,7 +30,7 @@ class ContentModel extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Returns this model's normalized attribute configs.
+	 * @inheritDoc BaseModel::getAttributeConfigs()
 	 *
 	 * @return array
 	 */
@@ -74,7 +74,10 @@ class ContentModel extends BaseModel
 	}
 
 	/**
-	 * Validates the custom fields.
+	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
+	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
+	 *
+	 * In addition we validates the custom fields on this model.
 	 *
 	 * @param array|null $attributes
 	 * @param bool       $clearErrors
@@ -132,6 +135,8 @@ class ContentModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

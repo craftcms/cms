@@ -55,7 +55,7 @@ class CategoriesFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Performs any additional actions after the element has been saved.
+	 * @inheritDoc IFieldType::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -102,7 +102,7 @@ class CategoriesFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Returns an array of variables that should be passed to the input template.
+	 * @inheritDoc BaseElementFieldType::getInputTemplateVariables()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria

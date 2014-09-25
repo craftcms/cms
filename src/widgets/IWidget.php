@@ -13,16 +13,27 @@ namespace Craft;
  */
 interface IWidget extends ISavableComponentType
 {
-	// Private Methods
+	// Public Methods
 	// =========================================================================
 
 	/**
+	 * Returns the widget's title.
+	 *
 	 * @return string
 	 */
 	public function getTitle();
 
 	/**
+	 * Returns the widget's body HTML.
+	 *
 	 * @return string
 	 */
 	public function getBodyHtml();
+
+	/**
+	 * Returns the widget's colspan.
+	 *
+	 * @return int
+	 */
+	public function getColspan();
 }

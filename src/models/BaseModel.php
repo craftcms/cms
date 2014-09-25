@@ -294,9 +294,9 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
-	 * Gets an attribute's value.
+	 * Gets an attribute’s value.
 	 *
-	 * @param string $name
+	 * @param string $name         The attribute’s name.
 	 * @param bool   $flattenValue
 	 *
 	 * @return mixed
@@ -435,7 +435,8 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
-	 * We override the parent method so we can log any attributes that failed validation.
+	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
+	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors

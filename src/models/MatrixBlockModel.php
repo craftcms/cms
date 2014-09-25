@@ -30,7 +30,7 @@ class MatrixBlockModel extends BaseElementModel
 	// =========================================================================
 
 	/**
-	 * Returns the field layout used by this element.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -45,7 +45,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the locale IDs this element is available in.
+	 * @inheritDoc BaseElementModel::getLocales()
 	 *
 	 * @return array
 	 */
@@ -135,7 +135,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the name of the table this element's content is stored in.
+	 * @inheritDoc BaseElementModel::getContentTable()
 	 *
 	 * @return string
 	 */
@@ -145,7 +145,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the field column prefix this element's content uses.
+	 * @inheritDoc BaseElementModel::getFieldColumnPrefix()
 	 *
 	 * @return string
 	 */
@@ -168,6 +168,8 @@ class MatrixBlockModel extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

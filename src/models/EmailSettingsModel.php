@@ -17,9 +17,9 @@ class EmailSettingsModel extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Declares the validation rules.
+	 * @inheritDoc BaseModel::rules()
 	 *
-	 * @return array The array of validation rules.
+	 * @return array
 	 */
 	public function rules()
 	{
@@ -65,6 +65,8 @@ class EmailSettingsModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

@@ -17,6 +17,8 @@ class TaskRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,6 +27,8 @@ class TaskRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -38,6 +42,8 @@ class TaskRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::behaviors()
+	 *
 	 * @return array
 	 */
 	public function behaviors()
@@ -48,6 +54,8 @@ class TaskRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::scopes()
+	 *
 	 * @return array
 	 */
 	public function scopes()
@@ -61,6 +69,8 @@ class TaskRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

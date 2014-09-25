@@ -17,6 +17,8 @@ class StructureElementRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,6 +27,8 @@ class StructureElementRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -36,6 +40,8 @@ class StructureElementRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -50,6 +56,8 @@ class StructureElementRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::behaviors()
+	 *
 	 * @return array
 	 */
 	public function behaviors()
@@ -63,6 +71,8 @@ class StructureElementRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

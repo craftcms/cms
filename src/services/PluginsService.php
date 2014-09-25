@@ -848,8 +848,8 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin = new $nsClass;
 
-		// Make sure the plugin implements the BasePlugin abstract class
-		if (!$plugin instanceof BasePlugin)
+		// Make sure the plugin implements the IPlugin interface
+		if (!$plugin instanceof IPlugin)
 		{
 			return null;
 		}

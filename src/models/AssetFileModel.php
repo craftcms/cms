@@ -114,7 +114,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Gets an attribute's value.
+	 * @inheritDoc BaseModel::getAttribute()
 	 *
 	 * @param string $name
 	 * @param bool   $flattenValue
@@ -139,7 +139,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Return the file's field layout.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -183,7 +183,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns whether the current user can edit the element.
+	 * @inheritDoc BaseElementModel::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -253,7 +253,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Get the thumb's URL.
+	 * @inheritDoc BaseElementModel::getThumbUrl()
 	 *
 	 * @param int $size
 	 *
@@ -272,7 +272,7 @@ class AssetFileModel extends BaseElementModel
 	}
 
 	/**
-	 * Get the icons URL.
+	 * @inheritDoc BaseElementModel::getIconUrl()
 	 *
 	 * @param int $size
 	 *
@@ -358,6 +358,8 @@ class AssetFileModel extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

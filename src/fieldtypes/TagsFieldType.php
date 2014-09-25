@@ -46,7 +46,7 @@ class TagsFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria

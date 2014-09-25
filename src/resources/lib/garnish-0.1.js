@@ -891,6 +891,7 @@ Garnish.Base = Base.extend({
 			{
 				(function(elem)
 				{
+					// window is the only element that natively supports a resize event
 					if (elem == window)
 					{
 						return;
@@ -898,8 +899,13 @@ Garnish.Base = Base.extend({
 
 					// IE < 11 had a proprietary 'resize' event and 'attachEvent' method.
 					// Conveniently both dropped in 11.
+					if (document.attachEvent)
+					{
+						return;
+					}
 
-					if (!document.attachEvent && !elem.__resizeTriggers__)
+					// Is this the first resize listener added to this element?
+					if (!elem.__resizeTrigger__)
 					{
 						// The element must be relative, absolute, or fixed
 						if (getComputedStyle(elem).position == 'static')
@@ -907,27 +913,27 @@ Garnish.Base = Base.extend({
 							elem.style.position = 'relative';
 						}
 
-						var $resizeTriggers = $(
-							'<div class="resize-triggers">' +
-								'<div class="expand-trigger"><div></div></div>' +
-								'<div class="contract-trigger"></div>' +
-							'</div>'
-						).prependTo(elem);
-
-						elem.__resizeLast__ = {};
-						elem.__resizeTriggers__ = $resizeTriggers[0];
-
-						resetTriggers(elem);
-						elem.addEventListener('scroll', scrollListener, true);
+						var obj = elem.__resizeTrigger__ = document.createElement('object');
+						obj.className = 'resize-trigger';
+						obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
+						obj.__resizeElement__ = $(elem);
+						obj.onload = objectLoad;
+						obj.type = 'text/html';
+						obj.__resizeElement__.prepend(obj);
+						obj.data = 'about:blank';
 
 						// Listen for window resizes too
 						Garnish.$win.on('resize', function()
 						{
-							scrollListener.apply(elem);
+							// Has the object been loaded yet?
+							if (obj.contentDocument)
+							{
+								resizeListener({ target: obj.contentDocument.defaultView });
+							}
 						});
 
 						// Avoid a top margin on the next element
-						$resizeTriggers.next().addClass('first');
+						$(obj).next().addClass('first');
 					}
 				})($elem[i]);
 			}
@@ -951,75 +957,39 @@ Garnish.Base = Base.extend({
 	}
 });
 
-/**
- * Used by our resize detection script
- */
-if (!document.attachEvent)
+// Resize event helper functions
+// =============================================================================
+
+function resizeListener(e)
 {
-	var requestFrame = (function()
+	var win = (e.target || e.srcElement);
+
+	// Ignore if there's no resize trigger yet
+	if (typeof win.__resizeTrigger__ == typeof undefined)
 	{
-		var raf = window.requestAnimationFrame ||
-				  window.mozRequestAnimationFrame ||
-				  window.webkitRequestAnimationFrame ||
-				  function(fn){ return window.setTimeout(fn, 20); };
-
-		  return function(fn){ return raf(fn); };
-	})();
-
-	var cancelFrame = (function()
-	{
-		var cancel = window.cancelAnimationFrame ||
-					 window.mozCancelAnimationFrame ||
-					 window.webkitCancelAnimationFrame ||
-					 window.clearTimeout;
-
-		return function(id){ return cancel(id); };
-	})();
-
-	var resetTriggers = function(elem)
-	{
-		var triggers    = elem.__resizeTriggers__,
-			expand      = triggers.firstElementChild,
-			contract    = triggers.lastElementChild,
-			expandChild = expand.firstElementChild;
-
-		contract.scrollLeft = contract.scrollWidth;
-		contract.scrollTop  = contract.scrollHeight;
-
-		expandChild.style.width  = expand.offsetWidth + 1 + 'px';
-		expandChild.style.height = expand.offsetHeight + 1 + 'px';
-
-		expand.scrollLeft = expand.scrollWidth;
-		expand.scrollTop  = expand.scrollHeight;
+		return;
 	}
 
-	var checkTriggers = function(elem)
+	// Ignore if the size hasn't changed
+	if (
+		typeof win.__lastOffsetWidth__ != typeof undefined &&
+		win.__resizeTrigger__.prop('offsetWidth') == win.__lastOffsetWidth__ &&
+		win.__resizeTrigger__.prop('offsetHeight') == win.__lastOffsetHeight__
+	)
 	{
-		return elem.offsetWidth  != elem.__resizeLast__.width ||
-			   elem.offsetHeight != elem.__resizeLast__.height;
+		return;
 	}
 
-	var scrollListener = function(ev)
-	{
-		var elem = this;
-		resetTriggers(elem);
+	win.__lastOffsetWidth__ = win.__resizeTrigger__.prop('offsetWidth');
+	win.__lastOffsetHeight__ = win.__resizeTrigger__.prop('offsetHeight');
 
-		if (elem.__resizeRAF__)
-		{
-			cancelFrame(elem.__resizeRAF__);
-		}
+	win.__resizeTrigger__.trigger('resize');
+}
 
-		elem.__resizeRAF__ = requestFrame(function()
-		{
-			if (checkTriggers(elem))
-			{
-				elem.__resizeLast__.width  = elem.offsetWidth;
-				elem.__resizeLast__.height = elem.offsetHeight;
-
-				$(elem).trigger('resize');
-			}
-		});
-	}
+function objectLoad(e)
+{
+	this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
+	this.contentDocument.defaultView.addEventListener('resize', resizeListener);
 }
 
 
@@ -1994,8 +1964,11 @@ Garnish.DragDrop = Garnish.Drag.extend({
 		{
 			(function($draggeeHelper)
 			{
-				$draggeeHelper.fadeOut('fast', function() {
-					$draggeeHelper.remove();
+				$draggeeHelper.velocity('fadeOut', {
+					duration: 'fast',
+					complete: function() {
+						$draggeeHelper.remove();
+					}
 				});
 			})(this.helpers[i]);
 		}
@@ -2703,7 +2676,7 @@ Garnish.LightSwitch = Garnish.Base.extend({
 
 	turnOn: function()
 	{
-		this.$innerContainer.stop().velocity({marginLeft: 0}, 'fast');
+		this.$innerContainer.velocity('stop').velocity({marginLeft: 0}, 'fast');
 		this.$input.val(Garnish.Y_AXIS);
 		this.on = true;
 		this.onChange();
@@ -2712,19 +2685,19 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		this.$toggleTarget.height('auto');
 		var height = this.$toggleTarget.height();
 		this.$toggleTarget.height(0);
-		this.$toggleTarget.stop().velocity({height: height}, 'fast', $.proxy(function() {
+		this.$toggleTarget.velocity('stop').velocity({height: height}, 'fast', $.proxy(function() {
 			this.$toggleTarget.height('auto');
 		}, this));
 	},
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().velocity({marginLeft: Garnish.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.velocity('stop').velocity({marginLeft: Garnish.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.onChange();
 
-		this.$toggleTarget.stop().velocity({height: 0}, 'fast');
+		this.$toggleTarget.velocity('stop').velocity({height: 0}, 'fast');
 	},
 
 	toggle: function(ev)
@@ -2996,14 +2969,14 @@ Garnish.Menu = Garnish.Base.extend({
 			this.setPositionRelativeToTrigger();
 		}
 
-		this.$container.fadeIn(50);
+		this.$container.velocity('fadeIn', { duration: 50 });
 
 		Garnish.escManager.register(this, 'hide');
 	},
 
 	hide: function()
 	{
-		this.$container.fadeOut('fast');
+		this.$container.velocity('fadeOut', { duration: 'fast' });
 
 		Garnish.escManager.unregister(this);
 
@@ -3725,8 +3698,10 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 			this.updateSizeAndPosition();
 
-			this.$shade.fadeIn(50);
-			this.$container.delay(50).fadeIn($.proxy(this, 'onFadeIn'));
+			this.$shade.velocity('fadeIn', { duration: 50 });
+			this.$container.delay(50).velocity('fadeIn', {
+				complete: $.proxy(this, 'onFadeIn')
+			});
 
 			if (this.settings.hideOnShadeClick)
 			{
@@ -3770,8 +3745,11 @@ Garnish.Modal = Garnish.Base.extend({
 
 		if (this.$container)
 		{
-			this.$container.fadeOut('fast');
-			this.$shade.fadeOut('fast', $.proxy(this, 'onFadeOut'));
+			this.$container.velocity('fadeOut', { duration: 'fast' });
+			this.$shade.velocity('fadeOut', {
+				duration: 'fast',
+				complete: $.proxy(this, 'onFadeOut')
+			});
 
 			if (this.settings.hideOnShadeClick)
 			{
@@ -4055,13 +4033,19 @@ Garnish.NiceText = Garnish.Base.extend({
 
 	showHint: function()
 	{
-		this.$hint.fadeIn(Garnish.NiceText.hintFadeDuration);
+		this.$hint.velocity('fadeIn', {
+			complete: Garnish.NiceText.hintFadeDuration
+		});
+
 		this.showingHint = true;
 	},
 
 	hideHint: function()
 	{
-		this.$hint.fadeOut(Garnish.NiceText.hintFadeDuration);
+		this.$hint.velocity('fadeOut', {
+			complete: Garnish.NiceText.hintFadeDuration
+		});
+
 		this.showingHint = false;
 	},
 

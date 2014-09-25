@@ -528,6 +528,16 @@ class Image
 				$normalizedQuality = round(($quality * 9) / 100);
 				$normalizedQuality = 9 - $normalizedQuality;
 
+				if ($normalizedQuality < 0)
+				{
+					$normalizedQuality = 0;
+				}
+
+				if ($normalizedQuality > 9)
+				{
+					$normalizedQuality = 9;
+				}
+
 				return array('png_compression_level' => $normalizedQuality, 'flatten' => false);
 			}
 

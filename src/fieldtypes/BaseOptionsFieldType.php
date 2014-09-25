@@ -30,7 +30,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -49,7 +49,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc BaseElementFieldType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -93,7 +93,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
+	 * @inheritDoc ISavableComponentType::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -111,7 +111,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the field value for use.
+	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -170,7 +170,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	abstract protected function getOptionsSettingsLabel();
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */

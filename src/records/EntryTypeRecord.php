@@ -17,6 +17,8 @@ class EntryTypeRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,6 +27,8 @@ class EntryTypeRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -36,6 +40,8 @@ class EntryTypeRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -47,7 +53,7 @@ class EntryTypeRecord extends BaseRecord
 	}
 
 	/**
-	 * Returns this model's validation rules.
+	 * @inheritDoc BaseRecord::rules()
 	 *
 	 * @return array
 	 */
@@ -67,6 +73,8 @@ class EntryTypeRecord extends BaseRecord
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

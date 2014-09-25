@@ -30,7 +30,7 @@ class SectionLocaleModel extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Returns this model's validation rules.
+	 * @inheritDoc BaseModel::rules()
 	 *
 	 * @return array
 	 */
@@ -55,6 +55,8 @@ class SectionLocaleModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

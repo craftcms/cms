@@ -27,7 +27,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Returns the name of the source type.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Returns the component's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -49,7 +49,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
+	 * @inheritDoc ISavableComponentType::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -65,9 +65,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Starts an indexing session.
+	 * @inheritDoc BaseAssetSourceType::startIndex()
 	 *
-	 * @param string $sessionId Indexing session id.
+	 * @param string $sessionId
 	 *
 	 * @return array
 	 */
@@ -143,10 +143,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Process an indexing session.
+	 * @inheritDoc BaseAssetSourceType::processIndex()
 	 *
-	 * @param string $sessionId Indexing session id.
-	 * @param int    $offset    The offset of the item to index.
+	 * @param string $sessionId
+	 * @param int    $offset
 	 *
 	 * @return mixed
 	 */
@@ -192,12 +192,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and Transform Index using the
-	 * provided path to the source image.
+	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel that the transform belongs to.
-	 * @param AssetTransformIndexModel $index       The handle of the transform.
-	 * @param string                   $sourceImage The source image.
+	 * @param AssetFileModel           $file
+	 * @param AssetTransformIndexModel $index
+	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
@@ -209,9 +208,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get the image source path
+	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFileModel $file The file to get the source path for.
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
@@ -221,9 +220,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Make a local copy of the file and return the path to it.
+	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFileModel $file The file to get a local copy of.
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
@@ -238,7 +237,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if a physical folder exists.
+	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
 	 * @param AssetFolderModel $parentPath
 	 * @param string           $folderName
@@ -251,7 +250,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return the source's base URL.
+	 * @inheritDoc BaseAssetSourceType::getBaseUrl()
 	 *
 	 * @return string
 	 */
@@ -278,11 +277,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Insert a file from path in folder.
+	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
-	 * @param AssetFolderModel $folder   The folder to insert the files into.
-	 * @param string           $filePath The location of the file to insert.
-	 * @param string           $fileName The filename to use.
+	 * @param AssetFolderModel $folder
+	 * @param string           $filePath
+	 * @param string           $fileName
 	 *
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
@@ -344,10 +343,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a name replacement for a filename already taken in a folder.
+	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
-	 * @param AssetFolderModel $folder   The folder to check.
-	 * @param string           $fileName The filename to check.
+	 * @param AssetFolderModel $folder
+	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
@@ -383,7 +382,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */
@@ -411,9 +410,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete just the source file for an Assets File.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFile()
 	 *
-	 * @param string $subpath The subpath of the file to delete within the source.
+	 * @param string $subpath
 	 *
 	 * @return null
 	 */
@@ -423,12 +422,12 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Move a file in source.
+	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFileModel   $file         The file to move.
-	 * @param AssetFolderModel $targetFolder The folder where to move the file.
-	 * @param string           $fileName     The filename to use.
-	 * @param bool             $overwrite    If true, will overwrite target
+	 * @param AssetFileModel   $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string           $fileName
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
@@ -507,10 +506,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Copy a physical file inside the source.
+	 * @inheritDoc BaseAssetSourceType::copySourceFile()
 	 *
-	 * @param string $sourceUri The source URI of the file.
-	 * @param string $targetUri The target URI of the file.
+	 * @param string $sourceUri
+	 * @param string $targetUri
 	 *
 	 * @return bool
 	 */
@@ -520,10 +519,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Create a physical folder, return true on success.
+	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
-	 * @param AssetFolderModel $parentFolder The folder in which to create it.
-	 * @param string           $folderName   The name of the new folder.
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
@@ -538,10 +537,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Rename a source folder.
+	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
-	 * @param AssetFolderModel $folder  The folder to rename.
-	 * @param string           $newName The new name.
+	 * @param AssetFolderModel $folder
+	 * @param string           $newName
 	 *
 	 * @return bool
 	 */
@@ -555,10 +554,10 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete the source folder.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
-	 * @param AssetFolderModel $parentFolder The parent folder.
-	 * @param string           $folderName   THe folder to delete.
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
@@ -568,9 +567,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Determines if a file can be moved internally from original source.
+	 * @inheritDoc BaseAssetSourceType::canMoveFileFrom()
 	 *
-	 * @param BaseAssetSourceType $originalSource The source with whom to test.
+	 * @param BaseAssetSourceType $originalSource
 	 *
 	 * @return mixed
 	 */

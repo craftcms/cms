@@ -18,7 +18,7 @@ class CategoryElementType extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * Returns the element type name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -28,7 +28,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has content.
+	 * @inheritDoc IElementType::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -38,7 +38,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has titles.
+	 * @inheritDoc IElementType::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * @inheritDoc IElementType::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -58,7 +58,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type can have statuses.
+	 * @inheritDoc IElementType::hasStatuses()
 	 *
 	 * @return bool
 	 */
@@ -68,7 +68,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns this element type's sources.
+	 * @inheritDoc IElementType::getSources()
 	 *
 	 * @param string|null $context
 	 *
@@ -103,7 +103,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the element index HTML.
+	 * @inheritDoc IElementType::getIndexHtml()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 * @param array                $disabledElementIds
@@ -140,7 +140,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the attributes that can be shown/sorted by in table views.
+	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -154,7 +154,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom element criteria attributes for this element type.
+	 * @inheritDoc IElementType::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -168,7 +168,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an element query targeting elements of this type.
+	 * @inheritDoc IElementType::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -196,7 +196,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an element model based on a query result.
+	 * @inheritDoc IElementType::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -208,7 +208,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the HTML for an editor HUD for the given element.
+	 * @inheritDoc IElementType::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -248,7 +248,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Saves a given element.
+	 * @inheritDoc IElementType::saveElement()
 	 *
 	 * @param BaseElementModel $element
 	 * @param array            $params
@@ -266,7 +266,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Routes the request when the URI matches an element.
+	 * @inheritDoc IElementType::routeRequestForMatchedElement()
 	 *
 	 * @param BaseElementModel
 	 *
@@ -295,7 +295,7 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * Performs actions after an element has been moved within a structure.
+	 * @inheritDoc IElementType::onAfterMoveElementInStructure()
 	 *
 	 * @param BaseElementModel $element
 	 * @param int              $structureId
