@@ -462,7 +462,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return int
 	 */
-	public function createTable($table, $columns, $options=null, $addIdColumn = true, $addAuditColumns = true)
+	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
 		$table = $this->getConnection()->addTablePrefix($table);
 
