@@ -17,16 +17,22 @@ interface ITask extends ISavableComponentType
 	// =========================================================================
 
 	/**
+	 * Returns the default description for this task.
+	 *
 	 * @return string
 	 */
 	public function getDescription();
 
 	/**
+	 * Returns the total number of steps for this task.
+	 *
 	 * @return int
 	 */
 	public function getTotalSteps();
 
 	/**
+	 * Runs a task step.
+	 *
 	 * @param int $step
 	 *
 	 * @return bool

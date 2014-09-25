@@ -17,7 +17,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	// =========================================================================
 
 	/**
-	 * The type of component this is.
+	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
 	 *
 	 * @var string
 	 */
@@ -27,7 +27,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	// =========================================================================
 
 	/**
-	 * Returns the tool's icon value.
+	 * @inheritDoc ITool::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * Returns the tool's options HTML.
+	 * @inheritDoc ITool::getOptionsHtml()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * Returns the tool's button label.
+	 * @inheritDoc ITool::getButtonLabel()
 	 *
 	 * @return string
 	 */
@@ -57,7 +57,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * Performs the tool's action.
+	 * @inheritDoc ITool::performAction()
 	 *
 	 * @param array $params
 	 *

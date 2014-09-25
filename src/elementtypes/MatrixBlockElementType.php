@@ -18,7 +18,7 @@ class MatrixBlockElementType extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * Returns the element type name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -28,7 +28,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has content.
+	 * @inheritDoc IElementType::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -38,7 +38,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * @inheritDoc IElementType::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom element criteria attributes for this element type.
+	 * @inheritDoc IElementType::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -64,7 +64,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the content table name that should be joined in for an elements query.
+	 * @inheritDoc IElementType::getContentTableForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -93,7 +93,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the field column names that should be selected from the content table.
+	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -122,7 +122,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an element query targeting elements of this type.
+	 * @inheritDoc IElementType::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -158,7 +158,7 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an element model based on a query result.
+	 * @inheritDoc IElementType::populateElementModel()
 	 *
 	 * @param array $row
 	 *

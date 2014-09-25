@@ -27,7 +27,7 @@ class GetHelpWidget extends BaseWidget
 	// =========================================================================
 
 	/**
-	 * Returns the type of widget this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's title.
+	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */
@@ -70,6 +70,8 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IComponentType::isSelectable()
+	 *
 	 * @return bool
 	 */
 	public function isSelectable()

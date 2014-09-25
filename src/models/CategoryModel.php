@@ -25,7 +25,7 @@ class CategoryModel extends BaseElementModel
 	// =========================================================================
 
 	/**
-	 * Returns the field layout used by this element.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -40,7 +40,7 @@ class CategoryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the URL format used to generate this element's URL.
+	 * @inheritDoc BaseElementModel::getUrlFormat()
 	 *
 	 * @return string|null
 	 */
@@ -67,7 +67,7 @@ class CategoryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns whether the current user can edit the element.
+	 * @inheritDoc BaseElementModel::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -93,6 +93,8 @@ class CategoryModel extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

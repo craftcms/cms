@@ -17,18 +17,24 @@ interface ISavableComponentType extends IComponentType
 	// =========================================================================
 
 	/**
+	 * Gets the settings.
+	 *
 	 * @return BaseModel
 	 */
 	public function getSettings();
 
 	/**
-	 * @param array $values
+	 * Sets the setting values.
+	 *
+	 * @param array|BaseModel $values
 	 *
 	 * @return null
 	 */
 	public function setSettings($values);
 
 	/**
+	 * Preps the settings before they're saved to the database.
+	 *
 	 * @param array $settings
 	 *
 	 * @return array
@@ -36,6 +42,8 @@ interface ISavableComponentType extends IComponentType
 	public function prepSettings($settings);
 
 	/**
+	 * Returns the component's settings HTML.
+	 *
 	 * @return string|null
 	 */
 	public function getSettingsHtml();

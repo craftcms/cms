@@ -32,7 +32,7 @@ class EntryModel extends BaseElementModel
 	// =========================================================================
 
 	/**
-	 * Returns the field layout used by this element.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -47,7 +47,7 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the locale IDs this element is available in.
+	 * @inheritDoc BaseElementModel::getLocales()
 	 *
 	 * @return array
 	 */
@@ -64,7 +64,7 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the URL format used to generate this element's URL.
+	 * @inheritDoc BaseElementModel::getUrlFormat()
 	 *
 	 * @return string|null
 	 */
@@ -155,7 +155,7 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's status.
+	 * @inheritDoc BaseElementModel::getStatus()
 	 *
 	 * @return string|null
 	 */
@@ -187,7 +187,7 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns whether the current user can edit the element.
+	 * @inheritDoc BaseElementModel::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -203,7 +203,7 @@ class EntryModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's CP edit URL.
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */
@@ -241,6 +241,8 @@ class EntryModel extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

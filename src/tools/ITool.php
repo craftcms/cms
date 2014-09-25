@@ -17,21 +17,29 @@ interface ITool extends IComponentType
 	// =========================================================================
 
 	/**
+	 * @inheritDoc ITool::getIconValue()
+	 *
 	 * @return string
 	 */
 	public function getIconValue();
 
 	/**
+	 * Returns the tool's options HTML.
+	 *
 	 * @return string
 	 */
 	public function getOptionsHtml();
 
 	/**
+	 * Returns the tool's button label.
+	 *
 	 * @return string
 	 */
 	public function getButtonLabel();
 
 	/**
+	 * Performs the tool's action.
+	 *
 	 * @param array $params
 	 *
 	 * @return array

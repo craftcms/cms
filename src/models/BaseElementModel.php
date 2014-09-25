@@ -159,7 +159,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Populates a new model instance with a given set of attributes.
+	 * @inheritDoc BaseModel::populateModel()
 	 *
 	 * @param mixed $values
 	 *
@@ -755,7 +755,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Gets an attribute's value.
+	 * @inheritDoc BaseModel::getAttribute()
 	 *
 	 * @param string $name
 	 * @param bool   $flattenValue
@@ -1077,6 +1077,8 @@ abstract class BaseElementModel extends BaseModel
 
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

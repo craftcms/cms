@@ -17,6 +17,11 @@ class AccountSettingsModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
+	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
+	 *
+	 * In addition, we check that the username does not have any whitespace in it.
+	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
 	 *
@@ -37,6 +42,8 @@ class AccountSettingsModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

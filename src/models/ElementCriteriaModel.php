@@ -164,7 +164,9 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Clears the cached values when a new attribute is set.
+	 * Sets an attribute's value.
+	 *
+	 * In addition, will clears the cached values when a new attribute is set.
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -196,7 +198,7 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	}
 
 	/**
-	 * Returns the element type.
+	 * @inheritDoc BaseElementModel::getElementType()
 	 *
 	 * @return BaseElementType
 	 */
@@ -407,6 +409,8 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

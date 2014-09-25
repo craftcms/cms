@@ -17,11 +17,15 @@ interface IFieldType extends ISavableComponentType
 	// =========================================================================
 
 	/**
+	 * Returns the content attribute config.
+	 *
 	 * @return mixed
 	 */
 	public function defineContentAttribute();
 
 	/**
+	 * Returns the field's input HTML.
+	 *
 	 * @param string $name
 	 * @param mixed  $value
 	 *
@@ -30,6 +34,8 @@ interface IFieldType extends ISavableComponentType
 	public function getInputHtml($name, $value);
 
 	/**
+	 * Returns the input value as it should be saved to the database.
+	 *
 	 * @param mixed $value
 	 *
 	 * @return mixed
@@ -37,6 +43,9 @@ interface IFieldType extends ISavableComponentType
 	public function prepValueFromPost($value);
 
 	/**
+	 * Validates the value beyond the checks that were assumed based on the content attribute.  Returns 'true' or any
+	 * custom validation errors.
+	 *
 	 * @param mixed $value
 	 *
 	 * @return true|string|array
@@ -44,6 +53,8 @@ interface IFieldType extends ISavableComponentType
 	public function validate($value);
 
 	/**
+	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
+	 *
 	 * @param mixed $value
 	 *
 	 * @return string
@@ -51,31 +62,43 @@ interface IFieldType extends ISavableComponentType
 	public function getSearchKeywords($value);
 
 	/**
+	 * Performs any actions before a field is saved.
+	 *
 	 * @return null
 	 */
 	public function onBeforeSave();
 
 	/**
+	 * Performs any actions after a field is saved.
+	 *
 	 * @return null
 	 */
 	public function onAfterSave();
 
 	/**
+	 * Performs any actions before a field is deleted.
+	 *
 	 * @return null
 	 */
 	public function onBeforeDelete();
 
 	/**
+	 * Performs any actions after a field is deleted.
+	 *
 	 * @return null
 	 */
 	public function onAfterDelete();
 
 	/**
+	 * Performs any additional actions after the element has been saved.
+	 *
 	 * @return null
 	 */
 	public function onAfterElementSave();
 
 	/**
+	 * @inheritDoc IFieldType::prepValue()
+	 *
 	 * @param mixed $value
 	 *
 	 * @return mixed
@@ -83,6 +106,8 @@ interface IFieldType extends ISavableComponentType
 	public function prepValue($value);
 
 	/**
+	 * Modifies an element query that's filtering by this field.
+	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
 	 *

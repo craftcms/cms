@@ -45,7 +45,7 @@ class CategoryGroupModel extends BaseModel
 	}
 
 	/**
-	 * Returns the section's locale models
+	 * Returns the category's locale models.
 	 *
 	 * @return array
 	 */
@@ -82,6 +82,8 @@ class CategoryGroupModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

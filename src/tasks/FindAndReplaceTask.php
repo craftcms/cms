@@ -35,7 +35,7 @@ class FindAndReplaceTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -50,7 +50,7 @@ class FindAndReplaceTask extends BaseTask
 	}
 
 	/**
-	 * Gets the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -99,7 +99,7 @@ class FindAndReplaceTask extends BaseTask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
 	 *
@@ -157,7 +157,7 @@ class FindAndReplaceTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */

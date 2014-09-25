@@ -17,7 +17,7 @@ class ColorFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class ColorFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,7 +37,7 @@ class ColorFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -60,7 +60,7 @@ class ColorFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns static HTML for the field's value.
+	 * @inheritDoc BaseFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
 	 *

@@ -17,7 +17,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	// =========================================================================
 
 	/**
-	 * The type of component this is.
+	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
 	 *
 	 * @var string
 	 */
@@ -41,7 +41,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	// =========================================================================
 
 	/**
-	 * Returns whether this component should be selectable when choosing a component of this type.
+	 * @inheritDoc IComponentType::isSelectable()
 	 *
 	 * @return bool
 	 */
@@ -58,7 +58,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Returns the widget's title.
+	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string
 	 */
@@ -69,7 +69,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Returns the widget's colspan.
+	 * @inheritDoc IWidget::getColspan()
 	 *
 	 * @return int
 	 */
@@ -79,7 +79,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */

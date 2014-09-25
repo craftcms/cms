@@ -62,7 +62,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -72,7 +72,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -82,7 +82,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -109,8 +109,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the content attribute.  Returns 'true' or any
-	 * custom validation errors.
+	 * @inheritDoc IFieldType::validate()
 	 *
 	 * @param array $value
 	 *
@@ -143,7 +142,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the field value for use.
+	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -195,7 +194,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
@@ -209,7 +208,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field, based on the prepped post data.
+	 * @inheritDoc IFieldType::getSearchKeywords()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -228,7 +227,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Performs any additional actions after the element has been saved.
+	 * @inheritDoc IFieldType::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -243,7 +242,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns static HTML for the field's value.
+	 * @inheritDoc BaseFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
 	 *
@@ -430,7 +429,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */

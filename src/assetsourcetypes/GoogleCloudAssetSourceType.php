@@ -70,7 +70,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Make a local copy of the file and return the path to it.
+	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
 	 * @param AssetFileModel $file
 	 *
@@ -88,7 +88,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Starts an indexing session.
+	 * @inheritDoc BaseAssetSourceType::startIndex()
 	 *
 	 * @param $sessionId
 	 *
@@ -190,7 +190,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Process an indexing session.
+	 * @inheritDoc BaseAssetSourceType::processIndex()
 	 *
 	 * @param $sessionId
 	 * @param $offset
@@ -246,7 +246,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Returns the name of the source type.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -256,7 +256,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Returns the component's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -295,7 +295,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and handle using the provided path to the source image.
+	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
 	 * @param AssetFileModel $file
 	 *
@@ -321,7 +321,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if a physical folder exists.
+	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
 	 * @param string $parentPath
 	 * @param string $folderName
@@ -335,7 +335,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return the source's base URL.
+	 * @inheritDoc BaseAssetSourceType::getBaseUrl()
 	 *
 	 * @return string
 	 */
@@ -345,7 +345,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Return true if the source is a remote source.
+	 * @inheritDoc BaseAssetSourceType::isRemote()
 	 *
 	 * @return bool
 	 */
@@ -358,7 +358,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	// =========================================================================
 
 	/**
-	 * Defines the settings.
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
 	 * @return array
 	 */
@@ -375,7 +375,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Insert a file from path in folder.
+	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param                  $filePath
@@ -419,7 +419,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a name replacement for a filename already taken in a folder.
+	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param                  $fileName
@@ -454,9 +454,9 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete just the source file for an Assets File.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFile()
 	 *
-	 * @param string $subpath The subpath of the file to delete within the source
+	 * @param string $subpath
 	 *
 	 * @return void
 	 */
@@ -467,12 +467,12 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Move a file in source.
+	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
-	 * @param bool             $overwrite If true, will overwrite target destination.
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
@@ -546,7 +546,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Create a physical folder, return true on success.
+	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
@@ -560,7 +560,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Rename a source folder.
+	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param                  $newName
@@ -589,7 +589,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Delete the source folder.
+	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
 	 * @param AssetFolderModel $parentFolder
 	 * @param                  $folderName
@@ -611,11 +611,11 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Put an image transform for the File and Transform Index using the provided path to the source image.
+	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel that the transform belongs to
-	 * @param AssetTransformIndexModel $index       The handle of the transform.
-	 * @param string                   $sourceImage The source image.
+	 * @param AssetFileModel           $file
+	 * @param AssetTransformIndexModel $index
+	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
@@ -655,7 +655,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Determines if a file can be moved internally from original source.
+	 * @inheritDoc BaseAssetSourceType::canMoveFileFrom()
 	 *
 	 * @param BaseAssetSourceType $originalSource
 	 *
@@ -677,7 +677,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Copy a physical file inside the source.
+	 * @inheritDoc BaseAssetSourceType::copySourceFile()
 	 *
 	 * @param $sourceUri
 	 * @param $targetUri

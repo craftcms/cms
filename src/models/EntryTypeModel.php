@@ -37,7 +37,7 @@ class EntryTypeModel extends BaseModel
 	}
 
 	/**
-	 * Returns the entry type's CP edit URL.
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
 	 *
 	 * @return string
 	 */
@@ -63,6 +63,8 @@ class EntryTypeModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

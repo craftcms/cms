@@ -30,6 +30,8 @@ class AssetIndexDataModel extends BaseComponentModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

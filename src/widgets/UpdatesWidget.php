@@ -27,7 +27,7 @@ class UpdatesWidget extends BaseWidget
 	// =========================================================================
 
 	/**
-	 * Returns the type of widget this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -37,6 +37,8 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IComponentType::isSelectable()
+	 *
 	 * @return bool
 	 */
 	public function isSelectable()
@@ -51,7 +53,7 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */

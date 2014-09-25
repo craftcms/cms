@@ -180,7 +180,7 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's status.
+	 * @inheritDoc BaseElementModel::getStatus()
 	 *
 	 * @return string|null
 	 */
@@ -205,7 +205,7 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the URL to the thumbnail for this user for a given size.
+	 * @inheritDoc BaseElementModel::getThumbUrl()
 	 *
 	 * @param int $size
 	 *
@@ -327,7 +327,7 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's CP edit URL.
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */
@@ -352,7 +352,7 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
-	 * Populates a new user instance with a given set of attributes.
+	 * @inheritDoc BaseModel::populateModel()
 	 *
 	 * @param mixed $attributes
 	 *
@@ -380,6 +380,11 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
+	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
+	 *
+	 * In addition, we check that the username does not have any whitespace in it.
+	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
 	 *
@@ -400,6 +405,8 @@ class UserModel extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

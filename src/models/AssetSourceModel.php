@@ -73,6 +73,8 @@ class AssetSourceModel extends BaseComponentModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

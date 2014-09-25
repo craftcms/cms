@@ -17,7 +17,7 @@ class ClearCachesTool extends BaseTool
 	// =========================================================================
 
 	/**
-	 * Returns the tool name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
-	 * Returns the tool's icon value.
+	 * @inheritDoc ITool::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
-	 * Returns the tool's options HTML.
+	 * @inheritDoc ITool::getOptionsHtml()
 	 *
 	 * @return string
 	 */
@@ -55,7 +55,7 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
-	 * Returns the tool's button label.
+	 * @inheritDoc ITool::getButtonLabel()
 	 *
 	 * @return string
 	 */
@@ -65,7 +65,7 @@ class ClearCachesTool extends BaseTool
 	}
 
 	/**
-	 * Performs the tool's action.
+	 * @inheritDoc ITool::performAction()
 	 *
 	 * @param array $params
 	 *

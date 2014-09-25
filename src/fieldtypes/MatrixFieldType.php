@@ -17,7 +17,7 @@ class MatrixFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,7 +37,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -77,7 +77,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
+	 * @inheritDoc ISavableComponentType::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -142,7 +142,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Performs any actions after a field is saved.
+	 * @inheritDoc IFieldType::onAfterSave()
 	 *
 	 * @return null
 	 */
@@ -152,7 +152,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Performs any actions before a field is deleted.
+	 * @inheritDoc IFieldType::onBeforeDelete()
 	 *
 	 * @return null
 	 */
@@ -162,7 +162,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the field value for use.
+	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -208,7 +208,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -251,7 +251,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the input value as it should be saved to the database.
+	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $data
 	 *
@@ -363,10 +363,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Validates the value beyond the checks that were assumed based on the
-	 * content attribute.
-	 *
-	 * Returns 'true' or any custom validation errors.
+	 * @inheritDoc IFieldType::validate()
 	 *
 	 * @param array $blocks
 	 *
@@ -415,8 +412,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the search keywords that should be associated with this field,
-	 * based on the prepped post data.
+	 * @inheritDoc IFieldType::getSearchKeywords()
 	 *
 	 * @param mixed $value
 	 *
@@ -459,7 +455,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Performs any additional actions after the element has been saved.
+	 * @inheritDoc IFieldType::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -469,7 +465,7 @@ class MatrixFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns static HTML for the field's value.
+	 * @inheritDoc BaseFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
 	 *
@@ -500,7 +496,7 @@ class MatrixFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the settings model.
+	 * @inheritDoc BaseSavableComponentType::getSettingsModel()
 	 *
 	 * @return BaseModel
 	 */

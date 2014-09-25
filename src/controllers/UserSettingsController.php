@@ -22,7 +22,7 @@ class UserSettingsController extends BaseController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * @inheritDoc BaseController::init()
 	 *
 	 * @throws HttpException
 	 * @return null

@@ -73,6 +73,8 @@ class BaseEntryRevisionModel extends EntryModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

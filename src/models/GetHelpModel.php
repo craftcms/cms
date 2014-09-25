@@ -17,6 +17,8 @@ class GetHelpModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::rules()
+	 *
 	 * @return array
 	 */
 	public function rules()
@@ -31,6 +33,8 @@ class GetHelpModel extends BaseModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
