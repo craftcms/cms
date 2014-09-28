@@ -121,7 +121,6 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-.go { white-space: nowrap; }
 .go:after { font-size: 11px; margin-top: -1px; @include padding-left(4px); color: $lighttextcolor;
 	body.ltr & { content: 'circlerarr'; }
 	body.rtl & { content: 'circlelarr'; }

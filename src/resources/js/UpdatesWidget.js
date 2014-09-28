@@ -76,7 +76,7 @@ Craft.UpdatesWidget = Garnish.Base.extend(
 			this.$body.html(
 				'<p class="centeralign">' +
 					updateText +
-					' <a class="go" href="'+Craft.getUrl('updates')+'">'+Craft.t('Go to Updates')+'</a>' +
+					' <a class="go nowrap" href="'+Craft.getUrl('updates')+'">'+Craft.t('Go to Updates')+'</a>' +
 				'</p>'
 			);
 		}

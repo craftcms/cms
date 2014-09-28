@@ -5,7 +5,7 @@
 		{% else %}
 			{{ "{total} updates available!"|t({ total: total }) }}
 		{% endif %}
-		<a class="go" href="{{ url('updates') }}">{{ "Go to Updates"|t }}</a>
+		<a class="go nowrap" href="{{ url('updates') }}">{{ "Go to Updates"|t }}</a>
 	</p>
 {% else %}
 	<p class="centeralign">{{ "Congrats! You’re up-to-date."|t }}</p>
