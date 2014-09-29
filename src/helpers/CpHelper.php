@@ -45,7 +45,7 @@ class CpHelper
 					if (craft()->updates->criticalCraftUpdateAvailable($updateModel->app->releases))
 					{
 						$alerts[] = Craft::t('There’s a critical @@@appName@@@ update available.') .
-							' <a class="go" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('Go to Updates').'</a>';
+							' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('Go to Updates').'</a>';
 					}
 				}
 			}
