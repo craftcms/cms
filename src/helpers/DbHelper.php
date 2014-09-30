@@ -340,53 +340,53 @@ class DbHelper
 	 * Parses a service param value to a DbCommand where condition.
 	 *
 	 * @param string       $column
-	 * @param string|array $values
+	 * @param string|array $value
 	 * @param array        &$params
 	 *
 	 * @return mixed
 	 */
-	public static function parseParam($column, $values, &$params)
+	public static function parseParam($column, $value, &$params)
 	{
-		// Need to do a strict check here in case $values = true
-		if ($values === 'not ')
+		// Need to do a strict check here in case $value = true
+		if ($value === 'not ')
 		{
 			return '';
 		}
 
 		$conditions = array();
 
-		$values = ArrayHelper::stringToArray($values);
+		$value = ArrayHelper::stringToArray($value);
 
-		if (!count($values))
+		if (!count($value))
 		{
 			return '';
 		}
 
-		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($values));
+		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($value));
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{
-			$join = array_shift($values);
+			$join = array_shift($value);
 		}
 		else
 		{
 			$join = 'or';
 		}
 
-		foreach ($values as $value)
+		foreach ($value as $val)
 		{
-			if ($value === null)
+			if ($val === null)
 			{
-				$value = ':empty:';
+				$val = ':empty:';
 			}
-			else if (StringHelper::toLowerCase($value) == ':notempty:')
+			else if (StringHelper::toLowerCase($val) == ':notempty:')
 			{
-				$value = 'not :empty:';
+				$val = 'not :empty:';
 			}
 
-			$operator = static::_parseParamOperator($value);
+			$operator = static::_parseParamOperator($val);
 
-			if (StringHelper::toLowerCase($value) == ':empty:')
+			if (StringHelper::toLowerCase($val) == ':empty:')
 			{
 				if ($operator == '=')
 				{
@@ -408,7 +408,7 @@ class DbHelper
 				}
 
 				$param = $paramKey.$i;
-				$params[$param] = trim($value);
+				$params[$param] = trim($val);
 				$conditions[] = $column.$operator.$param;
 			}
 		}
@@ -428,45 +428,45 @@ class DbHelper
 	 * Normalizes date params and then sends them off to parseParam().
 	 *
 	 * @param string                $column
-	 * @param string|array|DateTime $values
+	 * @param string|array|DateTime $value
 	 * @param array                 &$params
 	 *
 	 * @return mixed
 	 */
-	public static function parseDateParam($column, $values, &$params)
+	public static function parseDateParam($column, $value, &$params)
 	{
 		$normalizedValues = array();
 
-		$values = ArrayHelper::stringToArray($values);
+		$value = ArrayHelper::stringToArray($value);
 
-		if (!count($values))
+		if (!count($value))
 		{
 			return '';
 		}
 
-		if ($values[0] == 'and' || $values[0] == 'or')
+		if ($value[0] == 'and' || $value[0] == 'or')
 		{
-			$normalizedValues[] = $values[0];
-			array_shift($values);
+			$normalizedValues[] = $value[0];
+			array_shift($value);
 		}
 
-		foreach ($values as $value)
+		foreach ($value as $val)
 		{
-			if (is_string($value))
+			if (is_string($val))
 			{
-				$operator = static::_parseParamOperator($value);
+				$operator = static::_parseParamOperator($val);
 			}
 			else
 			{
 				$operator = '=';
 			}
 
-			if (!$value instanceof \DateTime)
+			if (!$val instanceof \DateTime)
 			{
-				$value = DateTime::createFromString($value, craft()->getTimeZone());
+				$val = DateTime::createFromString($val, craft()->getTimeZone());
 			}
 
-			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());
+			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
 		}
 
 		return static::parseParam($column, $normalizedValues, $params);
