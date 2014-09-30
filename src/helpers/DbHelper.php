@@ -337,11 +337,24 @@ class DbHelper
 	}
 
 	/**
-	 * Parses a service param value to a DbCommand where condition.
+	 * Parses a query param value and returns a {@link \CDbCommand::where()}-compatible condition.
 	 *
-	 * @param string       $column
-	 * @param string|array $value
-	 * @param array        &$params
+	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
+	 * string (via {@link ArrayHelper::stringToArray()}). If that is not desired behavior, you can escape the comma
+	 * with a backslash before it.
+	 *
+	 * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
+	 * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
+	 *
+	 * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
+	 * `'='` will be assumed.
+	 *
+	 * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
+	 * database values. (An “empty” value is either NULL or an empty string of text).
+	 *
+	 * @param string       $column  The database column that the param is targeting.
+	 * @param string|array $value   The param value(s).
+	 * @param array        &$params The {@link \CDbCommand::$params} array.
 	 *
 	 * @return mixed
 	 */
