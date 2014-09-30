@@ -339,13 +339,13 @@ class DbHelper
 	/**
 	 * Parses a service param value to a DbCommand where condition.
 	 *
-	 * @param string       $key
+	 * @param string       $column
 	 * @param string|array $values
 	 * @param array        &$params
 	 *
 	 * @return mixed
 	 */
-	public static function parseParam($key, $values, &$params)
+	public static function parseParam($column, $values, &$params)
 	{
 		// Need to do a strict check here in case $values = true
 		if ($values === 'not ')
@@ -390,17 +390,17 @@ class DbHelper
 			{
 				if ($operator == '=')
 				{
-					$conditions[] = array('or', $key.' is null', $key.' = ""');
+					$conditions[] = array('or', $column.' is null', $column.' = ""');
 				}
 				else
 				{
-					$conditions[] = array('and', $key.' is not null', $key.' != ""');
+					$conditions[] = array('and', $column.' is not null', $column.' != ""');
 				}
 			}
 			else
 			{
 				// Find a unique param name
-				$paramKey = ':'.str_replace('.', '', $key);
+				$paramKey = ':'.str_replace('.', '', $column);
 				$i = 1;
 				while (isset($params[$paramKey.$i]))
 				{
@@ -409,7 +409,7 @@ class DbHelper
 
 				$param = $paramKey.$i;
 				$params[$param] = trim($value);
-				$conditions[] = $key.$operator.$param;
+				$conditions[] = $column.$operator.$param;
 			}
 		}
 
@@ -427,13 +427,13 @@ class DbHelper
 	/**
 	 * Normalizes date params and then sends them off to parseParam().
 	 *
-	 * @param string                $key
+	 * @param string                $column
 	 * @param string|array|DateTime $values
 	 * @param array                 &$params
 	 *
 	 * @return mixed
 	 */
-	public static function parseDateParam($key, $values, &$params)
+	public static function parseDateParam($column, $values, &$params)
 	{
 		$normalizedValues = array();
 
@@ -469,7 +469,7 @@ class DbHelper
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());
 		}
 
-		return static::parseParam($key, $normalizedValues, $params);
+		return static::parseParam($column, $normalizedValues, $params);
 	}
 
 	// Private Methods
