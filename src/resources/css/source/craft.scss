@@ -556,8 +556,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 .element.hasthumb,
 .element.hasicon { @include padding-left(35px !important); }
-.thumbsview .element.hasthumb,
-.thumbsview .element.hasicon { @include padding-left(0 !important); }
+.elements .thumbsview .element.hasthumb,
+.elements .thumbsview .element.hasicon { @include padding-left(0 !important); }
 .element.hasthumb .elementthumb,
 .element.hasicon .elementicon { position: absolute; top: -1px; @include left(-1px); width: 30px; height: 30px; background-repeat: no-repeat; background-position: 50% 50%; }
 .element.hasthumb .elementthumb { border-radius: 3px;
@@ -586,13 +586,13 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.loading.removable .delete { display: none; }
 
 /* thumbs views */
-.thumbsview { @include margin(-14px, 0, 0, -14px); }
-.thumbsview li { @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; }
+.elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
+.elements .thumbsview li { @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; }
 
-.thumbsview .element { display: block; padding: 105px 0 5px !important; }
-.thumbsview .element .elementthumb,
-.thumbsview .element .elementicon { width: 100px; height: 100px; }
-.thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.elements .thumbsview .element { display: block; padding: 105px 0 5px !important; }
+.elements .thumbsview .element .elementthumb,
+.elements .thumbsview .element .elementicon { width: 100px; height: 100px; }
+.elements .thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* structures */
 .structure { position: relative; z-index: 1; }
