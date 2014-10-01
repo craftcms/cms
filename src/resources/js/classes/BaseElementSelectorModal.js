@@ -5,7 +5,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 {
 	elementType: null,
 	elementIndex: null,
-	elementSelect: null,
 
 	$body: null,
 	$selectBtn: null,
@@ -70,6 +69,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 						storageKey:         this.settings.storageKey,
 						criteria:           this.settings.criteria,
 						disabledElementIds: this.settings.disabledElementIds,
+						selectable:         true,
+						multiSelect:        this.settings.multiSelect,
+						onSelectionChange:  $.proxy(this, 'onSelectionChange'),
 						onUpdateElements:   $.proxy(this, 'onUpdateElements'),
 						onEnableElements:   $.proxy(this, 'onEnableElements'),
 						onDisableElements:  $.proxy(this, 'onDisableElements')
@@ -94,37 +96,14 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	{
 		if (!appended)
 		{
+			// Double-clicking should select the elements
 			this.addListener(this.elementIndex.$elementContainer, 'dblclick', 'selectElements');
 		}
-
-		// Reset the element select
-		if (this.elementSelect)
-		{
-			this.elementSelect.destroy();
-			delete this.elementSelect;
-		}
-
-		if (this.elementIndex.getSelectedSourceState('mode') == 'structure')
-		{
-			var $items = this.elementIndex.$elementContainer.find('.row:not(.disabled)');
-		}
-		else
-		{
-			var $items = this.elementIndex.$elementContainer.children(':not(.disabled)');
-		}
-
-		this.elementSelect = new Garnish.Select(this.elementIndex.$elementContainer, $items, {
-			multi: this.settings.multiSelect,
-			vertical: (this.elementIndex.getSelectedSourceState('mode') != 'thumbs'),
-			onSelectionChange: $.proxy(this, 'onSelectionChange')
-		});
-
-        this.elementIndex.setElementSelect(this.elementSelect);
-    },
+	},
 
 	onSelectionChange: function()
 	{
-		if (this.elementSelect.totalSelected)
+		if (this.elementIndex.elementSelect.totalSelected)
 		{
 			this.$selectBtn.removeClass('disabled');
 		}
@@ -136,12 +115,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	onEnableElements: function($elements)
 	{
-		this.elementSelect.addItems($elements);
+		this.elementIndex.elementSelect.addItems($elements);
 	},
 
 	onDisableElements: function($elements)
 	{
-		this.elementSelect.removeItems($elements);
+		this.elementIndex.elementSelect.removeItems($elements);
 	},
 
 	cancel: function()
@@ -151,19 +130,19 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	selectElements: function()
 	{
-		if (this.elementIndex && this.elementSelect && this.elementSelect.totalSelected)
+		if (this.elementIndex && this.elementIndex.elementSelect && this.elementIndex.elementSelect.totalSelected)
 		{
-			this.elementSelect.clearMouseUpTimeout();
+			this.elementIndex.elementSelect.clearMouseUpTimeout();
 			this.hide();
 
-			var $selectedItems = this.elementSelect.getSelectedItems(),
+			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
 				elementInfo = this.getElementInfo($selectedItems);
 
 			this.onSelect(elementInfo);
 
 			if (this.settings.disableOnSelect)
 			{
-				this.elementIndex.disableElements(this.elementSelect.getSelectedItems());
+				this.elementIndex.disableElements(this.elementIndex.elementSelect.getSelectedItems());
 			}
 		}
 	},

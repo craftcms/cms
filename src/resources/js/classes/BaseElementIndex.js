@@ -393,6 +393,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	setNewElementDataHtml: function(response, append)
 	{
+		// Is this a brand new set of elements?
 		if (!append)
 		{
 			this.$elements.html(response.html);
@@ -408,10 +409,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 
 			this.$elementContainer = this.getElementContainer();
+			var $newElements = this.$elementContainer.children();
+
+			if (this.settings.selectable)
+			{
+				// Reset the element select
+				if (this.elementSelect)
+				{
+					this.elementSelect.destroy();
+					delete this.elementSelect;
+				}
+
+				this.elementSelect = this.createElementSelect($newElements);
+			}
 		}
 		else
 		{
-			this.$elementContainer.append(response.html);
+			var $newElements = $(response.html).appendTo(this.$elementContainer);
+
+			if (this.settings.selectable)
+			{
+				this.elementSelect.addItems($newElements);
+			}
 		}
 
 		$('head').append(response.headHtml);
@@ -468,7 +487,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			Craft.cp.updateResponsiveTables();
 		}
 
-		this.onUpdateElements(append);
+		this.onUpdateElements(append, $newElements);
 	},
 
 	getElementContainer: function()
@@ -483,9 +502,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
-	onUpdateElements: function(append)
+	createElementSelect: function($elements)
 	{
-		this.settings.onUpdateElements(append);
+		$elements = $elements.filter(':not(.disabled)');
+
+		return new Garnish.Select(this.$elementContainer, $elements, {
+			multi:             this.settings.multiSelect,
+			vertical:          (this.getSelectedSourceState('mode') != 'thumbs'),
+			onSelectionChange: $.proxy(this, 'onSelectionChange')
+		});
+	},
+
+	onUpdateElements: function(append, $newElements)
+	{
+		this.settings.onUpdateElements(append, $newElements);
 	},
 
 	onStatusChange: function(ev)
@@ -674,6 +704,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.settings.onAfterHtmlInit()
 	},
 
+	onSelectionChange: function()
+	{
+		this.settings.onSelectionChange();
+	},
+
 	doesSourceHaveViewMode: function(viewMode)
 	{
 		for (var i = 0; i < this.sourceViewModes.length; i++)
@@ -807,11 +842,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
-	setElementSelect: function(obj)
-	{
-		this.elementSelect = obj;
-	},
-
 	addButton: function($button)
 	{
 		if (this.showingSidebar)
@@ -855,7 +885,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		storageKey: null,
 		criteria: null,
 		disabledElementIds: [],
+		selectable: false,
+		multiSelect: false,
 		onUpdateElements: $.noop,
+		onSelectionChange: $.noop,
 		onEnableElements: $.noop,
 		onDisableElements: $.noop,
 		onSelectSource: $.noop,

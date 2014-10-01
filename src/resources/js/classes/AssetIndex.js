@@ -65,6 +65,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	initIndexMode: function()
 	{
+		// Make the elements selectable
+		this.settings.selectable = true;
+		this.settings.multiSelect = true;
+
 		// ---------------------------------------
 		// File dragging
 		// ---------------------------------------
@@ -924,16 +928,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 * Perform actions after updating elements
 	 * @private
 	 */
-	onUpdateElements: function(append)
+	onUpdateElements: function(append, $newElements)
 	{
-		this.base(append);
-
 		if (this.settings.context == 'index')
 		{
-			var $elements = this.$elementContainer.children(':not(.disabled)');
-			this._initElementSelect($elements);
-			this._attachElementEvents($elements);
-			this._initElementDragger($elements);
+			var $enabledElements = $newElements.filter(':not(.disabled)');
+			this._attachElementEvents($enabledElements);
+			this._initElementDragger($enabledElements);
 		}
 
 		// See if we have freshly uploaded files to add to selection
@@ -948,32 +949,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					item = item.parent();
 				}
 
-				this.elementSelect.selectItem(item);
+				if (this.elementSelect)
+				{
+					this.elementSelect.selectItem(item);
+				}
 			}
 
 			// Reset the list.
 			this._uploadedFileIds = [];
 		}
+
+		this.base(append, $newElements)
 	},
 
-	_initElementSelect: function($children)
-	{
-		if (typeof this.elementSelect == "object" && this.elementSelect != null)
-		{
-			this.elementSelect.destroy();
-			delete this.elementSelect;
-		}
-
-		var elementSelect = new Garnish.Select(this.$elementContainer, $children, {
-			multi: true,
-			vertical: (this.getSelectedSourceState('mode') == 'table'),
-			onSelectionChange: $.proxy(this, '_onElementSelectionChange')
-		});
-
-		this.setElementSelect(elementSelect);
-	},
-
-	_onElementSelectionChange: function()
+	onSelectionChange: function()
 	{
 		this._enableElementContextMenu();
 		var selected = this.elementSelect.getSelectedItems();
@@ -983,6 +972,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			this._selectedFileIds[i] = Craft.getElementInfo(selected[i]).id;
 		}
+
+		this.base();
 	},
 
 	_attachElementEvents: function($elements)
