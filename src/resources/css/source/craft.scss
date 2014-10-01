@@ -553,6 +553,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.unselectable { @include user-select(none); }
 
 .element .label { display: inline-block; }
+.element .status { @include margin(0, 0, 0, 5px); }
 
 .element.hasthumb,
 .element.hasicon { @include padding-left(35px !important); }

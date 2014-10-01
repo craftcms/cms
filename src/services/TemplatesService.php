@@ -1434,11 +1434,6 @@ class TemplatesService extends BaseApplicationComponent
 			$elementType = craft()->elements->getElementType($context['element']->getElementType());
 		}
 
-		if ($elementType->hasStatuses())
-		{
-			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
-		}
-
 		$html .= '<span class="title">';
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
@@ -1450,7 +1445,14 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= $label;
 		}
 
-		$html .= '</span></div></div>';
+		$html .= '</span>';
+
+		if ($elementType->hasStatuses())
+		{
+			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
+		}
+
+		$html .= '</div></div>';
 
 		return $html;
 	}
