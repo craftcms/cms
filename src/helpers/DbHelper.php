@@ -418,30 +418,37 @@ class DbHelper
 				// This could be a LIKE condition
 				if ($operator == '=' || $operator == '!=')
 				{
-					$val = preg_replace('/^\*|\*$/', '%', $val, -1, $count);
-
-					if ($count)
-					{
-						$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
-
-						// Duck out early
-						continue;
-					}
+					$val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
+					$like = (bool) $count;
 				}
-
-				// Find a unique param name
-				$paramKey = ':'.str_replace('.', '', $column);
-				$i = 1;
-
-				while (isset($params[$paramKey.$i]))
+				else
 				{
-					$i++;
+					$like = false;
 				}
 
-				$param = $paramKey.$i;
-				$params[$param] = $val;
+				// Unescape any asterisks
+				$val = str_replace('\*', '*', $val);
 
-				$conditions[] = $column.$operator.$param;
+				if ($like)
+				{
+					$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
+				}
+				else
+				{
+					// Find a unique param name
+					$paramKey = ':'.str_replace('.', '', $column);
+					$i = 1;
+
+					while (isset($params[$paramKey.$i]))
+					{
+						$i++;
+					}
+
+					$param = $paramKey.$i;
+					$params[$param] = $val;
+
+					$conditions[] = $column.$operator.$param;
+				}
 			}
 		}
 
