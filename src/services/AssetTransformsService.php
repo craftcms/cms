@@ -741,15 +741,15 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function detectAutoTransformFormat(AssetFileModel $file)
 	{
-		if (in_array($file->getExtension(), ImageHelper::getWebSafeFormats()))
+		if (in_array(mb_strtolower($file->getExtension()), ImageHelper::getWebSafeFormats()))
 		{
 			return $file->getExtension();
 		}
 		else if ($file->kind == "image")
 		{
 
-			// The only reasonable way to check for transparency is with Imagick
-			// If Imagick is not present, then we fallback to jpg
+			// The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
+			// we fallback to jpg
 			if (craft()->images->isGd() || !method_exists("Imagick", "getImageAlphaChannel"))
 			{
 				return 'jpg';
