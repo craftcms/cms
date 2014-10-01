@@ -412,16 +412,35 @@ class DbHelper
 			}
 			else
 			{
+				// Trim any whitespace from the value
+				$val = trim($val);
+
+				// This could be a LIKE condition
+				if ($operator == '=' || $operator == '!=')
+				{
+					$val = preg_replace('/^\*|\*$/', '%', $val, -1, $count);
+
+					if ($count)
+					{
+						$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
+
+						// Duck out early
+						continue;
+					}
+				}
+
 				// Find a unique param name
 				$paramKey = ':'.str_replace('.', '', $column);
 				$i = 1;
+
 				while (isset($params[$paramKey.$i]))
 				{
 					$i++;
 				}
 
 				$param = $paramKey.$i;
-				$params[$param] = trim($val);
+				$params[$param] = $val;
+
 				$conditions[] = $column.$operator.$param;
 			}
 		}
