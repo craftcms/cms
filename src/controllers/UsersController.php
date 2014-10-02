@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionValidate', 'actionSetPassword', 'actionSaveUser');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionValidate');
 
 	// Public Methods
 	// =========================================================================
