@@ -71,7 +71,7 @@ class EntriesService extends BaseApplicationComponent
 		{
 			if ($entry->parentId)
 			{
-				$parentEntry = $this->getEntryById($entry->parentId);
+				$parentEntry = $this->getEntryById($entry->parentId, $entry->locale);
 
 				if (!$parentEntry)
 				{
