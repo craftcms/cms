@@ -613,7 +613,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 .elementindex .structure li .toggle { background-color: #fff; }
 
-.structure li .element { @include floatleft; }
 .structure li .icon { @include margin(5px, 5px, 0, 0); opacity: 0; @include transition(opacity linear 100ms); }
 .structure li .add { padding: 0 5px; }
 .structure li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
