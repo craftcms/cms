@@ -122,6 +122,7 @@ class EntriesController extends BaseEntriesController
 		{
 			// Get all the possible parent options
 			$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Entry);
+			$parentOptionCriteria->locale = $variables['localeId'];
 			$parentOptionCriteria->sectionId = $variables['section']->id;
 			$parentOptionCriteria->status = null;
 			$parentOptionCriteria->localeEnabled = null;
@@ -134,6 +135,7 @@ class EntriesController extends BaseEntriesController
 
 			if ($variables['entry']->id)
 			{
+				// Prevent the current entry, or any of its descendants, from being options
 				$idParam = array('and', 'not '.$variables['entry']->id);
 
 				$descendantCriteria = craft()->elements->getCriteria(ElementType::Entry);
@@ -175,12 +177,7 @@ class EntriesController extends BaseEntriesController
 
 			if ($variables['parentId'] === null && $variables['entry']->id)
 			{
-				$parentIdCriteria = craft()->elements->getCriteria(ElementType::Entry);
-				$parentIdCriteria->ancestorOf =$variables['entry'];
-				$parentIdCriteria->ancestorDist = 1;
-				$parentIdCriteria->status = null;
-				$parentIdCriteria->localeEnabled = null;
-				$parentIds = $parentIdCriteria->ids();
+				$parentIds = $variables['entry']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
 
 				if ($parentIds)
 				{
