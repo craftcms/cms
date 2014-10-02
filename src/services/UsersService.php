@@ -198,7 +198,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * $user->getContent()->birthYear = 1812;
 	 *
-	 * $success = craft()->users->saveUser($entry);
+	 * $success = craft()->users->saveUser($user);
 	 *
 	 * if (!$success)
 	 * {
