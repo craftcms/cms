@@ -69,7 +69,7 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 .icon.expand:before { content: 'expand'; }
 .icon.collapse:before { content: 'collapse'; }
 
-.help:before { content: '?'; color: #9d2dcc; }
+.help:before { content: 'help'; color: #9d2dcc; }
 
 /* nav */
 .nav { display: block; }
@@ -256,7 +256,7 @@ td.right { float: none; @include alignright; }
 
 /* help */
 .content.has-help { padding-bottom: 60px; }
-.content.has-help .help { position: absolute; bottom: 17px; @include right(17px); font-size: 26px; }
+.content.has-help .help { position: absolute; bottom: 17px; @include right(17px); font-size: 24px; }
 
 /* ----------------------------------------
 /*  Icon lists
