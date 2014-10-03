@@ -3725,8 +3725,11 @@ Garnish.Modal = Garnish.Base.extend({
 
 		if (this.$container)
 		{
-			this.$container.finish();
-			this.$shade.finish();
+			this.$container.velocity('stop');
+			this.$container.show().css('opacity', 1);
+
+			this.$shade.velocity('stop');
+			this.$shade.show().css('opacity', 1);
 		}
 	},
 
@@ -3770,8 +3773,11 @@ Garnish.Modal = Garnish.Base.extend({
 
 		if (this.$container)
 		{
-			this.$container.finish();
-			this.$shade.finish();
+			this.$container.velocity('stop');
+			this.$container.css('opacity', 0).hide();
+
+			this.$shade.velocity('stop');
+			this.$shade.css('opacity', 0).hide();
 		}
 	},
 
