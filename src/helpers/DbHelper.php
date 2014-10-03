@@ -388,15 +388,7 @@ class DbHelper
 
 		foreach ($value as $val)
 		{
-			if ($val === null)
-			{
-				$val = ':empty:';
-			}
-			else if (StringHelper::toLowerCase($val) == ':notempty:')
-			{
-				$val = 'not :empty:';
-			}
-
+			static::_normalizeEmptyValue($val);
 			$operator = static::_parseParamOperator($val);
 
 			if (StringHelper::toLowerCase($val) == ':empty:')
@@ -491,6 +483,17 @@ class DbHelper
 
 		foreach ($value as $val)
 		{
+			// Is this an empty value?
+			static::_normalizeEmptyValue($val);
+
+			if ($val == ':empty:' || $val == 'not :empty:')
+			{
+				$normalizedValues[] = $val;
+
+				// Sneak out early
+				continue;
+			}
+
 			if (is_string($val))
 			{
 				$operator = static::_parseParamOperator($val);
@@ -515,11 +518,28 @@ class DbHelper
 	// =========================================================================
 
 	/**
+	 * Normalizes “empty” values.
+	 *
+	 * @param stirng &$value The param value.
+	 */
+	private static function _normalizeEmptyValue(&$value)
+	{
+		if ($value === null)
+		{
+			$value = ':empty:';
+		}
+		else if (StringHelper::toLowerCase($value) == ':notempty:')
+		{
+			$value = 'not :empty:';
+		}
+	}
+
+	/**
 	 * Extracts the operator from a DB param and returns it.
 	 *
-	 * @param string &$value
+	 * @param string &$value Te param value.
 	 *
-	 * @return string
+	 * @return string The operator.
 	 */
 	private static function _parseParamOperator(&$value)
 	{
