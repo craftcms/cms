@@ -42,7 +42,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			filter: $.proxy(function() {
 				return this.elementSelect.getSelectedItems();
 			}, this),
-			caboose: $('<div class="caboose"/>'),
 			onSortChange: $.proxy(function() {
 				this.elementSelect.resetItemOrder();
 			}, this)

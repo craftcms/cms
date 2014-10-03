@@ -51,7 +51,6 @@ Craft.MatrixInput = Garnish.Base.extend(
 			collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
 
 		this.blockSort = new Garnish.DragSort($blocks, {
-			caboose: '<div/>',
 			handle: '> .actions > .move',
 			axis: 'y',
 			helperOpacity: 0.9
