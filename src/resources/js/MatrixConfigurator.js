@@ -73,7 +73,6 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 		}
 
 		this.blockTypeSort = new Garnish.DragSort($blockTypeItems, {
-			caboose: '<div/>',
 			handle: '.move',
 			axis: 'y'
 		});
@@ -387,7 +386,6 @@ var BlockType = Garnish.Base.extend(
 		this.addListener(this.$settingsBtn, 'click', 'showSettings');
 
 		this.fieldSort = new Garnish.DragSort($fieldItems, {
-			caboose: '<div/>',
 			handle: '.move',
 			axis: 'y',
 			onSortChange: $.proxy(function() {

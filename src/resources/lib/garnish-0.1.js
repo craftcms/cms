@@ -1638,8 +1638,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	helperPositions: null,
 	helperLagIncrement: null,
 	updateHelperPosInterval: null,
-	draggeeMouseOffsetX: null,
-	draggeeMouseOffsetY: null,
+	draggeeMidpointMouseOffsetX: null,
+	draggeeMidpointMouseOffsetY: null,
 
 	/**
 	 * init
@@ -1709,8 +1709,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 
 		// Capture the mouse offset
 		var offset = this.$draggee.offset();
-		this.draggeeMouseOffsetX = this.mouseX - (offset.left + this.$draggee.outerWidth() / 2);
-		this.draggeeMouseOffsetY = this.mouseY - (offset.top + this.$draggee.outerHeight() / 2);
+		this.draggeeMidpointMouseOffsetX = this.mouseX - (offset.left + this.$draggee.outerWidth() / 2);
+		this.draggeeMidpointMouseOffsetY = this.mouseY - (offset.top + this.$draggee.outerHeight() / 2);
 
 		this.base();
 	},
@@ -2027,7 +2027,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 	$heightedContainer: null,
 	$insertion: null,
-	$caboose: null,
 	startDraggeeIndex: null,
 	closestItem: null,
 	draggeeMidpointX: null,
@@ -2048,19 +2047,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 		settings = $.extend({}, Garnish.DragSort.defaults, settings);
 		this.base(items, settings);
-
-		if (this.settings.caboose)
-		{
-			// is it a function?
-			if (typeof this.settings.caboose == 'function')
-			{
-				this.$caboose = $(this.settings.caboose());
-			}
-			else
-			{
-				this.$caboose = $(this.settings.caboose);
-			}
-		}
 	},
 
 	/**
@@ -2069,15 +2055,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 	onDragStart: function()
 	{
 		this.base();
-
-		// add the caboose?
-		if (this.$caboose)
-		{
-			var $lastItem = $().add(this.$items).last();
-			this.$caboose.insertAfter($lastItem);
-			this.otherItems.push(this.$caboose[0]);
-			this.totalOtherItems++;
-		}
 
 		this.closestItem = null;
 		this.setMidpoints();
@@ -2128,8 +2105,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 		{
 			this.setMidpoint(this.$items[i]);
 		}
-
-		this.setMidpoint(this.$caboose);
 	},
 
 	setMidpoint: function(item)
@@ -2148,8 +2123,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	onDrag: function()
 	{
-		this.draggeeMidpointX = this.mouseX - this.draggeeMouseOffsetX;
-		this.draggeeMidpointY = this.mouseY - this.draggeeMouseOffsetY;
+		this.draggeeMidpointX = this.mouseX - this.draggeeMidpointMouseOffsetX;
+		this.draggeeMidpointY = this.mouseY - this.draggeeMidpointMouseOffsetY;
 
 		// if there's a container set, make sure that we're hovering over it
 		if (this.$heightedContainer && !Garnish.hitTest(this.mouseX, this.mouseY, this.$heightedContainer))
@@ -2217,7 +2192,15 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		if (this.closestItem)
 		{
-			this.$draggee.insertBefore(this.closestItem);
+			// Going down?
+			if (this.$draggee.index() < $(this.closestItem).index())
+			{
+				this.$draggee.insertAfter(this.closestItem);
+			}
+			else
+			{
+				this.$draggee.insertBefore(this.closestItem);
+			}
 
 			if (this.$insertion)
 			{
@@ -2234,12 +2217,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	onDragStop: function()
 	{
-		// remove the caboose
-		if (this.$caboose)
-		{
-			this.$caboose.remove();
-		}
-
 		if (this.$insertion)
 		{
 			this.$insertion.remove();
