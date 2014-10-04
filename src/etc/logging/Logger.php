@@ -13,6 +13,19 @@ namespace Craft;
  */
 class Logger extends \CLogger
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * This property will be passed as the parameter to {@link flush()} when it is called in {@link log()} due to the
+	 * limit of {@link autoFlush} being reached. By default, this property is false, meaning the filtered messages are
+	 * still kept in the memory by each log route after calling {@link flush()}. If this is true, the filtered messages
+	 * will be written to the actual medium each time {@link flush()} is called within {@link log()}.
+	 *
+	 * @var boolean
+	 */
+	public $autoDump = true;
+
 	// Public Methods
 	// =========================================================================
 
