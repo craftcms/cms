@@ -315,6 +315,11 @@ class UsersController extends BaseController
 
 		if ($userToValidate)
 		{
+			// Fire an 'onBeforeVerifyUser' event
+			craft()->users->onBeforeVerifyUser(new Event($this, array(
+				'user' => $userToValidate
+			)));
+
 			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate, $code);
 		}
 
