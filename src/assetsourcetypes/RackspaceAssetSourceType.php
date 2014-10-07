@@ -1008,7 +1008,23 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 
 		if (!$lastModified)
 		{
-			return false;
+			// For Rackspace, apparently it's OK for folders to have "/" or not. Whatever.
+			if (substr($path, -1) == "/")
+			{
+				$target = $this->_prepareRequestURI($this->getSettings()->container, rtrim($path, "/"));
+				$response = $this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $target, 'HEAD');
+				$lastModified = static::_extractHeader($response, 'Last-Modified');
+				$size = static::_extractHeader($response, 'Content-Length');
+
+				if (!$lastModified)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		return (object) array('lastModified' => $lastModified, 'size' => $size);
