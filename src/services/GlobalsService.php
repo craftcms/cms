@@ -383,6 +383,11 @@ class GlobalsService extends BaseApplicationComponent
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
+		// Fire an 'onBeforeSaveGlobalContent' event
+		$this->onBeforeSaveGlobalContent(new Event($this, array(
+			'globalSet' => $globalSet
+		)));
+
 		if (craft()->elements->saveElement($globalSet))
 		{
 			// Fire an 'onSaveGlobalContent' event
@@ -408,5 +413,17 @@ class GlobalsService extends BaseApplicationComponent
 	public function onSaveGlobalContent(Event $event)
 	{
 		$this->raiseEvent('onSaveGlobalContent', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveGlobalContent' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveGlobalContent(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveGlobalContent', $event);
 	}
 }
