@@ -49,7 +49,7 @@ class AssetsHelper
 		$baseUrl = $sourceType->getBaseUrl();
 		$folderPath = $file->getFolder()->path;
 		$fileName = $file->filename;
-		$appendix = AssetsHelper::getUrlAppendix($sourceType, $file);
+		$appendix = static::getUrlAppendix($sourceType, $file);
 
 		return $baseUrl.$folderPath.$fileName.$appendix;
 	}
