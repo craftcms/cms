@@ -758,9 +758,21 @@ class AssetsService extends BaseApplicationComponent
 			{
 				$file = $this->getFileById($fileId);
 				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
+
+				// Fire an 'onBeforeDeleteAsset' event
+				$this->onBeforeDeleteAsset(new Event($this, array(
+					'file' => $file
+				)));
+
 				$source->deleteFile($file);
 				craft()->elements->deleteElementById($fileId);
+
+				// Fire an 'onDeleteAsset' event
+				$this->onDeleteAsset(new Event($this, array(
+					'file' => $file
+				)));
 			}
+
 			$response->setSuccess();
 		}
 		catch (Exception $exception)
@@ -1031,6 +1043,30 @@ class AssetsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
 		}
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteAsset(Event $event)
+	{
+		$this->raiseEvent('onDeleteAsset', $event);
 	}
 
 	// Private Methods
