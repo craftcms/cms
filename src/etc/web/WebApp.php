@@ -135,6 +135,10 @@ class WebApp extends \CWebApplication
 		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('request');
+
+		// Attach our own custom Logger
+		Craft::setLogger(new Logger());
+
 		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
@@ -142,9 +146,6 @@ class WebApp extends \CWebApplication
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath($this->path->getRuntimePath());
-
-		// Attach our own custom Logger
-		Craft::setLogger(new Logger());
 
 		// If there is a custom appId set, apply it here.
 		if ($appId = $this->config->get('appId'))

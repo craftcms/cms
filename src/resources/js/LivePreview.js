@@ -321,12 +321,14 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.loading = true;
 
 			var data = $.extend({}, postData, this.basePostData),
-				scrollTop = $(this.$iframe[0].contentWindow.document).scrollTop();
+				$doc = $(this.$iframe[0].contentWindow.document),
+				scrollX = $doc.scrollLeft(),
+				scrollY = $doc.scrollTop();
 
 			$.post(this.postUrl, data, $.proxy(function(response)
 			{
 				var html = response +
-					'<script type="text/javascript">document.body.scrollTop = '+scrollTop+';</script>';
+					'<script type="text/javascript">window.scrollTo('+scrollX+', '+scrollY+');</script>';
 
 				// Set the iframe to use the same bg as the iframe body,
 				// to reduce the blink when reloading the DOM
