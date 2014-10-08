@@ -1138,12 +1138,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var $fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo('body'),
 			options = this._currentUploaderSettings;
 
-		options.events = {
-			fileuploadstart:       $.proxy(this, '_onUploadStart'),
-			fileuploadprogressall: $.proxy(this, '_onUploadProgress'),
-			fileuploaddone:        $.proxy(this, '_onUploadComplete')
-		};
-
 		options.url = Craft.getActionUrl('assets/replaceFile');
 		options.dropZone = null;
 		options.fileInput = $fileInput;
