@@ -128,6 +128,69 @@ class AssetsController extends BaseController
 	}
 
 	/**
+	 * Replace a file
+	 *
+	 * @throws Exception
+	 * @return null
+	 */
+	public function actionReplaceFile()
+	{
+		$this->requireAjaxRequest();
+		$fileId = craft()->request->getPost('fileId');
+
+		try
+		{
+			if (empty($_FILES['replaceFile']) || !isset($_FILES['replaceFile']['error']) || $_FILES['replaceFile']['error'] != 0)
+			{
+				throw new Exception(Craft::t('The upload failed.'));
+			}
+
+			$existingFile = craft()->assets->getFileById($fileId);
+
+			if (!$existingFile)
+			{
+				throw new Exception(Craft::t('The file to be replaced cannot be found.'));
+			}
+
+			$targetFolderId = $existingFile->folderId;
+
+			try
+			{
+				$this->_checkUploadPermissions($targetFolderId);
+			}
+			catch (Exception $e)
+			{
+				$this->returnErrorJson($e->getMessage());
+			}
+
+			$fileName = $_FILES['replaceFile']['name'];
+			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
+			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
+
+			$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+			$insertedFileId = $response->getDataItem('fileId');
+
+			$newFile = craft()->assets->getFileById($insertedFileId);
+
+			if ($newFile && $existingFile)
+			{
+				$source = craft()->assetSources->populateSourceType($newFile->getSource());
+				$source->replaceFile($existingFile, $newFile);
+				craft()->assets->deleteFiles($newFile->id);
+			}
+			else
+			{
+				throw new Exception(Craft::t('Something went wrong with the replace operation.'));
+			}
+		}
+		catch (Exception $exception)
+		{
+			$this->returnErrorJson($exception->getMessage());
+		}
+
+		$this->returnJson(array('success' => true, 'fileId' => $fileId));
+	}
+	/**
 	 * Create a folder.
 	 *
 	 * @return null

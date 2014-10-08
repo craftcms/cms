@@ -382,30 +382,29 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if ($oldFile->kind == 'image')
 		{
-			craft()->assetTransforms->deleteThumbnailsForFile($oldFile);
+			craft()->assetTransforms->deleteAllTransformData($oldFile);
 			$this->deleteSourceFile($oldFile->getFolder()->path.$oldFile->filename);
 			$this->purgeCachedSourceFile($oldFile->getFolder(), $oldFile->filename);
 
 			// For remote sources, fetch the source image and move it in the old ones place
 			if (!$this->isSourceLocal())
 			{
-				$localCopy = $this->getLocalCopy($replaceWith);
-
-				if ($oldFile->kind == "image")
+				if ($replaceWith->kind == "image")
 				{
+					$localCopy = $replaceWith->getTransformSource();
 					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
 				}
-
-				IOHelper::deleteFile($localCopy);
 			}
 		}
+
 
 		$this->moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename, true);
 
 		// Update file info
-		$oldFile->width = $replaceWith->width;
-		$oldFile->height = $replaceWith->height;
-		$oldFile->size = $replaceWith->size;
+		$oldFile->width        = $replaceWith->width;
+		$oldFile->height       = $replaceWith->height;
+		$oldFile->size         = $replaceWith->size;
+		$oldFile->kind         = $replaceWith->kind;
 		$oldFile->dateModified = $replaceWith->dateModified;
 
 		craft()->assets->storeFile($oldFile);

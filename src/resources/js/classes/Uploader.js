@@ -78,7 +78,8 @@ Craft.Uploader = Garnish.Base.extend(
 	 */
 	isLastUpload: function()
 	{
-		return this.getInProgress() == 1;
+		// Processing the last file or not processing at all.
+		return this.getInProgress() < 2;
 	},
 
 	/**

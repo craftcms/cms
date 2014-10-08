@@ -19,6 +19,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_uploadFileProgress: {},
 	_uploadedFileIds: [],
 	_selectedFileIds: [],
+	_currentUploaderSettings: {},
 
 	_singleFileMenu: null,
 	_multiFileMenu: null,
@@ -752,6 +753,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			options.allowedKinds = this.settings.criteria.kind;
 		}
 
+		this._currentUploaderSettings = options;
+
 		this.uploader = new Craft.Uploader (this.$uploadButton, options);
 
 		this.$uploadButton.on('click', $.proxy(function()
@@ -1006,6 +1009,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var menuOptions = [{ label: Craft.t('View file'), onClick: $.proxy(this, '_viewFile') }];
 		menuOptions.push({ label: Craft.t('Edit properties'), onClick: $.proxy(this, '_showProperties') });
 		menuOptions.push({ label: Craft.t('Rename file'), onClick: $.proxy(this, '_renameFile') });
+		menuOptions.push({ label: Craft.t('Replace file'), onClick: $.proxy(this, '_replaceFile') });
 		menuOptions.push({ label: Craft.t('Copy reference tag'), onClick: $.proxy(this, '_copyRefTag') });
 		menuOptions.push('-');
 		menuOptions.push({ label: Craft.t('Delete file'), onClick: $.proxy(this, '_deleteFile') });
@@ -1122,6 +1126,32 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			Craft.postActionRequest('assets/moveFile', postData, $.proxy(handleRename, this));
 		}
+	},
+
+	/**
+	 * Replace a file.
+	 * @private
+	 */
+	_replaceFile: function (event)
+	{
+		$('.replaceFile').remove();
+		var $fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo('body'),
+			options = this._currentUploaderSettings;
+
+		options.events = {
+			fileuploadstart:       $.proxy(this, '_onUploadStart'),
+			fileuploadprogressall: $.proxy(this, '_onUploadProgress'),
+			fileuploaddone:        $.proxy(this, '_onUploadComplete')
+		};
+
+		options.url = Craft.getActionUrl('assets/replaceFile');
+		options.dropZone = null;
+		options.fileInput = $fileInput;
+
+		var tempUploader = new Craft.Uploader($fileInput, options);
+		tempUploader.setParams({fileId: Craft.getElementInfo($(event.currentTarget)).id});
+
+		$fileInput.click();
 	},
 
 	_copyRefTag: function(event)
