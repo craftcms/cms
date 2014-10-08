@@ -37,14 +37,16 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	// =========================================================================
 
 	/**
-	 * A wrapper for logging with plugins.
+	 * A wrapper for writing to the log files for plugins that will ultimately call {@link Craft::log()}. This allows
+	 * plugins to be able to write to their own log files at `craft/storage/runtime/logs/pluginHandle.log` using
+	 * `PluginHandle::log()` syntax.
 	 *
-	 * @param string $msg
-	 * @param string $level
+	 * @param        $msg   The message to be logged.
+	 * @param string $level The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or
+	 *                      LogLevel::Error).
+	 * @param bool   $force Whether to force the message to be logged regardless of the level or category.
 	 *
-	 * @param bool   $force
-	 *
-	 * @return mixed|void
+	 * @return mixed
 	 */
 	public static function log($msg, $level = LogLevel::Info, $force = false)
 	{
