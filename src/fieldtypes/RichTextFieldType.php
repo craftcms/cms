@@ -170,6 +170,10 @@ class RichTextFieldType extends BaseFieldType
 			if ($this->getSettings()->purifyHtml)
 			{
 				$purifier = new \CHtmlPurifier();
+				$purifier->setOptions(array(
+					'Attr.AllowedFrameTargets' => array('_blank'),
+				));
+
 				$value = $purifier->purify($value);
 
 			}
