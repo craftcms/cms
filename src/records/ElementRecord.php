@@ -36,7 +36,7 @@ class ElementRecord extends BaseRecord
 		return array(
 			array('columns' => array('type')),
 			array('columns' => array('enabled')),
-			array('columns' => array('archived')),
+			array('columns' => array('archived, dateCreated')),
 		);
 	}
 
