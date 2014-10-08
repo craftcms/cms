@@ -410,7 +410,6 @@ class ElementsService extends BaseApplicationComponent
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
 			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale))
-			->group('elements.id');
 
 		if ($elementType->hasContent())
 		{
