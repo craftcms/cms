@@ -25,7 +25,17 @@
 				translatable: true
 			}) }}
 
-			{% if CraftEdition == CraftPro %}
+            {{ forms.textField({
+                first: true,
+                label: "Handle"|t,
+                id: 'handle',
+                name: 'handle',
+                value: (source is defined ? source.handle : null),
+                errors: (source is defined ? source.getErrors('handle') : null),
+                required: true,
+            }) }}
+
+            {% if CraftEdition == CraftPro %}
 				<hr>
 
 				{% includeJsResource "js/asseteditsourcesettings.js" %}
@@ -75,3 +85,8 @@
 		</div>
 	</form>
 {% endset %}
+
+
+{% if source is not defined or not source.handle %}
+    {% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
+{% endif %}

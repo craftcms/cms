@@ -47,6 +47,7 @@ class AssetSourceRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('name'), 'unique' => true),
+			array('columns' => array('handle'), 'unique' => true),
 		);
 	}
 
@@ -62,6 +63,7 @@ class AssetSourceRecord extends BaseRecord
 	{
 		return array(
 			'name'                => array(AttributeType::Name, 'required' => true),
+			'handle'              => array(AttributeType::Handle, 'required' => true),
 			'type'                => array(AttributeType::ClassName, 'required' => true),
 			'settings'            => AttributeType::Mixed,
 			'sortOrder'           => AttributeType::SortOrder,

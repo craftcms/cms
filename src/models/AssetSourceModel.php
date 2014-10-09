@@ -81,10 +81,11 @@ class AssetSourceModel extends BaseComponentModel
 	{
 		$attributes = parent::defineAttributes();
 
-		$attributes['name'] = AttributeType::String;
+		$attributes['name']            = AttributeType::String;
+		$attributes['handle']          = AttributeType::Handle;
 		$attributes['type']['default'] = 'Local';
-		$attributes['sortOrder'] = AttributeType::String;
-		$attributes['fieldLayoutId'] = AttributeType::Number;
+		$attributes['sortOrder']       = AttributeType::String;
+		$attributes['fieldLayoutId']   = AttributeType::Number;
 
 		return $attributes;
 	}

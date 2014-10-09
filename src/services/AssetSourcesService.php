@@ -325,8 +325,9 @@ class AssetSourcesService extends BaseApplicationComponent
 			$oldSource = AssetSourceModel::populateModel($sourceRecord);
 		}
 
-		$sourceRecord->name = $source->name;
-		$sourceRecord->type = $source->type;
+		$sourceRecord->name          = $source->name;
+		$sourceRecord->handle        = $source->handle;
+		$sourceRecord->type          = $source->type;
 		$sourceRecord->fieldLayoutId = $source->fieldLayoutId;
 
 		$sourceType = $this->populateSourceType($source);
@@ -516,7 +517,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	private function _createSourceQuery()
 	{
 		return craft()->db->createCommand()
-			->select('id, fieldLayoutId, name, type, settings, sortOrder')
+			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
 			->from('assetsources')
 			->order('sortOrder');
 	}

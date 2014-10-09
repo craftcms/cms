@@ -126,7 +126,8 @@ class AssetSourcesController extends BaseController
 			$source = new AssetSourceModel();
 		}
 
-		$source->name = craft()->request->getPost('name');
+		$source->name   = craft()->request->getPost('name');
+		$source->handle = craft()->request->getPost('handle');
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
