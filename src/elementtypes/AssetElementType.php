@@ -188,6 +188,7 @@ class AssetElementType extends BaseElementType
 	{
 		return array(
 			'sourceId' => AttributeType::Number,
+			'source'   => AttributeType::Handle,
 			'folderId' => AttributeType::Number,
 			'filename' => AttributeType::String,
 			'kind'     => AttributeType::Mixed,
@@ -212,9 +213,19 @@ class AssetElementType extends BaseElementType
 			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
 			->join('assetfiles assetfiles', 'assetfiles.id = elements.id');
 
+		if (!empty($criteria->source))
+		{
+			$query->join('assetsources assetsources', 'assetfiles.sourceId = assetsources.id');
+		}
+
 		if ($criteria->sourceId)
 		{
 			$query->andWhere(DbHelper::parseParam('assetfiles.sourceId', $criteria->sourceId, $query->params));
+		}
+
+		if ($criteria->source)
+		{
+			$query->andWhere(DbHelper::parseParam('assetsources.handle', $criteria->source, $query->params));
 		}
 
 		if ($criteria->folderId)
