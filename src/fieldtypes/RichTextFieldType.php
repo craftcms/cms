@@ -153,6 +153,16 @@ class RichTextFieldType extends BaseFieldType
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
 			$value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
+			if ($this->getSettings()->purifyHtml)
+			{
+				$purifier = new \CHtmlPurifier();
+				$purifier->setOptions(array(
+					'Attr.AllowedFrameTargets' => array('_blank'),
+				));
+
+				$value = $purifier->purify($value);
+			}
+
 			if ($this->getSettings()->cleanupHtml)
 			{
 				// Remove <span> and <font> tags
@@ -165,17 +175,6 @@ class RichTextFieldType extends BaseFieldType
 				// Remove empty tags
 				// (Leave empty <a> tags though, since they might be defining a standalone #anchor.)
 				$value = preg_replace('/<(h1|h2|h3|h4|h5|h6|p|div|blockquote|pre|strong|em|b|i|u)\s*><\/\1>/', '', $value);
-			}
-
-			if ($this->getSettings()->purifyHtml)
-			{
-				$purifier = new \CHtmlPurifier();
-				$purifier->setOptions(array(
-					'Attr.AllowedFrameTargets' => array('_blank'),
-				));
-
-				$value = $purifier->purify($value);
-
 			}
 		}
 
