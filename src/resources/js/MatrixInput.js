@@ -13,6 +13,10 @@ Craft.MatrixInput = Garnish.Base.extend(
 	inputIdPrefix: null,
 	maxBlocks: null,
 
+	showingAddBlockMenu: false,
+	addBlockBtnGroupWidth: null,
+	addBlockBtnContainerWidth: null,
+
 	$container: null,
 	$blockContainer: null,
 	$addBlockBtnContainer: null,
@@ -99,16 +103,40 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 	setNewBlockBtn: function()
 	{
-		if (this.$addBlockBtnGroup.removeClass('hidden').width() > this.$addBlockBtnGroup.parent().width())
+		// Do we know what the button group width is yet?
+		if (!this.addBlockBtnGroupWidth)
 		{
-			this.$addBlockBtnGroup.addClass('hidden');
-			this.$addBlockMenuBtn.removeClass('hidden');
+			this.addBlockBtnGroupWidth = this.$addBlockBtnGroup.width();
+
+			if (!this.addBlockBtnGroupWidth)
+			{
+				return;
+			}
 		}
-		else
+
+		// Only check if the container width has resized
+		if (this.addBlockBtnContainerWidth !== (this.addBlockBtnContainerWidth = this.$addBlockBtnContainer.width()))
 		{
-			this.$addBlockBtnGroup.removeClass('hidden');
-			this.$addBlockMenuBtn.addClass('hidden');
+			if (this.addBlockBtnGroupWidth > this.addBlockBtnContainerWidth)
+			{
+				if (!this.showingAddBlockMenu)
+				{
+					this.$addBlockBtnGroup.addClass('hidden');
+					this.$addBlockMenuBtn.removeClass('hidden');
+					this.showingAddBlockMenu = true;
+				}
+			}
+			else
+			{
+				if (this.showingAddBlockMenu)
+				{
+					this.$addBlockBtnGroup.removeClass('hidden');
+					this.$addBlockMenuBtn.addClass('hidden');
+					this.showingAddBlockMenu = false;
+				}
+			}
 		}
+
 	},
 
 	canAddMoreBlocks: function()
