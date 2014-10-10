@@ -290,6 +290,12 @@ class SystemSettingsController extends BaseController
 		$emailSettings->emailAddress                = craft()->request->getPost('emailAddress');
 		$emailSettings->senderName                  = craft()->request->getPost('senderName');
 
+		if (craft()->getEdition() >= Craft::Client)
+		{
+			$settings['template'] = craft()->request->getPost('template');
+			$emailSettings->template = $settings['template'];
+		}
+
 		// Validate user input
 		if (!$emailSettings->validate())
 		{
@@ -299,11 +305,6 @@ class SystemSettingsController extends BaseController
 		$settings['protocol']     = $emailSettings->protocol;
 		$settings['emailAddress'] = $emailSettings->emailAddress;
 		$settings['senderName']   = $emailSettings->senderName;
-
-		if (craft()->getEdition() >= Craft::Client)
-		{
-			$settings['template'] = craft()->request->getPost('template');
-		}
 
 		switch ($emailSettings->protocol)
 		{

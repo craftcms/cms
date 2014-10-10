@@ -84,6 +84,7 @@ class EmailSettingsModel extends BaseModel
 			'emailAddress'            => AttributeType::Email,
 			'senderName'              => AttributeType::String,
 			'testEmailAddress'        => AttributeType::Email,
+			'template'                => AttributeType::String,
 		);
 	}
 }
