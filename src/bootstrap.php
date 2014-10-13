@@ -66,6 +66,13 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 
 // Validate permissions on craft/config/ and craft/storage/
 craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH);
+
+// If license.key doesn't exist yet, make sure the config folder is writable.
+if (!file_exists(CRAFT_CONFIG_PATH.'license.key'))
+{
+	craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH, true);
+}
+
 craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH, true);
 
 // Create the craft/storage/runtime/ folder if it doesn't already exist
