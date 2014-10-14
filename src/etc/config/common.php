@@ -229,7 +229,6 @@ $components['messages']['class'] = 'Craft\PhpMessageSource';
 $components['coreMessages']['class'] = 'Craft\PhpMessageSource';
 $components['request']['class'] = 'Craft\HttpRequestService';
 $components['request']['enableCookieValidation'] = true;
-$components['viewRenderer']['class'] = 'Craft\TemplateProcessor';
 $components['statePersister']['class'] = 'Craft\StatePersister';
 
 $components['urlManager']['class'] = 'Craft\UrlManager';
