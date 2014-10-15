@@ -20,7 +20,7 @@ var Base = function() {
 
 Base.extend = function(_instance, _static) { // subclass
 	var extend = Base.prototype.extend;
-	
+
 	// build the prototype
 	Base._prototyping = true;
 	var proto = new this;
@@ -29,7 +29,7 @@ Base.extend = function(_instance, _static) { // subclass
     // call this method from any other method to invoke that method's ancestor
   };
 	delete Base._prototyping;
-	
+
 	// create the wrapper for the constructor function
 	//var constructor = proto.constructor.valueOf(); //-dean
 	var constructor = proto.constructor;
@@ -44,7 +44,7 @@ Base.extend = function(_instance, _static) { // subclass
 			}
 		}
 	};
-	
+
 	// build the class interface
 	klass.ancestor = this;
 	klass.extend = this.extend;
@@ -106,7 +106,18 @@ Base.prototype = {
 			}
 			// copy each of the source object's properties to this object
 			for (var key in source) {
-				if (!proto[key]) extend.call(this, key, source[key]);
+				if (!proto[key]) {
+					var desc = Object.getOwnPropertyDescriptor(source, key);
+					if (typeof desc.value != typeof undefined) {
+						extend.call(this, key, desc.value);
+					}
+					if (desc.get || desc.set) {
+						Object.defineProperty(this, key, {
+							get: desc.get,
+							set: desc.set
+						});
+					}
+				}
 			}
 		}
 		return this;
@@ -121,7 +132,7 @@ Base = Base.extend({
 }, {
 	ancestor: Object,
 	version: "1.1",
-	
+
 	forEach: function(object, block, context) {
 		for (var key in object) {
 			if (this.prototype[key] === undefined) {
@@ -129,7 +140,7 @@ Base = Base.extend({
 			}
 		}
 	},
-		
+
 	implement: function() {
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "function") {
@@ -142,7 +153,7 @@ Base = Base.extend({
 		}
 		return this;
 	},
-	
+
 	toString: function() {
 		return String(this.valueOf());
 	}
@@ -793,6 +804,13 @@ Garnish.Base = Base.extend({
 	addListener: function(elem, events, data, func)
 	{
 		var $elem = $(elem);
+
+		// Ignore if there aren't any elements
+		if (!$elem.length)
+		{
+			return;
+		}
+
 		events = this._formatEvents(events);
 
 		// Param mapping
@@ -1535,8 +1553,16 @@ Garnish.CheckboxSelect = Garnish.Base.extend({
 			checked:  isAllChecked,
 			disabled: isAllChecked
 		});
-	}
+	},
 
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.$container.removeData('checkboxSelect');
+		this.base();
+	}
 });
 
 
@@ -1684,8 +1710,16 @@ Garnish.ContextMenu = Garnish.Base.extend({
 	disable: function()
 	{
 		this.removeListener(this.$target, 'contextmenu,mousedown');
-	}
+	},
 
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.$target.removeData('contextmenu');
+		this.base();
+	}
 },
 {
 	defaults: {
@@ -3136,12 +3170,15 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		}
 	},
 
+	/**
+	 * Destroy
+	 */
 	destroy: function()
 	{
-		this.base();
+		this.$outerContainer.removeData('lightswitch');
 		this.dragger.destroy();
+		this.base();
 	}
-
 },
 {
 	offMargin: -50,
@@ -3473,6 +3510,15 @@ Garnish.MenuBtn = Garnish.Base.extend({
 	disable: function ()
 	{
 		this.disabled = true;
+	},
+
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.$btn.removeData('menubtn');
+		this.base();
 	}
 },
 {
@@ -4227,9 +4273,15 @@ Garnish.Modal = Garnish.Base.extend({
 		this.updateSizeAndPosition();
 	},
 
+	/**
+	 * Destroy
+	 */
 	destroy: function()
 	{
-		this.base();
+		if (this.$container)
+		{
+			this.$container.removeData('modal');
+		}
 
 		if (this.dragger)
 		{
@@ -4240,6 +4292,8 @@ Garnish.Modal = Garnish.Base.extend({
 		{
 			this.resizeDragger.destroy();
 		}
+
+		this.base();
 	}
 },
 {
@@ -4437,8 +4491,8 @@ Garnish.NiceText = Garnish.Base.extend({
 				'padding-bottom':      this.$input.css('padding-bottom'),
 				'padding-left':        this.$input.css('padding-left'),
 				'-webkit-box-sizing':  this.inputBoxSizing,
-		  		'-moz-box-sizing':     this.inputBoxSizing,
-		        'box-sizing':          this.inputBoxSizing
+				'-moz-box-sizing':     this.inputBoxSizing,
+				'box-sizing':          this.inputBoxSizing
 			});
 		}
 
@@ -4539,19 +4593,25 @@ Garnish.NiceText = Garnish.Base.extend({
 		}
 	},
 
+	/**
+	 * Destroy
+	 */
 	destroy: function()
 	{
-		this.base();
-        if (this.$hint !== null)
-        {
-            this.$hint.remove();
-        }
-        if (this.$stage !== null)
-        {
-            this.$stage.remove();
-        }
-    }
+		this.$input.removeData('nicetext');
 
+		if (this.$hint)
+		{
+			this.$hint.remove();
+		}
+
+		if (this.$stage)
+		{
+			this.$stage.remove();
+		}
+
+		this.base();
+	}
 },
 {
 	interval: 100,
@@ -4694,8 +4754,16 @@ Garnish.Pill = Garnish.Base.extend({
 				break;
 			}
 		}
-	}
+	},
 
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.$outerContainer.removeData('pill');
+		this.base();
+	}
 });
 
 
@@ -5277,6 +5345,15 @@ Garnish.Select = Garnish.Base.extend({
 	getSelectedItems: function()
 	{
 		return this.$items.filter('.'+this.settings.selectedClass);
+	},
+
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.$container.removeData('select');
+		this.base();
 	},
 
 	// Events
