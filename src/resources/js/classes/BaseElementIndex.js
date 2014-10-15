@@ -260,13 +260,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
-		var sourceElement = this.$sources.filter('.sel');
-		if (sourceElement.length == 0)
+		var $source = this.sourceSelect.$selectedItems.first();
+
+		if (!$source.length)
 		{
-			sourceElement = this.$sources.filter(':first');
+			$source = this.$sources.first();
 		}
 
-		this.selectSource(sourceElement);
+		this.selectSource($source);
 		this.updateElements();
 	},
 
