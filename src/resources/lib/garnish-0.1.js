@@ -4704,15 +4704,19 @@ Garnish.Pill = Garnish.Base.extend({
  */
 Garnish.Select = Garnish.Base.extend({
 
+	// Properties
+	// =========================================================================
+
 	$container: null,
 	$items: null,
+	$selectedItems: null,
 
 	totalSelected: null,
 
 	mousedownX: null,
 	mousedownY: null,
 	mouseUpTimeout: null,
-	callbackTimeout: null,
+	callbackFrame: null,
 
 	$focusable: null,
 	$first: null,
@@ -4720,8 +4724,11 @@ Garnish.Select = Garnish.Base.extend({
 	$last: null,
 	last: null,
 
+	// Public methods
+	// =========================================================================
+
 	/**
-	 * Init
+	 * Constructor
 	 */
 	init: function(container, items, settings)
 	{
@@ -4747,6 +4754,8 @@ Garnish.Select = Garnish.Base.extend({
 		this.setSettings(settings, Garnish.Select.defaults);
 
 		this.$items = $();
+		this.$selectedItems = $();
+
 		this.addItems(items);
 
 		// --------------------------------------------------------------------
@@ -4793,17 +4802,13 @@ Garnish.Select = Garnish.Base.extend({
 			this.deselectAll();
 		}
 
-		$item.addClass(this.settings.selectedClass);
-
 		this.$first = this.$last = $item;
 		this.first = this.last = this.getItemIndex($item);
 
 		this.setFocusableItem($item);
 		$item.focus();
 
-		this.totalSelected++;
-
-		this.setCallbackTimeout();
+		this._selectItems($item);
 	},
 
 	selectAll: function()
@@ -4818,9 +4823,7 @@ Garnish.Select = Garnish.Base.extend({
 		this.$first = $(this.$items[this.first]);
 		this.$last = $(this.$items[this.last]);
 
-		this.$items.addClass(this.settings.selectedClass);
-		this.totalSelected = this.$items.length;
-		this.setCallbackTimeout();
+		this._selectItems(this.$items);
 	},
 
 	/**
@@ -4853,11 +4856,7 @@ Garnish.Select = Garnish.Base.extend({
 				sliceTo = this.first + 1;
 		}
 
-		this.$items.slice(sliceFrom, sliceTo).addClass(this.settings.selectedClass);
-
-		this.totalSelected = sliceTo - sliceFrom;
-
-		this.setCallbackTimeout();
+		this._selectItems(this.$items.slice(sliceFrom, sliceTo));
 	},
 
 	/**
@@ -4865,15 +4864,11 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	deselectItem: function($item)
 	{
-		$item.removeClass(this.settings.selectedClass);
-
 		var index = this.getItemIndex($item);
 		if (this.first === index) this.$first = this.first = null;
 		if (this.last === index) this.$last = this.last = null;
 
-		this.totalSelected--;
-
-		this.setCallbackTimeout();
+		this._deselectItems($item);
 	},
 
 	/**
@@ -4881,16 +4876,12 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	deselectAll: function(clearFirst)
 	{
-		this.$items.removeClass(this.settings.selectedClass);
-
 		if (clearFirst)
 		{
 			this.$first = this.first = this.$last = this.last = null;
 		}
 
-		this.totalSelected = 0;
-
-		this.setCallbackTimeout();
+		this._deselectItems(this.$items);
 	},
 
 	/**
@@ -4922,279 +4913,6 @@ Garnish.Select = Garnish.Base.extend({
 	clearMouseUpTimeout: function()
 	{
 		clearTimeout(this.mouseUpTimeout);
-	},
-
-	/**
-	 * On Mouse Down
-	 */
-	onMouseDown: function(ev)
-	{
-		// ignore right clicks
-		if (ev.which != Garnish.PRIMARY_CLICK)
-		{
-			return;
-		}
-
-		// Enforce the filter
-		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
-		{
-			return;
-		}
-
-		this.mousedownX = ev.pageX;
-		this.mousedownY = ev.pageY;
-
-		var $item = $($.data(ev.currentTarget, 'select-item'));
-
-		if (ev.metaKey || ev.ctrlKey)
-		{
-			this.toggleItem($item);
-		}
-		else if (this.first !== null && ev.shiftKey)
-		{
-			this.selectRange($item);
-		}
-	},
-
-	/**
-	 * On Mouse Up
-	 */
-	onMouseUp: function(ev)
-	{
-		// ignore right clicks
-		if (ev.which != Garnish.PRIMARY_CLICK)
-		{
-			return;
-		}
-
-		// Enfore the filter
-		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
-		{
-			return;
-		}
-
-		var $item = $($.data(ev.currentTarget, 'select-item'));
-
-		// was this a click?
-		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
-		{
-			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
-			if (this.isSelected($item))
-			{
-				this.clearMouseUpTimeout();
-
-				this.mouseUpTimeout = setTimeout($.proxy(function() {
-					this.deselectOthers($item);
-				}, this), 300);
-			}
-			else
-			{
-				this.deselectAll();
-				this.selectItem($item);
-			}
-		}
-	},
-
-	// --------------------------------------------------------------------
-
-	/**
-	 * On Key Down
-	 */
-	onKeyDown: function(ev)
-	{
-		var metaKey = (ev.metaKey || ev.ctrlKey);
-
-		if (this.settings.arrowsChangeSelection || !this.$focusable.length)
-		{
-			var anchor = ev.shiftKey ? this.last : this.first;
-		}
-		else
-		{
-			var anchor = $.inArray(this.$focusable[0], this.$items);
-
-			if (anchor == -1)
-			{
-				anchor = 0;
-			}
-		}
-
-		// Ok, what are we doing here?
-		switch (ev.keyCode)
-		{
-			case Garnish.LEFT_KEY:
-			{
-				ev.preventDefault();
-
-				// Select the last item if none are selected
-				if (this.first === null)
-				{
-					if (Garnish.ltr)
-					{
-						var $item = this.getLastItem();
-					}
-					else
-					{
-						var $item = this.getFirstItem();
-					}
-				}
-				else
-				{
-					if (metaKey)
-					{
-						var $item = this.getFurthestItemToTheLeft(anchor);
-					}
-					else
-					{
-						var $item = this.getItemToTheLeft(anchor);
-					}
-				}
-
-				break;
-			}
-
-			case Garnish.RIGHT_KEY:
-			{
-				ev.preventDefault();
-
-				// Select the first item if none are selected
-				if (this.first === null)
-				{
-					if (Garnish.ltr)
-					{
-						var $item = this.getFirstItem();
-					}
-					else
-					{
-						var $item = this.getLastItem();
-					}
-				}
-				else
-				{
-					if (metaKey)
-					{
-						var $item = this.getFurthestItemToTheRight(anchor);
-					}
-					else
-					{
-						var $item = this.getItemToTheRight(anchor);
-					}
-				}
-
-				break;
-			}
-
-			case Garnish.UP_KEY:
-			{
-				ev.preventDefault();
-
-				// Select the last item if none are selected
-				if (this.first === null)
-				{
-					var $item = this.getLastItem();
-				}
-				else
-				{
-					if (metaKey)
-					{
-						var $item = this.getFurthestItemAbove(anchor);
-					}
-					else
-					{
-						var $item = this.getItemAbove(anchor);
-					}
-
-					if (!$item)
-					{
-						$item = this.getFirstItem();
-					}
-				}
-
-				break;
-			}
-
-			case Garnish.DOWN_KEY:
-			{
-				ev.preventDefault();
-
-				// Select the first item if none are selected
-				if (this.first === null)
-				{
-					var $item = this.getFirstItem();
-				}
-				else
-				{
-					if (metaKey)
-					{
-						var $item = this.getFurthestItemBelow(anchor);
-					}
-					else
-					{
-						var $item = this.getItemBelow(anchor);
-					}
-
-					if (!$item)
-					{
-						$item = this.getLastItem();
-					}
-				}
-
-				break;
-			}
-
-			case Garnish.SPACE_KEY:
-			{
-				if (!metaKey)
-				{
-					ev.preventDefault();
-
-					if (this.isSelected(this.$focusable))
-					{
-						this.deselectItem(this.$focusable);
-					}
-					else
-					{
-						this.selectItem(this.$focusable);
-					}
-				}
-
-				break;
-			}
-
-			case Garnish.A_KEY:
-			{
-				if (metaKey)
-				{
-					ev.preventDefault();
-					this.selectAll();
-				}
-
-				break;
-			}
-		}
-
-		// Is there an item queued up for focus/selection?
-		if ($item && $item.length)
-		{
-			if (this.settings.arrowsChangeSelection)
-			{
-				// select it
-				if (this.first !== null && ev.shiftKey)
-				{
-					this.selectRange($item);
-				}
-				else
-				{
-					this.deselectAll();
-					this.selectItem($item);
-				}
-			}
-			else
-			{
-				// just set the new item to be focussable
-				this.setFocusableItem($item);
-				$item.focus();
-			}
-		}
 	},
 
 	getFirstItem: function()
@@ -5508,17 +5226,6 @@ Garnish.Select = Garnish.Base.extend({
 	},
 
 	/**
-	 * Destroy
-	 */
-	destroy: function()
-	{
-		this.base();
-
-		// clear timeout
-		this.clearCallbackTimeout();
-	},
-
-	/**
 	 * Update First/Last indexes
 	 */
 	updateIndexes: function()
@@ -5565,42 +5272,329 @@ Garnish.Select = Garnish.Base.extend({
 	// --------------------------------------------------------------------
 
 	/**
-	 * Clear Callback Timeout
+	 * Get Selected Items
 	 */
-	clearCallbackTimeout: function()
+	getSelectedItems: function()
 	{
-		if (this.settings.onSelectionChange)
+		return this.$items.filter('.'+this.settings.selectedClass);
+	},
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * On Mouse Down
+	 */
+	onMouseDown: function(ev)
+	{
+		// ignore right clicks
+		if (ev.which != Garnish.PRIMARY_CLICK)
 		{
-			clearTimeout(this.callbackTimeout);
+			return;
+		}
+
+		// Enforce the filter
+		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
+		{
+			return;
+		}
+
+		this.mousedownX = ev.pageX;
+		this.mousedownY = ev.pageY;
+
+		var $item = $($.data(ev.currentTarget, 'select-item'));
+
+		if (ev.metaKey || ev.ctrlKey)
+		{
+			this.toggleItem($item);
+		}
+		else if (this.first !== null && ev.shiftKey)
+		{
+			this.selectRange($item);
+		}
+	},
+
+	/**
+	 * On Mouse Up
+	 */
+	onMouseUp: function(ev)
+	{
+		// ignore right clicks
+		if (ev.which != Garnish.PRIMARY_CLICK)
+		{
+			return;
+		}
+
+		// Enfore the filter
+		if (this.settings.filter && !$(ev.target).is(this.settings.filter))
+		{
+			return;
+		}
+
+		var $item = $($.data(ev.currentTarget, 'select-item'));
+
+		// was this a click?
+		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
+		{
+			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
+			if (this.isSelected($item))
+			{
+				this.clearMouseUpTimeout();
+
+				this.mouseUpTimeout = setTimeout($.proxy(function() {
+					this.deselectOthers($item);
+				}, this), 300);
+			}
+			else
+			{
+				this.deselectAll();
+				this.selectItem($item);
+			}
+		}
+	},
+
+	/**
+	 * On Key Down
+	 */
+	onKeyDown: function(ev)
+	{
+		var metaKey = (ev.metaKey || ev.ctrlKey);
+
+		if (this.settings.arrowsChangeSelection || !this.$focusable.length)
+		{
+			var anchor = ev.shiftKey ? this.last : this.first;
+		}
+		else
+		{
+			var anchor = $.inArray(this.$focusable[0], this.$items);
+
+			if (anchor == -1)
+			{
+				anchor = 0;
+			}
+		}
+
+		// Ok, what are we doing here?
+		switch (ev.keyCode)
+		{
+			case Garnish.LEFT_KEY:
+			{
+				ev.preventDefault();
+
+				// Select the last item if none are selected
+				if (this.first === null)
+				{
+					if (Garnish.ltr)
+					{
+						var $item = this.getLastItem();
+					}
+					else
+					{
+						var $item = this.getFirstItem();
+					}
+				}
+				else
+				{
+					if (metaKey)
+					{
+						var $item = this.getFurthestItemToTheLeft(anchor);
+					}
+					else
+					{
+						var $item = this.getItemToTheLeft(anchor);
+					}
+				}
+
+				break;
+			}
+
+			case Garnish.RIGHT_KEY:
+			{
+				ev.preventDefault();
+
+				// Select the first item if none are selected
+				if (this.first === null)
+				{
+					if (Garnish.ltr)
+					{
+						var $item = this.getFirstItem();
+					}
+					else
+					{
+						var $item = this.getLastItem();
+					}
+				}
+				else
+				{
+					if (metaKey)
+					{
+						var $item = this.getFurthestItemToTheRight(anchor);
+					}
+					else
+					{
+						var $item = this.getItemToTheRight(anchor);
+					}
+				}
+
+				break;
+			}
+
+			case Garnish.UP_KEY:
+			{
+				ev.preventDefault();
+
+				// Select the last item if none are selected
+				if (this.first === null)
+				{
+					var $item = this.getLastItem();
+				}
+				else
+				{
+					if (metaKey)
+					{
+						var $item = this.getFurthestItemAbove(anchor);
+					}
+					else
+					{
+						var $item = this.getItemAbove(anchor);
+					}
+
+					if (!$item)
+					{
+						$item = this.getFirstItem();
+					}
+				}
+
+				break;
+			}
+
+			case Garnish.DOWN_KEY:
+			{
+				ev.preventDefault();
+
+				// Select the first item if none are selected
+				if (this.first === null)
+				{
+					var $item = this.getFirstItem();
+				}
+				else
+				{
+					if (metaKey)
+					{
+						var $item = this.getFurthestItemBelow(anchor);
+					}
+					else
+					{
+						var $item = this.getItemBelow(anchor);
+					}
+
+					if (!$item)
+					{
+						$item = this.getLastItem();
+					}
+				}
+
+				break;
+			}
+
+			case Garnish.SPACE_KEY:
+			{
+				if (!metaKey)
+				{
+					ev.preventDefault();
+
+					if (this.isSelected(this.$focusable))
+					{
+						this.deselectItem(this.$focusable);
+					}
+					else
+					{
+						this.selectItem(this.$focusable);
+					}
+				}
+
+				break;
+			}
+
+			case Garnish.A_KEY:
+			{
+				if (metaKey)
+				{
+					ev.preventDefault();
+					this.selectAll();
+				}
+
+				break;
+			}
+		}
+
+		// Is there an item queued up for focus/selection?
+		if ($item && $item.length)
+		{
+			if (this.settings.arrowsChangeSelection)
+			{
+				// select it
+				if (this.first !== null && ev.shiftKey)
+				{
+					this.selectRange($item);
+				}
+				else
+				{
+					this.deselectAll();
+					this.selectItem($item);
+				}
+			}
+			else
+			{
+				// just set the new item to be focussable
+				this.setFocusableItem($item);
+				$item.focus();
+			}
 		}
 	},
 
 	/**
 	 * Set Callback Timeout
 	 */
-	setCallbackTimeout: function()
+	onSelectionChange: function()
 	{
-		if (this.settings.onSelectionChange)
-		{
-			// clear the last one
-			this.clearCallbackTimeout();
+		this.totalSelected = this.$selectedItems.length;
 
-			this.callbackTimeout = setTimeout($.proxy(function()
-			{
-				this.callbackTimeout = null;
-				this.settings.onSelectionChange();
-			}, this), 1);
+		if (this.callbackFrame)
+		{
+			Garnish.cancelAnimationFrame(this.callbackFrame);
+			this.callbackFrame = null;
 		}
+
+		this.callbackFrame = Garnish.requestAnimationFrame($.proxy(function()
+		{
+			this.callbackFrame = null;
+			this.trigger('selectionChange');
+			this.settings.onSelectionChange();
+		}, this));
 	},
 
-	/**
-	 * Get Selected Items
-	 */
-	getSelectedItems: function()
+	// Private methods
+	// =========================================================================
+
+	_selectItems: function($items)
 	{
-		return this.$items.filter('.'+this.settings.selectedClass);
+		$items.addClass(this.settings.selectedClass);
+		this.$selectedItems = this.$selectedItems.add($items);
+		this.onSelectionChange();
+	},
+
+	_deselectItems: function($items)
+	{
+		$items.removeClass(this.settings.selectedClass);
+		this.$selectedItems = this.$selectedItems.not($items);
+		this.onSelectionChange();
 	}
 },
+
+// Static Properties
+// =============================================================================
+
 {
 	defaults: {
 		selectedClass: 'sel',
