@@ -48,7 +48,7 @@ interface IFieldType extends ISavableComponentType
 	 * return '<textarea name="'.$name.'">'.$value.'</textarea>';
 	 * ```
 	 *
-	 * For more complex inputs, you might prefer to create a template for this input, and render it via
+	 * For more complex inputs, you might prefer to create a template, and render it via
 	 * {@link TemplatesService::render()}. For example, the following code would render a template loacated at
 	 * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
 	 *
