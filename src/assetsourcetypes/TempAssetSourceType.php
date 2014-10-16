@@ -4,12 +4,13 @@ namespace Craft;
 /**
  * A temporary asset source type class.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.assetsourcetypes
- * @since     2.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.assetsourcetypes
+ * @since      2.0
+ * @deprecated This class will be removed in Craft 3.0.
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
