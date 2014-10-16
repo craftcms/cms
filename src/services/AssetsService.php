@@ -694,12 +694,34 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Inserts a file from a local path into a folder and returns the resulting file id.
+	 * Saves a file into an asset folder.
 	 *
-	 * @param string $localPath
-	 * @param string $fileName
-	 * @param int    $folderId
-	 * @param mixed  $conflictResolution What action should be taken in the event of a filename conflict.
+	 * This can be used to store newly-uploaded files:
+	 *
+	 * ```php
+	 * $uploadedFile = UploadedFile::getInstanceByName('photo');
+	 * $folderId = 10;
+	 *
+	 * $response = craft()->assets->insertFileByLocalPath(
+	 *     $uploadedFile->tempName,
+	 *     $uploadedFile->name,
+	 *     $folderId,
+	 *     AssetConflictResolution::KeepBoth
+	 * );
+	 *
+	 * if ($response->isSuccess())
+	 * {
+	 *     $fileId = $response->getDataItem('fileId');
+	 *     // ...
+	 * }
+	 * ```
+	 *
+	 * @param string $localPath          The local path to the file.
+	 * @param string $fileName           The name that the file should be given when saved in the asset folder.
+	 * @param int    $folderId           The ID of the folder that the file should be saved into.
+	 * @param string $conflictResolution What action should be taken in the event of a filename conflict, if any
+	 *                                   (`AssetConflictResolution::KeepBoth`, `AssetConflictResolution::Replace`,
+	 *                                   or `AssetConflictResolution::Cancel).
 	 *
 	 * @return AssetOperationResponseModel
 	 */
