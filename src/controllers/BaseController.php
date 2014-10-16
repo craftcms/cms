@@ -38,17 +38,6 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
-	 *
-	 * @throws HttpException
-	 * @return null
-	 */
-	public function init()
-	{
-
-	}
-
-	/**
 	 * Include any route params gathered by {@link UrlManager} as controller action params.
 	 *
 	 * @return array
