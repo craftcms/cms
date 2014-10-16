@@ -76,7 +76,7 @@ interface IFieldType extends ISavableComponentType
 	 * …then it might actually look like this before getting output to the browser:
 	 *
 	 * ```html
-	 * <textarea id="fields-foo" name="fields[foo]"></textarea>
+	 * <textarea id="namespace-foo" name="namespace[foo]"></textarea>
 	 *
 	 * <script type="text/javascript">
 	 *     var textarea = document.getElementById('foo');
@@ -84,9 +84,9 @@ interface IFieldType extends ISavableComponentType
 	 * ```
 	 *
 	 * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id=`
-	 * attribute was changed from `foo` to `fields-foo`.
+	 * attribute was changed from `foo` to `namespace-foo`.
 	 *
-	 * Before you start adding `fields-` to the beginning of your element ID selectors, keep in mind that the actual
+	 * Before you start adding `namespace-` to the beginning of your element ID selectors, keep in mind that the actual
 	 * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
 	 * that simple.
 	 *
