@@ -329,12 +329,4 @@ abstract class BaseController extends \CController
 
 		return true;
 	}
-
-	/**
-	 * @return array
-	 */
-	public function filters()
-	{
-
-	}
 }
