@@ -1076,7 +1076,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	targetItemMouseOffsetY: null,
 
 	scrollProperty: null,
-	scrollDir: null,
+	scrollAxis: null,
+	scrollDist: null,
 	scrollProxy: null,
 	scrollFrame: null,
 
@@ -1135,21 +1136,24 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			{
 				// Scrolling up?
 				this.drag._winScrollTop = Garnish.$win.scrollTop();
+				this.drag._minMouseScrollY = this.drag._winScrollTop + Garnish.BaseDrag.windowScrollTargetSize;
 
-				if (this.mouseY < this.drag._winScrollTop + Garnish.BaseDrag.windowScrollTargetSize)
+				if (this.mouseY < this.drag._minMouseScrollY)
 				{
 					this.drag._scrollProperty = 'scrollTop';
-					this.drag._scrollDir = -1;
+					this.drag._scrollAxis = 'Y';
+					this.drag._scrollDist = Math.round((this.mouseY - this.drag._minMouseScrollY) / 2);
 				}
 				else
 				{
 					// Scrolling down?
-					this.drag._winHeight = Garnish.$win.height();
+					this.drag._maxMouseScrollY = this.drag._winScrollTop + Garnish.$win.height() - Garnish.BaseDrag.windowScrollTargetSize;
 
-					if (this.mouseY > this.drag._winScrollTop + this.drag._winHeight - Garnish.BaseDrag.windowScrollTargetSize)
+					if (this.mouseY > this.drag._maxMouseScrollY)
 					{
 						this.drag._scrollProperty = 'scrollTop';
-						this.drag._scrollDir = 1;
+						this.drag._scrollAxis = 'Y';
+						this.drag._scrollDist = Math.round((this.mouseY - this.drag._maxMouseScrollY) / 2);
 					}
 				}
 			}
@@ -1158,21 +1162,24 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			{
 				// Scrolling left?
 				this.drag._winScrollLeft = Garnish.$win.scrollLeft();
+				this.drag._minMouseScrollX = this.drag._winScrollLeft + Garnish.BaseDrag.windowScrollTargetSize;
 
-				if (this.mouseX < this.drag._winScrollLeft + Garnish.BaseDrag.windowScrollTargetSize)
+				if (this.mouseX < this.drag._minMouseScrollX)
 				{
 					this.drag._scrollProperty = 'scrollLeft';
-					this.drag._scrollDir = -1;
+					this.drag._scrollAxis = 'X';
+					this.drag._scrollDist = Math.round((this.mouseX - this.drag._minMouseScrollX) / 2);
 				}
 				else
 				{
 					// Scrolling right?
-					this.drag._winWidth = Garnish.$win.width();
+					this.drag._maxMouseScrollX = this.drag._winScrollLeft + Garnish.$win.width() - Garnish.BaseDrag.windowScrollTargetSize;
 
-					if (this.mouseX > this.drag._winScrollLeft + this.drag._winWidth - Garnish.BaseDrag.windowScrollTargetSize)
+					if (this.mouseX > this.drag._maxMouseScrollX)
 					{
 						this.drag._scrollProperty = 'scrollLeft';
-						this.drag._scrollDir = 1;
+						this.drag._scrollAxis = 'X';
+						this.drag._scrollDist = Math.round((this.mouseX - this.drag._maxMouseScrollX) / 2);
 					}
 				}
 			}
@@ -1187,11 +1194,18 @@ Garnish.BaseDrag = Garnish.Base.extend({
 						this.scrollProxy = $.proxy(this, '_scrollWindow');
 					}
 
+					if (this.scrollFrame)
+					{
+						Garnish.cancelAnimationFrame(this.scrollFrame);
+						this.scrollFrame = null;
+					}
+
 					this.scrollFrame = Garnish.requestAnimationFrame(this.scrollProxy);
 				}
 
 				this.scrollProperty = this.drag._scrollProperty;
-				this.scrollDir = this.drag._scrollDir;
+				this.scrollAxis = this.drag._scrollAxis;
+				this.scrollDist = this.drag._scrollDist;
 			}
 			else
 			{
@@ -1283,11 +1297,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			var index = $.inArray(item, this.$items);
 			if (index != -1)
 			{
-				var $handle = $.data(item, 'drag-handle');
-				$handle.data('drag-item', null);
-				$.data(item, 'drag', null);
-				$.data(item, 'drag-handle', null);
-				this.removeAllListeners($handle);
+				this._deinitItem(item);
 				this.$items.splice(index, 1);
 			}
 		}
@@ -1300,20 +1310,19 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	{
 		for (var i = 0; i < this.$items.length; i++)
 		{
-			var item = this.$items[i],
-				$handle = $.data(item, 'drag-handle');
-
-			$.data(item, 'drag', null);
-
-			if ($handle)
-			{
-				$.data(item, 'drag-handle', null);
-				$handle.data('drag-item', null);
-				this.removeAllListeners($handle);
-			}
+			this._deinitItem(this.$items[i]);
 		}
 
 		this.$items = $();
+	},
+
+	/**
+	 * Destroy
+	 */
+	destroy: function()
+	{
+		this.removeAllItems();
+		this.base();
 	},
 
 	// Events
@@ -1470,11 +1479,14 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	_scrollWindow: function()
 	{
 		this._.scrollPos = Garnish.$win[this.scrollProperty]();
-		Garnish.$win[this.scrollProperty](this._.scrollPos + this.scrollDir * 3);
+		Garnish.$win[this.scrollProperty](this._.scrollPos + this.scrollDist);
 
-		this.mouseY -= this._.scrollPos - Garnish.$win[this.scrollProperty]()
+		this['mouse'+this.scrollAxis] -= this._.scrollPos - Garnish.$win[this.scrollProperty]();
+		this['realMouse'+this.scrollAxis] = this['mouse'+this.scrollAxis];
 
 		this.drag();
+
+		this.scrollFrame = Garnish.requestAnimationFrame(this.scrollProxy);
 	},
 
 	/**
@@ -1489,7 +1501,25 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		}
 
 		this.scrollProperty = null;
-		this.scrollDir = null;
+		this.scrollAxis = null;
+		this.scrollDist = null;
+	},
+
+	/**
+	 * Deinitialize an item.
+	 */
+	_deinitItem: function(item)
+	{
+		var $handle = $.data(item, 'drag-handle');
+
+		if ($handle)
+		{
+			$handle.removeData('drag-item');
+			this.removeAllListeners($handle);
+		}
+
+		$.removeData(item, 'drag');
+		$.removeData(item, 'drag-handle');
 	}
 },
 
@@ -1498,7 +1528,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 
 {
 	minMouseDist: 1,
-	windowScrollTargetSize: 20,
+	windowScrollTargetSize: 25,
 
 	defaults: {
 		handle: null,
@@ -1838,13 +1868,13 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	/**
 	 * Drag
 	 */
-	drag: function()
+	drag: function(didMouseMove)
 	{
 		// Update the draggee's virtual midpoint
 		this.draggeeVirtualMidpointX = this.mouseX + this.targetItemMouseOffsetX + (this.targetItemWidth / 2);
 		this.draggeeVirtualMidpointY = this.mouseY + this.targetItemMouseOffsetY + (this.targetItemHeight / 2);
 
-		this.base();
+		this.base(didMouseMove);
 	},
 
 	/**
@@ -5270,15 +5300,25 @@ Garnish.Select = Garnish.Base.extend({
 			var index = $.inArray(item, this.$items);
 			if (index != -1)
 			{
-				var $handle = $.data(item, 'select-handle');
-				$handle.data('select-item', null);
-				$.data(item, 'select', null);
-				$.data(item, 'select-handle', null);
-				this.removeAllListeners($handle);
+				this._deinitItem(item);
 				this.$items.splice(index, 1);
 			}
 		}
 
+		this.updateIndexes();
+	},
+
+	/**
+	 * Remove All Items
+	 */
+	removeAllItems: function()
+	{
+		for (var i = 0; i < this.$items.length; i++)
+		{
+			this._deinitItem(this.$items[i]);
+		}
+
+		this.$items = $();
 		this.updateIndexes();
 	},
 
@@ -5350,6 +5390,7 @@ Garnish.Select = Garnish.Base.extend({
 	destroy: function()
 	{
 		this.$container.removeData('select');
+		this.removeAllItems();
 		this.base();
 	},
 
@@ -5663,6 +5704,23 @@ Garnish.Select = Garnish.Base.extend({
 		$items.removeClass(this.settings.selectedClass);
 		this.$selectedItems = this.$selectedItems.not($items);
 		this.onSelectionChange();
+	},
+
+	/**
+	 * Deinitialize an item.
+	 */
+	_deinitItem: function(item)
+	{
+		var $handle = $.data(item, 'select-handle');
+
+		if ($handle)
+		{
+			$handle.removeData('select-item');
+			this.removeAllListeners($handle);
+		}
+
+		$.removeData(item, 'select');
+		$.removeData(item, 'select-handle');
 	}
 },
 
