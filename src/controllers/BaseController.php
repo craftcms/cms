@@ -56,22 +56,6 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns the folder containing view files for this controller. Craft overrides this since {@link \CController}'s
-	 * version defaults $module to craft().
-	 *
-	 * @return string The folder containing the view files for this controller.
-	 */
-	public function getViewPath()
-	{
-		if (($module = $this->getModule()) === null)
-		{
-			$module = craft();
-		}
-
-		return $module->getViewPath().'/';
-	}
-
-	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param mixed $template      The name of the template to load, or a {@link StringTemplate} object.
