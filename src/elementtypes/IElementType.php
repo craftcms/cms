@@ -326,12 +326,13 @@ interface IElementType extends IComponentType
 	 * ```
 	 *
 	 * If you are able to determine from the element criteria’s paramteers that there’s no way that the query is going
-	 * to match any elements, you can have it return `false`.
+	 * to match any elements, you can have it return `false`. The query will be stopped before it ever gets a chance to
+	 * execute.
 	 *
-	 * @param DbCommand            $query    The database query.
-	 * @param ElementCriteriaModel $criteria
+	 * @param DbCommand            $query    The database query currently being built to find the elements.
+	 * @param ElementCriteriaModel $criteria The criteria that is being used to find the elements.
 	 *
-	 * @return null|false
+	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria);
 
