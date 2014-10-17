@@ -111,7 +111,7 @@ Base.prototype = {
 						// set the value normally in case it's a function that needs to be overwritten
 						extend.call(this, key, desc.value);
 					} else {
-						// now set it (again?) while maintaining the original descriptor settings
+						// set it while maintaining the original descriptor settings
 						Object.defineProperty(this, key, desc);
 					}
 				}
