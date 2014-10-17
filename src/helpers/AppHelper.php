@@ -25,9 +25,9 @@ class AppHelper
 	// =========================================================================
 
 	/**
-	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
+	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
 	 *
-\	 * @return bool
+	 * @return bool Whether Craft is running on the PHP Dev Server.
 	 */
 	public static function isPhpDevServer()
 	{
@@ -47,9 +47,9 @@ class AppHelper
 	}
 
 	/**
-	 * Returns an array of all known Craft editions.
+	 * Returns an array of all known Craft editions’ IDs.
 	 *
-	 * @return array
+	 * @return array All the known Craft editions’ IDs.
 	 */
 	public static function getEditions()
 	{
@@ -59,9 +59,9 @@ class AppHelper
 	/**
 	 * Returns the name of the given Craft edition.
 	 *
-	 * @param int $edition
+	 * @param int $edition An edition’s ID.
 	 *
-	 * @return string
+	 * @return string The edition’s name.
 	 */
 	public static function getEditionName($edition)
 	{
@@ -85,9 +85,9 @@ class AppHelper
 	/**
 	 * Returns whether an edition is valid.
 	 *
-	 * @param mixed $edition
+	 * @param mixed $edition An edition’s ID (or is it?)
 	 *
-	 * @return bool
+	 * @return bool Whether $edition is a valid edition ID.
 	 */
 	public static function isValidEdition($edition)
 	{
@@ -97,9 +97,9 @@ class AppHelper
 	/**
 	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
 	 *
-	 * @param string $value
+	 * @param string $value The size string.
 	 *
-	 * @return int
+	 * @return int The size in bytes.
 	 */
 	public static function getByteValueFromPhpSizeString($value)
 	{
