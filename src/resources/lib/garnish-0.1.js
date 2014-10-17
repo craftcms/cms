@@ -110,10 +110,10 @@ Base.prototype = {
 					if (typeof desc.value != typeof undefined) {
 						// set the value normally in case it's a function that needs to be overwritten
 						extend.call(this, key, desc.value);
-						desc.value = this[key];
+					} else {
+						// now set it (again?) while maintaining the original descriptor settings
+						Object.defineProperty(this, key, desc);
 					}
-					// now set it (again?) while maintaining the original descriptor settings
-					Object.defineProperty(this, key, desc);
 				}
 			}
 		}
