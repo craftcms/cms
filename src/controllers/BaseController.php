@@ -38,20 +38,11 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * Initializes the controller.  This method is called by the Craft before the controller starts to execute.
+	 * Returns the request parameters that will be used for action parameter binding.
 	 *
-	 * @throws HttpException
-	 * @return null
-	 */
-	public function init()
-	{
-
-	}
-
-	/**
-	 * Include any route params gathered by {@link UrlManager} as controller action params.
+	 * By default, this method will return $_GET merged with {@link UrlManager::getRouteParams}.
 	 *
-	 * @return array
+	 * @return array The request parameters to be used for action parameter binding.
 	 */
 	public function getActionParams()
 	{
@@ -67,31 +58,16 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns the folder containing view files for this controller. Craft overrides this since {@link \CController}'s
-	 * version defaults $module to craft().
-	 *
-	 * @return string The folder containing the view files for this controller.
-	 */
-	public function getViewPath()
-	{
-		if (($module = $this->getModule()) === null)
-		{
-			$module = craft();
-		}
-
-		return $module->getViewPath().'/';
-	}
-
-	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param mixed $template      The name of the template to load, or a {@link StringTemplate} object.
+	 * @param mixed $template      The name of the template to load in a format supported by
+	 *                             {@link TemplatesService::findTemplate()}, or a {@link StringTemplate} object.
 	 * @param array $variables     The variables that should be available to the template.
-	 * @param bool  $return        Whether to return the results, rather than output them.
-	 * @param bool  $processOutput
+	 * @param bool  $return        Whether to return the results, rather than output them. (Default is `false`.)
+	 * @param bool  $processOutput Whether the output should be processed by {@link processOutput()}.
 	 *
 	 * @throws HttpException
-	 * @return mixed
+	 * @return mixed The rendered template if $return is set to `true`.
 	 */
 	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
@@ -176,7 +152,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirects user to the login template if they're not logged in.
+	 * Redirects the user to the login template if they're not logged in.
 	 *
 	 * @return null
 	 */
@@ -189,7 +165,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Requires the current user to be logged in as an admin.
+	 * Throws a 403 error if the current user is not an admin.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -203,7 +179,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns a 400 if this isn't a POST request
+	 * Throws a 400 error if this isn’t a POST request
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -217,7 +193,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns a 400 if this isn't an Ajax request.
+	 * Throws a 400 error if this isn’t an Ajax request.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -231,7 +207,7 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Requires the current request to include a token.
+	 * Throws a 400 error if the current request doesn’t have a valid token.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -245,11 +221,11 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirect
+	 * Redirects the browser to a given URL.
 	 *
-	 * @param      $url
-	 * @param bool $terminate
-	 * @param int  $statusCode
+	 * @param string $url The URL to redirect the browser to.
+	 * @param bool   $terminate Whether the request should be terminated.
+	 * @param int    $statusCode The status code to accompany the redirect. (Default is 302.)
 	 *
 	 * @return null
 	 */
@@ -300,9 +276,9 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Respond with JSON
+	 * Responds to the request with JSON.
 	 *
-	 * @param array|null $var The array to JSON-encode and return
+	 * @param array|null $var The array that should be JSON-encoded and returned to the browser.
 	 *
 	 * @return null
 	 */
@@ -318,9 +294,9 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Respond with a JSON error message
+	 * Responds to the request with a JSON error message.
 	 *
-	 * @param string $error The error message
+	 * @param string $error The error message.
 	 *
 	 * @return null
 	 */
@@ -355,13 +331,5 @@ abstract class BaseController extends \CController
 		}
 
 		return true;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function filters()
-	{
-
 	}
 }

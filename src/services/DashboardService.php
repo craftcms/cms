@@ -244,26 +244,6 @@ class DashboardService extends BaseApplicationComponent
 	private function _addDefaultUserWidgets()
 	{
 		$user = craft()->userSession->getUser();
-		$sections = craft()->sections->getAllSections();
-
-		foreach ($sections as $section)
-		{
-			if ($section->type !== SectionType::Single)
-			{
-				// Only add widgets for sections they have create privileges to.
-				if ($user->can('createEntries:'.$section->id))
-				{
-					$widget = new WidgetModel();
-					$widget->type = 'QuickPost';
-
-					$widget->settings = array(
-						'section' => $section->id
-					);
-
-					$this->saveUserWidget($widget);
-				}
-			}
-		}
 
 		// Recent Entries widget
 		$widget = new WidgetModel();

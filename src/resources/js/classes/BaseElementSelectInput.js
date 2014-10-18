@@ -58,8 +58,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		{
 			this.elementSort = new Garnish.DragSort({
 				container: this.$elementsContainer,
-				filter: (this.selectable ? $.proxy(function() {
-					return this.elementSelect.getSelectedItems();
+				filter: (this.selectable ? $.proxy(function()
+				{
+					// Only return all the selected items if the target item is selected
+					if (this.elementSort.$targetItem.hasClass('sel'))
+					{
+						return this.elementSelect.getSelectedItems();
+					}
+					else
+					{
+						return this.elementSort.$targetItem;
+					}
 				}, this) : null),
 				ignoreHandleSelector: '.delete',
 				onSortChange: (this.selectable ? $.proxy(function() {

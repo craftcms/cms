@@ -19,21 +19,23 @@ interface IComponentType
 	/**
 	 * Returns the component’s name.
 	 *
-	 * @return string
+	 * This is what your component will be called throughout the Control Panel.
+	 *
+	 * @return string The component’s name.
 	 */
 	public function getName();
 
 	/**
-	 * Get the class name, sans namespace and suffix.
+	 * Returns the component’s handle, ideally based on the class name.
 	 *
-	 * @return string
+	 * @return string The component’s handle.
 	 */
 	public function getClassHandle();
 
 	/**
-	 * Returns whether this component should be selectable when choosing a component of this type.
+	 * Returns whether this component should be shown when the user is creating a component of this type.
 	 *
-	 * @return bool
+	 * @return bool Whether the component should be selectable.
 	 */
 	public function isSelectable();
 }

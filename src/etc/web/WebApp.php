@@ -397,54 +397,6 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Gets the viewPath for the incoming request.
-	 *
-	 * Craft can't use Yii's {@link setViewPath()} because Craft's view path depends on the request type, which is
-	 * initialized after web application, so we override getViewPath().
-	 *
-	 * @return string
-	 */
-	public function getViewPath()
-	{
-		if (!isset($this->_templatePath))
-		{
-			if (mb_strpos(get_class($this->request), 'HttpRequest') !== false)
-			{
-				$this->_templatePath = $this->path->getTemplatesPath();
-			}
-			else
-			{
-				// in the case of an exception, our custom classes are not loaded.
-				$this->_templatePath = CRAFT_TEMPLATES_PATH;
-			}
-		}
-
-		return $this->_templatePath;
-	}
-
-	/**
-	 * Sets the template path for the app.
-	 *
-	 * @param string $path
-	 *
-	 * @return null
-	 */
-	public function setViewPath($path)
-	{
-		$this->_templatePath = $path;
-	}
-
-	/**
-	 * Returns the CP templates path.
-	 *
-	 * @return string
-	 */
-	public function getSystemViewPath()
-	{
-		return $this->path->getCpTemplatesPath();
-	}
-
-	/**
 	 * Formats an exception into JSON before returning it to the client.
 	 *
 	 * @param array $data

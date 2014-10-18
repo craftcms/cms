@@ -19,21 +19,22 @@ interface IWidget extends ISavableComponentType
 	/**
 	 * Returns the widget's title.
 	 *
-	 * @return string
+	 * @return string The widget’s title.
 	 */
 	public function getTitle();
 
 	/**
 	 * Returns the widget's body HTML.
 	 *
-	 * @return string
+	 * @return string|false The widget’s body HTML, or `false` if the widget
+	 *                      should not be visible.
 	 */
 	public function getBodyHtml();
 
 	/**
 	 * Returns the widget's colspan.
 	 *
-	 * @return int
+	 * @return int The widget’s colspan.
 	 */
 	public function getColspan();
 }

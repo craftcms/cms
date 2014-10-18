@@ -3,6 +3,9 @@
  */
 Craft.BaseElementIndex = Garnish.Base.extend(
 {
+	// Properties
+	// =========================================================================
+
 	initialized: false,
 	elementType: null,
 
@@ -39,16 +42,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$sidebar: null,
 	$sidebarButtonContainer: null,
 	showingSidebar: null,
-	$sources: null,
 	sourceKey: null,
 	sourceViewModes: null,
 	$source: null,
-	$sourceToggles: null,
 	$elements: null,
 	$table: null,
 	$elementContainer: null,
 
+	// Public methods
+	// =========================================================================
 
+	/**
+	 * Constructor
+	 */
 	init: function(elementType, $container, settings)
 	{
 		this.elementType = elementType;
@@ -83,8 +89,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
 		this.$sidebarButtonContainer = this.$sidebar.children('.buttons');
-		this.$sources = this.$sidebar.find('nav a');
-		this.$sourceToggles = this.$sidebar.find('.toggle');
 		this.$elements = this.$container.find('.elements:first');
 
 		if (!this.$sidebarButtonContainer.length)
@@ -97,11 +101,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$viewModeBtnTd = this.$toolbar.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
 
+		// Initialize the sources
+		// ---------------------------------------------------------------------
+
+		var $sources = this._getSourcesInList(this.$sidebar.children('nav').children('ul'));
+
 		// No source, no party.
-		if (this.$sources.length == 0)
+		if ($sources.length == 0)
 		{
 			return;
 		}
+
+		// The source selector
+		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
+			selectedClass:     'sel',
+			multi:             false,
+			vertical:          true,
+			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
+		});
+
+		this._initSources($sources);
+
+		// Initialize the locale menu button
+		// ---------------------------------------------------------------------
 
 		// Is there a locale menu?
 		if (this.$localeMenuBtn.length)
@@ -185,22 +207,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.initialized = true;
 		this.updateElements();
 
-		// Add some listeners
-		this.addListener(this.$sourceToggles, 'click', function(ev)
-		{
-			$(ev.currentTarget).parent().toggleClass('expanded');
-			this.$sidebar.trigger('resize');
-			ev.stopPropagation();
-		});
-
-		// The source selector
-		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), this.$sources, {
-			selectedClass:     'sel',
-			multi:             false,
-			vertical:          true,
-			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
-		});
-
 		// Status changes
 		if (this.$statusMenuBtn.length)
 		{
@@ -253,6 +259,48 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
+	get $sources()
+	{
+		if (!this.sourceSelect)
+		{
+			return undefined;
+		}
+
+		return this.sourceSelect.$items;
+	},
+
+	initSource: function($source)
+	{
+		this.sourceSelect.addItems($source);
+		this.initSourceToggle($source);
+	},
+
+	initSourceToggle: function($source)
+	{
+		var $toggle = this._getSourceToggle($source);
+
+		if ($toggle.length)
+		{
+			this.addListener($toggle, 'click', '_onToggleClick');
+		}
+	},
+
+	deinitSource: function($source)
+	{
+		this.sourceSelect.removeItems($source);
+		this.deinitSourceToggle($source);
+	},
+
+	deinitSourceToggle: function($source)
+	{
+		var $toggle = this._getSourceToggle($source);
+
+		if ($toggle.length)
+		{
+			this.removeListener($toggle, 'click');
+		}
+	},
+
 	getDefaultSourceKey: function()
 	{
 		return this.instanceState.selectedSource;
@@ -260,14 +308,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
-		var sourceElement = this.$sources.filter('.sel');
-		if (sourceElement.length == 0)
-		{
-			sourceElement = this.$sources.filter(':first');
-		}
+		var $source = this.sourceSelect.$selectedItems.first();
 
-		this.selectSource(sourceElement);
-		this.updateElements();
+		if (!$source.length)
+		{
+			// Not an option
+			this.sourceSelect.selectItem(this.$sources.first());
+		}
+		else
+		{
+			this.selectSource($source);
+			this.updateElements();
+		}
 	},
 
 	setInstanceState: function(key, value)
@@ -575,11 +627,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getSourceByKey: function(key)
 	{
-		for (var i = 0; i < this.$sources.length; i++)
+		if (this.$sources)
 		{
-			var $source = $(this.$sources[i]);
+			var $source = this.$sources.filter('[data-key="'+key+'"]:first');
 
-			if ($source.data('key') == key)
+			if ($source.length)
 			{
 				return $source;
 			}
@@ -877,8 +929,85 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
 		this.$elements.fadeTo('fast', 1);
+	},
+
+	// Private methods
+	// =========================================================================
+
+	_getSourcesInList: function($list)
+	{
+		return $list.children('li').children('a');
+	},
+
+	_getChildSources: function($source)
+	{
+		var $list = $source.siblings('ul');
+		return this._getSourcesInList($list);
+	},
+
+	_getSourceToggle: function($source)
+	{
+		return $source.siblings('.toggle');
+	},
+
+	_initSources: function($sources)
+	{
+		for (var i = 0; i < $sources.length; i++)
+		{
+			this.initSource($($sources[i]));
+		}
+	},
+
+	_deinitSources: function($sources)
+	{
+		for (var i = 0; i < $sources.length; i++)
+		{
+			this.deinitSource($($sources[i]));
+		}
+	},
+
+	_onToggleClick: function(ev)
+	{
+		this._toggleSource($(ev.currentTarget).prev('a'));
+		ev.stopPropagation();
+	},
+
+	_toggleSource: function($source)
+	{
+		if ($source.parent('li').hasClass('expanded'))
+		{
+			this._collapseSource($source);
+		}
+		else
+		{
+			this._expandSource($source);
+		}
+	},
+
+	_expandSource: function($source)
+	{
+		$source.parent('li').addClass('expanded');
+
+		this.$sidebar.trigger('resize');
+
+		var $childSources = this._getChildSources($source);
+		this._initSources($childSources);
+	},
+
+	_collapseSource: function($source)
+	{
+		$source.parent('li').removeClass('expanded');
+
+		this.$sidebar.trigger('resize');
+
+		var $childSources = this._getChildSources($source);
+		this._deinitSources($childSources);
 	}
 },
+
+// Static Properties
+// =============================================================================
+
 {
 	defaults: {
 		context: 'index',
