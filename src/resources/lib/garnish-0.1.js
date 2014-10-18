@@ -1070,10 +1070,10 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	mouseY: null,
 	mouseDistX: null,
 	mouseDistY: null,
+	mouseOffsetX: null,
+	mouseOffsetY: null,
 
 	$targetItem: null,
-	targetItemMouseOffsetX: null,
-	targetItemMouseOffsetY: null,
 
 	scrollProperty: null,
 	scrollAxis: null,
@@ -1409,8 +1409,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 
 		// Capture the difference between the mouse position and the target item's offset
 		var offset = this.$targetItem.offset();
-		this.targetItemMouseOffsetX = offset.left - ev.pageX;
-		this.targetItemMouseOffsetY = offset.top - ev.pageY;
+		this.mouseOffsetX = ev.pageX - offset.left;
+		this.mouseOffsetY = ev.pageY - offset.top;
 
 		// Listen for mousemove, mouseup
 		this.addListener(Garnish.$doc, 'mousemove', '_onMouseMove');
@@ -1871,8 +1871,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	drag: function(didMouseMove)
 	{
 		// Update the draggee's virtual midpoint
-		this.draggeeVirtualMidpointX = this.mouseX + this.targetItemMouseOffsetX + (this.targetItemWidth / 2);
-		this.draggeeVirtualMidpointY = this.mouseY + this.targetItemMouseOffsetY + (this.targetItemHeight / 2);
+		this.draggeeVirtualMidpointX = this.mouseX - this.mouseOffsetX + (this.targetItemWidth / 2);
+		this.draggeeVirtualMidpointY = this.mouseY - this.mouseOffsetY + (this.targetItemHeight / 2);
 
 		this.base(didMouseMove);
 	},
@@ -1917,7 +1917,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	 */
 	getHelperTargetX: function()
 	{
-		return this.mouseX;
+		return this.mouseX - this.mouseOffsetX;
 	},
 
 	/**
@@ -1925,7 +1925,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	 */
 	getHelperTargetY: function()
 	{
-		return this.mouseY;
+		return this.mouseY - this.mouseOffsetY;
 	},
 
 	/**
@@ -2000,7 +2000,6 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			$draggeeHelper = $draggee.clone().addClass('draghelper');
 
 		$draggeeHelper.css({
-
 			width: $draggee.width() + 1, // Prevent the brower from wrapping text if the width was actually a fraction of a pixel larger
 			height: $draggee.height(),
 			margin: 0
@@ -2079,8 +2078,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	_getHelperTarget: function(i)
 	{
 		return {
-			left: this.getHelperTargetX() + this.targetItemMouseOffsetX + (i * Garnish.Drag.helperSpacingX),
-			top:  this.getHelperTargetY() + this.targetItemMouseOffsetY + (i * Garnish.Drag.helperSpacingY)
+			left: this.getHelperTargetX() + (Garnish.Drag.helperSpacingX * i),
+			top:  this.getHelperTargetY() + (Garnish.Drag.helperSpacingY * i)
 		};
 	},
 
@@ -2287,8 +2286,8 @@ Garnish.DragMove = Garnish.BaseDrag.extend({
 	onDrag: function(items, settings)
 	{
 		this.$targetItem.css({
-			left: this.mouseX + this.targetItemMouseOffsetX,
-			top:  this.mouseY + this.targetItemMouseOffsetY
+			left: this.mouseX - this.mouseOffsetX,
+			top:  this.mouseY - this.mouseOffsetY
 		});
 	}
 
@@ -2359,12 +2358,12 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		if (this.settings.magnetStrength != 1)
 		{
-			this.getHelperTargetX._draggeeOffsetX = this.$draggee.offset().left - this.targetItemMouseOffsetX;
-			return this.getHelperTargetX._draggeeOffsetX + ((this.mouseX - this.getHelperTargetX._draggeeOffsetX) / this.settings.magnetStrength);
+			this.getHelperTargetX._draggeeOffsetX = this.$draggee.offset().left;
+			return this.getHelperTargetX._draggeeOffsetX + ((this.mouseX - this.mouseOffsetX - this.getHelperTargetX._draggeeOffsetX) / this.settings.magnetStrength);
 		}
 		else
 		{
-			return this.mouseX;
+			return this.base();
 		}
 	},
 
@@ -2375,12 +2374,12 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		if (this.settings.magnetStrength != 1)
 		{
-			this.getHelperTargetY._draggeeOffsetY = this.$draggee.offset().top - this.targetItemMouseOffsetY;
-			return this.getHelperTargetY._draggeeOffsetY + ((this.mouseY - this.getHelperTargetY._draggeeOffsetY) / this.settings.magnetStrength);
+			this.getHelperTargetY._draggeeOffsetY = this.$draggee.offset().top;
+			return this.getHelperTargetY._draggeeOffsetY + ((this.mouseY - this.mouseOffsetY - this.getHelperTargetY._draggeeOffsetY) / this.settings.magnetStrength);
 		}
 		else
 		{
-			return this.mouseY;
+			return this.base();
 		}
 	},
 
@@ -2561,7 +2560,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		this._testForClosestItem._$item = $(item);
 
-		this._testForClosestItem._mouseDiff = Garnish.getDist(
+		this._testForClosestItem._mouseDist = Garnish.getDist(
 			this._testForClosestItem._$item.data('midpointX'),
 			this._testForClosestItem._$item.data('midpointY'),
 			this.draggeeVirtualMidpointX,
@@ -2570,11 +2569,11 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 		if (
 			this._getClosestItem._closestItem === null ||
-			this._testForClosestItem._mouseDiff < this._getClosestItem._closestItemMouseDiff
+			this._testForClosestItem._mouseDist < this._getClosestItem._closestItemMouseDist
 		)
 		{
 			this._getClosestItem._closestItem          = this._testForClosestItem._$item[0];
-			this._getClosestItem._closestItemMouseDiff = this._testForClosestItem._mouseDiff;
+			this._getClosestItem._closestItemMouseDist = this._testForClosestItem._mouseDist;
 		}
 	},
 
@@ -4807,8 +4806,6 @@ Garnish.Select = Garnish.Base.extend({
 	$items: null,
 	$selectedItems: null,
 
-	totalSelected: null,
-
 	mousedownX: null,
 	mousedownY: null,
 	mouseUpTimeout: null,
@@ -4856,18 +4853,21 @@ Garnish.Select = Garnish.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		this.addListener(this.$container, 'click', function(ev)
+		if (this.settings.allowEmpty)
 		{
-			if (this.ignoreClick)
+			this.addListener(this.$container, 'click', function(ev)
 			{
-				this.ignoreClick = false;
-			}
-			else
-			{
-				// deselect all items on container click
-				this.deselectAll(true);
-			}
-		});
+				if (this.ignoreClick)
+				{
+					this.ignoreClick = false;
+				}
+				else
+				{
+					// Deselect all items on container click
+					this.deselectAll(true);
+				}
+			});
+		}
 	},
 
 	// --------------------------------------------------------------------
@@ -4883,9 +4883,19 @@ Garnish.Select = Garnish.Base.extend({
 	/**
 	 * Is Selected?
 	 */
-	isSelected: function($item)
+	isSelected: function(item)
 	{
-		return $item.hasClass(this.settings.selectedClass);
+		if (Garnish.isJquery(item))
+		{
+			if (!item[0])
+			{
+				return false;
+			}
+
+			item = item[0];
+		}
+
+		return ($.inArray(item, this.$selectedItems) != -1);
 	},
 
 	/**
@@ -4994,13 +5004,16 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	toggleItem: function($item)
 	{
-		if (! this.isSelected($item))
+		if (!this.isSelected($item))
 		{
 			this.selectItem($item);
 		}
 		else
 		{
-			this.deselectItem($item);
+			if (this._canDeselect($item))
+			{
+				this.deselectItem($item);
+			}
 		}
 	},
 
@@ -5219,11 +5232,19 @@ Garnish.Select = Garnish.Base.extend({
 	// --------------------------------------------------------------------
 
 	/**
+	 * totalSelected getter
+	 */
+	get totalSelected()
+	{
+		return this.getTotalSelected();
+	},
+
+	/**
 	 * Get Total Selected
 	 */
 	getTotalSelected: function()
 	{
-		return this.totalSelected;
+		return this.$selectedItems.length;
 	},
 
 	/**
@@ -5281,8 +5302,6 @@ Garnish.Select = Garnish.Base.extend({
 			});
 		}
 
-		this.totalSelected += $items.filter('.'+this.settings.selectedClass).length;
-
 		this.updateIndexes();
 	},
 
@@ -5303,6 +5322,7 @@ Garnish.Select = Garnish.Base.extend({
 			{
 				this._deinitItem(item);
 				this.$items.splice(index, 1);
+				this.$selectedItems = this.$selectedItems.not(item);
 			}
 		}
 
@@ -5320,15 +5340,8 @@ Garnish.Select = Garnish.Base.extend({
 		}
 
 		this.$items = $();
+		this.$selectedItems = $();
 		this.updateIndexes();
-	},
-
-	/**
-	 * Refresh Item Order
-	 */
-	refreshItemOrder: function()
-	{
-		this.$items = $(this.$items);
 	},
 
 	/**
@@ -5354,6 +5367,7 @@ Garnish.Select = Garnish.Base.extend({
 	 resetItemOrder: function()
 	 {
 	 	this.$items = $().add(this.$items);
+	 	this.$selectedItems = $().add(this.$selectedItems);
 	 	this.updateIndexes();
 	 },
 
@@ -5621,7 +5635,10 @@ Garnish.Select = Garnish.Base.extend({
 
 					if (this.isSelected(this.$focusable))
 					{
-						this.deselectItem(this.$focusable);
+						if (this._canDeselect(this.$focusable))
+						{
+							this.deselectItem(this.$focusable);
+						}
 					}
 					else
 					{
@@ -5674,8 +5691,6 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	onSelectionChange: function()
 	{
-		this.totalSelected = this.$selectedItems.length;
-
 		if (this.callbackFrame)
 		{
 			Garnish.cancelAnimationFrame(this.callbackFrame);
@@ -5692,6 +5707,11 @@ Garnish.Select = Garnish.Base.extend({
 
 	// Private methods
 	// =========================================================================
+
+	_canDeselect: function($items)
+	{
+		return (this.settings.allowEmpty || this.totalSelected > $items.length);
+	},
 
 	_selectItems: function($items)
 	{
@@ -5732,6 +5752,7 @@ Garnish.Select = Garnish.Base.extend({
 	defaults: {
 		selectedClass: 'sel',
 		multi: false,
+		allowEmpty: true,
 		vertical: false,
 		horizontal: false,
 		arrowsChangeSelection: true,
