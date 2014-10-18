@@ -114,8 +114,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		// The source selector
 		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-			selectedClass:     'sel',
 			multi:             false,
+			allowEmpty:        false,
 			vertical:          true,
 			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
 		});
@@ -308,18 +308,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
-		var $source = this.sourceSelect.$selectedItems.first();
-
-		if (!$source.length)
-		{
-			// Not an option
-			this.sourceSelect.selectItem(this.$sources.first());
-		}
-		else
-		{
-			this.selectSource($source);
-			this.updateElements();
-		}
+		this.selectSource(this.sourceSelect.$selectedItems);
+		this.updateElements();
 	},
 
 	setInstanceState: function(key, value)
