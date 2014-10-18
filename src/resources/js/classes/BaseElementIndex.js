@@ -202,6 +202,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		this.selectSource($source);
+		this.sourceSelect.selectItem($source);
 
 		// Load up the elements!
 		this.initialized = true;
@@ -605,13 +606,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
-		if (this.$source)
+		if ($source[0] != this.sourceSelect.$selectedItems[0])
 		{
-			this.$source.removeClass('sel');
+			this.sourceSelect.selectItem($source);
 		}
 
+		this.$source = $source;
 		this.sourceKey = $source.data('key');
-		this.$source = $source.addClass('sel');
 		this.setInstanceState('selectedSource', this.sourceKey);
 
 		if (this.$search)
