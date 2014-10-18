@@ -600,7 +600,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	selectSource: function($source)
 	{
-		if (this.$source == $source)
+		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
 		{
 			return;
 		}
