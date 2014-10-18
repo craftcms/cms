@@ -5322,6 +5322,7 @@ Garnish.Select = Garnish.Base.extend({
 			{
 				this._deinitItem(item);
 				this.$items.splice(index, 1);
+				this.$selectedItems = this.$selectedItems.not(item);
 			}
 		}
 
@@ -5339,15 +5340,8 @@ Garnish.Select = Garnish.Base.extend({
 		}
 
 		this.$items = $();
+		this.$selectedItems = $();
 		this.updateIndexes();
-	},
-
-	/**
-	 * Refresh Item Order
-	 */
-	refreshItemOrder: function()
-	{
-		this.$items = $(this.$items);
 	},
 
 	/**
@@ -5373,6 +5367,7 @@ Garnish.Select = Garnish.Base.extend({
 	 resetItemOrder: function()
 	 {
 	 	this.$items = $().add(this.$items);
+	 	this.$selectedItems = $().add(this.$selectedItems);
 	 	this.updateIndexes();
 	 },
 
