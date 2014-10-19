@@ -114,8 +114,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		// The source selector
 		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-			selectedClass:     'sel',
 			multi:             false,
+			allowEmpty:        false,
 			vertical:          true,
 			onSelectionChange: $.proxy(this, 'onSourceSelectionChange')
 		});
@@ -202,6 +202,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		this.selectSource($source);
+		this.sourceSelect.selectItem($source);
 
 		// Load up the elements!
 		this.initialized = true;
@@ -308,18 +309,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
-		var $source = this.sourceSelect.$selectedItems.first();
-
-		if (!$source.length)
-		{
-			// Not an option
-			this.sourceSelect.selectItem(this.$sources.first());
-		}
-		else
-		{
-			this.selectSource($source);
-			this.updateElements();
-		}
+		this.selectSource(this.sourceSelect.$selectedItems);
+		this.updateElements();
 	},
 
 	setInstanceState: function(key, value)
@@ -610,18 +601,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	selectSource: function($source)
 	{
-		if (this.$source == $source)
+		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
 		{
 			return;
 		}
 
-		if (this.$source)
+		if ($source[0] != this.sourceSelect.$selectedItems[0])
 		{
-			this.$source.removeClass('sel');
+			this.sourceSelect.selectItem($source);
 		}
 
+		this.$source = $source;
 		this.sourceKey = $source.data('key');
-		this.$source = $source.addClass('sel');
 		this.setInstanceState('selectedSource', this.sourceKey);
 
 		if (this.$search)
