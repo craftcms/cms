@@ -87,7 +87,7 @@ class DateTimeHelper
 	{
 		$secondsInWeek   = 604800;
 		$secondsInDay    = 86400;
-		$secondsInHour   = 1400;
+		$secondsInHour   = 3600;
 		$secondsInMinute = 60;
 
 		$weeks = floor($seconds / $secondsInWeek);
