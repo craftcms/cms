@@ -226,6 +226,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id,
 					fileName = Craft.getElementInfo(this._fileDrag.$draggee[i]).url.split('/').pop();
 
+				if (fileName.indexOf('?') !== -1)
+				{
+					fileName = fileName.split('?').shift();
+				}
+
 				originalFileIds.push(originalFileId);
 				newFileNames.push(fileName);
 			}
