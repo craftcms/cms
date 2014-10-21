@@ -47,12 +47,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		if (this.settings.context == 'index')
 		{
-			if (this._folderDrag)
+			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				if (this._getSourceLevel($source) > 1)
-				{
-					this._folderDrag.addItems($source.parent());
-				}
+				this._folderDrag.addItems($source.parent());
+			}
+
+			if (this._fileDrag)
+			{
+				this._fileDrag.updateDropTargets();
 			}
 		}
 	},
@@ -67,6 +69,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (contextMenu)
 		{
 			contextMenu.destroy();
+		}
+
+		if (this.settings.context == 'index')
+		{
+			if (this._folderDrag && this._getSourceLevel($source) > 1)
+			{
+				this._folderDrag.removeItems($source.parent());
+			}
+
+			if (this._fileDrag)
+			{
+				this._fileDrag.updateDropTargets();
+			}
 		}
 	},
 
@@ -180,7 +195,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				// Tag the dragged folder and it's subfolders
 				var draggedSourceIds = [];
-				this._folderDrag.$draggee.find('a[data-key]').each(function ()
+				this._folderDrag.$draggee.find('a[data-key]').each(function()
 				{
 					draggedSourceIds.push($(this).data('key'));
 				});
@@ -1342,7 +1357,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// collapse any temp-expanded drop targets that aren't parents of this one
 		this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data('key')));
 
-		this.dropTargetFolder.parent().find('> .toggle').click();
+		this.dropTargetFolder.siblings('.toggle').click();
 
 		// keep a record of that
 		this._tempExpandedFolders.push(this.dropTargetFolder);
@@ -1350,11 +1365,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_collapseFolder: function($source)
 	{
-		var li = $source.parent();
-
-		if (li.hasClass('expanded'))
+		if ($source.parent().hasClass('expanded'))
 		{
-			li.find('> .toggle').click();
+			$source.siblings('.toggle').click();
 		}
 	},
 
