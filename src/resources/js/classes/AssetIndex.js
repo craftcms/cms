@@ -46,12 +46,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		if (this.settings.context == 'index')
 		{
-			if (this._folderDrag)
+			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				if (this._getSourceLevel($source) > 1)
-				{
-					this._folderDrag.addItems($source.parent());
-				}
+				this._folderDrag.addItems($source.parent());
+			}
+
+			if (this._fileDrag)
+			{
+				this._fileDrag.updateDropTargets();
 			}
 		}
 	},
@@ -66,6 +68,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (contextMenu)
 		{
 			contextMenu.destroy();
+		}
+
+		if (this.settings.context == 'index')
+		{
+			if (this._folderDrag && this._getSourceLevel($source) > 1)
+			{
+				this._folderDrag.removeItems($source.parent());
+			}
+
+			if (this._fileDrag)
+			{
+				this._fileDrag.updateDropTargets();
+			}
 		}
 	},
 
