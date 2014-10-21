@@ -150,7 +150,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		if (newName && newName != oldName)
 		{
 			$labelSpan.text(newName);
-			$tab.find('.id-input').attr('name', 'fieldLayout['+Craft.encodeUriComponent(newName)+'][]');
+			$tab.find('.id-input').attr('name', this.getFieldInputName(newName));
 		}
 	},
 
@@ -190,7 +190,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		else
 		{
 			$field.addClass('fld-required');
-			$('<input class="required-input" type="hidden" name="requiredFields[]" value="'+$field.data('id')+'">').appendTo($field);
+			$('<input class="required-input" type="hidden" name="'+this.settings.requiredFieldInputName+'" value="'+$field.data('id')+'">').appendTo($field);
 
 			setTimeout(function() {
 				$option.text(Craft.t('Make not required'));
@@ -252,6 +252,11 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		this.tabDrag.addItems($tab);
 
 		this.initTab($tab);
+	},
+
+	getFieldInputName: function(tabName)
+	{
+		return this.settings.fieldInputName.replace(/__TAB_NAME__/g, Craft.encodeUriComponent(tabName));
 	}
 },
 {
@@ -263,7 +268,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		snapToGrid: 30
 	},
 	defaults: {
-		customizableTabs: true
+		customizableTabs: true,
+		fieldInputName: 'fieldLayout[__TAB_NAME__][]',
+		requiredFieldInputName: 'requiredFields[]'
 	}
 });
 
@@ -587,8 +594,10 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 
 			for (var i = 0; i < $fields.length; i++)
 			{
-				var $field = $($fields[i]);
-				$field.append('<input class="id-input" type="hidden" name="fieldLayout['+Craft.encodeUriComponent(tabName)+'][]" value="'+$field.data('id')+'">');
+				var $field = $($fields[i]),
+					inputName = this.designer.getFieldInputName(tabName);
+
+				$field.append('<input class="id-input" type="hidden" name="'+inputName+'" value="'+$field.data('id')+'">');
 			}
 
 			this.designer.fieldDrag.addItems($fields);
@@ -685,7 +694,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Find the field's new tab name
 			var tabName = this.$insertion.parent().parent().find('.tab span').text(),
-				inputName = 'fieldLayout['+Craft.encodeUriComponent(tabName)+'][]';
+				inputName = this.designer.getFieldInputName(tabName);
 
 			if (this.draggingUnusedItem)
 			{

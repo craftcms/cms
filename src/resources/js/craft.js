@@ -1025,7 +1025,15 @@ $.extend(Craft,
 		if (typeof localStorage != 'undefined')
 		{
 			key = 'Craft-'+Craft.siteUid+'.'+key;
-			localStorage[key] = JSON.stringify(value);
+
+			// localStorage might be filled all the way up.
+			// Especially likely if this is a private window in Safari 8+, where localStorage technically exists,
+			// but has a max size of 0 bytes.
+			try
+			{
+				localStorage[key] = JSON.stringify(value);
+			}
+			catch(e) {}
 		}
 	},
 

@@ -214,7 +214,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (this._fileDrag.$activeDropTarget)
 		{
 			// keep it selected
-			this._fileDrag.$activeDropTarget.addClass('sel');
+			this.sourceSelect.selectItem(this._fileDrag.$activeDropTarget);
 
 			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
 				originalFileIds = [],
@@ -349,7 +349,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 
 		// re-select the previously selected folders
-		this.$previouslySelectedFolder.addClass('sel');
+		this.sourceSelect.selectItem(this.$previouslySelectedFolder);
 
 		this._fileDrag.returnHelpersToDraggees();
 	},
