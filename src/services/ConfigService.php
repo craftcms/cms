@@ -556,7 +556,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getActivateAccountPath($code, $uid, $full = true)
 	{
-		$url = $this->get('actionTrigger').'/users/validate';
+		$url = $this->get('actionTrigger').'/users/verify';
 
 		if (!$full)
 		{

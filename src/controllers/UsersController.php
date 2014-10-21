@@ -301,29 +301,29 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Validate that a user has access to an email address.
+	 * Verifies that a user has access to an email address.
 	 *
 	 * @throws HttpException|Exception
 	 * @return null
 	 */
-	public function actionValidate()
+	public function actionVerifyUser()
 	{
 		$code = craft()->request->getRequiredQuery('code');
 		$id = craft()->request->getRequiredQuery('id');
-		$userToValidate = craft()->users->getUserByUid($id);
+		$userToVerify = craft()->users->getUserByUid($id);
 		$isCodeValid = false;
 
-		if ($userToValidate)
+		if ($userToVerify)
 		{
 			// Fire an 'onBeforeVerifyUser' event
 			craft()->users->onBeforeVerifyUser(new Event($this, array(
-				'user' => $userToValidate
+				'user' => $userToVerify
 			)));
 
-			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToValidate, $code);
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToVerify, $code);
 		}
 
-		if (!$userToValidate || !$isCodeValid)
+		if (!$userToVerify || !$isCodeValid)
 		{
 			if (($url = craft()->config->getLocalized('activateAccountFailurePath')) != '')
 			{
@@ -331,7 +331,7 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				if (!$userToValidate)
+				if (!$userToVerify)
 				{
 					throw new HttpException('200', Craft::t('Invalid verification code.'));
 				}
@@ -339,7 +339,7 @@ class UsersController extends BaseController
 				{
 					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 
-					$this->renderTemplate('_special/expired', array('userId' => $userToValidate->id));
+					$this->renderTemplate('_special/expired', array('userId' => $userToVerify->id));
 				}
 			}
 		}
@@ -350,24 +350,24 @@ class UsersController extends BaseController
 			{
 				// If they are validating an account that doesn't belong to them,
 				// log them out of their current account.
-				if ($currentUser->id !== $userToValidate->id)
+				if ($currentUser->id !== $userToVerify->id)
 				{
 					craft()->userSession->logout();
 				}
 			}
 
-			if (craft()->users->activateUser($userToValidate))
+			if (craft()->users->activateUser($userToVerify))
 			{
-				craft()->userSession->processUsernameCookie($userToValidate->username);
+				craft()->userSession->processUsernameCookie($userToVerify->username);
 
 				// Successfully activated user, do they require a password reset or is their password empty? If so, send
 				// them through the password logic.
-				if ($userToValidate->passwordResetRequired || !$userToValidate->password)
+				if ($userToVerify->passwordResetRequired || !$userToVerify->password)
 				{
 					// All users that go through account activation will need to set their password.
-					$code = craft()->users->setVerificationCodeOnUser($userToValidate);
+					$code = craft()->users->setVerificationCodeOnUser($userToVerify);
 
-					if ($userToValidate->can('accessCp'))
+					if ($userToVerify->can('accessCp'))
 					{
 						$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
 					}
@@ -381,11 +381,11 @@ class UsersController extends BaseController
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->impersonate($userToValidate->id);
+						craft()->userSession->impersonate($userToVerify->id);
 					}
 
 					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
-					if (!$userToValidate->can('accessCp'))
+					if (!$userToVerify->can('accessCp'))
 					{
 						$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
 						$this->redirect($url);
@@ -434,6 +434,19 @@ class UsersController extends BaseController
 
 			$this->redirect($url);
 		}
+	}
+
+
+	/**
+	 * Verifies that a user has access to an email address.
+	 *
+	 * @deprecated Deprecated in 2.0. Use {@link UsersController::verifyUser()} instead.
+	 * @return null
+	 */
+	public function actionValidate()
+	{
+		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/verifyUser instead.');
+		$this->actionSaveUser();
 	}
 
 	/**
