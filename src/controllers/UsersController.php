@@ -56,7 +56,7 @@ class UsersController extends BaseController
 
 		if (craft()->request->isPostRequest())
 		{
-			// A little house-cleaning for expired, pending users, first.
+			// First, a little house-cleaning for expired, pending users.
 			craft()->users->purgeExpiredPendingUsers();
 
 			$loginName = craft()->request->getPost('loginName');
@@ -358,6 +358,8 @@ class UsersController extends BaseController
 
 			if (craft()->users->activateUser($userToValidate))
 			{
+				craft()->userSession->processUsernameCookie($userToValidate->username);
+
 				// Successfully activated user, do they require a password reset or is their password empty? If so, send
 				// them through the password logic.
 				if ($userToValidate->passwordResetRequired || !$userToValidate->password)
@@ -377,7 +379,7 @@ class UsersController extends BaseController
 				else
 				{
 					// Do we need to auto-login?
-					if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
+					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
 						craft()->userSession->impersonate($userToValidate->id);
 					}

@@ -425,18 +425,7 @@ class UserSessionService extends \CWebUser
 			// Was the login successful?
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
-				// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
-				$rememberUsernameDuration = craft()->config->get('rememberUsernameDuration');
-
-				if ($rememberUsernameDuration)
-				{
-					$this->saveCookie('username', $username, DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration));
-				}
-				else
-				{
-					// Just in case...
-					$this->deleteStateCookie('username');
-				}
+				$this->processUsernameCookie($username);
 
 				// Get how long this session is supposed to last.
 				$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
@@ -906,6 +895,30 @@ class UserSessionService extends \CWebUser
 			craft()->request->isCpRequest() &&
 			craft()->request->getParam('dontExtendSession')
 		);
+	}
+
+	/**
+	 * If the 'rememberUsernameDuration' config setting is set, will save a cookie with the given username for that
+	 * duration. Otherwise, will delete any existing username cookie.
+	 *
+	 * @param string $username The username to save in the cookie.
+	 *
+	 * @return null
+	 */
+	public function processUsernameCookie($username)
+	{
+		// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
+		$rememberUsernameDuration = craft()->config->get('rememberUsernameDuration');
+
+		if ($rememberUsernameDuration)
+		{
+			$this->saveCookie('username', $username, DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration));
+		}
+		else
+		{
+			// Just in case...
+			$this->deleteStateCookie('username');
+		}
 	}
 
 	/**
