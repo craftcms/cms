@@ -166,7 +166,7 @@ class RecentEntriesWidget extends BaseWidget
 		$criteria->sectionId = $targetSectionId;
 		$criteria->editable = true;
 		$criteria->limit = $this->getSettings()->limit;
-		$criteria->order = 'dateCreated desc';
+		$criteria->order = 'elements.dateCreated desc';
 
 		return $criteria->find();
 	}
