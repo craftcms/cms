@@ -321,6 +321,12 @@ class UsersController extends BaseController
 			)));
 
 			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToVerify, $code);
+
+			// Fire an 'onVerifyUser' event
+			craft()->users->onVerifyUser(new Event($this, array(
+				'user' => $userToVerify,
+				'isCodeValid' => $isCodeValid
+			)));
 		}
 
 		if (!$userToVerify || !$isCodeValid)

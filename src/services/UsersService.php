@@ -999,6 +999,18 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Fires an 'onVerifyUser' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onVerifyUser(Event $event)
+	{
+		$this->raiseEvent('onVerifyUser', $event);
+	}
+
+	/**
 	 * Fires an 'onBeforeActivateUser' event.
 	 *
 	 * @param Event $event
