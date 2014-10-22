@@ -452,7 +452,7 @@ class UsersController extends BaseController
 	public function actionValidate()
 	{
 		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/verifyUser instead.');
-		$this->actionSaveUser();
+		$this->actionVerifyUser();
 	}
 
 	/**
