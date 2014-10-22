@@ -133,6 +133,11 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 		{
 			$params = JsonHelper::decode($row['criteria']);
 			$criteria = craft()->elements->getCriteria($row['type'], $params);
+
+			// Chance overcorrecting a little for the sake of templates with pending elements,
+			// whose caches should be recreated (see http://craftcms.stackexchange.com/a/2611/9)
+			$criteria->status = null;
+
 			$criteriaElementIds = $criteria->ids();
 			$cacheIdsToDelete = array();
 
