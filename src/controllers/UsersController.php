@@ -446,7 +446,7 @@ class UsersController extends BaseController
 	/**
 	 * Verifies that a user has access to an email address.
 	 *
-	 * @deprecated Deprecated in 2.0. Use {@link UsersController::verifyUser()} instead.
+	 * @deprecated Deprecated in 2.3. Use {@link UsersController::verifyUser()} instead.
 	 * @return null
 	 */
 	public function actionValidate()
