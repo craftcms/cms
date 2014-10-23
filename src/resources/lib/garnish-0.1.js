@@ -1114,6 +1114,14 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	},
 
 	/**
+	 * Returns whether dragging is allowed right now.
+	 */
+	allowDragging: function()
+	{
+		return true;
+	},
+
+	/**
 	 * Start Dragging
 	 */
 	startDragging: function()
@@ -1402,6 +1410,12 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		}
 
 		ev.preventDefault();
+
+		// Make sure that dragging is allowed right now
+		if (!this.allowDragging())
+		{
+			return;
+		}
 
 		// Capture the target
 		this.$targetItem = $($.data(ev.currentTarget, 'drag-item'));
@@ -1788,6 +1802,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	lastMouseX: null,
 	lastMouseY: null,
 
+	_returningHelpersToDraggees: false,
+
 	// Public methods
 	// =========================================================================
 
@@ -1812,6 +1828,15 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	},
 
 	/**
+	 * Returns whether dragging is allowed right now.
+	 */
+	allowDragging: function()
+	{
+		// Don't allow dragging if we're in the middle of animating the helpers back to the draggees
+		return !this._returningHelpersToDraggees;
+	},
+
+	/**
 	 * Start Dragging
 	 */
 	startDragging: function()
@@ -1826,20 +1851,11 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		this.targetItemWidth  = this.$targetItem.outerWidth();
 		this.targetItemHeight = this.$targetItem.outerHeight();
 
-		// Set the $draggee
-		this.$draggee = this.findDraggee();
-
-		// Put the target item in the front of the list
-		this.$draggee = $([ this.$targetItem[0] ].concat(this.$draggee.not(this.$targetItem[0]).toArray()));
-
 		// Save the draggee's display style (block/table-row) so we can re-apply it later
-		this.draggeeDisplay = this.$draggee.css('display');
+		this.draggeeDisplay = this.$targetItem.css('display');
 
-		// Create the helper(s)
-		this._createHelpers();
-
-		// Remove/hide the draggee
-		this._hideDraggee();
+		// Set the $draggee
+		this.setDraggee(this.findDraggee());
 
 		// Create an array of all the other items
 		this.otherItems = [];
@@ -1866,6 +1882,61 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		this.updateHelperPosFrame = Garnish.requestAnimationFrame(this.updateHelperPosProxy);
 
 		this.base();
+	},
+
+	/**
+	 * Sets the draggee.
+	 */
+	setDraggee: function($draggee)
+	{
+		// Keep the target item at the front of the list
+		this.$draggee = $([ this.$targetItem[0] ].concat($draggee.not(this.$targetItem).toArray()));
+
+		// Create the helper(s)
+		if (this.settings.collapseDraggees)
+		{
+			this._createHelper(0);
+		}
+		else
+		{
+			for (var i = 0; i < this.$draggee.length; i++)
+			{
+				this._createHelper(i);
+			}
+		}
+
+		this._hideDraggee();
+	},
+
+	/**
+	 * Appends additional items to the draggee.
+	 */
+	appendDraggee: function($newDraggee)
+	{
+		if (!$newDraggee.length)
+		{
+			return;
+		}
+
+		if (!this.settings.collapseDraggees)
+		{
+			var oldLength = this.$draggee.length;
+		}
+
+		this.$draggee = $(this.$draggee.toArray().concat($newDraggee.not(this.$draggee).toArray()));
+
+		// Create new helpers?
+		if (!this.settings.collapseDraggees)
+		{
+			var newLength = this.$draggee.length;
+
+			for (var i = oldLength; i < newLength; i++)
+			{
+				this._createHelper(i);
+			}
+		}
+
+		this._hideDraggee();
 	},
 
 	/**
@@ -1936,6 +2007,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	 */
 	returnHelpersToDraggees: function()
 	{
+		this._returningHelpersToDraggees = true;
+
 		for (var i = 0; i < this.helpers.length; i++)
 		{
 			var $draggee = $(this.$draggee[i]),
@@ -1975,24 +2048,6 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 
 	// Private methods
 	// =========================================================================
-
-	/**
-	 * Creates helper clones of the draggee(s)
-	 */
-	_createHelpers: function()
-	{
-		if (this.settings.collapseDraggees)
-		{
-			this._createHelper(0);
-		}
-		else
-		{
-			for (var i = 0; i < this.$draggee.length; i++)
-			{
-				this._createHelper(i);
-			}
-		}
-	},
 
 	/**
 	 * Creates a helper.
@@ -2094,8 +2149,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		}
 		else if (this.settings.collapseDraggees)
 		{
-			this.$draggee.first().css('visibility', 'hidden');
-			this.$draggee.not(this.$draggee.first()).hide();
+			this.$targetItem.css('visibility', 'hidden');
+			this.$draggee.not(this.$targetItem).hide();
 		}
 		else
 		{
@@ -2116,6 +2171,8 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		this.$draggee.show().css('visibility', 'inherit');
 
 		this.onReturnHelpersToDraggees();
+
+		this._returningHelpersToDraggees = false;
 	}
 },
 
@@ -2315,6 +2372,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	startDraggeeIndex: null,
 	closestItem: null,
 
+	_midpointVersion: 0,
+
 	// Public methods
 	// =========================================================================
 
@@ -2416,7 +2475,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 		this._placeInsertionWithDraggee();
 
 		this.closestItem = null;
-		this._recordPositions();
+		this._midpointVersion++;
 
 		//  Get the closest container that has a height
 		if (this.settings.container)
@@ -2517,36 +2576,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 	},
 
 	/**
-	 * Sets the item midpoints up front so we don't have to keep checking on every mouse move
-	 */
-	_recordPositions: function()
-	{
-		for (this._recordPositions._i = 0; this._recordPositions._i < this.totalOtherItems; this._recordPositions._i++)
-		{
-			this._recordPosition($(this.otherItems[this._recordPositions._i]));
-		}
-
-		if (!this.settings.removeDraggee)
-		{
-			this._recordPosition(this.$draggee);
-		}
-		else if (this.insertionVisible)
-		{
-			this._recordPosition(this.$insertion);
-		}
-	},
-
-	/**
-	 * Set the midpoint on an item.
-	 */
-	_recordPosition: function($item)
-	{
-		$item.data('offset', $item.offset());
-		$item.data('midpointX', $item.data('offset').left + $item.outerWidth() / 2);
-		$item.data('midpointY', $item.data('offset').top + $item.outerHeight() / 2);
-	},
-
-	/**
 	 * Returns the closest item to the cursor.
 	 */
 	_getClosestItem: function()
@@ -2556,30 +2585,30 @@ Garnish.DragSort = Garnish.Drag.extend({
 		// Start by checking the draggee/insertion, if either are visible
 		// ---------------------------------------------------------------------
 
-		this._getClosestItem._counter = 0;
-
 		if (!this.settings.removeDraggee)
 		{
-			this._testForClosestItem(this.$draggee.first());
+			this._testForClosestItem(this.$draggee[0]);
 		}
 		else if (this.insertionVisible)
 		{
-			this._testForClosestItem(this.$insertion.first());
+			this._testForClosestItem(this.$insertion[0]);
 		}
 
 		// Check items before the draggee
 		// ---------------------------------------------------------------------
 
-		if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._lastXDist = this._getClosestItem._closestItem ? Math.abs($.data(this._getClosestItem._closestItem, 'midpointX') - this.draggeeVirtualMidpointX) : null;
-		if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._lastYDist = this._getClosestItem._closestItem ? Math.abs($.data(this._getClosestItem._closestItem, 'midpointY') - this.draggeeVirtualMidpointY) : null;
+		if (this._getClosestItem._closestItem) this._getClosestItem._midpoint = this._getItemMidpoint(this._getClosestItem._closestItem)
+		if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._startXDist = this._getClosestItem._lastXDist = this._getClosestItem._closestItem ? Math.abs(this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX) : null;
+		if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._startYDist = this._getClosestItem._lastYDist = this._getClosestItem._closestItem ? Math.abs(this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY) : null;
 
 		this._getClosestItem._$otherItem = this.$draggee.first().prev();
 
 		while (this._getClosestItem._$otherItem.length)
 		{
 			// See if we're just getting further away
-			if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._xDist = Math.abs(this._getClosestItem._$otherItem.data('midpointX') - this.draggeeVirtualMidpointX);
-			if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._yDist = Math.abs(this._getClosestItem._$otherItem.data('midpointY') - this.draggeeVirtualMidpointY);
+			this._getClosestItem._midpoint = this._getItemMidpoint(this._getClosestItem._$otherItem[0]);
+			if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._xDist = Math.abs(this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX);
+			if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._yDist = Math.abs(this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY);
 
 			if (
 				(this.settings.axis == Garnish.Y_AXIS || (this._getClosestItem._lastXDist !== null && this._getClosestItem._xDist > this._getClosestItem._lastXDist)) &&
@@ -2595,7 +2624,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			// Give the extending class a chance to allow/disallow this item
 			if (this.canInsertBefore(this._getClosestItem._$otherItem))
 			{
-				this._testForClosestItem(this._getClosestItem._$otherItem);
+				this._testForClosestItem(this._getClosestItem._$otherItem[0]);
 			}
 
 			// Prep the next item
@@ -2605,16 +2634,17 @@ Garnish.DragSort = Garnish.Drag.extend({
 		// Check items after the draggee
 		// ---------------------------------------------------------------------
 
-		if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._lastXDist = this._getClosestItem._closestItem ? Math.abs($.data(this._getClosestItem._closestItem, 'midpointX') - this.draggeeVirtualMidpointX) : null;
-		if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._lastYDist = this._getClosestItem._closestItem ? Math.abs($.data(this._getClosestItem._closestItem, 'midpointY') - this.draggeeVirtualMidpointY) : null;
+		if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._lastXDist = this._getClosestItem._startXDist;
+		if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._lastYDist = this._getClosestItem._startYDist;
 
 		this._getClosestItem._$otherItem = this.$draggee.last().next();
 
 		while (this._getClosestItem._$otherItem.length)
 		{
 			// See if we're just getting further away
-			if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._xDist = Math.abs(this._getClosestItem._$otherItem.data('midpointX') - this.draggeeVirtualMidpointX);
-			if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._yDist = Math.abs(this._getClosestItem._$otherItem.data('midpointY') - this.draggeeVirtualMidpointY);
+			this._getClosestItem._midpoint = this._getItemMidpoint(this._getClosestItem._$otherItem[0]);
+			if (this.settings.axis != Garnish.Y_AXIS) this._getClosestItem._xDist = Math.abs(this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX);
+			if (this.settings.axis != Garnish.X_AXIS) this._getClosestItem._yDist = Math.abs(this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY);
 
 			if (
 				(this.settings.axis == Garnish.Y_AXIS || (this._getClosestItem._lastXDist !== null && this._getClosestItem._xDist > this._getClosestItem._lastXDist)) &&
@@ -2630,7 +2660,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			// Give the extending class a chance to allow/disallow this item
 			if (this.canInsertAfter(this._getClosestItem._$otherItem))
 			{
-				this._testForClosestItem(this._getClosestItem._$otherItem);
+				this._testForClosestItem(this._getClosestItem._$otherItem[0]);
 			}
 
 			// Prep the next item
@@ -2654,13 +2684,34 @@ Garnish.DragSort = Garnish.Drag.extend({
 		}
 	},
 
-	_testForClosestItem: function($item)
+	_getItemMidpoint: function(item)
 	{
-		this._getClosestItem._counter++;
+		if ($.data(item, 'midpointVersion') != this._midpointVersion)
+		{
+			this._getItemMidpoint._$item = $(item);
+			this._getItemMidpoint._offset = this._getItemMidpoint._$item.offset();
+
+			$.data(item, 'midpoint', {
+				x: this._getItemMidpoint._offset.left + this._getItemMidpoint._$item.outerWidth() / 2,
+				y: this._getItemMidpoint._offset.top + this._getItemMidpoint._$item.outerHeight() / 2
+			});
+
+			$.data(item, 'midpointVersion', this._midpointVersion);
+
+			delete this._getItemMidpoint._$item;
+			delete this._getItemMidpoint._offset;
+		}
+
+		return $.data(item, 'midpoint');
+	},
+
+	_testForClosestItem: function(item)
+	{
+		this._testForClosestItem._midpoint = this._getItemMidpoint(item);
 
 		this._testForClosestItem._mouseDist = Garnish.getDist(
-			$item.data('midpointX'),
-			$item.data('midpointY'),
+			this._testForClosestItem._midpoint.x,
+			this._testForClosestItem._midpoint.y,
 			this.draggeeVirtualMidpointX,
 			this.draggeeVirtualMidpointY
 		);
@@ -2670,7 +2721,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			this._testForClosestItem._mouseDist < this._getClosestItem._closestItemMouseDist
 		)
 		{
-			this._getClosestItem._closestItem          = $item[0];
+			this._getClosestItem._closestItem          = item;
 			this._getClosestItem._closestItemMouseDist = this._testForClosestItem._mouseDist;
 		}
 	},
@@ -2695,8 +2746,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 			this._placeInsertionWithDraggee();
 		}
 
-		// Now that things have shifted around we need to set the new midpoints
-		this._recordPositions();
+		// Now that things have shifted around, invalidate the midpoints
+		this._midpointVersion++;
 
 		this.onInsertionPointChange();
 	},
