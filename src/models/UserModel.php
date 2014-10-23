@@ -49,6 +49,24 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * @inheritDoc BaseModel::getAttribute()
+	 *
+	 * @param string $name
+	 * @param bool   $flattenValue
+	 *
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		if ($name === 'firstName' || $name === 'lastName' || $name === 'username')
+		{
+			return HtmlHelper::encode(parent::getAttribute($name, $flattenValue));
+		}
+
+		return parent::getAttribute($name, $flattenValue);
+	}
+
+	/**
 	 * Returns the reference string to this element.
 	 *
 	 * @return string|null
