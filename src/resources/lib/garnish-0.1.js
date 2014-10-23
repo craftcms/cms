@@ -1905,7 +1905,19 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			}
 		}
 
-		this._hideDraggee();
+		if (this.settings.removeDraggee)
+		{
+			this.$draggee.hide();
+		}
+		else if (this.settings.collapseDraggees)
+		{
+			this.$targetItem.css('visibility', 'hidden');
+			this.$draggee.not(this.$targetItem).hide();
+		}
+		else
+		{
+			this.$draggee.css('visibility', 'hidden');
+		}
 	},
 
 	/**
@@ -1923,7 +1935,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			var oldLength = this.$draggee.length;
 		}
 
-		this.$draggee = $(this.$draggee.toArray().concat($newDraggee.not(this.$draggee).toArray()));
+		this.$draggee = $(this.$draggee.toArray().concat($newDraggee.toArray()));
 
 		// Create new helpers?
 		if (!this.settings.collapseDraggees)
@@ -1936,7 +1948,14 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			}
 		}
 
-		this._hideDraggee();
+		if (this.settings.removeDraggee || this.settings.collapseDraggees)
+		{
+			$newDraggee.hide();
+		}
+		else
+		{
+			$newDraggee.css('visibility', 'hidden');
+		}
 	},
 
 	/**
@@ -2139,23 +2158,6 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 			left: this.getHelperTargetX() + (this.settings.helperSpacingX * i),
 			top:  this.getHelperTargetY() + (this.settings.helperSpacingY * i)
 		};
-	},
-
-	_hideDraggee: function()
-	{
-		if (this.settings.removeDraggee)
-		{
-			this.$draggee.hide();
-		}
-		else if (this.settings.collapseDraggees)
-		{
-			this.$targetItem.css('visibility', 'hidden');
-			this.$draggee.not(this.$targetItem).hide();
-		}
-		else
-		{
-			this.$draggee.css('visibility', 'hidden');
-		}
 	},
 
 	_showDraggee: function()
