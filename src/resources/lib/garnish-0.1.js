@@ -1259,33 +1259,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			// Add the item
 			$.data(item, 'drag', this);
 
-			// Get the handle
-			if (this.settings.handle)
-			{
-				if (typeof this.settings.handle == 'object')
-				{
-					var $handle = $(this.settings.handle);
-				}
-				else if (typeof this.settings.handle == 'string')
-				{
-					var $handle = $(item).find(this.settings.handle);
-				}
-				else if (typeof this.settings.handle == 'function')
-				{
-					var $handle = $(this.settings.handle(item));
-				}
-			}
-			else
-			{
-				var $handle = $(item);
-			}
-
-			if ($handle.length)
-			{
-				$.data(item, 'drag-handle', $handle[0]);
-				$handle.data('drag-item', item);
-				this.addListener($handle, 'mousedown', '_onMouseDown');
-			}
+			// Add the listener
+			this.addListener(item, 'mousedown', '_onMouseDown');
 		}
 
 		this.$items = $().add(this.$items.add(items));
@@ -1395,11 +1370,18 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			return;
 		}
 
+		// Ignore if they didn't actually click on the handle
+		var $target = $(ev.target),
+			$handle = this._getItemHandle(ev.currentTarget);
+
+		if (!$target.is($handle) && !$target.closest($handle).length)
+		{
+			return;
+		}
+
 		// Make sure the target isn't a button (unless the button is the handle)
 		if (ev.currentTarget != ev.target && this.settings.ignoreHandleSelector)
 		{
-			var $target = $(ev.target);
-
 			if (
 				$target.is(this.settings.ignoreHandleSelector) ||
 				$target.closest(this.settings.ignoreHandleSelector).length
@@ -1418,7 +1400,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		}
 
 		// Capture the target
-		this.$targetItem = $($.data(ev.currentTarget, 'drag-item'));
+		this.$targetItem = $(ev.currentTarget);
 
 		// Capture the current mouse position
 		this.mousedownX = this.mouseX = ev.pageX;
@@ -1432,6 +1414,29 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		// Listen for mousemove, mouseup
 		this.addListener(Garnish.$doc, 'mousemove', '_onMouseMove');
 		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp');
+	},
+
+	_getItemHandle: function(item)
+	{
+		if (this.settings.handle)
+		{
+			if (typeof this.settings.handle == 'object')
+			{
+				return $(this.settings.handle);
+			}
+
+			if (typeof this.settings.handle == 'string')
+			{
+				return $(this.settings.handle, item);
+			}
+
+			if (typeof this.settings.handle == 'function')
+			{
+				return $(this.settings.handle(item));
+			}
+		}
+
+		return $(item);
 	},
 
 	/**
@@ -1527,16 +1532,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	 */
 	_deinitItem: function(item)
 	{
-		var handle = $.data(item, 'drag-handle');
-
-		if (handle)
-		{
-			$.removeData(handle, 'drag-item');
-			this.removeAllListeners(handle);
-		}
-
+		this.removeAllListeners(item);
 		$.removeData(item, 'drag');
-		$.removeData(item, 'drag-handle');
 	}
 },
 
