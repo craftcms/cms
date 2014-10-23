@@ -271,7 +271,7 @@ class UsersService extends BaseApplicationComponent
 		try
 		{
 			// If we're going through account verification, in whatever form
-			if ($user->unverifiedEmail)
+			if ($user->sendVerificationEmail)
 			{
 				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 			}
@@ -298,7 +298,7 @@ class UsersService extends BaseApplicationComponent
 
 				$userRecord->save(false);
 
-				if ($user->unverifiedEmail)
+				if ($user->sendVerificationEmail)
 				{
 					// Temporarily set the unverified email on the UserModel so the verification email goes to the
 					// right place

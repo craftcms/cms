@@ -755,7 +755,7 @@ class UsersController extends BaseController
 			if ($newEmail)
 			{
 				// Does that email need to be verified?
-				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification') && (!craft()->userSession->isAdmin() || craft()->request->getPost('verificationRequired')))
+				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
 				{
 					$user->unverifiedEmail = $newEmail;
 
@@ -768,6 +768,11 @@ class UsersController extends BaseController
 				else
 				{
 					$user->email = $newEmail;
+				}
+
+				if (!craft()->userSession->isAdmin() || craft()->request->getPost('sendVerificationEmail'))
+				{
+					$user->sendVerificationEmail = true;
 				}
 			}
 		}
@@ -787,7 +792,8 @@ class UsersController extends BaseController
 
 		if ($isNewUser)
 		{
-			if ($user->unverifiedEmail)
+			// Check the global setting here, instead of unverifiedEmail
+			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
 			{
 				$user->status = UserStatus::Pending;
 			}
