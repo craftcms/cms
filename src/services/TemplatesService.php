@@ -1381,11 +1381,6 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' removable';
 		}
 
-		if ($context['context'] != 'index')
-		{
-			$html .= ' unselectable';
-		}
-
 		if ($thumbUrl)
 		{
 			$html .= ' hasthumb';

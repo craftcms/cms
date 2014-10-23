@@ -1,9 +1,8 @@
 <div class="tableview">
-	<table class="data fullwidth">
+	<table class="data fullwidth"{% if structure is defined %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
 		<thead>
 			{% for attribute, label in attributes %}
-				{% set ordered = (order is defined and order == attribute) %}
-				<th scope="col" data-attribute="{{ attribute }}"{% if ordered %} class="ordered {{ sort }}"{% endif %}>{{ label }}</th>
+				<th scope="col" data-attribute="{{ attribute }}">{{ label }}</th>
 			{% endfor %}
 		</thead>
 		<tbody>

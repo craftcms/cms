@@ -168,6 +168,21 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		return array(
+			'title'      => Craft::t('Title'),
+			'uri'        => Craft::t('URI'),
+			'postDate'   => Craft::t('Post Date'),
+			'expiryDate' => Craft::t('Expiry Date'),
+		);
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param null $source
@@ -176,23 +191,18 @@ class EntryElementType extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		if ($source && preg_match('/^section:(\d+)$/', $source, $match))
-		{
-			$section = craft()->sections->getSectionById($match[1]);
-		}
-
 		$attributes = array(
 			'title' => Craft::t('Title'),
 			'uri'   => Craft::t('URI'),
 		);
 
+		if ($source == '*')
+		{
+			$attributes['section'] = Craft::t('Section');
+		}
+
 		if ($source != 'singles')
 		{
-			if (empty($section))
-			{
-				$attributes['sectionId'] = Craft::t('Section');
-			}
-
 			$attributes['postDate']   = Craft::t('Post Date');
 			$attributes['expiryDate'] = Craft::t('Expiry Date');
 		}
@@ -212,7 +222,7 @@ class EntryElementType extends BaseElementType
 	{
 		switch ($attribute)
 		{
-			case 'sectionId':
+			case 'section':
 			{
 				return Craft::t($element->getSection()->name);
 			}

@@ -542,15 +542,17 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px -1px rgba(0,0,0,0.1));
 }
 
-.datatablesorthelper { margin: -2px -7px; padding: 2px 7px; }
+.datatablesorthelper { margin: 0 -7px; padding: 0 7px; }
+.datatablesorthelper,
+.datatablesorthelper .element,
+.datatablesorthelper a { cursor: move !important; }
 .datatablesorthelper tr:first-child th,
 .datatablesorthelper tr:first-child td { border-top: none !important; }
 .datatablesorthelper tr:last-child th,
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
 /* elements */
-.element { display: inline-block; position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; }
-.element.unselectable { @include user-select(none); }
+.element { display: inline-block; position: relative; border: 1px solid transparent; padding: 5px 7px; cursor: default; outline: none !important; @include user-select(none); }
 
 .element .label { display: inline-block; }
 .element .status { @include margin(0, 0, 0, 5px); }
@@ -586,6 +588,13 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.loading.sel:after { background-image: url(../images/spinner_element.gif); }
 .element.loading.removable .delete { display: none; }
 
+/* table views */
+.elements .tableview td { position: relative; }
+.elements .tableview .move { display: block; float: left; margin-top: 5px; font-size: 11px; }
+
+.elements .tableview table tr.sel th,
+.elements .tableview table tr.sel td { background: #f5f5f5; }
+
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
 .elements .thumbsview li { @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; }
@@ -611,8 +620,6 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
 .structure li.collapsed > ul { display: none; }
 .structure li .row:after { @include clearafter; }
-
-.elementindex .structure li .toggle { background-color: #fff; }
 
 .structure li .icon { @include margin(5px, 5px, 0, 0); opacity: 0; @include transition(opacity linear 100ms); }
 .structure li .add { padding: 0 5px; }
@@ -888,19 +895,18 @@ body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolo
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
-.menu ul li a:not(.sel):hover,
-.menu ul li a:not(.sel):hover .light,
-.menu:not(:hover) ul li a:not(.sel).hover,
-.menu:not(:hover) ul li a:not(.sel).hover .light,
+.menu ul li a:not(.sel):not(.disabled):hover,
+.menu ul li a:not(.sel):not(.disabled):hover .light,
+.menu:not(:hover) ul li a:not(.sel):not(.disabled).hover,
+.menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
 body .redactor_dropdown a:hover { color: $textcolor; background-color: $menuhovercolor; }
-.menu ul li a.sel { color: #fff; background: $menuselcolor; cursor: default; }
+.menu ul li a.sel { cursor: default; }
 .menu hr { margin: 5px -14px; }
 
 .menu ul.padded li a { @include padding-left(24px); }
 .menu ul.padded li a[data-icon]:before,
 .menu ul.padded li a.icon:before,
 .menu ul.padded li a.sel:before { @include floatleft; @include margin(3px, 0, 0, -17px); font-size: 11px; color: $mediumtextcolor !important; }
-.menu ul.padded li a.sel:before { color: #fff !important; }
 .menu ul.padded li a.sel:not([data-icon]):before { content: 'check'; }
 .menu hr.padded { @include margin-left(10px); }
 
@@ -1194,6 +1200,8 @@ ul.errors li { color: $errorcolor; }
 
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
+
+	.elements .tableview .reorder { background-image: url(../images/rowreorderhandle_2x.png); background-size: 5px; }
 
 	.structure ul li { background-size: 40px;
 		body.ltr & { background-image: url(../images/branch_2x.png); }

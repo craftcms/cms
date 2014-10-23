@@ -152,34 +152,44 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 			'disabledElementIds'  => $disabledElementIds,
 		);
 
+		// Special case for sorting by structure
+		if (!empty($viewState['order']) && $viewState['order'] == 'structure')
+		{
+			$source = $this->getSource($sourceKey, $context);
+
+			if (isset($source['structureId']))
+			{
+				$criteria->order = 'lft asc';
+				$variables['structure'] = craft()->structures->getStructureById($source['structureId']);
+			}
+			else
+			{
+				unset($viewState['order']);
+			}
+		}
+		else if (!empty($viewState['order']) && $viewState['order'] == 'score')
+		{
+			$criteria->order = 'score';
+		}
+		else
+		{
+			$sortableAttributes = $this->defineSortableAttributes();
+
+			if ($sortableAttributes)
+			{
+				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
+				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], array('asc', 'desc'))) ? $viewState['sort'] : 'asc';
+
+				$criteria->order = $order.' '.$sort;
+			}
+		}
+
 		switch ($viewState['mode'])
 		{
 			case 'table':
 			{
-				// Make sure the attribute is actually allowed
+				// Get the table columns
 				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
-
-				// Ordering by an attribute?
-				if (!empty($viewState['order']) && in_array($viewState['order'], array_keys($variables['attributes'])))
-				{
-					$criteria->order = $viewState['order'].' '.$viewState['sort'];
-					$variables['order'] = $viewState['order'];
-					$variables['sort'] = $viewState['sort'];
-				}
-
-				break;
-			}
-
-			case 'structure':
-			{
-				$source = $this->getSource($sourceKey, $context);
-
-				$variables['structure']           = craft()->structures->getStructureById($source['structureId']);
-				$variables['collapsedElementIds'] = isset($viewState['collapsedElementIds']) ? $viewState['collapsedElementIds'] : array();
-				$variables['newChildUrl']         = (isset($source['newChildUrl']) ? $source['newChildUrl'] : null);
-
-				$criteria->offset = 0;
-				$criteria->limit = null;
 
 				break;
 			}
@@ -189,6 +199,16 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset ? 'container' : 'elements');
 		return craft()->templates->render($template, $variables);
+	}
+
+	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		return $this->defineTableAttributes();
 	}
 
 	/**

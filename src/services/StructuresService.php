@@ -105,6 +105,32 @@ class StructuresService extends BaseApplicationComponent
 		return (bool) $affectedRows;
 	}
 
+	/**
+	 * Returns the descendant level delta for a given element.
+	 *
+	 * @param int              $structureId
+	 * @param BaseElementModel $element
+	 *
+	 * @return int
+	 */
+	public function getElementLevelDelta($structureId, BaseElementModel $element)
+	{
+		$elementRecord = $this->_getElementRecord($structureId, $element);
+		$descendants = $elementRecord->descendants();
+		$criteria = $descendants->getDbCriteria();
+		$criteria->order = 'level desc';
+		$deepestDescendant = $descendants->find();
+
+		if ($deepestDescendant)
+		{
+			return $deepestDescendant->level - $elementRecord->level;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
 	// Moving elements around
 	// -------------------------------------------------------------------------
 

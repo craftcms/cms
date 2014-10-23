@@ -16,50 +16,84 @@ namespace Craft;
  */
 class StructuresController extends BaseController
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var StructureModel
+	 */
+	private $_structure;
+
+	/**
+	 * @var BaseElementModel
+	 */
+	private $_element;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * Moves an element within a structure.
-	 *
-	 * @param array $variables
+	 * Initializes the application component.
 	 *
 	 * @return null
 	 */
-	public function actionMoveElement(array $variables = array())
+	public function init()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$structureId     = craft()->request->getRequiredPost('structureId');
-		$elementId       = craft()->request->getRequiredPost('elementId');
-		$localeId        = craft()->request->getRequiredPost('locale');
+		$structureId = craft()->request->getRequiredPost('structureId');
+		$elementId   = craft()->request->getRequiredPost('elementId');
+		$localeId    = craft()->request->getRequiredPost('locale');
+
+		$this->_structure = craft()->structures->getStructureById($structureId);
+
+		// Make sure they have permission to be doing this
+		if ($this->_structure->movePermission)
+		{
+			craft()->userSession->requirePermission($this->_structure->movePermission);
+		}
+
+		$this->_element = craft()->elements->getElementById($elementId, null, $localeId);
+	}
+
+	/**
+	 * Returns the descendant level delta for a given element.
+	 *
+	 * @return null
+	 */
+	public function actionGetElementLevelDelta()
+	{
+		$delta = craft()->structures->getElementLevelDelta($this->_structure->id, $this->_element);
+
+		$this->returnJson(array(
+			'delta' => $delta
+		));
+	}
+
+	/**
+	 * Moves an element within a structure.
+	 *
+	 * @return null
+	 */
+	public function actionMoveElement()
+	{
 		$parentElementId = craft()->request->getPost('parentId');
 		$prevElementId   = craft()->request->getPost('prevId');
 
-		$structure = craft()->structures->getStructureById($structureId);
-
-		// Make sure they have permission to be doing this
-		if ($structure->movePermission)
-		{
-			craft()->userSession->requirePermission($structure->movePermission);
-		}
-
-		$element = craft()->elements->getElementById($elementId, null, $localeId);
-
 		if ($prevElementId)
 		{
-			$prevElement = craft()->elements->getElementById($prevElementId, null, $localeId);
-			$success = craft()->structures->moveAfter($structure->id, $element, $prevElement, 'auto', true);
+			$prevElement = craft()->elements->getElementById($prevElementId, null, $this->_element->locale);
+			$success = craft()->structures->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
 		}
 		else if ($parentElementId)
 		{
-			$parentElement = craft()->elements->getElementById($parentElementId, null, $localeId);
-			$success = craft()->structures->prepend($structure->id, $element, $parentElement, 'auto', true);
+			$parentElement = craft()->elements->getElementById($parentElementId, null, $this->_element->locale);
+			$success = craft()->structures->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
 		}
 		else
 		{
-			$success = craft()->structures->prependToRoot($structure->id, $element, 'auto', true);
+			$success = craft()->structures->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
 		}
 
 		$this->returnJson(array(

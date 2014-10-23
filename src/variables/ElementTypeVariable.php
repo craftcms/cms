@@ -69,6 +69,16 @@ class ElementTypeVariable extends BaseComponentTypeVariable
 	}
 
 	/**
+	 * Returns the attributes that elements can be sorted by.
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		return $this->component->defineSortableAttributes();
+	}
+
+	/**
 	 * Returns the table view HTML for a given attribute.
 	 *
 	 * @param BaseElementModel $element

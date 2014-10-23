@@ -149,7 +149,14 @@ interface IElementType extends IComponentType
 	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
 
 	/**
-	 * Defines the attributes that can be shown/sorted by in Table View.
+	 * Defines the attributes that elements can be sorted by.
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes();
+
+	/**
+	 * Defines the columns that can be shown in table views.
 	 *
 	 * This method should return an array whose keys map to attribute names and database columns that can be sorted
 	 * against when querying for elements, and whose values make up the table’s column headers.

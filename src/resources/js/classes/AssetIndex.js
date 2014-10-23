@@ -1170,7 +1170,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 * Replace a file.
 	 * @private
 	 */
-	_replaceFile: function (event)
+	_replaceFile: function(event)
 	{
 		$('.replaceFile').remove();
 		var $fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo('body'),
@@ -1282,7 +1282,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 			case 'thumbs':
 			{
-				return $('<ul class="thumbsview assets-tv-drag" />').append($element.removeClass('sel'));
+				return $('<div class="elements"/>').append(
+					$('<ul class="thumbsview assets-tv-drag"/>').append(
+						$element.removeClass('sel')
+					)
+				);
 			}
 		}
 

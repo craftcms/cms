@@ -1,6 +1,9 @@
 {% from "_includes/forms" import text -%}
 
 {% includeTranslations
+	"Sort by {attribute}",
+	"Score",
+	"Structure",
 	"Display in a table",
 	"Display hierarchically",
 	"Display as thumbnails"
@@ -9,6 +12,7 @@
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementType.hasStatuses()) %}
 {% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementType.isLocalized()) : false) %}
+{% set sortableAttributes = elementType.defineSortableAttributes() %}
 
 <div class="main">
 	<div class="toolbar">
@@ -53,6 +57,21 @@
 							placeholder: "Search"|t
 						}) }}
 						<div class="clear hidden" title="{{ 'Clear'|t }}"></div>
+					</div>
+				</td>
+				<td class="thin">
+					<div class="btn menubtn sortmenubtn">{% if sortableAttributes %}{{ "Sort by {attribute}"|t({ attribute: sortableAttributes|first }) }}{% endif %}</div>
+					<div class="menu">
+						<ul class="padded sort-attributes">
+							{% for key, label in sortableAttributes %}
+								<li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ key }}">{{ label }}</a></li>
+							{% endfor %}
+						</ul>
+						<hr>
+						<ul class="padded sort-directions">
+							<li><a data-dir="asc" class="sel">{{ "Ascending"|t }}</a></li>
+							<li><a data-dir="desc">{{ "Descending"|t }}</a></li>
+						</ul>
 					</div>
 				</td>
 				<td class="thin viewbtns hidden"></td>
