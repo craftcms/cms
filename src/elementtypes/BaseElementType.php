@@ -197,7 +197,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 		$variables['elements'] = $criteria->find();
 
-		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset ? 'container' : 'elements');
+		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset && !$criteria->positionedAfter ? 'container' : 'elements');
 		return craft()->templates->render($template, $variables);
 	}
 

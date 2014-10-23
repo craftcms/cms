@@ -17,7 +17,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 	_draggeeLevel: null,
 	_draggeeLevelDelta: null,
-	_draggingLastElements: null,
+	draggingLastElements: null,
 	_loadingDraggeeLevelDelta: false,
 
 	_targetLevel: null,
@@ -58,13 +58,40 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		this._draggeeLevel = this.$targetItem.data('level');
 		this._draggeeLevelDelta = 0;
 
-		var $draggee = this._assembleDraggee($(this.$targetItem), this.$targetItem.next());
+		var $draggee = $(this.$targetItem)
+			$nextRow = this.$targetItem.next();
+
+		while ($nextRow.length)
+		{
+			// See if this row is a descendant of the draggee
+			var nextRowLevel = $nextRow.data('level');
+
+			if (nextRowLevel <= this._draggeeLevel)
+			{
+				break;
+			}
+
+			// Is this the deepest descendant we've seen so far?
+			var nextRowLevelDelta = nextRowLevel - this._draggeeLevel;
+
+			if (nextRowLevelDelta > this._draggeeLevelDelta)
+			{
+				this._draggeeLevelDelta = nextRowLevelDelta;
+			}
+
+			// Add it and prep the next row
+			$draggee = $draggee.add($nextRow);
+			$nextRow = $nextRow.next();
+		}
+
+		// Are we dragging the last elements on the page?
+		this.draggingLastElements = !$nextRow.length;
 
 		// Do we have a maxLevels to enforce,
 		// and does it look like this draggee has descendants we don't know about yet?
 		if (
-			this._draggingLastElements &&
 			this.maxLevels &&
+			this.draggingLastElements &&
 			this.$targetItem.data('descendants') > $draggee.length - 1
 		)
 		{
@@ -168,7 +195,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		this._mouseLevelOffset = this.mouseOffsetX - this._getLevelIndent(this._draggeeLevel),
 		this._targetItemOffsetX = this.$targetItem.offset().left;
 
+		// Set the initial target level bounds
 		this._setTargetLevelBounds();
+
+		// Check to see if we should load more elements now
+		this.elementIndex.maybeLoadMore();
 
 		this.base();
 	},
@@ -200,7 +231,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		this.base();
 
 		// Update the draggee's padding if the position just changed
-		// -----------------------------------------------------------------
+		// ---------------------------------------------------------------------
 
 		if (this._targetLevel != this._draggeeLevel)
 		{
@@ -279,57 +310,27 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	onReturnHelpersToDraggees: function()
 	{
 		this._$firstRowCells.css('width', '');
-		this.base();
-	},
 
-	addItems: function(items)
-	{
-		this.base(items);
-
-		if (this.dragging && this._draggingLastElements)
+		// If we were dragging the last elements on the page and ended up loading any additional elemetns in,
+		// there could be a gap between the last draggee item and whatever now comes after it.
+		// So remove the post-draggee elements and possibly load up the next batch.
+		if (this.draggingLastElements)
 		{
-			this.appendDraggee(this._assembleDraggee($(), $(items).first()));
+			var $postDraggeeItems = this.$draggee.last().nextAll();
+
+			if ($postDraggeeItems.length)
+			{
+				this.removeItems($postDraggeeItems);
+				$postDraggeeItems.remove();
+				this.elementIndex.maybeLoadMore();
+			}
 		}
+
+		this.base();
 	},
 
 	// Private methods
 	// =========================================================================
-
-	/**
-	 * Assembles the draggee.
-	 */
-	_assembleDraggee: function($draggee, $nextRow)
-	{
-		if ($nextRow.length)
-		{
-			// We haven't reached the end of the page yet
-			this._draggingLastElements = false;
-
-			// See if this row is a descendant of the draggee
-			var nextRowLevel = $nextRow.data('level');
-
-			if (nextRowLevel > this._draggeeLevel)
-			{
-				// Is this the deepest descendant we've seen so far?
-				var nextRowLevelDelta = nextRowLevel - this._draggeeLevel;
-
-				if (nextRowLevelDelta > this._draggeeLevelDelta)
-				{
-					this._draggeeLevelDelta = nextRowLevelDelta;
-				}
-
-				// Keep going
-				$draggee = this._assembleDraggee($draggee.add($nextRow), $nextRow.next());
-			}
-		}
-		else
-		{
-			// Are we dragging the last elements on the page?
-			this._draggingLastElements = true;
-		}
-
-		return $draggee;
-	},
 
 	/**
 	 * Returns the min and max levels that the draggee could occupy between

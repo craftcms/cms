@@ -58,6 +58,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$table: null,
 	$elementContainer: null,
 
+	morePending: false,
+	loadingMore: false,
+	totalVisible: null,
+	totalVisiblePostStructureTableDraggee: null,
+
 	// Public methods
 	// =========================================================================
 
@@ -477,6 +482,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}, this));
 	},
 
+	/**
+	 * Updates the element container with new element HTML.
+	 */
 	setNewElementDataHtml: function(response, append)
 	{
 		// Is this a brand new set of elements?
@@ -509,7 +517,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			if (this.getSelectedSortAttribute() == 'structure')
 			{
 				// Create the sorter
-				this.structureTableSort = new Craft.StructureTableSorter(this, $newElements);
+				this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
+					onSortChange: $.proxy(this, '_onStructureTableSortChange')
+				});
 			}
 			else
 			{
@@ -535,49 +545,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		Garnish.$bod.append(response.footHtml);
 
 		// More?
-		if (response.more)
+		this.morePending = response.more;
+
+		if (this.morePending)
 		{
-			this.totalVisible = response.totalVisible;
-
-			this.addListener(this.$scroller, 'scroll', function()
+			if (this._isStructureTableDraggingLastElements())
 			{
-				if (this.$scroller[0] == Garnish.$win[0])
-				{
-					var winHeight = Garnish.$win.innerHeight(),
-						winScrollTop = Garnish.$win.scrollTop(),
-						bodHeight = Garnish.$bod.height();
+				this.totalVisiblePostStructureTableDraggee = response.totalVisible;
+			}
+			else
+			{
+				this.totalVisible = response.totalVisible;
+			}
 
-					var loadMore = (winHeight + winScrollTop >= bodHeight);
-				}
-				else
-				{
-					var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-						containerScrollTop = this.$scroller.scrollTop(),
-						containerHeight = this.$scroller.outerHeight();
-
-					var loadMore = (containerScrollHeight - containerScrollTop <= containerHeight + 15);
-				}
-
-				if (loadMore)
-				{
-					this.$loadingMoreSpinner.removeClass('hidden');
-					this.removeListener(this.$scroller, 'scroll');
-
-					var data = this.getControllerData();
-					data.offset = this.totalVisible;
-
-					Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus)
-					{
-						this.$loadingMoreSpinner.addClass('hidden');
-
-						if (textStatus == 'success')
-						{
-							this.setNewElementDataHtml(response, true);
-						}
-
-					}, this));
-				}
-			});
+			// Is there room to load more right now?
+			if (this.canLoadMore())
+			{
+				this.loadMore();
+			}
+			else
+			{
+				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+			}
 		}
 
 		if (this.getSelectedSourceState('mode') == 'table')
@@ -588,6 +577,97 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.onUpdateElements(append, $newElements);
 	},
 
+	/**
+	 * Checks if the user has reached the bottom of the scroll area, and if so, loads the next batch of elemets.
+	 */
+	maybeLoadMore: function()
+	{
+		if (this.canLoadMore())
+		{
+			this.loadMore();
+		}
+	},
+
+	/**
+	 * Returns whether the user has reached the bottom of the scroll area.
+	 */
+	canLoadMore: function()
+	{
+		// Check if the user has reached the bottom of the scroll area
+		if (this.$scroller[0] == Garnish.$win[0])
+		{
+			var winHeight = Garnish.$win.innerHeight(),
+				winScrollTop = Garnish.$win.scrollTop(),
+				bodHeight = Garnish.$bod.height();
+
+			return (winHeight + winScrollTop >= bodHeight);
+		}
+		else
+		{
+			var containerScrollHeight = this.$scroller.prop('scrollHeight'),
+				containerScrollTop = this.$scroller.scrollTop(),
+				containerHeight = this.$scroller.outerHeight();
+
+			return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
+		}
+	},
+
+	/**
+	 * Loads the next batch of elements.
+	 */
+	loadMore: function()
+	{
+		if (this.loadingMore)
+		{
+			return;
+		}
+
+		this.loadingMore = true;
+		this.$loadingMoreSpinner.removeClass('hidden');
+		this.removeListener(this.$scroller, 'scroll');
+
+		var data = this.getLoadMoreData();
+
+		Craft.postActionRequest('elements/getElements', data, $.proxy(function(response, textStatus)
+		{
+			this.loadingMore = false;
+			this.$loadingMoreSpinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				this.setNewElementDataHtml(response, true);
+			}
+
+		}, this));
+	},
+
+	/**
+	 * Returns the data that should be passed to the elements/getElements controller action
+	 * when loading the next batch of elements.
+	 */
+	getLoadMoreData: function()
+	{
+		var data = this.getControllerData();
+
+		// If we are dragging the last elements on the page,
+		// tell the controller to only load elements positioned after the draggee.
+		if (this._isStructureTableDraggingLastElements())
+		{
+			data.offset = this.totalVisiblePostStructureTableDraggee;
+			data.criteria.positionedAfter = this.structureTableSort.$targetItem.data('id');
+		}
+		else
+		{
+			data.offset = this.totalVisible;
+		}
+
+		return data;
+	},
+
+	/**
+	 * Returns the data that should be passed to the elements/getElements controller action
+	 * when loading a fresh set of elements.
+	 */
 	getElementContainer: function()
 	{
 		if (this.getSelectedSourceState('mode') == 'table')
@@ -1140,6 +1220,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
+	},
+
+	_isStructureTableDraggingLastElements: function()
+	{
+		return (this.structureTableSort && this.structureTableSort.dragging && this.structureTableSort.draggingLastElements);
 	}
 },
 
