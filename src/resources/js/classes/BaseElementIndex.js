@@ -206,7 +206,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		// Load up the elements!
 		this.initialized = true;
-		this.updateElements();
 
 		// Status changes
 		if (this.$statusMenuBtn.length)
