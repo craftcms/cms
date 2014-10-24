@@ -431,7 +431,6 @@ class UserModel extends BaseElementModel
 			'passwordResetRequired'      => AttributeType::Bool,
 			'lastPasswordChangeDate'     => AttributeType::DateTime,
 			'unverifiedEmail'            => AttributeType::Email,
-			'sendVerificationEmail'      => AttributeType::Bool,
 			'newPassword'                => AttributeType::String,
 			'currentPassword'            => AttributeType::String,
 			'verificationCodeIssuedDate' => AttributeType::DateTime,

@@ -117,8 +117,8 @@
 
 						{% if requireEmailVerification and currentUser.admin %}
 							{{ forms.checkboxField({
-								label: "Send a verification email?"|t,
-								name: 'verificationRequired',
+								label: "Send a verification email now?"|t,
+								name: 'sendVerificationEmail',
 								checked: true
 							}) }}
 						{% endif %}
