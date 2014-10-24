@@ -686,6 +686,9 @@ class EntriesController extends BaseEntriesController
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
+		// Get the section
+		// ---------------------------------------------------------------------
+
 		if (!empty($variables['sectionHandle']))
 		{
 			$variables['section'] = craft()->sections->getSectionByHandle($variables['sectionHandle']);
@@ -699,6 +702,9 @@ class EntriesController extends BaseEntriesController
 		{
 			throw new HttpException(404);
 		}
+
+		// Get the locale
+		// ---------------------------------------------------------------------
 
 		if (craft()->isLocalized())
 		{
@@ -735,7 +741,9 @@ class EntriesController extends BaseEntriesController
 			}
 		}
 
-		// Now let's set up the actual entry
+		// Get the entry
+		// ---------------------------------------------------------------------
+
 		if (empty($variables['entry']))
 		{
 			if (!empty($variables['entryId']))
@@ -772,7 +780,8 @@ class EntriesController extends BaseEntriesController
 			}
 		}
 
-		// Entry type
+		// Get the entry type
+		// ---------------------------------------------------------------------
 
 		// Override the entry type?
 		$typeId = craft()->request->getParam('typeId');
@@ -782,7 +791,6 @@ class EntriesController extends BaseEntriesController
 			$variables['entry']->typeId = $typeId;
 		}
 
-		// Save the entry type locally
 		$variables['entryType'] = $variables['entry']->getType();
 
 		if (!$variables['entryType'])
@@ -790,7 +798,9 @@ class EntriesController extends BaseEntriesController
 			throw new Exception(Craft::t('No entry types are available for this entry.'));
 		}
 
-		// Tabs
+		// Define the content tabs
+		// ---------------------------------------------------------------------
+
 		$variables['tabs'] = array();
 
 		foreach ($variables['entryType']->getFieldLayout()->getTabs() as $index => $tab)
