@@ -23,7 +23,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 	getDefaultSourceKey: function()
 	{
-		if (this.settings.context == 'index' && typeof defaultSectionHandle != 'undefined')
+		// Did they request a specific section in the URL?
+		if (this.settings.context == 'index' && typeof defaultSectionHandle != typeof undefined)
 		{
 			if (defaultSectionHandle == 'singles')
 			{
@@ -48,9 +49,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 	onSelectSource: function()
 	{
-		if (this.settings.context == 'index' && typeof history != 'undefined')
+		if (this.settings.context == 'index')
 		{
-			// Update the URI
+			// Get the handle of the selected source
 			if (this.$source.data('key') == 'singles')
 			{
 				var handle = 'singles';
@@ -60,14 +61,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 				var handle = this.$source.data('handle');
 			}
 
-			var uri = 'entries';
-
-			if (handle)
+			// Update the URL
+			if (typeof history != typeof undefined)
 			{
-				uri += '/'+handle;
-			}
+				var uri = 'entries';
 
-			history.replaceState({}, '', Craft.getUrl(uri));
+				if (handle)
+				{
+					uri += '/'+handle;
+				}
+
+				history.replaceState({}, '', Craft.getUrl(uri));
+			}
 
 			// Update the New Entry button
 			if (this.$newEntryBtnGroup.length)
