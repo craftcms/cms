@@ -816,16 +816,6 @@ class EntriesController extends BaseEntriesController
 				'class' => ($hasErrors ? 'error' : null)
 			);
 		}
-
-		// Settings tab
-		if ($variables['section']->type != SectionType::Single)
-		{
-			$hasErrors = ($variables['entry']->hasErrors() && (
-				$variables['entry']->getErrors('slug') ||
-				$variables['entry']->getErrors('postDate') ||
-				$variables['entry']->getErrors('expiryDate')
-			));
-		}
 	}
 
 	/**
