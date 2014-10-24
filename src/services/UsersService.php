@@ -270,12 +270,6 @@ class UsersService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// If we're going through account verification, in whatever form
-			if ($user->unverifiedEmail)
-			{
-				$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-			}
-
 			// Set a default status of pending, if one wasn't supplied.
 			if (!$user->status)
 			{
@@ -297,27 +291,6 @@ class UsersService extends BaseApplicationComponent
 				}
 
 				$userRecord->save(false);
-
-				if ($user->unverifiedEmail)
-				{
-					// Temporarily set the unverified email on the UserModel so the verification email goes to the
-					// right place
-					$originalEmail = $user->email;
-					$user->email = $user->unverifiedEmail;
-
-					try
-					{
-						craft()->email->sendEmailByKey($user, $isNewUser ? 'account_activation' : 'verify_new_email', array(
-							'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
-						));
-					}
-					catch (\phpmailerException $e)
-					{
-						craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
-					}
-
-					$user->email = $originalEmail;
-				}
 
 				if (!$isNewUser)
 				{
@@ -423,6 +396,26 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->save();
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
+			'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
+		));
+	}
+
+	/**
+	 * Sends a new email verification email for a user, regardless of their status.
+	 *
+	 * A new verification code will generated for the user overwriting any existing one.
+	 *
+	 * @param UserModel $user The user to send the activation email to.
+	 *
+	 * @return bool Whether the email was sent successfully.
+	 */
+	public function sendNewEmailVerifyEmail(UserMOdel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
 		));
 	}

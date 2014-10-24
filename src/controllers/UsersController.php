@@ -660,6 +660,7 @@ class UsersController extends BaseController
 
 		$currentUser = craft()->userSession->getUser();
 		$thisIsPublicRegistration = false;
+		$sendVerificationEmail = false;
 
 		$userId = craft()->request->getPost('userId');
 		$isNewUser = $userId === null ? true : false;
@@ -755,7 +756,7 @@ class UsersController extends BaseController
 			if ($newEmail)
 			{
 				// Does that email need to be verified?
-				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification') && (!craft()->userSession->isAdmin() || craft()->request->getPost('verificationRequired')))
+				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
 				{
 					$user->unverifiedEmail = $newEmail;
 
@@ -768,6 +769,11 @@ class UsersController extends BaseController
 				else
 				{
 					$user->email = $newEmail;
+				}
+
+				if (!craft()->userSession->isAdmin() || craft()->request->getPost('sendVerificationEmail'))
+				{
+					$sendVerificationEmail = true;
 				}
 			}
 		}
@@ -787,7 +793,8 @@ class UsersController extends BaseController
 
 		if ($isNewUser)
 		{
-			if ($user->unverifiedEmail)
+			// Check the global setting here, instead of unverifiedEmail
+			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
 			{
 				$user->status = UserStatus::Pending;
 			}
@@ -824,6 +831,32 @@ class UsersController extends BaseController
 			{
 				// Assign them to the default user group
 				$this->_assignDefaultGroupToUser($user->id);
+			}
+
+			if ($sendVerificationEmail)
+			{
+				// Temporarily set the unverified email on the UserModel so the verification email goes to the
+				// right place
+				$originalEmail = $user->email;
+				$user->email = $user->unverifiedEmail;
+
+				try
+				{
+					if ($isNewUser)
+					{
+						craft()->users->sendActivationEmail($user);
+					}
+					else
+					{
+						craft()->users->sendNewEmailVerifyEmail($user);
+					}
+				}
+				catch (\phpmailerException $e)
+				{
+					craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
+				}
+
+				$user->email = $originalEmail;
 			}
 
 			craft()->userSession->setNotice(Craft::t('User saved.'));
