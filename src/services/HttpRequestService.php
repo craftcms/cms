@@ -1266,14 +1266,23 @@ class HttpRequestService extends \CHttpRequest
 				}
 
 				if (
-					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath))) ||
 					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
-					($actionParam = $this->getParam('action')) !== null
+					($actionParam = $this->getParam('action')) !== null ||
+					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath)))
 				)
 				{
 					$this->_isActionRequest = true;
 
-					if ($specialPath)
+					if ($triggerMatch)
+					{
+						$this->_actionSegments = array_slice($this->_segments, 1);
+					}
+					else if ($actionParam)
+					{
+						$actionParam = $this->decodePathInfo($actionParam);
+						$this->_actionSegments = array_filter(explode('/', $actionParam));
+					}
+					else
 					{
 						if ($this->_path == $loginPath)
 						{
@@ -1287,15 +1296,6 @@ class HttpRequestService extends \CHttpRequest
 						{
 							$this->_actionSegments = array('users', 'setpassword');
 						}
-					}
-					else if ($triggerMatch)
-					{
-						$this->_actionSegments = array_slice($this->_segments, 1);
-					}
-					else
-					{
-						$actionParam = $this->decodePathInfo($actionParam);
-						$this->_actionSegments = array_filter(explode('/', $actionParam));
 					}
 				}
 			}
