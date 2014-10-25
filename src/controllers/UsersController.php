@@ -972,10 +972,10 @@ class UsersController extends BaseController
 		}
 		catch (Exception $exception)
 		{
-			$this->returnErrorJson($exception->getMessage());
+			Craft::log('There was an error uploading the photo: '.$exception->getMessage(), LogLevel::Error);
 		}
 
-		$this->returnErrorJson(Craft::t('There was an error uploading your photo'));
+		$this->returnErrorJson(Craft::t('There was an error uploading your photo.'));
 	}
 
 	/**

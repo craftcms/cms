@@ -295,7 +295,7 @@ class UserElementType extends BaseElementType
 
 			if ($permittedUserIds)
 			{
-				$permissionConditions = array('or', 'users.admin = 1', DbHelper::parseParam('elements.id', $permittedUserIds, $query->params));
+				$permissionConditions = array('or', 'users.admin = 1', array('in', 'elements.id', $permittedUserIds));
 			}
 			else
 			{
@@ -314,9 +314,7 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
-			// arrays.
-			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
+			$query->andWhere('in', 'elements.id', $userIds);
 		}
 
 		if ($criteria->group)
@@ -336,9 +334,7 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
-			// arrays.
-			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
+			$query->andWhere('in', 'elements.id', $userIds);
 		}
 
 		if ($criteria->username)

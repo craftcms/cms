@@ -481,7 +481,15 @@ class EntriesController extends BaseEntriesController
 				$return['id']        = $entry->id;
 				$return['title']     = $entry->title;
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
-				$return['author']    = $entry->getAuthor()->getAttributes();
+
+				$author = $entry->getAuthor()->getAttributes();
+
+				if (isset($author['password']))
+				{
+					unset($author['password']);
+				}
+
+				$return['author']    = $author;
 				$return['postDate']  = ($entry->postDate ? $entry->postDate->localeDate() : null);
 
 				$this->returnJson($return);
