@@ -113,7 +113,7 @@ class CategoriesController extends BaseController
 
 		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
 		{
-			$locales[$localeId] = new SectionLocaleModel(array(
+			$locales[$localeId] = new CategoryGroupLocaleModel(array(
 				'locale'          => $localeId,
 				'urlFormat'       => craft()->request->getPost('urlFormat.'.$localeId),
 				'nestedUrlFormat' => craft()->request->getPost('nestedUrlFormat.'.$localeId),
