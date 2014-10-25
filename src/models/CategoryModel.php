@@ -77,6 +77,21 @@ class CategoryModel extends BaseElementModel
 	}
 
 	/**
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		$group = $this->getGroup();
+
+		if ($group)
+		{
+			return UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+		}
+	}
+
+	/**
 	 * Returns the category's group.
 	 *
 	 * @return CategoryGroupModel|null
@@ -101,6 +116,9 @@ class CategoryModel extends BaseElementModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'groupId' => AttributeType::Number,
+
+			// Just used for saving categories
+			'newParentId'      => AttributeType::Number,
 		));
 	}
 }

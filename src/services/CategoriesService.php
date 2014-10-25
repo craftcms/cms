@@ -591,6 +591,27 @@ class CategoriesService extends BaseApplicationComponent
 	{
 		$isNewCategory = !$category->id;
 
+		$hasNewParent = $this->_checkForNewParent($category);
+
+		if ($hasNewParent)
+		{
+			if ($category->newParentId)
+			{
+				$parentCategory = $this->getCategoryById($category->newParentId, $category->locale);
+
+				if (!$parentCategory)
+				{
+					throw new Exception(Craft::t('No category exists with the ID “{id}”', array('id' => $category->newParentId)));
+				}
+			}
+			else
+			{
+				$parentCategory = null;
+			}
+
+			$category->setParent($parentCategory);
+		}
+
 		// Category data
 		if (!$isNewCategory)
 		{
@@ -635,11 +656,21 @@ class CategoriesService extends BaseApplicationComponent
 
 				$categoryRecord->save(false);
 
-				if ($isNewCategory)
+				// Has the parent changed?
+				if ($hasNewParent)
 				{
-					// Add it to the group's structure
-					craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+					if (!$category->newParentId)
+					{
+						craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+					}
+					else
+					{
+						craft()->structures->append($category->getGroup()->structureId, $category, $parentCategory);
+					}
 				}
+
+				// Update the category's descendants, who may be using this category's URI in their own URIs
+				craft()->elements->updateDescendantSlugsAndUris($category);
 
 				if ($transaction !== null)
 				{
@@ -837,6 +868,58 @@ class CategoriesService extends BaseApplicationComponent
 		}
 
 		return $group;
+	}
+
+	/**
+	 * Checks if an category was submitted with a new parent category selected.
+	 *
+	 * @param CategoryModel $category
+	 *
+	 * @return bool
+	 */
+	private function _checkForNewParent(CategoryModel $category)
+	{
+		// Is it a brand new category?
+		if (!$category->id)
+		{
+			return true;
+		}
+
+		// Was a new parent ID actually submitted?
+		if ($category->newParentId === null)
+		{
+			return false;
+		}
+
+		// Is it set to the top level now, but it hadn't been before?
+		if ($category->newParentId === '0' && $category->level != 1)
+		{
+			return true;
+		}
+
+		// Is it set to be under a parent now, but didn't have one before?
+		if ($category->newParentId !== '0' && $category->level == 1)
+		{
+			return true;
+		}
+
+		// Is the newParentId set to a different category ID than its previous parent?
+		$criteria = craft()->elements->getCriteria(ElementType::Category);
+		$criteria->ancestorOf = $category;
+		$criteria->ancestorDist = 1;
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+
+		$oldParent = $criteria->first();
+		$oldParentId = ($oldParent ? $oldParent->id : '0');
+
+		if ($category->newParentId != $oldParentId)
+		{
+			return true;
+		}
+
+		// Must be set to the same one then
+		return false;
 	}
 
 	/**

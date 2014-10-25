@@ -3,17 +3,20 @@
  */
 Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 {
-	groupId: null,
-	structure: null,
+	$newCategoryBtn: null,
 
-	$noCats: null,
-	$addCategoryForm: null,
-	$addCategoryInput: null,
-	$addCategorySpinner: null,
+	onAfterHtmlInit: function()
+	{
+		// Get the New Category button
+		this.$newCategoryBtn = this.$sidebar.find('> .buttons > .btn');
+
+		this.base();
+	},
 
 	getDefaultSourceKey: function()
 	{
-		if (this.settings.context == 'index' && typeof defaultGroupHandle != 'undefined')
+		// Did they request a specific category group in the URL?
+		if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined)
 		{
 			for (var i = 0; i < this.$sources.length; i++)
 			{
@@ -31,148 +34,29 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 	onSelectSource: function()
 	{
-		if (this.settings.context == 'index' && typeof history != 'undefined')
+		if (this.settings.context == 'index')
 		{
-			var uri = 'categories/'+this.$source.data('handle');
+			// Get the handle of the selected source
+			var handle = this.$source.data('handle');
 
-			history.replaceState({}, '', Craft.getUrl(uri));
+			// Update the URL
+			if (typeof history != typeof undefined)
+			{
+				var uri = 'categories';
+
+				if (handle)
+				{
+					uri += '/'+handle;
+				}
+
+				history.replaceState({}, '', Craft.getUrl(uri));
+			}
+
+			// Update the New Category button
+			this.$newCategoryBtn.attr('href', Craft.getUrl('categories/'+handle+'/new'));
 		}
 
 		this.base();
-	},
-
-	getViewModesForSource: function()
-	{
-		return [
-			{ mode: 'structure', title: Craft.t('Display hierarchically'), icon: 'structure' }
-		];
-	},
-
-	onUpdateElements: function(append)
-	{
-		// Make sure it's not table view (for a search)
-		if (this.getSelectedSourceState('mode') == 'structure')
-		{
-			this.$noCats = this.$elements.children('.nocats');
-			this.$addCategoryForm = this.$elements.children('form');
-			this.$addCategoryInput = this.$addCategoryForm.find('input[type=text]');
-			this.$addCategorySpinner = this.$addCategoryForm.find('.spinner');
-
-			this.structure = this.$elementContainer.data('structure');
-			this.groupId = this.$addCategoryForm.data('group-id');
-
-			this.addListener(this.$addCategoryForm, 'submit', 'onAddCategorySubmit');
-		}
-
-		this.initElements(this.$elementContainer.find('.element'));
-
-		this.base(append);
-	},
-
-	initElements: function($elements)
-	{
-		if (this.settings.context == 'index')
-		{
-			this.addListener($elements, 'dblclick', function(ev)
-			{
-				Craft.showElementEditor($(ev.currentTarget));
-			});
-
-			this.addListener($elements.siblings('.delete'), 'click', 'onDeleteClick');
-		}
-	},
-
-	onDeleteClick: function(ev)
-	{
-		var $element = $(ev.currentTarget).siblings('.element'),
-			info = Craft.getElementInfo($element);
-
-		if (confirm(Craft.t('Are you sure you want to delete “{name}” and its descendants?', { name: info.label })))
-		{
-			Craft.postActionRequest('categories/deleteCategory', { categoryId: info.id }, $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					if (response.success)
-					{
-						this.structure.removeElement($element);
-						Craft.cp.displayNotice(Craft.t('“{name}” deleted.', { name: info.label }));
-
-						// Was that the last one?
-						if (!this.$elementContainer.find('.element').not($element).length)
-						{
-							this.$noCats.removeClass('hidden');
-						}
-					}
-					else
-					{
-						Craft.cp.displayError(Craft.t('Couldn’t delete “{name}”.', { name: info.label }));
-					}
-				}
-
-			}, this));
-		}
-	},
-
-	onAddCategorySubmit: function(ev)
-	{
-		ev.preventDefault();
-
-		this.$addCategorySpinner.removeClass('hidden');
-
-		var data = {
-			title: this.$addCategoryInput.val(),
-			groupId: this.groupId
-		};
-
-		Craft.postActionRequest('categories/createCategory', data, $.proxy(function(response, textStatus) {
-
-			this.$addCategorySpinner.addClass('hidden');
-
-			if (textStatus == 'success')
-			{
-				this.$noCats.addClass('hidden');
-
-				var $element = $('<div class="element" data-editable' +
-					' data-id="'+response.id+'"' +
-					' data-locale="'+Craft.locale+'"' +
-					' data-status="'+response.status+'"' +
-					' data-label="'+response.title+'"' +
-					' data-url="'+response.url+'">' +
-					'<div class="label">' +
-						'<span class="status '+response.status+'"></span>' +
-						'<span class="title">'+response.title+'</span>' +
-					'</div>' +
-				'</div>');
-
-				// Add it to the structure
-				this.structure.addElement($element);
-
-				// Add the delete button
-				var $row = $element.parent();
-				$('<a class="delete icon" title="'+Craft.t('Delete')+'"></a>').appendTo($row);
-
-				// Initialize it
-				this.initElements($element);
-
-				// Clear out the "Add a Category" input
-				this.$addCategoryInput.val('');
-
-				// Animate the new category into place
-				var css = {
-					top: 24
-				};
-				css[Craft.left] = -5;
-
-				var animateCss = {
-					top: 0
-				};
-				animateCss[Craft.left] = 0;
-
-				$element.css(css).velocity(animateCss, 'fast');
-			}
-
-		}, this));
 	}
 
 });

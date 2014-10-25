@@ -103,43 +103,6 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getIndexHtml()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 * @param array                $disabledElementIds
-	 * @param array                $viewState
-	 * @param string|null          $sourceKey
-	 * @param string|null          $context
-	 *
-	 * @return string
-	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
-	{
-		if ($context == 'index' && $viewState['mode'] == 'structure')
-		{
-			$criteria->offset = 0;
-			$criteria->limit = null;
-
-			$source = $this->getSource($sourceKey, $context);
-
-			return craft()->templates->render('_elements/categoryindex', array(
-				'viewMode'            => $viewState['mode'],
-				'context'             => $context,
-				'elementType'         => new ElementTypeVariable($this),
-				'disabledElementIds'  => $disabledElementIds,
-				'structure'           => craft()->structures->getStructureById($source['structureId']),
-				'collapsedElementIds' => isset($viewState['collapsedElementIds']) ? $viewState['collapsedElementIds'] : array(),
-				'elements'            => $criteria->find(),
-				'groupId'             => $source['criteria']['groupId'],
-			));
-		}
-		else
-		{
-			return parent::getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
-		}
-	}
-
-	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source
@@ -149,7 +112,8 @@ class CategoryElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			'title' => Craft::t('Title')
+			'title' => Craft::t('Title'),
+			'uri'   => Craft::t('URI'),
 		);
 	}
 

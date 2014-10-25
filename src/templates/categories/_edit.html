@@ -1,0 +1,144 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set groupHandle = group.handle %}
+
+
+{% block main %}
+    <form id="category-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
+        {{ getCsrfInput() }}
+
+        <input type="hidden" name="groupId" value="{{ group.id }}">
+        {% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
+        {% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ category.locale }}">{% endif %}
+
+        <div class="grid first">
+            <div class="item" data-position="left" data-min-colspan="2" data-max-colspan="3">
+                <div id="fields" class="pane">
+                    {% include "_includes/tabs" %}
+
+                    {{ forms.textField({
+                        label: "Title"|t,
+                        locale: category.locale,
+                        id: 'title',
+                        name: 'title',
+                        value: category.title,
+                        errors: category.getErrors('title'),
+                        first: true,
+                        autofocus: true,
+                        required: true,
+                        maxlength: 255
+                    }) }}
+
+                    <div>
+                        {% for tab in group.getFieldLayout().getTabs() %}
+                            <div id="tab{{ loop.index }}"{% if not loop.first %} class="hidden"{% endif %}>
+                                {% include "_includes/fields" with {
+                                    fields:  tab.getFields(),
+                                    element: category
+                                } only %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div><!--/item-->
+
+            <div class="item" data-position="right" data-colspan="1">
+
+                {% if craft.isLocalized() %}
+                    <ul id="locales" class="pane">
+                        {% set parentIdParam = craft.request.getParam('parentId') %}
+                        {% for localeId in localeIds %}
+                            {% set localeName = craft.i18n.getLocaleById(localeId).name %}
+                            <li{% if localeId == category.locale %} class="sel"{% endif %}>
+                                {%- if localeId == category.locale -%}
+                                    {{ localeName }}
+                                {%- else -%}
+                                    {% set localeUrl = url(
+                                        'categories/'~groupHandle~'/'~craft.request.getSegment(3)~'/'~localeId,
+                                        (parentIdParam ? { parentId: parentIdParam })
+                                    ) -%}
+                                    <a href="{{ localeUrl }}">{{ localeName }}</a>
+                                {%- endif -%}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <div id="settings" class="pane">
+
+                    {{ forms.textField({
+                        label: "Slug"|t,
+                        locale: category.locale,
+                        id: 'slug',
+                        name: 'slug',
+                        value: category.slug,
+                        errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
+                    }) }}
+
+                    {% if parentOptions|length > 1 %}
+                        {{ forms.selectField({
+                            label: "Parent Category"|t,
+                            id: 'parentId',
+                            name: 'parentId',
+                            options: parentOptions,
+                            value: parentId
+                        }) }}
+                    {% endif %}
+
+                    {% set statusInput %}
+                        <div class="left">
+                            {{ forms.lightswitch({
+                                id: 'enabled',
+                                name: 'enabled',
+                                on: category.enabled
+                            }) }}
+                        </div>
+
+                        <div class="right">
+                            <input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="categories/deleteCategory"
+                                data-confirm="{{ 'Are you sure you want to delete this category?'|t }}"
+                                data-redirect="categories">
+                        </div>
+                    {% endset %}
+
+                    {{ forms.field({
+                        label: "Status"|t,
+                        id: 'enabled'
+                    }, statusInput) }}
+
+                </div><!--/pane-->
+
+                {# Action buttons #}
+
+                <hr>
+
+                <input type="hidden" name="action" value="categories/saveCategory">
+                <input type="hidden" name="redirect" value="categories/{{ groupHandle }}">
+
+                <table class="inputs fullwidth">
+                    <tr>
+                        <td class="thin">
+                            <div class="btngroup submit first">
+                                <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+                                <div class="btn submit menubtn"></div>
+                                <div class="menu">
+                                    <ul>
+                                        <li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+                                        <li><a class="formsubmit" data-redirect="categories/{{ groupHandle }}/new{{ parentOptions|length > 1 ? '?parentId={parent.id}' }}">{{ "Save and add another"|t }}</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div><!--/item-->
+        </div><!--/grid-->
+    </form>
+{% endblock %}
+
+
+{% if not category.slug %}
+    {% includeJs "window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');" %}
+{% endif %}

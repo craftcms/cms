@@ -3,7 +3,15 @@
 {% set elementType = 'Category' %}
 {% set showStatusMenu = false %}
 {% set showLocaleMenu = false %}
-{% set showSearch = false %}
+
+{% block sidebar %}
+	<div class="buttons">
+		<a class="btn submit add icon" href="{{ url('categories/'~groups[0].handle~'/new') }}">{{ "New Category"|t }}</a>
+	</div>
+
+	{{ parent() }}
+{% endblock %}
+
 
 {% if groupHandle is defined %}
 	{% includeJs 'window.defaultGroupHandle = "'~groupHandle~'";' %}

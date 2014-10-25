@@ -19,6 +19,9 @@ class CategoriesController extends BaseController
 	// Public Methods
 	// =========================================================================
 
+	// Category Groups
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Category groups index.
 	 *
@@ -161,40 +164,201 @@ class CategoriesController extends BaseController
 		$this->returnJson(array('success' => true));
 	}
 
+	// Categories
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Saves a category.
+	 * Displays the category index page.
 	 *
+	 * @param array $variables The route variables.
+	 *
+	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionCreateCategory()
+	public function actionCategoryIndex(array $variables = array())
 	{
-		$this->requireLogin();
-		$this->requireAjaxRequest();
+		$variables['groups'] = craft()->categories->getEditableGroups();
 
-		$groupId = craft()->request->getRequiredPost('groupId');
-
-		craft()->userSession->requirePermission('editCategories:'.$groupId);
-
-		$category = new CategoryModel();
-		$category->groupId = $groupId;
-
-		$category->getContent()->title = craft()->request->getPost('title');
-
-		if (craft()->categories->saveCategory($category))
+		if (!$variables['groups'])
 		{
-			$this->returnJson(array(
-				'success' => true,
-				'id'      => $category->id,
-				'title'   => $category->title,
-				'status'  => $category->getStatus(),
-				'url'     => $category->getUrl(),
-			));
+			throw new HttpException(404);
+		}
+
+		$this->renderTemplate('categories/_index', $variables);
+	}
+
+	/**
+	 * Displays the category edit page.
+	 *
+	 * @param array $variables The route variables.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionEditCategory(array $variables = array())
+	{
+		$this->_prepEditCategoryVariables($variables);
+
+		$this->_enforceEditCategoryPermissions($variables['category']);
+
+		// Get all the possible parent options
+		$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Category);
+		$parentOptionCriteria->locale = $variables['localeId'];
+		$parentOptionCriteria->groupId = $variables['group']->id;
+		$parentOptionCriteria->status = null;
+		$parentOptionCriteria->localeEnabled = null;
+		$parentOptionCriteria->limit = null;
+
+		if ($variables['group']->maxLevels)
+		{
+			$parentOptionCriteria->level = '< '.$variables['group']->maxLevels;
+		}
+
+		if ($variables['category']->id)
+		{
+			// Prevent the current category, or any of its descendants, from being options
+			$idParam = array('and', 'not '.$variables['category']->id);
+
+			$descendantCriteria = craft()->elements->getCriteria(ElementType::Category);
+			$descendantCriteria->descendantOf = $variables['category'];
+			$descendantCriteria->status = null;
+			$descendantCriteria->localeEnabled = null;
+			$descendantIds = $descendantCriteria->ids();
+
+			foreach ($descendantIds as $id)
+			{
+				$idParam[] = 'not '.$id;
+			}
+
+			$parentOptionCriteria->id = $idParam;
+		}
+
+		$parentOptions = $parentOptionCriteria->find();
+
+		$variables['parentOptions'] = array(array(
+			'label' => '', 'value' => '0'
+		));
+
+		foreach ($parentOptions as $parentOption)
+		{
+			$label = '';
+
+			for ($i = 1; $i < $parentOption->level; $i++)
+			{
+				$label .= '    ';
+			}
+
+			$label .= $parentOption->title;
+
+			$variables['parentOptions'][] = array('label' => $label, 'value' => $parentOption->id);
+		}
+
+		// Get the initially selected parent
+		$variables['parentId'] = craft()->request->getParam('parentId');
+
+		if ($variables['parentId'] === null && $variables['category']->id)
+		{
+			$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+
+			if ($parentIds)
+			{
+				$variables['parentId'] = $parentIds[0];
+			}
+		}
+
+		if (!$variables['category']->id)
+		{
+			$variables['title'] = Craft::t('Create a new category');
 		}
 		else
 		{
-			$this->returnJson(array(
-				'success' => false
-			));
+			$variables['docTitle'] = Craft::t($variables['category']->title);
+			$variables['title'] = HtmlHelper::encode(Craft::t($variables['category']->title));
+		}
+
+		// Breadcrumbs
+		$variables['crumbs'] = array(
+			array('label' => Craft::t('Categories'), 'url' => UrlHelper::getUrl('categories')),
+			array('label' => Craft::t($variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle))
+		);
+
+		foreach ($variables['category']->getAncestors() as $ancestor)
+		{
+			$variables['crumbs'][] = array('label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl());
+		}
+
+		// Set the base CP edit URL
+		$variables['baseCpEditUrl'] = 'categories/'.$variables['group']->handle.'/{id}-{slug}';
+
+		// Set the "Continue Editing" URL
+		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
+			(craft()->isLocalized() && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+
+		// Render the template!
+		craft()->templates->includeCssResource('css/category.css');
+		$this->renderTemplate('categories/_edit', $variables);
+	}
+
+	/**
+	 * Saves an category.
+	 *
+	 * @return null
+	 */
+	public function actionSaveCategory()
+	{
+		$this->requirePostRequest();
+
+		$category = $this->_getCategoryModel();
+
+		// Permission enforcement
+		$this->_enforceEditCategoryPermissions($category);
+		$userSessionService = craft()->userSession;
+
+		// Populate the category with post data
+		$this->_populateCategoryModel($category);
+
+		// Save the category
+		if (craft()->categories->saveCategory($category))
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$return['success']   = true;
+				$return['title']     = $category->title;
+				$return['cpEditUrl'] = $category->getCpEditUrl();
+
+				$this->returnJson(array(
+					'success'   => true,
+					'id'        => $category->id,
+					'title'     => $category->title,
+					'status'    => $category->getStatus(),
+					'url'       => $category->getUrl(),
+					'cpEditUrl' => $category->getCpEditUrl()
+				));
+			}
+			else
+			{
+				$userSessionService->setNotice(Craft::t('Category saved.'));
+				$this->redirectToPostedUrl($category);
+			}
+		}
+		else
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'success' => false,
+					'errors'  => $category->getErrors(),
+				));
+			}
+			else
+			{
+				$userSessionService->setError(Craft::t('Couldn’t save category.'));
+
+				// Send the category back to the template
+				craft()->urlManager->setRouteVariables(array(
+					'category' => $category
+				));
+			}
 		}
 	}
 
@@ -207,7 +371,6 @@ class CategoriesController extends BaseController
 	public function actionDeleteCategory()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		$categoryId = craft()->request->getRequiredPost('categoryId');
 		$category = craft()->categories->getCategoryById($categoryId);
@@ -217,9 +380,241 @@ class CategoriesController extends BaseController
 			throw new Exception(Craft::t('No category exists with the ID “{id}”', array('id' => $categoryId)));
 		}
 
+		// Make sure they have permission to do this
 		craft()->userSession->requirePermission('editCategories:'.$category->groupId);
 
-		$success = craft()->categories->deleteCategoryById($categoryId);
-		$this->returnJson(array('success' => $success));
+		// Delete it
+		if (craft()->categories->deleteCategory($category))
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				craft()->userSession->setNotice(Craft::t('Category deleted.'));
+				$this->redirectToPostedUrl($category);
+			}
+		}
+		else
+		{
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => false));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t delete category.'));
+
+				// Send the category back to the template
+				craft()->urlManager->setRouteVariables(array(
+					'category' => $category
+				));
+			}
+		}
+	}
+
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Saves a category.
+	 *
+	 * @return null
+	 */
+	public function actionCreateCategory()
+	{
+		craft()->deprecator->log('CategoriesController::actionCreateCategory()', 'CategoriesController::actionCreateCategory() has been deprecated. Use CategoriesController::actionSaveCategory() instead.');
+		$this->actionSaveCategory();
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Preps category category variables.
+	 *
+	 * @param array &$variables
+	 *
+	 * @throws HttpException|Exception
+	 * @return null
+	 */
+	private function _prepEditCategoryVariables(&$variables)
+	{
+		// Get the category group
+		// ---------------------------------------------------------------------
+
+		if (!empty($variables['groupHandle']))
+		{
+			$variables['group'] = craft()->categories->getGroupByHandle($variables['groupHandle']);
+		}
+		else if (!empty($variables['groupId']))
+		{
+			$variables['group'] = craft()->categories->getGroupById($variables['groupId']);
+		}
+
+		if (empty($variables['group']))
+		{
+			throw new HttpException(404);
+		}
+
+		// Get the locale
+		// ---------------------------------------------------------------------
+
+		$variables['localeIds'] = craft()->i18n->getEditableLocaleIds();
+
+		if (!$variables['localeIds'])
+		{
+			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this site’s locales.'));
+		}
+
+		if (empty($variables['localeId']))
+		{
+			$variables['localeId'] = craft()->language;
+
+			if (!in_array($variables['localeId'], $variables['localeIds']))
+			{
+				$variables['localeId'] = $variables['localeIds'][0];
+			}
+		}
+		else
+		{
+			// Make sure they were requesting a valid locale
+			if (!in_array($variables['localeId'], $variables['localeIds']))
+			{
+				throw new HttpException(404);
+			}
+		}
+
+		// Get the category
+		// ---------------------------------------------------------------------
+
+		if (empty($variables['category']))
+		{
+			if (!empty($variables['categoryId']))
+			{
+				$variables['category'] = craft()->categories->getCategoryById($variables['categoryId'], $variables['localeId']);
+
+				if (!$variables['category'])
+				{
+					throw new HttpException(404);
+				}
+			}
+			else
+			{
+				$variables['category'] = new CategoryModel();
+				$variables['category']->groupId = $variables['group']->id;
+				$variables['category']->enabled = true;
+
+				if (!empty($variables['localeId']))
+				{
+					$variables['category']->locale = $variables['localeId'];
+				}
+			}
+		}
+
+		// Define the content tabs
+		// ---------------------------------------------------------------------
+
+		$variables['tabs'] = array();
+
+		foreach ($variables['group']->getFieldLayout()->getTabs() as $index => $tab)
+		{
+			// Do any of the fields on this tab have errors?
+			$hasErrors = false;
+
+			if ($variables['category']->hasErrors())
+			{
+				foreach ($tab->getFields() as $field)
+				{
+					if ($variables['category']->getErrors($field->getField()->handle))
+					{
+						$hasErrors = true;
+						break;
+					}
+				}
+			}
+
+			$variables['tabs'][] = array(
+				'label' => Craft::t($tab->name),
+				'url'   => '#tab'.($index+1),
+				'class' => ($hasErrors ? 'error' : null)
+			);
+		}
+	}
+
+	/**
+	 * Fetches or creates a CategoryModel.
+	 *
+	 * @throws Exception
+	 * @return CategoryModel
+	 */
+	private function _getCategoryModel()
+	{
+		$categoryId = craft()->request->getPost('categoryId');
+		$localeId = craft()->request->getPost('locale');
+
+		if ($categoryId)
+		{
+			$category = craft()->categories->getCategoryById($categoryId, $localeId);
+
+			if (!$category)
+			{
+				throw new Exception(Craft::t('No category exists with the ID “{id}”', array('id' => $categoryId)));
+			}
+		}
+		else
+		{
+			$category = new CategoryModel();
+			$category->groupId = craft()->request->getRequiredPost('groupId');
+
+			if ($localeId)
+			{
+				$category->locale = $localeId;
+			}
+		}
+
+		return $category;
+	}
+
+	/**
+	 * Enforces all Edit Category permissions.
+	 *
+	 * @param CategoryModel $category
+	 *
+	 * @return null
+	 */
+	private function _enforceEditCategoryPermissions(CategoryModel $category)
+	{
+		$userSessionService = craft()->userSession;
+
+		if (craft()->isLocalized())
+		{
+			// Make sure they have access to this locale
+			$userSessionService->requirePermission('editLocale:'.$category->locale);
+		}
+
+		// Make sure the user is allowed to edit categories in this group
+		$userSessionService->requirePermission('editCategories:'.$category->groupId);
+	}
+
+	/**
+	 * Populates an CategoryModel with post data.
+	 *
+	 * @param CategoryModel $category
+	 *
+	 * @return null
+	 */
+	private function _populateCategoryModel(CategoryModel $category)
+	{
+		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
+		$category->slug        = craft()->request->getPost('slug', $category->slug);
+		$category->newParentId = craft()->request->getPost('parentId');
+		$category->enabled     = (bool) craft()->request->getPost('enabled', $category->enabled);
+
+		$category->getContent()->title = craft()->request->getPost('title', $category->title);
+
+		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$category->setContentFromPost($fieldsLocation);
 	}
 }
