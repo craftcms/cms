@@ -1056,7 +1056,7 @@ body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px;
 		@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.07));
 	}
 	.select:after { @include icon; position: absolute; top: 10px; @include right(9px); font-size: 10px; content: '▼'; @include user-select(none); }
-	.select select { position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; color: $textcolor; background: none;
+	.select select { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; color: $textcolor; background: none;
 		@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 		-webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms;
 		-moz-transition: border linear 100ms, box-shadow linear 100ms;
