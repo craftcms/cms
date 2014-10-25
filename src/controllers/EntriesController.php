@@ -478,6 +478,7 @@ class EntriesController extends BaseEntriesController
 			if (craft()->request->isAjaxRequest())
 			{
 				$return['success']   = true;
+				$return['id']        = $entry->id;
 				$return['title']     = $entry->title;
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
 				$return['author']    = $entry->getAuthor()->getAttributes();
