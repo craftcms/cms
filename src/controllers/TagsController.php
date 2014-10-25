@@ -103,7 +103,7 @@ class TagsController extends BaseController
 		$tagGroup->handle = craft()->request->getPost('handle');
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Tag;
 		$tagGroup->setFieldLayout($fieldLayout);
 

@@ -147,7 +147,7 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Asset;
 		$source->setFieldLayout($fieldLayout);
 

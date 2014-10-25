@@ -350,7 +350,7 @@ class CategoriesService extends BaseApplicationComponent
 				}
 
 				$fieldLayout = $group->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout, false);
+				craft()->fields->saveLayout($fieldLayout);
 				$groupRecord->fieldLayoutId = $fieldLayout->id;
 				$group->fieldLayoutId = $fieldLayout->id;
 

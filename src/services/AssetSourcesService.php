@@ -365,7 +365,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 				// Save the new one
 				$fieldLayout = $source->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout, false);
+				craft()->fields->saveLayout($fieldLayout);
 
 				// Update the source record/model with the new layout ID
 				$source->fieldLayoutId = $fieldLayout->id;

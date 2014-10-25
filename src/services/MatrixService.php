@@ -322,7 +322,7 @@ class MatrixService extends BaseApplicationComponent
 				$fieldLayout = new FieldLayoutModel();
 				$fieldLayout->type = ElementType::MatrixBlock;
 				$fieldLayout->setFields($fieldLayoutFields);
-				$fieldsService->saveLayout($fieldLayout, false);
+				$fieldsService->saveLayout($fieldLayout);
 
 				// Update the block type model & record with our new field layout ID
 				$blockType->setFieldLayout($fieldLayout);

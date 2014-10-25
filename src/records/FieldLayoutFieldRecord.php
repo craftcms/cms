@@ -35,7 +35,7 @@ class FieldLayoutFieldRecord extends BaseRecord
 	{
 		return array(
 			'layout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'required' => true, 'onDelete' => static::CASCADE),
-			'tab'    => array(static::BELONGS_TO, 'FieldLayoutTabRecord', 'onDelete' => static::CASCADE),
+			'tab'    => array(static::BELONGS_TO, 'FieldLayoutTabRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'field'  => array(static::BELONGS_TO, 'FieldRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}

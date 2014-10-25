@@ -743,16 +743,14 @@ class FieldsService extends BaseApplicationComponent
 	/**
 	 * Assembles a field layout from post data.
 	 *
-	 * @param bool $customizableTabs Whether the field layout has custom tabs.
-	 *
 	 * @return FieldLayoutModel
 	 */
-	public function assembleLayoutFromPost($customizableTabs = true)
+	public function assembleLayoutFromPost()
 	{
 		$postedFieldLayout = craft()->request->getPost('fieldLayout', array());
 		$requiredFields = craft()->request->getPost('requiredFields', array());
 
-		return $this->assembleLayout($postedFieldLayout, $requiredFields, $customizableTabs);
+		return $this->assembleLayout($postedFieldLayout, $requiredFields);
 	}
 
 	/**
@@ -760,11 +758,10 @@ class FieldsService extends BaseApplicationComponent
 	 *
 	 * @param array      $postedFieldLayout
 	 * @param array|null $requiredFields
-	 * @param bool       $customizableTabs  Whether the field layout has custom tabs.
 	 *
 	 * @return FieldLayoutModel
 	 */
-	public function assembleLayout($postedFieldLayout, $requiredFields, $customizableTabs = true)
+	public function assembleLayout($postedFieldLayout, $requiredFields)
 	{
 		$tabs = array();
 		$fields = array();
@@ -774,6 +771,7 @@ class FieldsService extends BaseApplicationComponent
 		foreach ($postedFieldLayout as $tabName => $fieldIds)
 		{
 			$tabFields = array();
+			$tabSortOrder++;
 
 			foreach ($fieldIds as $fieldSortOrder => $fieldId)
 			{
@@ -782,22 +780,16 @@ class FieldsService extends BaseApplicationComponent
 				$field->required  = in_array($fieldId, $requiredFields);
 				$field->sortOrder = ($fieldSortOrder+1);
 
+				$fields[] = $field;
 				$tabFields[] = $field;
 			}
 
-			$fields = array_merge($fields, $tabFields);
+			$tab = new FieldLayoutTabModel();
+			$tab->name      = urldecode($tabName);
+			$tab->sortOrder = $tabSortOrder;
+			$tab->setFields($tabFields);
 
-			if ($customizableTabs)
-			{
-				$tabSortOrder++;
-
-				$tab = new FieldLayoutTabModel();
-				$tab->name      = urldecode($tabName);
-				$tab->sortOrder = $tabSortOrder;
-				$tab->setFields($tabFields);
-
-				$tabs[] = $tab;
-			}
+			$tabs[] = $tab;
 		}
 
 		$layout = new FieldLayoutModel();
@@ -811,11 +803,10 @@ class FieldsService extends BaseApplicationComponent
 	 * Saves a field layout.
 	 *
 	 * @param FieldLayoutModel $layout
-	 * @param bool             $customizableTabs Whether the field layout has custom tabs.
 	 *
 	 * @return bool
 	 */
-	public function saveLayout(FieldLayoutModel $layout, $customizableTabs = true)
+	public function saveLayout(FieldLayoutModel $layout)
 	{
 		// First save the layout
 		$layoutRecord = new FieldLayoutRecord();
@@ -823,36 +814,20 @@ class FieldsService extends BaseApplicationComponent
 		$layoutRecord->save(false);
 		$layout->id = $layoutRecord->id;
 
-		if ($customizableTabs)
+		foreach ($layout->getTabs() as $tab)
 		{
-			foreach ($layout->getTabs() as $tab)
-			{
-				$tabRecord = new FieldLayoutTabRecord();
-				$tabRecord->layoutId  = $layout->id;
-				$tabRecord->name      = $tab->name;
-				$tabRecord->sortOrder = $tab->sortOrder;
-				$tabRecord->save(false);
-				$tab->id = $tabRecord->id;
+			$tabRecord = new FieldLayoutTabRecord();
+			$tabRecord->layoutId  = $layout->id;
+			$tabRecord->name      = $tab->name;
+			$tabRecord->sortOrder = $tab->sortOrder;
+			$tabRecord->save(false);
+			$tab->id = $tabRecord->id;
 
-				foreach ($tab->getFields() as $field)
-				{
-					$fieldRecord = new FieldLayoutFieldRecord();
-					$fieldRecord->layoutId  = $layout->id;
-					$fieldRecord->tabId     = $tab->id;
-					$fieldRecord->fieldId   = $field->fieldId;
-					$fieldRecord->required  = $field->required;
-					$fieldRecord->sortOrder = $field->sortOrder;
-					$fieldRecord->save(false);
-					$field->id = $fieldRecord->id;
-				}
-			}
-		}
-		else
-		{
-			foreach ($layout->getFields() as $field)
+			foreach ($tab->getFields() as $field)
 			{
 				$fieldRecord = new FieldLayoutFieldRecord();
 				$fieldRecord->layoutId  = $layout->id;
+				$fieldRecord->tabId     = $tab->id;
 				$fieldRecord->fieldId   = $field->fieldId;
 				$fieldRecord->required  = $field->required;
 				$fieldRecord->sortOrder = $field->sortOrder;

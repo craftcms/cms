@@ -294,7 +294,7 @@ class GlobalsService extends BaseApplicationComponent
 
 					// Save the new one
 					$fieldLayout = $globalSet->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout, false);
+					craft()->fields->saveLayout($fieldLayout);
 
 					// Update the set record/model with the new layout ID
 					$globalSet->fieldLayoutId = $fieldLayout->id;

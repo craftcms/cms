@@ -1256,11 +1256,11 @@ class UsersController extends BaseController
 		craft()->userSession->requireAdmin();
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::User;
 		craft()->fields->deleteLayoutsByType(ElementType::User);
 
-		if (craft()->fields->saveLayout($fieldLayout, false))
+		if (craft()->fields->saveLayout($fieldLayout))
 		{
 			craft()->userSession->setNotice(Craft::t('User fields saved.'));
 			$this->redirectToPostedUrl();

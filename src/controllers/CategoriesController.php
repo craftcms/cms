@@ -123,7 +123,7 @@ class CategoriesController extends BaseController
 		$group->setLocales($locales);
 
 		// Group the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Category;
 		$group->setFieldLayout($fieldLayout);
 
