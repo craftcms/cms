@@ -539,7 +539,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.elementSelect = this.createElementSelect($newElements);
 			}
 
-			if (this.getSelectedSortAttribute() == 'structure')
+			if (this.settings.context == 'index' && this.getSelectedSortAttribute() == 'structure')
 			{
 				// Create the sorter
 				this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {

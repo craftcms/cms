@@ -123,8 +123,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	 */
 	getHelper: function($helperRow)
 	{
-		var $helper = $('<div class="datatablesorthelper"/>').appendTo(Garnish.$bod),
-			$table = $('<table class="data"/>').appendTo($helper),
+		var $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod),
+			$innerContainer = $('<div class="tableview"/>').appendTo($outerContainer),
+			$table = $('<table class="data"/>').appendTo($innerContainer),
 			$tbody = $('<tbody/>').appendTo($table);
 
 		$helperRow.appendTo($tbody);
@@ -149,12 +150,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				var padding = parseInt($cell.css('padding-'+Craft.left));
 				this._firstHelperCellOuterWidth = width + padding;
 
-				$helperCell.css('padding-'+Craft.left, '');
-				$helper.css('margin-'+Craft.left, padding + Craft.StructureTableSorter.HELPER_MARGIN);
+				$helperCell.css('padding-'+Craft.left, Craft.StructureTableSorter.BASE_PADDING);
+				$outerContainer.css('margin-'+Craft.left, padding + Craft.StructureTableSorter.HELPER_MARGIN);
 			}
 		}
 
-		return $helper;
+		return $outerContainer;
 	},
 
 	/**
@@ -242,7 +243,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				var $draggee = $(this.$draggee[i]),
 					oldLevel = $draggee.data('level'),
 					newLevel = oldLevel + levelDiff,
-					padding = this._getLevelIndent(newLevel);
+					padding = Craft.StructureTableSorter.BASE_PADDING + this._getLevelIndent(newLevel);
 
 				$draggee.data('level', newLevel);
 				$draggee.children(':first').css('padding-'+Craft.left, padding);
@@ -478,6 +479,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
 {
+	BASE_PADDING: 24,
 	HELPER_MARGIN: -7,
 	LEVEL_INDENT: 44,
 	MAX_GIVE: 22,

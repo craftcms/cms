@@ -590,7 +590,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 
 /* table views */
 .elements .tableview td { position: relative; }
-.elements .tableview .move { display: block; float: left; margin-top: 5px; font-size: 11px; }
+.elements .tableview .move { display: block; @include floatleft; @include margin(5px, 0, 0, -14px); font-size: 11px; }
 
 .elements .tableview table tr.sel th,
 .elements .tableview table tr.sel td { background: #f5f5f5; }
