@@ -11,7 +11,7 @@
 					<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
 						{%- spaceless %}
 							{% include "_includes/forms/checkbox" with {
-								label: include('_elements/element', { element: category }, with_context = false),
+								label: include('_elements/element', { element: category, context: 'field' }, with_context = false),
 								value: category.id,
 								id: id~'-'~category.id,
 								name: name~'[]',
