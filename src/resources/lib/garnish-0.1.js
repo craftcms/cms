@@ -2368,7 +2368,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	$heightedContainer: null,
 	$insertion: null,
 	insertionVisible: false,
-	startDraggeeIndex: null,
+	oldDraggeeIndex: null,
+	newDraggeeIndex: null,
 	closestItem: null,
 
 	_midpointVersion: 0,
@@ -2487,7 +2488,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 			}
 		}
 
-		this.startDraggeeIndex = this._getDraggeeIndex();
+		this.oldDraggeeIndex = this._getDraggeeIndex();
 
 		this.base();
 	},
@@ -2535,8 +2536,9 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 		// Has the item actually moved?
 		this.$items = $().add(this.$items);
+		this.newDraggeeIndex = this._getDraggeeIndex();
 
-		if (this._getDraggeeIndex() != this.startDraggeeIndex)
+		if (this.newDraggeeIndex != this.oldDraggeeIndex)
 		{
 			this.onSortChange();
 		}

@@ -58,10 +58,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$table: null,
 	$elementContainer: null,
 
-	morePending: false,
+	_totalVisible: null,
+	_morePending: false,
+	_totalVisiblePostStructureTableDraggee: null,
+	_morePendingPostStructureTableDraggee: false,
 	loadingMore: false,
-	totalVisible: null,
-	totalVisiblePostStructureTableDraggee: null,
 
 	// Public methods
 	// =========================================================================
@@ -293,6 +294,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		return this.sourceSelect.$items;
+	},
+
+	get totalVisible()
+	{
+		if (this._isStructureTableDraggingLastElements())
+		{
+			return this._totalVisiblePostStructureTableDraggee;
+		}
+		else
+		{
+			return this._totalVisible;
+		}
+	},
+
+	get morePending()
+	{
+		if (this._isStructureTableDraggingLastElements())
+		{
+			return this._morePendingPostStructureTableDraggee;
+		}
+		else
+		{
+			return this._morePending;
+		}
 	},
 
 	initSource: function($source)
@@ -544,20 +569,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		$('head').append(response.headHtml);
 		Garnish.$bod.append(response.footHtml);
 
-		// More?
-		this.morePending = response.more;
+		if (this._isStructureTableDraggingLastElements())
+		{
+			this._totalVisiblePostStructureTableDraggee = response.totalVisible;
+			this._morePendingPostStructureTableDraggee = response.more;
+		}
+		else
+		{
+			this._totalVisible = response.totalVisible;
+			this._morePending = this._morePendingPostStructureTableDraggee = response.more;
+		}
 
 		if (this.morePending)
 		{
-			if (this._isStructureTableDraggingLastElements())
-			{
-				this.totalVisiblePostStructureTableDraggee = response.totalVisible;
-			}
-			else
-			{
-				this.totalVisible = response.totalVisible;
-			}
-
 			// Is there room to load more right now?
 			if (this.canLoadMore())
 			{
@@ -593,6 +617,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	 */
 	canLoadMore: function()
 	{
+		if (!this.morePending)
+		{
+			return false;
+		}
+
 		// Check if the user has reached the bottom of the scroll area
 		if (this.$scroller[0] == Garnish.$win[0])
 		{
@@ -617,7 +646,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	 */
 	loadMore: function()
 	{
-		if (this.loadingMore)
+		if (!this.morePending || this.loadingMore)
 		{
 			return;
 		}
@@ -648,17 +677,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	getLoadMoreData: function()
 	{
 		var data = this.getControllerData();
+		data.offset = this.totalVisible;
 
 		// If we are dragging the last elements on the page,
 		// tell the controller to only load elements positioned after the draggee.
 		if (this._isStructureTableDraggingLastElements())
 		{
-			data.offset = this.totalVisiblePostStructureTableDraggee;
 			data.criteria.positionedAfter = this.structureTableSort.$targetItem.data('id');
-		}
-		else
-		{
-			data.offset = this.totalVisible;
 		}
 
 		return data;

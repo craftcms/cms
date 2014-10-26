@@ -6,7 +6,7 @@
 {% endif -%}
 
 {% for element in elements %}
-	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ (element.rgt - 1 - element.lft) / 2 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% for attribute, label in attributes %}
 			{% if loop.first %}
 				<td data-title="{{ label }}"{% if structure %} style="padding-{{ padding }}: {{ (element.level - 1) * 44 }}px;"{% endif %}>

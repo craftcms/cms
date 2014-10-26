@@ -92,7 +92,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		if (
 			this.maxLevels &&
 			this.draggingLastElements &&
-			this.$targetItem.data('descendants') > $draggee.length - 1
+			this.elementIndex.morePending
 		)
 		{
 			// Only way to know the true descendant level delta is to ask PHP
@@ -311,11 +311,14 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	{
 		this._$firstRowCells.css('width', '');
 
-		// If we were dragging the last elements on the page and ended up loading any additional elemetns in,
+		// If we were dragging the last elements on the page and ended up loading any additional elements in,
 		// there could be a gap between the last draggee item and whatever now comes after it.
 		// So remove the post-draggee elements and possibly load up the next batch.
-		if (this.draggingLastElements)
+		if (this.draggingLastElements && this.elementIndex.morePending)
 		{
+			// Update the element index's record of how many items are actually visible
+			this.elementIndex._totalVisible += (this.newDraggeeIndex - this.oldDraggeeIndex);
+
 			var $postDraggeeItems = this.$draggee.last().nextAll();
 
 			if ($postDraggeeItems.length)
