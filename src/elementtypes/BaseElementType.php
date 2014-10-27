@@ -287,7 +287,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 			}
 			default:
 			{
-				return $element->$attribute;
+				return HtmlHelper::encode($element->$attribute);
 			}
 		}
 	}

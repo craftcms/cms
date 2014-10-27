@@ -201,7 +201,7 @@ class AssetFileModel extends BaseElementModel
 	{
 		if ($this->kind == 'image')
 		{
-			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
+			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 			return TemplateHelper::getRaw($img);
 		}
 	}
