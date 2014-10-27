@@ -962,6 +962,8 @@ Garnish.Base = Base.extend({
 						obj.className = 'resize-trigger';
 						obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
 						obj.__resizeElement__ = $(elem);
+						obj.__resizeElement__.data('initialWidth', obj.__resizeElement__.prop('offsetWidth'));
+						obj.__resizeElement__.data('initialHeight', obj.__resizeElement__.prop('offsetHeight'));
 						obj.onload = objectLoad;
 						obj.type = 'text/html';
 						obj.__resizeElement__.prepend(obj);
@@ -1043,7 +1045,11 @@ function resizeListener(ev)
 function objectLoad(e)
 {
 	this.contentDocument.defaultView.__resizeTrigger__ = this.__resizeElement__;
-	$(this.contentDocument.defaultView).on('resize', resizeListener);
+	this.contentDocument.defaultView.__lastOffsetWidth__ = this.__resizeElement__.data('initialWidth');
+	this.contentDocument.defaultView.__lastOffsetHeight__ = this.__resizeElement__.data('initialHeight');
+	this.__resizeElement__.removeData('initialWidth');
+	this.__resizeElement__.removeData('initialHeight');
+	$(this.contentDocument.defaultView).on('resize', resizeListener).trigger('resize');
 }
 
 
