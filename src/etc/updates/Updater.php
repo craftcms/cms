@@ -114,6 +114,7 @@ class Updater
 		// Validate that the paths in the update manifest file are all writable by Craft
 		Craft::log('Validating update manifest file paths are writable.', LogLevel::Info, true);
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
+
 		if (count($writableErrors) > 0)
 		{
 			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors));
