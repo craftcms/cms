@@ -342,7 +342,7 @@ class AssetsController extends BaseController
 		$output = array();
 		foreach ($transforms as $transform)
 		{
-			$output[] = (object) array('id' => $transform->id, 'handle' => $transform->handle, 'name' => $transform->name);
+			$output[] = (object) array('id' => $transform->id, 'handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name));
 		}
 
 		$this->returnJson($output);
