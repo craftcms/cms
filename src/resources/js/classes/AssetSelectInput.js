@@ -124,10 +124,16 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	 */
 	_onUploadComplete: function(event, data)
 	{
-		var html = $(data.result.html);
-		$('head').append(data.result.css);
-
-		this.selectUploadedFile(Craft.getElementInfo(html));
+		if (data.result.error)
+		{
+			alert(data.result.error);
+		}
+		else
+		{
+			var html = $(data.result.html);
+			$('head').append(data.result.css);
+			this.selectUploadedFile(Craft.getElementInfo(html));
+		}
 
 		// Last file
 		if (this.uploader.isLastUpload())
