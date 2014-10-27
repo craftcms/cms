@@ -284,7 +284,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getLink()
 	{
-		$link = '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
+		$link = '<a href="'.$this->getUrl().'">'.HtmlHelper::encode($this->__toString()).'</a>';
 		return TemplateHelper::getRaw($link);
 	}
 

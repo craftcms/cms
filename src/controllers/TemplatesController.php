@@ -153,12 +153,6 @@ class TemplatesController extends BaseController
 		$error = craft()->errorHandler->getError();
 		$code = (string) $error['code'];
 
-		// Encode the error message to prevent XSS vector.
-		if (isset($error['message']))
-		{
-			$error['message'] = HtmlHelper::encode($error['message']);
-		}
-
 		if (craft()->request->isSiteRequest())
 		{
 			$prefix = craft()->config->get('errorTemplatePrefix');

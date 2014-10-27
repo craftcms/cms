@@ -3,11 +3,10 @@
 
 {% block message %}
 	<h2>{{ title }}</h2>
-	<p>
-		{% if message %}
-			{{ message|raw }}
-		{% else %}
-			{{ "An error occurred while processing your request."|t }}
-		{% endif %}
-	</p>
+
+	{% if message %}
+		{{ message|e|md }}
+	{% else %}
+		<p>{{ "An error occurred while processing your request."|t }}</p>
+	{% endif %}
 {% endblock %}

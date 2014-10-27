@@ -314,7 +314,7 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			$query->andWhere('in', 'elements.id', $userIds);
+			$query->andWhere(array('in', 'elements.id', $userIds));
 		}
 
 		if ($criteria->group)
@@ -334,7 +334,7 @@ class UserElementType extends BaseElementType
 				return false;
 			}
 
-			$query->andWhere('in', 'elements.id', $userIds);
+			$query->andWhere(array('in', 'elements.id', $userIds));
 		}
 
 		if ($criteria->username)

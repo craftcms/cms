@@ -644,31 +644,22 @@ class AppBehavior extends BaseBehavior
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
 			{
-				$missingPdo = true;
-				$messages[] = Craft::t('Craft requires the PDO extension to operate.');
+				throw new DbConnectException(Craft::t('Craft requires the PDO extension to operate.'));
 			}
-
-			if (!extension_loaded('pdo_mysql'))
+			else if (!extension_loaded('pdo_mysql'))
 			{
-				$missingPdo = true;
-				$messages[] = Craft::t('Craft requires the PDO_MYSQL driver to operate.');
+				throw new DbConnectException(Craft::t('Craft requires the PDO_MYSQL driver to operate.'));
 			}
-
-			if (!$missingPdo)
+			else
 			{
 				Craft::log($e->getMessage(), LogLevel::Error);
-				$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
+				throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 			}
 		}
 		catch (\Exception $e)
 		{
 			Craft::log($e->getMessage(), LogLevel::Error);
-			$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
-		}
-
-		if (!empty($messages))
-		{
-			throw new DbConnectException(Craft::t('{errors}', array('errors' => implode('<br />', $messages))));
+			throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 		}
 
 		$this->setIsDbConnectionValid(true);
