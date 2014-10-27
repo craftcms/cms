@@ -108,7 +108,7 @@ class Updater
 
 		if (!empty($errors))
 		{
-			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:<br /><br/ > {messages}', array('messages' => implode('<br />', $errors))));
+			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:')."\n\n".$this->_markdownList($errors));
 		}
 
 		// Validate that the paths in the update manifest file are all writable by Craft
@@ -116,7 +116,7 @@ class Updater
 		$writableErrors = $this->_validateManifestPathsWritable($unzipFolder);
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the follow paths, but can’t:<br /><br /> {files}', array('files' => implode('<br />', $writableErrors))));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors));
 		}
 
 		return array('uid' => $uid);
@@ -492,7 +492,7 @@ class Updater
 		// Make sure we can write to craft/app/requirements
 		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your <a href="http://buildwithcraft.com/docs/updating#one-click-updating">permissions</a>.'));
+			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://buildwithcraft.com/docs/updating#one-click-updating')));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';
@@ -527,5 +527,24 @@ class Updater
 		IOHelper::deleteFile($newTempFilePath);
 
 		return $errors;
+	}
+
+	/**
+	 * Turns an array of messages into a Markdown-formatted bulleted list.
+	 *
+	 * @param string $messages
+	 *
+	 * @return string
+	 */
+	private function _markdownList($messages)
+	{
+		$list = '';
+
+		foreach ($messages as $message)
+		{
+			$list .= '- '.$message."\n";
+		}
+
+		return $list;
 	}
 }
