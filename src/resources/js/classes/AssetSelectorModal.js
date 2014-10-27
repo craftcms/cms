@@ -90,10 +90,10 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	onSelectionChange: function(ev)
 	{
-		if (this.elementSelect.totalSelected && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
+		if (this.elementIndex.elementSelect.totalSelected && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
 		{
 			var allowTransforms = true,
-				$selectedItems = this.elementSelect.getSelectedItems();
+				$selectedItems = this.elementIndex.elementSelect.getSelectedItems();
 
 			for (var i = 0; i < $selectedItems.length; i++)
 			{
@@ -152,7 +152,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			Craft.AssetSelectorModal.transformUrls[transform] = {};
 		}
 
-		var $selectedItems = this.elementSelect.getSelectedItems(),
+		var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
 			imageIdsWithMissingUrls = [];
 
 		for (var i = 0; i < $selectedItems.length; i++)
