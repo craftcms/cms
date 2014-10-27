@@ -238,7 +238,7 @@ class EntriesController extends BaseEntriesController
 		else
 		{
 			$variables['docTitle'] = Craft::t($variables['entry']->title);
-			$variables['title'] = HtmlHelper::encode(Craft::t($variables['entry']->title));
+			$variables['title'] = Craft::t($variables['entry']->title);
 
 			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
