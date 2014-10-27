@@ -242,7 +242,7 @@ class EntriesController extends BaseEntriesController
 
 			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
-				$variables['title'] .= ' <span class="hidden">('.$variables['revisionLabel'].')</span>';
+				$variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
 			}
 		}
 
