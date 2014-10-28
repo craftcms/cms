@@ -641,7 +641,7 @@ class UsersController extends BaseController
 		$thisIsPublicRegistration = false;
 
 		$userId = craft()->request->getPost('userId');
-		$isNewUser = $userId === null ? true : false;
+		$isNewUser = !$userId;
 
 		// Are we editing an existing user?
 		if ($userId)
