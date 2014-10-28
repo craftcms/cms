@@ -328,8 +328,14 @@ class UserElementType extends BaseElementType
 			$groupIds = $groupIdsQuery->queryColumn();
 
 			// In the case where the group doesn't exist.
-			$userIds = $groupIds ? $this->_getUserIdsByGroupIds($groupIds) : false;
+			if (!$groupIds)
+			{
+				return false;
+			}
 
+			$userIds = $this->_getUserIdsByGroupIds($groupIds);
+
+			// In case there are no users in the groups.
 			if (!$userIds)
 			{
 				return false;
