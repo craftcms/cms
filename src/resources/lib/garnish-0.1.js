@@ -2403,6 +2403,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	closestItem: null,
 
 	_midpointVersion: 0,
+	_$prevItem: null,
+	_$nextItem: null,
 
 	// Public methods
 	// =========================================================================
@@ -2505,7 +2507,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 		this._placeInsertionWithDraggee();
 
 		this.closestItem = null;
-		this._midpointVersion++;
+		this._clearMidpoints();
 
 		//  Get the closest container that has a height
 		if (this.settings.container)
@@ -2715,11 +2717,56 @@ Garnish.DragSort = Garnish.Drag.extend({
 		}
 	},
 
+	_clearMidpoints: function()
+	{
+		this._midpointVersion++;
+		this._$prevItem = null;
+		this._$nextItem = null;
+	},
+
 	_getItemMidpoint: function(item)
 	{
 		if ($.data(item, 'midpointVersion') != this._midpointVersion)
 		{
-			this._getItemMidpoint._$item = $(item);
+			// If this isn't the draggee, temporarily move the draggee to this item
+			this._getItemMidpoint._repositionDraggee = (
+				!this.settings.axis &&
+				(!this.settings.removeDraggee || this.insertionVisible) &&
+				item != this.$draggee[0] &&
+				(!this.$insertion || item != this.$insertion.get(0))
+			);
+
+			if (this._getItemMidpoint._repositionDraggee)
+			{
+				// Is this the first time we've had to temporarily reposition the draggee since the last midpoint clearing?
+				if (!this._$prevItem)
+				{
+					this._$prevItem = (this.insertionVisible ? this.$insertion : this.$draggee).prev();
+
+					if (!this._$prevItem.length)
+					{
+						this._$nextItem = this.$draggee.last().next();
+					}
+				}
+
+				this._moveDraggeeToItem(item);
+
+				// Now figure out which element we're actually getting the midpoint of
+				if (!this.settings.removeDraggee)
+				{
+					this._getItemMidpoint._$item = this.$draggee;
+				}
+				else
+				{
+					this._getItemMidpoint._$item = this.$insertion;
+				}
+			}
+			else
+			{
+				// We're actually getting the midpoint of this item
+				this._getItemMidpoint._$item = $(item);
+			}
+
 			this._getItemMidpoint._offset = this._getItemMidpoint._$item.offset();
 
 			$.data(item, 'midpoint', {
@@ -2731,6 +2778,21 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 			delete this._getItemMidpoint._$item;
 			delete this._getItemMidpoint._offset;
+
+			if (this._getItemMidpoint._repositionDraggee)
+			{
+				// Move the draggee back
+				if (this._$prevItem.length)
+				{
+					this.$draggee.insertAfter(this._$prevItem);
+				}
+				else
+				{
+					this.$draggee.insertBefore(this._$nextItem);
+				}
+
+				this._placeInsertionWithDraggee();
+			}
 		}
 
 		return $.data(item, 'midpoint');
@@ -2764,23 +2826,28 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		if (this.closestItem)
 		{
-			// Going down?
-			if (this.$draggee.index() < $(this.closestItem).index())
-			{
-				this.$draggee.insertAfter(this.closestItem);
-			}
-			else
-			{
-				this.$draggee.insertBefore(this.closestItem);
-			}
-
-			this._placeInsertionWithDraggee();
+			this._moveDraggeeToItem(this.closestItem);
 		}
 
 		// Now that things have shifted around, invalidate the midpoints
-		this._midpointVersion++;
+		this._clearMidpoints();
 
 		this.onInsertionPointChange();
+	},
+
+	_moveDraggeeToItem: function(item)
+	{
+		// Going down?
+		if (this.$draggee.index() < $(item).index())
+		{
+			this.$draggee.insertAfter(item);
+		}
+		else
+		{
+			this.$draggee.insertBefore(item);
+		}
+
+		this._placeInsertionWithDraggee();
 	},
 
 	_placeInsertionWithDraggee: function()
