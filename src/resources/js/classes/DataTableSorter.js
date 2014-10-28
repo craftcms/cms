@@ -17,6 +17,7 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
 		settings.caboose = '<tr/>';
 		settings.axis = Garnish.Y_AXIS;
 		settings.magnetStrength = 4;
+		settings.helperLagBase = 1.5;
 
 		this.base($rows, settings);
 	},

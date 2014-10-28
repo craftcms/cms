@@ -71,6 +71,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 					}
 				}, this) : null),
 				ignoreHandleSelector: '.delete',
+				magnetStrength: 4,
+				helperLagBase: 1.5,
 				onSortChange: (this.selectable ? $.proxy(function() {
 					this.elementSelect.resetItemOrder();
 				}, this) : null)
