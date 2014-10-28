@@ -1,38 +1,45 @@
-if (typeof RedactorPlugins === 'undefined') var RedactorPlugins = {};
+if (!RedactorPlugins) var RedactorPlugins = {};
 
-RedactorPlugins.pagebreak = {
-
-	init: function()
-	{
-		this.fullscreen = false;
-		this.buttonAdd('pagebreak', 'Insert Page Break', $.proxy(this, 'insertPageBreak'));
-	},
-
-	insertPageBreak: function()
-	{
-		var $pagebreakNode = $('<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />'),
-			$currentNode = $(this.getCurrent());
-
-		if ($currentNode.length && !$currentNode.is('div.redactor_editor'))
+RedactorPlugins.pagebreak = function()
+{
+	return {
+		init: function()
 		{
-			// Find the closest element to div.redactor_editor
-			while ($currentNode.parent().length && !$currentNode.parent().is('div.redactor_editor'))
+			this.fullscreen = false;
+			var $btn = this.button.add('pagebreak', 'Insert Page Break');
+			this.button.addCallback($btn, this.pagebreak.insertPageBreak);
+		},
+
+		insertPageBreak: function()
+		{
+			var $pagebreakNode = $('<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />'),
+				$currentNode = $(this.selection.getCurrent());
+
+			if ($currentNode.length && !$currentNode.is('div.redactor_editor'))
 			{
-				$currentNode = $currentNode.parent();
+				// Find the closest element to div.redactor_editor
+				while ($currentNode.parent().length && !$currentNode.parent().is('div.redactor-editor'))
+				{
+					$currentNode = $currentNode.parent();
+				}
+
+				$pagebreakNode.insertAfter($currentNode);
+			}
+			else
+			{
+				// Just append it to the end
+				$pagebreakNode.appendTo(this.$editor);
 			}
 
-			$pagebreakNode.insertAfter($currentNode);
-		}
-		else
-		{
-			// Just append it to the end
-			$pagebreakNode.appendTo(this.$editor);
-		}
+			var $p = $('<p><br/></p>').insertAfter($pagebreakNode);
 
-		var $p = $('<p><br/></p>').insertAfter($pagebreakNode);
+			this.$editor.focus();
 
-		this.$editor.focus();
-		this.sync();
-		this.setSelection($p[0], 0, $p[0], 0);
-	}
+			Garnish.requestAnimationFrame($.proxy(function()
+			{
+				this.code.sync();
+			}, this));
+			//this.setSelection($p[0], 0, $p[0], 0);
+		}
+	};
 };

@@ -285,6 +285,7 @@ class RichTextFieldType extends BaseFieldType
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
 		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
+		craft()->templates->includeJsResource('lib/redactor/plugins/video.js');
 		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
 
 		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');

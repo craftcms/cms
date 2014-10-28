@@ -756,7 +756,7 @@ ul.tree,
 
 .modal,
 .hud,
-body #redactor_modal { z-index: 100; border-radius: 3px; background: #fff;
+body #redactor-modal { z-index: 100; border-radius: 3px; background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px -10px rgba(0,0,0,0.25));
 }
 
@@ -793,10 +793,10 @@ body #redactor_modal { z-index: 100; border-radius: 3px; background: #fff;
 
 .modal-shade,
 .hud-shade,
-body #redactor_modal_overlay { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+body #redactor-modal_overlay { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
 
 .modal-shade,
-body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
+body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
 
@@ -883,15 +883,15 @@ body #redactor_modal_overlay { background: rgba(255,255,255,0.75); }
 .menu,
 .ui-datepicker,
 .ui-timepicker-list,
-body .redactor_dropdown { z-index: 100; margin-bottom: 10px; border-radius: 3px; background: #fff; @include user-select(none);
+body .redactor-dropdown { z-index: 100; margin-bottom: 10px; border-radius: 3px; background: #fff; @include user-select(none);
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.1), 0 5px 25px -5px rgba(0,0,0,0.25));
 }
 
 .menu,
-body .redactor_dropdown { padding: 4px 14px; }
+body .redactor-dropdown { padding: 4px 14px; }
 
 .menu ul li a,
-body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
+body .redactor-dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolor; text-decoration: none; white-space: nowrap; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
@@ -899,7 +899,7 @@ body .redactor_dropdown a { margin: 0 -14px; padding: 3px 14px; color: $textcolo
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
-body .redactor_dropdown a:hover { color: $textcolor; background-color: $menuhovercolor; }
+body .redactor-dropdown a:hover { color: $textcolor; background-color: $menuhovercolor; }
 .menu ul li a.sel { cursor: default; }
 .menu hr { margin: 5px -14px; }
 
@@ -927,8 +927,8 @@ body .redactor_dropdown a:hover { color: $textcolor; background-color: $menuhove
 }
 
 .text,
-body .redactor_box,
-body .redactor_box textarea,
+body .redactor-box,
+body .redactor-box textarea,
 .border-box,
 .matrix-configurator > .field > .input { border: none; border-radius: 2px;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
@@ -971,15 +971,15 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 .text,
 .textline,
-body .redactor_editor,
-body .redactor_box textarea { padding: 6px 7px; }
+body .redactor-editor,
+body .redactor-box textarea { padding: 6px 7px; }
 
 .text { background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; background: none; }
 .text.small { padding: 3px; }
 
 .input.errors > .text,
-.input.errors > div.redactor_box,
+.input.errors > div.redactor-box,
 .input.errors > .border-box,
 .text.error { border: 1px solid $errorcolor !important; }
 
@@ -1028,25 +1028,25 @@ body .redactor_box textarea { padding: 6px 7px; }
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* redactor */
-body .redactor_box,
-body .redactor_toolbar,
-body .redactor_box textarea { z-index: auto !important; }
-body .redactor_box_fullscreen { z-index: 100 !important; }
-body .redactor_toolbar { background: none; @include box-shadow(none); }
-body .redactor_toolbar.toolbar_fixed_box { @include pane; z-index: 1 !important; }
-body .redactor_toolbar li a { color: $textcolor; }
-body .redactor_toolbar li a:hover { background-color: $menuhovercolor; color: $textcolor; }
-body .redactor_toolbar li a:active,
-body .redactor_toolbar li a.redactor_act { background-color: $menuselcolor; color: #fff; }
-body .redactor_toolbar li:first-child a { border-top-left-radius: 2px; }
-body .redactor_dropdown { z-index: 100; }
-body .redactor_editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
-.redactor_editor ul,
-.redactor_editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
-body .redactor_editor ul { list-style-type: disc; }
-body .redactor_box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
-body #redactor_modal footer button:first-child { border-bottom-left-radius: 3px; }
-body #redactor_modal footer button:last-child { border-bottom-right-radius: 3px; }
+body .redactor-box,
+body .redactor-toolbar,
+body .redactor-box textarea { z-index: auto !important; }
+body .redactor-box_fullscreen { z-index: 100 !important; }
+body .redactor-toolbar { background: none; @include box-shadow(none); }
+body .redactor-toolbar.toolbar_fixed_box { @include pane; z-index: 1 !important; }
+body .redactor-toolbar li a { color: $textcolor; }
+body .redactor-toolbar li a:hover { background-color: $menuhovercolor; color: $textcolor; }
+body .redactor-toolbar li a:active,
+body .redactor-toolbar li a.redactor-act { background-color: $menuselcolor; color: #fff; }
+body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
+body .redactor-dropdown { z-index: 100; }
+body .redactor-editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
+.redactor-editor ul,
+.redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
+body .redactor-editor ul { list-style-type: disc; }
+body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
+body #redactor-modal footer button:first-child { border-bottom-left-radius: 3px; }
+body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px; }
 
 /**
  * Selects
