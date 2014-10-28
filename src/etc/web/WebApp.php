@@ -881,7 +881,7 @@ class WebApp extends \CWebApplication
 		if (
 			$segments == array('users', 'login') ||
 			$segments == array('users', 'logout') ||
-			$segments == array('users', 'validate') ||
+			$segments == array('users', 'verifyuser') ||
 			$segments == array('users', 'setpassword') ||
 			$segments == array('users', 'forgotpassword') ||
 			$segments == array('users', 'saveUser') ||
@@ -1040,7 +1040,13 @@ class WebApp extends \CWebApplication
 			return true;
 		}
 
-		if ($this->request->isCpRequest())
+		if ($this->request->isCpRequest() ||
+
+			// Special case because we hide the cpTrigger in emails.
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/forgotpassword' ||
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword' ||
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyuser'
+		)
 		{
 			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
 			{
@@ -1059,7 +1065,7 @@ class WebApp extends \CWebApplication
 				$actionSegs == array('users', 'logout') ||
 				$actionSegs == array('users', 'forgotpassword') ||
 				$actionSegs == array('users', 'setpassword') ||
-				$actionSegs == array('users', 'validate') ||
+				$actionSegs == array('users', 'verifyuser') ||
 				$actionSegs[0] == 'update'
 			))
 			{

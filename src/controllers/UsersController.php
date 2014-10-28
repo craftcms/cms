@@ -7,7 +7,7 @@ namespace Craft;
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
  * Note that all actions in the controller, except {@link actionLogin}, {@link actionLogout}, {@link actionGetAuthTimeout},
- * {@link actionForgotPassword}, {@link actionValidate}, {@link actionSetPassword} and {@link actionSaveUser} require an
+ * {@link actionForgotPassword}, {@link actionVerifyUser}, {@link actionSetPassword} and {@link actionSaveUser} require an
  * authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionValidate');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyUser');
 
 	// Public Methods
 	// =========================================================================
