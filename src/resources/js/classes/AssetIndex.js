@@ -748,7 +748,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		};
 
 		this.selectSource($targetSource);
-		
+
 		this.$source = $targetSource;
 		this.sourceKey = $targetSource.data('key');
 		this.setInstanceState('selectedSource', this.sourceKey);
@@ -1005,13 +1005,16 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	onSelectionChange: function()
 	{
-		this._enableElementContextMenu();
-		var selected = this.elementSelect.getSelectedItems();
-		this._selectedFileIds = [];
-
-		for (var i = 0; i < selected.length; i++)
+		if (this.settings.context == 'index')
 		{
-			this._selectedFileIds[i] = Craft.getElementInfo(selected[i]).id;
+			this._enableElementContextMenu();
+			var selected = this.elementSelect.getSelectedItems();
+			this._selectedFileIds = [];
+
+			for (var i = 0; i < selected.length; i++)
+			{
+				this._selectedFileIds[i] = Craft.getElementInfo(selected[i]).id;
+			}
 		}
 
 		this.base();
