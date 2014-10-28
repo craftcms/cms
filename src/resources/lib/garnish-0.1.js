@@ -611,7 +611,7 @@ Garnish = $.extend(Garnish, {
 
 		for (var i = 0; i < $inputs.length; i++)
 		{
-			var $input = $($inputs[i]);
+			var $input = $inputs.eq(i);
 
 			if ($input.prop('disabled'))
 			{
@@ -662,6 +662,24 @@ Garnish = $.extend(Garnish, {
 		}
 
 		return postData;
+	},
+
+	copyInputValues: function(source, target)
+	{
+		var $sourceInputs = Garnish.findInputs(source),
+			$targetInputs = Garnish.findInputs(target);
+
+		for (var i = 0; i < $sourceInputs.length; i++)
+		{
+			if (typeof $targetInputs[i] == typeof undefined)
+			{
+				break;
+			}
+
+			$targetInputs.eq(i).val(
+				$sourceInputs.eq(i).val()
+			);
+		}
 	}
 });
 
@@ -862,7 +880,7 @@ Garnish.Base = Base.extend({
 				if (elemIndex != -1 && ev.keyCode == Garnish.SPACE_KEY)
 				{
 					ev.preventDefault();
-					var $evElem = $($elem[elemIndex]);
+					var $evElem = $elem.eq(elemIndex);
 
 					if (!$evElem.hasClass('disabled'))
 					{
@@ -900,7 +918,7 @@ Garnish.Base = Base.extend({
 			// Store the initial values
 			for (var i = 0; i < $elem.length; i++)
 			{
-				var _$elem = $($elem[i]);
+				var _$elem = $elem.eq(i);
 				_$elem.data('garnish-textchangeValue', _$elem.val());
 
 				if (!_$elem.data('garnish-textchangeable'))
@@ -2033,7 +2051,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 
 		for (var i = 0; i < this.helpers.length; i++)
 		{
-			var $draggee = $(this.$draggee[i]),
+			var $draggee = this.$draggee.eq(i),
 				$helper = this.helpers[i];
 
 			$draggee.css({
@@ -2076,8 +2094,13 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	 */
 	_createHelper: function(i)
 	{
-		var $draggee = $(this.$draggee[i]),
+		var $draggee = this.$draggee.eq(i),
 			$draggeeHelper = $draggee.clone().addClass('draghelper');
+
+		if (this.settings.copyDraggeeInputValuesToHelper)
+		{
+			Garnish.copyInputValues($draggee, $draggeeHelper);
+		}
 
 		$draggeeHelper.css({
 			width: $draggee.width() + 1, // Prevent the brower from wrapping text if the width was actually a fraction of a pixel larger
@@ -2189,6 +2212,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		filter: null,
 		collapseDraggees: false,
 		removeDraggee: false,
+		copyDraggeeInputValuesToHelper: false,
 		helperOpacity: 1,
 		helper: null,
 		helperBaseZindex: 1000,
@@ -5082,8 +5106,8 @@ Garnish.Select = Garnish.Base.extend({
 
 		this.first = 0;
 		this.last = this.$items.length-1;
-		this.$first = $(this.$items[this.first]);
-		this.$last = $(this.$items[this.last]);
+		this.$first = this.$items.eq(this.first);
+		this.$last = this.$items.eq(this.last);
 
 		this._selectItems(this.$items);
 	},
@@ -5184,7 +5208,7 @@ Garnish.Select = Garnish.Base.extend({
 	{
 		if (this.$items.length)
 		{
-			return $(this.$items[0]);
+			return this.$items.first();
 		}
 	},
 
@@ -5192,7 +5216,7 @@ Garnish.Select = Garnish.Base.extend({
 	{
 		if (this.$items.length)
 		{
-			return $(this.$items[this.$items.length-1]);
+			return this.$items.last();
 		}
 	},
 
@@ -5210,7 +5234,7 @@ Garnish.Select = Garnish.Base.extend({
 	{
 		if (this.isPreviousItem(index))
 		{
-			return $(this.$items[index-1]);
+			return this.$items.eq(index-1);
 		}
 	},
 
@@ -5218,7 +5242,7 @@ Garnish.Select = Garnish.Base.extend({
 	{
 		if (this.isNextItem(index))
 		{
-			return $(this.$items[index+1]);
+			return this.$items.eq(index+1);
 		}
 	},
 
@@ -5291,7 +5315,7 @@ Garnish.Select = Garnish.Base.extend({
 		var axisProps = Garnish.Select.closestItemAxisProps[axis],
 			dirProps = Garnish.Select.closestItemDirectionProps[dir];
 
-		var $thisItem = $(this.$items[index]),
+		var $thisItem = this.$items.eq(index),
 			thisOffset = $thisItem.offset(),
 			thisMidpoint = thisOffset[axisProps.midpointOffset] + Math.round($thisItem[axisProps.midpointSizeFunc]()/2),
 			otherRowPos = null,
@@ -5310,7 +5334,7 @@ Garnish.Select = Garnish.Base.extend({
 
 		for (var i = index + step; (typeof this.$items[i] != 'undefined'); i += step)
 		{
-			var $otherItem = $(this.$items[i]),
+			var $otherItem = this.$items.eq(i),
 				otherOffset = $otherItem.offset();
 
 			// Are we on the next row yet?
