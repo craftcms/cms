@@ -24,7 +24,8 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.$tbody = this.$table.children('tbody');
 
 		this.sorter = new Craft.DataTableSorter(this.$table, {
-			helperClass: 'editabletablesorthelper'
+			helperClass: 'editabletablesorthelper',
+			copyDraggeeInputValuesToHelper: true
 		});
 
 		var $rows = this.$tbody.children();
