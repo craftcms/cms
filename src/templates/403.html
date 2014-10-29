@@ -5,7 +5,7 @@
 	<h2>{{ title }}</h2>
 
 	{% if message %}
-		{{ message|e|md }}
+		{% filter md %}{{ message }}{% endfilter %}
 	{% else %}
 		<p>{{ "You don’t have the proper credentials to access this page."|t }}</p>
 	{% endif %}

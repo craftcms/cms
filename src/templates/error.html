@@ -3,5 +3,5 @@
 
 {% block message %}
 	<h2>{{ title }}</h2>
-	{{ message|e|md }}
+	{% filter md %}{{ message }}{% endfilter %}
 {% endblock %}

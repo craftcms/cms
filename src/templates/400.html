@@ -4,7 +4,7 @@
 {% block message %}
 	<h2>{{ title }}</h2>
 	{% if message %}
-		{{ message|e|md }}
+		{% filter md %}{{ message }}{% endfilter %}
 	{% else %}
 		<p>{{ "The request could not be understood by the server due to malformed syntax."|t }}</p>
 	{% endif %}
