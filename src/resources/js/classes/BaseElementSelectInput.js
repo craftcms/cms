@@ -269,6 +269,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			var element = elements[i],
 				$element = this.createNewElement(element);
 
+			this.appendElement($element);
+
 			// Animate it into place
 			var origOffset = element.$element.offset(),
 				destOffset = $element.offset();
@@ -307,9 +309,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		$element.prepend('<input type="hidden" name="'+this.name+'[]" value="'+elementInfo.id+'">' +
 			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
-		$element.appendTo(this.$elementsContainer);
-
 		return $element;
+	},
+
+	appendElement: function($element)
+	{
+		$element.appendTo(this.$elementsContainer);
 	},
 
 	onSelectElements: function()
