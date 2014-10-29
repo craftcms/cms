@@ -164,6 +164,26 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	onSelect: function(elementInfo)
 	{
 		this.settings.onSelect(elementInfo);
+	},
+
+	disable: function()
+	{
+		if (this.elementIndex)
+		{
+			this.elementIndex.disable();
+		}
+
+		this.base();
+	},
+
+	enable: function()
+	{
+		if (this.elementIndex)
+		{
+			this.elementIndex.enable();
+		}
+
+		this.base();
 	}
 },
 {

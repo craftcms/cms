@@ -1174,6 +1174,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$elements.fadeTo('fast', 1);
 	},
 
+	disable: function()
+	{
+		this.sourceSelect.disable();
+
+		if (this.elementSelect)
+		{
+			this.elementSelect.disable();
+		}
+
+		this.base();
+	},
+
+	enable: function()
+	{
+		this.sourceSelect.enable();
+
+		if (this.elementSelect)
+		{
+			this.elementSelect.enable();
+		}
+
+		this.base();
+	},
+
 	// Private methods
 	// =========================================================================
 
