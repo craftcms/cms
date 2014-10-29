@@ -525,32 +525,39 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Calls a method on all plugins that have the method.
+	 * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
 	 *
 	 * @param string $method The name of the method.
 	 * @param array  $args   Any arguments that should be passed when calling the method on the plugins.
+	 * @param bool   $ignoreEmpty Whether plugins that have the method but return an empty response should be ignored. Defaults to false.
 	 *
 	 * @return array An array of the plugins’ responses.
 	 */
-	public function call($method, $args = array())
+	public function call($method, $args = array(), $ignoreEmpty = false)
 	{
-		$result = array();
+		$allResults = array();
 		$altMethod = 'hook'.ucfirst($method);
 
 		foreach ($this->getPlugins() as $plugin)
 		{
 			if (method_exists($plugin, $method))
 			{
-				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $method), $args);
+				$result = call_user_func_array(array($plugin, $method), $args);
 			}
 			else if (method_exists($plugin, $altMethod))
 			{
 				craft()->deprecator->log('PluginsService::method_hook_prefix', 'The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().');
-				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $altMethod), $args);
+				$result = call_user_func_array(array($plugin, $altMethod), $args);
+			}
+
+			if (isset($result) && (!$ignoreEmpty || !empty($result)))
+			{
+				$allResults[$plugin->getClassHandle()] = $result;
+				unset($result);
 			}
 		}
 
-		return $result;
+		return $allResults;
 	}
 
 	/**
