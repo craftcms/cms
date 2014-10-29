@@ -173,7 +173,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		if (this.elementIndex && this.elementIndex.elementSelect && this.elementIndex.elementSelect.totalSelected)
 		{
 			this.elementIndex.elementSelect.clearMouseUpTimeout();
-			this.hide();
 
 			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
 				elementInfo = this.getElementInfo($selectedItems);
@@ -183,6 +182,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			if (this.settings.disableElementsOnSelect)
 			{
 				this.elementIndex.disableElements(this.elementIndex.elementSelect.getSelectedItems());
+			}
+
+			if (this.settings.hideOnSelect)
+			{
+				this.hide();
 			}
 		}
 	},
@@ -235,6 +239,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		multiSelect: false,
 		disabledElementIds: [],
 		disableElementsOnSelect: false,
+		hideOnSelect: true,
 		onCancel: $.noop,
 		onSelect: $.noop
 	}
