@@ -279,8 +279,15 @@ class UrlManager extends \CUrlManager
 
 				if ($element)
 				{
-					$elementType = craft()->elements->getElementType($element->getElementType());
-					$route = $elementType->routeRequestForMatchedElement($element);
+					// Do any plugins want a say in this?
+					$route = craft()->plugins->callFirst('getElementRoute', array($element), true);
+
+					if (!$route)
+					{
+						// Give the element type a chance
+						$elementType = craft()->elements->getElementType($element->getElementType());
+						$route = $elementType->routeRequestForMatchedElement($element);
+					}
 
 					if ($route)
 					{
