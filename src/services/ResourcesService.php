@@ -279,14 +279,11 @@ class ResourcesService extends BaseApplicationComponent
 		// Maybe a plugin wants to do something custom with this URL
 		craft()->plugins->loadPlugins();
 
-		$pluginPaths = craft()->plugins->call('getResourcePath', array($path));
+		$pluginPath = craft()->plugins->callFirst('getResourcePath', array($path), true);
 
-		foreach ($pluginPaths as $path)
+		if ($pluginPath && IOHelper::fileExists($pluginPath))
 		{
-			if ($path && IOHelper::fileExists($path))
-			{
-				return $path;
-			}
+			return $pluginPath;
 		}
 
 		// Couldn't find the file
