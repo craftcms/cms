@@ -118,7 +118,7 @@ class ImagesService extends BaseApplicationComponent
 		$channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
 		$memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits  * $channels / 8 + $K64) * $tweakFactor);
 
-		$memoryLimit = AppHelper::getByteValueFromPhpSizeString(ini_get('memory_limit'));
+		$memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
 
 		if (memory_get_usage() + $memoryNeeded < $memoryLimit)
 		{

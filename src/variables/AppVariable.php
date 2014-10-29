@@ -204,9 +204,9 @@ class AppVariable
 	 */
 	public function getMaxUploadSize()
 	{
-		$maxUpload = AppHelper::getByteValueFromPhpSizeString(ini_get('upload_max_filesize'));
-		$maxPost = AppHelper::getByteValueFromPhpSizeString(ini_get('post_max_size'));
-		$memoryLimit = AppHelper::getByteValueFromPhpSizeString(ini_get('memory_limit'));
+		$maxUpload = AppHelper::getPhpConfigValueInBytes('upload_max_filesize');
+		$maxPost = AppHelper::getPhpConfigValueInBytes('post_max_size');
+		$memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
 
 		$uploadInBytes = min($maxUpload, $maxPost);
 

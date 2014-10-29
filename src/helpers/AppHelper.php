@@ -95,13 +95,47 @@ class AppHelper
 	}
 
 	/**
+	 * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
+	 *
+	 * @param string $var The PHP config setting to retrieve.
+	 * @param int The size in bytes.
+	 */
+	public static function getPhpConfigValueInBytes($var)
+	{
+		$value = ini_get($var);
+
+		return static::_normalizePhpConfigValueToBytes($value);
+	}
+
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
 	 *
 	 * @param string $value The size string.
 	 *
+	 * @deprecated Deprecated in 2.3. Use {@link getPhpConfigValueInBytes()} instead.
 	 * @return int The size in bytes.
 	 */
 	public static function getByteValueFromPhpSizeString($value)
+	{
+		craft()->deprecator->log('AppHelper::getByteValueFromPhpSizeString()', 'AppHelper::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
+		return static::_normalizePhpConfigValueToBytes($value);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Normalizes a PHP config value into bytes.
+	 *
+	 * Used by getPhpConfigValueInBytes() and getByteValueFromPhpSizeString() so long as we have to keep the latter around.
+	 *
+	 * @param mixed $var
+	 * @return int
+	 */
+	private static function _normalizePhpConfigValueToBytes($value)
 	{
 		$matches = array();
 
