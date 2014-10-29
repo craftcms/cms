@@ -140,7 +140,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 			this.onSelect(elementInfo);
 
-			if (this.settings.disableOnSelect)
+			if (this.settings.disableElementsOnSelect)
 			{
 				this.elementIndex.disableElements(this.elementIndex.elementSelect.getSelectedItems());
 			}
@@ -174,7 +174,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		criteria: null,
 		multiSelect: false,
 		disabledElementIds: [],
-		disableOnSelect: false,
+		disableElementsOnSelect: false,
 		onCancel: $.noop,
 		onSelect: $.noop
 	}
