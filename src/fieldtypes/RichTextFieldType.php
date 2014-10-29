@@ -158,6 +158,7 @@ class RichTextFieldType extends BaseFieldType
 				$purifier = new \CHtmlPurifier();
 				$purifier->setOptions(array(
 					'Attr.AllowedFrameTargets' => array('_blank'),
+					'HTML.AllowedComments' => array('pagebreak'),
 				));
 
 				$value = $purifier->purify($value);
