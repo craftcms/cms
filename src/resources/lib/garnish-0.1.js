@@ -1734,7 +1734,7 @@ Garnish.ContextMenu = Garnish.Base.extend({
 
 		this.currentTarget = ev.currentTarget;
 
-		if (! this.$menu)
+		if (!this.$menu)
 		{
 			this.buildMenu();
 		}
@@ -1914,7 +1914,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 		this.$draggee = $([ this.$targetItem[0] ].concat($draggee.not(this.$targetItem).toArray()));
 
 		// Create the helper(s)
-		if (this.settings.collapseDraggees)
+		if (this.settings.singleHelper)
 		{
 			this._createHelper(0);
 		}
@@ -2210,6 +2210,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 {
 	defaults: {
 		filter: null,
+		singleHelper: false,
 		collapseDraggees: false,
 		removeDraggee: false,
 		copyDraggeeInputValuesToHelper: false,
@@ -2404,7 +2405,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 	_midpointVersion: 0,
 	_$prevItem: null,
-	_$nextItem: null,
 
 	// Public methods
 	// =========================================================================
@@ -2503,6 +2503,19 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	onDragStart: function()
 	{
+		this.oldDraggeeIndex = this._getDraggeeIndex();
+
+		// Is the target item not the first item in the draggee?
+		if (
+			this.$draggee.length > 1 &&
+			this._getItemIndex(this.$draggee[0]) > this._getItemIndex(this.$draggee[1])
+		)
+		{
+			// Reposition the target item before the other draggee items in the DOM
+			this.$draggee.first().insertBefore(this.$draggee[1]);
+		}
+
+		// Create the insertion
 		this.$insertion = this.createInsertion();
 		this._placeInsertionWithDraggee();
 
@@ -2514,13 +2527,11 @@ Garnish.DragSort = Garnish.Drag.extend({
 		{
 			this.$heightedContainer = $(this.settings.container);
 
-			while (! this.$heightedContainer.height())
+			while (!this.$heightedContainer.height())
 			{
 				this.$heightedContainer = this.$heightedContainer.parent();
 			}
 		}
-
-		this.oldDraggeeIndex = this._getDraggeeIndex();
 
 		this.base();
 	},
@@ -2603,9 +2614,14 @@ Garnish.DragSort = Garnish.Drag.extend({
 	// Private methods
 	// =========================================================================
 
+	_getItemIndex: function(item)
+	{
+		return $.inArray(item, this.$items);
+	},
+
 	_getDraggeeIndex: function()
 	{
-		return $.inArray(this.$draggee[0], this.$items);
+		return this._getItemIndex(this.$draggee[0]);
 	},
 
 	/**
@@ -2721,7 +2737,6 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		this._midpointVersion++;
 		this._$prevItem = null;
-		this._$nextItem = null;
 	},
 
 	_getItemMidpoint: function(item)
@@ -2741,12 +2756,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 				// Is this the first time we've had to temporarily reposition the draggee since the last midpoint clearing?
 				if (!this._$prevItem)
 				{
-					this._$prevItem = (this.insertionVisible ? this.$insertion : this.$draggee).prev();
-
-					if (!this._$prevItem.length)
-					{
-						this._$nextItem = this.$draggee.last().next();
-					}
+					this._$prevItem = (this.insertionVisible ? this.$insertion : this.$draggee).first().prev();
 				}
 
 				this._moveDraggeeToItem(item);
@@ -2788,7 +2798,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 				}
 				else
 				{
-					this.$draggee.insertBefore(this._$nextItem);
+					this.$draggee.prependTo(this.$draggee.parent());
 				}
 
 				this._placeInsertionWithDraggee();
@@ -2801,21 +2811,22 @@ Garnish.DragSort = Garnish.Drag.extend({
 	_testForClosestItem: function(item)
 	{
 		this._testForClosestItem._midpoint = this._getItemMidpoint(item);
+		this._testForClosestItem._mouseDistX = Math.abs(this._testForClosestItem._midpoint.x - this.draggeeVirtualMidpointX);
+		this._testForClosestItem._mouseDistY = Math.abs(this._testForClosestItem._midpoint.y - this.draggeeVirtualMidpointY);
 
-		this._testForClosestItem._mouseDist = Garnish.getDist(
-			this._testForClosestItem._midpoint.x,
-			this._testForClosestItem._midpoint.y,
-			this.draggeeVirtualMidpointX,
-			this.draggeeVirtualMidpointY
-		);
-
+		// Don't even consider items that are further away on the Y axis
 		if (
 			this._getClosestItem._closestItem === null ||
-			this._testForClosestItem._mouseDist < this._getClosestItem._closestItemMouseDist
+			this._testForClosestItem._mouseDistY < this._getClosestItem._closestItemMouseDistY ||
+			(
+				this._testForClosestItem._mouseDistY == this._getClosestItem._closestItemMouseDistY &&
+				this._testForClosestItem._mouseDistX <= this._getClosestItem._closestItemMouseDistX
+			)
 		)
 		{
 			this._getClosestItem._closestItem          = item;
-			this._getClosestItem._closestItemMouseDist = this._testForClosestItem._mouseDist;
+			this._getClosestItem._closestItemMouseDistX = this._testForClosestItem._mouseDistX;
+			this._getClosestItem._closestItemMouseDistY = this._testForClosestItem._mouseDistY;
 		}
 	},
 
@@ -5711,7 +5722,11 @@ Garnish.Select = Garnish.Base.extend({
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
 		// was this a click?
-		if (! (ev.metaKey || ev.ctrlKey) && ! ev.shiftKey && Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1)
+		if (
+			!(ev.metaKey || ev.ctrlKey) &&
+			!ev.shiftKey &&
+			Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1
+		)
 		{
 			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
 			if (this.isSelected($item))
