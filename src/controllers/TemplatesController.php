@@ -187,7 +187,16 @@ class TemplatesController extends BaseController
 
 		try
 		{
-			$this->renderTemplate($template, $error);
+			$variables = array_merge($error);
+
+			// If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
+			// is enabled, then allow the HTML not get encoded
+			if (strncmp($variables['type'], 'PHP ', 4) === 0 && AppHelper::getPhpConfigValueAsBool('html_errors'))
+			{
+				$variables['message'] = TemplateHelper::getRaw($variables['message']);
+			}
+
+			$this->renderTemplate($template, $variables);
 		}
 		catch (\Exception $e)
 		{
