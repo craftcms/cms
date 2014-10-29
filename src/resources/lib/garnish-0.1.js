@@ -694,6 +694,7 @@ Garnish.Base = Base.extend({
 	_eventHandlers: null,
 	_namespace: null,
 	_$listeners: null,
+	_disabled: false,
 
 	constructor: function()
 	{
@@ -845,7 +846,13 @@ Garnish.Base = Base.extend({
 			func = $.proxy(this, func);
 		}
 
-		$elem.on(events, data, func);
+		$elem.on(events, data, $.proxy(function()
+		{
+			if (!this._disabled)
+			{
+				func.apply(this, arguments);
+			}
+		}, this));
 
 		// Remember that we're listening to this element
 		this._$listeners = this._$listeners.add(elem);
@@ -1014,6 +1021,16 @@ Garnish.Base = Base.extend({
 	removeAllListeners: function(elem)
 	{
 		$(elem).off(this._namespace);
+	},
+
+	disable: function()
+	{
+		this._disabled = true;
+	},
+
+	enable: function()
+	{
+		this._disabled = false;
 	},
 
 	destroy: function()
