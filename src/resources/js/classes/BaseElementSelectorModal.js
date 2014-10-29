@@ -18,6 +18,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	$buttons: null,
 	$cancelBtn: null,
 	$selectBtn: null,
+	$footerSpinner: null,
 
 	init: function(elementType, settings)
 	{
@@ -31,7 +32,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 		this.base($container, this.settings);
 
-		this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
+		this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
+		this.$buttons = $('<div class="buttons rightalign first"/>').appendTo($footer);
 		this.$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo(this.$buttons);
 		this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('Select')+'</div>').appendTo(this.$buttons);
 
@@ -111,6 +113,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		{
 			this.$selectBtn.addClass('disabled');
 		}
+	},
+
+	showFooterSpinner: function()
+	{
+		this.$footerSpinner.removeClass('hidden');
+	},
+
+	hideFooterSpinner: function()
+	{
+		this.$footerSpinner.addClass('hidden');
 	},
 
 	onEnableElements: function($elements)

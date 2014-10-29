@@ -4,7 +4,6 @@
 Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 {
 	$selectTransformBtn: null,
-	$transformSpinner: null,
 	_selectedTransform: null,
 
 	init: function(elementType, settings)
@@ -82,10 +81,6 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		MenuButton.disable();
 
 		this.$selectTransformBtn.data('menuButton', MenuButton);
-
-		this.$transformSpinner = $('<div class="spinner hidden" style="margin-'+Craft.right+': -24px;"/>').insertAfter($btnGroup);
-
-
 	},
 
 	onSelectionChange: function(ev)
@@ -168,10 +163,11 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 		if (imageIdsWithMissingUrls.length)
 		{
-			this.$transformSpinner.removeClass('hidden');
+			this.showFooterSpinner();
+
 			this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, $.proxy(function()
 			{
-				this.$transformSpinner.addClass('hidden');
+				this.hideFooterSpinner();
 				this.selectImagesWithTransform(transform);
 			}, this));
 		}
