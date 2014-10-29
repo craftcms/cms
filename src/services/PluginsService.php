@@ -237,14 +237,17 @@ class PluginsService extends BaseApplicationComponent
 
 								// Chop off the "Plugin" suffix
 								$handle = mb_substr($pluginFileName, 0, mb_strlen($pluginFileName) - 6);
+								$lcHandle = mb_strtolower($handle);
 
-								if (mb_strtolower($handle) === mb_strtolower($pluginFolderName))
+								// Validate that the lowercase plugin class handle is the same as the folder name
+								// and that we haven't already loaded a plugin with the same handle but different casing
+								if ($lcHandle === $pluginFolderName && !isset($this->_allPlugins[$lcHandle]))
 								{
 									$plugin = $this->getPlugin($handle, false);
 
 									if ($plugin)
 									{
-										$this->_allPlugins[mb_strtolower($handle)] = $plugin;
+										$this->_allPlugins[$lcHandle] = $plugin;
 										$names[] = $plugin->getName();
 									}
 								}
