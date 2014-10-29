@@ -105,14 +105,39 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	onSelectionChange: function()
 	{
+		this.updateSelectBtnState();
+	},
+
+	updateSelectBtnState: function()
+	{
 		if (this.elementIndex.elementSelect.totalSelected)
 		{
-			this.$selectBtn.removeClass('disabled');
+			this.enableSelectBtn();
 		}
 		else
 		{
-			this.$selectBtn.addClass('disabled');
+			this.disableSelectBtn();
 		}
+	},
+
+	enableSelectBtn: function()
+	{
+		this.$selectBtn.removeClass('disabled');
+	},
+
+	disableSelectBtn: function()
+	{
+		this.$selectBtn.addClass('disabled');
+	},
+
+	enableCancelBtn: function()
+	{
+		this.$cancelBtn.removeClass('disabled');
+	},
+
+	disableCancelBtn: function()
+	{
+		this.$cancelBtn.addClass('disabled');
 	},
 
 	showFooterSpinner: function()
@@ -137,7 +162,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	cancel: function()
 	{
-		this.hide();
+		if (!this.$cancelBtn.hasClass('disabled'))
+		{
+			this.hide();
+		}
 	},
 
 	selectElements: function()
