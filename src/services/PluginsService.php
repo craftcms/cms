@@ -561,6 +561,38 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Calls a method on the first plugin that has it, and returns the result.
+	 *
+	 * @param string $method      The name of the method.
+	 * @param array  $args        Any arguments that should be passed when calling the method on the plugins.
+	 * @param bool   $ignoreEmpty Whether plugins that have the method but return an empty response should be ignored. Defaults to false.
+	 *
+	 * @return mixed The plugin’s response, or null.
+	 */
+	public function callFirst($method, $args = array(), $ignoreEmpty = false)
+	{
+		$altMethod = 'hook'.ucfirst($method);
+
+		foreach ($this->getPlugins() as $plugin)
+		{
+			if (method_exists($plugin, $method))
+			{
+				$result = call_user_func_array(array($plugin, $method), $args);
+			}
+			else if (method_exists($plugin, $altMethod))
+			{
+				craft()->deprecator->log('PluginsService::method_hook_prefix', 'The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().');
+				$result = call_user_func_array(array($plugin, $altMethod), $args);
+			}
+
+			if (isset($result) && (!$ignoreEmpty || !empty($result)))
+			{
+				return $result;
+			}
+		}
+	}
+
+	/**
 	 * Calls a method on all plugins that have the method.
 	 *
 	 * @param string $method The name of the method.
