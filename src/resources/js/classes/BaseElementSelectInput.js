@@ -209,14 +209,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	createModal: function()
 	{
-		return Craft.createElementSelectorModal(this.elementType, {
+		return Craft.createElementSelectorModal(this.elementType, this.getModalSettings());
+	},
+
+	getModalSettings: function()
+	{
+		return {
 			storageKey:         this.modalStorageKey,
 			sources:            this.sources,
 			criteria:           this.criteria,
 			multiSelect:        (this.limit != 1),
 			disabledElementIds: this.getSelectedElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
-		});
+		};
 	},
 
 	getSelectedElementIds: function()
