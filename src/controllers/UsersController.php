@@ -639,7 +639,7 @@ class UsersController extends BaseController
 
 		$currentUser = craft()->userSession->getUser();
 		$thisIsPublicRegistration = false;
-		$requireEmailVerification = craft()->systemSettings->getSetting('users', 'requireEmailVerification')
+		$requireEmailVerification = craft()->systemSettings->getSetting('users', 'requireEmailVerification');
 
 		$userId = craft()->request->getPost('userId');
 		$isNewUser = !$userId;
