@@ -95,6 +95,20 @@ class AppHelper
 	}
 
 	/**
+	 * Retrieves a boolean PHP config setting and normalizes it to an actual bool.
+	 *
+	 * @param string $var The PHP config setting to retrieve.
+	 * @return bool Whether it is set to the php.ini equivelant of `true`.
+	 */
+	public static function getPhpConfigValueAsBool($var)
+	{
+		$value = ini_get($var);
+
+		// Supposedly “On” values will always be normalized to '1' but who can trust PHP...
+		return ($value == '1' || strtolower($value) == 'on');
+	}
+
+	/**
 	 * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
 	 *
 	 * @param string $var The PHP config setting to retrieve.
