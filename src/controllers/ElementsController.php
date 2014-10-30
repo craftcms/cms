@@ -20,14 +20,29 @@ class ElementsController extends BaseController
 	// =========================================================================
 
 	/**
+	 * Initializes the application component.
+	 *
+	 * @return null
+	 */
+	public function init()
+	{
+		// This controller only supports JSON responses
+		$this->requireAjaxRequest();
+
+		// This controller is only available to the Control Panel
+		if (!craft()->request->isCpRequest())
+		{
+			throw new HttpException(403);
+		}
+	}
+
+	/**
 	 * Renders and returns the body of an ElementSelectorModal.
 	 *
 	 * @return null
 	 */
 	public function actionGetModalBody()
 	{
-		$this->requireAjaxRequest();
-
 		$sourceKeys = craft()->request->getParam('sources');
 		$context = craft()->request->getParam('context');
 		$elementType = $this->_getElementType();
@@ -143,8 +158,6 @@ class ElementsController extends BaseController
 	 */
 	public function actionGetEditorHtml()
 	{
-		$this->requireAjaxRequest();
-
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
@@ -168,8 +181,6 @@ class ElementsController extends BaseController
 	 */
 	public function actionSaveElement()
 	{
-		$this->requireAjaxRequest();
-
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getRequiredPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
