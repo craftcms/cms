@@ -107,7 +107,7 @@ class UsersController extends BaseController
 
 		$userId = craft()->request->getPost('userId');
 
-		if (craft()->userSession->impersonate($userId))
+		if (craft()->userSession->loginByUserId($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
 
@@ -254,7 +254,7 @@ class UsersController extends BaseController
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->impersonate($user->id);
+						craft()->userSession->loginByUserId($user->id, false, true);
 					}
 
 					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
@@ -387,7 +387,7 @@ class UsersController extends BaseController
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->impersonate($userToVerify->id);
+						craft()->userSession->loginByUserId($userToVerify->id, false, true);
 					}
 
 					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
@@ -868,7 +868,7 @@ class UsersController extends BaseController
 				// Do we need to auto-login?
 				if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 				{
-					craft()->userSession->impersonate($user->id);
+					craft()->userSession->loginByUserId($user->id, false, true);
 				}
 			}
 
