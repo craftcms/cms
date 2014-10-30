@@ -21,6 +21,7 @@ class UserSessionService extends \CWebUser
 
 	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
 	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
+	const AUTH_ACCESS_VAR  = '__auth_access';
 
 	// Properties
 	// =========================================================================
@@ -247,6 +248,76 @@ class UserSessionService extends \CWebUser
 	public function getJsFlashes($delete = true)
 	{
 		return $this->getFlash('js', array(), $delete);
+	}
+
+	// Session-Based Authorization
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Authorizes the user to perform an action for the duration of the session.
+	 *
+	 * @param stirng $action
+	 *
+	 * @return null
+	 */
+	public function authorize($action)
+	{
+		$access = $this->getState(static::AUTH_ACCESS_VAR, array());
+
+		if (!in_array($action, $access))
+		{
+			$access[] = $action;
+			$this->setState(static::AUTH_ACCESS_VAR, $access);
+		}
+	}
+
+	/**
+	 * Deauthorizes the user from performing an action.
+	 *
+	 * @param string $action
+	 *
+	 * @return null
+	 */
+	public function deauthorize($action)
+	{
+		$access = $this->getState(static::AUTH_ACCESS_VAR, array());
+		$index = array_search($action, $access);
+
+		if ($index !== false)
+		{
+			array_splice($access, $index, 1);
+			$this->setState(static::AUTH_ACCESS_VAR, $access);
+		}
+	}
+
+	/**
+	 * Returns whether the user is authorized to perform an action.
+	 *
+	 * @param string $action
+	 *
+	 * @return bool
+	 */
+	public function checkAuthorization($action)
+	{
+		$access = $this->getState(static::AUTH_ACCESS_VAR, array());
+
+		return in_array($action, $access);
+	}
+
+	/**
+	 * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
+	 *
+	 * @param string $permissionName The name of the permission.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function requireAuthorization($action)
+	{
+		if (!$this->checkAuthorization($action))
+		{
+			throw new HttpException(403);
+		}
 	}
 
 	// User-Based Authorization
