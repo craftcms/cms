@@ -34,12 +34,13 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	init: function(elementIndex, $elements, settings)
 	{
 		this.elementIndex = elementIndex;
-		this.structureId = this.elementIndex.$elementContainer.parent().data('structure-id');
-		this.maxLevels = parseInt(this.elementIndex.$elementContainer.parent().attr('data-max-levels'));
+		this.structureId = this.elementIndex.$table.data('structure-id');
+		this.maxLevels = parseInt(this.elementIndex.$table.attr('data-max-levels'));
 
 		settings = $.extend({}, Craft.StructureTableSorter.defaults, settings, {
 			handle:           '.move',
 			collapseDraggees: true,
+			singleHelper:     true,
 			helperSpacingY:   2,
 			magnetStrength:   4,
 			helper:           $.proxy(this, 'getHelper'),

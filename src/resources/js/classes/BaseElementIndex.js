@@ -539,7 +539,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.elementSelect = this.createElementSelect($newElements);
 			}
 
-			if (this.settings.context == 'index' && this.getSelectedSortAttribute() == 'structure')
+			// Should we initialize a StructureTableSorter?
+			if (
+				this.settings.context == 'index' &&
+				this.getSelectedSourceState('mode') == 'table' &&
+				this.getSelectedSortAttribute() == 'structure' &&
+				Garnish.hasAttr(this.$table, 'data-structure-id')
+			)
 			{
 				// Create the sorter
 				this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
@@ -697,7 +703,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		if (this.getSelectedSourceState('mode') == 'table')
 		{
-			return this.$table.find('tbody:first');
+			return this.$table.children('tbody:first');
 		}
 		else
 		{
