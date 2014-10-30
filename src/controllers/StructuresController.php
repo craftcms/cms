@@ -42,6 +42,12 @@ class StructuresController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		// This controller is only available to the Control Panel
+		if (!craft()->request->isCpRequest())
+		{
+			throw new HttpException(403);
+		}
+
 		$structureId = craft()->request->getRequiredPost('structureId');
 		$elementId   = craft()->request->getRequiredPost('elementId');
 		$localeId    = craft()->request->getRequiredPost('locale');
