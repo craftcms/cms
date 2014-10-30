@@ -63,36 +63,11 @@ class CategoriesFieldType extends BaseElementFieldType
 	{
 		$categoryIds = $this->element->getContent()->getAttribute($this->model->handle);
 
+		// Make sure something was actually posted
 		if ($categoryIds !== null)
 		{
-			// Still could be empty though...
-			if ($categoryIds)
-			{
-				// Make sure that for each selected category, all of its parents are also selected.
-				$criteria = craft()->elements->getCriteria(ElementType::Category);
-				$criteria->id = $categoryIds;
-				$criteria->status = null;
-				$criteria->localeEnabled = false;
-				$categories = $criteria->find();
-
-				$prevCategory = null;
-
-				foreach ($categories as $i => $category)
-				{
-					// Did we just skip any categories?
-					if ($category->level != 1 && (
-						($i == 0) ||
-						(!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
-					))
-					{
-						// Merge in all of the entry's ancestors
-						$ancestorIds = $category->getAncestors()->ids();
-						$categoryIds = array_merge($categoryIds, $ancestorIds);
-					}
-
-					$prevCategory = $category;
-				}
-			}
+			// Fill in any gaps
+			$categoryIds = craft()->categories->fillGapsInCategoryIds($categoryIds);
 
 			craft()->relations->saveRelations($this->model, $this->element, $categoryIds);
 		}

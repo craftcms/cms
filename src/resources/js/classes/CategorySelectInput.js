@@ -63,6 +63,10 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		return $element;
 	},
 
+	appendElement: function($element)
+	{
+	},
+
 	onSelectElements: function()
 	{
 		this.addLastClasses();
