@@ -92,10 +92,11 @@ class CategoryElementType extends BaseElementType
 			$key = 'group:'.$group->id;
 
 			$sources[$key] = array(
-				'label'       => Craft::t($group->name),
-				'data'        => array('handle' => $group->handle),
-				'criteria'    => array('groupId' => $group->id),
-				'structureId' => $group->structureId,
+				'label'             => Craft::t($group->name),
+				'data'              => array('handle' => $group->handle),
+				'criteria'          => array('groupId' => $group->id),
+				'structureId'       => $group->structureId,
+				'structureEditable' => craft()->userSession->checkPermission('editCategories:'.$group->id),
 			);
 		}
 

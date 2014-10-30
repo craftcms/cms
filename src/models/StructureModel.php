@@ -23,7 +23,7 @@ class StructureModel extends BaseModel
 	 */
 	public function isSortable()
 	{
-		return (!$this->movePermission || craft()->userSession->checkPermission($this->movePermission));
+		return craft()->userSession->checkAuthorization('editStructure:'.$this->id);
 	}
 
 	// Protected Methods
@@ -37,9 +37,8 @@ class StructureModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'id'             => AttributeType::Number,
-			'maxLevels'      => AttributeType::Number,
-			'movePermission' => AttributeType::String,
+			'id'        => AttributeType::Number,
+			'maxLevels' => AttributeType::Number,
 		);
 	}
 }

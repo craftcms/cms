@@ -46,15 +46,22 @@ class StructuresController extends BaseController
 		$elementId   = craft()->request->getRequiredPost('elementId');
 		$localeId    = craft()->request->getRequiredPost('locale');
 
+		// Make sure they have permission to edit this structure
+		craft()->userSession->requireAuthorization('editStructure:'.$structureId);
+
 		$this->_structure = craft()->structures->getStructureById($structureId);
 
-		// Make sure they have permission to be doing this
-		if ($this->_structure->movePermission)
+		if (!$this->_structure)
 		{
-			craft()->userSession->requirePermission($this->_structure->movePermission);
+			throw new Exception(Craft::t('No structure exists with the ID “{id}”', array('id' => $structureId)));
 		}
 
 		$this->_element = craft()->elements->getElementById($elementId, null, $localeId);
+
+		if (!$this->_element)
+		{
+			throw new Exception(Craft::t('No element exists with the ID “{id}”', array('id' => $elementId)));
+		}
 	}
 
 	/**

@@ -1,5 +1,5 @@
 <div class="tableview">
-	<table class="data fullwidth"{% if structure is defined %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
+	<table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
 		<thead>
 			{% for attribute, label in attributes %}
 				<th scope="col" data-attribute="{{ attribute }}">{{ label }}</th>

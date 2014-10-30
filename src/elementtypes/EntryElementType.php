@@ -158,6 +158,7 @@ class EntryElementType extends BaseElementType
 					if ($type == SectionType::Structure)
 					{
 						$sources[$key]['structureId'] = $section->structureId;
+						$sources[$key]['structureEditable'] = craft()->userSession->checkPermission('publishEntries:'.$section->id);
 						$sources[$key]['newChildUrl'] = 'entries/'.$section->handle.'/new';
 					}
 				}

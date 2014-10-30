@@ -1,16 +1,19 @@
 {% spaceless %}
 
 {% set structure = structure is defined ? structure : null -%}
+{% set structureEditable = structureEditable is defined ? structureEditable : false -%}
+
 {% if structure -%}
+	{% set basePadding = structureEditable or context != 'index' ? 24 : 0 %}
 	{% set padding = craft.i18n.getLocaleData().getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
 
 {% for element in elements %}
-	<tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+	<tr data-id="{{ element.id }}"{% if structureEditable %} data-level="{{ element.level }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% for attribute, label in attributes %}
 			{% if loop.first %}
-				<td data-title="{{ label }}"{% if structure %} style="padding-{{ padding }}: {{ 24 + (element.level - 1) * 44 }}px;"{% endif %}>
-					{%- if structure and context == 'index' %}<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>{% endif %}
+				<td data-title="{{ label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %}>
+					{%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>{% endif %}
 					{%- include "_elements/element" -%}
 				</td>
 			{% else %}

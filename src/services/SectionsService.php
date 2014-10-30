@@ -446,13 +446,6 @@ class SectionsService extends BaseApplicationComponent
 				if ($isNewSection)
 				{
 					$section->id = $sectionRecord->id;
-
-					if ($section->type == SectionType::Structure && !$structure->movePermission)
-					{
-						// Set the 'movePermission' on the structure as well
-						$structure->movePermission = 'publishEntries:'.$section->id;
-						craft()->structures->saveStructure($structure);
-					}
 				}
 
 				// Might as well update our cache of the section while we have it. (It's possible that the URL format
