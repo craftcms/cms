@@ -860,32 +860,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Clears all user identity information from persistent storage.
-	 *
-	 * This will remove the data stored via {@link setState}.
-	 *
-	 * @return null
-	 */
-	public function clearStates()
-	{
-		if (isset($_SESSION))
-		{
-			$keys = array_keys($_SESSION);
-			$prefix = $this->getStateKeyPrefix();
-
-			$n = mb_strlen($prefix);
-
-			foreach($keys as $key)
-			{
-				if (!strncmp($key, $prefix, $n))
-				{
-					unset($_SESSION[$key]);
-				}
-			}
-		}
-	}
-
-	/**
 	 * Returns whether the request should extend the current session timeout or not.
 	 *
 	 * @return bool
