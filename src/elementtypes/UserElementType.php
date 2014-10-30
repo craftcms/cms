@@ -327,8 +327,15 @@ class UserElementType extends BaseElementType
 			$groupIdsQuery->where(DbHelper::parseParam('handle', $criteria->group, $groupIdsQuery->params));
 			$groupIds = $groupIdsQuery->queryColumn();
 
+			// In the case where the group doesn't exist.
+			if (!$groupIds)
+			{
+				return false;
+			}
+
 			$userIds = $this->_getUserIdsByGroupIds($groupIds);
 
+			// In case there are no users in the groups.
 			if (!$userIds)
 			{
 				return false;

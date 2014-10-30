@@ -660,10 +660,10 @@ class UsersController extends BaseController
 
 		$currentUser = craft()->userSession->getUser();
 		$thisIsPublicRegistration = false;
-		$sendVerificationEmail = false;
+		$requireEmailVerification = craft()->systemSettings->getSetting('users', 'requireEmailVerification');
 
 		$userId = craft()->request->getPost('userId');
-		$isNewUser = $userId === null ? true : false;
+		$isNewUser = !$userId;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -756,7 +756,7 @@ class UsersController extends BaseController
 			if ($newEmail)
 			{
 				// Does that email need to be verified?
-				if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
+				if ($requireEmailVerification && (!craft()->userSession->isAdmin() || craft()->request->getPost('verificationRequired')))
 				{
 					$user->unverifiedEmail = $newEmail;
 
@@ -769,11 +769,6 @@ class UsersController extends BaseController
 				else
 				{
 					$user->email = $newEmail;
-				}
-
-				if (!craft()->userSession->isAdmin() || craft()->request->getPost('sendVerificationEmail'))
-				{
-					$sendVerificationEmail = true;
 				}
 			}
 		}
@@ -794,7 +789,7 @@ class UsersController extends BaseController
 		if ($isNewUser)
 		{
 			// Check the global setting here, instead of unverifiedEmail
-			if (craft()->systemSettings->getSetting('users', 'requireEmailVerification'))
+			if ($requireEmailVerification)
 			{
 				$user->status = UserStatus::Pending;
 			}
@@ -833,7 +828,7 @@ class UsersController extends BaseController
 				$this->_assignDefaultGroupToUser($user->id);
 			}
 
-			if ($sendVerificationEmail)
+			if ($requireEmailVerification)
 			{
 				// Temporarily set the unverified email on the UserModel so the verification email goes to the
 				// right place
@@ -867,11 +862,11 @@ class UsersController extends BaseController
 				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
 			}
 
-			// If this is a new user and you're currently not logged in.
-			if ($isNewUser && !$currentUser && $thisIsPublicRegistration && !$user->unverifiedEmail)
+			// Is this public registration, and is the user going to be activated automatically?
+			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
 			{
 				// Do we need to auto-login?
-				if ( craft()->config->get('autoLoginAfterAccountActivation') === true)
+				if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 				{
 					craft()->userSession->impersonate($user->id);
 				}
