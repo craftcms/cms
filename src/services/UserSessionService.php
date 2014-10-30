@@ -119,6 +119,9 @@ class UserSessionService extends \CWebUser
 		}
 	}
 
+	// Flash Data
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns the URL the user was trying to access before getting redirected to the login page via
 	 * {@link requireLogin()}.
@@ -245,6 +248,9 @@ class UserSessionService extends \CWebUser
 	{
 		return $this->getFlash('js', array(), $delete);
 	}
+
+	// User-Based Authorization
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Alias of {@link getIsGuest()}.
@@ -381,6 +387,9 @@ class UserSessionService extends \CWebUser
 	{
 		$this->requireLogin();
 	}
+
+	// User Identity/Authentication
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Logs a user in.
@@ -896,6 +905,9 @@ class UserSessionService extends \CWebUser
 			$this->deleteStateCookie('username');
 		}
 	}
+
+	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onBeforeLogin' event.
