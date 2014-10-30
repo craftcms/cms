@@ -296,6 +296,12 @@ class ElementsService extends BaseApplicationComponent
 						$result['locale'] = $criteria->locale;
 						$element = $elementType->populateElementModel($result);
 
+						// Was an element returned?
+						if (!$element || !($element instanceof BaseElementModel))
+						{
+							continue;
+						}
+
 						if ($contentTable)
 						{
 							$element->setContent($content);
