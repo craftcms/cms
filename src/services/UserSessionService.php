@@ -1028,28 +1028,6 @@ class UserSessionService extends \CWebUser
 	// =========================================================================
 
 	/**
-	 * Changes the current user with the specified identity information.
-	 *
-	 * This method is called by {@link login} and {@link restoreFromCookie} when the current user needs to be populated
-	 * with the corresponding identity information.
-	 *
-	 * Derived classes may override this method by retrieving additional user-related information. Make sure the parent
-	 * implementation is called first.
-	 *
-	 * @param mixed  $id     A unique identifier for the user.
-	 * @param string $name   The display name for the user.
-	 * @param array  $states Identity states.
-	 *
-	 * @return null
-	 */
-	protected function changeIdentity($id, $name, $states)
-	{
-		$this->setId($id);
-		$this->setName($name);
-		$this->loadIdentityStates($states);
-	}
-
-	/**
 	 * Updates the authentication status according to {@link authTimeout}.
 	 *
 	 * Based on the parts of {@link \CWebUser::updateAuthStatus()} that are relevant to Craft, but this version also
