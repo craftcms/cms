@@ -792,6 +792,49 @@ class CategoriesService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Updates a list of category IDs, filling in any gaps in the family tree.
+	 *
+	 * @param array $ids The original list of category IDs
+	 *
+	 * @return array The list of category IDs with all the gaps filled in.
+	 */
+	public function fillGapsInCategoryIds($ids)
+	{
+		$completeIds = array();
+
+		if ($ids)
+		{
+			// Make sure that for each selected category, all of its parents are also selected.
+			$criteria = craft()->elements->getCriteria(ElementType::Category);
+			$criteria->id = $ids;
+			$criteria->status = null;
+			$criteria->localeEnabled = false;
+			$categories = $criteria->find();
+
+			$prevCategory = null;
+
+			foreach ($categories as $i => $category)
+			{
+				// Did we just skip any categories?
+				if ($category->level != 1 && (
+					($i == 0) ||
+					(!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
+				))
+				{
+					// Merge in all of the entry's ancestors
+					$ancestorIds = $category->getAncestors()->ids();
+					$completeIds = array_merge($completeIds, $ancestorIds);
+				}
+
+				$completeIds[] = $category->id;
+				$prevCategory = $category;
+			}
+		}
+
+		return $completeIds;
+	}
+
 	// Events
 	// -------------------------------------------------------------------------
 
