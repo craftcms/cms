@@ -971,7 +971,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			var $enabledElements = $newElements.filter(':not(.disabled)');
 			this._attachElementEvents($enabledElements);
-			this._initElementDragger($enabledElements);
+
+			if (!append)
+			{
+				this._fileDrag.removeAllItems();
+			}
+
+			this._fileDrag.addItems($newElements);
 		}
 
 		// See if we have freshly uploaded files to add to selection
@@ -1025,12 +1031,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// Context menus
 		this._destroyElementContextMenus();
 		this._createElementContextMenus($elements);
-	},
-
-	_initElementDragger: function($elements)
-	{
-		this._fileDrag.removeAllItems();
-		this._fileDrag.addItems($elements);
 	},
 
 	_editProperties: function(event)
