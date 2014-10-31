@@ -46,7 +46,10 @@ class EntriesService extends BaseApplicationComponent
 	 * $entry->enabled   = true;
 	 *
 	 * $entry->getContent()->title = "Hello World!";
-	 * $entry->getContent()->body  = "<p>I can’t believe I literally just called this “Hello World!”.</p>";
+	 *
+	 * $entry->setContentFromPost(array(
+	 *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+	 * ));
 	 *
 	 * $success = craft()->entries->saveEntry($entry);
 	 *
