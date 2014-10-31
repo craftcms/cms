@@ -7,7 +7,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	$uploadInput: null,
 	$progressBar: null,
 	$folders: null,
-	$previouslySelectedFolder: null,
 
 	uploader: null,
 	promptHandler: null,
@@ -94,6 +93,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_initIndexPageMode: function()
 	{
+		var onDragStartProxy = $.proxy(this, '_onDragStart')
+			onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
+
 		// File dragging
 		// ---------------------------------------------------------------------
 
@@ -123,16 +125,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				return targets;
 			}, this),
 
-			onDragStart: $.proxy(function()
-			{
-				this._tempExpandedFolders = [];
-
-				this.$previouslySelectedFolder = this.$source.removeClass('sel');
-
-			}, this),
-
-			onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
-
+			onDragStart: onDragStartProxy,
+			onDropTargetChange: onDropTargetChangeProxy,
 			onDragStop: $.proxy(this, '_onFileDragStop')
 		});
 
@@ -206,13 +200,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				return targets;
 			}, this),
 
-			onDragStart: $.proxy(function()
-			{
-				this._tempExpandedFolders = [];
-			}, this),
-
-			onDropTargetChange: $.proxy(this, '_onDropTargetChange'),
-
+			onDragStart: onDragStartProxy,
+			onDropTargetChange: onDropTargetChangeProxy,
 			onDragStop: $.proxy(this, '_onFolderDragStop')
 		});
 	},
@@ -222,7 +211,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_onFileDragStop: function()
 	{
-		if (this._fileDrag.$activeDropTarget)
+		if (this._fileDrag.$activeDropTarget && this._fileDrag.$activeDropTarget[0] != this.$source[0])
 		{
 			// Keep it selected
 			this.sourceSelect.selectItem(this._fileDrag.$activeDropTarget);
@@ -356,11 +345,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 		else
 		{
+			// Add the .sel class back on the selected source
+			this.$source.addClass('sel');
+
 			this._collapseExtraExpandedFolders();
 		}
-
-		// re-select the previously selected folders
-		this.sourceSelect.selectItem(this.$previouslySelectedFolder);
 
 		this._fileDrag.returnHelpersToDraggees();
 	},
@@ -582,6 +571,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 		else
 		{
+			// Add the .sel class back on the selected source
+			this.$source.addClass('sel');
+
 			this._collapseExtraExpandedFolders();
 		}
 
@@ -746,7 +738,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 		};
 
-		this.selectSource($targetSource);
+		this.sourceSelect.selectItem($targetSource);
 
 		this.$source = $targetSource;
 		this.sourceKey = $targetSource.data('key');
@@ -1254,6 +1246,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				}
 			}, this));
 		}
+	},
+
+	/**
+	 * On Drag Start
+	 */
+	_onDragStart: function()
+	{
+		this._tempExpandedFolders = [];
 	},
 
 	/**
