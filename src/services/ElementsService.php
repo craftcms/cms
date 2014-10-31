@@ -1776,8 +1776,7 @@ class ElementsService extends BaseApplicationComponent
 		// Get the matched element IDs, and then have the SearchService filter them.
 		$elementIdsQuery = craft()->db->createCommand()
 			->select('elements.id')
-			->from('elements elements')
-			->group('elements.id');
+			->from('elements elements');
 
 		$elementIdsQuery->setWhere($query->getWhere());
 		$elementIdsQuery->setJoin($query->getJoin());
