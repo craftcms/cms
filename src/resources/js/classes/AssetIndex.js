@@ -99,7 +99,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// ---------------------------------------
 
 		this._fileDrag = new Garnish.DragDrop({
-			activeDropTargetClass: 'sel assets-fm-dragtarget',
+			activeDropTargetClass: 'sel',
 			helperOpacity: 0.5,
 
 			filter: $.proxy(function()
@@ -142,7 +142,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		this._folderDrag = new Garnish.DragDrop(
 		{
-			activeDropTargetClass: 'sel assets-fm-dragtarget',
+			activeDropTargetClass: 'sel',
 			helperOpacity: 0.5,
 
 			filter: $.proxy(function()
