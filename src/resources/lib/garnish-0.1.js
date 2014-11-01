@@ -797,7 +797,7 @@ Garnish.Base = Base.extend({
 		return events;
 	},
 
-	_formatEvents: function(events)
+	_splitEvents: function(events)
 	{
 		if (typeof events == 'string')
 		{
@@ -808,6 +808,13 @@ Garnish.Base = Base.extend({
 				events[i] = $.trim(events[i]);
 			}
 		}
+
+		return events;
+	},
+
+	_formatEvents: function(events)
+	{
+		var events = this._splitEvents(events).slice(0);
 
 		for (var i = 0; i < events.length; i++)
 		{
@@ -827,7 +834,7 @@ Garnish.Base = Base.extend({
 			return;
 		}
 
-		events = this._formatEvents(events);
+		events = this._splitEvents(events);
 
 		// Param mapping
 		if (typeof data != 'object')
@@ -846,7 +853,7 @@ Garnish.Base = Base.extend({
 			func = $.proxy(this, func);
 		}
 
-		$elem.on(events, data, $.proxy(function()
+		$elem.on(this._formatEvents(events), data, $.proxy(function()
 		{
 			if (!this._disabled)
 			{
@@ -858,7 +865,7 @@ Garnish.Base = Base.extend({
 		this._$listeners = this._$listeners.add(elem);
 
 		// Prep for activate event?
-		if (events.search(/\bactivate\b/) != -1 && !$elem.data('garnish-activatable'))
+		if ($.inArray('activate', events) != -1 && !$elem.data('garnish-activatable'))
 		{
 			var activateNamespace = this._namespace+'-activate';
 
@@ -920,7 +927,7 @@ Garnish.Base = Base.extend({
 		}
 
 		// Prep for chanegtext event?
-		if (events.search(/\btextchange\b/) != -1)
+		if ($.inArray('textchange', events) != -1)
 		{
 			// Store the initial values
 			for (var i = 0; i < $elem.length; i++)
@@ -954,7 +961,7 @@ Garnish.Base = Base.extend({
 		}
 
 		// Prep for resize event?
-		if (events.search(/\bresize\b/) != -1)
+		if ($.inArray('resize', events) != -1)
 		{
 			// Resize detection technique adapted from http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/ -- thanks!
 			for (var i = 0; i < $elem.length; i++)
@@ -1014,8 +1021,7 @@ Garnish.Base = Base.extend({
 
 	removeListener: function(elem, events)
 	{
-		events = this._formatEvents(events);
-		$(elem).off(events);
+		$(elem).off(this._formatEvents(events));
 	},
 
 	removeAllListeners: function(elem)
@@ -1301,7 +1307,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			$.data(item, 'drag', this);
 
 			// Add the listener
-			this.addListener(item, 'mousedown', '_onMouseDown');
+			this.addListener(item, 'mousedown', '_handleMouseDown');
 		}
 
 		this.$items = $().add(this.$items.add(items));
@@ -1395,9 +1401,9 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	// =========================================================================
 
 	/**
-	 * On Mouse Down
+	 * Handle Mouse Down
 	 */
-	_onMouseDown: function(ev)
+	_handleMouseDown: function(ev)
 	{
 		// Ignore right clicks
 		if (ev.which != Garnish.PRIMARY_CLICK)
@@ -1453,8 +1459,8 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		this.mouseOffsetY = ev.pageY - offset.top;
 
 		// Listen for mousemove, mouseup
-		this.addListener(Garnish.$doc, 'mousemove', '_onMouseMove');
-		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp');
+		this.addListener(Garnish.$doc, 'mousemove', '_handleMouseMove');
+		this.addListener(Garnish.$doc, 'mouseup', '_handleMouseUp');
 	},
 
 	_getItemHandle: function(item)
@@ -1481,9 +1487,9 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	},
 
 	/**
-	 * On Mouse Move
+	 * Handle Mouse Move
 	 */
-	_onMouseMove: function(ev)
+	_handleMouseMove: function(ev)
 	{
 		ev.preventDefault();
 
@@ -1506,9 +1512,9 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		if (!this.dragging)
 		{
 			// Has the mouse moved far enough to initiate dragging yet?
-			this._onMouseMove._mouseDist = Garnish.getDist(this.mousedownX, this.mousedownY, this.realMouseX, this.realMouseY);
+			this._handleMouseMove._mouseDist = Garnish.getDist(this.mousedownX, this.mousedownY, this.realMouseX, this.realMouseY);
 
-			if (this._onMouseMove._mouseDist >= Garnish.BaseDrag.minMouseDist)
+			if (this._handleMouseMove._mouseDist >= Garnish.BaseDrag.minMouseDist)
 			{
 				this.startDragging();
 			}
@@ -1521,9 +1527,9 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	},
 
 	/**
-	 * On Moues Up
+	 * Handle Moues Up
 	 */
-	_onMouseUp: function(ev)
+	_handleMouseUp: function(ev)
 	{
 		// Unbind the document events
 		this.removeAllListeners(Garnish.$doc);
@@ -3318,15 +3324,15 @@ Garnish.LightSwitch = Garnish.Base.extend({
 
 		this.on = this.$outerContainer.hasClass('on');
 
-		this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
-		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
+		this.addListener(this.$outerContainer, 'mousedown', '_handleMouseDown');
+		this.addListener(this.$outerContainer, 'keydown', '_handleKeyDown');
 
 		this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
 			axis:                 Garnish.X_AXIS,
 			ignoreHandleSelector: null,
-			onDragStart:          $.proxy(this, '_onDragStart'),
-			onDrag:               $.proxy(this, '_onDrag'),
-			onDragStop:           $.proxy(this, '_onDragStop')
+			onDragStart:          $.proxy(this, '_handleDragStart'),
+			onDrag:               $.proxy(this, '_handleDrag'),
+			onDragStop:           $.proxy(this, '_handleDragStop')
 		});
 	},
 
@@ -3375,12 +3381,12 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		this.$outerContainer.trigger('change');
 	},
 
-	_onMouseDown: function()
+	_handleMouseDown: function()
 	{
-		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp')
+		this.addListener(Garnish.$doc, 'mouseup', '_handleMouseUp')
 	},
 
-	_onMouseUp: function()
+	_handleMouseUp: function()
 	{
 		this.removeListener(Garnish.$doc, 'mouseup');
 
@@ -3389,7 +3395,7 @@ Garnish.LightSwitch = Garnish.Base.extend({
 			this.toggle();
 	},
 
-	_onKeyDown: function(ev)
+	_handleKeyDown: function(ev)
 	{
 		switch (ev.keyCode)
 		{
@@ -3437,12 +3443,12 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		return parseInt(this.$innerContainer.css('marginLeft'))
 	},
 
-	_onDragStart: function()
+	_handleDragStart: function()
 	{
 		this.dragStartMargin = this._getMargin();
 	},
 
-	_onDrag: function()
+	_handleDrag: function()
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
@@ -3458,7 +3464,7 @@ Garnish.LightSwitch = Garnish.Base.extend({
 		this.$innerContainer.css('marginLeft', margin);
 	},
 
-	_onDragStop: function()
+	_handleDragStop: function()
 	{
 		var margin = this._getMargin();
 
@@ -4342,8 +4348,8 @@ Garnish.Modal = Garnish.Base.extend({
 			var $resizeDragHandle = $('<div class="resizehandle"/>').appendTo(this.$container);
 
 			this.resizeDragger = new Garnish.BaseDrag($resizeDragHandle, {
-				onDragStart:   $.proxy(this, '_onResizeStart'),
-				onDrag:        $.proxy(this, '_onResize')
+				onDragStart:   $.proxy(this, '_handleResizeStart'),
+				onDrag:        $.proxy(this, '_handleResize')
 			});
 		}
 
@@ -4553,13 +4559,13 @@ Garnish.Modal = Garnish.Base.extend({
 		return this.getWidth._width;
 	},
 
-	_onResizeStart: function()
+	_handleResizeStart: function()
 	{
 		this.resizeStartWidth = this.getWidth();
 		this.resizeStartHeight = this.getHeight();
 	},
 
-	_onResize: function()
+	_handleResize: function()
 	{
 		if (Garnish.ltr)
 		{
