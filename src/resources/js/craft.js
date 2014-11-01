@@ -1054,6 +1054,7 @@ $.extend(Craft,
 
 		var info = {
 			id:       $element.data('id'),
+			locale:   $element.data('locale'),
 			label:    $element.data('label'),
 			status:   $element.data('status'),
 			url:      $element.data('url'),

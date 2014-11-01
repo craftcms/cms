@@ -110,13 +110,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
 	updateSelectBtnState: function()
 	{
-		if (this.elementIndex.elementSelect.totalSelected)
+		if (this.$selectBtn)
 		{
-			this.enableSelectBtn();
-		}
-		else
-		{
-			this.disableSelectBtn();
+			if (this.elementIndex.elementSelect.totalSelected)
+			{
+				this.enableSelectBtn();
+			}
+			else
+			{
+				this.disableSelectBtn();
+			}
 		}
 	},
 
@@ -203,6 +206,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		}
 
 		return info;
+	},
+
+	show: function()
+	{
+		this.updateSelectBtnState();
+		this.base();
 	},
 
 	onSelect: function(elementInfo)
