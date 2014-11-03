@@ -104,25 +104,30 @@
 								disabled: isVersion
 							}) }}
 
-							{% if section.type == 'structure' and parentOptions|length > 1 %}
-								{{ forms.selectField({
+							{% if section.type == 'structure' %}
+								{{ forms.elementSelectField({
 									label: "Parent Entry"|t,
 									id: 'parentId',
 									name: 'parentId',
-									options: parentOptions,
-									value: parentId,
-									disabled: isVersion
+									elementType: elementType,
+									addButtonLabel: "Choose"|t,
+									sources: ['section:'~section.id],
+									criteria: parentOptionCriteria,
+									limit: 1,
+									elements: (parent is defined and parent ? [parent])
 								}) }}
 							{% endif %}
 
 							{% if CraftEdition >= CraftClient %}
-								{{ forms.selectField({
+								{{ forms.elementSelectField({
 									label: "Author"|t,
 									id: 'author',
 									name: 'author',
-									options: authorOptions,
-									value: entry.authorId,
-									disabled: isVersion
+									elementType: userElementType,
+									addButtonLabel: "Choose"|t,
+									criteria: authorOptionCriteria,
+									limit: 1,
+									elements: (author is defined and author ? [author])
 								}) }}
 							{% endif %}
 
