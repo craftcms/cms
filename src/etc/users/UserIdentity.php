@@ -128,11 +128,6 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}
-					else
-					{
-						// Finally, everything is well with the world. Let's log in.
-						$this->logUserIn($user);
-					}
 				}
 				else
 				{

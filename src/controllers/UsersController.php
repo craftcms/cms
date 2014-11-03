@@ -107,7 +107,7 @@ class UsersController extends BaseController
 
 		$userId = craft()->request->getPost('userId');
 
-		if (craft()->userSession->impersonate($userId))
+		if (craft()->userSession->loginByUserId($userId))
 		{
 			craft()->userSession->setNotice(Craft::t('Logged in.'));
 
@@ -254,7 +254,7 @@ class UsersController extends BaseController
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->impersonate($user->id);
+						craft()->userSession->loginByUserId($user->id, false, true);
 					}
 
 					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
@@ -387,7 +387,7 @@ class UsersController extends BaseController
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->impersonate($userToVerify->id);
+						craft()->userSession->loginByUserId($userToVerify->id, false, true);
 					}
 
 					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
@@ -724,15 +724,49 @@ class UsersController extends BaseController
 		if ($isNewUser || $user->isCurrent() || craft()->userSession->isAdmin())
 		{
 			$newEmail    = craft()->request->getPost('email');
-			$newPassword = craft()->request->getPost($user->id ? 'newPassword' : 'password');
+			$newPassword = false;
+
+			// You can only change your own password directly.
+			if ($user->isCurrent())
+			{
+				$newPassword = craft()->request->getPost('newPassword');
+			}
+
+			// If this is a new user, see if a password has been set (for front-end registration forms).
+			if ($isNewUser && $thisIsPublicRegistration)
+			{
+				$newPassword = craft()->request->getPost('password');
+			}
 
 			if ($user->id && $user->email == $newEmail)
 			{
-				$newEmail = null;
+				$newEmail = false;
 			}
 
-			// You must pass your current password to change these fields for an existing user
-			if (!$isNewUser && ($newEmail || $newPassword))
+			$verifyExistingPassword = false;
+
+			// If this is an existing user...
+			if (!$isNewUser)
+			{
+				// And it's the current user or an admin...
+				if ($user->isCurrent() || craft()->userSession->isAdmin())
+				{
+					// Check to see if you're editing yourself and a new password has been set..
+					if ($user->isCurrent() && $newPassword)
+					{
+						$verifyExistingPassword = true;
+					}
+
+					// Both current users and admins change emails.
+					if ($newEmail)
+					{
+						$verifyExistingPassword = true;
+					}
+				}
+			}
+
+			// Do we need to verify the current user's password?
+			if ($verifyExistingPassword)
 			{
 				// Make sure the correct current password has been submitted
 				$currentPassword = craft()->request->getPost('password');
@@ -740,7 +774,7 @@ class UsersController extends BaseController
 
 				if (!craft()->users->validatePassword($currentHashedPassword, $currentPassword))
 				{
-					Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+					Craft::log('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', LogLevel::Warning);
 					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 
 					// We'll let the script keep executing in case we find any other validation errors...
@@ -868,7 +902,7 @@ class UsersController extends BaseController
 				// Do we need to auto-login?
 				if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 				{
-					craft()->userSession->impersonate($user->id);
+					craft()->userSession->loginByUserId($user->id, false, true);
 				}
 			}
 

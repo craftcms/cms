@@ -305,9 +305,9 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
+	 * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
 	 *
-	 * @param string $permissionName The name of the permission.
+	 * @param string $action The name of the action to check.
 	 *
 	 * @throws HttpException
 	 * @return null
@@ -480,13 +480,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function login($username, $password, $rememberMe = false)
 	{
-		// Validate the username/password first.
-		$usernameModel = new UsernameModel();
-		$passwordModel = new PasswordModel();
-
-		$usernameModel->username = $username;
-		$passwordModel->password = $password;
-
 		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
 		if (!craft()->request->userAgent || !$_SERVER['REMOTE_ADDR'])
 		{
@@ -495,82 +488,22 @@ class UserSessionService extends \CWebUser
 			$this->requireLogin();
 		}
 
-		// Validate the model.
+		// Validate the username/password first.
+		$usernameModel = new UsernameModel();
+		$passwordModel = new PasswordModel();
+
+		$usernameModel->username = $username;
+		$passwordModel->password = $password;
+
+		// Validate the models.
 		if ($usernameModel->validate() && $passwordModel->validate())
 		{
-			// Authenticate the credentials.
 			$this->_identity = new UserIdentity($username, $password);
-			$this->_identity->authenticate();
 
-			// Was the login successful?
-			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
+			// Did we authenticate?
+			if ($this->_identity->authenticate() && $this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
-				$this->processUsernameCookie($username);
-
-				// Get how long this session is supposed to last.
-				$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
-
-				$id = $this->_identity->getId();
-				$states = $this->_identity->getPersistentStates();
-
-				// Fire an 'onBeforeLogin' event
-				$this->onBeforeLogin(new Event($this, array(
-					'username'      => $usernameModel->username,
-				)));
-
-				// Run any before login logic.
-				if ($this->beforeLogin($id, $states, false))
-				{
-					$this->changeIdentity($id, $this->_identity->getName(), $states);
-
-					// Fire an 'onLogin' event
-					$this->onLogin(new Event($this, array(
-						'username'      => $usernameModel->username,
-					)));
-
-					if ($this->authTimeout)
-					{
-						if ($this->allowAutoLogin)
-						{
-							$user = craft()->users->getUserById($id);
-
-							if ($user)
-							{
-								// Save the necessary info to the identity cookie.
-								$sessionToken = StringHelper::UUID();
-								$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
-								$uid = craft()->users->handleSuccessfulLogin($user, $hashedToken);
-
-								$data = array(
-									$this->getName(),
-									$sessionToken,
-									$uid,
-									($rememberMe ? 1 : 0),
-									craft()->request->getUserAgent(),
-									$this->saveIdentityStates(),
-								);
-
-								$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
-							}
-							else
-							{
-								throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
-							}
-						}
-						else
-						{
-							throw new Exception(Craft::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
-						}
-					}
-
-					$this->_sessionRestoredFromCookie = false;
-					$this->_userRow = null;
-
-					// Run any after login logic.
-					$this->afterLogin(false);
-				}
-
-				return !$this->getIsGuest();
+				return $this->loginByUserId($this->_identity->getId(), $rememberMe, true);
 			}
 		}
 
@@ -579,20 +512,18 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Logs a user in for impersonation.
+	 * Logs a user in for solely by their user ID.
 	 *
-	 * This method doesn’t have any sort of credential verification, and just requires the ID of the user to
-	 * impersonate, so use it at your own peril.
+	 * This method doesn’t have any sort of credential verification, so use it at your own peril.
+     *
+	 * @param int  $userId            The user ID of the person to log in.
+	 * @param bool $rememberMe        Whether the user should be remembered.
+	 * @param bool $setUsernameCookie Whether to set the username cookie or not.
 	 *
-	 * The new user session will only last as long as the browser session remains active; no identity cookie will be
-	 * created.
-	 *
-	 * @param int $userId The user’s ID.
-	 *
+	 * @return bool
 	 * @throws Exception
-	 * @return bool Whether the user is now being impersonated.
 	 */
-	public function impersonate($userId)
+	public function loginByUserId($userId, $rememberMe = false, $setUsernameCookie = false)
 	{
 		$userModel = craft()->users->getUserById($userId);
 
@@ -601,31 +532,86 @@ class UserSessionService extends \CWebUser
 			throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $userId)));
 		}
 
+				// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+		if (!craft()->request->userAgent || !$_SERVER['REMOTE_ADDR'])
+		{
+			Craft::log('Someone tried to login with userId: '.$userId.', without presenting an IP address or userAgent string.', LogLevel::Warning);
+			$this->logout(true);
+			$this->requireLogin();
+		}
+
 		$this->_identity = new UserIdentity($userModel->username, null);
 		$this->_identity->logUserIn($userModel);
+
+		if ($setUsernameCookie)
+		{
+			$this->processUsernameCookie($userModel->username);
+		}
+
+		// Get how long this session is supposed to last.
+		$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
 
 		$id = $this->_identity->getId();
 		$states = $this->_identity->getPersistentStates();
 
+		// Fire an 'onBeforeLogin' event
+		$this->onBeforeLogin(new Event($this, array(
+			'username' => $userModel->username,
+		)));
+
 		// Run any before login logic.
 		if ($this->beforeLogin($id, $states, false))
 		{
-			// Fire an 'onBeforeLogin' event
-			$this->onBeforeLogin(new Event($this, array(
-				'username'      => $userModel->username,
-			)));
-
 			$this->changeIdentity($id, $this->_identity->getName(), $states);
 
 			// Fire an 'onLogin' event
 			$this->onLogin(new Event($this, array(
-				'username'      => $userModel->username,
+				'username' => $userModel->username,
 			)));
+
+			if ($this->authTimeout)
+			{
+				if ($this->allowAutoLogin)
+				{
+					$user = craft()->users->getUserById($id);
+
+					if ($user)
+					{
+						// Save the necessary info to the identity cookie.
+						$sessionToken = StringHelper::UUID();
+						$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
+						$uid = craft()->users->handleSuccessfulLogin($user, $hashedToken);
+
+						$data = array(
+							$this->getName(),
+							$sessionToken,
+							$uid,
+							($rememberMe ? 1 : 0),
+							craft()->request->getUserAgent(),
+							$this->saveIdentityStates(),
+						);
+
+						$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
+					}
+					else
+					{
+						throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
+					}
+				}
+				else
+				{
+					throw new Exception(Craft::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
+				}
+			}
+
+			$this->_sessionRestoredFromCookie = false;
+			$this->_userRow = null;
 
 			$this->_sessionRestoredFromCookie = false;
 			$this->_userRow = null;
 			$this->_userModel = null;
-			$this->setReturnUrl(null);
+			// TODO: Test
+			//$this->setReturnUrl(null);
 
 			// Run any after login logic.
 			$this->afterLogin(false);
@@ -634,7 +620,22 @@ class UserSessionService extends \CWebUser
 		}
 
 		Craft::log($userModel->username.' tried to log in unsuccessfully.', LogLevel::Warning);
+
 		return false;
+	}
+
+	/**
+	 * This method has been deprecated. Use {@link UserSessionService::loginByUserId()} instead.
+	 *
+	 * @param int $userId The user’s ID.
+	 *
+	 * @deprecated Deprecated in 2.3. Use {@link UserSessionService::loginByUserId()} instead.
+	 * @return null
+	 */
+	public function impersonate($userId)
+	{
+		craft()->deprecator->log('UserSessionController::impersonate()', 'The UserSessionService->impersonate method has been deprecated. Use UserSessionService->loginByUserId instead.');
+		$this->loginByUserId($userId, false, false);
 	}
 
 	/**
