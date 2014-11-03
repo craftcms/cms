@@ -125,7 +125,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		}
 		else
 		{
-			setTimeout(func, 200 * i);
+			setTimeout(func, 100 * i);
 		}
 	}
 });
