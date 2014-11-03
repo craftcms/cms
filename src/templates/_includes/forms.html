@@ -184,3 +184,8 @@
 	{% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
 	{{ _self.field(config, input) }}
 {% endmacro %}
+
+
+{% macro elementSelectField(config) %}
+	{{ _self.field(config, _self.elementSelect(config)) }}
+{% endmacro %}
