@@ -24,6 +24,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	selectable: true,
 	sortable: true,
 
+	_initialized: false,
+
 	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey)
 	{
 		this.id = id;
@@ -90,6 +92,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		this.resetElements();
 
 		this.addListener(this.$addElementBtn, 'activate', 'showModal');
+
+		this._initialized = true;
 	},
 
 	getContainer: function()
@@ -137,7 +141,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 			if (this.limit == 1)
 			{
-				this.$addElementBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
+				if (this._initialized)
+				{
+					this.$addElementBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
+				}
+				else
+				{
+					this.$addElementBtn.hide();
+				}
 			}
 		}
 	},
@@ -150,7 +161,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 			if (this.limit == 1)
 			{
-				this.$addElementBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
+				if (this._initialized)
+				{
+					this.$addElementBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
+				}
+				else
+				{
+					this.$addElementBtn.show();
+				}
 			}
 		}
 	},
