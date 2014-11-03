@@ -1,37 +1,37 @@
 {% import "_includes/forms" as forms %}
 
 {% if not craft.config.useEmailAsUsername %}
-    {{ forms.textField({
-        first: true,
-        label: "Username"|t,
-        id: 'username',
-        name: 'username',
-        value: (account is defined ? account.username : null),
-        autofocus: true,
-        required: (isNewAccount or (currentUser.admin or account.isCurrent()) ? true : false),
-        disabled: (isNewAccount or (currentUser.admin or account.isCurrent()) ? false : true),
-        errors: (account is defined ? account.getErrors('username') : null)
-    }) }}
+	{{ forms.textField({
+		first: true,
+		label: "Username"|t,
+		id: 'username',
+		name: 'username',
+		value: (account is defined ? account.username : null),
+		autofocus: true,
+		required: (isNewAccount or (currentUser.admin or account.isCurrent()) ? true : false),
+		disabled: (isNewAccount or (currentUser.admin or account.isCurrent()) ? false : true),
+		errors: (account is defined ? account.getErrors('username') : null)
+	}) }}
 {% endif %}
 
 <div class="grid" data-cols="2" data-mode="pct">
-    <div class="item" data-colspan="1">
-        {{ forms.textField({
-            label: "First Name"|t,
-            id: 'firstName',
-            name: 'firstName',
-            value: (account is defined ? account.firstName : null),
-            errors: (account is defined ? account.getErrors('firstName') : null),
-            autofocus: craft.config.useEmailAsUsername
-        }) }}
-    </div>
-    <div class="item" data-colspan="1">
-        {{ forms.textField({
-            label: "Last Name"|t,
-            id: 'lastName',
-            name: 'lastName',
-            value: (account is defined ? account.lastName : null),
-            errors: (account is defined ? account.getErrors('lastName') : null)
-        }) }}
-    </div>
+	<div class="item" data-colspan="1">
+		{{ forms.textField({
+			label: "First Name"|t,
+			id: 'firstName',
+			name: 'firstName',
+			value: (account is defined ? account.firstName : null),
+			errors: (account is defined ? account.getErrors('firstName') : null),
+			autofocus: craft.config.useEmailAsUsername
+		}) }}
+	</div>
+	<div class="item" data-colspan="1">
+		{{ forms.textField({
+			label: "Last Name"|t,
+			id: 'lastName',
+			name: 'lastName',
+			value: (account is defined ? account.lastName : null),
+			errors: (account is defined ? account.getErrors('lastName') : null)
+		}) }}
+	</div>
 </div>
