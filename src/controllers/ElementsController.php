@@ -226,6 +226,44 @@ class ElementsController extends BaseController
 		}
 	}
 
+	/**
+	 * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
+	 *
+	 * @return null
+	 */
+	public function actionGetCategoriesInputHtml()
+	{
+		$categoryIds = craft()->request->getParam('categoryIds', array());
+
+		// Fill in the gaps
+		$categoryIds = craft()->categories->fillGapsInCategoryIds($categoryIds);
+
+		if ($categoryIds)
+		{
+			$criteria = craft()->elements->getCriteria(ElementType::Category);
+			$criteria->id = $categoryIds;
+			$criteria->locale = craft()->request->getParam('locale');
+			$criteria->status = null;
+			$criteria->localeEnabled = null;
+			$criteria->limit = craft()->request->getParam('limit');
+			$categories = $criteria->find();
+		}
+		else
+		{
+			$categories = array();
+		}
+
+		$html = craft()->templates->render('_components/fieldtypes/Categories/input', array(
+			'elements' => $categories,
+			'id'       => craft()->request->getParam('id'),
+			'name'     => craft()->request->getParam('name'),
+		));
+
+		$this->returnJson(array(
+			'html' => $html,
+		));
+	}
+
 	// Private Methods
 	// =========================================================================
 

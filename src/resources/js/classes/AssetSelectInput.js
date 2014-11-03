@@ -82,18 +82,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		animateCss['margin-'+Craft.left] = 0;
 		this.$addElementBtn.velocity(animateCss, 'fast');
 
-		this.$elements = this.$elements.add($newElement);
-		this.initElements($newElement);
-
-		this.totalElements ++;
-
-		if (this.limit && this.totalElements == this.limit)
-		{
-			this.$addElementBtn.addClass('disabled');
-		}
+		this.addElements($newElement);
 
 		delete this.modal;
-
 	},
 
 	/**
@@ -141,8 +132,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			this.progressBar.hideProgressBar();
 			this.$container.removeClass('uploading');
 		}
-
-		this.updateAddElementsBtn();
 	},
 
 	/**
@@ -152,5 +141,4 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	{
 		return (!this.limit || this.$elements.length  + slotsTaken < this.limit);
 	}
-
 });

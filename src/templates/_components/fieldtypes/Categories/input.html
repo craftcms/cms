@@ -1,37 +1,27 @@
 <input type="hidden" name="{{ name }}" value="">
 
-{% if categories is defined %}
-	<div id="{{ id }}" class="categoriesfield">
+<div id="{{ id }}" class="categoriesfield">
+	<ul class="elements structure">
+		{% nav category in elements %}
+			<li id="{{ id }}-category-{{ category.id }}">
+				{% set indent = (category.level - 1) * 35 %}
+				<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+					{%- include "_elements/element" with { element: category, context: 'field' } -%}
+				</div>
 
-		<ul class="elements structure">
-			{% nav category in categories %}
-				{% set selected = (category.id in selectedCategoryIds) %}
-				<li id="{{ id }}-category-{{ category.id }}"{% if not selected %} class="hidden"{% endif %}>
-					{% set indent = (category.level - 1) * 35 %}
-					<div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
-						{%- spaceless %}
-							{% include "_includes/forms/checkbox" with {
-								label: include('_elements/element', { element: category, context: 'field' }, with_context = false),
-								value: category.id,
-								id: id~'-'~category.id,
-								name: name~'[]',
-								checked: selected
-							} only %}
-						{% endspaceless -%}
-					</div>
+				{% ifchildren %}
+					<ul>
+						{% children %}
+					</ul>
+				{% endifchildren %}
+			</li>
+		{% endnav %}
+	</ul>
 
-					{% ifchildren %}
-						<ul>
-							{% children %}
-						</ul>
-					{% endifchildren %}
-				</li>
-			{% endnav %}
-		</ul>
+	<div class="btn add icon dashed">{{ "Add a category"|t }}</div>
+</div>
 
-		<div class="btn add icon dashed">{{ "Add a category"|t }}</div>
-	</div>
-
+{% if jsClass is defined %}
 	{% set js %}
 		new {{ jsClass }}(
 			"{{ id   | namespaceInputId   | e('js') }}",
@@ -46,6 +36,4 @@
 	{% endset %}
 
 	{% includeJs js %}
-{% else %}
-	<p class="error">{{ "This field is not set to a valid category group."|t }}</p>
 {% endif %}

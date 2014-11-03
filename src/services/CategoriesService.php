@@ -810,6 +810,7 @@ class CategoriesService extends BaseApplicationComponent
 			$criteria->id = $ids;
 			$criteria->status = null;
 			$criteria->localeEnabled = false;
+			$criteria->limit = null;
 			$categories = $criteria->find();
 
 			$prevCategory = null;

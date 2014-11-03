@@ -373,12 +373,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Replace physical file.
 	 *
-	 * @param AssetFileModel $oldFile     The assetFileModel representing the original file.
-	 * @param AssetFileModel $replaceWith The assetFileModel representing the new file.
+	 * @param AssetFileModel $oldFile        The assetFileModel representing the original file.
+	 * @param AssetFileModel $replaceWith    The assetFileModel representing the new file.
+	 * @param boolean        $useOldFilename Whether or not to use the same filename as the original file..
+	 *                                       Defaults to true.
 	 *
 	 * @return null
 	 */
-	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith)
+	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith, $useOldFilename = true)
 	{
 		if ($oldFile->kind == 'image')
 		{
@@ -397,8 +399,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
+		$newFileName = $useOldFilename ? $oldFile->filename : $replaceWith->filename;
+		$folder = craft()->assets->getFolderById($oldFile->folderId);
 
-		$this->moveSourceFile($replaceWith, craft()->assets->getFolderById($oldFile->folderId), $oldFile->filename, true);
+		$this->moveSourceFile($replaceWith, $folder, $newFileName, true);
 
 		// Update file info
 		$oldFile->width        = $replaceWith->width;
@@ -406,6 +410,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$oldFile->size         = $replaceWith->size;
 		$oldFile->kind         = $replaceWith->kind;
 		$oldFile->dateModified = $replaceWith->dateModified;
+		$oldFile->filename     = $newFileName;
+
+		if (!$useOldFilename)
+		{
+			$replaceWith->filename = $this->getNameReplacement($folder, $replaceWith->filename);
+			craft()->assets->storeFile($replaceWith);
+		}
 
 		craft()->assets->storeFile($oldFile);
 	}

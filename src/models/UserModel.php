@@ -223,6 +223,16 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('editUsers');
+	}
+
+	/**
 	 * Returns whether this is the current logged-in user.
 	 *
 	 * @return bool

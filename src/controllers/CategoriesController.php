@@ -201,17 +201,22 @@ class CategoriesController extends BaseController
 
 		$this->_enforceEditCategoryPermissions($variables['category']);
 
-		// Get all the possible parent options
-		$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Category);
-		$parentOptionCriteria->locale = $variables['localeId'];
-		$parentOptionCriteria->groupId = $variables['group']->id;
-		$parentOptionCriteria->status = null;
-		$parentOptionCriteria->localeEnabled = null;
-		$parentOptionCriteria->limit = null;
+		// Parent Category selector variables
+		// ---------------------------------------------------------------------
+
+		$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Category));
+
+		// Define the parent options criteria
+		$variables['parentOptionCriteria'] = array(
+			'locale'        => $variables['localeId'],
+			'groupId'       => $variables['group']->id,
+			'status'        => null,
+			'localeEnabled' => null,
+		);
 
 		if ($variables['group']->maxLevels)
 		{
-			$parentOptionCriteria->level = '< '.$variables['group']->maxLevels;
+			$variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
 		}
 
 		if ($variables['category']->id)
@@ -230,42 +235,31 @@ class CategoriesController extends BaseController
 				$idParam[] = 'not '.$id;
 			}
 
-			$parentOptionCriteria->id = $idParam;
-		}
-
-		$parentOptions = $parentOptionCriteria->find();
-
-		$variables['parentOptions'] = array(array(
-			'label' => '', 'value' => '0'
-		));
-
-		foreach ($parentOptions as $parentOption)
-		{
-			$label = '';
-
-			for ($i = 1; $i < $parentOption->level; $i++)
-			{
-				$label .= '    ';
-			}
-
-			$label .= $parentOption->title;
-
-			$variables['parentOptions'][] = array('label' => $label, 'value' => $parentOption->id);
+			$variables['parentOptionCriteria']['id'] = $idParam;
 		}
 
 		// Get the initially selected parent
-		$variables['parentId'] = craft()->request->getParam('parentId');
+		$parentId = craft()->request->getParam('parentId');
 
-		if ($variables['parentId'] === null && $variables['category']->id)
+		if ($parentId === null && $variables['category']->id)
 		{
 			$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
 
 			if ($parentIds)
 			{
-				$variables['parentId'] = $parentIds[0];
+				$parentId = $parentIds[0];
 			}
 		}
 
+		if ($parentId)
+		{
+			$variables['parent'] = craft()->categories->getCategoryById($parentId, $variables['localeId']);
+		}
+
+		// Other variables
+		// ---------------------------------------------------------------------
+
+		// Page title
 		if (!$variables['category']->id)
 		{
 			$variables['title'] = Craft::t('Create a new category');
@@ -608,13 +602,22 @@ class CategoriesController extends BaseController
 	private function _populateCategoryModel(CategoryModel $category)
 	{
 		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-		$category->slug        = craft()->request->getPost('slug', $category->slug);
-		$category->newParentId = craft()->request->getPost('parentId');
-		$category->enabled     = (bool) craft()->request->getPost('enabled', $category->enabled);
+		$category->slug    = craft()->request->getPost('slug', $category->slug);
+		$category->enabled = (bool) craft()->request->getPost('enabled', $category->enabled);
 
 		$category->getContent()->title = craft()->request->getPost('title', $category->title);
 
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
 		$category->setContentFromPost($fieldsLocation);
+
+		// Parent
+		$parentId = craft()->request->getPost('parentId');
+
+		if (is_array($parentId))
+		{
+			$parentId = isset($parentId[0]) ? $parentId[0] : null;
+		}
+
+		$category->newParentId = $parentId;
 	}
 }

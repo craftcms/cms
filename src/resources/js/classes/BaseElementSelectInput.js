@@ -24,6 +24,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	selectable: true,
 	sortable: true,
 
+	_initialized: false,
+
 	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey)
 	{
 		this.id = id;
@@ -41,15 +43,21 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		this.$container = this.getContainer();
 		this.$elementsContainer = this.getElementsContainer();
-		this.$elements = this.getElements();
 		this.$addElementBtn = this.getAddElementsBtn();
 
-		this.updateAddElementsBtn();
+		if (this.limit == 1)
+		{
+			this.sortable = false;
+			this.$addElementBtn
+				.css('position', 'absolute')
+				.css('top', 0)
+				.css(Craft.left, 0);
+		}
 
 		if (this.selectable)
 		{
-			this.elementSelect = new Garnish.Select(this.$elements, {
-				multi: true,
+			this.elementSelect = new Garnish.Select({
+				multi: this.sortable,
 				filter: ':not(.delete)'
 			});
 		}
@@ -80,9 +88,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			});
 		}
 
-		this.initElements(this.$elements);
+		// Add the elements already on the page
+		this.resetElements();
 
 		this.addListener(this.$addElementBtn, 'activate', 'showModal');
+
+		this._initialized = true;
 	},
 
 	getContainer: function()
@@ -124,15 +135,51 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	disableAddElementsBtn: function()
 	{
-		this.$addElementBtn.addClass('disabled');
+		if (this.$addElementBtn && !this.$addElementBtn.hasClass('disabled'))
+		{
+			this.$addElementBtn.addClass('disabled');
+
+			if (this.limit == 1)
+			{
+				if (this._initialized)
+				{
+					this.$addElementBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
+				}
+				else
+				{
+					this.$addElementBtn.hide();
+				}
+			}
+		}
 	},
 
 	enableAddElementsBtn: function()
 	{
-		this.$addElementBtn.removeClass('disabled');
+		if (this.$addElementBtn && this.$addElementBtn.hasClass('disabled'))
+		{
+			this.$addElementBtn.removeClass('disabled');
+
+			if (this.limit == 1)
+			{
+				if (this._initialized)
+				{
+					this.$addElementBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
+				}
+				else
+				{
+					this.$addElementBtn.show();
+				}
+			}
+		}
 	},
 
-	initElements: function($elements)
+	resetElements: function()
+	{
+		this.$elements = $();
+		this.addElements(this.getElements());
+	},
+
+	addElements: function($elements)
 	{
 		if (this.selectable)
 		{
@@ -153,29 +200,55 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		{
 			Craft.showElementEditor($(ev.currentTarget));
 		});
+
+		this.$elements = this.$elements.add($elements);
+		this.updateAddElementsBtn();
 	},
 
-	removeElement: function(element)
+	removeElements: function($elements)
 	{
-		var $element = $(element);
-
-		this.$elements = this.$elements.not($element);
-
 		if (this.selectable)
 		{
-			this.elementSelect.removeItems($element);
+			this.elementSelect.removeItems($elements);
 		}
 
-		if (this.modal && $element.data('id'))
+		if (this.modal)
 		{
-			this.modal.elementIndex.enableElementsById($element.data('id'));
+			var ids = [];
+
+			for (var i = 0; i < $elements.length; i++)
+			{
+				var id = $elements.eq(i).data('id');
+
+				if (id)
+				{
+					ids.push(id);
+				}
+			}
+
+			if (ids.length)
+			{
+				this.modal.elementIndex.enableElementsById(ids);
+			}
 		}
 
-		if (this.$addElementBtn && this.$addElementBtn.length)
-		{
-			this.updateAddElementsBtn();
-		}
+		// Disable the hidden input in case the form is submitted before this element gets removed from the DOM
+		$elements.children('input').prop('disabled', true);
 
+		this.$elements = this.$elements.not($elements);
+		this.updateAddElementsBtn();
+	},
+
+	removeElement: function($element)
+	{
+		this.removeElements($element);
+		this.animateElementAway($element, function() {
+			$element.remove();
+		});
+	},
+
+	animateElementAway: function($element, callback)
+	{
 		$element.css('z-index', 0);
 
 		var animateCss = {
@@ -183,10 +256,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		};
 		animateCss['margin-'+Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-'+Craft.right)));
 
-		$element.velocity(animateCss, 'fast', function() {
-			$element.remove();
-		});
-
+		$element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
 	},
 
 	showModal: function()
@@ -219,7 +289,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			sources:            this.sources,
 			criteria:           this.criteria,
 			multiSelect:        (this.limit != 1),
-			disabledElementIds: this.getSelectedElementIds(),
+			disabledElementIds: this.getDisabledElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
 		};
 	},
@@ -228,14 +298,21 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	{
 		var ids = [];
 
+		for (var i = 0; i < this.$elements.length; i++)
+		{
+			ids.push(this.$elements.eq(i).data('id'));
+		}
+
+		return ids;
+	},
+
+	getDisabledElementIds: function()
+	{
+		var ids = this.getSelectedElementIds();
+
 		if (this.sourceElementId)
 		{
 			ids.push(this.sourceElementId);
-		}
-
-		for (var i = 0; i < this.$elements.length; i++)
-		{
-			ids.push($(this.$elements[i]).data('id'));
 		}
 
 		return ids;
@@ -255,11 +332,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		}
 
 		this.selectElements(elements);
-
-		if (this.modal.elementIndex)
-		{
-			this.modal.elementIndex.disableElementsById(this.getSelectedElementIds());
-		}
+		this.updateDisabledElementsInModal();
 	},
 
 	selectElements: function(elements)
@@ -270,33 +343,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 				$element = this.createNewElement(element);
 
 			this.appendElement($element);
-
-			// Animate it into place
-			var origOffset = element.$element.offset(),
-				destOffset = $element.offset();
-
-			var css = {
-				top:    origOffset.top - destOffset.top,
-				zIndex: 10000
-			};
-			css[Craft.left] = origOffset.left - destOffset.left;
-
-			$element.css(css);
-
-			var animateCss = {
-				top: 0
-			};
-			animateCss[Craft.left] = 0;
-
-			$element.velocity(animateCss, function() {
-				$(this).css('z-index', 1);
-			});
-
-			this.initElements($element);
-			this.$elements = this.$elements.add($element);
+			this.addElements($element);
+			this.animateElementIntoPlace(element.$element, $element);
 		}
 
-		this.updateAddElementsBtn();
 		this.onSelectElements();
 	},
 
@@ -317,9 +367,59 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		$element.appendTo(this.$elementsContainer);
 	},
 
+	animateElementIntoPlace: function($modalElement, $inputElement)
+	{
+		var origOffset = $modalElement.offset(),
+			destOffset = $inputElement.offset(),
+			$helper = $inputElement.clone().appendTo(Garnish.$bod);
+
+		$inputElement.css('visibility', 'hidden');
+
+		$helper.css({
+			position: 'absolute',
+			zIndex: 10000,
+			top: origOffset.top,
+			left: origOffset.left
+		});
+
+		var animateCss = {
+			top: destOffset.top,
+			left: destOffset.left
+		};
+
+		$helper.velocity(animateCss, Craft.BaseElementSelectInput.ADD_FX_DURATION, function() {
+			$helper.remove();
+			$inputElement.css('visibility', 'visible');
+		});
+	},
+
+	updateDisabledElementsInModal: function()
+	{
+		if (this.modal.elementIndex)
+		{
+			this.modal.elementIndex.disableElementsById(this.getDisabledElementIds());
+		}
+	},
+
+	getElementById: function(id)
+	{
+		for (var i = 0; i < this.$elements.length; i++)
+		{
+			var $element = this.$elements.eq(i);
+
+			if ($element.data('id') == id)
+			{
+				return $element;
+			}
+		}
+	},
+
 	onSelectElements: function()
 	{
 		this.trigger('selectElements');
 	}
-
+},
+{
+	ADD_FX_DURATION: 400,
+	REMOVE_FX_DURATION: 200
 });

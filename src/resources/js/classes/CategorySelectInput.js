@@ -3,87 +3,129 @@
  */
 Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 {
-	selectable: false,
 	sortable: false,
 
-	init: function()
+	getModalSettings: function()
 	{
-		this.base.apply(this, arguments);
-		this.addLastClasses();
+		var settings = this.base();
+		settings.hideOnSelect = false;
+		return settings;
 	},
 
 	getElements: function()
 	{
-		return this.$elementsContainer.find('li:not(.hidden) > .row .element');
+		return this.$elementsContainer.find('.element');
 	},
 
-	initElements: function($elements)
+	onModalSelect: function(elements)
 	{
-		this.initCheckboxes($elements.siblings('.checkbox'));
-	},
+		// Disable the modal
+		this.modal.disable();
+		this.modal.disableCancelBtn();
+		this.modal.disableSelectBtn();
+		this.modal.showFooterSpinner();
 
-	initCheckboxes: function($checkboxes)
-	{
-		this.removeListener($checkboxes, 'change');
-		this.addListener($checkboxes, 'change', 'onCheckboxChange');
-	},
+		// Get the new category HTML
+		var selectedCategoryIds = this.getSelectedElementIds();
 
-	onCheckboxChange: function(ev)
-	{
-		var $checkbox = $(ev.currentTarget);
-
-		if ($checkbox.prop('checked'))
+		for (var i = 0; i < elements.length; i++)
 		{
-			// Make sure everything leading up to this is checked
-			$checkbox.closest('li').parentsUntil(this.$elementsContainer, 'li').children('.row').find('.checkbox').prop('checked', true);
+			selectedCategoryIds.push(elements[i].id);
+		}
+
+		var data = {
+			categoryIds: selectedCategoryIds,
+			locale:      elements[0].locale,
+			id:          this.id,
+			name:        this.name,
+			limit:       this.limit,
+		};
+
+		Craft.postActionRequest('elements/getCategoriesInputHtml', data, $.proxy(function(response, textStatus)
+		{
+			this.modal.enable();
+			this.modal.enableCancelBtn();
+			this.modal.enableSelectBtn();
+			this.modal.hideFooterSpinner();
+
+			if (textStatus == 'success')
+			{
+				var $newInput = $(response.html),
+					$newElementsContainer = $newInput.children('.elements');
+
+				this.$elementsContainer.replaceWith($newElementsContainer);
+				this.$elementsContainer = $newElementsContainer;
+				this.resetElements();
+
+				for (var i = 0; i < elements.length; i++)
+				{
+					var element = elements[i],
+						$element = this.getElementById(element.id);
+
+					if ($element)
+					{
+						this.animateElementIntoPlace(element.$element, $element);
+					}
+				}
+
+				this.updateDisabledElementsInModal();
+				this.modal.hide();
+				this.onSelectElements();
+			}
+		}, this));
+	},
+
+	removeElement: function($element)
+	{
+		// Find any descendants this category might have
+		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
+
+		// Remove our record of them all at once
+		this.removeElements($allCategories);
+
+		// Animate them away one at a time
+		for (var i = 0; i < $allCategories.length; i++)
+		{
+			this._animateCategoryAway($allCategories, i);
+		}
+	},
+
+	_animateCategoryAway: function($allCategories, i)
+	{
+		// Is this the last one?
+		if (i == $allCategories.length - 1)
+		{
+			var callback = $.proxy(function()
+			{
+				var $li = $allCategories.first().parent().parent(),
+					$ul = $li.parent();
+
+				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
+				{
+					$li.remove();
+				}
+				else
+				{
+					$ul.remove();
+				}
+			}, this);
 		}
 		else
 		{
-			// Make sure everything under it is also unchecked
-			$checkbox.closest('li').children('ul').find('.checkbox').prop('checked', false);
+			callback = null;
 		}
-	},
 
-	createNewElement: function(elementInfo)
-	{
-		var $li = this.$container.find('#'+this.id+'-category-'+elementInfo.id),
-			$parentLis = $li.parentsUntil(this.$elementsContainer, 'li'),
-			$allLis = $li.add($parentLis),
-			$parentElements = $parentLis.children('.row').find('.element'),
-			$checkboxes = $allLis.children('.row').find('.checkbox'),
-			$element = $li.children('.row').find('.element');
+		var func = $.proxy(function() {
+			this.animateElementAway($allCategories.eq(i), callback);
+		}, this);
 
-		// Make sure all parent elements are visible and checked
-		$allLis.removeClass('hidden');
-		$checkboxes.prop('checked', true);
-
-		this.initCheckboxes($checkboxes);
-		this.$elements = this.$elements.add($parentElements);
-
-		return $element;
-	},
-
-	appendElement: function($element)
-	{
-	},
-
-	onSelectElements: function()
-	{
-		this.addLastClasses();
-		this.base.apply(this, arguments);
-	},
-
-	addLastClasses: function()
-	{
-		// Add the "last" class to the last visible <li>s in each <ul>
-		var $uls = this.$elementsContainer.find('ul');
-
-		for (var i = 0; i < $uls.length; i++)
+		if (i == 0)
 		{
-			var $ul = $($uls[i]);
-
-			$ul.children('.last').removeClass('last');
-			$ul.children(':not(.hidden):last').addClass('last');
+			func();
+		}
+		else
+		{
+			setTimeout(func, 100 * i);
 		}
 	}
 });

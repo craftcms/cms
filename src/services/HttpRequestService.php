@@ -1330,7 +1330,7 @@ class HttpRequestService extends \CHttpRequest
 		// Maybe they're looking for a nested param?
 		if (strpos($name, '.') !== false)
 		{
-			$path = array_filter(explode('.', $name));
+			$path = explode('.', $name);
 			$param = $data;
 
 			foreach ($path as $step)

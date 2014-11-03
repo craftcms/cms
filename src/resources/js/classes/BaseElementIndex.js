@@ -227,11 +227,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			var $source = this.$sources.first();
 		}
 
-		this.selectSource($source);
-		this.sourceSelect.selectItem($source);
-
 		// Load up the elements!
 		this.initialized = true;
+		this.sourceSelect.selectItem($source);
 
 		// Status changes
 		if (this.$statusMenuBtn.length)
@@ -359,8 +357,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
-		this.selectSource(this.sourceSelect.$selectedItems);
-		this.updateElements();
+		if (this.selectSource(this.sourceSelect.$selectedItems))
+		{
+			this.updateElements();
+		}
 	},
 
 	onStartSearching: function()
@@ -858,7 +858,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
 		{
-			return;
+			return false;
 		}
 
 		if ($source[0] != this.sourceSelect.$selectedItems[0])
@@ -959,6 +959,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.selectViewMode(viewMode);
 
 		this.onSelectSource();
+
+		return true;
 	},
 
 	setStoredSortOptionsForSource: function()

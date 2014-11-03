@@ -176,7 +176,7 @@ class AssetsController extends BaseController
 			if ($newFile && $existingFile)
 			{
 				$source = craft()->assetSources->populateSourceType($newFile->getSource());
-				$source->replaceFile($existingFile, $newFile);
+				$source->replaceFile($existingFile, $newFile, false);
 				craft()->assets->deleteFiles($newFile->id);
 			}
 			else

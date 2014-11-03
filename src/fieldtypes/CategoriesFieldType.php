@@ -55,6 +55,32 @@ class CategoriesFieldType extends BaseElementFieldType
 	// =========================================================================
 
 	/**
+	 * @inheritDoc IFieldType::getInputHtml()
+	 *
+	 * @param string $name
+	 * @param mixed  $criteria
+	 *
+	 * @return string
+	 */
+	public function getInputHtml($name, $criteria)
+	{
+		// Make sure the field is set to a valid category group
+		$sourceKey = $this->getSettings()->source;
+
+		if ($sourceKey)
+		{
+			$source = $this->getElementType()->getSource($sourceKey, 'field');
+		}
+
+		if (empty($source))
+		{
+			return '<p class="error">'.Craft::t('This field is not set to a valid category group.').'</p>';
+		}
+
+		return parent::getInputHtml($name, $criteria);
+	}
+
+	/**
 	 * @inheritDoc IFieldType::onAfterElementSave()
 	 *
 	 * @return null
@@ -71,42 +97,5 @@ class CategoriesFieldType extends BaseElementFieldType
 
 			craft()->relations->saveRelations($this->model, $this->element, $categoryIds);
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementFieldType::getInputTemplateVariables()
-	 *
-	 * @param string $name
-	 * @param mixed  $criteria
-	 *
-	 * @return array
-	 */
-	protected function getInputTemplateVariables($name, $criteria)
-	{
-		$variables = parent::getInputTemplateVariables($name, $criteria);
-
-		if ($variables['sources'])
-		{
-			$sourceKey = $variables['sources'][0];
-			$source = $this->getElementType()->getSource($sourceKey, 'field');
-
-			if ($source)
-			{
-				$criteria = craft()->elements->getCriteria(ElementType::Category);
-				$criteria->locale = $this->getTargetLocale();
-				$criteria->groupId = $source['criteria']['groupId'];
-				$criteria->status = null;
-				$criteria->localeEnabled = false;
-				$criteria->limit = null;
-				$variables['categories'] = $criteria->find();
-			}
-		}
-
-		$variables['selectedCategoryIds'] = $variables['elements']->ids();
-
-		return $variables;
 	}
 }

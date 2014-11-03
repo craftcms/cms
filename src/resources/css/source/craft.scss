@@ -621,7 +621,8 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .structure li.collapsed > ul { display: none; }
 .structure li .row:after { @include clearafter; }
 
-.structure li .icon { @include margin(5px, 5px, 0, 0); opacity: 0; @include transition(opacity linear 100ms); }
+.structure li .move,
+.structure li .add { @include margin(5px, 5px, 0, 0); opacity: 0; @include transition(opacity linear 100ms); }
 .structure li .add { padding: 0 5px; }
 .structure li .add:before { content: '▼'; color: rgba(0,0,0,0.2); }
 .structure li .add:not(.disabled):hover:before,
@@ -644,7 +645,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 }
 
 /* element select fields */
-.elementselect { margin-bottom: -10px; }
+.elementselect { position: relative; min-height: 40px; margin-bottom: -10px; }
 .elementselect:after { @include clearafter; }
 .elementselect .element,
 .elementselect .btn { @include floatleft; @include margin(0, 10px, 10px, 0); }
@@ -863,6 +864,7 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 .elementselectormodal .body .main .elements .structure .row.sel { background: #f5f5f5; }
 
 .elementselectormodal .footer { position: absolute; bottom: 0; left: 0; width: 100%; margin: 0; }
+.elementselectormodal .footer .spinner { @include floatright; @include margin-right(-24px); }
 
 /* element editing HUD */
 .element-hud-form .buttons .spinner { position: absolute; top: 0; @include right(-24px); }
@@ -1170,6 +1172,7 @@ ul.errors li { color: $errorcolor; }
 .add-category-form .texticon .text { @include padding-right(30px); }
 .add-category-form .texticon .spinner { position: absolute; top: 0; @include right(5px); }
 
+.categoriesfield { position: relative; min-height: 30px; }
 .categoriesfield .structure ul { @include margin-left(12px); }
 
 /* ----------------------------------------
