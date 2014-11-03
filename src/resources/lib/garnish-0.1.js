@@ -837,7 +837,7 @@ Garnish.Base = Base.extend({
 		events = this._splitEvents(events);
 
 		// Param mapping
-		if (typeof data != 'object')
+		if (typeof func == typeof undefined && typeof data != 'object')
 		{
 			// (elem, events, func)
 			func = data;
@@ -1142,7 +1142,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && $.isPlainObject(items))
+		if (typeof settings == typeof undefined && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -1860,7 +1860,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && $.isPlainObject(items))
+		if (typeof settings == typeof undefined && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -2441,7 +2441,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && $.isPlainObject(items))
+		if (typeof settings == typeof undefined && $.isPlainObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -4288,7 +4288,7 @@ Garnish.Modal = Garnish.Base.extend({
 	init: function(container, settings)
 	{
 		// Param mapping
-		if (!settings && $.isPlainObject(container))
+		if (typeof settings == typeof undefined && $.isPlainObject(container))
 		{
 			// (settings)
 			settings = container;
@@ -5109,7 +5109,14 @@ Garnish.Select = Garnish.Base.extend({
 		this.$container = $(container);
 
 		// Param mapping
-		if (!settings && $.isPlainObject(items))
+		if (typeof items == typeof undefined && $.isPlainObject(container))
+		{
+			// (settings)
+			settings = container;
+			container = null;
+			items = null;
+		}
+		else if (typeof settings == typeof undefined && $.isPlainObject(items))
 		{
 			// (container, settings)
 			settings = items;
