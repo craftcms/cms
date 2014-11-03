@@ -201,17 +201,23 @@ class CategoriesController extends BaseController
 
 		$this->_enforceEditCategoryPermissions($variables['category']);
 
-		// Get all the possible parent options
-		$parentOptionCriteria = craft()->elements->getCriteria(ElementType::Category);
-		$parentOptionCriteria->locale = $variables['localeId'];
-		$parentOptionCriteria->groupId = $variables['group']->id;
-		$parentOptionCriteria->status = null;
-		$parentOptionCriteria->localeEnabled = null;
-		$parentOptionCriteria->limit = null;
+		// Parent Category selector variables
+		// ---------------------------------------------------------------------
+
+		$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Category));
+
+		// Define the parent options criteria
+		$variables['parentOptionCriteria'] = array(
+			'locale'        => $variables['localeId'],
+			'groupId'       => $variables['group']->id,
+			'status'        => null,
+			'localeEnabled' => null,
+			'limit'         => null,
+		);
 
 		if ($variables['group']->maxLevels)
 		{
-			$parentOptionCriteria->level = '< '.$variables['group']->maxLevels;
+			$variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
 		}
 
 		if ($variables['category']->id)
@@ -230,41 +236,29 @@ class CategoriesController extends BaseController
 				$idParam[] = 'not '.$id;
 			}
 
-			$parentOptionCriteria->id = $idParam;
-		}
-
-		$parentOptions = $parentOptionCriteria->find();
-
-		$variables['parentOptions'] = array(array(
-			'label' => '', 'value' => '0'
-		));
-
-		foreach ($parentOptions as $parentOption)
-		{
-			$label = '';
-
-			for ($i = 1; $i < $parentOption->level; $i++)
-			{
-				$label .= '    ';
-			}
-
-			$label .= $parentOption->title;
-
-			$variables['parentOptions'][] = array('label' => $label, 'value' => $parentOption->id);
+			$variables['parentOptionCriteria']['id'] = $idParam;
 		}
 
 		// Get the initially selected parent
-		$variables['parentId'] = craft()->request->getParam('parentId');
+		$parentId = craft()->request->getParam('parentId');
 
-		if ($variables['parentId'] === null && $variables['category']->id)
+		if ($parentId === null && $variables['category']->id)
 		{
 			$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
 
 			if ($parentIds)
 			{
-				$variables['parentId'] = $parentIds[0];
+				$parentId = $parentIds[0];
 			}
 		}
+
+		if ($parentId)
+		{
+			$variables['parent'] = craft()->categories->getCategoryById($parentId, $variables['localeId']);
+		}
+
+		// Other variables
+		// ---------------------------------------------------------------------
 
 		if (!$variables['category']->id)
 		{
