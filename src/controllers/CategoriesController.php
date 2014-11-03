@@ -212,7 +212,6 @@ class CategoriesController extends BaseController
 			'groupId'       => $variables['group']->id,
 			'status'        => null,
 			'localeEnabled' => null,
-			'limit'         => null,
 		);
 
 		if ($variables['group']->maxLevels)
@@ -260,6 +259,7 @@ class CategoriesController extends BaseController
 		// Other variables
 		// ---------------------------------------------------------------------
 
+		// Page title
 		if (!$variables['category']->id)
 		{
 			$variables['title'] = Craft::t('Create a new category');
@@ -602,13 +602,22 @@ class CategoriesController extends BaseController
 	private function _populateCategoryModel(CategoryModel $category)
 	{
 		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-		$category->slug        = craft()->request->getPost('slug', $category->slug);
-		$category->newParentId = craft()->request->getPost('parentId');
-		$category->enabled     = (bool) craft()->request->getPost('enabled', $category->enabled);
+		$category->slug    = craft()->request->getPost('slug', $category->slug);
+		$category->enabled = (bool) craft()->request->getPost('enabled', $category->enabled);
 
 		$category->getContent()->title = craft()->request->getPost('title', $category->title);
 
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
 		$category->setContentFromPost($fieldsLocation);
+
+		// Parent
+		$parentId = craft()->request->getPost('parentId');
+
+		if (is_array($parentId))
+		{
+			$parentId = isset($parentId[0]) ? $parentId[0] : null;
+		}
+
+		$category->newParentId = $parentId;
 	}
 }

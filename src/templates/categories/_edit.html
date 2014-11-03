@@ -85,7 +85,7 @@
 						sources: ['group:'~group.id],
 						criteria: parentOptionCriteria,
 						limit: 1,
-						elements: (parent is defined ? [parent])
+						elements: (parent is defined and parent ? [parent])
 					}) }}
 
 					{% set statusInput %}
