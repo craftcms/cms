@@ -44,8 +44,8 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		Craft.postActionRequest('elements/getCategoriesInputHtml', data, $.proxy(function(response, textStatus)
 		{
 			this.modal.enable();
-			this.modal.disableCancelBtn();
-			this.modal.disableSelectBtn();
+			this.modal.enableCancelBtn();
+			this.modal.enableSelectBtn();
 			this.modal.hideFooterSpinner();
 
 			if (textStatus == 'success')
