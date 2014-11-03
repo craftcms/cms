@@ -266,7 +266,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function literalFilter($value)
 	{
-		return str_replace(array(',', '*'), array('\,', '\*'), $value);
+		return DbHelper::escapeParam($value);
 	}
 
 	/**
