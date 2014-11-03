@@ -164,13 +164,13 @@ class TagsController extends BaseController
 
 		$criteria = craft()->elements->getCriteria(ElementType::Tag);
 		$criteria->groupId = $tagGroupId;
-		$criteria->search  = 'name:'.implode('* name:', preg_split('/\s+/', $search)).'*';
+		$criteria->title   = DbHelper::escapeParam($search).'*';
 		$criteria->id      = $notIds;
 		$tags = $criteria->find();
 
 		$return = array();
 		$exactMatches = array();
-		$tagNameLengths = array();
+		$tagTitleLengths = array();
 		$exactMatch = false;
 
 		$normalizedSearch = StringHelper::normalizeKeywords($search);
@@ -178,15 +178,15 @@ class TagsController extends BaseController
 		foreach ($tags as $tag)
 		{
 			$return[] = array(
-				'id'   => $tag->id,
-				'name' => $tag->name
+				'id'    => $tag->id,
+				'title' => $tag->getContent()->title
 			);
 
-			$tagNameLengths[] = mb_strlen($tag->name);
+			$tagTitleLengths[] = mb_strlen($tag->getContent()->title);
 
-			$normalizedName = StringHelper::normalizeKeywords($tag->name);
+			$normalizedTitle = StringHelper::normalizeKeywords($tag->getContent()->title);
 
-			if ($normalizedName == $normalizedSearch)
+			if ($normalizedTitle == $normalizedSearch)
 			{
 				$exactMatches[] = 1;
 				$exactMatch = true;
@@ -197,7 +197,7 @@ class TagsController extends BaseController
 			}
 		}
 
-		array_multisort($exactMatches, SORT_DESC, $tagNameLengths, $return);
+		array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
 		$this->returnJson(array(
 			'tags'       => $return,
@@ -217,7 +217,7 @@ class TagsController extends BaseController
 
 		$tag = new TagModel();
 		$tag->groupId = craft()->request->getRequiredPost('groupId');
-		$tag->name = craft()->request->getRequiredPost('name');
+		$tag->getContent()->title = craft()->request->getRequiredPost('title');
 
 		if (craft()->tags->saveTag($tag))
 		{

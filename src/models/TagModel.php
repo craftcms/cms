@@ -25,13 +25,13 @@ class TagModel extends BaseElementModel
 	// =========================================================================
 
 	/**
-	 * Use the tag name as its string representation.
+	 * Use the tag title as its string representation.
 	 *
 	 * @return string
 	 */
 	public function __toString()
 	{
-		return $this->name;
+		return $this->getContent()->title;
 	}
 
 	/**
@@ -98,6 +98,18 @@ class TagModel extends BaseElementModel
 		return $this->getGroup();
 	}
 
+	/**
+	 * Returns the tag's title.
+	 *
+	 * @deprecated Deprecated in 2.3. Use {@link $title} instead.
+	 * @return string
+	 */
+	public function getName()
+	{
+		// TODO: Add a deprecation log in 3.0
+		return $this->getContent()->title;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -110,7 +122,6 @@ class TagModel extends BaseElementModel
 	{
 		return array_merge(parent::defineAttributes(), array(
 			'groupId' => AttributeType::Number,
-			'name'    => AttributeType::String,
 		));
 	}
 }

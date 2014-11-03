@@ -124,7 +124,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					for (var i = 0; i < response.tags.length; i++)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
+						$('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].title).data('id', response.tags[i].id);
 					}
 
 					if (!response.exactMatch)
@@ -155,13 +155,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 	{
 		var $option = $(option),
 			id = $option.data('id'),
-			name = $option.text();
+			title = $option.text();
 
 		var $element = $('<div class="element removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+name+'</span>').appendTo($element);
+		$('<span class="label">'+title+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-'+Craft.left, margin+'px');
@@ -185,7 +185,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 			var data = {
 				groupId: this.tagGroupId,
-				name: name
+				title: title
 			};
 
 			Craft.postActionRequest('tags/createTag', data, $.proxy(function(response, textStatus)
