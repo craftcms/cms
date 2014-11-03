@@ -43,6 +43,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		this.$elementsContainer = this.getElementsContainer();
 		this.$addElementBtn = this.getAddElementsBtn();
 
+		if (this.limit == 1)
+		{
+			this.sortable = false;
+			this.$addElementBtn
+				.css('position', 'absolute')
+				.css('top', 0)
+				.css(Craft.left, 0);
+		}
+
 		if (this.selectable)
 		{
 			this.elementSelect = new Garnish.Select({
@@ -122,17 +131,27 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	disableAddElementsBtn: function()
 	{
-		if (this.$addElementBtn)
+		if (this.$addElementBtn && !this.$addElementBtn.hasClass('disabled'))
 		{
 			this.$addElementBtn.addClass('disabled');
+
+			if (this.limit == 1)
+			{
+				this.$addElementBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
+			}
 		}
 	},
 
 	enableAddElementsBtn: function()
 	{
-		if (this.$addElementBtn)
+		if (this.$addElementBtn && this.$addElementBtn.hasClass('disabled'))
 		{
 			this.$addElementBtn.removeClass('disabled');
+
+			if (this.limit == 1)
+			{
+				this.$addElementBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
+			}
 		}
 	},
 
@@ -219,7 +238,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		};
 		animateCss['margin-'+Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-'+Craft.right)));
 
-		$element.velocity(animateCss, 200, callback);
+		$element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
 	},
 
 	showModal: function()
@@ -333,18 +352,26 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	animateElementIntoPlace: function($modalElement, $inputElement)
 	{
 		var origOffset = $modalElement.offset(),
-			destOffset = $inputElement.offset();
+			destOffset = $inputElement.offset(),
+			$helper = $inputElement.clone().appendTo(Garnish.$bod);
 
-		$inputElement
-			.css('top', origOffset.top - destOffset.top)
-			.css('z-index', 10000)
-			.css(Craft.left, origOffset.left - destOffset.left);
+		$inputElement.css('visibility', 'hidden');
 
-		var animateCss = { top: 0 };
-		animateCss[Craft.left] = 0;
+		$helper.css({
+			position: 'absolute',
+			zIndex: 10000,
+			top: origOffset.top,
+			left: origOffset.left
+		});
 
-		$inputElement.velocity(animateCss, function() {
-			$(this).css('z-index', 1);
+		var animateCss = {
+			top: destOffset.top,
+			left: destOffset.left
+		};
+
+		$helper.velocity(animateCss, Craft.BaseElementSelectInput.ADD_FX_DURATION, function() {
+			$helper.remove();
+			$inputElement.css('visibility', 'visible');
 		});
 	},
 
@@ -373,4 +400,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	{
 		this.trigger('selectElements');
 	}
+},
+{
+	ADD_FX_DURATION: 400,
+	REMOVE_FX_DURATION: 200
 });

@@ -645,7 +645,7 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 }
 
 /* element select fields */
-.elementselect { margin-bottom: -10px; }
+.elementselect { position: relative; min-height: 40px; margin-bottom: -10px; }
 .elementselect:after { @include clearafter; }
 .elementselect .element,
 .elementselect .btn { @include floatleft; @include margin(0, 10px, 10px, 0); }
@@ -1172,6 +1172,7 @@ ul.errors li { color: $errorcolor; }
 .add-category-form .texticon .text { @include padding-right(30px); }
 .add-category-form .texticon .spinner { position: absolute; top: 0; @include right(5px); }
 
+.categoriesfield { position: relative; min-height: 30px; }
 .categoriesfield .structure ul { @include margin-left(12px); }
 
 /* ----------------------------------------
