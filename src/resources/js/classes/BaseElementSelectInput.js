@@ -195,6 +195,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			}
 		}
 
+		// Disable the hidden input in case the form is submitted before this element gets removed from the DOM
+		$elements.children('input').prop('disabled', true);
+
 		this.$elements = this.$elements.not($elements);
 		this.updateAddElementsBtn();
 	},
