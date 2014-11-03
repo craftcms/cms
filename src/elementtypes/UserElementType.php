@@ -387,6 +387,49 @@ class UserElementType extends BaseElementType
 		return UserModel::populateModel($row);
 	}
 
+	/**
+	 * @inheritDoc IElementType::getEditorHtml()
+	 *
+	 * @param BaseElementModel $element
+	 *
+	 * @return string
+	 */
+	public function getEditorHtml(BaseElementModel $element)
+	{
+		$html = craft()->templates->render('users/_accountfields', array(
+			'account' => $element
+		));
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
+	}
+
+	/**
+	 * @inheritdoc BaseElementType::saveElement()
+	 *
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		if (isset($params['username']))
+		{
+			$element->username = $params['username'];
+		}
+
+		if (isset($params['firstName']))
+		{
+			$element->firstName = $params['firstName'];
+		}
+
+		if (isset($params['lastName']))
+		{
+			$element->lastName = $params['lastName'];
+		}
+
+		return craft()->users->saveUser($element);
+	}
+
 	// Private Methods
 	// =========================================================================
 
