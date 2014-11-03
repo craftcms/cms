@@ -670,7 +670,7 @@ class SectionsService extends BaseApplicationComponent
 							$criteria->sectionId = $section->id;
 							$criteria->status = null;
 							$criteria->localeEnabled = null;
-							$criteria->order = 'postDate';
+							$criteria->order = 'elements.id';
 							$criteria->limit = 25;
 
 							do
