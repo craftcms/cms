@@ -4,3 +4,7 @@
 #verifypasswordmodal { width: 350px; }
 #verifypasswordmodal .buttons { margin-top: 1em; }
 #verifypasswordmodal .buttons .spinner { position: absolute; top: 0; @include right(-19px); margin-top: 0; }
+
+#confirmdeletemodal .options label { display: inline-block; line-height: 30px; }
+#reassignselector { @include margin-left(10px); display: inline-block; vertical-align: middle; }
+#reassignselector .buttons .spinner { @include floatright; @include margin-right(-20px); @include margin-left(-4px); }

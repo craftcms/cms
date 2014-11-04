@@ -314,9 +314,7 @@
 						{% endif %}
 
 						{% if currentUser.can('deleteUsers') %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
-									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
-									   data-redirect="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
+							<input id="delete-btn" type="button" class="btn small" value="{{ 'Delete…'|t }}">
 						{% endif %}
 					</form>
 				{% endif %}
