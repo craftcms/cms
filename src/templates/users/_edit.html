@@ -143,7 +143,7 @@
 								label: "New Password"|t,
 								id: 'newPassword',
 							}, newPasswordInput) }}
-						%}
+						{% endif %}
 
 						{% if currentUser.admin %}
 							{{ forms.checkboxField({
