@@ -841,6 +841,16 @@ class UsersService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
+			// Delete the template caches for any entries authored by this user
+			$entryIds = craft()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('authorId' => $oldUser->id))
+				->queryColumn();
+
+			craft()->templateCache->deleteCachesByElementId($entryIds);
+
+			// Update the entry/version/draft tables to point to the new user
 			$userRefs = array(
 				'entries' => 'authorId',
 				'entrydrafts' => 'creatorId',
