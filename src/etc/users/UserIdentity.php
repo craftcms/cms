@@ -32,8 +32,28 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private $_id;
 
+	/**
+	 * @var UserModel
+	 */
+	private $_userModel;
+
 	// Public Methods
 	// =========================================================================
+
+
+	/**
+	 * UserIdentity constructor.
+	 *
+	 * @param string $username username
+	 * @param string $password password
+	 */
+	public function __construct($username,$password)
+	{
+		$this->username = $username;
+		$this->password = $password;
+
+		$this->_userModel = craft()->users->getUserByUsernameOrEmail($username);
+	}
 
 	/**
 	 * Authenticates a user against the database.
@@ -46,8 +66,7 @@ class UserIdentity extends \CUserIdentity
 
 		if ($user)
 		{
-			$this->_processUserStatus($user);
-			return true;
+			return $this->_processUserStatus($user);
 		}
 		else
 		{
@@ -65,6 +84,14 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
+	 * @return UserModel
+	 */
+	public function getUserModel()
+	{
+		return $this->_userModel;
+	}
+
+	/**
 	 * @param $user
 	 *
 	 * @return null
@@ -74,6 +101,7 @@ class UserIdentity extends \CUserIdentity
 		$this->_id = $user->id;
 		$this->username = $user->username;
 		$this->errorCode = static::ERROR_NONE;
+		$this->_userModel = $user;
 	}
 
 	// Private Methods
@@ -128,6 +156,11 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}
+					else
+					{
+						// Everything's good.
+						$this->errorCode = static::ERROR_NONE;
+					}
 				}
 				else
 				{
@@ -151,6 +184,8 @@ class UserIdentity extends \CUserIdentity
 				throw new Exception(Craft::t('User has unknown status “{status}”', array($user->status)));
 			}
 		}
+
+		return $this->errorCode === static::ERROR_NONE;
 	}
 
 	/**

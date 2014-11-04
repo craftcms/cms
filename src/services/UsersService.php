@@ -395,13 +395,15 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
-			'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
+			'link' => TemplateHelper::getRaw($url),
 		));
 	}
 
 	/**
-	 * Sends a new email verification email for a user, regardless of their status.
+	 * Sends a new email verification email to a user, regardless of their status.
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
 	 *
@@ -409,14 +411,38 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @return bool Whether the email was sent successfully.
 	 */
-	public function sendNewEmailVerifyEmail(UserMOdel $user)
+	public function sendNewEmailVerifyEmail(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		$url = craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid);
+
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
-			'link' => TemplateHelper::getRaw(craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid)),
+			'link' => TemplateHelper::getRaw($url),
+		));
+	}
+
+	/**
+	 * Sends a forgot password email to a user, regardless of their status.
+	 *
+	 * A new verification code will generated for the user overwriting any existing one.
+	 *
+	 * @param UserModel $user The user to send the forgot password email to.
+	 *
+	 * @return bool Whether the email was sent successfully.
+	 */
+	public function sendForgotPasswordEmail(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+
+		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
+			'link' => TemplateHelper::getRaw($url),
 		));
 	}
 
@@ -478,25 +504,6 @@ class UsersService extends BaseApplicationComponent
 		$record->photo = null;
 		$user->photo = null;
 		$record->save();
-	}
-
-	/**
-	 * Sends a “Forgot Password” email to a given user.
-	 *
-	 * @param UserModel $user The user.
-	 *
-	 * @return bool Whether the email was sent successfully.
-	 */
-	public function sendForgotPasswordEmail(UserModel $user)
-	{
-		$userRecord = $this->_getUserRecordById($user->id);
-		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-		$userRecord->save();
-
-		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
-		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => TemplateHelper::getRaw($url),
-		));
 	}
 
 	/**
