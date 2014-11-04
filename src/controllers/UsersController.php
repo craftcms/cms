@@ -810,7 +810,7 @@ class UsersController extends BaseController
 				$this->_assignDefaultGroupToUser($user->id);
 			}
 
-			if ($requireEmailVerification)
+			if ($requireEmailVerification && $user->unverifiedEmail)
 			{
 				// Temporarily set the unverified email on the UserModel so the verification email goes to the
 				// right place
