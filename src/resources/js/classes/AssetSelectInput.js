@@ -5,14 +5,13 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 {
 	requestId: 0,
 	hud: null,
-	fieldId: 0,
 	uploader: null,
 	progressBar: null,
 
-	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey, fieldId)
+	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey, fieldId)
 	{
-		this.base(id, name, elementType, sources, criteria, sourceElementId, limit, storageKey);
-		this.fieldId = fieldId;
+		this.base.apply(this, arguments);
+		//this.base(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey, fieldId);
 		this._attachUploader();
 	},
 
@@ -27,8 +26,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			url: Craft.getActionUrl('assets/expressUpload'),
 			dropZone: this.$container,
 			formData: {
-				fieldId: this.fieldId,
-				elementId: this.sourceElementId
+				fieldId: this.settings.fieldId,
+				elementId: this.settings.sourceElementId
 			}
 		};
 
@@ -39,9 +38,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 			options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
 		}
 
-		if (typeof this.criteria.kind != "undefined")
+		if (typeof this.settings.criteria.kind != "undefined")
 		{
-			options.allowedKinds = this.criteria.kind;
+			options.allowedKinds = this.settings.criteria.kind;
 		}
 
 		options.canAddMoreFiles = $.proxy(this, 'canAddMoreFiles');
@@ -69,7 +68,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
 		// Make a couple tweaks
 		$newElement.addClass('removable');
-		$newElement.prepend('<input type="hidden" name="'+this.name+'[]" value="'+element.id+'">' +
+		$newElement.prepend('<input type="hidden" name="'+this.settings.name+'[]" value="'+element.id+'">' +
 			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
 		$newElement.appendTo(this.$elementsContainer);
@@ -139,6 +138,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	 */
 	canAddMoreFiles: function (slotsTaken)
 	{
-		return (!this.limit || this.$elements.length  + slotsTaken < this.limit);
+		return (!this.settings.limit || this.$elements.length  + slotsTaken < this.settings.limit);
 	}
 });

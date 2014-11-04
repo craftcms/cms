@@ -3,15 +3,6 @@
  */
 Craft.BaseElementSelectInput = Garnish.Base.extend(
 {
-	id: null,
-	name: null,
-	elementType: null,
-	sources: null,
-	criteria: null,
-	sourceElementId: null,
-	limit: null,
-	modalStorageKey: null,
-
 	elementSelect: null,
 	elementSort: null,
 	modal: null,
@@ -21,33 +12,55 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	$elements: null,
 	$addElementBtn: null,
 
-	selectable: true,
-	sortable: true,
-
 	_initialized: false,
 
-	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey)
+	init: function(settings)
 	{
-		this.id = id;
-		this.name = name;
-		this.elementType = elementType;
-		this.sources = sources;
-		this.criteria = criteria;
-		this.sourceElementId = sourceElementId;
-		this.limit = limit;
+		// Normalize the settings and set them
+		// ---------------------------------------------------------------------
 
-		if (modalStorageKey)
+		// Are they still passing in a bunch of arguments?
+		if (!$.isPlainObject(settings))
 		{
-			this.modalStorageKey = 'BaseElementSelectInput.'+modalStorageKey;
+			// Loop through all of the old arguments and apply them to the settings
+			var normalizedSettings = {},
+				args = ['id', 'name', 'elementType', 'sources', 'criteria', 'sourceElementId', 'limit', 'modalStorageKey', 'fieldId'];
+
+			for (var i = 0; i < args.length; i++)
+			{
+				if (typeof arguments[i] != typeof undefined)
+				{
+					normalizedSettings[args[i]] = arguments[i];
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			settings = normalizedSettings;
+		}
+
+		this.setSettings(settings, Craft.BaseElementSelectInput.defaults);
+
+		// Apply the storage key prefix
+		if (this.settings.modalStorageKey)
+		{
+			this.modalStorageKey = 'BaseElementSelectInput.'+this.settings.modalStorageKey;
+		}
+
+		// No reason for this to be sortable if we're only allowing 1 selection
+		if (this.settings.limit == 1)
+		{
+			this.settings.sortable = false;
 		}
 
 		this.$container = this.getContainer();
 		this.$elementsContainer = this.getElementsContainer();
 		this.$addElementBtn = this.getAddElementsBtn();
 
-		if (this.limit == 1)
+		if (this.$addElementBtn && this.settings.limit == 1)
 		{
-			this.sortable = false;
 			this.$addElementBtn
 				.css('position', 'absolute')
 				.css('top', 0)
@@ -58,14 +71,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		this.initElementSort();
 		this.resetElements();
 
-		this.addListener(this.$addElementBtn, 'activate', 'showModal');
+		if (this.$addElementBtn)
+		{
+			this.addListener(this.$addElementBtn, 'activate', 'showModal');
+		}
 
 		this._initialized = true;
 	},
 
 	getContainer: function()
 	{
-		return $('#'+this.id);
+		return $('#'+this.settings.id);
 	},
 
 	getElementsContainer: function()
@@ -85,10 +101,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	initElementSelect: function()
 	{
-		if (this.selectable)
+		if (this.settings.selectable)
 		{
 			this.elementSelect = new Garnish.Select({
-				multi: this.sortable,
+				multi: this.settings.sortable,
 				filter: ':not(.delete)'
 			});
 		}
@@ -96,11 +112,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	initElementSort: function()
 	{
-		if (this.sortable)
+		if (this.settings.sortable)
 		{
 			this.elementSort = new Garnish.DragSort({
 				container: this.$elementsContainer,
-				filter: (this.selectable ? $.proxy(function()
+				filter: (this.settings.selectable ? $.proxy(function()
 				{
 					// Only return all the selected items if the target item is selected
 					if (this.elementSort.$targetItem.hasClass('sel'))
@@ -116,7 +132,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 				collapseDraggees: true,
 				magnetStrength: 4,
 				helperLagBase: 1.5,
-				onSortChange: (this.selectable ? $.proxy(function() {
+				onSortChange: (this.settings.selectable ? $.proxy(function() {
 					this.elementSelect.resetItemOrder();
 				}, this) : null)
 			});
@@ -125,7 +141,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	canAddMoreElements: function()
 	{
-		return (!this.limit || this.$elements.length < this.limit);
+		return (!this.settings.limit || this.$elements.length < this.settings.limit);
 	},
 
 	updateAddElementsBtn: function()
@@ -146,7 +162,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		{
 			this.$addElementBtn.addClass('disabled');
 
-			if (this.limit == 1)
+			if (this.settings.limit == 1)
 			{
 				if (this._initialized)
 				{
@@ -166,7 +182,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		{
 			this.$addElementBtn.removeClass('disabled');
 
-			if (this.limit == 1)
+			if (this.settings.limit == 1)
 			{
 				if (this._initialized)
 				{
@@ -188,14 +204,22 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	addElements: function($elements)
 	{
-		if (this.selectable)
+		if (this.settings.selectable)
 		{
 			this.elementSelect.addItems($elements);
 		}
 
-		if (this.sortable)
+		if (this.settings.sortable)
 		{
 			this.elementSort.addItems($elements);
+		}
+
+		if (this.settings.editable)
+		{
+			this.addListener($elements, 'dblclick', function(ev)
+			{
+				Craft.showElementEditor($(ev.currentTarget));
+			});
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
@@ -203,18 +227,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			this.removeElement($(ev.currentTarget).closest('.element'));
 		}, this));
 
-		this.addListener($elements, 'dblclick', function(ev)
-		{
-			Craft.showElementEditor($(ev.currentTarget));
-		});
-
 		this.$elements = this.$elements.add($elements);
 		this.updateAddElementsBtn();
 	},
 
 	removeElements: function($elements)
 	{
-		if (this.selectable)
+		if (this.settings.selectable)
 		{
 			this.elementSelect.removeItems($elements);
 		}
@@ -286,19 +305,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	createModal: function()
 	{
-		return Craft.createElementSelectorModal(this.elementType, this.getModalSettings());
+		return Craft.createElementSelectorModal(this.settings.elementType, this.getModalSettings());
 	},
 
 	getModalSettings: function()
 	{
-		return {
+		return $.extend({
 			storageKey:         this.modalStorageKey,
-			sources:            this.sources,
-			criteria:           this.criteria,
-			multiSelect:        (this.limit != 1),
+			sources:            this.settings.sources,
+			criteria:           this.settings.criteria,
+			multiSelect:        (this.settings.limit != 1),
 			disabledElementIds: this.getDisabledElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
-		};
+		}, this.settings.modalSettings);
 	},
 
 	getSelectedElementIds: function()
@@ -317,9 +336,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	{
 		var ids = this.getSelectedElementIds();
 
-		if (this.sourceElementId)
+		if (this.settings.sourceElementId)
 		{
-			ids.push(this.sourceElementId);
+			ids.push(this.settings.sourceElementId);
 		}
 
 		return ids;
@@ -327,10 +346,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 	onModalSelect: function(elements)
 	{
-		if (this.limit)
+		if (this.settings.limit)
 		{
 			// Cut off any excess elements
-			var slotsLeft = this.limit - this.$elements.length;
+			var slotsLeft = this.settings.limit - this.$elements.length;
 
 			if (elements.length > slotsLeft)
 			{
@@ -363,7 +382,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		// Make a couple tweaks
 		$element.addClass('removable');
-		$element.prepend('<input type="hidden" name="'+this.name+'[]" value="'+elementInfo.id+'">' +
+		$element.prepend('<input type="hidden" name="'+this.settings.name+'[]" value="'+elementInfo.id+'">' +
 			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
 
 		return $element;
@@ -424,9 +443,27 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	onSelectElements: function()
 	{
 		this.trigger('selectElements');
+		this.settings.onSelectElements();
 	}
 },
 {
 	ADD_FX_DURATION: 400,
-	REMOVE_FX_DURATION: 200
+	REMOVE_FX_DURATION: 200,
+
+	defaults: {
+		id: null,
+		name: null,
+		fieldId: null,
+		elementType: null,
+		sources: null,
+		criteria: {},
+		sourceElementId: null,
+		limit: null,
+		modalStorageKey: null,
+		modalSettings: {},
+		onSelectElements: $.noop,
+		sortable: true,
+		selectable: true,
+		editable: true
+	}
 });

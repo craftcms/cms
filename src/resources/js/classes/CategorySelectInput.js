@@ -36,9 +36,9 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		var data = {
 			categoryIds: selectedCategoryIds,
 			locale:      elements[0].locale,
-			id:          this.id,
-			name:        this.name,
-			limit:       this.limit,
+			id:          this.settings.id,
+			name:        this.settings.name,
+			limit:       this.settings.limit,
 		};
 
 		Craft.postActionRequest('elements/getCategoriesInputHtml', data, $.proxy(function(response, textStatus)
