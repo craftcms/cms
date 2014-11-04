@@ -7,7 +7,7 @@ namespace Craft;
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
  * Note that all actions in the controller, except {@link actionLogin}, {@link actionLogout}, {@link actionGetAuthTimeout},
- * {@link actionForgotPassword}, {@link actionVerifyUser}, {@link actionSetPassword} and {@link actionSaveUser} require an
+ * {@link actionForgotPassword}, {@link actionSetPassword} and {@link actionSaveUser} require an
  * authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyUser');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword');
 
 	// Public Methods
 	// =========================================================================
@@ -224,22 +224,105 @@ class UsersController extends BaseController
 
 		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
-		$user = craft()->users->getUserByUid($id);
+		$userToProcess = craft()->users->getUserByUid($id);
+		$isCodeValid = false;
 
-		if ($user)
+		// Have they just submitted a password, or are we just displaying teh page?
+		if (!craft()->request->isPostRequest())
 		{
-			$isCodeValid = craft()->users->isVerificationCodeValidForUser($user, $code);
+			if ($userToProcess)
+			{
+				// Fire an 'onBeforeVerifyUser' event
+				craft()->users->onBeforeVerifyUser(new Event($this, array(
+					'user' => $userToProcess
+				)));
+
+				$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);
+
+				// Fire an 'onVerifyUser' event
+				craft()->users->onVerifyUser(new Event($this, array(
+					'user'        => $userToProcess,
+					'isCodeValid' => $isCodeValid
+				)));
+			}
+
+			if (!$userToProcess || !$isCodeValid)
+			{
+				$this->_processInvalidToken($userToProcess);
+			}
+			else
+			{
+				// We've got a valid token. See if the current user is logged in.
+//				if (($currentUser = craft()->userSession->getUser()) !== null)
+//				{
+//					// If they are validating an account that doesn't belong to them, log them out of their current account.
+//					if ($currentUser->id !== $userToProcess->id)
+//					{
+//						craft()->userSession->logout();
+//					}
+//				}
+
+				// Activate the user.
+//				if (craft()->users->activateUser($userToProcess))
+//				{
+					craft()->userSession->processUsernameCookie($userToProcess->username);
+
+					// Send them to the set password template.
+					$url = craft()->config->getSetPasswordPath($code, $id, $userToProcess);
+
+					$this->_processSetPasswordPath($userToProcess);
+
+					$code = craft()->users->setVerificationCodeOnUser($userToProcess);
+
+					$this->renderTemplate($url, array(
+						'code'    => $code,
+						'id'      => $id,
+						'newUser' => ($userToProcess->password ? false : true),
+					));
+//				}
+				//else
+		//		{
+					// There was a problem activating the account.
+		//			$url = craft()->config->getLocalized('activateAccountFailurePath');
+
+		//			if ($url === '')
+		//			{
+						// Failed to validate user and there is no custom validation failure path.  Throw an exception.
+		//				throw new HttpException('200', Craft::t('There was a problem activating this account.'));
+		//			}
+		//			else
+		//			{
+						// Failed to activate user and there is a custom validate failure path set, so use it.
+		//				$url = UrlHelper::getSiteUrl($url);
+		//			}
+
+		//			if (craft()->request->isSecureConnection())
+		//			{
+		//				$url = UrlHelper::getUrl($url, array(
+		//					'code' => $code, 'id' => $id
+		//				), 'https');
+		//			}
+
+		//			$url = UrlHelper::getUrl($url, array(
+		//				'code' => $code, 'id' => $id
+		//			));
+
+		//			$this->redirect($url);
+		//		}
+			}
 		}
-
-		if (!$user || !$isCodeValid)
+		else
 		{
-			throw new HttpException('200', Craft::t('Invalid verification code.'));
-		}
+			// POST request. They've just set the password.
 
-		$url = craft()->config->getSetPasswordPath($code, $id, $user);
+			// See if we still have a valid token.
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);
 
-		if (craft()->request->isPostRequest())
-		{
+			if (!$userToProcess || !$isCodeValid)
+			{
+				$this->_processInvalidToken($userToProcess);
+			}
+
 			$newPassword = craft()->request->getRequiredPost('newPassword');
 
 			$passwordModel = new PasswordModel();
@@ -247,26 +330,44 @@ class UsersController extends BaseController
 
 			if ($passwordModel->validate())
 			{
-				$user->newPassword = $newPassword;
+				$userToProcess->newPassword = $newPassword;
 
-				if (craft()->users->changePassword($user))
+				if (craft()->users->changePassword($userToProcess))
 				{
+					if ($userToProcess->status == UserStatus::Pending)
+					{
+						craft()->users->activateUser($userToProcess);
+					}
+
+					$loggedIn = false;
+
 					// Do we need to auto-login?
 					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
 					{
-						craft()->userSession->loginByUserId($user->id, false, true);
+						craft()->userSession->loginByUserId($userToProcess->id, false, true);
+						$loggedIn = true;
 					}
 
 					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-					if (!$user->can('accessCp'))
+					if (!$userToProcess->can('accessCp'))
 					{
 						$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
 						$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
 					}
 					else
 					{
-						$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
-						$url = UrlHelper::getCpUrl($postCpLoginRedirect);
+						// If we didn't log them in, just send to the appropriate login page.
+						if (!$loggedIn)
+						{
+							$url = craft()->config->getLoginPath();
+						}
+						else
+						{
+							// We logged them in, so send to 'postCpLoginRedirect'.
+							$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+							$url = UrlHelper::getCpUrl($postCpLoginRedirect);
+						}
+
 					}
 
 					$this->redirect($url);
@@ -275,27 +376,17 @@ class UsersController extends BaseController
 
 			craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
 
-			$this->_processSetPasswordPath($user);
+			$this->_processSetPasswordPath($userToProcess);
 
 			$errors = array();
-			$errors = array_merge($errors, $user->getErrors('newPassword'));
+			$errors = array_merge($errors, $userToProcess->getErrors('newPassword'));
 			$errors = array_merge($errors, $passwordModel->getErrors('password'));
 
 			$this->renderTemplate($url, array(
 				'errors' => $errors,
 				'code' => $code,
 				'id' => $id,
-				'newUser' => ($user->password ? false : true),
-			));
-		}
-		else
-		{
-			$this->_processSetPasswordPath($user);
-
-			$this->renderTemplate($url, array(
-				'code' => $code,
-				'id' => $id,
-				'newUser' => ($user->password ? false : true),
+				'newUser' => ($userToProcess->password ? false : true),
 			));
 		}
 	}
@@ -303,156 +394,13 @@ class UsersController extends BaseController
 	/**
 	 * Verifies that a user has access to an email address.
 	 *
-	 * @throws HttpException|Exception
-	 * @return null
-	 */
-	public function actionVerifyUser()
-	{
-		$code = craft()->request->getRequiredQuery('code');
-		$id = craft()->request->getRequiredQuery('id');
-		$userToVerify = craft()->users->getUserByUid($id);
-		$isCodeValid = false;
-
-		if ($userToVerify)
-		{
-			// Fire an 'onBeforeVerifyUser' event
-			craft()->users->onBeforeVerifyUser(new Event($this, array(
-				'user' => $userToVerify
-			)));
-
-			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToVerify, $code);
-
-			// Fire an 'onVerifyUser' event
-			craft()->users->onVerifyUser(new Event($this, array(
-				'user' => $userToVerify,
-				'isCodeValid' => $isCodeValid
-			)));
-		}
-
-		if (!$userToVerify || !$isCodeValid)
-		{
-			if (($url = craft()->config->getLocalized('activateAccountFailurePath')) != '')
-			{
-				$this->redirect(UrlHelper::getSiteUrl($url));
-			}
-			else
-			{
-				if (!$userToVerify)
-				{
-					throw new HttpException('200', Craft::t('Invalid verification code.'));
-				}
-				else
-				{
-					craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-
-					$this->renderTemplate('_special/expired', array('userId' => $userToVerify->id));
-				}
-			}
-		}
-		else
-		{
-			// If the current user is logged in
-			if (($currentUser = craft()->userSession->getUser()) !== null)
-			{
-				// If they are validating an account that doesn't belong to them,
-				// log them out of their current account.
-				if ($currentUser->id !== $userToVerify->id)
-				{
-					craft()->userSession->logout();
-				}
-			}
-
-			if (craft()->users->activateUser($userToVerify))
-			{
-				craft()->userSession->processUsernameCookie($userToVerify->username);
-
-				// Successfully activated user, do they require a password reset or is their password empty? If so, send
-				// them through the password logic.
-				if ($userToVerify->passwordResetRequired || !$userToVerify->password)
-				{
-					// All users that go through account activation will need to set their password.
-					$code = craft()->users->setVerificationCodeOnUser($userToVerify);
-
-					if ($userToVerify->can('accessCp'))
-					{
-						$url = craft()->config->get('actionTrigger').'/users/'.craft()->config->getCpSetPasswordPath();
-					}
-					else
-					{
-						$url = craft()->config->getLocalized('setPasswordPath');
-					}
-				}
-				else
-				{
-					// Do we need to auto-login?
-					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
-					{
-						craft()->userSession->loginByUserId($userToVerify->id, false, true);
-					}
-
-					// If the user can't access the CP, then send them to the front-end activateAccountSuccessPath.
-					if (!$userToVerify->can('accessCp'))
-					{
-						$url = UrlHelper::getUrl(craft()->config->getLocalized('activateAccountSuccessPath'));
-						$this->redirect($url);
-					}
-					else
-					{
-						craft()->userSession->setNotice(Craft::t('Account activated.'));
-
-						if (craft()->request->getPost('redirect'))
-						{
-							$this->redirectToPostedUrl();
-						}
-						else
-						{
-							$this->redirect(UrlHelper::getCpUrl());
-						}
-					}
-				}
-			}
-			else
-			{
-				$url = craft()->config->getLocalized('activateAccountFailurePath');
-
-				if ($url === '')
-				{
-					// Failed to validate user and there is no custom validation failure path.  Throw an exception.
-					throw new HttpException('200', Craft::t('There was a problem activating this account.'));
-				}
-				else
-				{
-					// Failed to activate user and there is a custom validate failure path set, so use it.
-					$url = UrlHelper::getSiteUrl($url);
-				}
-			}
-
-			if (craft()->request->isSecureConnection())
-			{
-				$url = UrlHelper::getUrl($url, array(
-					'code' => $code, 'id' => $id
-				), 'https');
-			}
-
-			$url = UrlHelper::getUrl($url, array(
-				'code' => $code, 'id' => $id
-			));
-
-			$this->redirect($url);
-		}
-	}
-
-
-	/**
-	 * Verifies that a user has access to an email address.
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link UsersController::verifyUser()} instead.
+	 * @deprecated Deprecated in 2.3. Use {@link UsersController::actionSetPassword()} instead.
 	 * @return null
 	 */
 	public function actionValidate()
 	{
-		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/verifyUser instead.');
-		$this->actionVerifyUser();
+		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/setPassword instead.');
+		$this->actionSetPassword();
 	}
 
 	/**
@@ -790,7 +738,7 @@ class UsersController extends BaseController
 			if ($newEmail)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!craft()->userSession->isAdmin() || craft()->request->getPost('verificationRequired')))
+				if ($requireEmailVerification && (!craft()->userSession->isAdmin() || craft()->request->getPost('sendVerificationEmail')))
 				{
 					$user->unverifiedEmail = $newEmail;
 
@@ -1498,6 +1446,31 @@ class UsersController extends BaseController
 			if ($permissions !== null)
 			{
 				craft()->userPermissions->saveUserPermissions($user->id, $permissions);
+			}
+		}
+	}
+
+	/**
+	 * @param $user
+	 * @throws HttpException
+	 */
+	private function _processInvalidToken($user)
+	{
+		if (($url = craft()->config->getLocalized('activateAccountFailurePath')) != '')
+		{
+			$this->redirect(UrlHelper::getSiteUrl($url));
+		}
+		else
+		{
+			if (!$user)
+			{
+				throw new HttpException('200', Craft::t('Invalid verification code.'));
+			}
+			else
+			{
+				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
+
+				$this->renderTemplate('_special/expired', array('userId' => $user->id));
 			}
 		}
 	}
