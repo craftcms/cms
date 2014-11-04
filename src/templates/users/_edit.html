@@ -307,6 +307,10 @@
 						{{ hiddenInputs }}
 						{{ getCsrfInput() }}
 
+						{% if currentUser.admin and not account.isCurrent() %}
+							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
+						{% endif %}
+
 						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}
 							<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
 						{% endif %}
@@ -315,10 +319,6 @@
 							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
 									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
 									   data-redirect="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
-						{% endif %}
-
-						{% if currentUser.admin and not account.isCurrent() %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
 						{% endif %}
 					</form>
 				{% endif %}
