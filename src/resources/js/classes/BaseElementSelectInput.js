@@ -460,7 +460,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	}
 },
 {
-	ADD_FX_DURATION: 400,
+	ADD_FX_DURATION: 200,
 	REMOVE_FX_DURATION: 200,
 
 	defaults: {
