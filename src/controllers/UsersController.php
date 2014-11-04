@@ -222,7 +222,6 @@ class UsersController extends BaseController
 			craft()->userSession->logout();
 		}
 
-		$code = craft()->request->getRequiredParam('code');
 		$id = craft()->request->getRequiredParam('id');
 		$userToProcess = craft()->users->getUserByUid($id);
 		$isCodeValid = false;
@@ -230,6 +229,8 @@ class UsersController extends BaseController
 		// Have they just submitted a password, or are we just displaying teh page?
 		if (!craft()->request->isPostRequest())
 		{
+			$code = craft()->request->getRequiredParam('code');
+
 			if ($userToProcess)
 			{
 				// Fire an 'onBeforeVerifyUser' event
@@ -252,68 +253,28 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				// We've got a valid token. See if the current user is logged in.
-//				if (($currentUser = craft()->userSession->getUser()) !== null)
-//				{
-//					// If they are validating an account that doesn't belong to them, log them out of their current account.
-//					if ($currentUser->id !== $userToProcess->id)
-//					{
-//						craft()->userSession->logout();
-//					}
-//				}
+				craft()->userSession->processUsernameCookie($userToProcess->username);
 
-				// Activate the user.
-//				if (craft()->users->activateUser($userToProcess))
-//				{
-					craft()->userSession->processUsernameCookie($userToProcess->username);
+				// Send them to the set password template.
+				$url = craft()->config->getSetPasswordPath($code, $id, $userToProcess);
 
-					// Send them to the set password template.
-					$url = craft()->config->getSetPasswordPath($code, $id, $userToProcess);
+				$this->_processSetPasswordPath($userToProcess);
 
-					$this->_processSetPasswordPath($userToProcess);
+				$code = craft()->users->setVerificationCodeOnUser($userToProcess);
 
-					$code = craft()->users->setVerificationCodeOnUser($userToProcess);
-
-					$this->renderTemplate($url, array(
-						'code'    => $code,
-						'id'      => $id,
-						'newUser' => ($userToProcess->password ? false : true),
-					));
-//				}
-				//else
-		//		{
-					// There was a problem activating the account.
-		//			$url = craft()->config->getLocalized('activateAccountFailurePath');
-
-		//			if ($url === '')
-		//			{
-						// Failed to validate user and there is no custom validation failure path.  Throw an exception.
-		//				throw new HttpException('200', Craft::t('There was a problem activating this account.'));
-		//			}
-		//			else
-		//			{
-						// Failed to activate user and there is a custom validate failure path set, so use it.
-		//				$url = UrlHelper::getSiteUrl($url);
-		//			}
-
-		//			if (craft()->request->isSecureConnection())
-		//			{
-		//				$url = UrlHelper::getUrl($url, array(
-		//					'code' => $code, 'id' => $id
-		//				), 'https');
-		//			}
-
-		//			$url = UrlHelper::getUrl($url, array(
-		//				'code' => $code, 'id' => $id
-		//			));
-
-		//			$this->redirect($url);
-		//		}
+				$this->renderTemplate($url, array(
+					'code'    => $code,
+					'id'      => $id,
+					'newUser' => ($userToProcess->password ? false : true),
+				));
 			}
 		}
 		else
 		{
 			// POST request. They've just set the password.
+			$code = craft()->request->getRequiredPost('code');
+
+			$url = craft()->config->getSetPasswordPath($code, $id, $userToProcess);
 
 			// See if we still have a valid token.
 			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);

@@ -610,8 +610,6 @@ class UserSessionService extends \CWebUser
 			$this->_sessionRestoredFromCookie = false;
 			$this->_userRow = null;
 			$this->_userModel = null;
-			// TODO: Test
-			//$this->setReturnUrl(null);
 
 			// Run any after login logic.
 			$this->afterLogin(false);
