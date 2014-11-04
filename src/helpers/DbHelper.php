@@ -337,6 +337,19 @@ class DbHelper
 	}
 
 	/**
+	 * Escapes commas and asterisks in a string so they are not treated as special characters in
+	 * {@link DbHelper::parseParam()}.
+	 *
+	 * @param string $value The param value.
+	 *
+	 * @return string The escaped param value.
+	 */
+	public static function escapeParam($value)
+	{
+		return str_replace(array(',', '*'), array('\,', '\*'), $value);
+	}
+
+	/**
 	 * Parses a query param value and returns a {@link \CDbCommand::where()}-compatible condition.
 	 *
 	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the

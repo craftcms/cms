@@ -24,30 +24,14 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		this.tagGroupId = tagGroupId;
 		this.sourceElementId = sourceElementId;
 
-		this.$container = $('#'+this.id);
-		this.$elementsContainer = this.$container.children('.elements');
-		this.$elements = this.$elementsContainer.children();
+		this.$container = this.getContainer();
+		this.$elementsContainer = this.getElementsContainer();
 		this.$addTagInput = this.$container.children('.add').children('.text');
 		this.$spinner = this.$addTagInput.next();
 
-		this.totalElements = this.$elements.length;
-
-		this.elementSelect = new Garnish.Select(this.$elements, {
-			multi: true,
-			filter: ':not(.delete)'
-		});
-
-		this.elementSort = new Garnish.DragSort({
-			container: this.$elementsContainer,
-			filter: $.proxy(function() {
-				return this.elementSelect.getSelectedItems();
-			}, this),
-			onSortChange: $.proxy(function() {
-				this.elementSelect.resetItemOrder();
-			}, this)
-		});
-
-		this.initElements(this.$elements);
+		this.initElementSelect();
+		this.initElementSort();
+		this.resetElements();
 
 		this.addListener(this.$addTagInput, 'textchange', $.proxy(function()
 		{
@@ -140,7 +124,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 					for (var i = 0; i < response.tags.length; i++)
 					{
 						var $li = $('<li/>').appendTo($ul);
-						$('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].name).data('id', response.tags[i].id);
+						$('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].title).data('id', response.tags[i].id);
 					}
 
 					if (!response.exactMatch)
@@ -171,13 +155,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 	{
 		var $option = $(option),
 			id = $option.data('id'),
-			name = $option.text();
+			title = $option.text();
 
 		var $element = $('<div class="element removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
 			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+name+'</span>').appendTo($element);
+		$('<span class="label">'+title+'</span>').appendTo($element);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-'+Craft.left, margin+'px');
@@ -187,9 +171,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		this.$addTagInput.velocity(animateCss, 'fast');
 
 		this.$elements = this.$elements.add($element);
-		this.totalElements++;
 
-		this.initElements($element);
+		this.addElements($element);
 
 		this.killSearchMenu();
 		this.$addTagInput.val('');
@@ -202,7 +185,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 			var data = {
 				groupId: this.tagGroupId,
-				name: name
+				title: title
 			};
 
 			Craft.postActionRequest('tags/createTag', data, $.proxy(function(response, textStatus)
@@ -234,5 +217,4 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		this.searchMenu.destroy();
 		this.searchMenu = null;
 	}
-
 });

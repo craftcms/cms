@@ -54,41 +54,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 				.css(Craft.left, 0);
 		}
 
-		if (this.selectable)
-		{
-			this.elementSelect = new Garnish.Select({
-				multi: this.sortable,
-				filter: ':not(.delete)'
-			});
-		}
-
-		if (this.sortable)
-		{
-			this.elementSort = new Garnish.DragSort({
-				container: this.$elementsContainer,
-				filter: (this.selectable ? $.proxy(function()
-				{
-					// Only return all the selected items if the target item is selected
-					if (this.elementSort.$targetItem.hasClass('sel'))
-					{
-						return this.elementSelect.getSelectedItems();
-					}
-					else
-					{
-						return this.elementSort.$targetItem;
-					}
-				}, this) : null),
-				ignoreHandleSelector: '.delete',
-				collapseDraggees: true,
-				magnetStrength: 4,
-				helperLagBase: 1.5,
-				onSortChange: (this.selectable ? $.proxy(function() {
-					this.elementSelect.resetItemOrder();
-				}, this) : null)
-			});
-		}
-
-		// Add the elements already on the page
+		this.initElementSelect();
+		this.initElementSort();
 		this.resetElements();
 
 		this.addListener(this.$addElementBtn, 'activate', 'showModal');
@@ -114,6 +81,46 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	getAddElementsBtn: function()
 	{
 		return this.$container.children('.btn.add');
+	},
+
+	initElementSelect: function()
+	{
+		if (this.selectable)
+		{
+			this.elementSelect = new Garnish.Select({
+				multi: this.sortable,
+				filter: ':not(.delete)'
+			});
+		}
+	},
+
+	initElementSort: function()
+	{
+		if (this.sortable)
+		{
+			this.elementSort = new Garnish.DragSort({
+				container: this.$elementsContainer,
+				filter: (this.selectable ? $.proxy(function()
+				{
+					// Only return all the selected items if the target item is selected
+					if (this.elementSort.$targetItem.hasClass('sel'))
+					{
+						return this.elementSelect.getSelectedItems();
+					}
+					else
+					{
+						return this.elementSort.$targetItem;
+					}
+				}, this) : null),
+				ignoreHandleSelector: '.delete',
+				collapseDraggees: true,
+				magnetStrength: 4,
+				helperLagBase: 1.5,
+				onSortChange: (this.selectable ? $.proxy(function() {
+					this.elementSelect.resetItemOrder();
+				}, this) : null)
+			});
+		}
 	},
 
 	canAddMoreElements: function()

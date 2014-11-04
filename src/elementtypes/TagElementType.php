@@ -37,6 +37,16 @@ class TagElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::hasTitles()
+	 *
+	 * @return bool
+	 */
+	public function hasTitles()
+	{
+		return true;
+	}
+
+	/**
 	 * @inheritDoc IElementType::isLocalized()
 	 *
 	 * @return bool
@@ -77,6 +87,7 @@ class TagElementType extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
+		// TODO: Remove this in 3.0
 		return array('name');
 	}
 
@@ -90,7 +101,7 @@ class TagElementType extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return array(
-			'name' => Craft::t('Name'),
+			'title' => Craft::t('Title'),
 		);
 	}
 
@@ -102,12 +113,12 @@ class TagElementType extends BaseElementType
 	public function defineCriteriaAttributes()
 	{
 		return array(
-			'name'    => AttributeType::String,
 			'group'   => AttributeType::Mixed,
 			'groupId' => AttributeType::Mixed,
-			'order'   => array(AttributeType::String, 'default' => 'tags.name asc'),
+			'order'   => array(AttributeType::String, 'default' => 'content.title asc'),
 
 			// TODO: Deprecated
+			'name'    => AttributeType::String,
 			'set'     => AttributeType::Mixed,
 			'setId'   => AttributeType::Mixed,
 		);
@@ -124,16 +135,16 @@ class TagElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('tags.groupId, tags.name')
+			->addSelect('tags.groupId')
 			->join('tags tags', 'tags.id = elements.id');
+
+		// Still support the deprecated params
 
 		if ($criteria->name)
 		{
-			$query->andWhere(DbHelper::parseParam('tags.name', $criteria->name, $query->params));
+			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
 		}
 
-
-		// Still support the deprecated params
 		if ($criteria->setId && !$criteria->groupId)
 		{
 			craft()->deprecator->log('TagElementType::modifyElementsQuery():setId_param', 'The ‘setId’ tag param has been deprecated. Use ‘groupId’ instead.');
@@ -183,11 +194,12 @@ class TagElementType extends BaseElementType
 	{
 		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
-				'label'     => Craft::t('Name'),
-				'id'        => 'name',
-				'name'      => 'name',
-				'value'     => $element->name,
-				'errors'    => $element->getErrors('name'),
+				'label'     => Craft::t('Title'),
+				'locale'    => $element->locale,
+				'id'        => 'title',
+				'name'      => 'title',
+				'value'     => $element->getContent()->title,
+				'errors'    => $element->getErrors('title'),
 				'first'     => true,
 				'autofocus' => true,
 				'required'  => true
@@ -209,11 +221,6 @@ class TagElementType extends BaseElementType
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
-		if (isset($params['name']))
-		{
-			$element->name = $params['name'];
-		}
-
 		return craft()->tags->saveTag($element);
 	}
 }
