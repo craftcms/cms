@@ -751,7 +751,6 @@ class UsersController extends BaseController
 				else
 				{
 					$user->email = $newEmail;
-					$requireEmailVerification = false;
 				}
 			}
 		}
