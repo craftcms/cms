@@ -485,64 +485,6 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Reassigns a user’s content to another user.
-	 *
-	 * This is usually called right before a user gets deleted.
-	 *
-	 * @param UserModel $oldUser The user who currently owns the content.
-	 * @param UserModel $newUser The user that will own the content going forward.
-	 *
-	 * @return null
-	 */
-	public function reassignContent(UserModel $oldUser, UserModel $newUser)
-	{
-		// Fire an 'onBeforeReassignContent' event
-		$this->onBeforeReassignContent(new Event($this, array(
-			'oldUser' => $oldUser,
-			'newUser' => $newUser
-		)));
-
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
-		{
-			$userRefs = array(
-				'entries' => 'authorId',
-				'entrydrafts' => 'creatorId',
-				'entryversions' => 'creatorId',
-			);
-
-			foreach ($userRefs as $table => $column)
-			{
-				craft()->db->createCommand()->update($table, array(
-					$column => $newUser->id
-				), array(
-					$column => $oldUser->id
-				));
-			}
-
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-
-		// Fire an 'onReassignContent' event
-		$this->onReassignContent(new Event($this, array(
-			'oldUser' => $oldUser,
-			'newUser' => $newUser
-		)));
-	}
-
-	/**
 	 * Deletes a user's photo.
 	 *
 	 * @param UserModel $user The user.
@@ -876,6 +818,64 @@ class UsersService extends BaseApplicationComponent
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Reassigns a user’s content to another user.
+	 *
+	 * This is usually called right before a user gets deleted.
+	 *
+	 * @param UserModel $oldUser The user who currently owns the content.
+	 * @param UserModel $newUser The user that will own the content going forward.
+	 *
+	 * @return null
+	 */
+	public function reassignContent(UserModel $oldUser, UserModel $newUser)
+	{
+		// Fire an 'onBeforeReassignContent' event
+		$this->onBeforeReassignContent(new Event($this, array(
+			'oldUser' => $oldUser,
+			'newUser' => $newUser
+		)));
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			$userRefs = array(
+				'entries' => 'authorId',
+				'entrydrafts' => 'creatorId',
+				'entryversions' => 'creatorId',
+			);
+
+			foreach ($userRefs as $table => $column)
+			{
+				craft()->db->createCommand()->update($table, array(
+					$column => $newUser->id
+				), array(
+					$column => $oldUser->id
+				));
+			}
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		// Fire an 'onReassignContent' event
+		$this->onReassignContent(new Event($this, array(
+			'oldUser' => $oldUser,
+			'newUser' => $newUser
+		)));
 	}
 
 	/**
