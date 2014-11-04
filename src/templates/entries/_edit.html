@@ -267,7 +267,7 @@
 												{% if showEntryTypes %}
 													{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
 												{% endif %}
-												{% if section.type == 'structure' and parentOptions|length > 1 %}
+												{% if section.type == 'structure' %}
 													{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
 												{% endif %}
 

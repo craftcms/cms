@@ -3,11 +3,6 @@
  */
 Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 {
-	id: null,
-	name: null,
-	tagGroupId: null,
-	sourceElementId: null,
-	elementSort: null,
 	searchTimeout: null,
 	searchMenu: null,
 
@@ -17,21 +12,37 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 	$addTagInput: null,
 	$spinner: null,
 
-	init: function(id, name, tagGroupId, sourceElementId)
+	init: function(settings)
 	{
-		this.id = id;
-		this.name = name;
-		this.tagGroupId = tagGroupId;
-		this.sourceElementId = sourceElementId;
+		// Normalize the settings
+		// ---------------------------------------------------------------------
 
-		this.$container = this.getContainer();
-		this.$elementsContainer = this.getElementsContainer();
+		// Are they still passing in a bunch of arguments?
+		if (!$.isPlainObject(settings))
+		{
+			// Loop through all of the old arguments and apply them to the settings
+			var normalizedSettings = {},
+				args = ['id', 'name', 'tagGroupId', 'sourceElementId'];
+
+			for (var i = 0; i < args.length; i++)
+			{
+				if (typeof arguments[i] != typeof undefined)
+				{
+					normalizedSettings[args[i]] = arguments[i];
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			settings = normalizedSettings;
+		}
+
+		this.base($.extend({}, Craft.TagSelectInput.defaults, settings));
+
 		this.$addTagInput = this.$container.children('.add').children('.text');
 		this.$spinner = this.$addTagInput.next();
-
-		this.initElementSelect();
-		this.initElementSort();
-		this.resetElements();
 
 		this.addListener(this.$addTagInput, 'textchange', $.proxy(function()
 		{
@@ -76,6 +87,9 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		});
 	},
 
+	// No "add" button
+	getAddElementsBtn: $.noop,
+
 	searchForTags: function()
 	{
 		if (this.searchMenu)
@@ -101,14 +115,14 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 				}
 			}
 
-			if (this.sourceElementId)
+			if (this.settings.sourceElementId)
 			{
-				excludeIds.push(this.sourceElementId);
+				excludeIds.push(this.settings.sourceElementId);
 			}
 
 			var data = {
 				search:     this.$addTagInput.val(),
-				tagGroupId: this.tagGroupId,
+				tagGroupId: this.settings.tagGroupId,
 				excludeIds: excludeIds
 			};
 
@@ -158,7 +172,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			title = $option.text();
 
 		var $element = $('<div class="element removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
-			$input = $('<input type="hidden" name="'+this.name+'[]" value="'+id+'"/>').appendTo($element)
+			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element)
 
 		$('<a class="delete icon" title="'+Craft.t('Remove')+'"></a>').appendTo($element);
 		$('<span class="label">'+title+'</span>').appendTo($element);
@@ -184,7 +198,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			$element.addClass('loading disabled');
 
 			var data = {
-				groupId: this.tagGroupId,
+				groupId: this.settings.tagGroupId,
 				title: title
 			};
 
@@ -216,5 +230,10 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 		this.searchMenu.hide();
 		this.searchMenu.destroy();
 		this.searchMenu = null;
+	}
+},
+{
+	defaults: {
+		tagGroupId: null
 	}
 });

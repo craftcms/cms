@@ -189,6 +189,10 @@ class TemplatesController extends BaseController
 		{
 			$variables = array_merge($error);
 
+			// Escape any inner-word underscores, which Markdown mistakes for italics
+			// TODO: This won't be necessary in 3.0 thanks to Parsedown
+			$variables['message'] = preg_replace('/(?<=[a-zA-Z])_(?=[a-zA-Z])/', '\_', $variables['message']);
+
 			// If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
 			// is enabled, then allow the HTML not get encoded
 			if (strncmp($variables['type'], 'PHP ', 4) === 0 && AppHelper::getPhpConfigValueAsBool('html_errors'))

@@ -30,9 +30,9 @@ class FieldLayoutTabModel extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Returns the tab's layout.
+	 * Returns the tab’s layout.
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayoutModel|null The tab’s layout.
 	 */
 	public function getLayout()
 	{
@@ -55,9 +55,9 @@ class FieldLayoutTabModel extends BaseModel
 	}
 
 	/**
-	 * Sets the tab's layout.
+	 * Sets the tab’s layout.
 	 *
-	 * @param FieldLayoutModel $layout
+	 * @param FieldLayoutModel $layout The tab’s layout.
 	 *
 	 * @return null
 	 */
@@ -67,9 +67,9 @@ class FieldLayoutTabModel extends BaseModel
 	}
 
 	/**
-	 * Returns the tab's fields.
+	 * Returns the tab’s fields.
 	 *
-	 * @return array
+	 * @return array The tab’s fields.
 	 */
 	public function getFields()
 	{
@@ -97,9 +97,9 @@ class FieldLayoutTabModel extends BaseModel
 	}
 
 	/**
-	 * Sets the tab's fields.
+	 * Sets the tab’s fields.
 	 *
-	 * @param array $fields
+	 * @param array $fields The tab’s fields.
 	 *
 	 * @return null
 	 */

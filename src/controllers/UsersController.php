@@ -586,7 +586,7 @@ class UsersController extends BaseController
 
 		craft()->templates->includeCssResource('css/account.css');
 		craft()->templates->includeJsResource('js/AccountSettingsForm.js');
-		craft()->templates->includeJs('new Craft.AccountSettingsForm('.($variables['account']->isCurrent() ? 'true' : 'false').');');
+		craft()->templates->includeJs('new Craft.AccountSettingsForm('.JsonHelper::encode($variables['account']->id).', '.($variables['account']->isCurrent() ? 'true' : 'false').');');
 
 		craft()->templates->includeTranslations(
 			'Please enter your current password.',
@@ -1174,19 +1174,58 @@ class UsersController extends BaseController
 		}
 
 		// Even if you have deleteUser permissions, only and admin should be able to delete another admin.
-		$currentUser = craft()->userSession->getUser();
-
-		if ($user->admin && !$currentUser->admin)
+		if ($user->admin)
 		{
-			throw new HttpException(403);
+			craft()->userSession->requireAdmin();
 		}
 
-		craft()->users->deleteUser($user);
+		$reassigneeId = craft()->request->getPost('reassign');
+
+		if (is_array($reassigneeId) && isset($reassigneeId[0]))
+		{
+			$reassigneeId = $reassigneeId[0];
+		}
+
+		if ($reassigneeId)
+		{
+			$reassignee = craft()->users->getUserById($reassigneeId);
+
+			if (!$reassignee)
+			{
+				$this->_noUserExists($reassigneeId);
+			}
+		}
+
+		// Wrap this whole thing in a transaction, so content gets assigned back to the original user
+		// in the event that there's an exception while deleting them.
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			if (isset($reassignee))
+			{
+				craft()->users->reassignContent($user, $reassignee);
+			}
+
+			craft()->users->deleteUser($user);
+
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
 
 		craft()->userSession->setNotice(Craft::t('User deleted.'));
 		$this->redirectToPostedUrl();
 	}
-
 
 	/**
 	 * Unsuspends a user.

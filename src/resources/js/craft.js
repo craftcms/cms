@@ -309,6 +309,23 @@ $.extend(Craft,
 	},
 
 	/**
+	 * Returns a hidden CSRF token input, if CSRF protection is enabled.
+	 *
+	 * @return string
+	 */
+	getCsrfInput: function()
+	{
+		if (Craft.csrfTokenName)
+		{
+			return '<input type="hidden" name="'+Craft.csrfTokenName+'" value="'+Craft.csrfTokenValue+'"/>';
+		}
+		else
+		{
+			return '';
+		}
+	},
+
+	/**
 	 * Posts an action request to the server.
 	 *
 	 * @param string action

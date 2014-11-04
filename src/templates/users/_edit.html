@@ -50,6 +50,7 @@
 {% set requireEmailVerification = craft.systemSettings.users.requireEmailVerification %}
 
 {% set hiddenInputs %}
+	{{ getCsrfInput() }}
 	{% if not isNewAccount -%}
 		<input type="hidden" name="userId" value="{{ account.id }}">
 	{%- endif %}
@@ -62,7 +63,6 @@
 			<form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account is defined and account.isCurrent() ? 'myaccount' : 'users/{id}' }}">
 				<input type="hidden" name="action" value="users/saveUser">
 				<input type="hidden" name="redirect" value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
-				{{ getCsrfInput() }}
 				{{ hiddenInputs }}
 
 				{% include "_includes/tabs" %}
@@ -257,7 +257,6 @@
 			<div class="item" data-position="right" data-colspan="1">
 				<form class="pane" method="post" accept-charset="UTF-8">
 					{{ hiddenInputs }}
-					{{ getCsrfInput() }}
 
 					<h5 class="first">{{ "Account Status"|t }}</h5>
 					<p>
@@ -305,20 +304,17 @@
 				{% if not account.isCurrent() and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
 					<form class="pane" method="post" accept-charset="UTF-8">
 						{{ hiddenInputs }}
-						{{ getCsrfInput() }}
+
+						{% if currentUser.admin and not account.isCurrent() %}
+							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
+						{% endif %}
 
 						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}
 							<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
 						{% endif %}
 
 						{% if currentUser.can('deleteUsers') %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t }}" data-action="users/deleteUser"
-									   data-confirm="{{ 'Are you sure you want to delete this account and all associated content?'|t }}"
-									   data-redirect="{{ CraftEdition == CraftPro ? 'users' : 'dashboard' }}">
-						{% endif %}
-
-						{% if currentUser.admin and not account.isCurrent() %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
+							<input id="delete-btn" type="button" class="btn small" value="{{ 'Delete…'|t }}">
 						{% endif %}
 					</form>
 				{% endif %}
