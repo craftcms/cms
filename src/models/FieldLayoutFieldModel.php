@@ -25,9 +25,9 @@ class FieldLayoutFieldModel extends BaseModel
 	// =========================================================================
 
 	/**
-	 * Returns the field's layout.
+	 * Returns the field’s layout.
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayoutModel|null The field’s layout.
 	 */
 	public function getLayout()
 	{
@@ -50,9 +50,9 @@ class FieldLayoutFieldModel extends BaseModel
 	}
 
 	/**
-	 * Sets the field's layout.
+	 * Sets the field’s layout.
 	 *
-	 * @param FieldLayoutModel $layout
+	 * @param FieldLayoutModel $layout The field’s layout.
 	 *
 	 * @return null
 	 */
@@ -62,9 +62,9 @@ class FieldLayoutFieldModel extends BaseModel
 	}
 
 	/**
-	 * Returns the actual field model.
+	 * Returns the associated field.
 	 *
-	 * @return FieldModel|null
+	 * @return FieldModel|null The associated field.
 	 */
 	public function getField()
 	{
