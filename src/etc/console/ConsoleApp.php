@@ -85,6 +85,28 @@ class ConsoleApp extends \CConsoleApplication
 	}
 
 	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		return $this->asa('AppBehavior')->getLanguage();
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 *
+	 * @return null
+	 */
+	public function setLanguage($language)
+	{
+		$this->asa('AppBehavior')->setLanguage($language);
+	}
+
+	/**
 	 * Attaches an event listener, or remembers it for later if the component
 	 * has not been initialized yet.
 	 *

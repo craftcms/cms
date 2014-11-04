@@ -51,6 +51,17 @@ class AppBehavior extends BaseBehavior
 	 */
 	private $_isDbConnectionValid = false;
 
+	/**
+	 * @var
+	 */
+	private $_language;
+
+	/**
+	 * @var bool
+	 */
+	private $_gettingLanguage = false;
+
+
 	// Public Methods
 	// =========================================================================
 
@@ -506,6 +517,44 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		if (!isset($this->_language))
+		{
+			// Defend against an infinite getLanguage() loop
+			if (!$this->_gettingLanguage)
+			{
+				$this->_gettingLanguage = true;
+				$this->setLanguage($this->_getTargetLanguage());
+			}
+			else
+			{
+				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+				$this->setLanguage($this->_getFallbackLanguage());
+				$this->_gettingLanguage = false;
+			}
+		}
+
+		return $this->_language;
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 *
+	 * @return null
+	 */
+	public function setLanguage($language)
+	{
+		$this->_language = $language;
+	}
+
+	/**
 	 * Returns the Yii framework version.
 	 *
 	 * @return mixed
@@ -708,5 +757,99 @@ class AppBehavior extends BaseBehavior
 		{
 			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
 		}
+	}
+
+	/**
+	 * Returns the target app language.
+	 *
+	 * @return string|null
+	 */
+	private function _getTargetLanguage()
+	{
+		if ($this->isInstalled())
+		{
+			// Will any locale validation be necessary here?
+			if (craft()->request->isCpRequest() || defined('CRAFT_LOCALE'))
+			{
+				if (craft()->request->isCpRequest())
+				{
+					$locale = 'auto';
+				}
+				else
+				{
+					$locale = StringHelper::toLowerCase(CRAFT_LOCALE);
+				}
+
+				// Get the list of actual site locale IDs
+				$siteLocaleIds = craft()->i18n->getSiteLocaleIds();
+
+				// Is it set to "auto"?
+				if ($locale == 'auto')
+				{
+					// Place this within a try/catch in case userSession is being fussy.
+					try
+					{
+						// If the user is logged in *and* has a primary language set, use that
+						$user = craft()->userSession->getUser();
+
+						if ($user && $user->preferredLocale)
+						{
+							return $user->preferredLocale;
+						}
+					}
+					catch (\Exception $e)
+					{
+						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
+					}
+
+					// Otherwise check if the browser's preferred language matches any of the site locales
+					$browserLanguages = craft()->request->getBrowserLanguages();
+
+					if ($browserLanguages)
+					{
+						foreach ($browserLanguages as $language)
+						{
+							if (in_array($language, $siteLocaleIds))
+							{
+								return $language;
+							}
+						}
+					}
+				}
+
+				// Is it set to a valid site locale?
+				else if (in_array($locale, $siteLocaleIds))
+				{
+					return $locale;
+				}
+			}
+
+			// Use the primary site locale by default
+			return craft()->i18n->getPrimarySiteLocaleId();
+		}
+		else
+		{
+			return $this->_getFallbackLanguage();
+		}
+	}
+
+	/**
+	 * Tries to find a language match with the user's browser's preferred language(s).
+	 * If not uses the app's sourceLanguage.
+	 *
+	 * @return string
+	 */
+	private function _getFallbackLanguage()
+	{
+		// See if we have the CP translated in one of the user's browsers preferred language(s)
+		$language = craft()->getTranslatedBrowserLanguage();
+
+		// Default to the source language.
+		if (!$language)
+		{
+			$language = craft()->sourceLanguage;
+		}
+
+		return $language;
 	}
 }
