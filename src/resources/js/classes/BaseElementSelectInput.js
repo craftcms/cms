@@ -378,7 +378,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			this.animateElementIntoPlace(element.$element, $element);
 		}
 
-		this.onSelectElements();
+		this.onSelectElements(elements);
 	},
 
 	createNewElement: function(elementInfo)
@@ -445,10 +445,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		}
 	},
 
-	onSelectElements: function()
+	onSelectElements: function(elements)
 	{
-		this.trigger('selectElements');
-		this.settings.onSelectElements();
+		this.trigger('selectElements', { elements: elements });
+		this.settings.onSelectElements(elements);
 	}
 },
 {
