@@ -138,7 +138,7 @@
 							{{ forms.errorList(account.getErrors('newPassword')) }}
 						{% endset %}
 
-						{% if currentUser %}
+						{% if account.isCurrent() %}
 							{{ forms.field({
 								label: "New Password"|t,
 								id: 'newPassword',
