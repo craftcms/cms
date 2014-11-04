@@ -501,9 +501,9 @@ class UserSessionService extends \CWebUser
 			$this->_identity = new UserIdentity($username, $password);
 
 			// Did we authenticate?
-			if ($this->_identity->authenticate() && $this->_identity->errorCode == UserIdentity::ERROR_NONE)
+			if ($this->_identity->authenticate())
 			{
-				return $this->loginByUserId($this->_identity->getId(), $rememberMe, true);
+				return $this->loginByUserId($this->_identity->getUserModel()->id, $rememberMe, true);
 			}
 		}
 
@@ -532,7 +532,7 @@ class UserSessionService extends \CWebUser
 			throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $userId)));
 		}
 
-				// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
+		// Require a userAgent string and an IP address to help prevent direct socket connections from trying to login.
 		if (!craft()->request->userAgent || !$_SERVER['REMOTE_ADDR'])
 		{
 			Craft::log('Someone tried to login with userId: '.$userId.', without presenting an IP address or userAgent string.', LogLevel::Warning);
