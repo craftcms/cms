@@ -43,8 +43,13 @@ class m141024_000001_field_layout_tabs extends BaseMigration
 			));
 		}
 
+		// Damn you MySQL 5.6!
+		$this->dropForeignKey('fieldlayoutfields', 'tabId');
+
 		// Make the tabId column required
 		$this->alterColumn('fieldlayoutfields', 'tabId', array(ColumnType::Int, 'null' => false));
+
+		$this->addForeignKey('fieldlayoutfields', 'tabId', 'fieldlayouttabs', 'id', 'CASCADE');
 
 		Craft::log('Done adding tabs to all field layouts.', LogLevel::Info, true);
 
