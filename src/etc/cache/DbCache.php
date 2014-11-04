@@ -29,4 +29,19 @@ class DbCache extends \CDbCache
 	{
 		return craft()->db;
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @param DbConnection   $db
+	 * @param string         $tableName
+	 */
+	protected function createCacheTable($db, $tableName)
+	{
+		if (!craft()->db->tableExists(craft()->config->get('cacheTableName', ConfigFile::DbCache), true))
+		{
+			parent::createCacheTable($db, $tableName);
+		}
+	}
 }

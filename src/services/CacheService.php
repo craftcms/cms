@@ -43,7 +43,7 @@ class CacheService extends BaseApplicationComponent
 			{
 				$this->_cacheComponent = new DbCache();
 				$this->_cacheComponent->gCProbability = craft()->config->get('gcProbability', ConfigFile::DbCache);
-				$this->_cacheComponent->cacheTableName = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);;
+				$this->_cacheComponent->cacheTableName = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
 				break;
 			}
