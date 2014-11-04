@@ -397,7 +397,8 @@ class UserElementType extends BaseElementType
 	public function getEditorHtml(BaseElementModel $element)
 	{
 		$html = craft()->templates->render('users/_accountfields', array(
-			'account' => $element
+			'account'      => $element,
+			'isNewAccount' => false,
 		));
 
 		$html .= parent::getEditorHtml($element);
