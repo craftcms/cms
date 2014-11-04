@@ -72,8 +72,8 @@
 			translations:          {{ getTranslations()|raw }},
 			maxUploadSize:         {{ craft.app.getMaxUploadSize() }},
 			{% if craft.config.enableCsrfProtection %}
-				csrfTokenValue:        "{{ craft.request.getCsrfToken() }}",
-				csrfTokenName:         "{{ craft.config.csrfTokenName }}",
+				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
+				csrfTokenName:         "{{ craft.config.csrfTokenName|e('js') }}",
 			{% endif %}
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
