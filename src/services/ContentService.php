@@ -332,9 +332,7 @@ class ContentService extends BaseApplicationComponent
 
 			if ($field && !$field->translatable)
 			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType && $fieldType->defineContentAttribute())
+				if ($field->hasContentColumn())
 				{
 					$nonTranslatableFields[$field->id] = $field;
 				}

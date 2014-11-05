@@ -270,9 +270,7 @@ class FieldsService extends BaseApplicationComponent
 
 			foreach ($this->getAllFields() as $field)
 			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType && $fieldType->defineContentAttribute())
+				if ($field->hasContentColumn())
 				{
 					$this->_fieldsWithContent[$context][] = $field;
 				}
