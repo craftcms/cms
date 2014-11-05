@@ -136,7 +136,6 @@ class ConfigService extends BaseApplicationComponent
 	 *
 	 * - [siteUrl](http://buildwithcraft.com/docs/config-settings#siteUrl)
 	 * - [activateAccountFailurePath](http://buildwithcraft.com/docs/config-settings#activateAccountFailurePath)
-	 * - [activateAccountSuccessPath](http://buildwithcraft.com/docs/config-settings#activateAccountSuccessPath)
 	 * - [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath)
 	 * - [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath)
 	 * - [setPasswordPath](http://buildwithcraft.com/docs/config-settings#setPasswordPath)

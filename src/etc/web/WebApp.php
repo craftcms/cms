@@ -85,27 +85,12 @@ class WebApp extends \CWebApplication
 	/**
 	 * @var
 	 */
-	private $_language;
-
-	/**
-	 * @var
-	 */
-	private $_templatePath;
-
-	/**
-	 * @var
-	 */
 	private $_editionComponents;
 
 	/**
 	 * @var
 	 */
 	private $_pendingEvents;
-
-	/**
-	 * @var bool
-	 */
-	private $_gettingLanguage = false;
 
 	// Public Methods
 	// =========================================================================
@@ -301,23 +286,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLanguage()
 	{
-		if (!isset($this->_language))
-		{
-			// Defend against an infinite getLanguage() loop
-			if (!$this->_gettingLanguage)
-			{
-				$this->_gettingLanguage = true;
-				$this->setLanguage($this->_getTargetLanguage());
-			}
-			else
-			{
-				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-				$this->setLanguage($this->_getFallbackLanguage());
-				$this->_gettingLanguage = false;
-			}
-		}
-
-		return $this->_language;
+		return $this->asa('AppBehavior')->getLanguage();
 	}
 
 	/**
@@ -329,7 +298,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->_language = $language;
+		$this->asa('AppBehavior')->setLanguage($language);
 	}
 
 	/**
@@ -759,100 +728,6 @@ class WebApp extends \CWebApplication
 				throw new HttpException(404);
 			}
 		}
-	}
-
-	/**
-	 * Returns the target app language.
-	 *
-	 * @return string|null
-	 */
-	private function _getTargetLanguage()
-	{
-		if ($this->isInstalled())
-		{
-			// Will any locale validation be necessary here?
-			if ($this->request->isCpRequest() || defined('CRAFT_LOCALE'))
-			{
-				if ($this->request->isCpRequest())
-				{
-					$locale = 'auto';
-				}
-				else
-				{
-					$locale = StringHelper::toLowerCase(CRAFT_LOCALE);
-				}
-
-				// Get the list of actual site locale IDs
-				$siteLocaleIds = $this->i18n->getSiteLocaleIds();
-
-				// Is it set to "auto"?
-				if ($locale == 'auto')
-				{
-					// Place this within a try/catch in case userSession is being fussy.
-					try
-					{
-						// If the user is logged in *and* has a primary language set, use that
-						$user = $this->userSession->getUser();
-
-						if ($user && $user->preferredLocale)
-						{
-							return $user->preferredLocale;
-						}
-					}
-					catch (\Exception $e)
-					{
-						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
-					}
-
-					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = $this->request->getBrowserLanguages();
-
-					if ($browserLanguages)
-					{
-						foreach ($browserLanguages as $language)
-						{
-							if (in_array($language, $siteLocaleIds))
-							{
-								return $language;
-							}
-						}
-					}
-				}
-
-				// Is it set to a valid site locale?
-				else if (in_array($locale, $siteLocaleIds))
-				{
-					return $locale;
-				}
-			}
-
-			// Use the primary site locale by default
-			return $this->i18n->getPrimarySiteLocaleId();
-		}
-		else
-		{
-			return $this->_getFallbackLanguage();
-		}
-	}
-
-	/**
-	 * Tries to find a language match with the user's browser's preferred language(s).
-	 * If not uses the app's sourceLanguage.
-	 *
-	 * @return string
-	 */
-	private function _getFallbackLanguage()
-	{
-		// See if we have the CP translated in one of the user's browsers preferred language(s)
-		$language = $this->getTranslatedBrowserLanguage();
-
-		// Default to the source language.
-		if (!$language)
-		{
-			$language = $this->sourceLanguage;
-		}
-
-		return $language;
 	}
 
 	/**
