@@ -688,7 +688,6 @@ class AppBehavior extends BaseBehavior
 		catch(\CDbException $e)
 		{
 			Craft::log($e->getMessage(), LogLevel::Error);
-			$missingPdo = false;
 
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
@@ -737,6 +736,7 @@ class AppBehavior extends BaseBehavior
 	{
 		$info = $this->getInfo();
 		$info->maintenance = $value;
+
 		return $this->saveInfo($info);
 	}
 
