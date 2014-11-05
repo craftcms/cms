@@ -303,6 +303,12 @@ class WebApp extends \CWebApplication
 	{
 		if (!isset($this->_language))
 		{
+			// This method shouldn't be the one to initialize HttpRequestService.
+			if (!$this->getComponent('request', false))
+			{
+				return $this->sourceLanguage;
+			}
+
 			// Defend against an infinite getLanguage() loop
 			if (!$this->_gettingLanguage)
 			{

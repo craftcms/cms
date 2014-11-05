@@ -379,19 +379,6 @@ class Craft extends \Yii
 			}
 		}
 
-		// If this isn't set, presumably we can't connect to the database.
-		if (!craft()->getIsDbConnectionValid())
-		{
-			$source = 'en_us';
-			$language = 'en_us';
-
-			// If it's a yiic/console app, just go with english.
-			if (!craft()->isConsole())
-			{
-				$language = craft()->getTranslatedBrowserLanguage();
-			}
-		}
-
 		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
 		if (craft()->config->get('translationDebugOutput'))
 		{
