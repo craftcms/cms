@@ -17,15 +17,6 @@ return array(
 	'actionTrigger' => 'actions',
 
 	/**
-	 * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site
-	 * requests.
-	 *
-	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
-	 * basis.
-	 */
-	'activateAccountFailurePath' => '',
-
-	/**
 	 * Determines whether auto-generated URLs should have trailing slashes.
 	 */
 	'addTrailingSlashesToUrls' => false,
@@ -239,6 +230,15 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'invalidLoginWindowDuration' => 'PT1H',
+
+	/**
+	 * The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
+	 * resetting user account passwords.  Note that this only affects front-end site requests.
+	 *
+	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+	 * basis.
+	 */
+	'invalidTokenPath' => '',
 
 	/**
 	 * Whether the site is currently online or not. If set to false or true, will take precedence over what is set in
