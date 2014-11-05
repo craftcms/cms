@@ -328,7 +328,7 @@ return array(
 	 * might be stored with memcache or the like. If it does, Craft will leave it alone; otherwise Craft will override
 	 * it.
 	 */
-	'overridePhpSessionLocation' => 'auto',
+	'overridePhpSessionLocation' => false,
 
 	/**
 	 * The string preceding a number which Craft will look for when determining if the current request is for a
