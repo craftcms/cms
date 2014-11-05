@@ -3,7 +3,11 @@
  */
 Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 {
-	sortable: false,
+	setSettings: function()
+	{
+		this.base.apply(this, arguments);
+		this.settings.sortable = false;
+	},
 
 	getModalSettings: function()
 	{
