@@ -293,6 +293,8 @@ class MatrixService extends BaseApplicationComponent
 				}
 
 				// Save the fields and field layout
+				// -------------------------------------------------------------
+
 				$fieldLayoutFields = array();
 				$sortOrder = 0;
 
@@ -307,21 +309,28 @@ class MatrixService extends BaseApplicationComponent
 						throw new Exception(Craft::t('An error occurred while saving this Matrix block type.'));
 					}
 
-					$sortOrder++;
-					$fieldLayoutFields[] = array(
-						'fieldId'   => $field->id,
-						'required'  => $field->required,
-						'sortOrder' => $sortOrder
-					);
+					$fieldLayoutField = new FieldLayoutFieldModel();
+					$fieldLayoutField->fieldId = $field->id;
+					$fieldLayoutField->required = $field->required;
+					$fieldLayoutField->sortOrder = ++$sortOrder;
+
+					$fieldLayoutFields[] = $fieldLayoutField;
 				}
 
 				$contentService->fieldContext        = $originalFieldContext;
 				$contentService->fieldColumnPrefix   = $originalFieldColumnPrefix;
 				$fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
+				$fieldLayoutTab = new FieldLayoutTabModel();
+				$fieldLayoutTab->name = 'Content';
+				$fieldLayoutTab->sortOrder = 1;
+				$fieldLayoutTab->setFields($fieldLayoutFields);
+
 				$fieldLayout = new FieldLayoutModel();
 				$fieldLayout->type = ElementType::MatrixBlock;
+				$fieldLayout->setTabs(array($fieldLayoutTab));
 				$fieldLayout->setFields($fieldLayoutFields);
+
 				$fieldsService->saveLayout($fieldLayout);
 
 				// Update the block type model & record with our new field layout ID
