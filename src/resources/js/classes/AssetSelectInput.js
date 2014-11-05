@@ -8,10 +8,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 	uploader: null,
 	progressBar: null,
 
-	init: function(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey, fieldId)
+	init: function()
 	{
 		this.base.apply(this, arguments);
-		//this.base(id, name, elementType, sources, criteria, sourceElementId, limit, modalStorageKey, fieldId);
 		this._attachUploader();
 	},
 
