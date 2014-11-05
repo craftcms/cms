@@ -1456,7 +1456,16 @@ class UsersController extends BaseController
 	 */
 	private function _processInvalidToken($user)
 	{
-		if (($url = craft()->config->getLocalized('activateAccountFailurePath')) != '')
+		$url = craft()->config->getLocalized('invalidTokenPath');
+
+		if ($url == '')
+		{
+			// Check the deprecated config setting.
+			// TODO: Add a deprecation log message in 3.0.
+			$url = craft()->config->getLocalized('activateAccountFailurePath');
+		}
+
+		if ($url != '')
 		{
 			$this->redirect(UrlHelper::getSiteUrl($url));
 		}
