@@ -191,7 +191,7 @@ Craft.Uploader = Garnish.Base.extend(
 				var str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: Craft.maxUploadSize});
+			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
 			this._rejectedFiles.size = [];
 			alert(str);
 		}
@@ -207,10 +207,33 @@ Craft.Uploader = Garnish.Base.extend(
 				var str = "The files {files} could not be uploaded, because the field limit has been reached.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", "), size: Craft.maxUploadSize});
+			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", ")});
 			this._rejectedFiles.limit = [];
 			alert(str);
 		}
+	},
+
+	humanFileSize: function (bytes, si)
+	{
+		var threshold = 1024;
+
+		if(bytes < threshold)
+		{
+			return bytes + ' B';
+		}
+
+		var units = ['kB','MB','GB','TB','PB','EB','ZB','YB'];
+
+		var u = -1;
+
+		do
+		{
+			bytes = bytes /threshold;
+			++u;
+		}
+		while(bytes >= threshold);
+
+		return bytes.toFixed(1)+' '+units[u];
 	},
 
 	defaultSettings: {
