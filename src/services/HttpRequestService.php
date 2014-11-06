@@ -663,7 +663,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string     $content   The contents of the file.
 	 * @param array|null $options   An array of optional options. Possible keys include 'forceDownload', 'mimeType',
 	 *                              and 'cache'.
-	 * @param bool|null  $terminate Whether the requset should be terminated after the file has been sent.
+	 * @param bool|null  $terminate Whether the request should be terminated after the file has been sent.
 	 *                              Defaults to `true`.
 	 *
 	 * @throws HttpException
