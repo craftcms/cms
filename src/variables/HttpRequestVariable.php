@@ -356,4 +356,18 @@ class HttpRequestVariable
 	{
 		return craft()->request->getQueryStringWithoutPath();
 	}
+
+	/**
+	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
+	 * variations in how different ISPs handle IP addresses in headers between hops.
+	 *
+	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
+	 * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
+	 *
+	 * @return string The IP address.
+	 */
+	public function getIpAddress()
+	{
+		return craft()->request->getIpAddress();
+	}
 }
