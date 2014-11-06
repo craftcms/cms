@@ -109,9 +109,7 @@ class MatrixBlockElementType extends BaseElementType
 
 			foreach ($blockType->getFields() as $field)
 			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType && $fieldType->defineContentAttribute())
+				if ($field->hasContentColumn())
 				{
 					$columns[] = array('handle' => $field->handle, 'column' => $fieldColumnPrefix.$field->handle);
 				}
