@@ -678,7 +678,9 @@ class HttpRequestService extends \CHttpRequest
 		// (http://pear.php.net/bugs/bug.php?id=9670)
 		if (ob_get_length() !== false)
 		{
-			ob_clean();
+			// If zlib.output_compression is enabled, then ob_clean() will corrupt the results of output buffering.
+			// ob_end_clean is what we want.
+			ob_end_clean();
 		}
 
 		// Default to disposition to 'download'
@@ -785,14 +787,14 @@ class HttpRequestService extends \CHttpRequest
 			}
 		}
 
-		if (!ob_get_length())
-		{
-			HeaderHelper::setLength($length);
-		}
-
 		if ($options['mimeType'] == 'application/x-javascript' || $options['mimeType'] == 'text/css')
 		{
 			HeaderHelper::setHeader(array('Vary' => 'Accept-Encoding'));
+		}
+
+		if (!ob_get_length())
+		{
+			HeaderHelper::setLength($length);
 		}
 
 		$content = mb_substr($content, $contentStart, $length);
