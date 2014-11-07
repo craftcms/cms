@@ -300,6 +300,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						{
 							$('[data-id=' + originalFileIds[i] + ']').remove();
 						}
+
+						this._collapseExtraExpandedFolders(targetFolderId);
 					};
 
 					if (this.promptHandler.getPromptCount())
