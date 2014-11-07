@@ -265,6 +265,23 @@ interface IElementType extends IComponentType
 	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
+	 * Returns the fields that should take part in an upcoming elements qurery.
+	 *
+	 * These fields will get their own parameters in the {@link ElementCriteriaModel} that gets passed in,
+	 * their field types will each have an opportunity to help build the element query, and their columns in the content
+	 * table will be selected by the query (for those that have one).
+	 *
+	 * If a field has its own column in the content table, but the column name is prefixed with something besides
+	 * “field_”, make sure you set the `columnPrefix` attribute on the {@link FieldModel}, so
+	 * {@link ElementsService::buildElementsQuery()} knows which column to select.
+	 *
+	 * @param ElementCriteriaModel
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
+
+	/**
 	 * Returns the field column names that should be selected from the content table.
 	 *
 	 * This method will tell {@link ElementsService::buildElementsQuery()} which custom fields it should be selecting
@@ -273,6 +290,7 @@ interface IElementType extends IComponentType
 	 *
 	 * @param ElementCriteriaModel
 	 *
+	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria);

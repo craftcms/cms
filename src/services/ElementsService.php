@@ -430,6 +430,7 @@ class ElementsService extends BaseApplicationComponent
 					$contentCols .= ', content.title';
 				}
 
+				// TODO: Replace this with a call to getFieldsForElementsQuery() in 3.0
 				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
 
 				foreach ($fieldColumns as $column)
@@ -597,16 +598,47 @@ class ElementsService extends BaseApplicationComponent
 		// Give field types a chance to make changes
 		// ---------------------------------------------------------------------
 
-		foreach ($criteria->getSupportedFieldHandles() as $fieldHandle)
+		if ($elementType->hasContent() && $contentTable)
 		{
-			$field = craft()->fields->getFieldByHandle($fieldHandle);
-			$fieldType = $field->getFieldType();
+			$contentService = craft()->content;
+			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
 
-			if ($fieldType)
+			// TODO: $fields should already be defined by now in Carft 3.0
+			$fields = $elementType->getFieldsForElementsQuery($criteria);
+			$extraCriteriaAttributes = $criteria->getExtraAttributeNames();
+
+			foreach ($fields as $field)
 			{
-				if ($fieldType->modifyElementsQuery($query, $criteria->$fieldHandle) === false)
+				$fieldType = $field->getFieldType();
+
+				if ($fieldType)
 				{
-					return false;
+					// Was this field's parameter set on the criteria model?
+					if (in_array($field->handle, $extraCriteriaAttributes))
+					{
+						$fieldCriteria = $criteria->{$field->handle};
+					}
+					else
+					{
+						$fieldCriteria = null;
+					}
+
+					// Set the field's column prefix on ContentService
+					if ($field->columnPrefix)
+					{
+						$contentService->fieldColumnPrefix = $field->columnPrefix;
+					}
+
+					$fieldTypeResponse = $fieldType->modifyElementsQuery($query, $fieldCriteria);
+
+					// Set it back
+					$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+
+					// Need to bail early?
+					if ($fieldTypeResponse === false)
+					{
+						return false;
+					}
 				}
 			}
 		}

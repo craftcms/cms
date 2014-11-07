@@ -101,6 +101,7 @@ class FieldModel extends BaseComponentModel
 			'translatable' => AttributeType::Bool,
 
 			'oldHandle'    => AttributeType::String,
+			'columnPrefix' => AttributeType::String,
 		));
 	}
 }

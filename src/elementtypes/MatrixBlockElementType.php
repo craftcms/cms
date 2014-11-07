@@ -93,15 +93,15 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
+	 * @inheritDoc IElementType::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return array
+	 * @return FieldModel[]
 	 */
-	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$columns = array();
+		$fields = array();
 
 		foreach (craft()->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
 		{
@@ -109,14 +109,12 @@ class MatrixBlockElementType extends BaseElementType
 
 			foreach ($blockType->getFields() as $field)
 			{
-				if ($field->hasContentColumn())
-				{
-					$columns[] = array('handle' => $field->handle, 'column' => $fieldColumnPrefix.$field->handle);
-				}
+				$field->columnPrefix = $fieldColumnPrefix;
+				$fields[] = $field;
 			}
 		}
 
-		return $columns;
+		return $fields;
 	}
 
 	/**

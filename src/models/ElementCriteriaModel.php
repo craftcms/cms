@@ -17,6 +17,11 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	// =========================================================================
 
 	/**
+	 * @var bool Whether this model should be strict about only allowing values to be set on defined attributes
+	 */
+	protected $strictAttributes = false;
+
+	/**
 	 * @var BaseElementType
 	 */
 	private $_elementType;
@@ -390,6 +395,9 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		}
 	}
 
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns an element at a specific offset.
 	 *
@@ -457,19 +465,6 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 		// Mix in any custom attributes defined by the element type
 		$elementTypeAttributes = $this->_elementType->defineCriteriaAttributes();
 		$attributes = array_merge($attributes, $elementTypeAttributes);
-
-		// Mix in the custom fields
-		$this->_supportedFieldHandles = array();
-
-		foreach (craft()->fields->getAllFields() as $field)
-		{
-			// Make sure the handle doesn't conflict with an existing attribute
-			if (!isset($attributes[$field->handle]))
-			{
-				$this->_supportedFieldHandles[] = $field->handle;
-				$attributes[$field->handle] = array(AttributeType::Mixed);
-			}
-		}
 
 		return $attributes;
 	}

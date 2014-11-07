@@ -327,26 +327,48 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getFieldsForElementsQuery()
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	{
+		$contentService = craft()->content;
+		$originalFieldContext = $contentService->fieldContext;
+		$contentService->fieldContext = 'global';
+
+		$fields = craft()->fields->getAllFields();
+
+		$contentService->fieldContext = $originalFieldContext;
+
+		return $fields;
+	}
+
+	/**
 	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
+	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$contentService = craft()->content;
 		$columns = array();
+		$fields = $this->getFieldsForElementsQuery($criteria);
 
-		$originalFieldContext = $contentService->fieldContext;
-		$contentService->fieldContext = 'global';
-
-		foreach (craft()->fields->getFieldsWithContent() as $field)
+		foreach ($fields as $field)
 		{
-			$columns[] = array('handle' => $field->handle, 'column' => 'field_'.$field->handle);
+			if ($field->hasContentColumn())
+			{
+				$columns[] = array(
+					'handle' => $field->handle,
+					'column' => ($field->columnPrefix ? $field->columnPrefix : 'field_') . $field->handle
+				);
+			}
 		}
-
-		$contentService->fieldContext = $originalFieldContext;
 
 		return $columns;
 	}
