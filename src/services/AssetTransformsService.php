@@ -467,6 +467,10 @@ class AssetTransformsService extends BaseApplicationComponent
 		unset($values['detectedFormat']);
 		unset($values['transform']);
 
+		// Let DbCommand take care of the audit columns.
+		unset($values['dateCreated']);
+		unset($values['dateUpdated']);
+
 		if (!empty($index->id))
 		{
 			$id = $index->id;
