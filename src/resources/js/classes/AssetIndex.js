@@ -219,7 +219,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (this._fileDrag.$activeDropTarget && this._fileDrag.$activeDropTarget[0] != this.$source[0])
 		{
 			// Keep it selected
-			this.sourceSelect.selectItem(this._fileDrag.$activeDropTarget);
+			var originatingSource = this.$source;
 
 			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
 				originalFileIds = [],
@@ -287,6 +287,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					this.setIndexAvailable();
 					this.progressBar.hideProgressBar();
 
+					var performAfterMoveActions = function ()
+					{
+						// Select original source
+						this.sourceSelect.selectItem(originatingSource);
+
+						// Make sure we use the correct offset when fetching the next page
+						this._totalVisible -= this._fileDrag.$draggee.length;
+
+						// And remove the elements that have been moved away
+						for (var i = 0; i < originalFileIds.length; i++)
+						{
+							$('[data-id=' + originalFileIds[i] + ']').remove();
+						}
+					};
+
 					if (this.promptHandler.getPromptCount())
 					{
 						// Define callback for completing all prompts
@@ -316,7 +331,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							// Nothing to do, carry on
 							if (newParameterArray.length == 0)
 							{
-								this._selectSourceByFolderId(targetFolderId);
+								performAfterMoveActions.apply(this);
 							}
 							else
 							{
@@ -336,8 +351,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					}
 					else
 					{
+						performAfterMoveActions.apply(this);
 						this._fileDrag.fadeOutHelpers();
-						this._selectSourceByFolderId(targetFolderId);
 					}
 				}, this);
 
