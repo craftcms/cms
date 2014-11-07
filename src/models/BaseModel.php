@@ -114,24 +114,30 @@ abstract class BaseModel extends \CModel
 	 */
 	public function __call($name, $arguments)
 	{
-		if (in_array($name, $this->attributeNames()))
-		{
-			$copy = $this->copy();
-
-			if (count($arguments) == 1)
-			{
-				$copy->setAttribute($name, $arguments[0]);
-			}
-			else
-			{
-				$copy->setAttribute($name, $arguments);
-			}
-
-			return $copy;
-		}
-		else
+		try
 		{
 			return parent::__call($name, $arguments);
+		}
+		catch (\CException $e)
+		{
+			// Is this one of our attributes?
+			if (!$this->strictAttributes || in_array($name, $this->attributeNames()))
+			{
+				$copy = $this->copy();
+
+				if (count($arguments) == 1)
+				{
+					$copy->setAttribute($name, $arguments[0]);
+				}
+				else
+				{
+					$copy->setAttribute($name, $arguments);
+				}
+
+				return $copy;
+			}
+
+			throw $e;
 		}
 	}
 
