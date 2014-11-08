@@ -1116,7 +1116,10 @@ class UsersController extends BaseController
 	/**
 	 * Deletes a user.
 	 *
+	 * @throws Exception
 	 * @throws HttpException
+	 * @throws \CDbException
+	 * @throws \Exception
 	 * @return null
 	 */
 	public function actionDeleteUser()
@@ -1451,7 +1454,8 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $user
+	 * @param UserModel $user
+	 *
 	 * @throws HttpException
 	 */
 	private function _processInvalidToken($user)
@@ -1471,16 +1475,16 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			if (!$user)
+			if ($user->can('accessCp'))
 			{
-				throw new HttpException('200', Craft::t('Invalid verification code.'));
+				$url = UrlHelper::getCpUrl(craft()->config->getLoginPath());
 			}
 			else
 			{
-				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-
-				$this->renderTemplate('_special/expired', array('userId' => $user->id));
+				$url = UrlHelper::getSiteUrl(craft()->config->getLoginPath());
 			}
+
+			throw new HttpException('200', Craft::t('Invalid verification code. Please [login or reset your password]({loginUrl}).', array('loginUrl' => $url)));
 		}
 	}
 }
