@@ -35,6 +35,7 @@
 
 		{{ forms.textField({
 			label: "Site Name"|t,
+			warning: (craft.config.siteName ? configWarning('siteName')),
 			id: 'siteName',
 			name: 'siteName',
 			value: info.siteName,
