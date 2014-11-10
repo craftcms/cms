@@ -158,7 +158,7 @@ class UserIdentity extends \CUserIdentity
 					}
 					else
 					{
-						// Everything's good.
+						// Everything is good.
 						$this->errorCode = static::ERROR_NONE;
 					}
 				}

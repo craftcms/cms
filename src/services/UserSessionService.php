@@ -106,9 +106,28 @@ class UserSessionService extends \CWebUser
 			{
 				$userRow = $this->_getUserRow($this->getId());
 
-				if ($userRow && $userRow['status'] == UserStatus::Active || $userRow['status'] == UserStatus::Pending)
+				// Only return active and pending users.
+				if ($userRow)
 				{
-					$this->_userModel = UserModel::populateModel($userRow);
+					$validUser = false;
+
+					// Keeping extra logic here so the upgrade to 2.3 won't freak.
+					// First the pre 2.3 check.
+					if ((isset($userRow['status']) && $userRow['status'] == UserStatus::Active) || (isset($userRow['status']) && $userRow['status'] == UserStatus::Pending))
+					{
+						$validUser = true;
+					}
+
+					// Now the 2.3 check. If all 3 of these are false, then the user is active or pending.
+					if ((isset($userRow['suspended']) && isset($userRow['archived']) && isset($userRow['locked'])) && (!$userRow['suspended'] && !$userRow['archived'] && !$userRow['locked']))
+					{
+						$validUser = true;
+					}
+
+					if ($validUser)
+					{
+						$this->_userModel = UserModel::populateModel($userRow);
+					}
 				}
 				else
 				{

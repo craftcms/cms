@@ -186,7 +186,39 @@ class UserModel extends BaseElementModel
 	 */
 	public function getStatus()
 	{
-		return $this->getAttribute('status');
+		if ($this->locked)
+		{
+			return UserStatus::Locked;
+		}
+
+		if ($this->suspended)
+		{
+			return UserStatus::Suspended;
+		}
+
+		if ($this->archived)
+		{
+			return UserStatus::Archived;
+		}
+
+		// Do this so we have pending as the default.
+		if (!$this->pending)
+		{
+			return UserStatus::Active;
+		}
+
+		return UserStatus::Pending;
+	}
+
+	/**
+	 * Sets a user's status to active.
+	 */
+	public function setActive()
+	{
+		$this->pending = false;
+		$this->locked = false;
+		$this->suspended = false;
+		$this->archived = false;
 	}
 
 	/**
@@ -433,7 +465,10 @@ class UserModel extends BaseElementModel
 			'preferredLocale'            => AttributeType::Locale,
 			'admin'                      => AttributeType::Bool,
 			'client'                     => AttributeType::Bool,
-			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
+			'locked'                     => AttributeType::Bool,
+			'suspended'                  => AttributeType::Bool,
+			'pending'                    => AttributeType::Bool,
+			'archived'                   => AttributeType::Bool,
 			'lastLoginDate'              => AttributeType::DateTime,
 			'invalidLoginCount'          => AttributeType::Number,
 			'lastInvalidLoginDate'       => AttributeType::DateTime,
