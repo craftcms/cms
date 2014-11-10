@@ -37,9 +37,9 @@ return array(
 	'allowUppercaseInSlug' => false,
 
 	/**
-	 * If this is set, Craft will call Yii’s CApplication->setId method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
+	 * If this is set, Craft will call Yii’s CApplication::setId() method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
 	 * set an application ID for Craft instead of using it’s own method of generating an ID based on a hash of
-	 * CApplication->getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
+	 * CApplication::getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
 	 * where deploying will destroy any active user sessions.
 	 *
 	 * The value is itself is not important as long as it is very hard to guess and is NOT based on the the absolute path
@@ -178,14 +178,8 @@ return array(
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
-	 *
-	 * For example if you set it to:
-	 *
-	 *     array(
-	 *         'siteUrl' => 'http://example.com/'
-	 *     )
-	 *
-	 * ...then you would be able to use "{siteUrl}" in your Site URL setting or the URL settings for your Asset sources.
+	 * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
+	 * of this setting.
 	 */
 	'environmentVariables' => array(),
 
@@ -241,14 +235,14 @@ return array(
 	'invalidTokenPath' => '',
 
 	/**
-	 * Whether the site is currently online or not. If set to false or true, will take precedence over what is set in
-	 * Settings->General->System Status in the CP.
+	 * Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+	 * System Status setting in Settings → General.
 	 */
-	'isSystemOn' => '',
+	'isSystemOn' => null,
 
 	/**
 	 * If set to true, the auto-generated slugs for an entry will strip any multi-byte characters (Chinese, Japanese, etc.)
-	 * and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ => n).
+	 * and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ → n).
 	 *
 	 * Note that this only affects the JavaScript auto-generated slugs and they still can be manually entered in the slug.
 	 */
@@ -428,7 +422,7 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
-	 * The base URL to the site. If this is set, Craft will use it instead of the site URL defined in Settings->General.
+	 * The base URL to the site. If set, it will take precedence over the Site URL setting in Settings → General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.
