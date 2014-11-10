@@ -402,7 +402,7 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			$returnUrl = craft()->userSession->getReturnUrl();
+			$returnUrl = craft()->config->get('postCpLoginRedirect');
 		}
 
 		$this->returnJson(array('alive' => true, 'finished' => true, 'returnUrl' => $returnUrl));
