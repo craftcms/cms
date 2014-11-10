@@ -24,7 +24,7 @@ class LogEntryModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'dateTime'    => AttributeType::String,
+			'dateTime'    => AttributeType::DateTime,
 			'level'       => AttributeType::String,
 			'category'    => AttributeType::Number,
 			'get'         => AttributeType::Mixed,
