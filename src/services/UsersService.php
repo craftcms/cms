@@ -241,8 +241,9 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->client                = $user->client;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
-		$userRecord->status                = $user->status;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
+
+		$this->_processSaveUserStatus($userRecord, $user->status);
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -273,7 +274,7 @@ class UsersService extends BaseApplicationComponent
 			// Set a default status of pending, if one wasn't supplied.
 			if (!$user->status)
 			{
-				$user->status = UserStatus::Pending;
+				$user->pending = true;
 			}
 
 			// Fire an 'onBeforeSaveUser' event
@@ -583,7 +584,8 @@ class UsersService extends BaseApplicationComponent
 				// Was that one bad password too many?
 				if ($userRecord->invalidLoginCount > $maxInvalidLogins)
 				{
-					$userRecord->status = $user->status = UserStatus::Locked;
+					$userRecord->locked = true;
+					$user->locked = true;
 					$userRecord->invalidLoginCount = null;
 					$userRecord->invalidLoginWindowStart = null;
 					$userRecord->lockoutDate = $user->lockoutDate = $currentTime;
@@ -619,7 +621,8 @@ class UsersService extends BaseApplicationComponent
 
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		$userRecord->status = $user->status = UserStatus::Active;
+		$userRecord->setActive();
+		$user->setActive();
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
 		$userRecord->lockoutDate = null;
@@ -668,7 +671,9 @@ class UsersService extends BaseApplicationComponent
 
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		$userRecord->status = $user->status = UserStatus::Active;
+		$userRecord->locked = false;
+		$user->locked = false;
+
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 		$userRecord->invalidLoginWindowStart = null;
 
@@ -703,7 +708,8 @@ class UsersService extends BaseApplicationComponent
 
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		$userRecord->status = $user->status = UserStatus::Suspended;
+		$userRecord->suspended = true;
+		$user->suspended = true;
 
 		if ($userRecord->save())
 		{
@@ -736,7 +742,8 @@ class UsersService extends BaseApplicationComponent
 
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		$userRecord->status = $user->status = UserStatus::Active;
+		$userRecord->suspended = false;
+		$user->suspended = false;
 
 		if ($userRecord->save())
 		{
@@ -828,6 +835,8 @@ class UsersService extends BaseApplicationComponent
 	 * @param UserModel $oldUser The user who currently owns the content.
 	 * @param UserModel $newUser The user that will own the content going forward.
 	 *
+	 * @throws \CDbException
+	 * @throws \Exception
 	 * @return null
 	 */
 	public function reassignContent(UserModel $oldUser, UserModel $newUser)
@@ -1018,7 +1027,7 @@ class UsersService extends BaseApplicationComponent
 
 			$ids = craft()->db->createCommand()->select('id')
 				->from('users')
-				->where('status = :status AND verificationCodeIssuedDate < :pastTime', array('status' => 'pending', 'pastTime' => $pastTime))
+				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array('pastTime' => $pastTime))
 				->queryColumn();
 
 			$affectedRows = craft()->db->createCommand()->delete('elements', array('in', 'id', $ids));
@@ -1308,7 +1317,8 @@ class UsersService extends BaseApplicationComponent
 
 			if (!$user->unverifiedEmail)
 			{
-				$userRecord->status = $user->status = UserStatus::Active;
+				$userRecord->setActive();
+				$user->setActive();
 			}
 
 			$userRecord->invalidLoginWindowStart = null;
@@ -1345,6 +1355,50 @@ class UsersService extends BaseApplicationComponent
 			}
 
 			return false;
+		}
+	}
+
+	/**
+	 * @param $userRecord
+	 * @param $status
+	 */
+	private function _processSaveUserStatus($userRecord, $status)
+	{
+		switch ($status)
+		{
+			case UserStatus::Active:
+			{
+				$userRecord->archived = false;
+				$userRecord->locked = false;
+				$userRecord->pending = false;
+				$userRecord->suspended = false;
+
+				break;
+			}
+
+			case UserStatus::Pending:
+			{
+				$userRecord->pending = true;
+				break;
+			}
+
+			case UserStatus::Locked:
+			{
+				$userRecord->locked = true;
+				break;
+			}
+
+			case UserStatus::Suspended:
+			{
+				$userRecord->suspended = true;
+				break;
+			}
+
+			case UserStatus::Archived:
+			{
+				$userRecord->archived = true;
+				break;
+			}
 		}
 	}
 }

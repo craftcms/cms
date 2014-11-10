@@ -734,11 +734,11 @@ class UsersController extends BaseController
 			// Check the global setting here, instead of unverifiedEmail
 			if ($requireEmailVerification)
 			{
-				$user->status = UserStatus::Pending;
+				$user->pending = true;
 			}
 			else
 			{
-				$user->status = UserStatus::Active;
+				$user->setActive();
 			}
 		}
 

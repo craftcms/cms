@@ -82,6 +82,17 @@ class UserRecord extends BaseRecord
 		return parent::validate($attributes, false);
 	}
 
+	/**
+	 * Sets a user's status to active.
+	 */
+	public function setActive()
+	{
+		$this->pending = false;
+		$this->locked = false;
+		$this->suspended = false;
+		$this->archived = false;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -102,7 +113,10 @@ class UserRecord extends BaseRecord
 			'preferredLocale'            => array(AttributeType::Locale),
 			'admin'                      => array(AttributeType::Bool),
 			'client'                     => array(AttributeType::Bool),
-			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
+			'locked'                     => array(AttributeType::Bool),
+			'suspended'                  => array(AttributeType::Bool),
+			'pending'                    => array(AttributeType::Bool),
+			'archived'                   => array(AttributeType::Bool),
 			'lastLoginDate'              => array(AttributeType::DateTime),
 			'lastLoginAttemptIPAddress'  => array(AttributeType::String, 'maxLength' => 45),
 			'invalidLoginWindowStart'    => array(AttributeType::DateTime),

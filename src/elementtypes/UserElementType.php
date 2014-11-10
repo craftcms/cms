@@ -220,7 +220,33 @@ class UserElementType extends BaseElementType
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
 	{
-		return 'users.status = "'.$status.'"';
+		switch ($status)
+		{
+			case UserStatus::Active:
+			{
+				return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
+			}
+
+			case UserStatus::Pending:
+			{
+				return 'users.pending = 1';
+			}
+
+			case UserStatus::Locked:
+			{
+				return 'users.locked = 1';
+			}
+
+			case UserStatus::Suspended:
+			{
+				return 'users.suspended = 1';
+			}
+
+			case UserStatus::Archived:
+			{
+				return 'users.archived = 1';
+			}
+		}
 	}
 
 	/**
@@ -234,7 +260,7 @@ class UserElementType extends BaseElementType
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.status, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
+			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
 			->join('users users', 'users.id = elements.id');
 
 		if ($criteria->admin)
