@@ -29,7 +29,7 @@ class m141109_000001_user_status_shuffle extends BaseMigration
 		$this->update('users', array(
 			'locked' => 1
 		), array(
-			'status' => UserStatus::Locked
+			'status' => 'locked'
 		));
 
 		$this->update('users', array('locked' => 0), 'locked IS NULL');
@@ -38,7 +38,7 @@ class m141109_000001_user_status_shuffle extends BaseMigration
 		$this->update('users', array(
 			'pending' => 1
 		), array(
-			'status' => UserStatus::Pending
+			'status' => 'pending'
 		));
 
 		$this->update('users', array('pending' => 0), 'pending IS NULL');
@@ -47,7 +47,7 @@ class m141109_000001_user_status_shuffle extends BaseMigration
 		$this->update('users', array(
 			'archived' => 1
 		), array(
-			'status' => UserStatus::Archived
+			'status' => 'archived'
 		));
 
 		$this->update('users', array('archived' => 0), 'archived IS NULL');
@@ -56,7 +56,7 @@ class m141109_000001_user_status_shuffle extends BaseMigration
 		$this->update('users', array(
 			'suspended' => 1
 		), array(
-			'status' => UserStatus::Suspended
+			'status' => 'suspended'
 		));
 
 		$this->update('users', array('suspended' => 0), 'suspended IS NULL');
