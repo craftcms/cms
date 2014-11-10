@@ -118,7 +118,7 @@
 								}) }}
 							{% endif %}
 
-							{% if CraftEdition >= CraftClient %}
+							{% if CraftEdition >= CraftClient and currentUser.can('editPeerEntries'~permissionSuffix) %}
 								{{ forms.elementSelectField({
 									label: "Author"|t,
 									id: 'author',
