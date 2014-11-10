@@ -320,8 +320,18 @@ class AppBehavior extends BaseBehavior
 	{
 		if (!isset($this->_siteName))
 		{
-			$siteName = $this->getInfo('siteName');
-			$this->_siteName = craft()->config->parseEnvironmentString($siteName);
+			// Start by checking the config
+			$siteName = craft()->config->getLocalized('siteName');
+
+			if (!$siteName)
+			{
+				$siteName = $this->getInfo('siteName');
+
+				// Parse it for environment variables
+				$siteName = craft()->config->parseEnvironmentString($siteName);
+			}
+
+			$this->_siteName = $siteName;
 		}
 
 		return $this->_siteName;

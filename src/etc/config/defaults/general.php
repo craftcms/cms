@@ -422,6 +422,14 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
+	 * The name of the site. If set, it will take precedence over the Site Name setting in Settings → General.
+	 *
+	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+	 * basis.
+	 */
+	'siteName' => null,
+
+	/**
 	 * The base URL to the site. If set, it will take precedence over the Site URL setting in Settings → General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
