@@ -201,13 +201,12 @@ class UserModel extends BaseElementModel
 			return UserStatus::Archived;
 		}
 
-		// Do this so we have pending as the default.
-		if (!$this->pending)
+		if ($this->pending)
 		{
-			return UserStatus::Active;
+			return UserStatus::Pending;
 		}
 
-		return UserStatus::Pending;
+		return UserStatus::Active;
 	}
 
 	/**
