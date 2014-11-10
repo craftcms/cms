@@ -47,7 +47,6 @@
 			{% if not craft.request.isMobileBrowser(true) %}
 				document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
 			{% endif %}
-			window.returnUrl = '{{ craft.session.returnUrl|e('js') }}';
 		}
 		else
 		{
