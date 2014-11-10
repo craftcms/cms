@@ -67,12 +67,13 @@ class UserSessionVariable
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
 	 * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
+	 * @param bool   $delete     Whether the stored return URL should be deleted after it was fetched.
 	 *
 	 * @return string The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = null)
+	public function getReturnUrl($defaultUrl = null, $delete = false)
 	{
-		return craft()->userSession->getReturnUrl($defaultUrl);
+		return craft()->userSession->getReturnUrl($defaultUrl, $delete);
 	}
 
 	/**

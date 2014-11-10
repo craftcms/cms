@@ -1288,11 +1288,35 @@ class UsersController extends BaseController
 	 */
 	private function _handleSuccessfulLogin($setNotice)
 	{
+		// Get the current user
+		$currentUser = craft()->userSession->getUser();
+
+		// Were they trying to access a URL beforehand?
+		$returnUrl = craft()->userSession->getReturnUrl(null, true);
+
+		if ($returnUrl === null || $returnUrl == craft()->request->getPath())
+		{
+			// If this is a CP request and they can access the control panel, send them wherever
+			// postCpLoginRedirect tells us
+			if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
+			{
+				$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+				$returnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
+			}
+			else
+			{
+				// Otherwise send them wherever postLoginRedirect tells us
+				$postLoginRedirect = craft()->config->get('postLoginRedirect');
+				$returnUrl = UrlHelper::getSiteUrl($postLoginRedirect);
+			}
+		}
+
 		// If this was an Ajax request, just return success:true
 		if (craft()->request->isAjaxRequest())
 		{
 			$this->returnJson(array(
-				'success' => true
+				'success' => true,
+				'returnUrl' => $returnUrl
 			));
 		}
 		else
@@ -1302,30 +1326,7 @@ class UsersController extends BaseController
 				craft()->userSession->setNotice(Craft::t('Logged in.'));
 			}
 
-			// Get the current user
-			$currentUser = craft()->userSession->getUser();
-
-			// Were they trying to access a URL beforehand?
-			$defaultUrl = craft()->userSession->getReturnUrl();
-
-			if ($defaultUrl === null || $defaultUrl == craft()->request->getPath())
-			{
-				// If this is a CP request and they can access the control panel, send them wherever
-				// postCpLoginRedirect tells us
-				if (craft()->request->isCpRequest() && $currentUser->can('accessCp'))
-				{
-					$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
-					$defaultUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
-				}
-				else
-				{
-					// Otherwise send them wherever postLoginRedirect tells us
-					$postLoginRedirect = craft()->config->get('postLoginRedirect');
-					$defaultUrl = UrlHelper::getSiteUrl($postLoginRedirect);
-				}
-			}
-
-			$this->redirectToPostedUrl($currentUser, $defaultUrl);
+			$this->redirectToPostedUrl($currentUser, $returnUrl);
 		}
 	}
 

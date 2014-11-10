@@ -128,10 +128,11 @@ class UserSessionService extends \CWebUser
 	 * {@link requireLogin()}.
 	 *
 	 * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
+	 * @param bool        $delete     Whether the stored return URL should be deleted after it was fetched.
 	 *
 	 * @return string|null The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = null)
+	public function getReturnUrl($defaultUrl = null, $delete = false)
 	{
 		$returnUrl = $this->getState('__returnUrl');
 
@@ -141,6 +142,12 @@ class UserSessionService extends \CWebUser
 			// i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
 			// so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
 			$returnUrl = str_replace(array('{', '}'), array('', ''), $returnUrl);
+
+			// Should we delete it?
+			if ($delete)
+			{
+				parent::setReturnUrl(null);
+			}
 		}
 
 		if ($returnUrl === null)
