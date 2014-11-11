@@ -1028,6 +1028,12 @@ class ElementsService extends BaseApplicationComponent
 		$elementRecord->enabled = (bool) $element->enabled;
 		$elementRecord->archived = (bool) $element->archived;
 
+		// Fire an 'onBeforeSaveElement' event
+		$this->onBeforeSaveElement(new Event($this, array(
+			'element'      => $element,
+			'isNewElement' => $isNewElement
+		)));
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
@@ -1248,6 +1254,12 @@ class ElementsService extends BaseApplicationComponent
 				if ($success)
 				{
 					$transaction->commit();
+
+					// Fire an 'onSaveElement' event
+					$this->onSaveElement(new Event($this, array(
+						'element'      => $element,
+						'isNewElement' => $isNewElement
+					)));
 				}
 				else
 				{
@@ -1791,6 +1803,30 @@ class ElementsService extends BaseApplicationComponent
 	public function onBeforeDeleteElements(Event $event)
 	{
 		$this->raiseEvent('onBeforeDeleteElements', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveElement' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveElement(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveElement', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveElement' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSaveElement(Event $event)
+	{
+		$this->raiseEvent('onSaveElement', $event);
 	}
 
 	// Private Methods
