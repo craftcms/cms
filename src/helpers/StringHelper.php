@@ -415,21 +415,15 @@ class StringHelper
 	{
 		if (!isset(static::$_iconv))
 		{
-			static::$_iconv = false;
-
 			// Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
 			// don't consider iconv "installed" if it's there but "unusable".
-			if (!function_exists('iconv'))
+			if (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK)
 			{
-				Craft::log('iconv is not installed.  Will fallback to mbstring.', LogLevel::Warning);
-			}
-			else if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
-			{
-				Craft::log('Buggy iconv installed.  Will fallback to mbstring.', LogLevel::Warning);
+				static::$_iconv = true;
 			}
 			else
 			{
-				static::$_iconv = true;
+				static::$_iconv = false;
 			}
 		}
 
