@@ -976,8 +976,8 @@ class SectionsService extends BaseApplicationComponent
 				throw $e;
 			}
 
-			// Fire an 'onSaveEntry' event
-			$this->onSaveEntry(new Event($this, array(
+			// Fire an 'onSaveEntryType' event
+			$this->onSaveEntryType(new Event($this, array(
 				'entryType'      => $entryType,
 				'isNewEntryType' => $isNewEntryType
 			)));
