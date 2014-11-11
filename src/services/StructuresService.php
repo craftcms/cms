@@ -328,6 +328,7 @@ class StructuresService extends BaseApplicationComponent
 	{
 		// Fire an 'onBeforeMoveElement' event
 		$this->onBeforeMoveElement(new Event($this, array(
+			'structureId'  => $structureId,
 			'element'      => $element,
 		)));
 
@@ -373,6 +374,7 @@ class StructuresService extends BaseApplicationComponent
 
 					// Fire an 'onMoveElement' event
 					$this->onMoveElement(new Event($this, array(
+						'structureId'  => $structureId,
 						'element'      => $element,
 					)));
 				}
