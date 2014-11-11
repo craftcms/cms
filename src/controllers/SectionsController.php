@@ -338,6 +338,9 @@ class SectionsController extends BaseController
 	/**
 	 * Saves an entry type.
 	 *
+	 * @throws Exception
+	 * @throws HttpException
+	 * @throws \Exception
 	 * @return null
 	 */
 	public function actionSaveEntryType()
