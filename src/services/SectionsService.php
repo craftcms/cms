@@ -915,6 +915,12 @@ class SectionsService extends BaseApplicationComponent
 
 		if (!$entryType->hasErrors())
 		{
+			// Fire an 'onBeforeSaveEntryType' event
+			$this->onBeforeSaveEntryType(new Event($this, array(
+				'entryType'      => $entryType,
+				'isNewEntryType' => $isNewEntryType
+			)));
+
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
@@ -957,6 +963,12 @@ class SectionsService extends BaseApplicationComponent
 
 				throw $e;
 			}
+
+			// Fire an 'onSaveEntry' event
+			$this->onSaveEntry(new Event($this, array(
+				'entryType'      => $entryType,
+				'isNewEntryType' => $isNewEntryType
+			)));
 
 			return true;
 		}
@@ -1141,6 +1153,30 @@ class SectionsService extends BaseApplicationComponent
 				return false;
 			}
 		}
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveEntryType' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveEntryType(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveEntryType', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveEntryType' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSaveEntryType(Event $event)
+	{
+		$this->raiseEvent('onSaveEntryType', $event);
 	}
 
 	// Private Methods
