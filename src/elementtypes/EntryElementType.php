@@ -264,6 +264,7 @@ class EntryElementType extends BaseElementType
 			'authorId'        => AttributeType::Number,
 			'before'          => AttributeType::Mixed,
 			'editable'        => AttributeType::Bool,
+			'expiryDate'      => AttributeType::Mixed,
 			'order'           => array(AttributeType::String, 'default' => 'lft, postDate desc'),
 			'postDate'        => AttributeType::Mixed,
 			'section'         => AttributeType::Mixed,
@@ -433,6 +434,11 @@ class EntryElementType extends BaseElementType
 			{
 				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<'.$criteria->before, $query->params));
 			}
+		}
+
+		if ($criteria->expiryDate)
+		{
+			$query->andWhere(DbHelper::parseDateParam('entries.expiryDate', $criteria->expiryDate, $query->params));
 		}
 
 		if ($criteria->editable)
