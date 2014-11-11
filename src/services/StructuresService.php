@@ -234,6 +234,30 @@ class StructuresService extends BaseApplicationComponent
 		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
 	}
 
+	/**
+	 * Fires an 'onBeforeMoveElement' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeMoveElement(Event $event)
+	{
+		$this->raiseEvent('onBeforeMoveElement', $event);
+	}
+
+	/**
+	 * Fires an 'onMoveElement' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onMoveElement(Event $event)
+	{
+		$this->raiseEvent('onMoveElement', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -302,6 +326,11 @@ class StructuresService extends BaseApplicationComponent
 	 */
 	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode)
 	{
+		// Fire an 'onBeforeMoveElement' event
+		$this->onBeforeMoveElement(new Event($this, array(
+			'element'      => $element,
+		)));
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
@@ -341,6 +370,11 @@ class StructuresService extends BaseApplicationComponent
 				if ($transaction !== null)
 				{
 					$transaction->commit();
+
+					// Fire an 'onMoveElement' event
+					$this->onMoveElement(new Event($this, array(
+						'element'      => $element,
+					)));
 				}
 			}
 		}
