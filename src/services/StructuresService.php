@@ -368,7 +368,6 @@ class StructuresService extends BaseApplicationComponent
 				// Tell the element type about it
 				$elementType = craft()->elements->getElementType($element->getElementType());
 				$elementType->onAfterMoveElementInStructure($element, $structureId);
-				//craft()->elements->updateElementSlugAndUri($element);
 
 				if ($transaction !== null)
 				{
