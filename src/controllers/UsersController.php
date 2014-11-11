@@ -1476,7 +1476,7 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			if ($user->can('accessCp'))
+			if ($user && $user->can('accessCp'))
 			{
 				$url = UrlHelper::getCpUrl(craft()->config->getLoginPath());
 			}
