@@ -410,6 +410,12 @@ class SectionsService extends BaseApplicationComponent
 
 		if (!$section->hasErrors())
 		{
+			// Fire an 'onBeforeSaveSection' event
+			$this->onBeforeSaveSection(new Event($this, array(
+				'section'      => $section,
+				'isNewSection' => $isNewSection,
+			)));
+
 			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 			try
 			{
@@ -715,6 +721,12 @@ class SectionsService extends BaseApplicationComponent
 
 				throw $e;
 			}
+
+			// Fire an 'onSaveSection' event
+			$this->onSaveSection(new Event($this, array(
+				'section'      => $section,
+				'isNewSection' => $isNewSection,
+			)));
 
 			return true;
 		}
@@ -1177,6 +1189,30 @@ class SectionsService extends BaseApplicationComponent
 	public function onSaveEntryType(Event $event)
 	{
 		$this->raiseEvent('onSaveEntryType', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveSection' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveSection(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveSection', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveSection' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSaveSection(Event $event)
+	{
+		$this->raiseEvent('onSaveSection', $event);
 	}
 
 	// Private Methods
