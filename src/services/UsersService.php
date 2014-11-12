@@ -856,44 +856,51 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @throws \CDbException
 	 * @throws \Exception
-	 * @return null
+	 * @return bool Whether the content was reassigned.
 	 */
 	public function reassignContent(UserModel $oldUser, UserModel $newUser)
 	{
-		// Fire an 'onBeforeReassignContent' event
-		$this->onBeforeReassignContent(new Event($this, array(
-			'oldUser' => $oldUser,
-			'newUser' => $newUser
-		)));
-
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			// Delete the template caches for any entries authored by this user
-			$entryIds = craft()->db->createCommand()
-				->select('id')
-				->from('entries')
-				->where(array('authorId' => $oldUser->id))
-				->queryColumn();
+			// Fire an 'onBeforeReassignContent' event
+			$event = new Event($this, array(
+				'oldUser' => $oldUser,
+				'newUser' => $newUser
+			));
+			$this->onBeforeReassignContent($event);
 
-			craft()->templateCache->deleteCachesByElementId($entryIds);
-
-			// Update the entry/version/draft tables to point to the new user
-			$userRefs = array(
-				'entries' => 'authorId',
-				'entrydrafts' => 'creatorId',
-				'entryversions' => 'creatorId',
-			);
-
-			foreach ($userRefs as $table => $column)
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
 			{
-				craft()->db->createCommand()->update($table, array(
-					$column => $newUser->id
-				), array(
-					$column => $oldUser->id
-				));
+				// Delete the template caches for any entries authored by this user
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('authorId' => $oldUser->id))
+					->queryColumn();
+
+				craft()->templateCache->deleteCachesByElementId($entryIds);
+
+				// Update the entry/version/draft tables to point to the new user
+				$userRefs = array(
+					'entries' => 'authorId',
+					'entrydrafts' => 'creatorId',
+					'entryversions' => 'creatorId',
+				);
+
+				foreach ($userRefs as $table => $column)
+				{
+					craft()->db->createCommand()->update($table, array(
+						$column => $newUser->id
+					), array(
+						$column => $oldUser->id
+					));
+				}
 			}
 
+			// Commit the transaction regardless of whether we reassigned the content,
+			// in case something changed in onBeforeReassignContent
 			if ($transaction !== null)
 			{
 				$transaction->commit();
@@ -914,6 +921,8 @@ class UsersService extends BaseApplicationComponent
 			'oldUser' => $oldUser,
 			'newUser' => $newUser
 		)));
+
+		return $event->performAction;
 	}
 
 	/**
