@@ -362,6 +362,7 @@ class StructuresService extends BaseApplicationComponent
 				$this->onBeforeMoveElement($event);
 			}
 
+			// Was there was no onBeforeMoveElement event, or is the event is giving us the go-ahead?
 			if (!isset($event) || $event->performAction)
 			{
 				// Really do it
