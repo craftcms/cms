@@ -355,44 +355,54 @@ class StructuresService extends BaseApplicationComponent
 			if ($mode == 'update')
 			{
 				// Fire an 'onBeforeMoveElement' event
-				$this->onBeforeMoveElement(new Event($this, array(
+				$event = new Event($this, array(
 					'structureId'  => $structureId,
 					'element'      => $element,
-				)));
+				));
+				$this->onBeforeMoveElement($event);
 			}
 
-			// Really do it
-			$success = $elementRecord->$action($targetElementRecord);
-
-			// If it didn't work, rollback the transaciton in case something changed in onBeforeMoveElement
-			if (!$success)
+			if (!isset($event) || $event->performAction)
 			{
-				if ($transaction !== null)
+				// Really do it
+				$success = $elementRecord->$action($targetElementRecord);
+
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeMoveElement
+				if (!$success)
 				{
-					$transaction->rollback();
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
 				}
 
-				return false;
+				$element->root  = $elementRecord->root;
+				$element->lft   = $elementRecord->lft;
+				$element->rgt   = $elementRecord->rgt;
+				$element->level = $elementRecord->level;
+
+				// Tell the element type about it
+				$elementType = craft()->elements->getElementType($element->getElementType());
+				$elementType->onAfterMoveElementInStructure($element, $structureId);
+
+				if ($mode == 'update')
+				{
+					// Fire an 'onMoveElement' event
+					$this->onMoveElement(new Event($this, array(
+						'structureId'  => $structureId,
+						'element'      => $element,
+					)));
+				}
 			}
-
-			$element->root  = $elementRecord->root;
-			$element->lft   = $elementRecord->lft;
-			$element->rgt   = $elementRecord->rgt;
-			$element->level = $elementRecord->level;
-
-			// Tell the element type about it
-			$elementType = craft()->elements->getElementType($element->getElementType());
-			$elementType->onAfterMoveElementInStructure($element, $structureId);
-
-			if ($mode == 'update')
+			else
 			{
-				// Fire an 'onMoveElement' event
-				$this->onMoveElement(new Event($this, array(
-					'structureId'  => $structureId,
-					'element'      => $element,
-				)));
+				$success = false;
 			}
 
+			// Commit the transaction regardless of whether we moved the element,
+			// in case something changed in onBeforeMoveElement
 			if ($transaction !== null)
 			{
 				$transaction->commit();
