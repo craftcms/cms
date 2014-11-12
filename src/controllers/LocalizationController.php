@@ -43,8 +43,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locale = craft()->request->getRequiredPost('id');
-		$success = craft()->i18n->addSiteLocale($locale);
+		$localeId = craft()->request->getRequiredPost('id');
+		$success = craft()->i18n->addSiteLocale($localeId);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -58,8 +58,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locales = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
-		$success = craft()->i18n->reorderSiteLocales($locales);
+		$localeIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
+		$success = craft()->i18n->reorderSiteLocales($localeIds);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -73,8 +73,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$locale = craft()->request->getRequiredPost('id');
-		$success = craft()->i18n->deleteSiteLocale($locale);
+		$localeId = craft()->request->getRequiredPost('id');
+		$success = craft()->i18n->deleteSiteLocale($localeId);
 		$this->returnJson(array('success' => $success));
 	}
 }
