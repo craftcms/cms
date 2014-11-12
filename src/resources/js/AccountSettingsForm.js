@@ -117,71 +117,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	{
 		if (!this.confirmDeleteModal)
 		{
-			var $form = $(
-					'<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
-						Craft.getCsrfInput() +
-						'<input type="hidden" name="action" value="users/deleteUser"/>' +
-						'<input type="hidden" name="userId" value="'+this.userId+'"/>' +
-						'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
-					'</form>'
-				).appendTo(Garnish.$bod),
-				$body = $(
-					'<div class="body">' +
-						'<p>'+Craft.t('What do you want to do with the user’s content?')+'</p>' +
-						'<div class="options">' +
-							'<label><input type="radio" name="contentAction" value="reassign"/> '+Craft.t('Reassign it to:')+'</label>' +
-							'<div id="reassignselector" class="elementselect">' +
-								'<div class="elements"></div>' +
-								'<div class="btn add icon dashed">'+Craft.t('Choose a user')+'</div>' +
-							'</div>' +
-						'</div>' +
-						'<div>' +
-							'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it all')+'</label>' +
-						'</div>' +
-					'</div>'
-				).appendTo($form),
-				$buttons = $('<div class="buttons right"/>').appendTo($body),
-				$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
-
-			this.$deleteActionRadios = $body.find('input[type=radio]');
-			this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Delete user')+'" />').appendTo($buttons);
-			this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
-
-			this.confirmDeleteModal = new Garnish.Modal($form);
-
-			this.userSelect = new Craft.BaseElementSelectInput({
-				id: 'reassignselector',
-				name: 'reassign',
-				elementType: 'User',
-				criteria: {
-					id: 'not '+this.userId
-				},
-				limit: 1,
-				modalSettings: {
-					closeOtherModals: false
-				},
-				onSelectElements: $.proxy(function()
-				{
-					if (!this.$deleteActionRadios.first().prop('checked'))
-					{
-						this.$deleteActionRadios.first().click();
-					}
-					else
-					{
-						this.validateDeleteInputs();
-					}
-				}, this),
-				onRemoveElements: $.proxy(this, 'validateDeleteInputs'),
-				selectable: false,
-				editable: false
-			});
-
-			this.addListener($cancelBtn, 'click', function() {
-				this.confirmDeleteModal.hide();
-			});
-
-			this.addListener(this.$deleteActionRadios, 'change', 'validateDeleteInputs');
-			this.addListener($form, 'submit', 'submitDeleteUser');
+			this._createConfirmDeleteModal();
 		}
 		else
 		{
@@ -235,6 +171,78 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 		this.disable();
 		this.userSelect.disable();
 		this._deleting = true;
+	},
+
+	// Private Methods
+	// =========================================================================
+
+	_createConfirmDeleteModal: function()
+	{
+		var $form = $(
+				'<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
+					Craft.getCsrfInput() +
+					'<input type="hidden" name="action" value="users/deleteUser"/>' +
+					'<input type="hidden" name="userId" value="'+this.userId+'"/>' +
+					'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
+				'</form>'
+			).appendTo(Garnish.$bod),
+			$body = $(
+				'<div class="body">' +
+					'<p>'+Craft.t('What do you want to do with the user’s content?')+'</p>' +
+					'<div class="options">' +
+						'<label><input type="radio" name="contentAction" value="reassign"/> '+Craft.t('Reassign it to:')+'</label>' +
+						'<div id="reassignselector" class="elementselect">' +
+							'<div class="elements"></div>' +
+							'<div class="btn add icon dashed">'+Craft.t('Choose a user')+'</div>' +
+						'</div>' +
+					'</div>' +
+					'<div>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it all')+'</label>' +
+					'</div>' +
+				'</div>'
+			).appendTo($form),
+			$buttons = $('<div class="buttons right"/>').appendTo($body),
+			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
+
+		this.$deleteActionRadios = $body.find('input[type=radio]');
+		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Delete user')+'" />').appendTo($buttons);
+		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
+
+		this.confirmDeleteModal = new Garnish.Modal($form);
+
+		this.userSelect = new Craft.BaseElementSelectInput({
+			id: 'reassignselector',
+			name: 'reassign',
+			elementType: 'User',
+			criteria: {
+				id: 'not '+this.userId
+			},
+			limit: 1,
+			modalSettings: {
+				closeOtherModals: false
+			},
+			onSelectElements: $.proxy(function()
+			{
+				if (!this.$deleteActionRadios.first().prop('checked'))
+				{
+					this.$deleteActionRadios.first().click();
+				}
+				else
+				{
+					this.validateDeleteInputs();
+				}
+			}, this),
+			onRemoveElements: $.proxy(this, 'validateDeleteInputs'),
+			selectable: false,
+			editable: false
+		});
+
+		this.addListener($cancelBtn, 'click', function() {
+			this.confirmDeleteModal.hide();
+		});
+
+		this.addListener(this.$deleteActionRadios, 'change', 'validateDeleteInputs');
+		this.addListener($form, 'submit', 'submitDeleteUser');
 	}
 });
 
