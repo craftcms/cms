@@ -511,7 +511,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function createFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		$folderName = AssetsHelper::cleanAssetName($folderName);
+		$folderName = AssetsHelper::cleanAssetName($folderName, false);
 
 		// If folder exists in DB or physically, bail out
 		if (craft()->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))

@@ -40,7 +40,7 @@ class AssetsHelper
 	 * Generate a URL for a given Assets file in a Source Type.
 	 *
 	 * @param BaseAssetSourceType $sourceType
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel      $file
 	 *
 	 * @return string
 	 */
@@ -58,7 +58,7 @@ class AssetsHelper
 	 * Get appendix for an URL based on it's Source caching settings.
 	 *
 	 * @param BaseAssetSourceType $source
-	 * @param AssetFileModel $file
+	 * @param AssetFileModel      $file
 	 *
 	 * @return string
 	 */
@@ -77,12 +77,26 @@ class AssetsHelper
 	/**
 	 * Clean an Asset's filename.
 	 *
-	 * @param $fileName
+	 * @param $name
+	 * @param bool $isFilename if set to true (default), will separate extension
+	 *                         and clean the filename separately.
 	 *
 	 * @return mixed
 	 */
-	public static function cleanAssetName($fileName)
+	public static function cleanAssetName($name, $isFilename = true)
 	{
+		if ($isFilename)
+		{
+			$baseName = IOHelper::getFileName($name, false);
+			$extension = '.'.IOHelper::getExtension($name);
+		}
+		else
+		{
+			$baseName = $name;
+			$extension =  '';
+		}
+
+
 		$separator = craft()->config->get('filenameWordSeparator');
 
 		if (!is_string($separator))
@@ -90,6 +104,13 @@ class AssetsHelper
 			$separator = null;
 		}
 
-		return IOHelper::cleanFilename($fileName, false, $separator);
+		$baseName = IOHelper::cleanFilename($baseName, false, $separator);
+
+		if ($isFilename && empty($baseName))
+		{
+			$baseName = '-';
+		}
+
+		return $baseName.$extension;
 	}
 }
