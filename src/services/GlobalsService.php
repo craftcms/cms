@@ -379,28 +379,70 @@ class GlobalsService extends BaseApplicationComponent
 	 *
 	 * @param GlobalSetModel $globalSet
 	 *
+	 * @throws \CDbException
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		// Fire an 'onBeforeSaveGlobalContent' event
-		$this->onBeforeSaveGlobalContent(new Event($this, array(
-			'globalSet' => $globalSet
-		)));
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
-		if (craft()->elements->saveElement($globalSet))
+		try
+		{
+			// Fire an 'onBeforeSaveGlobalContent' event
+			$event = new Event($this, array(
+				'globalSet' => $globalSet
+			));
+
+			$this->onBeforeSaveGlobalContent($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
+			{
+				$success = craft()->elements->saveElement($globalSet);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+			}
+			else
+			{
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the user, in case something changed
+			// in onBeforeSaveGlobalContent
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		if ($success)
 		{
 			// Fire an 'onSaveGlobalContent' event
 			$this->onSaveGlobalContent(new Event($this, array(
 				'globalSet' => $globalSet
 			)));
+		}
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return $success;
 	}
 
 	/**
