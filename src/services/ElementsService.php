@@ -1519,6 +1519,11 @@ class ElementsService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
+			// Fire an 'onBeforeDeleteElements' event
+			$this->onBeforeDeleteElements(new Event($this, array(
+				'elementIds' => $elementIds
+			)));
+
 			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
 			// go one-by-one in case one of theme deletes the record of another in the process.
 			foreach ($elementIds as $elementId)
@@ -1536,11 +1541,6 @@ class ElementsService extends BaseApplicationComponent
 			// Delete the caches before they drop their elementId relations (passing `false` because there's no chance
 			// this element is suddenly going to show up in a new query)
 			craft()->templateCache->deleteCachesByElementId($elementIds, false);
-
-			// Fire an 'onBeforeDeleteElements' event
-			$this->onBeforeDeleteElements(new Event($this, array(
-				'elementIds' => $elementIds
-			)));
 
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)

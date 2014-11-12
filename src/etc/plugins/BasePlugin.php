@@ -173,7 +173,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	public function onAfterInstall()
 	{
-
 	}
 
 	/**
@@ -183,7 +182,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	public function onBeforeInstall()
 	{
-
 	}
 
 	/**
@@ -193,6 +191,5 @@ abstract class BasePlugin extends BaseSavableComponentType implements IPlugin
 	 */
 	public function onBeforeUninstall()
 	{
-
 	}
 }
