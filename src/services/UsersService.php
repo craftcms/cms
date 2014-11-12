@@ -782,12 +782,13 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Deletes a user.
 	 *
-	 * @param UserModel $user The user.
+	 * @param UserModel      $user              The user to be deleted.
+	 * @param UserModel|null $transferContentTo The user who should take over the deleted user’s content.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was deleted successfully.
 	 */
-	public function deleteUser(UserModel $user)
+	public function deleteUser(UserModel $user, UserModel $transferContentTo = null)
 	{
 		if (!$user->id)
 		{
@@ -798,24 +799,71 @@ class UsersService extends BaseApplicationComponent
 		try
 		{
 			// Fire an 'onBeforeDeleteUser' event
-			$this->onBeforeDeleteUser(new Event($this, array(
-				'user' => $user
-			)));
+			$event = new Event($this, array(
+				'user'              => $user,
+				'transferContentTo' => $transferContentTo
+			));
+			$this->onBeforeDeleteUser($event);
 
-			// Grab the entry IDs that were authored by this user so we can delete them too.
-			$criteria = craft()->elements->getCriteria(ElementType::Entry);
-			$criteria->authorId = $user->id;
-			$criteria->limit = null;
-			$entries = $criteria->find();
-
-			if ($entries)
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
 			{
-				craft()->entries->deleteEntry($entries);
+				// Get the entry IDs that belong to this user
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('authorId' => $user->id))
+					->queryColumn();
+
+				// Should we transfer the content to a new user?
+				if ($transferContentTo)
+				{
+					// Delete the template caches for any entries authored by this user
+					craft()->templateCache->deleteCachesByElementId($entryIds);
+
+					// Update the entry/version/draft tables to point to the new user
+					$userRefs = array(
+						'entries' => 'authorId',
+						'entrydrafts' => 'creatorId',
+						'entryversions' => 'creatorId',
+					);
+
+					foreach ($userRefs as $table => $column)
+					{
+						craft()->db->createCommand()->update($table, array(
+							$column => $transferContentTo->id
+						), array(
+							$column => $user->id
+						));
+					}
+				}
+				else
+				{
+					// Delete the entries
+					craft()->elements->deleteElementById($entryIds);
+				}
+
+				// Delete the user
+				$success = craft()->elements->deleteElementById($user->id);
+
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeDeleteUser
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+			}
+			else
+			{
+				$success = false;
 			}
 
-			// Delete the user
-			$success = craft()->elements->deleteElementById($user->id);
-
+			// Commit the transaction regardless of whether we deleted the user,
+			// in case something changed in onBeforeDeleteUser
 			if ($transaction !== null)
 			{
 				$transaction->commit();
@@ -835,94 +883,12 @@ class UsersService extends BaseApplicationComponent
 		{
 			// Fire an 'onDeleteUser' event
 			$this->onDeleteUser(new Event($this, array(
-				'user' => $user
+				'user'              => $user,
+				'transferContentTo' => $transferContentTo
 			)));
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Reassigns a user’s content to another user.
-	 *
-	 * This is usually called right before a user gets deleted.
-	 *
-	 * @param UserModel $oldUser The user who currently owns the content.
-	 * @param UserModel $newUser The user that will own the content going forward.
-	 *
-	 * @throws \CDbException
-	 * @throws \Exception
-	 * @return bool Whether the content was reassigned.
-	 */
-	public function reassignContent(UserModel $oldUser, UserModel $newUser)
-	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
-		{
-			// Fire an 'onBeforeReassignContent' event
-			$event = new Event($this, array(
-				'oldUser' => $oldUser,
-				'newUser' => $newUser
-			));
-			$this->onBeforeReassignContent($event);
-
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
-			{
-				// Delete the template caches for any entries authored by this user
-				$entryIds = craft()->db->createCommand()
-					->select('id')
-					->from('entries')
-					->where(array('authorId' => $oldUser->id))
-					->queryColumn();
-
-				craft()->templateCache->deleteCachesByElementId($entryIds);
-
-				// Update the entry/version/draft tables to point to the new user
-				$userRefs = array(
-					'entries' => 'authorId',
-					'entrydrafts' => 'creatorId',
-					'entryversions' => 'creatorId',
-				);
-
-				foreach ($userRefs as $table => $column)
-				{
-					craft()->db->createCommand()->update($table, array(
-						$column => $newUser->id
-					), array(
-						$column => $oldUser->id
-					));
-				}
-			}
-
-			// Commit the transaction regardless of whether we reassigned the content,
-			// in case something changed in onBeforeReassignContent
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
 		}
 
-		// Fire an 'onReassignContent' event
-		$this->onReassignContent(new Event($this, array(
-			'oldUser' => $oldUser,
-			'newUser' => $newUser
-		)));
-
-		return $event->performAction;
+		return $success;
 	}
 
 	/**
@@ -1209,30 +1175,6 @@ class UsersService extends BaseApplicationComponent
 	public function onUnsuspendUser(Event $event)
 	{
 		$this->raiseEvent('onUnsuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeReassignContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeReassignContent(Event $event)
-	{
-		$this->raiseEvent('onBeforeReassignContent', $event);
-	}
-
-	/**
-	 * Fires an 'onReassignContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onReassignContent(Event $event)
-	{
-		$this->raiseEvent('onReassignContent', $event);
 	}
 
 	/**
