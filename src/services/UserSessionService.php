@@ -581,71 +581,88 @@ class UserSessionService extends \CWebUser
 		$states = $this->_identity->getPersistentStates();
 
 		// Fire an 'onBeforeLogin' event
-		$this->onBeforeLogin(new Event($this, array(
+		$event = new Event($this, array(
 			'username' => $userModel->username,
-		)));
+		));
 
-		// Run any before login logic.
-		if ($this->beforeLogin($id, $states, false))
+		$this->onBeforeLogin($event);
+
+		// Is the event is giving us the go-ahead?
+		if ($event->performAction)
 		{
-			$this->changeIdentity($id, $this->_identity->getName(), $states);
+			// Run any before login logic.
+			if ($this->beforeLogin($id, $states, false))
+			{
+				$this->changeIdentity($id, $this->_identity->getName(), $states);
 
+				if ($this->authTimeout)
+				{
+					if ($this->allowAutoLogin)
+					{
+						$user = craft()->users->getUserById($id);
+
+						if ($user)
+						{
+							// Save the necessary info to the identity cookie.
+							$sessionToken = StringHelper::UUID();
+							$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
+							$uid = craft()->users->handleSuccessfulLogin($user, $hashedToken);
+
+							$data = array(
+								$this->getName(),
+								$sessionToken,
+								$uid,
+								($rememberMe ? 1 : 0),
+								craft()->request->getUserAgent(),
+								$this->saveIdentityStates(),
+							);
+
+							$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
+						}
+						else
+						{
+							throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
+						}
+					}
+					else
+					{
+						throw new Exception(Craft::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
+					}
+				}
+
+				$this->_sessionRestoredFromCookie = false;
+				$this->_userRow = null;
+
+				$this->_sessionRestoredFromCookie = false;
+				$this->_userRow = null;
+				$this->_userModel = null;
+
+				// Run any after login logic.
+				$this->afterLogin(false);
+				$success = !$this->getIsGuest();
+			}
+			else
+			{
+				$success = false;
+			}
+		}
+		else
+		{
+			$success = false;
+		}
+
+		if ($success)
+		{
 			// Fire an 'onLogin' event
 			$this->onLogin(new Event($this, array(
 				'username' => $userModel->username,
 			)));
-
-			if ($this->authTimeout)
-			{
-				if ($this->allowAutoLogin)
-				{
-					$user = craft()->users->getUserById($id);
-
-					if ($user)
-					{
-						// Save the necessary info to the identity cookie.
-						$sessionToken = StringHelper::UUID();
-						$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
-						$uid = craft()->users->handleSuccessfulLogin($user, $hashedToken);
-
-						$data = array(
-							$this->getName(),
-							$sessionToken,
-							$uid,
-							($rememberMe ? 1 : 0),
-							craft()->request->getUserAgent(),
-							$this->saveIdentityStates(),
-						);
-
-						$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
-					}
-					else
-					{
-						throw new Exception(Craft::t('Could not find a user with Id of {userId}.', array('{userId}' => $this->getId())));
-					}
-				}
-				else
-				{
-					throw new Exception(Craft::t('{class}.allowAutoLogin must be set true in order to use cookie-based authentication.', array('{class}' => get_class($this))));
-				}
-			}
-
-			$this->_sessionRestoredFromCookie = false;
-			$this->_userRow = null;
-
-			$this->_sessionRestoredFromCookie = false;
-			$this->_userRow = null;
-			$this->_userModel = null;
-
-			// Run any after login logic.
-			$this->afterLogin(false);
-
-			return !$this->getIsGuest();
 		}
-
-		Craft::log($userModel->username.' tried to log in unsuccessfully.', LogLevel::Warning);
-
-		return false;
+		else
+		{
+			Craft::log($userModel->username.' tried to log in unsuccessfully.', LogLevel::Warning);
+			return false;
+		}
 	}
 
 	/**
@@ -1250,36 +1267,46 @@ class UserSessionService extends \CWebUser
 	protected function beforeLogout()
 	{
 		// Fire an 'onBeforeLogout' event
-		$this->onBeforeLogout(new Event($this));
+		$event = new Event($this, array(
+			'user'      => $this->getUser(),
+		));
 
-		$cookie = $this->getIdentityCookie();
+		$this->onBeforeLogout($event);
 
-		if ($cookie)
+		// Is the event is giving us the go-ahead?
+		if ($event->performAction)
 		{
-			$data = $this->getIdentityCookieValue($cookie);
+			$cookie = $this->getIdentityCookie();
 
-			if ($data)
+			if ($cookie)
 			{
-				$loginName = $data[0];
-				$uid = $data[2];
+				$data = $this->getIdentityCookieValue($cookie);
 
-				// Clean up their row in the sessions table.
-				$user = craft()->users->getUserByUsernameOrEmail($loginName);
-
-				if ($user)
+				if ($data)
 				{
-					craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+					$loginName = $data[0];
+					$uid = $data[2];
+
+					// Clean up their row in the sessions table.
+					$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+					if ($user)
+					{
+						craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+					}
+				}
+				else
+				{
+					Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Warning);
 				}
 			}
-			else
-			{
-				Craft::log('During logout, tried to remove the row from the sessions table, but it appears the cookie data is invalid.', LogLevel::Warning);
-			}
+
+			$this->_userRow = null;
+
+			return true;
 		}
 
-		$this->_userRow = null;
-
-		return true;
+		return false;
 	}
 
 	/**
