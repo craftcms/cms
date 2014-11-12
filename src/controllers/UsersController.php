@@ -551,7 +551,12 @@ class UsersController extends BaseController
 
 		craft()->templates->includeTranslations(
 			'Please enter your current password.',
-			'Please enter your password.'
+			'Please enter your password.',
+			'What do you want to do with the user’s content?',
+			'Reassign it to:',
+			'Choose a user',
+			'Delete it all',
+			'Delete user'
 		);
 
 		$this->renderTemplate('users/_edit', $variables);
