@@ -386,15 +386,6 @@ class StructuresService extends BaseApplicationComponent
 				// Tell the element type about it
 				$elementType = craft()->elements->getElementType($element->getElementType());
 				$elementType->onAfterMoveElementInStructure($element, $structureId);
-
-				if ($mode == 'update')
-				{
-					// Fire an 'onMoveElement' event
-					$this->onMoveElement(new Event($this, array(
-						'structureId'  => $structureId,
-						'element'      => $element,
-					)));
-				}
 			}
 			else
 			{
@@ -416,6 +407,15 @@ class StructuresService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		if ($success && $mode == 'update')
+		{
+			// Fire an 'onMoveElement' event
+			$this->onMoveElement(new Event($this, array(
+				'structureId'  => $structureId,
+				'element'      => $element,
+			)));
 		}
 
 		return $success;
