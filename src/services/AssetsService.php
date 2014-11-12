@@ -426,7 +426,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName));
+			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName, false));
 		}
 		catch (Exception $exception)
 		{
