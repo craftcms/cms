@@ -190,8 +190,8 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 				'<div class="body">' +
 					'<p>'+Craft.t('What do you want to do with the user’s content?')+'</p>' +
 					'<div class="options">' +
-						'<label><input type="radio" name="contentAction" value="reassign"/> '+Craft.t('Reassign it to:')+'</label>' +
-						'<div id="reassignselector" class="elementselect">' +
+						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
+						'<div id="transferselect" class="elementselect">' +
 							'<div class="elements"></div>' +
 							'<div class="btn add icon dashed">'+Craft.t('Choose a user')+'</div>' +
 						'</div>' +
@@ -211,8 +211,8 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 		this.confirmDeleteModal = new Garnish.Modal($form);
 
 		this.userSelect = new Craft.BaseElementSelectInput({
-			id: 'reassignselector',
-			name: 'reassignContent',
+			id: 'transferselect',
+			name: 'transferContentTo',
 			elementType: 'User',
 			criteria: {
 				id: 'not '+this.userId

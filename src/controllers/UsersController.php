@@ -553,7 +553,7 @@ class UsersController extends BaseController
 			'Please enter your current password.',
 			'Please enter your password.',
 			'What do you want to do with the user’s content?',
-			'Reassign it to:',
+			'Transfer it to:',
 			'Choose a user',
 			'Delete it',
 			'Delete user'
@@ -1148,58 +1148,30 @@ class UsersController extends BaseController
 			craft()->userSession->requireAdmin();
 		}
 
-		$reassignUserId = craft()->request->getPost('reassignContent');
+		// Are we transfering the user's content to a different user?
+		$transferContentToId = craft()->request->getPost('transferContentTo');
 
-		if (is_array($reassignUserId) && isset($reassignUserId[0]))
+		if (is_array($transferContentToId) && isset($transferContentToId[0]))
 		{
-			$reassignUserId = $reassignUserId[0];
+			$transferContentToId = $transferContentToId[0];
 		}
 
-		if ($reassignUserId)
+		if ($transferContentToId)
 		{
-			$reassignUser = craft()->users->getUserById($reassignUserId);
+			$transferContentTo = craft()->users->getUserById($transferContentToId);
 
-			if (!$reassignUser)
+			if (!$transferContentTo)
 			{
-				$this->_noUserExists($reassignUserId);
+				$this->_noUserExists($transferContentToId);
 			}
 		}
-
-		// Wrap this whole thing in a transaction, so content gets assigned back to the original user
-		// in the event that there's an exception while deleting them.
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		else
 		{
-			if (isset($reassignUser))
-			{
-				$performDeletion = craft()->users->reassignContent($user, $reassignUser);
-			}
-			else
-			{
-				$performDeletion = true;
-			}
-
-			if ($performDeletion)
-			{
-				$success = craft()->users->deleteUser($user);
-			}
-
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
+			$transferContentTo = null;
 		}
 
-		if ($performDeletion && $success)
+		// Delete the user
+		if (craft()->users->deleteUser($user, $transferContentTo))
 		{
 			craft()->userSession->setNotice(Craft::t('User deleted.'));
 			$this->redirectToPostedUrl();

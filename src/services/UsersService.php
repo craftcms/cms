@@ -282,7 +282,6 @@ class UsersService extends BaseApplicationComponent
 				'user'      => $user,
 				'isNewUser' => $isNewUser
 			));
-
 			$this->onBeforeSaveUser($event);
 
 			// Is the event is giving us the go-ahead?
@@ -291,7 +290,7 @@ class UsersService extends BaseApplicationComponent
 				// Save the element
 				$success = craft()->elements->saveElement($user, false);
 
-				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeSaveUser
 				if (!$success)
 				{
 					if ($transaction !== null)
@@ -336,8 +335,8 @@ class UsersService extends BaseApplicationComponent
 				$success = false;
 			}
 
-			// Commit the transaction regardless of whether we saved the user, in case something changed
-			// in onBeforeSaveUser
+			// Commit the transaction regardless of whether we saved the user,
+			// in case something changed in onBeforeSaveUser
 			if ($transaction !== null)
 			{
 				$transaction->commit();
@@ -630,81 +629,49 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
-	 * @throws \Exception
 	 * @return bool Whether the user was activated successfully.
 	 */
 	public function activateUser(UserModel $user)
 	{
+		// Fire an 'onBeforeActivateUser' event
+		$this->onBeforeActivateUser(new Event($this, array(
+			'user' => $user
+		)));
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		$userRecord = $this->_getUserRecordById($user->id);
+
+		$userRecord->setActive();
+		$user->setActive();
+		$userRecord->verificationCode = null;
+		$userRecord->verificationCodeIssuedDate = null;
+		$userRecord->lockoutDate = null;
+
+		// If they have an unverified email address, now is the time to set it to their primary email address
+		if ($user->unverifiedEmail)
 		{
-			// Fire an 'onBeforeActivateUser' event
-			$event = new Event($this, array(
-				'user' => $user,
-			));
+			$userRecord->email = $user->unverifiedEmail;
 
-			$this->onBeforeActivateUser($event);
-
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
+			if (craft()->config->get('useEmailAsUsername'))
 			{
-				$userRecord = $this->_getUserRecordById($user->id);
-
-				$userRecord->setActive();
-				$user->setActive();
-				$userRecord->verificationCode = null;
-				$userRecord->verificationCodeIssuedDate = null;
-				$userRecord->lockoutDate = null;
-
-				// If they have an unverified email address, now is the time to set it to their primary email address
-				if ($user->unverifiedEmail)
-				{
-					$userRecord->email = $user->unverifiedEmail;
-
-					if (craft()->config->get('useEmailAsUsername'))
-					{
-						$userRecord->username = $user->unverifiedEmail;
-					}
-
-					$userRecord->unverifiedEmail = null;
-				}
-
-				$userRecord->save();
-				$success = true;
-			}
-			else
-			{
-				$success = false;
+				$userRecord->username = $user->unverifiedEmail;
 			}
 
-			// Commit the transaction regardless of whether we activated the user, in case something changed
-			// in onBeforeActivateUser
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
+			$userRecord->unverifiedEmail = null;
 		}
 
-		if ($success)
+		if ($userRecord->save())
 		{
 			// Fire an 'onActivateUser' event
 			$this->onActivateUser(new Event($this, array(
 				'user' => $user
 			)));
-		}
 
-		return $success;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -712,68 +679,36 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
-	 * @throws \Exception
 	 * @return bool Whether the user was unlocked successfully.
 	 */
 	public function unlockUser(UserModel $user)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		// Fire an 'onBeforeUnlockUser' event
+		$this->onBeforeUnlockUser(new Event($this, array(
+			'user' => $user
+		)));
 
-		try
-		{
-			// Fire an 'onBeforeUnlockUser' event
-			$event = new Event($this, array(
-				'user'      => $user,
-			));
+		$userRecord = $this->_getUserRecordById($user->id);
 
-			$this->onBeforeUnlockUser($event);
+		$userRecord->locked = false;
+		$user->locked = false;
 
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
-			{
-				$userRecord = $this->_getUserRecordById($user->id);
+		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
+		$userRecord->invalidLoginWindowStart = null;
 
-				$userRecord->locked = false;
-				$user->locked = false;
-
-				$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
-				$userRecord->invalidLoginWindowStart = null;
-
-				$userRecord->save();
-				$success = true;
-			}
-			else
-			{
-				$success = false;
-			}
-
-			// Commit the transaction regardless of whether we unlocked the user, in case something changed
-			// in onBeforeUnlockUser
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-
-		if ($success)
+		if ($userRecord->save())
 		{
 			// Fire an 'onUnlockUser' event
 			$this->onUnlockUser(new Event($this, array(
 				'user' => $user
 			)));
-		}
 
-		return $success;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -781,65 +716,33 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
-	 * @throws \Exception
 	 * @return bool Whether the user was suspended successfully.
 	 */
 	public function suspendUser(UserModel $user)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		// Fire an 'onBeforeSuspendUser' event
+		$this->onBeforeSuspendUser(new Event($this, array(
+			'user' => $user
+		)));
 
-		try
-		{
-			// Fire an 'onBeforeSuspendUser' event
-			$event = new Event($this, array(
-				'user'      => $user,
-			));
+		$userRecord = $this->_getUserRecordById($user->id);
 
-			$this->onBeforeSuspendUser($event);
+		$userRecord->suspended = true;
+		$user->suspended = true;
 
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
-			{
-				$userRecord = $this->_getUserRecordById($user->id);
-
-				$userRecord->suspended = true;
-				$user->suspended = true;
-
-				$userRecord->save();
-				$success = true;
-			}
-			else
-			{
-				$success = false;
-			}
-
-			// Commit the transaction regardless of whether we saved the user, in case something changed
-			// in onBeforeSuspendUser
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-
-		if ($success)
+		if ($userRecord->save())
 		{
 			// Fire an 'onSuspendUser' event
 			$this->onSuspendUser(new Event($this, array(
 				'user' => $user
 			)));
-		}
 
-		return $success;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -847,77 +750,45 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
-	 * @throws \Exception
 	 * @return bool Whether the user was unsuspended successfully.
 	 */
 	public function unsuspendUser(UserModel $user)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		// Fire an 'onBeforeUnsuspendUser' event
+		$this->onBeforeUnsuspendUser(new Event($this, array(
+			'user' => $user
+		)));
 
-		try
-		{
-			// Fire an 'onBeforeUnsuspendUser' event
-			$event = new Event($this, array(
-				'user'      => $user,
-			));
+		$userRecord = $this->_getUserRecordById($user->id);
 
-			$this->onBeforeUnsuspendUser($event);
+		$userRecord->suspended = false;
+		$user->suspended = false;
 
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
-			{
-				$userRecord = $this->_getUserRecordById($user->id);
-
-				$userRecord->suspended = false;
-				$user->suspended = false;
-
-				$userRecord->save();
-				$success = true;
-			}
-			else
-			{
-				$success = false;
-			}
-
-			// Commit the transaction regardless of whether we unsuspended the user, in case something changed
-			// in onBeforeUnsuspendUser
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-
-		if ($success)
+		if ($userRecord->save())
 		{
 			// Fire an 'onUnsuspendUser' event
 			$this->onUnsuspendUser(new Event($this, array(
 				'user' => $user
 			)));
-		}
 
-		return $success;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
 	 * Deletes a user.
 	 *
-	 * @param UserModel $user The user.
+	 * @param UserModel      $user              The user to be deleted.
+	 * @param UserModel|null $transferContentTo The user who should take over the deleted user’s content.
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool Whether the user was deleted successfully.
 	 */
-	public function deleteUser(UserModel $user)
+	public function deleteUser(UserModel $user, UserModel $transferContentTo = null)
 	{
 		if (!$user->id)
 		{
@@ -929,18 +800,53 @@ class UsersService extends BaseApplicationComponent
 		{
 			// Fire an 'onBeforeDeleteUser' event
 			$event = new Event($this, array(
-				'user'      => $user,
+				'user'              => $user,
+				'transferContentTo' => $transferContentTo
 			));
-
 			$this->onBeforeDeleteUser($event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
 			{
+				// Get the entry IDs that belong to this user
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('authorId' => $user->id))
+					->queryColumn();
+
+				// Should we transfer the content to a new user?
+				if ($transferContentTo)
+				{
+					// Delete the template caches for any entries authored by this user
+					craft()->templateCache->deleteCachesByElementId($entryIds);
+
+					// Update the entry/version/draft tables to point to the new user
+					$userRefs = array(
+						'entries' => 'authorId',
+						'entrydrafts' => 'creatorId',
+						'entryversions' => 'creatorId',
+					);
+
+					foreach ($userRefs as $table => $column)
+					{
+						craft()->db->createCommand()->update($table, array(
+							$column => $transferContentTo->id
+						), array(
+							$column => $user->id
+						));
+					}
+				}
+				else
+				{
+					// Delete the entries
+					craft()->elements->deleteElementById($entryIds);
+				}
+
 				// Delete the user
 				$success = craft()->elements->deleteElementById($user->id);
 
-				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeDeleteUser
 				if (!$success)
 				{
 					if ($transaction !== null)
@@ -950,25 +856,14 @@ class UsersService extends BaseApplicationComponent
 
 					return false;
 				}
-
-				// Grab the entry IDs that were authored by this user so we can delete them too.
-				$criteria = craft()->elements->getCriteria(ElementType::Entry);
-				$criteria->authorId = $user->id;
-				$criteria->limit = null;
-				$entries = $criteria->find();
-
-				if ($entries)
-				{
-					craft()->entries->deleteEntry($entries);
-				}
 			}
 			else
 			{
 				$success = false;
 			}
 
-			// Commit the transaction regardless of whether we deleted the user, in case something changed
-			// in onBeforeDeleteUser
+			// Commit the transaction regardless of whether we deleted the user,
+			// in case something changed in onBeforeDeleteUser
 			if ($transaction !== null)
 			{
 				$transaction->commit();
@@ -988,97 +883,8 @@ class UsersService extends BaseApplicationComponent
 		{
 			// Fire an 'onDeleteUser' event
 			$this->onDeleteUser(new Event($this, array(
-				'user' => $user
-			)));
-		}
-
-		return $success;
-	}
-
-	/**
-	 * Reassigns a user’s content to another user.
-	 *
-	 * This is usually called right before a user gets deleted.
-	 *
-	 * @param UserModel $oldUser The user who currently owns the content.
-	 * @param UserModel $newUser The user that will own the content going forward.
-	 *
-	 * @throws \CDbException
-	 * @throws \Exception
-	 * @return null
-	 */
-	public function reassignContent(UserModel $oldUser, UserModel $newUser)
-	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-
-		try
-		{
-			// Fire an 'onBeforeReassignContent' event
-			$event = new Event($this, array(
-				'oldUser'  => $oldUser,
-				'newUser'  => $newUser
-			));
-
-			$this->onBeforeReassignContent($event);
-
-			// Is the event is giving us the go-ahead?
-			if ($event->performAction)
-			{
-				// Delete the template caches for any entries authored by this user
-				$entryIds = craft()->db->createCommand()
-					->select('id')
-					->from('entries')
-					->where(array('authorId' => $oldUser->id))
-					->queryColumn();
-
-				craft()->templateCache->deleteCachesByElementId($entryIds);
-
-				// Update the entry/version/draft tables to point to the new user
-				$userRefs = array(
-					'entries'       => 'authorId',
-					'entrydrafts'   => 'creatorId',
-					'entryversions' => 'creatorId',
-				);
-
-				foreach ($userRefs as $table => $column)
-				{
-					craft()->db->createCommand()->update($table, array(
-						$column => $newUser->id
-					), array(
-						$column => $oldUser->id
-					));
-				}
-
-				$success = true;
-			}
-			else
-			{
-				$success = false;
-			}
-
-			// Commit the transaction regardless of whether we re-assigned the content, in case something changed
-			// in onBeforeReassignContent
-			if ($transaction !== null)
-			{
-				$transaction->commit();
-			}
-		}
-		catch (\Exception $e)
-		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
-
-			throw $e;
-		}
-
-		if ($success)
-		{
-			// Fire an 'onReassignContent' event
-			$this->onReassignContent(new Event($this, array(
-				'oldUser' => $oldUser,
-				'newUser' => $newUser
+				'user'              => $user,
+				'transferContentTo' => $transferContentTo
 			)));
 		}
 
@@ -1369,30 +1175,6 @@ class UsersService extends BaseApplicationComponent
 	public function onUnsuspendUser(Event $event)
 	{
 		$this->raiseEvent('onUnsuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeReassignContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeReassignContent(Event $event)
-	{
-		$this->raiseEvent('onBeforeReassignContent', $event);
-	}
-
-	/**
-	 * Fires an 'onReassignContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onReassignContent(Event $event)
-	{
-		$this->raiseEvent('onReassignContent', $event);
 	}
 
 	/**
