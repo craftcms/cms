@@ -230,19 +230,65 @@ class EntryRevisionsService extends BaseApplicationComponent
 	 */
 	public function deleteDraft(EntryDraftModel $draft)
 	{
-		$draftRecord = $this->_getDraftRecord($draft);
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
-		// Fire an 'onBeforeDeleteDraft' event
-		$this->onBeforeDeleteDraft(new Event($this, array(
-			'draft'      => $draft,
-		)));
+		try
+		{
+			// Fire an 'onBeforeDeleteDraft' event
+			$event = new Event($this, array(
+				'draft' => $draft,
+			));
 
-		$draftRecord->delete();
+			$this->onBeforeDeleteDraft($event);
 
-		// Fire an 'onAfterDeleteDraft' event
-		$this->onAfterDeleteDraft(new Event($this, array(
-			'draft'      => $draft,
-		)));
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
+			{
+				$draftRecord = $this->_getDraftRecord($draft);
+				$draftRecord->delete();
+
+				$success = true;
+			}
+			else
+			{
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we deleted the draft, in case something changed
+			// in onBeforeDeleteDraft
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		if ($success)
+		{
+			// Fire an 'onDeleteDraft' event
+			$this->onDeleteDraft(new Event($this, array(
+				'draft' => $draft,
+			)));
+
+			//
+			if ($this->hasEventHandler('onAfterDeleteDraft'))
+			{
+				// Fire an 'onAfterDeleteDraft' event (deprecated)
+				$this->onAfterDeleteDraft(new Event($this, array(
+					'draft' => $draft,
+				)));
+			}
+		}
+
+		return $success;
 	}
 
 	/**
@@ -426,15 +472,28 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fires an 'onAfterDeleteDraft' event.
+	 * Fires an 'onDeleteDraft' event.
 	 *
 	 * @param Event $event
 	 *
 	 * @return null
 	 */
+	public function onDeleteDraft(Event $event)
+	{
+		$this->raiseEvent('onDeleteDraft', $event);
+	}
+
+	/**
+	 * Fires an 'onAfterDeleteDraft' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @deprecated Deprecated in 2.3. Use {@link onDeleteDraft() `entryRevisions.onDeleteDraft`} instead.
+	 * @return null
+	 */
 	public function onAfterDeleteDraft(Event $event)
 	{
-		$this->raiseEvent('onAfterDeleteDraft', $event);
+		$this->raiseEvent('onDeleteDraft', $event);
 	}
 
 	/**

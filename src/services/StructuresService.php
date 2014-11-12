@@ -359,16 +359,17 @@ class StructuresService extends BaseApplicationComponent
 					'structureId'  => $structureId,
 					'element'      => $element,
 				));
+
 				$this->onBeforeMoveElement($event);
 			}
 
-			// Was there was no onBeforeMoveElement event, or is the event is giving us the go-ahead?
+			// Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
 			if (!isset($event) || $event->performAction)
 			{
 				// Really do it
 				$success = $elementRecord->$action($targetElementRecord);
 
-				// If it didn't work, rollback the transaciton in case something changed in onBeforeMoveElement
+				// If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
 				if (!$success)
 				{
 					if ($transaction !== null)
@@ -393,8 +394,8 @@ class StructuresService extends BaseApplicationComponent
 				$success = false;
 			}
 
-			// Commit the transaction regardless of whether we moved the element,
-			// in case something changed in onBeforeMoveElement
+			// Commit the transaction regardless of whether we moved the element, in case something changed
+			// in onBeforeMoveElement
 			if ($transaction !== null)
 			{
 				$transaction->commit();
