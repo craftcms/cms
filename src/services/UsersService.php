@@ -278,13 +278,29 @@ class UsersService extends BaseApplicationComponent
 			}
 
 			// Fire an 'onBeforeSaveUser' event
-			$this->onBeforeSaveUser(new Event($this, array(
+			$event = new Event($this, array(
 				'user'      => $user,
 				'isNewUser' => $isNewUser
-			)));
+			));
+			$this->onBeforeSaveUser($event);
 
-			if (craft()->elements->saveElement($user, false))
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
 			{
+				// Save the element
+				$success = craft()->elements->saveElement($user, false);
+
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeSaveUser
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewUser)
 				{
@@ -313,15 +329,17 @@ class UsersService extends BaseApplicationComponent
 						}
 					}
 				}
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the user,
+			// in case something changed in onBeforeSaveUser
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -334,23 +352,24 @@ class UsersService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
-
-		// Fire an 'onSaveUser' event
-		$this->onSaveUser(new Event($this, array(
-			'user'      => $user,
-			'isNewUser' => $isNewUser
-		)));
-
-		if ($this->hasEventHandler('onSaveProfile'))
+		if ($success)
 		{
-			// Fire an 'onSaveProfile' event (deprecated)
-			$this->onSaveProfile(new Event($this, array(
-				'user' => $user
+			// Fire an 'onSaveUser' event
+			$this->onSaveUser(new Event($this, array(
+				'user'      => $user,
+				'isNewUser' => $isNewUser
 			)));
+
+			if ($this->hasEventHandler('onSaveProfile'))
+			{
+				// Fire an 'onSaveProfile' event (deprecated)
+				$this->onSaveProfile(new Event($this, array(
+					'user' => $user
+				)));
+			}
 		}
 
-		return true;
+		return $success;
 	}
 
 	/**
