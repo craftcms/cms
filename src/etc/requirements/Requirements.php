@@ -130,13 +130,7 @@ class Requirements
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
-			new Requirement(
-				Craft::t('iconv support'),
-				function_exists('iconv'),
-				false,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('@@@appName@@@ requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
-			),
+			new IconvRequirement(),
 		);
 	}
 
@@ -432,5 +426,77 @@ class PhpVersionRequirement extends Requirement
 			(version_compare(PHP_VERSION, '5.3', '>=') && version_compare(PHP_VERSION, '5.3.12', '<')) ||
 			(version_compare(PHP_VERSION, '5.4', '>=') && version_compare(PHP_VERSION, '5.4.2', '<'))
 		);
+	}
+}
+
+/**
+ * Iconv requirement class.
+ *
+ * @package craft.app.etc.requirements
+ */
+class IconvRequirement extends Requirement
+{
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return PhpVersionRequirement
+	 */
+	public function __construct()
+	{
+		parent::__construct(
+			Craft::t('iconv support'),
+			null,
+			false,
+			'<a href="http://buildwithcraft.com">@@@appName@@@</a>'
+		);
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getNotes()
+	{
+		if ($this->getResult() == RequirementResult::Warning)
+		{
+			return Craft::t('You have a buggy version of iconv installed. (See {url1} and {url2}.)', array(
+				'url1' => '<a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a>',
+				'url2' => '<a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>',
+			));
+		}
+		else
+		{
+			return Craft::t('{url} is recommended.', array(
+				'url' => '<a href="http://php.net/manual/en/book.iconv.php">iconv</a>',
+			));
+		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		if (function_exists('iconv'))
+		{
+			// See if it's the buggy version
+			if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
+			{
+				return RequirementResult::Warning;
+			}
+			else
+			{
+				return RequirementResult::Success;
+			}
+		}
+		else
+		{
+			return RequirementResult::Failed;
+		}
 	}
 }
