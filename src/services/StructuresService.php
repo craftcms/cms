@@ -385,7 +385,7 @@ class StructuresService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		if ($success && $action == 'update')
+		if ($success && $mode == 'update')
 		{
 			// Fire an 'onMoveElement' event
 			$this->onMoveElement(new Event($this, array(
