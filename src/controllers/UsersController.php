@@ -1148,20 +1148,20 @@ class UsersController extends BaseController
 			craft()->userSession->requireAdmin();
 		}
 
-		$reassigneeId = craft()->request->getPost('reassign');
+		$reassignUserId = craft()->request->getPost('reassignContent');
 
-		if (is_array($reassigneeId) && isset($reassigneeId[0]))
+		if (is_array($reassignUserId) && isset($reassignUserId[0]))
 		{
-			$reassigneeId = $reassigneeId[0];
+			$reassignUserId = $reassignUserId[0];
 		}
 
-		if ($reassigneeId)
+		if ($reassignUserId)
 		{
-			$reassignee = craft()->users->getUserById($reassigneeId);
+			$reassignUser = craft()->users->getUserById($reassignUserId);
 
-			if (!$reassignee)
+			if (!$reassignUser)
 			{
-				$this->_noUserExists($reassigneeId);
+				$this->_noUserExists($reassignUserId);
 			}
 		}
 
@@ -1170,12 +1170,19 @@ class UsersController extends BaseController
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
-			if (isset($reassignee))
+			if (isset($reassignUser))
 			{
-				craft()->users->reassignContent($user, $reassignee);
+				$performDeletion = craft()->users->reassignContent($user, $reassignUser);
+			}
+			else
+			{
+				$performDeletion = true;
 			}
 
-			craft()->users->deleteUser($user);
+			if ($performDeletion)
+			{
+				$success = craft()->users->deleteUser($user);
+			}
 
 			if ($transaction !== null)
 			{
@@ -1192,8 +1199,15 @@ class UsersController extends BaseController
 			throw $e;
 		}
 
-		craft()->userSession->setNotice(Craft::t('User deleted.'));
-		$this->redirectToPostedUrl();
+		if ($performDeletion && $success)
+		{
+			craft()->userSession->setNotice(Craft::t('User deleted.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			craft()->userSession->setError(Craft::t('Couldn’t delete the user.'));
+		}
 	}
 
 	/**

@@ -212,7 +212,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 		this.userSelect = new Craft.BaseElementSelectInput({
 			id: 'reassignselector',
-			name: 'reassign',
+			name: 'reassignContent',
 			elementType: 'User',
 			criteria: {
 				id: 'not '+this.userId
