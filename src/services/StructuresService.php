@@ -326,24 +326,20 @@ class StructuresService extends BaseApplicationComponent
 	 */
 	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode)
 	{
+		// Figure out what we're doing
 		if ($mode != 'insert')
 		{
 			// See if there's an existing structure element record
 			$elementRecord = $this->_getElementRecord($structureId, $element);
+
+			if ($elementRecord)
+			{
+				$mode = 'update';
+				$action = $updateAction;
+			}
 		}
 
-		if (!empty($elementRecord))
-		{
-			$mode = 'update';
-			$action = $updateAction;
-
-			// Fire an 'onBeforeMoveElement' event
-			$this->onBeforeMoveElement(new Event($this, array(
-				'structureId'  => $structureId,
-				'element'      => $element,
-			)));
-		}
-		else
+		if (empty($elementRecord))
 		{
 			$elementRecord = new StructureElementRecord();
 			$elementRecord->structureId = $structureId;
@@ -356,6 +352,16 @@ class StructuresService extends BaseApplicationComponent
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 		try
 		{
+			if ($mode == 'update')
+			{
+				// Fire an 'onBeforeMoveElement' event
+				$this->onBeforeMoveElement(new Event($this, array(
+					'structureId'  => $structureId,
+					'element'      => $element,
+				)));
+			}
+
+			// Really do it
 			$success = $elementRecord->$action($targetElementRecord);
 
 			if ($success)
@@ -368,6 +374,15 @@ class StructuresService extends BaseApplicationComponent
 				// Tell the element type about it
 				$elementType = craft()->elements->getElementType($element->getElementType());
 				$elementType->onAfterMoveElementInStructure($element, $structureId);
+
+				if ($mode == 'update')
+				{
+					// Fire an 'onMoveElement' event
+					$this->onMoveElement(new Event($this, array(
+						'structureId'  => $structureId,
+						'element'      => $element,
+					)));
+				}
 
 				if ($transaction !== null)
 				{
@@ -383,15 +398,6 @@ class StructuresService extends BaseApplicationComponent
 			}
 
 			throw $e;
-		}
-
-		if ($success && $action == 'update')
-		{
-			// Fire an 'onMoveElement' event
-			$this->onMoveElement(new Event($this, array(
-				'structureId'  => $structureId,
-				'element'      => $element,
-			)));
 		}
 
 		return $success;
