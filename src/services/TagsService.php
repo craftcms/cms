@@ -355,16 +355,33 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Fire an 'onBeforeSaveTag' event
-			$this->onBeforeSaveTag(new Event($this, array(
+			$event = new Event($this, array(
 				'tag'      => $tag,
 				'isNewTag' => $isNewTag
-			)));
+			));
 
-			if (craft()->elements->saveElement($tag, false))
+			$this->onBeforeSaveTag($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+				$success = craft()->elements->saveElement($tag, false);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewTag)
 				{
@@ -372,15 +389,17 @@ class TagsService extends BaseApplicationComponent
 				}
 
 				$tagRecord->save(false);
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the tag, in case something changed
+			// in onBeforeSaveTag
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -393,23 +412,24 @@ class TagsService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
-
-		// Fire an 'onSaveTag' event
-		$this->onSaveTag(new Event($this, array(
-			'tag'      => $tag,
-			'isNewTag' => $isNewTag
-		)));
-
-		if ($this->hasEventHandler('onSaveTagContent'))
+		if ($success)
 		{
-			// Fire an 'onSaveTagContent' event (deprecated)
-			$this->onSaveTagContent(new Event($this, array(
-				'tag' => $tag
+			// Fire an 'onSaveTag' event
+			$this->onSaveTag(new Event($this, array(
+				'tag'      => $tag,
+				'isNewTag' => $isNewTag
 			)));
+
+			if ($this->hasEventHandler('onSaveTagContent'))
+			{
+				// Fire an 'onSaveTagContent' event (deprecated)
+				$this->onSaveTagContent(new Event($this, array(
+					'tag' => $tag
+				)));
+			}
 		}
 
-		return true;
+		return $success;
 	}
 
 	// Events
