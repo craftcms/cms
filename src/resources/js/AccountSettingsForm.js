@@ -197,7 +197,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 						'</div>' +
 					'</div>' +
 					'<div>' +
-						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it all')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it')+'</label>' +
 					'</div>' +
 				'</div>'
 			).appendTo($form),
