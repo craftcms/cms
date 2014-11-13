@@ -1342,9 +1342,9 @@ class AssetsService extends BaseApplicationComponent
 			// Use the previous data to clean up
 			craft()->assetTransforms->deleteAllTransformData($oldFileModel);
 			$originatingSource->finalizeTransfer($oldFileModel);
-
-			IOHelper::deleteFile($localCopy);
 		}
+
+		IOHelper::deleteFile($localCopy);
 
 		return $response;
 	}

@@ -145,6 +145,7 @@ class AssetsFieldType extends BaseElementFieldType
 						move_uploaded_file($file->getTempName(), $tempPath);
 						$response = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 						$fileIds[] = $response->getDataItem('fileId');
+						IOHelper::deleteFile($tempPath, true);
 					}
 
 					if (is_array($value) && is_array($fileIds))

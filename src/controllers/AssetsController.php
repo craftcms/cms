@@ -119,6 +119,7 @@ class AssetsController extends BaseController
 
 		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
 		$fileId = $response->getDataItem('fileId');
+		IOHelper::deleteFile($fileLocation, true);
 
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);
@@ -178,6 +179,7 @@ class AssetsController extends BaseController
 				$source = craft()->assetSources->populateSourceType($newFile->getSource());
 				$source->replaceFile($existingFile, $newFile, false);
 				craft()->assets->deleteFiles($newFile->id);
+				IOHelper::deleteFile($fileLocation, true);
 			}
 			else
 			{

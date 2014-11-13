@@ -668,6 +668,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			$this->storeLocalSource($localCopy, $imageSourcePath);
 			$this->queueSourceForDeletingIfNecessary($imageSourcePath);
+			IOHelper::deleteFile($localCopy, true);
 		}
 
 		$file->setTransformSource($imageSourcePath);
