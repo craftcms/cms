@@ -400,7 +400,9 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 /* big buttons */
 .btngroup.big .btn,
 .btn.big { padding: 0 14px; font-size: 14px; line-height: 36px; }
-.btn.big[data-icon]:before { @include margin-left(-2px); }
+.btn.big[data-icon]:before,
+.livepreviewbtn:before,
+.sharebtn:before { @include margin-left(-2px); }
 .btngroup.big,
 .btngroup.big input.btn,
 .btn.big,

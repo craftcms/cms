@@ -275,7 +275,7 @@ $fldGuideColor: #f4f3fb;
 /* Preview buttons and Live Preview */
 .previewbtns { display: block; position: relative; }
 .previewbtns .livepreviewbtn { @include margin-right(40px); }
-.previewbtns .sharebtn { position: absolute; top: 0; @include right(0); width: 41px; }
+.previewbtns .sharebtn { position: absolute !important; top: 0; @include right(0); width: 41px; }
 
 .livepreviewbtn { display: block; position: relative; }
 .livepreviewbtn .spinner { position: absolute; top: 3px; @include right(7px); }
