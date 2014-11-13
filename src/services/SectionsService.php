@@ -263,7 +263,7 @@ class SectionsService extends BaseApplicationComponent
 	 * @param int         $sectionId
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return SectionLocaleModel[] The section’s locales.
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
