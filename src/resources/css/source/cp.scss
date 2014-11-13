@@ -272,6 +272,32 @@ $fldGuideColor: #f4f3fb;
 }
 .fld-tab.draghelper .tabs .tab { border-bottom-color: #fff; }
 
+/* Preview buttons and Live Preview */
+.previewbtns { display: block; position: relative; }
+.previewbtns .livepreviewbtn { @include margin-right(40px); }
+.previewbtns .sharebtn { position: absolute; top: 0; @include right(0); width: 41px; }
+
+.livepreviewbtn { display: block; position: relative; }
+.livepreviewbtn .spinner { position: absolute; top: 3px; @include right(7px); }
+
+.lp-editor,
+.lp-iframe-container { position: fixed; top: 0; height: 100%; background: #fff; background-clip: padding-box; }
+.lp-iframe-container.dragging:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }
+
+.lp-editor { z-index: 3; padding: 0 24px; overflow: auto; @include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
+	@include box-sizing(border-box);
+}
+.lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; }
+.lp-editor header .btn { @include floatright; }
+.lp-editor header h1 { margin: 0; font-size: 25px; line-height: 30px; color: #333; }
+.lp-editor > .field:last-child { margin-bottom: 24px !important; }
+
+.lp-iframe-container { z-index: 2; }
+.lp-iframe { width: 100%; height: 100%; }
+
+.lp-draghandle { position: absolute; z-index: 3; top: 0; margin-left: -3px; width: 6px; height: 100%; cursor: col-resize; }
+
+
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 	   only screen and (   -moz-min-device-pixel-ratio: 1.5),

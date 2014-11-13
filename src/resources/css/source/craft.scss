@@ -45,6 +45,8 @@ body.rtl .ltr { text-align: right; direction: ltr; }
 .go:after,
 .menubtn:after,
 .required:after,
+.livepreviewbtn:before,
+.sharebtn:before,
 [data-icon]:before,
 [data-icon-after]:after { @include icon; }
 
@@ -70,6 +72,8 @@ body.rtl [data-icon-after=structure]:after { content: attr('structurertl'); }
 .icon.collapse:before { content: 'collapse'; }
 
 .help:before { content: 'help'; color: #9d2dcc; }
+.livepreviewbtn:before { content: 'view'; }
+.sharebtn:before { content: 'share'; }
 
 /* nav */
 .nav { display: block; }

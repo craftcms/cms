@@ -3,9 +3,8 @@
 
 Craft.LivePreview = Garnish.Base.extend(
 {
-	$form: null,
-	$settingsContainer: null,
-	$btn: null,
+	$extraFields: null,
+	$trigger: null,
 	$spinner: null,
 	$shade: null,
 	$editor: null,
@@ -14,8 +13,7 @@ Craft.LivePreview = Garnish.Base.extend(
 	$iframe: null,
 	$fieldPlaceholder: null,
 
-	postUrl: null,
-	locale: null,
+	previewUrl: null,
 	basePostData: null,
 	inPreviewMode: false,
 	fields: null,
@@ -28,47 +26,49 @@ Craft.LivePreview = Garnish.Base.extend(
 	dragger: null,
 	dragStartEditorWidth: null,
 
-	init: function(entryUrl, locale)
+	init: function(settings)
 	{
-		if (entryUrl)
+		this.setSettings(settings, Craft.LivePreview.defaults);
+
+		// Should preview requests use a specific URL?
+		// This won't affect how the request gets routed (the action param will override it),
+		// but it will allow the templates to change behavior based on the request URI.
+		if (this.settings.previewUrl)
 		{
-			this.postUrl = entryUrl;
+			this.previewUrl = this.settings.previewUrl;
 		}
 		else
 		{
-			this.postUrl = Craft.baseSiteUrl.replace(/\/+$/, '') + '/';
+			this.previewUrl = Craft.baseSiteUrl.replace(/\/+$/, '') + '/';
 		}
-
-		this.locale = locale;
 
 		// Load the preview over SSL if the current request is
 		if (document.location.protocol == 'https:')
 		{
-			this.postUrl = this.postUrl.replace(/^http:/, 'https:');
+			this.previewUrl = this.previewUrl.replace(/^http:/, 'https:');
 		}
 
-		this.$form = $('#entry-form');
-		this.$settingsContainer = $('#settings');
-		this.$btn = $('#livepreview-btn');
-		this.$spinner = $('#livepreview-spinner');
-		this.$fieldPlaceholder = $('<div/>');
+		// Set the base post data
+		this.basePostData = $.extend(
+			{ action: this.settings.previewAction },
+			this.settings.previewParams
+		);
 
-		this.basePostData = {
-			action: 'entries/previewEntry',
-			locale: this.locale
-		};
-
-		var $hiddenInputs = this.$form.children('input[type=hidden]');
-		for (var i = 0; i < $hiddenInputs.length; i++)
+		if (Craft.csrfTokenName)
 		{
-			var $input = $($hiddenInputs[i]);
-			this.basePostData[$input.attr('name')] = $input.val();
+			this.basePostData[Craft.csrfTokenName] = Craft.csrfTokenValue;
 		}
+
+		// Find the DOM elements
+		this.$extraFields = $(this.settings.extraFields);
+		this.$trigger = $(this.settings.trigger);
+		this.$spinner = this.settings.spinner ? $(this.settings.spinner) : this.$trigger.find('.spinner');
+		this.$fieldPlaceholder = $('<div/>');
 
 		this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.LivePreview.defaultEditorWidth);
 		this.containEditorWidth();
 
-		this.addListener(this.$btn, 'activate', 'toggle');
+		this.addListener(this.$trigger, 'activate', 'toggle');
 
 		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
 		{
@@ -122,10 +122,10 @@ Craft.LivePreview = Garnish.Base.extend(
 		if (!this.$editor)
 		{
 			this.$shade = $('<div class="modal-shade dark"></div>').appendTo(Garnish.$bod).css('z-index', 2);
-			this.$editor = $('<div id="livepreview-editor"></div>').appendTo(Garnish.$bod)
-			this.$iframeContainer = $('<div id="livepreview-iframe-container" />').appendTo(Garnish.$bod);
-			this.$iframe = $('<iframe id="livepreview-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
-			this.$dragHandle = $('<div id="livepreview-draghandle"></div>').appendTo(Garnish.$bod);
+			this.$editor = $('<div class="lp-editor"></div>').appendTo(Garnish.$bod)
+			this.$iframeContainer = $('<div class="lp-iframe-container" />').appendTo(Garnish.$bod);
+			this.$iframe = $('<iframe class="lp-iframe" frameborder="0" />').appendTo(this.$iframeContainer);
+			this.$dragHandle = $('<div class="lp-draghandle"></div>').appendTo(Garnish.$bod);
 
 			var $header = $('<header class="header"></header>').appendTo(this.$editor),
 				$closeBtn = $('<div class="btn">'+Craft.t('Done')+'</div>').appendTo($header),
@@ -153,7 +153,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
 		this.fields = [];
-		var $fields = $('#fields > .field, #fields > div > div > .field');
+		var $fields = $(this.settings.fields);
 
 		for (var i= 0; i < $fields.length; i++)
 		{
@@ -313,7 +313,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		}
 
 		// Has the post data changed?
-		var postData = $.extend(Garnish.getPostData(this.$editor), Garnish.getPostData(this.$settingsContainer));
+		var postData = $.extend(Garnish.getPostData(this.$editor), Garnish.getPostData(this.$extraFields));
 
 		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData))
 		{
@@ -325,7 +325,7 @@ Craft.LivePreview = Garnish.Base.extend(
 				scrollX = $doc.scrollLeft(),
 				scrollY = $doc.scrollTop();
 
-			$.post(this.postUrl, data, $.proxy(function(response)
+			$.post(this.previewUrl, data, $.proxy(function(response)
 			{
 				var html = response +
 					'<script type="text/javascript">window.scrollTo('+scrollX+', '+scrollY+');</script>';
@@ -383,7 +383,16 @@ Craft.LivePreview = Garnish.Base.extend(
 	}
 },
 {
-	defaultEditorWidth: 400
+	defaultEditorWidth: 400,
+	defaults: {
+		trigger: '.livepreviewbtn',
+		spinner: null,
+		fields: null,
+		extraFields: null,
+		previewUrl: null,
+		previewAction: null,
+		previewParams: {}
+	}
 });
 
 

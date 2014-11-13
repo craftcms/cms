@@ -1,0 +1,13 @@
+{% if shareUrl is defined %}
+	<div class="btngroup big previewbtns">
+{% endif %}
+
+<div class="btn big livepreviewbtn">
+	{{ "Live Preview"|t }}
+	<div class="spinner hidden"></div>
+</div>
+
+{% if shareUrl is defined %}
+		<a href="{{ shareUrl }}" class="btn big sharebtn" title="{{ 'Share'|t }}" target="_blank"></a>
+	</div>
+{% endif %}

@@ -244,11 +244,22 @@ class EntriesController extends BaseEntriesController
 			$variables['showEntryTypes'] = false;
 		}
 
-		// Enable preview mode?
+		// Enable Live Preview?
 		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
 		{
 			craft()->templates->includeJsResource('js/LivePreview.js');
-			craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
+			craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode(array(
+				'fields'        => '#fields > .field, #fields > div > div > .field',
+				'extraFields'   => '#settings',
+				'previewUrl'    => $variables['entry']->getUrl(),
+				'previewAction' => 'entries/previewEntry',
+				'previewParams' => array(
+				                       'sectionId' => $variables['section']->id,
+				                       'entryId'   => $variables['entry']->id,
+				                       'locale'    => $variables['entry']->locale,
+				                       'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
+				                   )
+			)).');');
 			$variables['showPreviewBtn'] = true;
 
 			// Should we show the Share button too?
