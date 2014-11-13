@@ -472,7 +472,7 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Sends a forgot password email to a user, regardless of their status.
+	 * Sends a password reset email to a user.
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
 	 *
@@ -480,7 +480,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @return bool Whether the email was sent successfully.
 	 */
-	public function sendForgotPasswordEmail(UserModel $user)
+	public function sendPasswordResetEmail(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -1356,6 +1356,23 @@ class UsersService extends BaseApplicationComponent
 	public function onDeleteUser(Event $event)
 	{
 		$this->raiseEvent('onDeleteUser', $event);
+	}
+
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Sends a password reset email.
+	 *
+	 * @param UserModel $user The user to send the forgot password email to.
+	 *
+	 * @deprecated Deprecated in 2.3. Use {@link sendPasswordResetEmail()} instead.
+	 * @return bool Whether the email was sent successfully.
+	 */
+	public function sendForgotPasswordEmail(UserModel $user)
+	{
+		// TODO: Add a deprecation log in Craft 3.0
+		return $this->sendPasswordResetEmail($user);
 	}
 
 	// Private Methods

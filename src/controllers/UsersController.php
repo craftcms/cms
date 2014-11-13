@@ -7,7 +7,7 @@ namespace Craft;
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
  * Note that all actions in the controller, except {@link actionLogin}, {@link actionLogout}, {@link actionGetAuthTimeout},
- * {@link actionSendForgotPasswordEmail}, {@link actionSetPassword} and {@link actionSaveUser} require an
+ * {@link actionSendPasswordResetEmail}, {@link actionSetPassword} and {@link actionSaveUser} require an
  * authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendForgotPasswordEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword');
 
 	// Public Methods
 	// =========================================================================
@@ -151,11 +151,11 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Sends a Forgot Password email.
+	 * Sends a password reset email.
 	 *
 	 * @return null
 	 */
-	public function actionSendForgotPasswordEmail()
+	public function actionSendPasswordResetEmail()
 	{
 		$this->requirePostRequest();
 
@@ -1360,12 +1360,13 @@ class UsersController extends BaseController
 	/**
 	 * Sends a Forgot Password email.
 	 *
+	 * @deprecated Deprecated in 2.3. Use {@link actionSendPasswordResetEmail()} instead.
 	 * @return null
 	 */
 	public function actionForgotPassword()
 	{
 		// TODO: Log a deprecation error in Craft 3
-		$this->actionSendForgotPasswordEmail();
+		$this->actionSendPasswordResetEmail();
 	}
 
 	// Private Methods

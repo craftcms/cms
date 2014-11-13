@@ -146,7 +146,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						craft()->users->sendForgotPasswordEmail($user);
+						craft()->users->sendPasswordResetEmail($user);
 					}
 					else if (craft()->request->isCpRequest() && !$user->can('accessCp'))
 					{

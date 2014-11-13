@@ -758,6 +758,7 @@ class WebApp extends \CWebApplication
 			$segments == array('users', 'logout') ||
 			$segments == array('users', 'setpassword') ||
 			$segments == array('users', 'forgotpassword') ||
+			$segments == array('users', 'sendPasswordResetEmail') ||
 			$segments == array('users', 'saveUser') ||
 			$segments == array('users', 'getAuthTimeout')
 		)
@@ -936,6 +937,7 @@ class WebApp extends \CWebApplication
 				$actionSegs == array('users', 'login') ||
 				$actionSegs == array('users', 'logout') ||
 				$actionSegs == array('users', 'forgotpassword') ||
+				$actionSegs == array('users', 'sendPasswordResetEmail') ||
 				$actionSegs == array('users', 'setpassword') ||
 				$actionSegs[0] == 'update'
 			))
