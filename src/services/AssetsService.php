@@ -149,24 +149,42 @@ class AssetsService extends BaseApplicationComponent
 			return false;
 		}
 
+		if ($isNewFile && !$file->getContent()->title)
+		{
+			// Give it a default title based on the file name
+			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+		}
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
-			if ($isNewFile && !$file->getContent()->title)
-			{
-				// Give it a default title based on the file name
-				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-			}
-
 			// Fire an 'onBeforeSaveAsset' event
-			$this->onBeforeSaveAsset(new Event($this, array(
+			$event = new Event($this, array(
 				'asset'      => $file,
 				'isNewAsset' => $isNewFile
-			)));
+			));
 
-			// Save the element
-			if (craft()->elements->saveElement($file, false))
+			$this->onBeforeSaveAsset($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+
+				// Save the element
+				$success = craft()->elements->saveElement($file, false);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewFile)
 				{
@@ -175,15 +193,17 @@ class AssetsService extends BaseApplicationComponent
 
 				// Save the file row
 				$fileRecord->save(false);
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the asset, in case something changed
+			// in onBeforeSaveAsset
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -196,23 +216,24 @@ class AssetsService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
-
-		// Fire an 'onSaveAsset' event
-		$this->onSaveAsset(new Event($this, array(
-			'asset'      => $file,
-			'isNewAsset' => $isNewFile
-		)));
-
-		if ($this->hasEventHandler('onSaveFileContent'))
+		if ($success)
 		{
-			// Fire an 'onSaveFileContent' event (deprecated)
-			$this->onSaveFileContent(new Event($this, array(
-				'file' => $file
+			// Fire an 'onSaveAsset' event
+			$this->onSaveAsset(new Event($this, array(
+				'asset'      => $file,
+				'isNewAsset' => $isNewFile
 			)));
+
+			if ($this->hasEventHandler('onSaveFileContent'))
+			{
+				// Fire an 'onSaveFileContent' event (deprecated)
+				$this->onSaveFileContent(new Event($this, array(
+					'file' => $file
+				)));
+			}
 		}
 
-		return true;
+		return $success;
 	}
 
 	/**
