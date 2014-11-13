@@ -917,7 +917,6 @@ class WebApp extends \CWebApplication
 		if ($this->request->isCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/forgotpassword' ||
 			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword'
 		)
 		{
