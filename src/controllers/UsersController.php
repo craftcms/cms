@@ -496,11 +496,11 @@ class UsersController extends BaseController
 				{
 					$variables['statusLabel'] = Craft::t('Unverified');
 
-					$statusActions[] = array('action' => 'users/sendActivationEmail', 'label' => Craft::t('Resend verification email'));
+					$statusActions[] = array('action' => 'users/sendActivationEmail', 'label' => Craft::t('Send activation email'));
 
 					if (craft()->userSession->isAdmin())
 					{
-						$statusActions[] = array('action' => 'users/activateUser', 'label' => Craft::t('Activate user'));
+						$statusActions[] = array('action' => 'users/activateUser', 'label' => Craft::t('Activate account'));
 					}
 
 					break;
