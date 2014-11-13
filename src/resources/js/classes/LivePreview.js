@@ -22,9 +22,11 @@ Craft.LivePreview = Garnish.Base.extend(
 	loading: false,
 	checkAgain: false,
 
-	editorWidth: null,
 	dragger: null,
 	dragStartEditorWidth: null,
+
+	_editorWidth: null,
+	_editorWidthInPx: null,
 
 	init: function(settings)
 	{
@@ -65,9 +67,10 @@ Craft.LivePreview = Garnish.Base.extend(
 		this.$spinner = this.settings.spinner ? $(this.settings.spinner) : this.$trigger.find('.spinner');
 		this.$fieldPlaceholder = $('<div/>');
 
+		// Set the initial editor width
 		this.editorWidth = Craft.getLocalStorage('LivePreview.editorWidth', Craft.LivePreview.defaultEditorWidth);
-		this.containEditorWidth();
 
+		// Event Listeners
 		this.addListener(this.$trigger, 'activate', 'toggle');
 
 		Craft.cp.on('beforeSaveShortcut', $.proxy(function()
@@ -79,21 +82,38 @@ Craft.LivePreview = Garnish.Base.extend(
 		}, this));
 	},
 
-	containEditorWidth: function()
+	get editorWidth()
 	{
-		if (this.editorWidth < 200)
+		return this._editorWidth;
+	},
+
+	get editorWidthInPx()
+	{
+		return this._editorWidthInPx;
+	},
+
+	set editorWidth(width)
+	{
+		// Is this getting set in pixels?
+		if (width >= 1)
 		{
-			this.editorWidth = 200;
-			return true;
+			var inPx = width;
+			width /= Garnish.$win.width();
+		}
+		else
+		{
+			var inPx = Math.round(width * Garnish.$win.width());
 		}
 
-		if (this.editorWidth > Garnish.$win.width() - 200)
+		// Make sure it's no less than the minimum
+		if (inPx < Craft.LivePreview.minEditorWidthInPx)
 		{
-			this.editorWidth = Garnish.$win.width() - 200;
-			return true;
+			inPx = Craft.LivePreview.minEditorWidthInPx;
+			width = inPx / Garnish.$win.width();
 		}
 
-		return false;
+		this._editorWidth = width;
+		this._editorWidthInPx = inPx;
 	},
 
 	toggle: function()
@@ -141,14 +161,14 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.addListener($closeBtn, 'click', 'exit');
 		}
 
-		this.$editor.css(Craft.left, -this.editorWidth+'px');
-		this.$editor.css('width', this.editorWidth+'px');
+		// Set the sizes
+		this.handleWindowResize();
+		this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
-		var iframeWidth = this.getIframeWidth();
-		this.$iframeContainer.css(Craft.right, -iframeWidth);
-		this.$iframeContainer.css('width', iframeWidth);
-		this.addListener(Garnish.$win, 'resize', 'updateWidths');
-		this.updateWidths();
+		this.$editor.css(Craft.left, -this.editorWidthInPx+'px');
+		this.$editor.css('width', this.editorWidthInPx+'px');
+
+		this.$iframeContainer.css(Craft.right, -this.getIframeWidth());
 
 		// Move all the fields into the editor rather than copying them
 		// so any JS that's referencing the elements won't break.
@@ -173,8 +193,6 @@ Craft.LivePreview = Garnish.Base.extend(
 			});
 		}
 
-		Garnish.$win.trigger('resize');
-
 		if (this.updateIframe())
 		{
 			this.$spinner.removeClass('hidden');
@@ -191,6 +209,15 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.inPreviewMode = true;
 		this.trigger('enter');
+	},
+
+	handleWindowResize: function()
+	{
+		// Reset the width so the min width is enforced
+		this.editorWidth = this.editorWidth;
+
+		// Update the editor/iframe sizes
+		this.updateWidths();
 	},
 
 	slideIn: function()
@@ -244,7 +271,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
 		this.$shade.delay(200).velocity('fadeOut');
 
-		this.$editor.velocity('stop').animateLeft(-this.editorWidth, 'slow', $.proxy(function()
+		this.$editor.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function()
 		{
 			for (var i = 0; i < this.fields.length; i++)
 			{
@@ -283,14 +310,13 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	getIframeWidth: function()
 	{
-		return Garnish.$win.width()-this.editorWidth;
+		return Garnish.$win.width()-this.editorWidthInPx;
 	},
 
 	updateWidths: function()
 	{
-		this.containEditorWidth();
-		this.$editor.css('width', this.editorWidth+'px');
-		this.$dragHandle.css(Craft.left, this.editorWidth+'px');
+		this.$editor.css('width', this.editorWidthInPx+'px');
+		this.$dragHandle.css(Craft.left, this.editorWidthInPx+'px');
 		this.$iframeContainer.width(this.getIframeWidth());
 	},
 
@@ -358,7 +384,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	_onDragStart: function()
 	{
-		this.dragStartEditorWidth = this.editorWidth;
+		this.dragStartEditorWidth = this.editorWidthInPx;
 		this.$iframeContainer.addClass('dragging');
 	},
 
@@ -383,7 +409,9 @@ Craft.LivePreview = Garnish.Base.extend(
 	}
 },
 {
-	defaultEditorWidth: 400,
+	defaultEditorWidth: .33,
+	minEditorWidthInPx: 200,
+
 	defaults: {
 		trigger: '.livepreviewbtn',
 		spinner: null,
