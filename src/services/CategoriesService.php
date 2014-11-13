@@ -563,6 +563,36 @@ class CategoriesService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Returns whether a group’s categories have URLs, and if the group’s template path is valid.
+	 *
+	 * @param CategoryGroupModel $group
+	 *
+	 * @return bool
+	 */
+	public function isGroupTemplateValid(CategoryGroupModel $group)
+	{
+		if ($group->hasUrls)
+		{
+			// Set Craft to the site template path
+			$oldTemplatesPath = craft()->path->getTemplatesPath();
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			// Does the template exist?
+			$templateExists = craft()->templates->doesTemplateExist($group->template);
+
+			// Restore the original template path
+			craft()->path->setTemplatesPath($oldTemplatesPath);
+
+			if ($templateExists)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Categories
 	// -------------------------------------------------------------------------
 

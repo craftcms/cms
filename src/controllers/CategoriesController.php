@@ -281,6 +281,45 @@ class CategoriesController extends BaseController
 			$variables['crumbs'][] = array('label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl());
 		}
 
+		// Enable Live Preview?
+		if (!craft()->request->isMobileBrowser(true) && craft()->categories->isGroupTemplateValid($variables['group']))
+		{
+			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
+				'fields'        => '#title-field, #fields > div > div > .field',
+				'extraFields'   => '#settings',
+				'previewUrl'    => $variables['category']->getUrl(),
+				'previewAction' => 'categories/previewCategory',
+				'previewParams' => array(
+				                       'groupId'    => $variables['group']->id,
+				                       'categoryId' => $variables['category']->id,
+				                       'locale'     => $variables['category']->locale,
+				                   )
+			)).');');
+
+			$variables['showPreviewBtn'] = true;
+
+			// Should we show the Share button too?
+			if ($variables['category']->id)
+			{
+				// If the category is enabled, use its main URL as its share URL.
+				if ($variables['category']->getStatus() == BaseElementModel::ENABLED)
+				{
+					$variables['shareUrl'] = $variables['category']->getUrl();
+				}
+				else
+				{
+					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/shareCategory', array(
+						'categoryId' => $variables['category']->id,
+						'locale'     => $variables['category']->locale
+					));
+				}
+			}
+		}
+		else
+		{
+			$variables['showPreviewBtn'] = false;
+		}
+
 		// Set the base CP edit URL
 		$variables['baseCpEditUrl'] = 'categories/'.$variables['group']->handle.'/{id}-{slug}';
 
@@ -291,6 +330,23 @@ class CategoriesController extends BaseController
 		// Render the template!
 		craft()->templates->includeCssResource('css/category.css');
 		$this->renderTemplate('categories/_edit', $variables);
+	}
+
+	/**
+	 * Previews a category.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionPreviewCategory()
+	{
+		$this->requirePostRequest();
+
+		$category = $this->_getCategoryModel();
+		$this->_enforceEditCategoryPermissions($category);
+		$this->_populateCategoryModel($category);
+
+		$this->_showCategory($category);
 	}
 
 	/**
@@ -406,6 +462,66 @@ class CategoriesController extends BaseController
 				));
 			}
 		}
+	}
+
+	/**
+	 * Redirects the client to a URL for viewing a disabled category on the front end.
+	 *
+	 * @param mixed $categoryId
+	 * @param mixed $locale
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionShareCategory($categoryId, $locale = null)
+	{
+		$category = craft()->categories->getCategoryById($categoryId, $locale);
+
+		if (!$category)
+		{
+			throw new HttpException(404);
+		}
+
+		// Make sure they have permission to be viewing this category
+		$this->_enforceEditCategoryPermissions($category);
+
+		// Make sure the category actually can be viewed
+		if (!craft()->categories->isGroupTemplateValid($category->getGroup()))
+		{
+			throw new HttpException(404);
+		}
+
+		// Create the token and redirect to the category URL with the token in place
+		$token = craft()->tokens->createToken(array(
+			'action' => 'categories/viewSharedCategory',
+			'params' => array('categoryId' => $categoryId, 'locale' => $category->locale)
+		));
+
+		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
+		craft()->request->redirect($url);
+	}
+
+	/**
+	 * Shows an category/draft/version based on a token.
+	 *
+	 * @param mixed $categoryId
+	 * @param mixed $locale
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionViewSharedCategory($categoryId, $locale = null)
+	{
+		$this->requireToken();
+
+		$category = craft()->categories->getCategoryById($categoryId, $locale);
+
+		if (!$category)
+		{
+			throw new HttpException(404);
+		}
+
+		$this->_showCategory($category);
 	}
 
 	// Deprecated Methods
@@ -619,5 +735,32 @@ class CategoriesController extends BaseController
 		}
 
 		$category->newParentId = $parentId;
+	}
+
+	/**
+	 * Displays a category.
+	 *
+	 * @param CategoryModel $category
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	private function _showCategory(CategoryModel $category)
+	{
+		$group = $category->getGroup();
+
+		if (!$group)
+		{
+			Craft::log('Attempting to preview a category that doesn’t have a group', LogLevel::Error);
+			throw new HttpException(404);
+		}
+
+		craft()->setLanguage($category->locale);
+
+		craft()->templates->getTwig()->disableStrictVariables();
+
+		$this->renderTemplate($group->template, array(
+			'category' => $category
+		));
 	}
 }

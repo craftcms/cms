@@ -45,6 +45,10 @@
 
 			<div class="item" data-position="right" data-colspan="1">
 
+				{% if showPreviewBtn %}
+					{% include "_includes/previewbtns" %}
+				{% endif %}
+
 				{% if craft.isLocalized() %}
 					<ul id="locales" class="pane">
 						{% set parentIdParam = craft.request.getParam('parentId') %}
