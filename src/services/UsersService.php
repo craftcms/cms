@@ -83,6 +83,32 @@ class UsersService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a user by their email.
+	 *
+	 * ```php
+	 * $user = craft()->users->getUserByEmail($email);
+	 * ```
+	 *
+	 * @param string $email The user’s email.
+	 *
+	 * @return UserModel|null The user with the given email, or `null` if a user could not be found.
+	 */
+	public function getUserByEmail($email)
+	{
+		$userRecord = UserRecord::model()->find(array(
+			'condition' => 'email=:email',
+			'params' => array(':email' => $email),
+		));
+
+		if ($userRecord)
+		{
+			return UserModel::populateModel($userRecord);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns a user by their UID.
 	 *
 	 * ```php
