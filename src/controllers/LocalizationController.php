@@ -74,7 +74,9 @@ class LocalizationController extends BaseController
 		$this->requireAjaxRequest();
 
 		$localeId = craft()->request->getRequiredPost('id');
-		$success = craft()->i18n->deleteSiteLocale($localeId);
+		$transferContentTo = craft()->request->getPost('transferContentTo');
+
+		$success = craft()->i18n->deleteSiteLocale($localeId, $transferContentTo);
 		$this->returnJson(array('success' => $success));
 	}
 }

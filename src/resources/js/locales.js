@@ -19,6 +19,7 @@ Craft.Locales = Garnish.Base.extend(
 	init: function(locales, selectedLocales)
 	{
 		this.locales = {};
+
 		for (var id in locales)
 		{
 			this.locales[id] = {
@@ -33,21 +34,7 @@ Craft.Locales = Garnish.Base.extend(
 		this.$addLocaleInput = $('#addlocaleinput');
 		this.$addLocaleSpinner = this.$addLocaleField.find('.spinner');
 
-		this.adminTable = new Craft.AdminTable({
-			tableSelector: '#locales',
-			sortable: true,
-			minObjects: 1,
-			reorderAction: 'localization/reorderLocales',
-			deleteAction: 'localization/deleteLocale',
-			confirmDeleteMessage: Craft.t('Are you sure you want to delete “{name}” and all its associated content?'),
-			onDeleteObject: $.proxy(function(id) {
-				var index = $.inArray(id, this.selectedLocales);
-				if (index != -1)
-				{
-					this.selectedLocales.splice(index, 1);
-				}
-			}, this)
-		});
+		this.adminTable = new LocalesTable(this);
 
 		this.addListener(this.$addLocaleInput, 'keydown', 'onKeyDown');
 		this.addListener(this.$addLocaleInput, 'focus', 'onFocus');
@@ -288,6 +275,178 @@ Craft.Locales = Garnish.Base.extend(
 
 }, {
 	wordRegex: new RegExp('[a-zA-Z]+', 'g')
+});
+
+
+var LocalesTable = Craft.AdminTable.extend(
+{
+	manager: null,
+	confirmDeleteModal: null,
+
+	$rowToDelete: null,
+	$deleteActionRadios: null,
+	$deleteSubmitBtn: null,
+	$deleteSpinner: null,
+
+	_deleting: false,
+
+	init: function(manager)
+	{
+		this.manager = manager;
+
+		this.base({
+			tableSelector: '#locales',
+			sortable: true,
+			minObjects: 1,
+			reorderAction: 'localization/reorderLocales',
+			deleteAction: 'localization/deleteLocale',
+		});
+	},
+
+	confirmDeleteObject: function($row)
+	{
+		if (this.confirmDeleteModal)
+		{
+			this.confirmDeleteModal.destroy();
+			delete this.confirmDeleteModal;
+		}
+
+		this._createConfirmDeleteModal($row);
+
+		// Auto-focus the first radio
+		if (!Garnish.isMobileBrowser(true))
+		{
+			setTimeout($.proxy(function() {
+				this.$deleteActionRadios.first().focus();
+			}, this), 100);
+		}
+
+		return false;
+	},
+
+	onDeleteObject: function(id)
+	{
+		var index = $.inArray(id, this.manager.selectedLocales);
+
+		if (index != -1)
+		{
+			this.manager.selectedLocales.splice(index, 1);
+		}
+
+		this.base(id);
+	},
+
+	validateDeleteInputs: function()
+	{
+		var validates = (
+			this.$deleteActionRadios.eq(0).prop('checked') ||
+			this.$deleteActionRadios.eq(1).prop('checked')
+		);
+
+		if (validates)
+		{
+			this.$deleteSubmitBtn.removeClass('disabled')
+		}
+		else
+		{
+			this.$deleteSubmitBtn.addClass('disabled')
+		}
+
+		return validates;
+	},
+
+	submitDeleteLocale: function(ev)
+	{
+		ev.preventDefault();
+
+		if (this._deleting || !this.validateDeleteInputs())
+		{
+			return;
+		}
+
+		this.$deleteSubmitBtn.addClass('active');
+		this.$deleteSpinner.removeClass('hidden');
+		this.disable();
+		this._deleting = true;
+
+		var data = {
+			id: this.getObjectId(this.$rowToDelete)
+		};
+
+		// Are we transferring content?
+		if (this.$deleteActionRadios.eq(0).prop('checked'))
+		{
+			data.transferContentTo = this.$transferSelect.val();
+		}
+
+		Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this._deleting = false;
+				this.enable();
+				this.confirmDeleteModal.hide();
+				this.handleDeleteObjectResponse(response, this.$rowToDelete);
+			}
+		}, this));
+	},
+
+	// Private Methods
+	// =========================================================================
+
+	_createConfirmDeleteModal: function($row)
+	{
+		this.$rowToDelete = $row;
+
+		var id = this.getObjectId($row),
+			name = this.getObjectName($row);
+
+		var $form = $(
+				'<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
+					Craft.getCsrfInput() +
+					'<input type="hidden" name="action" value="localization/deleteLocale"/>' +
+					'<input type="hidden" name="id" value="'+id+'"/>' +
+				'</form>'
+			).appendTo(Garnish.$bod),
+			$body = $(
+				'<div class="body">' +
+					'<p>'+Craft.t('What do you want to do with any content that is only available in {language}?', { language: name })+'</p>' +
+					'<div class="options">' +
+						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
+						'<div id="transferselect" class="select">' +
+							'<select/>' +
+						'</div>' +
+					'</div>' +
+					'<div>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it')+'</label>' +
+					'</div>' +
+				'</div>'
+			).appendTo($form),
+			$buttons = $('<div class="buttons right"/>').appendTo($body),
+			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
+
+		this.$deleteActionRadios = $body.find('input[type=radio]');
+		this.$transferSelect = $('#transferselect > select');
+		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Delete {language}', { language: name })+'" />').appendTo($buttons);
+		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
+
+		for (var i = 0; i < this.manager.selectedLocales.length; i++)
+		{
+			if (this.manager.selectedLocales[i] != id)
+			{
+				this.$transferSelect.append('<option value="'+this.manager.selectedLocales[i]+'">'+this.manager.locales[this.manager.selectedLocales[i]].name+'</option>');
+			}
+		}
+
+		this.confirmDeleteModal = new Garnish.Modal($form);
+
+		this.addListener($cancelBtn, 'click', function() {
+			this.confirmDeleteModal.hide();
+		});
+
+		this.addListener(this.$deleteActionRadios, 'change', 'validateDeleteInputs');
+		this.addListener($form, 'submit', 'submitDeleteLocale');
+	}
 });
 
 

@@ -356,14 +356,219 @@ class LocalizationService extends BaseApplicationComponent
 	/**
 	 * Deletes a site locale.
 	 *
-	 * @param string $localeId
+	 * @param string      $localeId          The locale to be deleted.
+	 * @param string|null $transferContentTo The locale that should take over the deleted locale’s content.
 	 *
-	 * @return bool
+	 * @return bool Whether the locale was successfully deleted.
 	 */
-	public function deleteSiteLocale($localeId)
+	public function deleteSiteLocale($localeId, $transferContentTo)
 	{
-		$affectedRows = craft()->db->createCommand()->delete('locales', array('locale' => $localeId));
-		return (bool) $affectedRows;
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Fire an 'onBeforeDeleteLocale' event
+			$event = new Event($this, array(
+				'localeId'          => $localeId,
+				'transferContentTo' => $transferContentTo
+			));
+			$this->onBeforeDeleteLocale($event);
+
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
+			{
+				// Get the section IDs that are enabled for this locale
+				$sectionIds = craft()->db->createCommand()
+					->select('sectionId')
+					->from('sections_i18n')
+					->where(array('locale' => $localeId))
+					->queryColumn();
+
+				// Figure out which ones are *only* enabled for this locale
+				$soloSectionIds = array();
+
+				foreach ($sectionIds as $sectionId)
+				{
+					$sectionLocales = craft()->sections->getSectionLocales($sectionId);
+
+					if (count($sectionLocales) == 1 && $sectionLocales[0]->locale == $localeId)
+					{
+						$soloSectionIds[] = $sectionId;
+					}
+				}
+
+				// Did we find any?
+				if ($soloSectionIds)
+				{
+					// Should we enable those for a different locale?
+					if ($transferContentTo)
+					{
+						craft()->db->createCommand()->update(
+							'sections_i18n',
+							array('locale' => $transferContentTo),
+							array('in', 'sectionId', $soloSectionIds)
+						);
+
+						// Get all of the entry IDs in those sections
+						$entryIds = craft()->db->createCommand()
+							->select('id')
+							->from('entries')
+							->where(array('in', 'sectionId', $soloSectionIds))
+							->queryColumn();
+
+						if ($entryIds)
+						{
+							// Delete their template caches
+							craft()->templateCache->deleteCachesByElementId($entryIds);
+
+							// Update the entry tables
+							craft()->db->createCommand()->update(
+								'content',
+								array('locale' => $transferContentTo),
+								array('in', 'elementId', $entryIds)
+							);
+
+							craft()->db->createCommand()->update(
+								'elements_i18n',
+								array('locale' => $transferContentTo),
+								array('in', 'elementId', $entryIds)
+							);
+
+							craft()->db->createCommand()->update(
+								'entrydrafts',
+								array('locale' => $transferContentTo),
+								array('in', 'entryId', $entryIds)
+							);
+
+							craft()->db->createCommand()->update(
+								'entryversions',
+								array('locale' => $transferContentTo),
+								array('in', 'entryId', $entryIds)
+							);
+
+							craft()->db->createCommand()->update(
+								'relations',
+								array('sourceLocale' => $transferContentTo),
+								array('and', array('in', 'sourceId', $entryIds), 'sourceLocale is not null')
+							);
+
+							// All the Matrix tables
+							$blockIds = craft()->db->createCommand()
+								->select('id')
+								->from('matrixblocks')
+								->where(array('in', 'ownerId', $entryIds))
+								->queryColumn();
+
+							if ($blockIds)
+							{
+								craft()->db->createCommand()->update(
+									'matrixblocks',
+									array('ownerLocale' => $transferContentTo),
+									array('and', array('in', 'id', $blockIds), 'ownerLocale is not null')
+								);
+
+								craft()->db->createCommand()->delete(
+									'elements_i18n',
+									array('and', array('in', 'elementId', $blockIds), 'locale = :transferContentTo'),
+									array(':transferContentTo' => $transferContentTo)
+								);
+
+								craft()->db->createCommand()->update(
+									'elements_i18n',
+									array('locale' => $transferContentTo),
+									array('and', array('in', 'elementId', $blockIds), 'locale = :localeId'),
+									array(':localeId' => $localeId)
+								);
+
+								$matrixTablePrefix = craft()->db->addTablePrefix('matrixcontent_');
+								$matrixTablePrefixLength = strlen($matrixTablePrefix);
+								$tablePrefixLength = strlen(craft()->db->tablePrefix);
+
+								foreach (craft()->db->getSchema()->getTableNames() as $tableName)
+								{
+									if (strncmp($tableName, $matrixTablePrefix, $matrixTablePrefixLength) === 0)
+									{
+										$tableName = substr($tableName, $tablePrefixLength);
+
+										craft()->db->createCommand()->delete(
+											$tableName,
+											array('and', array('in', 'elementId', $blockIds), 'locale = :transferContentTo'),
+											array(':transferContentTo' => $transferContentTo)
+										);
+
+										craft()->db->createCommand()->update(
+											$tableName,
+											array('locale' => $transferContentTo),
+											array('and', array('in', 'elementId', $blockIds), 'locale = :localeId'),
+											array(':localeId' => $localeId)
+										);
+									}
+								}
+
+								craft()->db->createCommand()->update(
+									'relations',
+									array('sourceLocale' => $transferContentTo),
+									array('and', array('in', 'sourceId', $blockIds), 'sourceLocale is not null')
+								);
+							}
+						}
+					}
+					else
+					{
+						// Delete those sections
+						foreach ($soloSectionIds as $sectionId)
+						{
+							craft()->sections->deleteSectionById($sectionId);
+						}
+					}
+				}
+
+				// Delete the locale
+				$affectedRows = craft()->db->createCommand()->delete('locales', array('locale' => $localeId));
+				$success = (bool) $affectedRows;
+
+				// If it didn't work, rollback the transaciton in case something changed in onBeforeDeleteLocale
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+			}
+			else
+			{
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we deleted the locale,
+			// in case something changed in onBeforeDeleteLocale
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		if ($success)
+		{
+			// Fire an 'onDeleteLocale' event
+			$this->onDeleteLocale(new Event($this, array(
+				'localeId'          => $localeId,
+				'transferContentTo' => $transferContentTo
+			)));
+		}
+
+		return $success;
 	}
 
 	/**
@@ -393,5 +598,32 @@ class LocalizationService extends BaseApplicationComponent
 		}
 
 		return $this->_localeData[$localeId];
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeDeleteLocale' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteLocale(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteLocale', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteLocale' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteLocale(Event $event)
+	{
+		$this->raiseEvent('onDeleteLocale', $event);
 	}
 }
