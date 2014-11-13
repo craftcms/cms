@@ -217,42 +217,15 @@ class UsersController extends BaseController
 	 */
 	public function actionSetPassword()
 	{
-		if (craft()->userSession->isLoggedIn())
-		{
-			craft()->userSession->logout();
-		}
-
-		$id = craft()->request->getRequiredParam('id');
-		$userToProcess = craft()->users->getUserByUid($id);
-		$isCodeValid = false;
-
 		// Have they just submitted a password, or are we just displaying teh page?
 		if (!craft()->request->isPostRequest())
 		{
-			$code = craft()->request->getRequiredParam('code');
-
-			if ($userToProcess)
+			if ($info = $this->_processTokenRequest())
 			{
-				// Fire an 'onBeforeVerifyUser' event
-				craft()->users->onBeforeVerifyUser(new Event($this, array(
-					'user' => $userToProcess
-				)));
+				$userToProcess = $info['userToProcess'];
+				$id = $info['id'];
+				$code = $info['code'];
 
-				$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);
-
-				// Fire an 'onVerifyUser' event
-				craft()->users->onVerifyUser(new Event($this, array(
-					'user'        => $userToProcess,
-					'isCodeValid' => $isCodeValid
-				)));
-			}
-
-			if (!$userToProcess || !$isCodeValid)
-			{
-				$this->_processInvalidToken($userToProcess);
-			}
-			else
-			{
 				craft()->userSession->processUsernameCookie($userToProcess->username);
 
 				// Send them to the set password template.
@@ -272,7 +245,9 @@ class UsersController extends BaseController
 		else
 		{
 			// POST request. They've just set the password.
-			$code = craft()->request->getRequiredPost('code');
+			$code          = craft()->request->getRequiredPost('code');
+			$id            = craft()->request->getRequiredParam('id');
+			$userToProcess = craft()->users->getUserByUid($id);
 
 			$url = craft()->config->getSetPasswordPath($code, $id, $userToProcess);
 
@@ -300,38 +275,7 @@ class UsersController extends BaseController
 						craft()->users->activateUser($userToProcess);
 					}
 
-					$loggedIn = false;
-
-					// Do we need to auto-login?
-					if (craft()->config->get('autoLoginAfterAccountActivation') === true)
-					{
-						craft()->userSession->loginByUserId($userToProcess->id, false, true);
-						$loggedIn = true;
-					}
-
-					// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-					if (!$userToProcess->can('accessCp'))
-					{
-						$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
-						$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
-					}
-					else
-					{
-						// If we didn't log them in, just send to the appropriate login page.
-						if (!$loggedIn)
-						{
-							$url = craft()->config->getLoginPath();
-						}
-						else
-						{
-							// We logged them in, so send to 'postCpLoginRedirect'.
-							$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
-							$url = UrlHelper::getCpUrl($postCpLoginRedirect);
-						}
-
-					}
-
-					$this->redirect($url);
+					$this->_processPostValidationRedirect($userToProcess);
 				}
 			}
 
@@ -362,6 +306,21 @@ class UsersController extends BaseController
 	{
 		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/setPassword instead.');
 		$this->actionSetPassword();
+	}
+
+	/**
+	 * Verifies that a user has access to an email address.
+	 */
+	public function actionVerifyEmail()
+	{
+		if ($info = $this->_processTokenRequest())
+		{
+			$userToProcess = $info['userToProcess'];
+
+			craft()->users->verifyEmailForUser($userToProcess);
+
+			$this->_processPostValidationRedirect($userToProcess);
+		}
 	}
 
 	/**
@@ -1549,6 +1508,46 @@ class UsersController extends BaseController
 	}
 
 	/**
+	 * @return array
+	 * @throws HttpException
+	 */
+	private function _processTokenRequest()
+	{
+		if (craft()->userSession->isLoggedIn())
+		{
+			craft()->userSession->logout();
+		}
+
+		$id            = craft()->request->getRequiredParam('id');
+		$userToProcess = craft()->users->getUserByUid($id);
+		$code          = craft()->request->getRequiredParam('code');
+		$isCodeValid   = false;
+
+		if ($userToProcess)
+		{
+			// Fire an 'onBeforeVerifyUser' event
+			craft()->users->onBeforeVerifyUser(new Event($this, array(
+				'user' => $userToProcess
+			)));
+
+			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);
+
+			// Fire an 'onVerifyUser' event
+			craft()->users->onVerifyUser(new Event($this, array(
+				'user'        => $userToProcess,
+				'isCodeValid' => $isCodeValid
+			)));
+		}
+
+		if (!$userToProcess || !$isCodeValid)
+		{
+			$this->_processInvalidToken($userToProcess);
+		}
+
+		return array('code' => $code, 'id' => $id, 'userToProcess' => $userToProcess);
+	}
+
+	/**
 	 * @param UserModel $user
 	 *
 	 * @throws HttpException
@@ -1581,5 +1580,46 @@ class UsersController extends BaseController
 
 			throw new HttpException('200', Craft::t('Invalid verification code. Please [login or reset your password]({loginUrl}).', array('loginUrl' => $url)));
 		}
+	}
+
+	/**
+	 * @param $userToProcess
+	 *
+	 * @throws Exception
+	 */
+	private function _processPostValidationRedirect($userToProcess)
+	{
+		$loggedIn = false;
+
+		// Do we need to auto-login?
+		if (craft()->config->get('autoLoginAfterAccountActivation') === true)
+		{
+			craft()->userSession->loginByUserId($userToProcess->id, false, true);
+			$loggedIn = true;
+		}
+
+		// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
+		if (!$userToProcess->can('accessCp'))
+		{
+			$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
+			$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+		}
+		else
+		{
+			// If we didn't log them in, just send to the appropriate login page.
+			if (!$loggedIn)
+			{
+				$url = craft()->config->getLoginPath();
+			}
+			else
+			{
+				// We logged them in, so send to 'postCpLoginRedirect'.
+				$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+				$url = UrlHelper::getCpUrl($postCpLoginRedirect);
+			}
+
+		}
+
+		$this->redirect($url);
 	}
 }

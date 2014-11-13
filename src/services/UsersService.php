@@ -464,7 +464,7 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		$url = craft()->config->getActivateAccountPath($unhashedVerificationCode, $userRecord->uid);
+		$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
 
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -683,21 +683,10 @@ class UsersService extends BaseApplicationComponent
 				$userRecord->verificationCode = null;
 				$userRecord->verificationCodeIssuedDate = null;
 				$userRecord->lockoutDate = null;
+				$userRecord->save();
 
 				// If they have an unverified email address, now is the time to set it to their primary email address
-				if ($user->unverifiedEmail)
-				{
-					$userRecord->email = $user->unverifiedEmail;
-
-					if (craft()->config->get('useEmailAsUsername'))
-					{
-						$userRecord->username = $user->unverifiedEmail;
-					}
-
-					$userRecord->unverifiedEmail = null;
-				}
-
-				$userRecord->save();
+				$this->verifyEmailForUser($user);
 				$success = true;
 			}
 			else
@@ -731,6 +720,31 @@ class UsersService extends BaseApplicationComponent
 		}
 
 		return $success;
+	}
+
+	/**
+	 * If 'unverifiedEmail' is set on the UserModel, then this method will transfer it to the official email property
+	 * and clear the unverified one.
+	 *
+	 * @param UserModel $user
+	 *
+	 * @throws Exception
+	 */
+	public function verifyEmailForUser(UserModel $user)
+	{
+		if ($user->unverifiedEmail)
+		{
+			$userRecord = $this->_getUserRecordById($user->id);
+			$userRecord->email = $user->unverifiedEmail;
+
+			if (craft()->config->get('useEmailAsUsername'))
+			{
+				$userRecord->username = $user->unverifiedEmail;
+			}
+
+			$userRecord->unverifiedEmail = null;
+			$userRecord->save();
+		}
 	}
 
 	/**
