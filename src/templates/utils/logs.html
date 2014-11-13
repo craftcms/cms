@@ -28,52 +28,57 @@
 		</select>
 	</div>
 
-	{% for logEntry in logEntries %}
+	{% for logEntries in logEntriesByRequest %}
 
-		{% if currentLogFileName == 'phperrors.log' %}
+		{% if not loop.first %}<hr>{% endif %}
 
-			<div>
-				{{ logEntry.message|raw }}
-			</div>
+		{% for logEntry in logEntries %}
 
-		{% else %}
+			{% if currentLogFileName == 'phperrors.log' %}
 
-			<h2>{{ logEntry.dateTime }}</h2>
+				<div>
+					{{ logEntry.message|raw }}
+				</div>
 
-			<table class="data fullwidth">
-				<tr>
-					<th class="light" width="300">Level</th>
-					<td>{{ logEntry.level }}</td>
-				</tr>
-				<tr>
-					<th class="light" width="300">Category</th>
-					<td>{{ logEntry.category }}</td>
-				</tr>
-				{% if logEntry.message %}
+			{% else %}
+
+				<h2>{{ logEntry.dateTime.localeDate() ~ ' ' ~ logEntry.dateTime.localeTime() }}</h2>
+
+				<table class="data fullwidth">
 					<tr>
-						<th class="light" width="300">Message</th>
-						<td>{{ logEntry.message }}</td>
+						<th class="light" width="300">Level</th>
+						<td>{{ logEntry.level }}</td>
 					</tr>
+					<tr>
+						<th class="light" width="300">Category</th>
+						<td>{{ logEntry.category }}</td>
+					</tr>
+					{% if logEntry.message %}
+						<tr>
+							<th class="light" width="300">Message</th>
+							<td>{{ logEntry.message }}</td>
+						</tr>
+					{% endif %}
+				</table>
+
+				{{ table('Get Variables', logEntry.get) }}
+				{{ table('Post Variables', logEntry.post) }}
+				{{ table('Cookies', logEntry.cookie) }}
+				{{ table('Session Data', logEntry.session) }}
+				{{ table('Server Variables', logEntry.server) }}
+
+				{% if logEntry.profile %}
+					<h3>Profile</h3>
+					<ol>
+						{% for step in logEntry.profile %}
+							<li>{{ step|join('<br>')|raw }}</li>
+						{% endfor %}
+					</ol>
 				{% endif %}
-			</table>
 
-			{{ table('Get Variables', logEntry.get) }}
-			{{ table('Post Variables', logEntry.post) }}
-			{{ table('Cookies', logEntry.cookie) }}
-			{{ table('Session Data', logEntry.session) }}
-			{{ table('Server Variables', logEntry.server) }}
-
-			{% if logEntry.profile %}
-				<h3>Profile</h3>
-				<ol>
-					{% for step in logEntry.profile %}
-						<li>{{ step|join('<br>')|raw }}</li>
-					{% endfor %}
-				</ol>
 			{% endif %}
 
-		{% endif %}
-
+		{% endfor %}
 	{% endfor %}
 
 {% endblock %}
