@@ -1028,254 +1028,243 @@ class ElementsService extends BaseApplicationComponent
 		$elementRecord->enabled = (bool) $element->enabled;
 		$elementRecord->archived = (bool) $element->archived;
 
-		// Fire an 'onBeforeSaveElement' event
-		$this->onBeforeSaveElement(new Event($this, array(
-			'element'      => $element,
-			'isNewElement' => $isNewElement
-		)));
-
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
-			// Save the element record first
-			$success = $elementRecord->save(false);
+			// Fire an 'onBeforeSaveElement' event
+			$event = new Event($this, array(
+				'element'      => $element,
+				'isNewElement' => $isNewElement
+			));
 
-			if ($success)
+			$this->onBeforeSaveElement($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
-				if ($isNewElement)
-				{
-					// Save the element id on the element model, in case {id} is in the URL format
-					$element->id = $elementRecord->id;
-
-					if ($elementType->hasContent())
-					{
-						$element->getContent()->elementId = $element->id;
-					}
-				}
-
-				// Save the content
-				if ($elementType->hasContent())
-				{
-					craft()->content->saveContent($element, false, (bool) $element->id);
-				}
-
-				// Update the search index
-				craft()->search->indexElementAttributes($element);
-
-				// Update the locale records and content
-
-				// We're saving all of the element's locales here to ensure that they all exist and to update the URI in
-				// the event that the URL format includes some value that just changed
-
-				$localeRecords = array();
-
-				if (!$isNewElement)
-				{
-					$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
-						'elementId' => $element->id
-					));
-
-					foreach ($existingLocaleRecords as $record)
-					{
-						$localeRecords[$record->locale] = $record;
-					}
-				}
-
-				$mainLocaleId = $element->locale;
-
-				$locales = $element->getLocales();
-				$localeIds = array();
-
-				if (!$locales)
-				{
-					throw new Exception('All elements must have at least one locale associated with them.');
-				}
-
-				foreach ($locales as $localeId => $localeInfo)
-				{
-					if (is_numeric($localeId) && is_string($localeInfo))
-					{
-						$localeId = $localeInfo;
-						$localeInfo = array();
-					}
-
-					$localeIds[] = $localeId;
-
-					if (!isset($localeInfo['enabledByDefault']))
-					{
-						$localeInfo['enabledByDefault'] = true;
-					}
-
-					if (isset($localeRecords[$localeId]))
-					{
-						$localeRecord = $localeRecords[$localeId];
-					}
-					else
-					{
-						$localeRecord = new ElementLocaleRecord();
-
-						$localeRecord->elementId = $element->id;
-						$localeRecord->locale    = $localeId;
-						$localeRecord->enabled   = $localeInfo['enabledByDefault'];
-					}
-
-					// Is this the main locale?
-					$isMainLocale = ($localeId == $mainLocaleId);
-
-					if ($isMainLocale)
-					{
-						$localizedElement = $element;
-					}
-					else
-					{
-						// Copy the element for this locale
-						$localizedElement = $element->copy();
-						$localizedElement->locale = $localeId;
-
-						if ($localeRecord->id)
-						{
-							// Keep the original slug
-							$localizedElement->slug = $localeRecord->slug;
-						}
-						else
-						{
-							// Default to the main locale's slug
-							$localizedElement->slug = $element->slug;
-						}
-					}
-
-					if ($elementType->hasContent())
-					{
-						if (!$isMainLocale)
-						{
-							$content = null;
-
-							if (!$isNewElement)
-							{
-								// Do we already have a content row for this locale?
-								$content = craft()->content->getContent($localizedElement);
-							}
-
-							if (!$content)
-							{
-								$content = craft()->content->createContent($localizedElement);
-								$content->setAttributes($element->getContent()->getAttributes());
-								$content->id = null;
-								$content->locale = $localeId;
-							}
-
-							$localizedElement->setContent($content);
-						}
-
-						if (!$localizedElement->getContent()->id)
-						{
-							craft()->content->saveContent($localizedElement, false, false);
-						}
-					}
-
-					// Set a valid/unique slug and URI
-					ElementHelper::setValidSlug($localizedElement);
-					ElementHelper::setUniqueUri($localizedElement);
-
-					$localeRecord->slug = $localizedElement->slug;
-					$localeRecord->uri  = $localizedElement->uri;
-
-					if ($isMainLocale)
-					{
-						$localeRecord->enabled = (bool) $element->localeEnabled;
-					}
-
-					$success = $localeRecord->save();
-
-					if (!$success)
-					{
-						// Pass any validation errors on to the element
-						$element->addErrors($localeRecord->getErrors());
-
-						// Don't bother with any of the other locales
-						break;
-					}
-				}
+				// Save the element record first
+				$success = $elementRecord->save(false);
 
 				if ($success)
 				{
-					if (!$isNewElement)
+					if ($isNewElement)
 					{
-						// Delete the rows that don't need to be there anymore
-
-						craft()->db->createCommand()->delete('elements_i18n', array('and',
-							'elementId = :elementId',
-							array('not in', 'locale', $localeIds)
-						), array(
-							':elementId' => $element->id
-						));
+						// Save the element id on the element model, in case {id} is in the URL format
+						$element->id = $elementRecord->id;
 
 						if ($elementType->hasContent())
 						{
-							craft()->db->createCommand()->delete($element->getContentTable(), array('and',
+							$element->getContent()->elementId = $element->id;
+						}
+					}
+
+					// Save the content
+					if ($elementType->hasContent())
+					{
+						craft()->content->saveContent($element, false, (bool)$element->id);
+					}
+
+					// Update the search index
+					craft()->search->indexElementAttributes($element);
+
+					// Update the locale records and content
+
+					// We're saving all of the element's locales here to ensure that they all exist and to update the URI in
+					// the event that the URL format includes some value that just changed
+
+					$localeRecords = array();
+
+					if (!$isNewElement)
+					{
+						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+							'elementId' => $element->id
+						));
+
+						foreach ($existingLocaleRecords as $record)
+						{
+							$localeRecords[$record->locale] = $record;
+						}
+					}
+
+					$mainLocaleId = $element->locale;
+
+					$locales = $element->getLocales();
+					$localeIds = array();
+
+					if (!$locales)
+					{
+						throw new Exception('All elements must have at least one locale associated with them.');
+					}
+
+					foreach ($locales as $localeId => $localeInfo)
+					{
+						if (is_numeric($localeId) && is_string($localeInfo))
+						{
+							$localeId = $localeInfo;
+							$localeInfo = array();
+						}
+
+						$localeIds[] = $localeId;
+
+						if (!isset($localeInfo['enabledByDefault']))
+						{
+							$localeInfo['enabledByDefault'] = true;
+						}
+
+						if (isset($localeRecords[$localeId]))
+						{
+							$localeRecord = $localeRecords[$localeId];
+						}
+						else
+						{
+							$localeRecord = new ElementLocaleRecord();
+
+							$localeRecord->elementId = $element->id;
+							$localeRecord->locale = $localeId;
+							$localeRecord->enabled = $localeInfo['enabledByDefault'];
+						}
+
+						// Is this the main locale?
+						$isMainLocale = ($localeId == $mainLocaleId);
+
+						if ($isMainLocale)
+						{
+							$localizedElement = $element;
+						}
+						else
+						{
+							// Copy the element for this locale
+							$localizedElement = $element->copy();
+							$localizedElement->locale = $localeId;
+
+							if ($localeRecord->id)
+							{
+								// Keep the original slug
+								$localizedElement->slug = $localeRecord->slug;
+							}
+							else
+							{
+								// Default to the main locale's slug
+								$localizedElement->slug = $element->slug;
+							}
+						}
+
+						if ($elementType->hasContent())
+						{
+							if (!$isMainLocale)
+							{
+								$content = null;
+
+								if (!$isNewElement)
+								{
+									// Do we already have a content row for this locale?
+									$content = craft()->content->getContent($localizedElement);
+								}
+
+								if (!$content)
+								{
+									$content = craft()->content->createContent($localizedElement);
+									$content->setAttributes($element->getContent()->getAttributes());
+									$content->id = null;
+									$content->locale = $localeId;
+								}
+
+								$localizedElement->setContent($content);
+							}
+
+							if (!$localizedElement->getContent()->id)
+							{
+								craft()->content->saveContent($localizedElement, false, false);
+							}
+						}
+
+						// Set a valid/unique slug and URI
+						ElementHelper::setValidSlug($localizedElement);
+						ElementHelper::setUniqueUri($localizedElement);
+
+						$localeRecord->slug = $localizedElement->slug;
+						$localeRecord->uri = $localizedElement->uri;
+
+						if ($isMainLocale)
+						{
+							$localeRecord->enabled = (bool)$element->localeEnabled;
+						}
+
+						$success = $localeRecord->save();
+
+						if (!$success)
+						{
+							// Pass any validation errors on to the element
+							$element->addErrors($localeRecord->getErrors());
+
+							// Don't bother with any of the other locales
+							break;
+						}
+					}
+
+					if ($success)
+					{
+						if (!$isNewElement)
+						{
+							// Delete the rows that don't need to be there anymore
+
+							craft()->db->createCommand()->delete('elements_i18n', array('and',
 								'elementId = :elementId',
 								array('not in', 'locale', $localeIds)
 							), array(
 								':elementId' => $element->id
 							));
-						}
-					}
 
-					// Call the field types' onAfterElementSave() methods
-					$fieldLayout = $element->getFieldLayout();
-
-					if ($fieldLayout)
-					{
-						foreach ($fieldLayout->getFields() as $fieldLayoutField)
-						{
-							$field = $fieldLayoutField->getField();
-
-							if ($field)
+							if ($elementType->hasContent())
 							{
-								$fieldType = $field->getFieldType();
+								craft()->db->createCommand()->delete($element->getContentTable(), array('and',
+									'elementId = :elementId',
+									array('not in', 'locale', $localeIds)
+								), array(
+									':elementId' => $element->id
+								));
+							}
+						}
 
-								if ($fieldType)
+						// Call the field types' onAfterElementSave() methods
+						$fieldLayout = $element->getFieldLayout();
+
+						if ($fieldLayout)
+						{
+							foreach ($fieldLayout->getFields() as $fieldLayoutField)
+							{
+								$field = $fieldLayoutField->getField();
+
+								if ($field)
 								{
-									$fieldType->element = $element;
-									$fieldType->onAfterElementSave();
+									$fieldType = $field->getFieldType();
+
+									if ($fieldType)
+									{
+										$fieldType->element = $element;
+										$fieldType->onAfterElementSave();
+									}
 								}
 							}
 						}
-					}
 
-					// Finally, delete any caches involving this element. (Even do this for new elements, since they
-					// might pop up in a cached criteria.)
-					craft()->templateCache->deleteCachesByElement($element);
+						// Finally, delete any caches involving this element. (Even do this for new elements, since they
+						// might pop up in a cached criteria.)
+						craft()->templateCache->deleteCachesByElement($element);
+					}
 				}
 			}
+			else
+			{
+				$success = false;
+			}
 
+			// Commit the transaction regardless of whether we saved the user, in case something changed
+			// in onBeforeSaveElement
 			if ($transaction !== null)
 			{
-				if ($success)
-				{
-					$transaction->commit();
-
-					// Fire an 'onSaveElement' event
-					$this->onSaveElement(new Event($this, array(
-						'element'      => $element,
-						'isNewElement' => $isNewElement
-					)));
-				}
-				else
-				{
-					$transaction->rollback();
-				}
-			}
-
-			if (!$success && $isNewElement)
-			{
-				$element->id = null;
-
-				if ($elementType->hasContent())
-				{
-					$element->getContent()->id = null;
-					$element->getContent()->elementId = null;
-				}
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -1286,6 +1275,28 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			throw $e;
+		}
+
+		if ($success)
+		{
+			// Fire an 'onSaveElement' event
+			$this->onSaveElement(new Event($this, array(
+				'element'      => $element,
+				'isNewElement' => $isNewElement
+			)));
+		}
+		else
+		{
+			if ($isNewElement)
+			{
+				$element->id = null;
+
+				if ($elementType->hasContent())
+				{
+					$element->getContent()->id = null;
+					$element->getContent()->elementId = null;
+				}
+			}
 		}
 
 		return $success;
