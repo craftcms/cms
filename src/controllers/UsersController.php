@@ -405,6 +405,9 @@ class UsersController extends BaseController
 	 */
 	public function actionEditUser(array $variables = array(), $account = null)
 	{
+		// Determine which user account we're editing
+		// ---------------------------------------------------------------------
+
 		$isClientAccount = false;
 
 		// This will be set if there was a validation error.
@@ -464,7 +467,92 @@ class UsersController extends BaseController
 
 		$variables['isNewAccount'] = !$variables['account']->id;
 
+		// Make sure they have permission to edit this user
+		// ---------------------------------------------------------------------
+
+		if (!$variables['account']->isCurrent())
+		{
+			if ($variables['isNewAccount'])
+			{
+				craft()->userSession->requirePermission('registerUsers');
+			}
+			else
+			{
+				craft()->userSession->requirePermission('editUsers');
+			}
+		}
+
+		// Determine which actions should be available
+		// ---------------------------------------------------------------------
+
+		if (craft()->getEdition() >= Craft::Client && !$variables['isNewAccount'])
+		{
+			$statusActions = array();
+			$sketchyActions = array();
+
+			switch ($variables['account']->getStatus())
+			{
+				case UserStatus::Pending:
+				{
+					$variables['statusLabel'] = Craft::t('Unverified');
+
+					$statusActions[] = array('action' => 'users/sendActivationEmail', 'label' => Craft::t('Resend verification email'));
+
+					if (craft()->userSession->isAdmin())
+					{
+						$statusActions[] = array('action' => 'users/activateUser', 'label' => Craft::t('Activate user'));
+					}
+
+					break;
+				}
+				case UserStatus::Locked:
+				{
+					$variables['statusLabel'] = Craft::t('Locked');
+
+					if (craft()->userSession->checkPermission('administrateUsers'))
+					{
+						$statusActions[] = array('action' => 'users/unlockUser', 'label' => Craft::t('Unlock'));
+					}
+
+					break;
+				}
+				case UserStatus::Suspended:
+				{
+					$variables['statusLabel'] = Craft::t('Suspended');
+
+					if (craft()->userSession->checkPermission('administrateUsers'))
+					{
+						$statusActions[] = array('action' => 'users/unsuspendUser', 'label' => Craft::t('Unsuspend'));
+					}
+
+					break;
+				}
+				case UserStatus::Active:
+				{
+					$variables['statusLabel'] = Craft::t('Active');
+					break;
+				}
+			}
+
+			if (!$variables['account']->isCurrent())
+			{
+				if (craft()->userSession->checkPermission('administrateUsers') && $variables['account']->getStatus() != UserStatus::Suspended)
+				{
+					$sketchyActions[] = array('action' => 'users/suspendUser', 'label' => Craft::t('Suspend'));
+				}
+
+				if (craft()->userSession->checkPermission('deleteUsers'))
+				{
+					$sketchyActions[] = array('id' => 'delete-btn', 'label' => Craft::t('Delete…'));
+				}
+			}
+
+			$variables['actions'] = array_filter(array($statusActions, $sketchyActions));
+		}
+
 		// Set the appropriate page title
+		// ---------------------------------------------------------------------
+
 		if (!$variables['isNewAccount'])
 		{
 			if ($variables['account']->isCurrent())
@@ -473,8 +561,6 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				craft()->userSession->requirePermission('editUsers');
-
 				$variables['title'] = Craft::t("{user}’s Account", array('user' => $variables['account']->name));
 			}
 		}
@@ -484,13 +570,12 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			// New user, make sure we can register.
-			craft()->userSession->requirePermission('registerUsers');
-
 			$variables['title'] = Craft::t("Register a new user");
 		}
 
 		// Show tabs if they have Craft Pro
+		// ---------------------------------------------------------------------
+
 		if (craft()->getEdition() == Craft::Pro)
 		{
 			$variables['selectedTab'] = 'account';
@@ -544,6 +629,9 @@ class UsersController extends BaseController
 				}
 			}
 		}
+
+		// Load the resources and render the page
+		// ---------------------------------------------------------------------
 
 		craft()->templates->includeCssResource('css/account.css');
 		craft()->templates->includeJsResource('js/AccountSettingsForm.js');

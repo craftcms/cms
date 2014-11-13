@@ -258,25 +258,25 @@
 				<form class="pane" method="post" accept-charset="UTF-8">
 					{{ hiddenInputs }}
 
+					{% if actions|length %}
+						<div class="btn menubtn right" data-icon="settings " title="{{ 'Actions'|t }}"></div>
+						<div class="menu">
+							{% for actionList in actions %}
+								{% if not loop.first %}<hr>{% endif %}
+								<ul>
+									{% for actionItem in actionList %}
+										<li><a
+											{%- if actionItem.id is defined %} id="{{ actionItem.id }}"{% endif %}
+											{%- if actionItem.action is defined %} class="formsubmit" data-action="{{ actionItem.action }}"{% endif -%}
+										>{{ actionItem.label }}</a></li>
+									{% endfor %}
+								</ul>
+							{% endfor %}
+						</div>
+					{% endif %}
+
 					<h5 class="first">{{ "Account Status"|t }}</h5>
-					<p>
-						<span class="status {{ account.status }}"></span>
-						{% if account.status == 'pending' %}
-							{{ "Unverified"|t }} 
-							<input type="button" class="btn small formsubmit" value="{{ 'Resend verification email'|t }}" data-action="users/sendActivationEmail">
-							{% if currentUser.admin %}
-								<input type="button" class="btn small formsubmit" value="{{ 'Activate user'|t }}" data-action="users/activateUser">
-							{% endif %}
-						{% elseif account.status == 'locked' %}
-							{{ "Locked"|t }} 
-							{% if currentUser.can('administrateUsers') %}<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">{% endif %}
-						{% elseif account.status == 'suspended' %}
-							{{ "Suspended"|t }} 
-							{% if currentUser.can('administrateUsers') %}<input type="submit" class="btn small formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">{% endif %}
-						{% else %}
-							{{ "Active"|t }}
-						{% endif %}
-					</p>
+					<p><span class="status {{ account.status }}"></span> {{ statusLabel }}</p>
 
 					{% if account.status == 'locked' and craft.config.cooldownDuration %}
 						<h5>{{ "Cooldown Time Remaining"|t }}</h5>
@@ -301,21 +301,11 @@
 					{% endif %}
 				</form>
 
-				{% if not account.isCurrent() and (currentUser.can('deleteUsers') or currentUser.can('administrateUsers')) %}
-					<form class="pane" method="post" accept-charset="UTF-8">
+				{% if currentUser.admin and not account.isCurrent() %}
+					<form method="post" accept-charset="UTF-8">
+						<input type="hidden" name="action" value="users/impersonate">
 						{{ hiddenInputs }}
-
-						{% if currentUser.admin and not account.isCurrent() %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Login as user'|t }}" data-action="users/impersonate">
-						{% endif %}
-
-						{% if currentUser.can('administrateUsers') and account.status != 'suspended' %}
-							<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
-						{% endif %}
-
-						{% if currentUser.can('deleteUsers') %}
-							<input id="delete-btn" type="button" class="btn small" value="{{ 'Delete…'|t }}">
-						{% endif %}
+						<input type="submit" class="btn big fullwidth" value="{{ 'Login as {user}'|t({ user: account.username }) }}">
 					</form>
 				{% endif %}
 			</div><!--/item-->
