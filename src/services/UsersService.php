@@ -482,15 +482,29 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function sendPasswordResetEmail(UserModel $user)
 	{
+		$url = $this->getPasswordResetUrl($user);
+
+		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
+			'link' => TemplateHelper::getRaw($url),
+		));
+	}
+
+	/**
+	 * Sets a new verification code on a user, and returns their new Password Reset URL.
+	 *
+	 * @param UserModel $user The user that should get the new Password Reset URL
+	 *
+	 * @return string The new Password Reset URL.
+	 */
+	public function getPasswordResetUrl(UserModel $user)
+	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
 		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
 
-		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
-			'link' => TemplateHelper::getRaw($url),
-		));
+		return $url;
 	}
 
 	/**
