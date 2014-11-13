@@ -359,11 +359,14 @@ class LocalizationService extends BaseApplicationComponent
 	 * @param string      $localeId          The locale to be deleted.
 	 * @param string|null $transferContentTo The locale that should take over the deleted locale’s content.
 	 *
+	 * @throws \CDbException
+	 * @throws \Exception
 	 * @return bool Whether the locale was successfully deleted.
 	 */
 	public function deleteSiteLocale($localeId, $transferContentTo)
 	{
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Fire an 'onBeforeDeleteLocale' event
@@ -371,6 +374,7 @@ class LocalizationService extends BaseApplicationComponent
 				'localeId'          => $localeId,
 				'transferContentTo' => $transferContentTo
 			));
+
 			$this->onBeforeDeleteLocale($event);
 
 			// Is the event is giving us the go-ahead?
@@ -526,7 +530,7 @@ class LocalizationService extends BaseApplicationComponent
 				$affectedRows = craft()->db->createCommand()->delete('locales', array('locale' => $localeId));
 				$success = (bool) $affectedRows;
 
-				// If it didn't work, rollback the transaciton in case something changed in onBeforeDeleteLocale
+				// If it didn't work, rollback the transaction in case something changed in onBeforeDeleteLocale
 				if (!$success)
 				{
 					if ($transaction !== null)

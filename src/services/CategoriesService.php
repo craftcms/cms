@@ -654,7 +654,7 @@ class CategoriesService extends BaseApplicationComponent
 			{
 				$success = craft()->elements->saveElement($category, false);
 
-				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
 				if (!$success)
 				{
 					if ($transaction !== null)
@@ -694,8 +694,8 @@ class CategoriesService extends BaseApplicationComponent
 				$success = false;
 			}
 
-			// Commit the transaction regardless of whether we saved the user,
-			// in case something changed in onBeforeSaveUser
+			// Commit the transaction regardless of whether we saved the category, in case something changed
+			// in onBeforeSaveCategory
 			if ($transaction !== null)
 			{
 				$transaction->commit();
