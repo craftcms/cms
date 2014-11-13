@@ -247,7 +247,7 @@ class EntriesController extends BaseEntriesController
 		// Enable Live Preview?
 		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
 		{
-			craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode(array(
+			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
 				'fields'        => '#fields > .field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $variables['entry']->getUrl(),

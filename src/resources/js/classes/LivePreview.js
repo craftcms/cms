@@ -395,5 +395,10 @@ Craft.LivePreview = Garnish.Base.extend(
 	}
 });
 
+Craft.LivePreview.init = function(settings)
+{
+	Craft.livePreview = new Craft.LivePreview(settings);
+};
+
 
 })(jQuery);
