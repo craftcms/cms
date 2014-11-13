@@ -34,7 +34,7 @@ Craft.AdminTable = Garnish.Base.extend(
 		}
 
 		this.$deleteBtns = this.$table.find('.delete');
-		this.addListener(this.$deleteBtns, 'click', 'deleteObject');
+		this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
 
 		this.updateUI();
 	},
@@ -57,7 +57,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
 		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
 
-		this.addListener($deleteBtn, 'click', 'deleteObject');
+		this.addListener($deleteBtn, 'click', 'handleDeleteBtnClick');
 		this.totalObjects++;
 
 		this.updateUI();
@@ -101,7 +101,7 @@ Craft.AdminTable = Garnish.Base.extend(
 		}, this));
 	},
 
-	deleteObject: function(event)
+	handleDeleteBtnClick: function(event)
 	{
 		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
 		{
@@ -109,44 +109,68 @@ Craft.AdminTable = Garnish.Base.extend(
 			return;
 		}
 
-		var $row = $(event.target).closest('tr'),
-			id = $row.attr(this.settings.idAttribute),
-			name = $row.attr(this.settings.nameAttribute);
+		var $row = $(event.target).closest('tr');
 
 		if (this.confirmDeleteObject($row))
 		{
-			Craft.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					if (response.success)
-					{
-						$row.remove();
-						this.totalObjects--;
-						this.updateUI();
-						this.onDeleteObject(id);
-
-						Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
-					}
-					else
-					{
-						Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
-					}
-				}
-
-			}, this));
+			this.deleteObject($row);
 		}
 	},
 
 	confirmDeleteObject: function($row)
 	{
-		var name = $row.attr(this.settings.nameAttribute);
+		var name = this.getObjectName($row);
 		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
+	},
+
+	deleteObject: function($row)
+	{
+		var data = {
+			id: this.getObjectId($row)
+		};
+
+		Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.handleDeleteObjectResponse(response, $row);
+			}
+		}, this));
+	},
+
+	handleDeleteObjectResponse: function(response, $row)
+	{
+		var id = this.getObjectId($row),
+			name = this.getObjectName($row);
+
+		if (response.success)
+		{
+			$row.remove();
+			this.totalObjects--;
+			this.updateUI();
+			this.onDeleteObject(id);
+
+			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
+		}
+		else
+		{
+			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+		}
 	},
 
 	onDeleteObject: function(id)
 	{
 		this.settings.onDeleteObject(id);
+	},
+
+	getObjectId: function($row)
+	{
+		return $row.attr(this.settings.idAttribute);
+	},
+
+	getObjectName: function($row)
+	{
+		return $row.attr(this.settings.nameAttribute);
 	},
 
 	updateUI: function()
