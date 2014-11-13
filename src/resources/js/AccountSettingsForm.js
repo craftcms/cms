@@ -10,6 +10,9 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	$currentPasswordInput: null,
 	$currentPasswordSpinner: null,
 
+	$copyPasswordResetUrlBtn: null,
+	$actionSpinner: null,
+
 	$deleteBtn: null,
 	$deleteActionRadios: null,
 	$deleteSpinner: null,
@@ -25,9 +28,12 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 		this.isCurrent = isCurrent;
 
 		this.$lockBtns = $('.btn.lock');
+		this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
+		this.$actionSpinner = $('#action-spinner');
 		this.$deleteBtn = $('#delete-btn');
 
 		this.addListener(this.$lockBtns, 'click', 'showCurrentPasswordForm');
+		this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'getPasswordResetUrl');
 		this.addListener(this.$deleteBtn, 'click', 'showConfirmDeleteModal');
 	},
 
@@ -111,6 +117,29 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 			}, this));
 		}
+	},
+
+	getPasswordResetUrl: function()
+	{
+		this.$actionSpinner.removeClass('hidden');
+
+		var data = {
+			userId: this.userId
+		};
+
+		Craft.postActionRequest('users/getPasswordResetUrl', data, $.proxy(function(response, textStatus)
+		{
+			this.$actionSpinner.addClass('hidden');
+
+			if (textStatus == 'success')
+			{
+				var message = Craft.t('{ctrl}C to copy.', {
+					ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+				});
+
+				prompt(message, response);
+			}
+		}, this));
 	},
 
 	showConfirmDeleteModal: function()

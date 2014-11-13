@@ -1,6 +1,8 @@
 @charset "UTF-8";
 @import "shared";
 
+#action-spinner { position: absolute; top: 24px; @include right(0); }
+
 #verifypasswordmodal { width: 350px; }
 #verifypasswordmodal .buttons { margin-top: 1em; }
 #verifypasswordmodal .buttons .spinner { position: absolute; top: 0; @include right(-19px); margin-top: 0; }

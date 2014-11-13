@@ -153,46 +153,66 @@ class UsersController extends BaseController
 	/**
 	 * Sends a password reset email.
 	 *
+	 * @throws HttpException
 	 * @return null
 	 */
 	public function actionSendPasswordResetEmail()
 	{
 		$this->requirePostRequest();
 
-		$loginName = craft()->request->getPost('loginName');
 		$errors = array();
 
-		if (!$loginName)
+		// If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
+		if (craft()->userSession->checkPermission('editUsers'))
 		{
-			$errors[] = Craft::t('Username or email is required.');
-		}
-		else
-		{
-			$user = craft()->users->getUserByUsernameOrEmail($loginName);
+			$userId = craft()->request->getPost('userId');
 
-			if ($user)
+			if ($userId)
 			{
-				if (craft()->users->sendForgotPasswordEmail($user))
+				$user = craft()->users->getUserById($userId);
+
+				if (!$user)
 				{
-					if (craft()->request->isAjaxRequest())
-					{
-						$this->returnJson(array('success' => true));
-					}
-					else
-					{
-						craft()->userSession->setNotice(Craft::t('Check your email for instructions to reset your password.'));
-						$this->redirectToPostedUrl();
-					}
+					throw new HttpException(404);
 				}
-				else
-				{
-					$errors[] = Craft::t('There was a problem sending the forgot password email.');
-				}
+			}
+		}
+
+		if (!isset($user))
+		{
+			$loginName = craft()->request->getPost('loginName');
+
+			if (!$loginName)
+			{
+				$errors[] = Craft::t('Username or email is required.');
 			}
 			else
 			{
-				$errors[] = Craft::t('Invalid username or email.');
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+				if (!$user)
+				{
+					$errors[] = Craft::t('Invalid username or email.');
+				}
 			}
+		}
+
+		if (!empty($user))
+		{
+			if (craft()->users->sendPasswordResetEmail($user))
+			{
+				if (craft()->request->isAjaxRequest())
+				{
+					$this->returnJson(array('success' => true));
+				}
+				else
+				{
+					craft()->userSession->setNotice(Craft::t('Password reset email sent.'));
+					$this->redirectToPostedUrl();
+				}
+			}
+
+			$errors[] = Craft::t('There was a problem sending the password reset email.');
 		}
 
 		if (craft()->request->isAjaxRequest())
@@ -203,10 +223,32 @@ class UsersController extends BaseController
 		{
 			// Send the data back to the template
 			craft()->urlManager->setRouteVariables(array(
-				'errors' => $errors,
-				'loginName'   => $loginName,
+				'errors'    => $errors,
+				'loginName' => isset($loginName) ? $loginName : null,
 			));
 		}
+	}
+
+	/**
+	 * Generates a new verification code for a given user, and returns its URL.
+	 *
+	 * @throws HttpException|Exception
+	 * @return null
+	 */
+	public function actionGetPasswordResetUrl()
+	{
+		$this->requireAdmin();
+
+		$userId = craft()->request->getRequiredParam('userId');
+		$user = craft()->users->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		echo craft()->users->getPasswordResetUrl($user);
+		craft()->end();
 	}
 
 	/**
@@ -459,6 +501,7 @@ class UsersController extends BaseController
 
 					if (craft()->userSession->isAdmin())
 					{
+						$statusActions[] = array('id' => 'copy-passwordreset-url', 'label' => Craft::t('Copy activation URL'));
 						$statusActions[] = array('action' => 'users/activateUser', 'label' => Craft::t('Activate account'));
 					}
 
@@ -489,6 +532,17 @@ class UsersController extends BaseController
 				case UserStatus::Active:
 				{
 					$variables['statusLabel'] = Craft::t('Active');
+
+					if (!$variables['account']->isCurrent())
+					{
+						$statusActions[] = array('action' => 'users/sendPasswordResetEmail', 'label' => 'Send password reset email');
+
+						if (craft()->userSession->isAdmin())
+						{
+							$statusActions[] = array('id' => 'copy-passwordreset-url', 'label' => 'Copy password reset URL');
+						}
+					}
+
 					break;
 				}
 			}
