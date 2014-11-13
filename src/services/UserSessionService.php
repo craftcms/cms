@@ -657,6 +657,8 @@ class UserSessionService extends \CWebUser
 			$this->onLogin(new Event($this, array(
 				'username' => $userModel->username,
 			)));
+
+			return true;
 		}
 		else
 		{
