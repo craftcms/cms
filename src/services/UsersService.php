@@ -502,7 +502,9 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
+		$path = craft()->config->get('actionTrigger').'/users/setpassword';
+		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
 
 		return $url;
 	}
