@@ -638,16 +638,33 @@ class CategoriesService extends BaseApplicationComponent
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Fire an 'onBeforeSaveCategory' event
-			$this->onBeforeSaveCategory(new Event($this, array(
+			$event = new Event($this, array(
 				'category'      => $category,
 				'isNewCategory' => $isNewCategory
-			)));
+			));
 
-			if (craft()->elements->saveElement($category, false))
+			$this->onBeforeSaveCategory($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+				$success = craft()->elements->saveElement($category, false);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveUser
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewCategory)
 				{
@@ -671,15 +688,17 @@ class CategoriesService extends BaseApplicationComponent
 
 				// Update the category's descendants, who may be using this category's URI in their own URIs
 				craft()->elements->updateDescendantSlugsAndUris($category);
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the user,
+			// in case something changed in onBeforeSaveUser
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -692,15 +711,16 @@ class CategoriesService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
+		if ($success)
+		{
+			// Fire an 'onSaveCategory' event
+			$this->onSaveCategory(new Event($this, array(
+				'category'      => $category,
+				'isNewCategory' => $isNewCategory
+			)));
+		}
 
-		// Fire an 'onSaveCategory' event
-		$this->onSaveCategory(new Event($this, array(
-			'category'      => $category,
-			'isNewCategory' => $isNewCategory
-		)));
-
-		return true;
+		return $success;
 	}
 
 	/**
