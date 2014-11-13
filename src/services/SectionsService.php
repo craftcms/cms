@@ -49,6 +49,9 @@ class SectionsService extends BaseApplicationComponent
 	// Public Methods
 	// =========================================================================
 
+	// Sections
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns all of the section IDs.
 	 *
@@ -258,7 +261,7 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a section's locales.
+	 * Returns a section’s locales.
 	 *
 	 * @param int         $sectionId
 	 * @param string|null $indexBy
@@ -819,7 +822,7 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
+	 * Returns whether a section’s entries have URLs, and if the section’s template path is valid.
 	 *
 	 * @param SectionModel $section
 	 *
@@ -848,10 +851,11 @@ class SectionsService extends BaseApplicationComponent
 		return false;
 	}
 
-	// Entry types
+	// Entry Types
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Returns a section's entry types.
+	 * Returns a section’s entry types.
 	 *
 	 * @param int         $sectionId
 	 * @param string|null $indexBy
@@ -1155,8 +1159,8 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
-	// General stuff
-	// ------------------------------------------------------------------------
+	// Helpers
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns whether a homepage section exists.
@@ -1207,6 +1211,9 @@ class SectionsService extends BaseApplicationComponent
 			}
 		}
 	}
+
+	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onBeforeSaveEntryType' event.

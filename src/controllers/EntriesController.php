@@ -248,7 +248,7 @@ class EntriesController extends BaseEntriesController
 		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
 		{
 			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
-				'fields'        => '#fields > .field, #fields > div > div > .field',
+				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $variables['entry']->getUrl(),
 				'previewAction' => 'entries/previewEntry',
@@ -259,6 +259,7 @@ class EntriesController extends BaseEntriesController
 				                       'versionId' => ($variables['entry']->getClassHandle() == 'EntryVersion' ? $variables['entry']->versionId : null),
 				                   )
 			)).');');
+
 			$variables['showPreviewBtn'] = true;
 
 			// Should we show the Share button too?
@@ -896,25 +897,23 @@ class EntriesController extends BaseEntriesController
 		$section = $entry->getSection();
 		$type = $entry->getType();
 
-		if ($section && $type)
-		{
-			craft()->setLanguage($entry->locale);
-
-			if (!$entry->postDate)
-			{
-				$entry->postDate = new DateTime();
-			}
-
-			craft()->templates->getTwig()->disableStrictVariables();
-
-			$this->renderTemplate($section->template, array(
-				'entry' => $entry
-			));
-		}
-		else
+		if (!$section || !$type)
 		{
 			Craft::log('Attempting to preview an entry that doesn’t have a section/type', LogLevel::Error);
 			throw new HttpException(404);
 		}
+
+		craft()->setLanguage($entry->locale);
+
+		if (!$entry->postDate)
+		{
+			$entry->postDate = new DateTime();
+		}
+
+		craft()->templates->getTwig()->disableStrictVariables();
+
+		$this->renderTemplate($section->template, array(
+			'entry' => $entry
+		));
 	}
 }
