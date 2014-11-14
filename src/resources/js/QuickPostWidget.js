@@ -17,25 +17,47 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 		this.params = params;
 		this.initFields = initFields;
 		this.$widget = $('#widget'+widgetId);
-		this.$form = this.$widget.find('form:first');
+
+		var $form = this.$widget.find('form:first');
+		this.$formClone = $form.clone();
+		this.initForm($form);
+	},
+
+	initForm: function($form)
+	{
+		this.$form = $form;
 		this.$spinner = this.$form.find('.spinner');
 
-		this.$formClone = this.$form.clone();
-
-		this.initForm();
-	},
-
-	initForm: function()
-	{
-		this.addListener(this.$form, 'submit', 'onSubmit');
 		this.initFields();
+
+		var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
+			$saveAndContinueEditingBtn = $menuBtn.next().find('> ul > li > a');
+
+		$menuBtn.menubtn();
+
+		this.addListener(this.$form, 'submit', 'handleFormSubmit');
+		this.addListener($saveAndContinueEditingBtn, 'click', 'saveAndContinueEditing');
 	},
 
-	onSubmit: function(event)
+	handleFormSubmit: function(event)
 	{
 		event.preventDefault();
 
-		if (this.loading) return;
+		this.save($.proxy(this, 'onSave'));
+	},
+
+	saveAndContinueEditing: function()
+	{
+		this.save($.proxy(this, 'gotoEntry'));
+	},
+
+	save: function(callback)
+	{
+		if (this.loading)
+		{
+			return;
+		}
+
 		this.loading = true;
 		this.$spinner.removeClass('hidden');
 
@@ -57,30 +79,7 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 				if (response.success)
 				{
 					Craft.cp.displayNotice(Craft.t('Entry saved.'));
-
-					// Reset the widget
-					var $newForm = this.$formClone.clone();
-					this.$form.replaceWith($newForm);
-					this.$form = $newForm;
-					this.initForm();
-
-					// Are there any Recent Entries widgets to notify?
-					if (typeof Craft.RecentEntriesWidget != 'undefined')
-					{
-						for (var i = 0; i < Craft.RecentEntriesWidget.instances.length; i++)
-						{
-							var widget = Craft.RecentEntriesWidget.instances[i];
-							if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
-							{
-								widget.addEntry({
-									url:      response.cpEditUrl,
-									title:    response.title,
-									postDate: response.postDate,
-									username: response.author.username
-								});
-							}
-						}
-					}
+					callback(response);
 				}
 				else
 				{
@@ -106,6 +105,38 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 			}
 
 		}, this));
+	},
+
+	onSave: function(response)
+	{
+		// Reset the widget
+		var $newForm = this.$formClone.clone();
+		this.$form.replaceWith($newForm);
+		this.initForm($newForm);
+
+		// Are there any Recent Entries widgets to notify?
+		if (typeof Craft.RecentEntriesWidget != 'undefined')
+		{
+			for (var i = 0; i < Craft.RecentEntriesWidget.instances.length; i++)
+			{
+				var widget = Craft.RecentEntriesWidget.instances[i];
+				if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
+				{
+					widget.addEntry({
+						url:      response.cpEditUrl,
+						title:    response.title,
+						postDate: response.postDate,
+						username: response.author.username
+					});
+				}
+			}
+		}
+	},
+
+	gotoEntry: function(response)
+	{
+		// Redirect to the entry's edit URL
+		Craft.redirectTo(response.cpEditUrl);
 	}
 });
 
