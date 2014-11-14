@@ -1601,46 +1601,14 @@ class GC
 	 * @param string &$file File path
 	 * @return string
 	 */
-	public static function __getMimeType(&$file)
+	private static function __getMIMEType(&$file)
 	{
-		$type = false;
-		// Fileinfo documentation says fileinfo_open() will use the
-		// MAGIC env var for the magic file
-		if (extension_loaded('fileinfo') && isset($_ENV['MAGIC']) &&
-			($finfo = finfo_open(FILEINFO_MIME, $_ENV['MAGIC'])) !== false)
-		{
-			if (($type = finfo_file($finfo, $file)) !== false)
-			{
-				// Remove the charset and grab the last content-type
-				$type = explode(' ', str_replace('; charset=', ';charset=', $type));
-				$type = array_pop($type);
-				$type = explode(';', $type);
-				$type = trim(array_shift($type));
-			}
-			finfo_close($finfo);
+		$extension = \Craft\IOHelper::getMimeType($file);
 
-			// If anyone is still using mime_content_type()
-		} elseif (function_exists('mime_content_type'))
-			$type = trim(mime_content_type($file));
-
-		if ($type !== false && strlen($type) > 0) return $type;
-
-		// Otherwise do it the old fashioned way
-		global $mimes;
-
-		$ext = strtolower(pathInfo($file, PATHINFO_EXTENSION));
-		if ($ext == 'png')
-		{
-			return 'image/png';
-		}
-
-		$mime_type = isset($mimes[$ext]) ? $mimes[$ext] : 'application/octet-stream';
-		if (is_array($mime_type))
-		{
-			$mime_type = end($mime_type);
-		}
-		return $mime_type;
+		return !is_null($extension) ? $extension : 'application/octet-stream';
 	}
+
+
 
 
 	/**
