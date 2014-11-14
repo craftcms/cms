@@ -1799,44 +1799,9 @@ class S3
 	*/
 	private static function __getMIMEType(&$file)
 	{
-		static $exts = array(
-			'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif',
-			'png' => 'image/png', 'ico' => 'image/x-icon', 'pdf' => 'application/pdf',
-			'tif' => 'image/tiff', 'tiff' => 'image/tiff', 'svg' => 'image/svg+xml',
-			'svgz' => 'image/svg+xml', 'swf' => 'application/x-shockwave-flash', 
-			'zip' => 'application/zip', 'gz' => 'application/x-gzip',
-			'tar' => 'application/x-tar', 'bz' => 'application/x-bzip',
-			'bz2' => 'application/x-bzip2',  'rar' => 'application/x-rar-compressed',
-			'exe' => 'application/x-msdownload', 'msi' => 'application/x-msdownload',
-			'cab' => 'application/vnd.ms-cab-compressed', 'txt' => 'text/plain',
-			'asc' => 'text/plain', 'htm' => 'text/html', 'html' => 'text/html',
-			'css' => 'text/css', 'js' => 'text/javascript',
-			'xml' => 'text/xml', 'xsl' => 'application/xsl+xml',
-			'ogg' => 'application/ogg', 'mp3' => 'audio/mpeg', 'wav' => 'audio/x-wav',
-			'avi' => 'video/x-msvideo', 'mpg' => 'video/mpeg', 'mpeg' => 'video/mpeg',
-			'mov' => 'video/quicktime', 'flv' => 'video/x-flv', 'php' => 'text/x-php'
-		);
+		$extension = \Craft\IOHelper::getMimeType($file);
 
-		$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-		if (isset($exts[$ext])) return $exts[$ext];
-
-		// Use fileinfo if available
-		if (extension_loaded('fileinfo') && isset($_ENV['MAGIC']) &&
-		($finfo = finfo_open(FILEINFO_MIME, $_ENV['MAGIC'])) !== false)
-		{
-			if (($type = finfo_file($finfo, $file)) !== false)
-			{
-				// Remove the charset and grab the last content-type
-				$type = explode(' ', str_replace('; charset=', ';charset=', $type));
-				$type = array_pop($type);
-				$type = explode(';', $type);
-				$type = trim(array_shift($type));
-			}
-			finfo_close($finfo);
-			if ($type !== false && strlen($type) > 0) return $type;
-		}
-
-		return 'application/octet-stream';
+		return !is_null($extension) ? $extension : 'application/octet-stream';
 	}
 
 
