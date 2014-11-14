@@ -20,6 +20,27 @@
 		instructions: "Which section do you want to pull recent entries from?"|t,
 		id: 'section',
 	}, sectionInput) }}
+
+	{% if craft.isLocalized() %}
+		{% set editableLocales = craft.i18n.getEditableLocales() %}
+
+		{% if editableLocales|length > 1 %}
+			{% set localeInput %}
+				<div class="select">
+					<select id="locale" name="locale">
+						{% for locale in editableLocales %}
+							<option value="{{ locale.id }}"{% if locale.id == settings.locale %} selected{% endif %}>{{ locale.getName() }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			{% endset %}
+
+			{{ forms.field({
+				id: 'locale',
+				label: "Locale"|t
+			}, localeInput) }}
+		{% endif %}
+	{% endif %}
 {% endif %}
 
 

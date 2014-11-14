@@ -116,6 +116,7 @@ class RecentEntriesWidget extends BaseWidget
 	{
 		return array(
 			'section' => array(AttributeType::Mixed, 'default' => '*'),
+			'locale'  => array(AttributeType::Locale, 'default' => craft()->language),
 			'limit'   => array(AttributeType::Number, 'default' => 10),
 		);
 	}
@@ -133,7 +134,7 @@ class RecentEntriesWidget extends BaseWidget
 		// Make sure that the user is actually allowed to edit entries in the current locale. Otherwise grab entries in
 		// their first editable locale.
 		$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
-		$targetLocale = craft()->language;
+		$targetLocale = $this->getSettings()->locale;
 
 		if (!$editableLocaleIds)
 		{
