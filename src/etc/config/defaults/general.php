@@ -101,6 +101,15 @@ return array(
 	'cacheMethod' => 'file',
 
 	/**
+	 * If set to true, will attempt to convert any UTF-8 characters (such as accented ones) to their low-ASCII
+	 * counterparts for all uploaded files. You can add additional character mappings with the 'customAsciiCharMappings'
+	 * config setting.
+	 *
+	 * If there are any characters that do not have a mapping, they will be dropped from the filename.
+	 */
+	'convertFilenamesToAscii' => false,
+
+	/**
 	 * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
 	 * failed login attempts.
 	 *

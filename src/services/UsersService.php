@@ -521,7 +521,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function saveUserPhoto($fileName, Image $image, UserModel $user)
 	{
-		$userName = IOHelper::cleanFilename($user->username);
+		$userName = IOHelper::cleanFilename($user->username, craft()->config->get('convertFilenamesToAscii'));
 		$userPhotoFolder = craft()->path->getUserPhotosPath().$userName.'/';
 		$targetFolder = $userPhotoFolder.'original/';
 
