@@ -14,27 +14,10 @@ namespace Craft;
  * @package   craft.app.controllers
  * @since     1.0
  */
-class ElementsController extends BaseController
+class ElementsController extends BaseElementsController
 {
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Initializes the application component.
-	 *
-	 * @return null
-	 */
-	public function init()
-	{
-		// This controller only supports JSON responses
-		$this->requireAjaxRequest();
-
-		// This controller is only available to the Control Panel
-		if (!craft()->request->isCpRequest())
-		{
-			throw new HttpException(403);
-		}
-	}
 
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
@@ -44,8 +27,8 @@ class ElementsController extends BaseController
 	public function actionGetModalBody()
 	{
 		$sourceKeys = craft()->request->getParam('sources');
-		$context = craft()->request->getParam('context');
-		$elementType = $this->_getElementType();
+		$elementType = $this->getElementType();
+		$context = $this->getContext();
 
 		if (is_array($sourceKeys))
 		{
@@ -71,82 +54,6 @@ class ElementsController extends BaseController
 			'elementType' => $elementType,
 			'sources'     => $sources,
 			'showSidebar' => (count($sources) > 1 || ($sources && !empty($sources[array_shift(array_keys($sources))]['nested'])))
-		));
-	}
-
-	/**
-	 * Renders and returns the list of elements in an ElementIndex.
-	 *
-	 * @return bool
-	 */
-	public function actionGetElements()
-	{
-		$context = craft()->request->getParam('context');
-		$elementType = $this->_getElementType();
-		$sourceKey = craft()->request->getParam('source');
-		$viewState = craft()->request->getParam('viewState');
-		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
-
-		if (empty($viewState['mode']))
-		{
-			$viewState['mode'] = 'table';
-		}
-
-		$baseCriteria = craft()->request->getPost('criteria');
-		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
-		$criteria->limit = 50;
-
-		if ($sourceKey)
-		{
-			$source = $elementType->getSource($sourceKey, $context);
-
-			if (!$source)
-			{
-				return false;
-			}
-
-			if (!empty($source['criteria']))
-			{
-				$criteria->setAttributes($source['criteria']);
-			}
-		}
-		else
-		{
-			$source = null;
-		}
-
-		if ($search = craft()->request->getParam('search'))
-		{
-			$criteria->search = $search;
-		}
-
-		if ($offset = craft()->request->getParam('offset'))
-		{
-			$criteria->offset = $offset;
-		}
-
-		$html = $elementType->getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
-
-		$totalElementsInBatch = count($criteria);
-		$totalVisible = $criteria->offset + $totalElementsInBatch;
-
-		if ($criteria->limit)
-		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
-			// 50 elements, rather than running two separate element queries
-			$more = ($totalElementsInBatch == $criteria->limit);
-		}
-		else
-		{
-			$more = false;
-		}
-
-		$this->returnJson(array(
-			'html'         => $html,
-			'headHtml'     => craft()->templates->getHeadHtml(),
-			'footHtml'     => craft()->templates->getFootHtml(),
-			'totalVisible' => $totalVisible,
-			'more'         => $more,
 		));
 	}
 
@@ -266,25 +173,6 @@ class ElementsController extends BaseController
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Returns the element type based on the posted element type class.
-	 *
-	 * @throws Exception
-	 * @return BaseElementType
-	 */
-	private function _getElementType()
-	{
-		$class = craft()->request->getRequiredParam('elementType');
-		$elementType = craft()->elements->getElementType($class);
-
-		if (!$elementType)
-		{
-			throw new Exception(Craft::t('No element type exists with the class “{class}”', array('class' => $class)));
-		}
-
-		return $elementType;
-	}
 
 	/**
 	 * Returns the editor HTML for a given element.
