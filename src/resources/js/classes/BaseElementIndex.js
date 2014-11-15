@@ -775,16 +775,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.$sortAttributesList.find('a.sel').removeClass('sel');
 			$option.addClass('sel');
 
-			this.$sortMenuBtn.text(Craft.t('Sort by {attribute}', { attribute: $option.text() }));
+			var label = $option.text();
+			this.$sortMenuBtn.attr('title', Craft.t('Sort by {attribute}', { attribute: label }));
+			this.$sortMenuBtn.text(label);
+
+			this.setSortDirection('asc');
 
 			if (attr == 'score' || attr == 'structure')
 			{
-				this.$sortDirectionsList.find('a').removeClass('sel').addClass('disabled');
+				this.$sortDirectionsList.find('a').addClass('disabled');
 			}
 			else
 			{
 				this.$sortDirectionsList.find('a').removeClass('disabled');
-				this.setSortDirection('asc');
 			}
 		}
 	},
@@ -801,11 +804,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	setSortDirection: function(dir)
 	{
-		if (dir == 'asc' || dir == 'desc')
+		if (dir != 'desc')
 		{
-			this.$sortDirectionsList.find('a.sel').removeClass('sel');
-			this.getSortDirectionOption(dir).addClass('sel');
+			dir = 'asc';
 		}
+
+		this.$sortMenuBtn.attr('data-icon', dir);
+		this.$sortDirectionsList.find('a.sel').removeClass('sel');
+		this.getSortDirectionOption(dir).addClass('sel');
 	},
 
 	onSortChange: function(ev)

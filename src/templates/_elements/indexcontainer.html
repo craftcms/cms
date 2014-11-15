@@ -60,7 +60,7 @@
 					</div>
 				</td>
 				<td class="thin">
-					<div class="btn menubtn sortmenubtn">{% if sortableAttributes %}{{ "Sort by {attribute}"|t({ attribute: sortableAttributes|first }) }}{% endif %}</div>
+					<div class="btn menubtn sortmenubtn"{% if sortableAttributes %} title="{{ 'Sort by {attribute}'|t({ attribute: sortableAttributes|first }) }}"{% endif %} data-icon="asc">{{ sortableAttributes ? sortableAttributes|first }}</div>
 					<div class="menu">
 						<ul class="padded sort-attributes">
 							{% for key, label in sortableAttributes %}
