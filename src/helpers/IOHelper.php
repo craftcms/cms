@@ -1483,16 +1483,15 @@ class IOHelper
 	}
 
 	/**
-	 * Cleans a filename stripping it of potentially malicious characters or problematic characters on different
-	 * filesystems.
+	 * Cleans a filename.
 	 *
-	 * @param string $fileName  The filename to clean.
-	 * @param bool   $onlyAscii Whether to convert any UTF-8 characters to their low-ASCII counterparts.
-	 * @param string $separator The character to use as a separator in place of spaces.
+	 * @param string $fileName
+	 * @param bool   $onlyAlphaNumeric
+	 * @param string $separator
 	 *
 	 * @return mixed
 	 */
-	public static function cleanFilename($fileName, $onlyAscii = false, $separator = '-')
+	public static function cleanFilename($fileName, $onlyAlphaNumeric = false, $separator = '-')
 	{
 		$disallowedChars = array('â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}');
 
@@ -1510,10 +1509,7 @@ class IOHelper
 		// Nuke any trailing or leading .-_
 		$fileName = trim($fileName, '.-_');
 
-		if ($onlyAscii)
-		{
-			$fileName = StringHelper::asciiString($fileName);
-		}
+		$fileName = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $fileName) : $fileName;
 
 		return $fileName;
 	}

@@ -408,7 +408,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		foreach ($pathParts as &$part)
 		{
-			$part = IOHelper::cleanFilename($part, craft()->config->get('convertFilenamesToAscii'));
+			$part = IOHelper::cleanFilename($part);
 		}
 
 		$subpath = join('/', $pathParts);

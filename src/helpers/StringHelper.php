@@ -260,7 +260,7 @@ class StringHelper
 	}
 
 	/**
-	 * Converts extended ASCII characters to ASCII, dropping any characters it does not have a match for.
+	 * Converts extended ASCII characters to ASCII.
 	 *
 	 * @param string $str
 	 *

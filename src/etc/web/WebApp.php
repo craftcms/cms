@@ -799,6 +799,9 @@ class WebApp extends \CWebApplication
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
 			{
+				// Flush the data cache, so we're not getting cached CP resource paths.
+				craft()->cache->flush();
+
 				$this->runController('templates/requirementscheck');
 			}
 		}
