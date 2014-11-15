@@ -457,6 +457,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		Craft.setLocalStorage(this.sourceStatesStorageKey, this.sourceStates);
 	},
 
+	/**
+	 * Returns the data that should be passed to the elementIndex/getElements controller action
+	 * when loading the first batch of elements.
+	 */
 	getControllerData: function()
 	{
 		var data = {
@@ -501,110 +505,58 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				this.setNewElementDataHtml(response, false);
+				// Update the view with the new container + elements HTML
+				// -------------------------------------------------------------
+
+				this.$elements.html(response.html);
+				this.$scroller.scrollTop(0);
+
+				if (this.getSelectedSourceState('mode') == 'table')
+				{
+					this.$table = this.$elements.find('table:first');
+					Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
+				}
+
+				// Find the new container
+				this.$elementContainer = this.getElementContainer();
+
+				// Get the new elements
+				var $newElements = this.$elementContainer.children();
+
+				if (this.settings.selectable)
+				{
+					// Reset the element select
+					if (this.elementSelect)
+					{
+						this.elementSelect.destroy();
+						delete this.elementSelect;
+					}
+
+					this.elementSelect = this.createElementSelect($newElements);
+				}
+
+				// Should we initialize a StructureTableSorter?
+				if (
+					this.settings.context == 'index' &&
+					this.getSelectedSourceState('mode') == 'table' &&
+					this.getSelectedSortAttribute() == 'structure' &&
+					Garnish.hasAttr(this.$table, 'data-structure-id')
+				)
+				{
+					// Create the sorter
+					this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
+						onSortChange: $.proxy(this, '_onStructureTableSortChange')
+					});
+				}
+				else
+				{
+					this.structureTableSort = null;
+				}
+
+				this._onUpdateElements(response, false, $newElements);
 			}
 
 		}, this));
-	},
-
-	/**
-	 * Updates the element container with new element HTML.
-	 */
-	setNewElementDataHtml: function(response, append)
-	{
-		// Is this a brand new set of elements?
-		if (!append)
-		{
-			this.$elements.html(response.html);
-			this.$scroller.scrollTop(0);
-
-			if (this.getSelectedSourceState('mode') == 'table')
-			{
-				this.$table = this.$elements.find('table:first');
-				Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.add(this.$table);
-			}
-
-			this.$elementContainer = this.getElementContainer();
-			var $newElements = this.$elementContainer.children();
-
-			if (this.settings.selectable)
-			{
-				// Reset the element select
-				if (this.elementSelect)
-				{
-					this.elementSelect.destroy();
-					delete this.elementSelect;
-				}
-
-				this.elementSelect = this.createElementSelect($newElements);
-			}
-
-			// Should we initialize a StructureTableSorter?
-			if (
-				this.settings.context == 'index' &&
-				this.getSelectedSourceState('mode') == 'table' &&
-				this.getSelectedSortAttribute() == 'structure' &&
-				Garnish.hasAttr(this.$table, 'data-structure-id')
-			)
-			{
-				// Create the sorter
-				this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
-					onSortChange: $.proxy(this, '_onStructureTableSortChange')
-				});
-			}
-			else
-			{
-				this.structureTableSort = null;
-			}
-		}
-		else
-		{
-			var $newElements = $(response.html).appendTo(this.$elementContainer);
-
-			if (this.settings.selectable)
-			{
-				this.elementSelect.addItems($newElements);
-			}
-
-			if (this.structureTableSort)
-			{
-				this.structureTableSort.addItems($newElements);
-			}
-		}
-
-		$('head').append(response.headHtml);
-		Garnish.$bod.append(response.footHtml);
-
-		if (this._isStructureTableDraggingLastElements())
-		{
-			this._totalVisiblePostStructureTableDraggee = response.totalVisible;
-			this._morePendingPostStructureTableDraggee = response.more;
-		}
-		else
-		{
-			this._totalVisible = response.totalVisible;
-			this._morePending = this._morePendingPostStructureTableDraggee = response.more;
-		}
-
-		if (this.morePending)
-		{
-			// Is there room to load more right now?
-			if (this.canLoadMore())
-			{
-				this.loadMore();
-			}
-			else
-			{
-				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
-			}
-		}
-
-		if (this.getSelectedSourceState('mode') == 'table')
-		{
-			Craft.cp.updateResponsiveTables();
-		}
-
-		this.onUpdateElements(append, $newElements);
 	},
 
 	/**
@@ -670,7 +622,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				this.setNewElementDataHtml(response, true);
+				// Update the view with the new elements HTML
+				// -------------------------------------------------------------
+
+				var $newElements = $(response.html).appendTo(this.$elementContainer);
+
+				if (this.settings.selectable)
+				{
+					this.elementSelect.addItems($newElements);
+				}
+
+				if (this.structureTableSort)
+				{
+					this.structureTableSort.addItems($newElements);
+				}
+
+				this._onUpdateElements(response, true, $newElements);
 			}
 
 		}, this));
@@ -1282,6 +1249,43 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
+	},
+
+	_onUpdateElements: function(response, append, $newElements)
+	{
+		$('head').append(response.headHtml);
+		Garnish.$bod.append(response.footHtml);
+
+		if (this._isStructureTableDraggingLastElements())
+		{
+			this._totalVisiblePostStructureTableDraggee = response.totalVisible;
+			this._morePendingPostStructureTableDraggee = response.more;
+		}
+		else
+		{
+			this._totalVisible = response.totalVisible;
+			this._morePending = this._morePendingPostStructureTableDraggee = response.more;
+		}
+
+		if (this.morePending)
+		{
+			// Is there room to load more right now?
+			if (this.canLoadMore())
+			{
+				this.loadMore();
+			}
+			else
+			{
+				this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+			}
+		}
+
+		if (this.getSelectedSourceState('mode') == 'table')
+		{
+			Craft.cp.updateResponsiveTables();
+		}
+
+		this.onUpdateElements(append, $newElements);
 	},
 
 	_isStructureTableDraggingLastElements: function()
