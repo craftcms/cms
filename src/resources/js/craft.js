@@ -1323,6 +1323,16 @@ $.extend($.fn,
 					.appendTo($form);
 			}
 
+			if ($btn.attr('data-param'))
+			{
+				$('<input type="hidden"/>')
+					.attr({
+						name: $btn.attr('data-param'),
+						value: $btn.attr('data-value')
+					})
+					.appendTo($form);
+			}
+
 			$form.submit();
 		});
 	},
