@@ -927,6 +927,7 @@ $.extend(Craft,
 		$('.lightswitch', $container).lightswitch();
 		$('.nicetext', $container).nicetext();
 		$('.pill', $container).pill();
+		$('.formsubmit', $container).formsubmit();
 		$('.menubtn', $container).menubtn();
 
 		// Make placeholders work for IE9, too.
@@ -1280,6 +1281,45 @@ $.extend($.fn,
 			{
 				new Garnish.Pill(this);
 			}
+		});
+	},
+
+	formsubmit: function()
+	{
+		// Secondary form submit buttons
+		this.on('click', function(ev)
+		{
+			var $btn = $(ev.currentTarget);
+
+			if ($btn.attr('data-confirm'))
+			{
+				if (!confirm($btn.attr('data-confirm')))
+				{
+					return;
+				}
+			}
+
+			// Is this a menu item?
+			if ($btn.data('menu'))
+			{
+				var $form = $btn.data('menu').$trigger.closest('form');
+			}
+			else
+			{
+				var $form = $btn.closest('form');
+			}
+
+			if ($btn.attr('data-action'))
+			{
+				$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
+			}
+
+			if ($btn.attr('data-redirect'))
+			{
+				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
+			}
+
+			$form.submit();
 		});
 	},
 

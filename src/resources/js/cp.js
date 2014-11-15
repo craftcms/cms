@@ -95,42 +95,6 @@ var CP = Garnish.Base.extend(
 		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
 		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
 
-		// Secondary form submit buttons
-		this.addListener($('.formsubmit'), 'activate', function(ev)
-		{
-			var $btn = $(ev.currentTarget);
-
-			if ($btn.attr('data-confirm'))
-			{
-				if (!confirm($btn.attr('data-confirm')))
-				{
-					return;
-				}
-			}
-
-			// Is this a menu item?
-			if ($btn.data('menu'))
-			{
-				var $form = $btn.data('menu').$trigger.closest('form');
-			}
-			else
-			{
-				var $form = $btn.closest('form');
-			}
-
-			if ($btn.attr('data-action'))
-			{
-				$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
-			}
-
-			if ($btn.attr('data-redirect'))
-			{
-				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
-			}
-
-			$form.submit();
-		});
-
 		// Alerts
 		if (this.$alerts.length)
 		{
