@@ -1311,12 +1311,16 @@ $.extend($.fn,
 
 			if ($btn.attr('data-action'))
 			{
-				$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
+				$('<input type="hidden" name="action"/>')
+					.val($btn.attr('data-action'))
+					.appendTo($form);
 			}
 
 			if ($btn.attr('data-redirect'))
 			{
-				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
+				$('<input type="hidden" name="redirect"/>')
+					.val($btn.attr('data-redirect'))
+					.appendTo($form);
 			}
 
 			$form.submit();
