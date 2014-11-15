@@ -143,10 +143,11 @@ interface IElementType extends IComponentType
 	 * @param array                $viewState
 	 * @param string|null          $sourceKey
 	 * @param string|null          $context
+	 * @param bool                 $includeContainer
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer);
 
 	/**
 	 * Defines the attributes that elements can be sorted by.

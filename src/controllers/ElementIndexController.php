@@ -34,14 +34,19 @@ class ElementIndexController extends BaseElementsController
 	private $_sourceKey;
 
 	/**
+	 * @var array|null
+	 */
+	private $_source;
+
+	/**
 	 * @var array
 	 */
 	private $_viewState;
 
 	/**
-	 * @var array|null
+	 * @var ElementCriteriaModel
 	 */
-	private $_source;
+	private $_criteria;
 
 	// Public Methods
 	// =========================================================================
@@ -58,74 +63,33 @@ class ElementIndexController extends BaseElementsController
 		$this->_elementType = $this->getElementType();
 		$this->_context     = $this->getContext();
 		$this->_sourceKey   = craft()->request->getParam('source');
-		$this->_viewState   = craft()->request->getRequiredParam('viewState');
 		$this->_source      = $this->_getSource();
+		$this->_viewState   = $this->_getViewState();
+		$this->_criteria    = $this->_getCriteria();
 	}
 
 	/**
-	 * Renders and returns the list of elements in an ElementIndex.
+	 * Renders and returns an element index container, plus its first batch of elements.
 	 *
-	 * @return bool
+	 * @return null
 	 */
 	public function actionGetElements()
 	{
-		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
+		$this->_respond(array(
+			'html'    => $this->_getElementHtml(true),
+		), true);
+	}
 
-		if (empty($this->_viewState['mode']))
-		{
-			$this->_viewState['mode'] = 'table';
-		}
-
-		$baseCriteria = craft()->request->getPost('criteria');
-		$criteria = craft()->elements->getCriteria($this->_elementType->getClassHandle(), $baseCriteria);
-		$criteria->limit = 50;
-
-		if ($search = craft()->request->getParam('search'))
-		{
-			$criteria->search = $search;
-		}
-
-		$actions = array();
-
-		// Is a specific source selected?
-		if ($this->_source)
-		{
-			// Does the source specify any criteria attributes?
-			if (!empty($this->_source['criteria']))
-			{
-				$criteria->setAttributes($this->_source['criteria']);
-			}
-		}
-
-		if ($offset = craft()->request->getParam('offset'))
-		{
-			$criteria->offset = $offset;
-		}
-
-		$html = $this->_elementType->getIndexHtml($criteria, $disabledElementIds, $this->_viewState, $this->_sourceKey, $this->_context);
-
-		$totalElementsInBatch = count($criteria);
-		$totalVisible = $criteria->offset + $totalElementsInBatch;
-
-		if ($criteria->limit)
-		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
-			// 50 elements, rather than running two separate element queries
-			$more = ($totalElementsInBatch == $criteria->limit);
-		}
-		else
-		{
-			$more = false;
-		}
-
-		$this->returnJson(array(
-			'html'         => $html,
-			'headHtml'     => craft()->templates->getHeadHtml(),
-			'footHtml'     => craft()->templates->getFootHtml(),
-			'totalVisible' => $totalVisible,
-			'more'         => $more,
-			'actions'      => $actions,
-		));
+	/**
+	 * Renders and returns a subsequent batch of elements for an element index.
+	 *
+	 * @return null
+	 */
+	public function actionGetMoreElements()
+	{
+		$this->_respond(array(
+			'html' => $this->_getElementHtml(false),
+		), true);
 	}
 
 	// Private Methods
@@ -151,5 +115,99 @@ class ElementIndexController extends BaseElementsController
 
 			return $source;
 		}
+	}
+
+	/**
+	 * Returns the current view state.
+	 *
+	 * @return array
+	 */
+	private function _getViewState()
+	{
+		$viewState = craft()->request->getParam('viewState', array());
+
+		if (empty($viewState['mode']))
+		{
+			$viewState['mode'] = 'table';
+		}
+
+		return $viewState;
+	}
+
+	/**
+	 * Returns the element criteria based on the current params.
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	private function _getCriteria()
+	{
+		$criteria = craft()->elements->getCriteria(
+			$this->_elementType->getClassHandle(),
+			craft()->request->getPost('criteria')
+		);
+
+		$criteria->limit = 50;
+		$criteria->offset = craft()->request->getParam('offset');
+		$criteria->search = craft()->request->getParam('search');
+
+		// Does the source specify any criteria attributes?
+		if (!empty($this->_source['criteria']))
+		{
+			$criteria->setAttributes($this->_source['criteria']);
+		}
+
+		return $criteria;
+	}
+
+	/**
+	 * Returns the element HTML to be returned to the client.
+	 *
+	 * @param bool $includeContainer Whether the element container should be included in the HTML.
+	 */
+	private function _getElementHtml($includeContainer)
+	{
+		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
+
+		return $this->_elementType->getIndexHtml(
+			$this->_criteria,
+			$disabledElementIds,
+			$this->_viewState,
+			$this->_sourceKey,
+			$this->_context,
+			$includeContainer
+		);
+	}
+
+	/**
+	 * Responds to the request.
+	 *
+	 * @param array $responseData
+	 * @param bool  $includeLoadMoreInfo
+	 *
+	 * @return null
+	 */
+	private function _respond($responseData, $includeLoadMoreInfo)
+	{
+		if ($includeLoadMoreInfo)
+		{
+			$totalElementsInBatch = count($this->_criteria);
+			$responseData['totalVisible'] = $this->_criteria->offset + $totalElementsInBatch;
+
+			if ($this->_criteria->limit)
+			{
+				// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
+				// 50 elements, rather than running two separate element queries
+				$responseData['more'] = ($totalElementsInBatch == $this->_criteria->limit);
+			}
+			else
+			{
+				$responseData['more'] = false;
+			}
+		}
+
+		$responseData['headHtml'] = craft()->templates->getHeadHtml();
+		$responseData['footHtml'] = craft()->templates->getFootHtml();
+
+		$this->returnJson($responseData);
 	}
 }

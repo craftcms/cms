@@ -140,10 +140,11 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param array                $viewState
 	 * @param null|string          $sourceKey
 	 * @param null|string          $context
+	 * @param bool                 $includeContainer
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer)
 	{
 		$variables = array(
 			'viewMode'            => $viewState['mode'],
@@ -206,7 +207,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 		$variables['elements'] = $criteria->find();
 
-		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset && !$criteria->positionedAfter ? 'container' : 'elements');
+		$template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 		return craft()->templates->render($template, $variables);
 	}
 

@@ -663,7 +663,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var data = this.getLoadMoreData();
 
-		Craft.postActionRequest('elementIndex/getElements', data, $.proxy(function(response, textStatus)
+		Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
 		{
 			this.loadingMore = false;
 			this.$loadingMoreSpinner.addClass('hidden');
@@ -677,8 +677,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	},
 
 	/**
-	 * Returns the data that should be passed to the elementIndex/getElements controller action
-	 * when loading the next batch of elements.
+	 * Returns the data that should be passed to the elementIndex/getMoreElements controller action
+	 * when loading a subsequent batch of elements.
 	 */
 	getLoadMoreData: function()
 	{
@@ -696,8 +696,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	},
 
 	/**
-	 * Returns the data that should be passed to the elementIndex/getElements controller action
-	 * when loading a fresh set of elements.
+	 * Returns the element container.
 	 */
 	getElementContainer: function()
 	{
