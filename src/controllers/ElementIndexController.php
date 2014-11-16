@@ -11,7 +11,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     1.0
+ * @since     2.3
  */
 class ElementIndexController extends BaseElementsController
 {
@@ -163,6 +163,8 @@ class ElementIndexController extends BaseElementsController
 	 * Returns the element HTML to be returned to the client.
 	 *
 	 * @param bool $includeContainer Whether the element container should be included in the HTML.
+	 *
+	 * @return string
 	 */
 	private function _getElementHtml($includeContainer)
 	{

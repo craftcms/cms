@@ -11,7 +11,7 @@ namespace Craft;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     1.0
+ * @since     2.3
  */
 abstract class BaseElementsController extends BaseController
 {
@@ -21,6 +21,7 @@ abstract class BaseElementsController extends BaseController
 	/**
 	 * Initializes the application component.
 	 *
+	 * @throws HttpException
 	 * @return null
 	 */
 	public function init()
