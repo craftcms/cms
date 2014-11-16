@@ -939,7 +939,7 @@ body .redactor-box,
 body .redactor-box textarea,
 .border-box,
 .matrix-configurator > .field > .input { border: none; border-radius: 2px;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 	@include box-shadow-transition(100ms);
 }
 
@@ -947,7 +947,7 @@ body .redactor-box textarea,
 .text:focus,
 .border-box:focus,
 .border-box.focus { border-color: $focusglowcolor; outline: none;
-	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 5px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 
 input.text,
