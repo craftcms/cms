@@ -975,6 +975,22 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 .nested-fields > .field:last-child { padding-bottom: 24px; }
 
 /* checkbox */
+input.checkbox { opacity: 0; position: absolute; width: 12px; height: 12px; }
+input.checkbox + label { clear: none; position: relative; @include padding-left(20px); cursor: pointer; }
+input.checkbox + label:empty { @include padding-left(12px); }
+input.checkbox + label:before { display: block; position: absolute; top: 2px; @include left(0); width: 11px; height: 12px; padding-left: 1px; content: '.'; font-size: 0; border-radius: 2px;
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+}
+input.checkbox:checked + label:before,
+input.checkbox.partchecked + label:before { background: hsl($hue, 10%, 85%); @include icon; content: 'check'; font-size: 13px; line-height: 12px; }
+input.checkbox.partchecked + label:before { content: '-'; font-size: 24px; line-height: 5px; }
+
+input.checkbox:focus + label:before { outline: none;
+	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
+}
+input.checkbox:checked:focus + label:before,
+input.checkbox.partchecked:focus + label:before { background: hsla(205, 100%, 60%, 0.5); }
+
 .field.checkbox:not(.has-instructions) + .field.checkbox:not(.has-instructions) { margin-top: -22px; }
 
 .text,
