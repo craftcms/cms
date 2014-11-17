@@ -544,9 +544,8 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$base = $file->getFolder()->path;
-					$from = $base.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$to   = $base.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);
