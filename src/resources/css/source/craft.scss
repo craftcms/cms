@@ -992,7 +992,7 @@ input.checkbox:focus + label:before { outline: none;
 input.checkbox:checked:focus + label:before,
 input.checkbox:indeterminate:focus + label:before { background: hsla(205, 100%, 60%, 0.5); }
 
-.field.checkbox:not(.has-instructions) + .field.checkbox:not(.has-instructions) { margin-top: -22px; }
+.checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 
 .text,
 .textline,
