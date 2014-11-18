@@ -28,7 +28,7 @@
 
 
 {% block initJs %}
-	Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
+	Craft.elementIndex = Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
 		context:        '{{ context }}',
 		showStatusMenu: {{ showStatusMenu is defined ? showStatusMenu|json_encode|raw : "'auto'" }},
 		showLocaleMenu: {{ showLocaleMenu is defined ? showLocaleMenu|json_encode|raw : "'auto'" }},
