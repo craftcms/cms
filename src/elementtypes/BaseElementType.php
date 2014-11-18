@@ -224,7 +224,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
-	 * @param null $source
+	 * @param string|null $source
 	 *
 	 * @return array
 	 */

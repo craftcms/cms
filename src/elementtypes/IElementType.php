@@ -170,7 +170,7 @@ interface IElementType extends IComponentType
 	 * All other items besides the first one will also define which element attribute should be shown within the data
 	 * cells. (The actual HTML to be shown can be customized with {@link getTableAttributeHtml()}.)
 	 *
-	 * @param string|null $source The currently-selected source.
+	 * @param string|null $source The selected source’s key, if any.
 	 *
 	 * @return array The table attributes.
 	 */

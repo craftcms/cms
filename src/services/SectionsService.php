@@ -55,7 +55,7 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns all of the section IDs.
 	 *
-	 * @return array
+	 * @return array All the sections’ IDs.
 	 */
 	public function getAllSectionIds()
 	{
@@ -75,7 +75,7 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns all of the section IDs that are editable by the current user.
 	 *
-	 * @return array
+	 * @return array All the editable sections’ IDs.
 	 */
 	public function getEditableSectionIds()
 	{
@@ -100,7 +100,7 @@ class SectionsService extends BaseApplicationComponent
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return SectionModel[] All the sections.
 	 */
 	public function getAllSections($indexBy = null)
 	{
@@ -157,7 +157,7 @@ class SectionsService extends BaseApplicationComponent
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return SectionModel[] All the editable sections.
 	 */
 	public function getEditableSections($indexBy = null)
 	{
