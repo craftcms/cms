@@ -248,6 +248,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 				$draggee.data('level', newLevel);
 				$draggee.children(':first').css('padding-'+Craft.left, padding);
+				$draggee.find('.element').data('level', newLevel);
 			}
 
 			this._positionChanged = true;
