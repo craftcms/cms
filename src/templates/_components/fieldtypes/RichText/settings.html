@@ -1,6 +1,5 @@
 {% import '_includes/forms' as forms %}
 
-
 {% if configOptions|length > 1 %}
 	{% set configInput %}
 		{{ forms.select({
@@ -16,12 +15,20 @@
 	{% endset %}
 {% endif %}
 
+{% set columnType %}
+	{{ forms.select({
+		id: 'columnType',
+		name: 'columnType',
+		options: columns,
+		value: settings.columnType
+	}) }}
+{% endset %}
+
 {{ forms.field({
 	label: "Config"|t,
 	instructions: "You can save custom Redactor configs as .json files in craft/config/redactor/."|t~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t~'</a>.',
 	id: 'configFile'
 }, configInput) }}
-
 
 {{ forms.checkboxField({
 	label: "Clean up HTML?"|t,
@@ -38,3 +45,10 @@
 	name: 'purifyHtml',
 	checked: settings.purifyHtml
 }) }}
+
+{{ forms.field({
+	label: "Column Type"|t,
+	instructions: "The underlying database column type to use when saving content."|t,
+	id: 'columnType',
+	warning: (existing ? "Changing this may result in data loss."|t),
+}, columnType) }}

@@ -672,7 +672,8 @@ class InstallService extends BaseApplicationComponent
 		$bodyField->translatable = true;
 		$bodyField->type         = 'RichText';
 		$bodyField->settings = array(
-			'configFile' => 'Standard.json'
+			'configFile' => 'Standard.json',
+			'columnType' => ColumnType::Text,
 		);
 
 		if (craft()->fields->saveField($bodyField))

@@ -57,9 +57,14 @@ class RichTextFieldType extends BaseFieldType
 			}
 		}
 
+		$columns = array('text' => Craft::t('Text (stores about 64k)'), 'mediumtext' => Craft::t('MediumText (stores about 4GB)'));
+
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
-			'configOptions' => $configOptions
+			'configOptions' => $configOptions,
+			'columns' => $columns,
+			// Lame, but not seeing an easy way to see if a fieldId exists at this point.
+			'existing' => strpos(craft()->request->getPath(), 'settings/fields/new') === false,
 		));
 	}
 
@@ -70,7 +75,15 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		return array(AttributeType::String, 'column' => ColumnType::Text);
+		$settings = $this->getSettings();
+
+		// It hasn't always been a settings, so default to Text if it's not set.
+		if (!$settings->getAttribute('columnType'))
+		{
+			return array(AttributeType::String, 'column' => ColumnType::Text);
+		}
+
+		return array(AttributeType::String, 'column' => $settings->columnType);
 	}
 
 	/**
@@ -188,6 +201,40 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * @inheritDoc BaseFieldType::validate()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return true|string|array
+	 */
+	public function validate($value)
+	{
+		$settings = $this->getSettings();
+
+		// This wasn't always a setting.
+		$columnType = !$settings->getAttribute('columnType') ? ColumnType::Text : $settings->getAttribute('columnType');
+
+		$postContentSize = strlen($value);
+		$maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($columnType);
+
+		// Give ourselves 10% wiggle room.
+		$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+
+		if ($postContentSize > $maxDbColumnSize)
+		{
+			// Give ourselves 10% wiggle room.
+			$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+
+			if ($postContentSize > $maxDbColumnSize)
+			{
+				return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * @inheritDoc BaseFieldType::getStaticHtml()
 	 *
 	 * @param mixed $value
@@ -213,6 +260,7 @@ class RichTextFieldType extends BaseFieldType
 			'configFile'  => AttributeType::String,
 			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
 			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
+			'columnType'  => array(AttributeType::String),
 		);
 	}
 

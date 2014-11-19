@@ -17,6 +17,18 @@ class MysqlSchema extends \CMysqlSchema
 	// =========================================================================
 
 	/**
+	 * Constructor.
+	 *
+	 * @param \CDbConnection $conn The database connection.
+	 */
+	public function __construct($conn)
+	{
+		parent::__construct($conn);
+
+		$this->columnTypes['mediumtext'] = 'mediumtext';
+	}
+
+	/**
 	 * @var int The maximum length that objects' names can be.
 	 */
 	public $maxObjectNameLength = 64;
