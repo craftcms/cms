@@ -153,7 +153,7 @@ $rackspaceRefreshContainersBtn.click(function()
 {
 	if ($rackspaceRegionSelect.val() == '-')
 	{
-		alert(Craft.t("Select a region first!"));
+		alert(Craft.t('Select a region first!'));
 		return;
 	}
     if ($rackspaceRefreshContainersBtn.hasClass('disabled'))

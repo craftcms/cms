@@ -1127,7 +1127,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			oldName = oldName.split('?').shift();
 		}
 
-		var newName = prompt(Craft.t("Rename file"), oldName);
+		var newName = prompt(Craft.t('Rename file'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -1252,7 +1252,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_deleteFiles: function()
 	{
-		if (confirm(Craft.t("Are you sure you want to delete these {number} files?", {number: this.elementSelect.getTotalSelected()})))
+		if (confirm(Craft.t('Are you sure you want to delete these {number} files?', {number: this.elementSelect.getTotalSelected()})))
 		{
 			this.setIndexBusy();
 
