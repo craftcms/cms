@@ -188,7 +188,7 @@ class EntryElementType extends BaseElementType
 	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
-	 * @param null $source
+	 * @param string|null $source
 	 *
 	 * @return array
 	 */

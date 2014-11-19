@@ -1394,6 +1394,11 @@ class TemplatesService extends BaseApplicationComponent
 
 		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
 
+		if ($context['element']->level)
+		{
+			$html .= ' data-level="'.$context['element']->level.'"';
+		}
+
 		$isEditable = ElementHelper::isElementEditable($context['element']);
 
 		if ($isEditable)

@@ -1629,7 +1629,7 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Returns all installed element types.
 	 *
-	 * @return BaseElementType[] The installed element types.
+	 * @return IElementType[] The installed element types.
 	 */
 	public function getAllElementTypes()
 	{
@@ -1641,7 +1641,7 @@ class ElementsService extends BaseApplicationComponent
 	 *
 	 * @param string $class The element type class handle.
 	 *
-	 * @return BaseElementType|null The element type, or `null`.
+	 * @return IElementType|null The element type, or `null`.
 	 */
 	public function getElementType($class)
 	{
