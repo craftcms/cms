@@ -341,8 +341,26 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->postDate   = craft()->request->getPost('postDate');
 		$draft->expiryDate = craft()->request->getPost('expiryDate');
 		$draft->enabled    = (bool) craft()->request->getPost('enabled');
-		$draft->authorId   = craft()->request->getPost('author');
-
 		$draft->getContent()->title = craft()->request->getPost('title');
+
+		// Author
+		$authorId = craft()->request->getPost('author', ($draft->authorId ? $draft->authorId : craft()->userSession->getUser()->id));
+
+		if (is_array($authorId))
+		{
+			$authorId = isset($authorId[0]) ? $authorId[0] : null;
+		}
+
+		$draft->authorId = $authorId;
+
+		// Parent
+		$parentId = craft()->request->getPost('parentId');
+
+		if (is_array($parentId))
+		{
+			$parentId = isset($parentId[0]) ? $parentId[0] : null;
+		}
+
+		$draft->parentId = $parentId;
 	}
 }
