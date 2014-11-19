@@ -337,6 +337,52 @@ class DbHelper
 	}
 
 	/**
+	 * Returns the maximum number of bytes a given textual column type can hold for a given database.
+	 *
+	 * @param        $columnType The textual column type to check.
+	 * @param string $database   The type of database to use.
+	 *
+	 * @return int The storage capacity of the column type in bytes.
+	 */
+	public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+	{
+		switch ($database)
+		{
+			case 'mysql':
+			{
+				switch ($columnType)
+				{
+					case ColumnType::TinyText:
+					{
+						// 255 bytes
+						return 255;
+					}
+
+					case ColumnType::Text:
+					{
+						// 65k
+						return 65535;
+					}
+
+					case ColumnType::MediumText:
+					{
+						// 16MB
+						return 16777215;
+					}
+
+					case ColumnType::LongText:
+					{
+						// 4GB
+						return 4294967295;
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+	/**
 	 * Escapes commas and asterisks in a string so they are not treated as special characters in
 	 * {@link DbHelper::parseParam()}.
 	 *
