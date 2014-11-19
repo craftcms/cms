@@ -18,6 +18,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	sourceSelect: null,
 	structureTableSort: null,
 
+	isIndexBusy: false,
+
 	$container: null,
 	$main: null,
 	$scroller: null,
@@ -489,7 +491,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
-		this.$mainSpinner.removeClass('hidden');
+		this.setIndexBusy();
 		this.removeListener(this.$scroller, 'scroll');
 
 		if (this.getSelectedSourceState('mode') == 'table' && this.$table)
@@ -501,7 +503,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		Craft.postActionRequest('elementIndex/getElements', data, $.proxy(function(response, textStatus)
 		{
-			this.$mainSpinner.addClass('hidden');
+			this.setIndexAvailable();
 
 			if (textStatus == 'success')
 			{
@@ -1144,14 +1146,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.$mainSpinner.removeClass('hidden');
 		this.isIndexBusy = true;
-		this.$elements.fadeTo('fast', 0.5);
 	},
 
 	setIndexAvailable: function()
 	{
 		this.$mainSpinner.addClass('hidden');
 		this.isIndexBusy = false;
-		this.$elements.fadeTo('fast', 1);
 	},
 
 	disable: function()

@@ -12,8 +12,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	promptHandler: null,
 	progressBar: null,
 
-	initialSourceKey: null,
-	isIndexBusy: false,
 	_uploadTotalFiles: 0,
 	_uploadFileProgress: {},
 	_uploadedFileIds: [],
