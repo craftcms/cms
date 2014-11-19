@@ -123,8 +123,9 @@ class ElementsController extends BaseElementsController
 		if ($elementType->saveElement($element, $params))
 		{
 			$this->returnJson(array(
-				'success'  => true,
-				'newTitle' => (string) $element
+				'success'   => true,
+				'newTitle'  => (string) $element,
+				'cpEditUrl' => $element->getCpEditUrl(),
 			));
 		}
 		else
