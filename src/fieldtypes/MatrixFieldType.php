@@ -113,6 +113,7 @@ class MatrixFieldType extends BaseFieldType
 						$field->id           = $fieldId;
 						$field->name         = $fieldSettings['name'];
 						$field->handle       = $fieldSettings['handle'];
+						$field->instructions = $fieldSettings['instructions'];
 						$field->required     = !empty($fieldSettings['required']);
 						$field->translatable = !empty($fieldSettings['translatable']);
 						$field->type         = $fieldSettings['type'];

@@ -65,7 +65,6 @@
 									value: field.name,
 									errors: field.getErrors('name'),
 									required: true,
-									translatable: true,
 									autofocus: true
 								}) }}
 
@@ -78,6 +77,15 @@
 									value: field.handle,
 									errors: field.getErrors('handle'),
 									required: true,
+								}) }}
+
+								{{ forms.textareaField({
+									label: "Instructions"|t,
+									id: fieldId~'-instructions',
+									class: 'nicetext',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][instructions]',
+									value: field.instructions,
+									errors: field.getErrors('instructions'),
 								}) }}
 
 								{{ forms.checkboxField({

@@ -702,6 +702,14 @@ Field = Garnish.Base.extend(
 						'<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
 					'</div>' +
 				'</div>' +
+				'<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
+					'<div class="heading">' +
+						'<label class="required" for="'+this.inputIdPrefix+'-instructions">'+Craft.t('Instructions')+'</label>' +
+					'</div>' +
+					'<div class="input">' +
+						'<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
+					'</div>' +
+				'</div>' +
 				'<div class="field checkbox">' +
 					'<label>' +
 						'<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
