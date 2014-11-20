@@ -35,16 +35,6 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IElementAction::isBatchAction()
-	 *
-	 * @return bool
-	 */
-	public function isBatchAction()
-	{
-		return true;
-	}
-
-	/**
 	 * @inheritDoc IElementAction::isDestructive()
 	 *
 	 * @return bool

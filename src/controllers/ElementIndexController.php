@@ -328,7 +328,6 @@ class ElementIndexController extends BaseElementsController
 				$actionData[] = array(
 					'handle'      => $action->getClassHandle(),
 					'name'        => $action->getName(),
-					'batch'       => $action->isBatchAction(),
 					'destructive' => $action->isDestructive(),
 					'trigger'     => $action->getTriggerHtml(),
 					'confirm'     => $action->getConfirmationMessage(),

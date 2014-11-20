@@ -14,13 +14,6 @@ namespace Craft;
 interface IElementAction extends IComponentType
 {
 	/**
-	 * Returns whether this action can be applied to a batch of elements.
-	 *
-	 * @return bool Whether this action can be applied to a batch of elements.
-	 */
-	public function isBatchAction();
-
-	/**
 	 * Returns whether this action is destructive in nature.
 	 *
 	 * @return bool Whether this action is destructive in nature.
