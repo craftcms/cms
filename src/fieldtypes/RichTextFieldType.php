@@ -66,7 +66,7 @@ class RichTextFieldType extends BaseFieldType
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
 			'columns' => $columns,
-			'existing' => (bool) $this->model->id,
+			'existing' => !empty($this->model->id),
 		));
 	}
 
