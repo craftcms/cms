@@ -66,8 +66,7 @@ class RichTextFieldType extends BaseFieldType
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
 			'columns' => $columns,
-			// Lame, but not seeing an easy way to see if a fieldId exists at this point.
-			'existing' => strpos(craft()->request->getPath(), 'settings/fields/new') === false,
+			'existing' => (bool) $this->model->id,
 		));
 	}
 
