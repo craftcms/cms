@@ -303,22 +303,16 @@ class UsersController extends BaseController
 
 			$newPassword = craft()->request->getRequiredPost('newPassword');
 
-			$passwordModel = new PasswordModel();
-			$passwordModel->password = $newPassword;
+			$userToProcess->newPassword = $newPassword;
 
-			if ($passwordModel->validate())
+			if (craft()->users->changePassword($userToProcess))
 			{
-				$userToProcess->newPassword = $newPassword;
-
-				if (craft()->users->changePassword($userToProcess))
+				if ($userToProcess->status == UserStatus::Pending)
 				{
-					if ($userToProcess->status == UserStatus::Pending)
-					{
-						craft()->users->activateUser($userToProcess);
-					}
-
-					$this->_processPostValidationRedirect($userToProcess);
+					craft()->users->activateUser($userToProcess);
 				}
+
+				$this->_processPostValidationRedirect($userToProcess);
 			}
 
 			craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
@@ -327,7 +321,6 @@ class UsersController extends BaseController
 
 			$errors = array();
 			$errors = array_merge($errors, $userToProcess->getErrors('newPassword'));
-			$errors = array_merge($errors, $passwordModel->getErrors('password'));
 
 			$this->renderTemplate($url, array(
 				'errors' => $errors,
