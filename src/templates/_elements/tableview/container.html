@@ -1,6 +1,9 @@
 <div class="tableview">
 	<table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %}>
 		<thead>
+			{% if showCheckboxes %}
+				<th></th>
+			{% endif %}
 			{% for attribute, label in attributes %}
 				<th scope="col" data-attribute="{{ attribute }}">{{ label }}</th>
 			{% endfor %}

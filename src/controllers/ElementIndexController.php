@@ -48,6 +48,11 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private $_criteria;
 
+	/**
+	 * @var array|null
+	 */
+	private $_actions;
+
 	// Public Methods
 	// =========================================================================
 
@@ -66,6 +71,11 @@ class ElementIndexController extends BaseElementsController
 		$this->_source      = $this->_getSource();
 		$this->_viewState   = $this->_getViewState();
 		$this->_criteria    = $this->_getCriteria();
+
+		if ($this->_context == 'index')
+		{
+			$this->_actions = $this->_getAvailableActions();
+		}
 	}
 
 	/**
@@ -75,9 +85,17 @@ class ElementIndexController extends BaseElementsController
 	 */
 	public function actionGetElements()
 	{
-		$this->_respond(array(
-			'html'    => $this->_getElementHtml(true),
-		), true);
+		// Get the action head/foot HTML before any more is added to it from the element HTML
+		if ($this->_context == 'index')
+		{
+			$responseData['actions']  = $this->_getActionData();
+			$responseData['actionsHeadHtml'] = craft()->templates->getHeadHtml();
+			$responseData['actionsFootHtml'] = craft()->templates->getFootHtml();
+		}
+
+		$responseData['html'] = $this->_getElementHtml(true);
+
+		$this->_respond($responseData, true);
 	}
 
 	/**
@@ -90,6 +108,90 @@ class ElementIndexController extends BaseElementsController
 		$this->_respond(array(
 			'html' => $this->_getElementHtml(false),
 		), true);
+	}
+
+	/**
+	 * Performs an action on one or more selected elements.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionPerformAction()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$requestService = craft()->request;
+
+		$actionHandle = $requestService->getRequiredPost('elementAction');
+		$elementIds = $requestService->getRequiredPost('elementIds');
+
+		// Find that action from the list of available actions for the source
+		if ($this->_actions)
+		{
+			foreach ($this->_actions as $availableAction)
+			{
+				if ($actionHandle == $availableAction->getClassHandle())
+				{
+					$action = $availableAction;
+					break;
+				}
+			}
+		}
+
+		if (!isset($action))
+		{
+			throw new HttpException(400);
+		}
+
+		// Check for any params in the post data
+		$params = $action->getParams();
+
+		foreach ($params->attributeNames() as $paramName)
+		{
+			$paramValue = $requestService->getPost($paramName);
+
+			if ($paramValue !== null)
+			{
+				$params->setAttribute($paramName, $paramValue);
+			}
+		}
+
+		// Make sure they validate
+		if (!$params->validate())
+		{
+			throw new HttpException(400);
+		}
+
+		// Perform the action
+		$actionCriteria = $this->_criteria->copy();
+		$actionCriteria->offset = 0;
+		$actionCriteria->limit = null;
+		$actionCriteria->order = null;
+		$actionCriteria->positionedAfter = null;
+		$actionCriteria->positionedBefore = null;
+		$actionCriteria->id = $elementIds;
+
+		$success = $action->performAction($actionCriteria);
+
+		// Respond
+		$response = array(
+			'success' => $success,
+			'message' => $action->getMessage(),
+		);
+
+		if ($success)
+		{
+			// Send a new set of elements
+			$response['html'] = $this->_getElementHtml(false);
+			$includeLoadMoreInfo = true;
+		}
+		else
+		{
+			$includeLoadMoreInfo = false;
+		}
+
+		$this->_respond($response, $includeLoadMoreInfo);
 	}
 
 	// Private Methods
@@ -169,6 +271,7 @@ class ElementIndexController extends BaseElementsController
 	private function _getElementHtml($includeContainer)
 	{
 		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
+		$showCheckboxes = !empty($this->_actions);
 
 		return $this->_elementType->getIndexHtml(
 			$this->_criteria,
@@ -176,8 +279,64 @@ class ElementIndexController extends BaseElementsController
 			$this->_viewState,
 			$this->_sourceKey,
 			$this->_context,
-			$includeContainer
+			$includeContainer,
+			$showCheckboxes
 		);
+	}
+
+	/**
+	 * Returns the available actions for the current source.
+	 *
+	 * @return array|null
+	 */
+	private function _getAvailableActions()
+	{
+		$actions = $this->_elementType->getAvailableActions($this->_sourceKey);
+
+		if ($actions)
+		{
+			foreach ($actions as $i => $action)
+			{
+				if (is_string($action))
+				{
+					$actions[$i] = $action = craft()->elements->getAction($action);
+				}
+
+				if (!($action instanceof IElementAction))
+				{
+					unset($actions[$i]);
+				}
+			}
+
+			return array_values($actions);
+		}
+	}
+
+	/**
+	 * Returns the data for the available actions.
+	 *
+	 * @return array
+	 */
+	private function _getActionData()
+	{
+		if ($this->_actions)
+		{
+			$actionData = array();
+
+			foreach ($this->_actions as $action)
+			{
+				$actionData[] = array(
+					'handle'      => $action->getClassHandle(),
+					'name'        => $action->getName(),
+					'batch'       => $action->isBatchAction(),
+					'destructive' => $action->isDestructive(),
+					'trigger'     => $action->getTriggerHtml(),
+					'confirm'     => $action->getConfirmationMessage(),
+				);
+			}
+
+			return $actionData;
+		}
 	}
 
 	/**
