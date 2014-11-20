@@ -461,7 +461,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		if ($file->kind == 'image')
 		{
-			// Just a rename operation
 			if ($targetFolder->sourceId == $file->sourceId)
 			{
 				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
@@ -472,7 +471,6 @@ class LocalAssetSourceType extends BaseAssetSourceType
 				// Move transforms
 				foreach ($transforms as $index)
 				{
-
 					// For each file, we have to have both the source and destination
 					// for both files and transforms, so we can reliably move them
 					$destinationIndex = clone $index;
@@ -488,12 +486,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);
-
 				}
 			}
 			else
 			{
-				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
+				craft()->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
