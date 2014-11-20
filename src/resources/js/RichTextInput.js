@@ -84,7 +84,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 				callback: $.proxy(function()
 				{
 					this.redactor.selectionSave();
-					var editor = this.redactor;
+
 					if (typeof this.assetSelectionModal == 'undefined')
 					{
 						this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -95,7 +95,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (assets.length)
 								{
-									editor.selectionRestore();
+									this.redactor.selectionRestore();
 									for (var i = 0; i < assets.length; i++)
 									{
 										var asset = assets[i],
@@ -106,11 +106,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 											url += ':'+transform;
 										}
 
-										editor.insertNode($('<img src="'+url+'" />')[0]);
-										editor.sync();
+										this.redactor.insertNode($('<img src="'+url+'" />')[0]);
+										this.redactor.sync();
 									}
-									editor.observeImages();
-									editor.dropdownHideAll();
+									this.redactor.observeImages();
+									this.redactor.dropdownHideAll();
 								}
 							}, this),
 							closeOtherModals: false,
@@ -134,7 +134,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 				{
 					this.redactor.selectionSave();
 
-					var editor = this.redactor;
 					if (typeof this.entrySelectionModal == 'undefined')
 					{
 						this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
@@ -145,15 +144,15 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (entries.length)
 								{
-									editor.selectionRestore();
+									this.redactor.selectionRestore();
 									var entry     = entries[0],
 										url       = entry.url+'#entry:'+entry.id,
-										selection = editor.getSelectionText(),
+										selection = this.redactor.getSelectionText(),
 										title = selection.length > 0 ? selection : entry.label;
-									editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
-									editor.sync();
+									this.redactor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
+									this.redactor.sync();
 								}
-								editor.dropdownHideAll();
+								this.redactor.dropdownHideAll();
 							},
 							closeOtherModals: false
 						});
@@ -171,7 +170,6 @@ Craft.RichTextInput = Garnish.Base.extend(
 				{
 					this.redactor.selectionSave();
 
-					var editor = this.redactor;
 					if (typeof this.assetLinkSelectionModal == 'undefined')
 					{
 						this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -181,15 +179,15 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (assets.length)
 								{
-									editor.selectionRestore();
+									this.redactor.selectionRestore();
 									var asset     = assets[0],
 										url       = asset.url+'#asset:'+asset.id,
-										selection = editor.getSelectionText(),
+										selection = this.redactor.getSelectionText(),
 										title     = selection.length > 0 ? selection : asset.label;
-									editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
-									editor.sync();
+									this.redactor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
+									this.redactor.sync();
 								}
-								editor.dropdownHideAll();
+								this.redactor.dropdownHideAll();
 							},
 							closeOtherModals: false,
 							canSelectImageTransforms: true
