@@ -18,10 +18,11 @@ abstract class ComponentType extends BaseEnum
 	// Constants
 	// =========================================================================
 
-	const AssetSource = 'assetSource';
-	const Element     = 'element';
-	const Field       = 'field';
-	const Task        = 'task';
-	const Tool        = 'tool';
-	const Widget      = 'widget';
+	const AssetSource   = 'assetSource';
+	const Element       = 'element';
+	const ElementAction = 'elementAction';
+	const Field         = 'field';
+	const Task          = 'task';
+	const Tool          = 'tool';
+	const Widget        = 'widget';
 }

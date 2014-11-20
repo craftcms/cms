@@ -120,6 +120,18 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getAvailableActions()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array|null
+	 */
+	public function getAvailableActions($source = null)
+	{
+		return array();
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineSearchableAttributes()
 	 *
 	 * @return array
@@ -141,16 +153,18 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param null|string          $sourceKey
 	 * @param null|string          $context
 	 * @param bool                 $includeContainer
+	 * @param bool                 $showCheckboxes
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer)
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
 		$variables = array(
 			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
 			'elementType'         => new ElementTypeVariable($this),
 			'disabledElementIds'  => $disabledElementIds,
+			'showCheckboxes'      => $showCheckboxes,
 		);
 
 		// Special case for sorting by structure

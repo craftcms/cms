@@ -109,6 +109,18 @@ interface IElementType extends IComponentType
 	public function getSource($key, $context = null);
 
 	/**
+	 * Returns the available element actions for a given source (if one is provided).
+	 *
+	 * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
+	 * {@link IElementAction} instance.
+	 *
+	 * @param string|null $source The selected source’s key, if any.
+	 *
+	 * @return array|null The available element actions.
+	 */
+	public function getAvailableActions($source = null);
+
+	/**
 	 * Defines which element model attributes should be searchable.
 	 *
 	 * This method should return an array of attribute names that can be accessed on your
@@ -144,10 +156,11 @@ interface IElementType extends IComponentType
 	 * @param string|null          $sourceKey
 	 * @param string|null          $context
 	 * @param bool                 $includeContainer
+	 * @param bool                 $showCheckboxes
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer);
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
 	/**
 	 * Defines the attributes that elements can be sorted by.

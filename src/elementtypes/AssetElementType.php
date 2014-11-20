@@ -103,6 +103,77 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getAvailableActions()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array|null
+	 */
+	public function getAvailableActions($source = null)
+	{
+		if (!preg_match('/^folder:(\d+)$/', $source, $matches))
+		{
+			return;
+		}
+
+		$folderId = $matches[1];
+
+		$actions = array();
+
+		// View
+		$viewAction = craft()->elements->getAction('View');
+		$viewAction->setParams(array(
+			'label' => Craft::t('View asset'),
+		));
+		$actions[] = $viewAction;
+
+		// Edit
+		$editAction = craft()->elements->getAction('Edit');
+		$editAction->setParams(array(
+			'label' => Craft::t('Edit asset'),
+		));
+		$actions[] = $editAction;
+
+		// Rename File
+		if (
+			craft()->assets->canUserPerformAction($folderId, 'removeFromAssetSource') &&
+			craft()->assets->canUserPerformAction($folderId, 'uploadToAssetSource')
+		)
+		{
+			$actions[] = 'RenameFile';
+		}
+
+		// Replace File
+		if (craft()->assets->canUserPerformAction($folderId, 'uploadToAssetSource'))
+		{
+			$actions[] = 'ReplaceFile';
+		}
+
+		// Copy Reference Tag
+		$copyRefTagAction = craft()->elements->getAction('CopyReferenceTag');
+		$copyRefTagAction->setParams(array(
+			'elementType' => 'asset',
+		));
+		$actions[] = $copyRefTagAction;
+
+		// Delete
+		if (craft()->assets->canUserPerformAction($folderId, 'removeFromAssetSource'))
+		{
+			$actions[] = 'DeleteAssets';
+		}
+
+		// Allow plugins to add additional actions
+		$allPluginActions = craft()->plugins->call('addAssetActions', array($source), true);
+
+		foreach ($allPluginActions as $pluginActions)
+		{
+			$actions = array_merge($actions, $pluginActions);
+		}
+
+		return $actions;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineSearchableAttributes()
 	 *
 	 * @return array

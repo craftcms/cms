@@ -595,20 +595,21 @@ table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: no
 .element.loading.removable .delete { display: none; }
 
 /* table views */
+.elements .tableview tr { outline: none; }
 .elements .tableview td { position: relative; }
 .elements .tableview .move { display: block; @include floatleft; @include margin(5px, 0, 0, -14px); font-size: 11px; }
 
-.elements .tableview table tr.sel th,
-.elements .tableview table tr.sel td { background: #f5f5f5; }
-
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
-.elements .thumbsview li { @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; }
+.elements .thumbsview li { position: relative; @include floatleft; @include margin(14px, 0, 0, 14px); width: 100px; }
 
-.elements .thumbsview .element { display: block; padding: 105px 0 5px !important; }
-.elements .thumbsview .element .elementthumb,
-.elements .thumbsview .element .elementicon { width: 100px; height: 100px; }
-.elements .thumbsview .element .label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.elements .thumbsview li .element { display: block; padding: 105px 0 5px !important; }
+.elements .thumbsview li .element .elementthumb,
+.elements .thumbsview li .element .elementicon { width: 100px; height: 100px; }
+.elements .thumbsview li .element .label { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
+.elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }
 
 /* structures */
 .structure { position: relative; z-index: 1; }
@@ -865,10 +866,6 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 
 .elementselectormodal .body .main .elements .structure .row { margin-top: 1px; outline: none; }
 
-.elementselectormodal .body .main .elements .tableview table tr.sel th,
-.elementselectormodal .body .main .elements .tableview table tr.sel td,
-.elementselectormodal .body .main .elements .structure .row.sel { background: #f5f5f5; }
-
 .elementselectormodal .footer { position: absolute; bottom: 0; left: 0; width: 100%; margin: 0; }
 .elementselectormodal .footer .spinner { @include floatright; @include margin-right(-24px); }
 
@@ -883,6 +880,11 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 
 #loginmodal .inputcontainer { position: relative; }
 #loginmodal .inputcontainer .spinner { position: absolute; top: 0; margin-top: 0; @include right(-24px); }
+
+/* delete user modal */
+.deleteusermodal .options label { display: inline-block; line-height: 30px; }
+.deleteusermodal .elementselect { @include margin-left(10px); display: inline-block; vertical-align: middle; }
+.deleteusermodal .buttons .spinner { @include floatright; @include margin-right(-20px); @include margin-left(-4px); }
 
 /* ----------------------------------------
 /*  Menus
@@ -976,21 +978,36 @@ table.editable textarea { font-size: 13px; line-height: 16px; color: $textcolor;
 
 /* checkbox */
 input.checkbox { opacity: 0; position: absolute; width: 12px; height: 12px; }
-input.checkbox + label { clear: none; position: relative; @include padding-left(20px); cursor: pointer; }
-input.checkbox + label:empty { @include padding-left(12px); }
-input.checkbox + label:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px; height: 12px; content: '.'; font-size: 0; border-radius: 2px;
-	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
+input.checkbox + label,
+div.checkbox { display: inline; clear: none; position: relative; @include padding-left(20px); cursor: pointer; }
+input.checkbox:disabled + label,
+.disabled div.checkbox { cursor: default; }
+input.checkbox + label:empty,
+div.checkbox:empty { @include padding-left(12px); }
+input.checkbox + label:before,
+div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
+	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
 input.checkbox:checked + label:before,
-input.checkbox:indeterminate + label:before { background: hsl($hue, 10%, 85%); @include icon; line-height: 12px; }
-input.checkbox:checked:not(:indeterminate) + label:before { content: 'check'; font-size: 13px; text-indent: 1px; }
-input.checkbox:indeterminate + label:before { content: 'minus'; font-size: 7px; text-align: center; }
+div.checkbox.checked:before,
+.sel div.checkbox:before,
+input.checkbox:indeterminate + label:before,
+div.checkbox.indeterminate:before { background: hsl($hue, 10%, 85%); @include icon; line-height: 12px; }
+input.checkbox:checked:not(:indeterminate) + label:before,
+div.checkbox.checked:not(.indeterminate):before,
+.sel div.checkbox:not(.indeterminate):before { content: 'check'; font-size: 13px; text-indent: 1px; }
+input.checkbox:indeterminate + label:before,
+div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
-input.checkbox:focus + label:before { outline: none;
+input.checkbox:focus + label:before,
+:focus div.checkbox:before { outline: none;
 	@include box-shadow(0 0 2px hsl(205, 100%, 60%), inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 1px 2px rgba(0,0,0,0.1), inset 0 0 0 1px hsla(205, 100%, 60%, 0.5));
 }
 input.checkbox:checked:focus + label:before,
-input.checkbox:indeterminate:focus + label:before { background: hsla(205, 100%, 60%, 0.5); }
+input.checkbox:indeterminate:focus + label:before,
+:focus div.checkbox.checked:before,
+.sel:focus div.checkbox:before,
+:focus div.checkbox.indeterminate:before { background: hsla(205, 100%, 60%, 0.5); }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 

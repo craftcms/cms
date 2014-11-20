@@ -182,6 +182,29 @@ class SectionsService extends BaseApplicationComponent
 		return $editableSections;
 	}
 
+
+	/**
+	 * Returns all sections of a given type.
+	 *
+	 * @param string $type
+	 *
+	 * @return SectionModel[] All the sections of the given type.
+	 */
+	public function getSectionsByType($type)
+	{
+		$sections = array();
+
+		foreach ($this->getAllSections() as $section)
+		{
+			if ($section->type == $type)
+			{
+				$sections[] = $section;
+			}
+		}
+
+		return $sections;
+	}
+
 	/**
 	 * Gets the total number of sections.
 	 *

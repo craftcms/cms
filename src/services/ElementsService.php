@@ -1648,6 +1648,31 @@ class ElementsService extends BaseApplicationComponent
 		return craft()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
 	}
 
+	// Element Actions
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns all installed element actions.
+	 *
+	 * @return IElementAction[] The installed element actions.
+	 */
+	public function getAllActions()
+	{
+		return craft()->components->getComponentsByType(ComponentType::ElementAction);
+	}
+
+	/**
+	 * Returns an element action by its class handle.
+	 *
+	 * @param string $class The element action class handle.
+	 *
+	 * @return IElementType|null The element action, or `null`.
+	 */
+	public function getAction($class)
+	{
+		return craft()->components->getComponentByTypeAndClass(ComponentType::ElementAction, $class);
+	}
+
 	// Misc
 	// -------------------------------------------------------------------------
 

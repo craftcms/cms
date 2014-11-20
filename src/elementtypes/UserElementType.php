@@ -96,6 +96,50 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getAvailableActions()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array|null
+	 */
+	public function getAvailableActions($source = null)
+	{
+		$actions = array();
+
+		// Edit
+		$editAction = craft()->elements->getAction('Edit');
+		$editAction->setParams(array(
+			'label' => Craft::t('Edit user'),
+		));
+		$actions[] = $editAction;
+
+		if (craft()->userSession->checkPermission('administrateUsers'))
+		{
+			// Suspend
+			$actions[] = 'SuspendUsers';
+
+			// Unsuspend
+			$actions[] = 'UnsuspendUsers';
+		}
+
+		if (craft()->userSession->checkPermission('deleteUsers'))
+		{
+			// Delete
+			$actions[] = 'DeleteUsers';
+		}
+
+		// Allow plugins to add additional actions
+		$allPluginActions = craft()->plugins->call('addUserActions', array($source), true);
+
+		foreach ($allPluginActions as $pluginActions)
+		{
+			$actions = array_merge($actions, $pluginActions);
+		}
+
+		return $actions;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineSearchableAttributes()
 	 *
 	 * @return array

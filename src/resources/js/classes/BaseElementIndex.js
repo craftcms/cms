@@ -20,10 +20,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	isIndexBusy: false,
 
+	selectable: false,
+	multiSelect: false,
+	actions: null,
+	actionsHeadHtml: null,
+	actionsFootHtml: null,
+	showingActionTriggers: false,
+	_$triggers: null,
+
 	$container: null,
 	$main: null,
 	$scroller: null,
 	$toolbar: null,
+	$toolbarTableRow: null,
+	$selectAllContainer: null,
+	$selectAllCheckbox: null,
 	$search: null,
 	searching: false,
 	$clearSearchBtn: null,
@@ -59,6 +70,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$elements: null,
 	$table: null,
 	$elementContainer: null,
+	$checkboxes: null,
 
 	_totalVisible: null,
 	_morePending: false,
@@ -98,11 +110,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Find the DOM elements
 		this.$main = this.$container.find('.main');
 		this.$toolbar = this.$container.find('.toolbar:first');
-		this.$statusMenuBtn = this.$toolbar.find('.statusmenubtn:first');
-		this.$localeMenuBtn = this.$toolbar.find('.localemenubtn:first');
-		this.$sortMenuBtn = this.$toolbar.find('.sortmenubtn:first');
-		this.$search = this.$toolbar.find('.search:first input:first');
-		this.$clearSearchBtn = this.$toolbar.find('.search:first > .clear');
+		this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
+		this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
+		this.$localeMenuBtn = this.$toolbarTableRow.find('.localemenubtn:first');
+		this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
+		this.$search = this.$toolbarTableRow.find('.search:first input:first');
+		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
 		this.$mainSpinner = this.$toolbar.find('.spinner:first');
 		this.$loadingMoreSpinner = this.$container.find('.spinner.loadingmore')
 		this.$sidebar = this.$container.find('.sidebar:first');
@@ -116,7 +129,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
 
-		this.$viewModeBtnTd = this.$toolbar.find('.viewbtns:first');
+		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
 
 		// Initialize the sources
@@ -491,6 +504,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return;
 		}
 
+		// Prep the UI
+		// -------------------------------------------------------------
+
 		this.setIndexBusy();
 		this.removeListener(this.$scroller, 'scroll');
 
@@ -498,6 +514,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			Craft.cp.$collapsibleTables = Craft.cp.$collapsibleTables.not(this.$table);
 		}
+
+		// Fetch the elements
+		// -------------------------------------------------------------
 
 		var data = this.getControllerData();
 
@@ -507,6 +526,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
+				// Cleanup
+				// -------------------------------------------------------------
+
+				this._prepForNewElements();
+
+				// Selectable setup
+				// -------------------------------------------------------------
+
+				if (this.settings.context == 'index' && response.actions && response.actions.length)
+				{
+					this.actions = response.actions;
+					this.actionsHeadHtml = response.actionsHeadHtml;
+					this.actionsFootHtml = response.actionsFootHtml;
+				}
+				else
+				{
+					this.actions = this.actionsHeadHtml = this.actionsFootHtml = null;
+				}
+
+				this.selectable = (this.actions || this.settings.selectable);
+
 				// Update the view with the new container + elements HTML
 				// -------------------------------------------------------------
 
@@ -525,40 +565,187 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				// Get the new elements
 				var $newElements = this.$elementContainer.children();
 
-				if (this.settings.selectable)
-				{
-					// Reset the element select
-					if (this.elementSelect)
-					{
-						this.elementSelect.destroy();
-						delete this.elementSelect;
-					}
-
-					this.elementSelect = this.createElementSelect($newElements);
-				}
-
-				// Should we initialize a StructureTableSorter?
-				if (
-					this.settings.context == 'index' &&
-					this.getSelectedSourceState('mode') == 'table' &&
-					this.getSelectedSortAttribute() == 'structure' &&
-					Garnish.hasAttr(this.$table, 'data-structure-id')
-				)
-				{
-					// Create the sorter
-					this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
-						onSortChange: $.proxy(this, '_onStructureTableSortChange')
-					});
-				}
-				else
-				{
-					this.structureTableSort = null;
-				}
+				// Initialize the selector stuff and the structure table sorter
+				this._setupNewElements($newElements);
 
 				this._onUpdateElements(response, false, $newElements);
 			}
 
 		}, this));
+	},
+
+	showActionTriggers: function()
+	{
+		// Ignore if they're already shown
+		if (this.showingActionTriggers)
+		{
+			return;
+		}
+
+		// Hide any toolbar inputs
+		this.$toolbarTableRow.children().not(this.$selectAllContainer).addClass('hidden');
+
+		if (!this._$triggers)
+		{
+			this._createTriggers();
+		}
+		else
+		{
+			this._$triggers.insertAfter(this.$selectAllContainer);
+		}
+
+		this.showingActionTriggers = true;
+	},
+
+	handleActionTriggerSubmit: function(ev)
+	{
+		ev.preventDefault();
+
+		var $form = $(ev.currentTarget),
+			actionHandle = $form.data('action'),
+			params = Garnish.getPostData($form);
+
+		this.submitAction(actionHandle, params);
+	},
+
+	handleMenuActionTriggerSubmit: function(ev)
+	{
+		var $option = $(ev.option);
+
+		// Maybe it's a link
+		if (!$option.attr('href'))
+		{
+			var actionHandle = $option.data('action');
+			this.submitAction(actionHandle);
+		}
+	},
+
+	submitAction: function(actionHandle, params)
+	{
+		// Make sure something's selected
+		var totalSelected = this.elementSelect.totalSelected,
+			totalItems = this.elementSelect.$items.length;
+
+		if (totalSelected == 0)
+		{
+			return;
+		}
+
+		// Find the action
+		for (var i = 0; i < this.actions.length; i++)
+		{
+			if (this.actions[i].handle == actionHandle)
+			{
+				var action = this.actions[i];
+				break;
+			}
+		}
+
+		if (!action || (action.confirm && !confirm(action.confirm)))
+		{
+			return;
+		}
+
+		// Get ready to submit
+		var data = $.extend(this.getControllerData(), params, {
+			elementAction: actionHandle,
+			elementIds:    this.getSelectedElementIds()
+		});
+
+		// Do it
+		this.setIndexBusy();
+
+		Craft.postActionRequest('elementIndex/performAction', data, $.proxy(function(response, textStatus)
+		{
+			this.setIndexAvailable();
+
+			if (textStatus == 'success')
+			{
+				if (response.success)
+				{
+					this._prepForNewElements();
+					this.$elementContainer.html('');
+					this.elementSelect = this.createElementSelect();
+
+					var $newElements = $(response.html).appendTo(this.$elementContainer);
+
+					// Initialize the selector stuff and the structure table sorter
+					this._setupNewElements($newElements);
+
+					// There may be less elements now if some had been lazy-loaded before. If that's the case and all of
+					// the elements were selected, we don't want to give the user the impression that all of the same
+					// elements are still selected.
+					if (totalItems <= 50 || totalSelected < totalItems)
+					{
+						for (var i = 0; i < data.elementIds.length; i++)
+						{
+							var $element = this.getElementById(data.elementIds[i]);
+
+							if ($element)
+							{
+								this.elementSelect.selectItem($element);
+							}
+						}
+					}
+
+					this._onUpdateElements(response, false, $newElements);
+
+					if (response.message)
+					{
+						Craft.cp.displayNotice(response.message);
+					}
+				}
+				else
+				{
+					Craft.cp.displayError(response.message);
+				}
+			}
+		}, this));
+	},
+
+	hideActionTriggers: function()
+	{
+		// Ignore if there aren't any
+		if (!this.showingActionTriggers)
+		{
+			return;
+		}
+
+		this._$triggers.detach();
+
+		this.$toolbarTableRow.children().not(this.$selectAllContainer).removeClass('hidden');
+
+		this.showingActionTriggers = false;
+	},
+
+	updateActionTriggers: function()
+	{
+		// Do we have an action UI to update?
+		if (this.actions)
+		{
+			var totalSelected = this.elementSelect.totalSelected;
+
+			if (totalSelected != 0)
+			{
+				if (totalSelected == this.elementSelect.$items.length)
+				{
+					this.$selectAllCheckbox.removeClass('indeterminate');
+					this.$selectAllCheckbox.addClass('checked');
+				}
+				else
+				{
+					this.$selectAllCheckbox.addClass('indeterminate');
+					this.$selectAllCheckbox.removeClass('checked');
+				}
+
+				this.showActionTriggers();
+			}
+			else
+			{
+				this.$selectAllCheckbox.removeClass('indeterminate checked');
+				this.hideActionTriggers();
+			}
+		}
 	},
 
 	/**
@@ -624,14 +811,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				// Update the view with the new elements HTML
-				// -------------------------------------------------------------
-
 				var $newElements = $(response.html).appendTo(this.$elementContainer);
 
-				if (this.settings.selectable)
+				if (this.actions || this.settings.selectable)
 				{
-					this.elementSelect.addItems($newElements);
+					this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+					this.updateActionTriggers();
 				}
 
 				if (this.structureTableSort)
@@ -679,15 +864,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 	},
 
-	createElementSelect: function($elements)
+	createElementSelect: function()
 	{
-		$elements = $elements.filter(':not(.disabled)');
-
-		return new Garnish.Select(this.$elementContainer, $elements, {
-			multi:             this.settings.multiSelect,
+		return new Garnish.Select(this.$elementContainer, {
+			multi:             (this.actions || this.settings.multiSelect),
 			vertical:          (this.getSelectedSourceState('mode') != 'thumbs'),
+			handle:            (this.settings.context == 'index' ? '.checkbox, .element' : null),
+			filter:            ':not(a)',
+			checkboxMode:      (this.settings.context == 'index' && this.actions),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
+	},
+
+	getSelectedElementIds: function()
+	{
+		var $selectedItems = this.elementSelect.$selectedItems,
+			ids = [];
+
+		for (var i = 0; i < $selectedItems.length; i++)
+		{
+			ids.push($selectedItems.eq(i).data('id'));
+		}
+
+		return ids;
 	},
 
 	onUpdateElements: function(append, $newElements)
@@ -983,6 +1182,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSelectionChange: function()
 	{
+		this.updateActionTriggers();
 		this.settings.onSelectionChange();
 	},
 
@@ -1127,7 +1327,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 		else
 		{
-			$('<td class="thin"/>').prependTo(this.$toolbar.find('tr:first')).append($button);
+			$('<td class="thin"/>').prependTo(this.$toolbarTableRow.find('tr:first')).append($button);
 		}
 	},
 
@@ -1251,6 +1451,91 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this._deinitSources($childSources);
 	},
 
+	_prepForNewElements: function()
+	{
+		if (this.actions)
+		{
+			// Get rid of the old action triggers regardless of whether the new batch has actions or not
+			this.hideActionTriggers();
+			this._$triggers = null;
+		}
+
+		// Reset the element select
+		if (this.elementSelect)
+		{
+			this.elementSelect.destroy();
+			delete this.elementSelect;
+		}
+
+		if (this.$selectAllContainer)
+		{
+			// Git rid of the old select all button
+			this.$selectAllContainer.detach();
+		}
+	},
+
+	_setupNewElements: function($newElements)
+	{
+		if (this.selectable)
+		{
+			// Initialize the element selector
+			this.elementSelect = this.createElementSelect();
+			this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+
+			if (this.actions)
+			{
+				// First time?
+				if (!this.$selectAllContainer)
+				{
+					// Create the select all button
+					this.$selectAllContainer = $('<td class="selectallcontainer thin"/>');
+					this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
+					this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
+
+					this.addListener(this.$selectAllBtn, 'click', function()
+					{
+						if (this.elementSelect.totalSelected == 0)
+						{
+							this.elementSelect.selectAll();
+						}
+						else
+						{
+							this.elementSelect.deselectAll();
+						}
+					});
+				}
+				else
+				{
+					// Reset the select all button
+					this.$selectAllCheckbox.removeClass('indeterminate checked');
+				}
+
+				// Place the select all button at the beginning of the toolbar
+				this.$selectAllContainer.prependTo(this.$toolbarTableRow);
+			}
+		}
+
+		// StructureTableSorter setup
+		// -------------------------------------------------------------
+
+		if (
+			this.settings.context == 'index' &&
+			this.getSelectedSourceState('mode') == 'table' &&
+			this.getSelectedSortAttribute() == 'structure' &&
+			Garnish.hasAttr(this.$table, 'data-structure-id')
+		)
+		{
+			// Create the sorter
+			this.structureTableSort = new Craft.StructureTableSorter(this, $newElements, {
+				onSortChange: $.proxy(this, '_onStructureTableSortChange')
+			});
+		}
+		else
+		{
+			this.structureTableSort = null;
+		}
+	},
+
 	_onUpdateElements: function(response, append, $newElements)
 	{
 		$('head').append(response.headHtml);
@@ -1291,6 +1576,100 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	_isStructureTableDraggingLastElements: function()
 	{
 		return (this.structureTableSort && this.structureTableSort.dragging && this.structureTableSort.draggingLastElements);
+	},
+
+	_createTriggers: function()
+	{
+		var triggers = [],
+			safeMenuActions = [],
+			destructiveMenuActions = [];
+
+		for (var i = 0; i < this.actions.length; i++)
+		{
+			var action = this.actions[i];
+
+			if (action.trigger)
+			{
+				var $form = $('<form id="'+action.handle+'-actiontrigger"/>')
+					.data('action', action.handle)
+					.append(action.trigger);
+
+				this.addListener($form, 'submit', 'handleActionTriggerSubmit');
+				triggers.push($form);
+			}
+			else
+			{
+				if (!action.destructive)
+				{
+					safeMenuActions.push(action);
+				}
+				else
+				{
+					destructiveMenuActions.push(action);
+				}
+			}
+		}
+
+		if (safeMenuActions.length || destructiveMenuActions.length)
+		{
+			var $menuTrigger = $('<form/>'),
+				$btn = $('<div class="btn menubtn" data-icon="settings " title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger),
+				$menu = $('<ul class="menu"/>').appendTo($menuTrigger),
+				$safeList = this._createMenuTriggerList(safeMenuActions),
+				$destructiveList = this._createMenuTriggerList(destructiveMenuActions);
+
+			if ($safeList)
+			{
+				$safeList.appendTo($menu);
+			}
+
+			if ($safeList && $destructiveList)
+			{
+				$('<hr/>').appendTo($menu);
+			}
+
+			if ($destructiveList)
+			{
+				$destructiveList.appendTo($menu);
+			}
+
+			triggers.push($menuTrigger);
+		}
+
+		this._$triggers = $();
+
+		for (var i = 0; i < triggers.length; i++)
+		{
+			var $td = $('<td class="'+(i < triggers.length - 1 ? 'thin' : '')+'"/>').append(triggers[i]);
+			this._$triggers = this._$triggers.add($td);
+		}
+
+		this._$triggers.insertAfter(this.$selectAllContainer);
+		$('head').append(this.actionsHeadHtml);
+		Garnish.$bod.append(this.actionsFootHtml);
+
+		Craft.initUiElements(this._$triggers);
+
+		if ($btn)
+		{
+			$btn.data('menubtn').on('optionSelect', $.proxy(this, 'handleMenuActionTriggerSubmit'));
+		}
+	},
+
+	_createMenuTriggerList: function(actions)
+	{
+		if (actions && actions.length)
+		{
+			var $ul = $('<ul/>');
+
+			for (var i = 0; i < actions.length; i++)
+			{
+				var handle = actions[i].handle;
+				$('<li><a id="'+handle+'-actiontrigger" data-action="'+handle+'">'+actions[i].name+'</a></li>').appendTo($ul);
+			}
+
+			return $ul;
+		}
 	}
 },
 

@@ -104,6 +104,80 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getAvailableActions()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array|null
+	 */
+	public function getAvailableActions($source = null)
+	{
+		if (preg_match('/^group:(\d+)$/', $source, $matches))
+		{
+			$group = craft()->categories->getGroupById($matches[1]);
+		}
+
+		if (empty($group))
+		{
+			return;
+		}
+
+		$actions = array();
+
+		// Set Status
+		$actions[] = 'SetStatus';
+
+		if ($group->hasUrls)
+		{
+			// View
+			$viewAction = craft()->elements->getAction('View');
+			$viewAction->setParams(array(
+				'label' => Craft::t('View category'),
+			));
+			$actions[] = $viewAction;
+		}
+
+		// Edit
+		$editAction = craft()->elements->getAction('Edit');
+		$editAction->setParams(array(
+			'label' => Craft::t('Edit category'),
+		));
+		$actions[] = $editAction;
+
+		// New Child
+		$structure = craft()->structures->getStructureById($group->structureId);
+
+		if ($structure)
+		{
+			$newChildAction = craft()->elements->getAction('NewChild');
+			$newChildAction->setParams(array(
+				'label'       => Craft::t('Create a new child category'),
+				'maxLevels'   => $structure->maxLevels,
+				'newChildUrl' => 'categories/'.$group->handle.'/new',
+			));
+			$actions[] = $newChildAction;
+		}
+
+		// Delete
+		$deleteAction = craft()->elements->getAction('Delete');
+		$deleteAction->setParams(array(
+			'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
+			'successMessage'      => Craft::t('Categories deleted.'),
+		));
+		$actions[] = $deleteAction;
+
+		// Allow plugins to add additional actions
+		$allPluginActions = craft()->plugins->call('addCategoryActions', array($source), true);
+
+		foreach ($allPluginActions as $pluginActions)
+		{
+			$actions = array_merge($actions, $pluginActions);
+		}
+
+		return $actions;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source

@@ -7,10 +7,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	structureId: null,
 	maxLevels: null,
 
-	_$firstRowCells: null,
-	_$firstHelperCell: null,
+	_helperMargin: null,
 
-	_firstHelperCellOuterWidth: null,
+	_$firstRowCells: null,
+	_$titleHelperCell: null,
+
+	_titleHelperCellOuterWidth: null,
 
 	_mouseLevelOffset: null,
 	_targetItemOffsetX: null,
@@ -49,6 +51,15 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		});
 
 		this.base($elements, settings);
+	},
+
+	/**
+	 * Start Dragging
+	 */
+	startDragging: function()
+	{
+		this._helperMargin = Craft.StructureTableSorter.HELPER_MARGIN + (this.elementIndex.actions ? 24 : 0);
+		this.base();
 	},
 
 	/**
@@ -137,22 +148,32 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 		for (var i = 0; i < $helperCells.length; i++)
 		{
-			var $cell = $(this._$firstRowCells[i]),
-				$helperCell = $($helperCells[i]),
-				width = $cell.width();
+			var $helperCell = $($helperCells[i]);
 
-			$cell.width(width);
+			// Skip the checkbox cell
+			if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+			{
+				$helperCell.remove();
+				continue;
+			}
+
+			// Hard-set the cell widths
+			var $firstRowCell = $(this._$firstRowCells[i]),
+				width = $firstRowCell.width();
+
+			$firstRowCell.width(width);
 			$helperCell.width(width);
 
-			if (i == 0)
+			// Is this the title cell?
+			if (Garnish.hasAttr($firstRowCell, 'data-titlecell'))
 			{
-				this._$firstHelperCell = $helperCell;
+				this._$titleHelperCell = $helperCell;
 
-				var padding = parseInt($cell.css('padding-'+Craft.left));
-				this._firstHelperCellOuterWidth = width + padding;
+				var padding = parseInt($firstRowCell.css('padding-'+Craft.left));
+				this._titleHelperCellOuterWidth = width + padding - (this.elementIndex.actions ? 12 : 0);
 
 				$helperCell.css('padding-'+Craft.left, Craft.StructureTableSorter.BASE_PADDING);
-				$outerContainer.css('margin-'+Craft.left, padding + Craft.StructureTableSorter.HELPER_MARGIN);
+				$outerContainer.css('margin-'+Craft.left, padding + this._helperMargin);
 			}
 		}
 
@@ -244,11 +265,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				var $draggee = $(this.$draggee[i]),
 					oldLevel = $draggee.data('level'),
 					newLevel = oldLevel + levelDiff,
-					padding = Craft.StructureTableSorter.BASE_PADDING + this._getLevelIndent(newLevel);
+					padding = Craft.StructureTableSorter.BASE_PADDING + (this.elementIndex.actions ? 14 : 0) + this._getLevelIndent(newLevel);
 
 				$draggee.data('level', newLevel);
-				$draggee.children(':first').css('padding-'+Craft.left, padding);
 				$draggee.find('.element').data('level', newLevel);
+				$draggee.children('[data-titlecell]:first').css('padding-'+Craft.left, padding);
 			}
 
 			this._positionChanged = true;
@@ -297,6 +318,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 	onSortChange: function()
 	{
+		if (this.elementIndex.elementSelect)
+		{
+			this.elementIndex.elementSelect.resetItemOrder();
+		}
+
 		this._positionChanged = true;
 		this.base();
 	},
@@ -452,8 +478,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 		// Apply the new margin/width
 		this._updateIndent._closestLevelMagnetIndent = this._updateIndent._closestLevelIndent + this._updateIndent._magnetImpact;
-		this.helpers[0].css('margin-'+Craft.left, this._updateIndent._closestLevelMagnetIndent + Craft.StructureTableSorter.HELPER_MARGIN);
-		this._$firstHelperCell.width(this._firstHelperCellOuterWidth - this._updateIndent._closestLevelMagnetIndent);
+		this.helpers[0].css('margin-'+Craft.left, this._updateIndent._closestLevelMagnetIndent + this._helperMargin);
+		this._$titleHelperCell.width(this._titleHelperCellOuterWidth - (this._updateIndent._closestLevelMagnetIndent + Craft.StructureTableSorter.BASE_PADDING));
 	},
 
 	/**
@@ -481,7 +507,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
 {
-	BASE_PADDING: 24,
+	BASE_PADDING: 14,
 	HELPER_MARGIN: -7,
 	LEVEL_INDENT: 44,
 	MAX_GIVE: 22,

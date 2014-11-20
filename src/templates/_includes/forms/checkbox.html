@@ -8,7 +8,7 @@
 
 {% set value = (value is defined ? value : 1) %}
 {% set id = (id is defined ? id : 'checkbox'~random()) %}
-{% set label = (label is defined ? label|raw) %}
+{% set label = (label is defined ? label) %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
 	<input type="hidden" name="{{ name }}" value="">
@@ -24,6 +24,6 @@
 	{%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
 	{%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
 
-<label for="{{ id }}">{{ label }}</label>
+<label for="{{ id }}">{{ label|raw }}</label>
 
 {% endspaceless -%}
