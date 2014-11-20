@@ -57,7 +57,10 @@ class RichTextFieldType extends BaseFieldType
 			}
 		}
 
-		$columns = array('text' => Craft::t('Text (stores about 64k)'), 'mediumtext' => Craft::t('MediumText (stores about 4GB)'));
+		$columns = array(
+			'text'       => Craft::t('Text (stores about 64K)'),
+			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
+		);
 
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
