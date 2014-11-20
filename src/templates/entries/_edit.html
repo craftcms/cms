@@ -268,6 +268,10 @@
 												{% if CraftEdition >= CraftClient %}
 													<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
 												{% endif %}
+
+												{% if not isSingle and entry.id %}
+													<li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new entry"|t }}</a></li>
+												{% endif %}
 											</ul>
 										</div>
 									</div>
