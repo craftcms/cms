@@ -1405,6 +1405,30 @@ class UsersService extends BaseApplicationComponent
 		return $this->sendPasswordResetEmail($user);
 	}
 
+	/**
+	 * Fires an 'onBeforeSetPassword' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSetPassword(Event $event)
+	{
+		$this->raiseEvent('onBeforeSetPassword', $event);
+	}
+
+	/**
+	 * Fires an 'onSetPassword' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSetPassword(Event $event)
+	{
+		$this->raiseEvent('onSetPassword', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -1483,7 +1507,23 @@ class UsersService extends BaseApplicationComponent
 		$passwordModel = new PasswordModel();
 		$passwordModel->password = $user->newPassword;
 
+		$validates = false;
+
 		if ($passwordModel->validate())
+		{
+			// Fire an 'onBeforeSetPassword' event
+			$event = new Event($this, array(
+				'password' => $user->newPassword,
+				'user'     => $user
+			));
+
+			$this->onBeforeSetPassword($event);
+
+			// Is the event is giving us the go-ahead?
+			$validates = $event->performAction;
+		}
+
+		if ($validates)
 		{
 			$hash = craft()->security->hashPassword($user->newPassword);
 
@@ -1503,7 +1543,7 @@ class UsersService extends BaseApplicationComponent
 
 			$user->newPassword = null;
 
-			return true;
+			$success = true;
 		}
 		else
 		{
@@ -1521,8 +1561,19 @@ class UsersService extends BaseApplicationComponent
 				));
 			}
 
-			return false;
+			$success = false;
 		}
+
+		if ($success)
+		{
+			// Fire an 'onSetPassword' event
+			$this->onSetPassword(new Event($this, array(
+				'user' => $user
+			)));
+
+		}
+
+		return $success;
 	}
 
 	/**
