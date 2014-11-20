@@ -438,15 +438,17 @@ abstract class BaseModel extends \CModel
 	 */
 	public function setAttributes($values)
 	{
-		if (is_array($values) || is_object($values))
+		// If this is a model, get the actual attributes on it
+		if ($values instanceof \CModel)
 		{
-			foreach ($this->attributeNames() as $name)
+			$values = $values->getAttributes();
+		}
+
+		if (is_array($values) || $values instanceof \Traversable)
+		{
+			foreach ($values as $name => $value)
 			{
-				// Make sure they're actually setting this attribute
-				if (isset($values[$name]) || (is_array($values) && array_key_exists($name, $values)))
-				{
-					$this->setAttribute($name, $values[$name]);
-				}
+				$this->setAttribute($name, $values[$name]);
 			}
 		}
 	}
