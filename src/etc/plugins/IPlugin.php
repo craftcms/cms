@@ -17,53 +17,57 @@ interface IPlugin extends ISavableComponentType
 	// =========================================================================
 
 	/**
-	 * Returns the plugin’s version.
+	 * Returns the plugin’s version number.
 	 *
-	 * @return string
+	 * @return string The plugin’s version number.
 	 */
 	public function getVersion();
 
 	/**
-	 * Returns the plugin developer's name.
+	 * Returns the plugin developer’s name.
 	 *
-	 * @return string
+	 * @return string The plugin developer’s name.
 	 */
 	public function getDeveloper();
 
 	/**
-	 * Returns the plugin developer's URL.
+	 * Returns the plugin developer’s URL.
 	 *
-	 * @return string
+	 * @return string The plugin developer’s URL.
 	 */
 	public function getDeveloperUrl();
 
 	/**
-	 * Returns the plugin's source language
+	 * Returns the locale ID that identifies what language the plugin was written in.
 	 *
-	 * @return string
+	 * @return string The plugin’s source language.
 	 */
 	public function getSourceLanguage();
 
 	/**
-	 * Returns the URL to the plugin's settings in the CP.
+	 * Returns the URL to the plugin’s settings page in the CP.
 	 *
-	 * A full URL is not required -- you can simply return "pluginname/settings".
+	 * If your plugin requires a custom settings page, you can use this method to point to it.
 	 *
-	 * If this is left blank, a simple settings page will be provided, filled with whatever getSettingsHtml() returns.
+	 * If this method returns anything, it will be run through {@link UrlHelper::getCpUrl()} before getting output,
+	 * so a full URL is not necessary.
 	 *
-	 * @return string|null
+	 * If this method doesn’t return anything, a simple settings page will be provided for your plugin,
+	 * filled with whatever {@link getSettingsHtml()} returns.
+	 *
+	 * @return string|null The URL to the plugin’s settings page, if it has a custom one.
 	 */
 	public function getSettingsUrl();
 
 	/**
 	 * Returns whether this plugin has its own section in the CP.
 	 *
-	 * @return bool
+	 * @return bool Whether this plugin has its own section in the CP.
 	 */
 	public function hasCpSection();
 
 	/**
-	 * Creates any tables defined by the plugin's records.
+	 * Creates any tables defined by the plugin’s records.
 	 *
 	 * @return null
 	 */
@@ -86,21 +90,21 @@ interface IPlugin extends ISavableComponentType
 	public function getRecords($scenario = null);
 
 	/**
-	 * Perform any actions after the plugin has been installed.
-	 *
-	 * @return null
-	 */
-	public function onAfterInstall();
-
-	/**
-	 * Perform any actions before the plugin has been installed.
+	 * Performs any actions that should occur before the plugin is installed.
 	 *
 	 * @return null
 	 */
 	public function onBeforeInstall();
 
 	/**
-	 * Perform any actions before the plugin gets uninstalled.
+	 * Performs any actions that should occur after the plugin is installed.
+	 *
+	 * @return null
+	 */
+	public function onAfterInstall();
+
+	/**
+	 * Performs any actions that should occur before the plugin is uninstalled.
 	 *
 	 * @return null
 	 */
