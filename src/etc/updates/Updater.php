@@ -108,7 +108,7 @@ class Updater
 
 		if (!empty($errors))
 		{
-			throw new Exception(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:')."\n\n".$this->_markdownList($errors));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('Your server does not meet the following minimum requirements for @@@appName@@@ to run:')."\n\n".$this->_markdownList($errors)));
 		}
 
 		// Validate that the paths in the update manifest file are all writable by Craft
@@ -117,7 +117,7 @@ class Updater
 
 		if (count($writableErrors) > 0)
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
 		}
 
 		return array('uid' => $uid);
@@ -493,7 +493,7 @@ class Updater
 		// Make sure we can write to craft/app/requirements
 		if (!IOHelper::isWritable(craft()->path->getAppPath().'etc/requirements/'))
 		{
-			throw new Exception(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://buildwithcraft.com/docs/updating#one-click-updating')));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'))));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';
