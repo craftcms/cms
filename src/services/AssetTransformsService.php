@@ -732,8 +732,9 @@ class AssetTransformsService extends BaseApplicationComponent
 		$maxCachedImageSize = $this->getCachedCloudImageSize();
 
 		// Resize if constrained by maxCachedImageSizes setting
-		if ($maxCachedImageSize > 0)
+		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
+
 			craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination);
 
 			if ($localCopy != $destination)
