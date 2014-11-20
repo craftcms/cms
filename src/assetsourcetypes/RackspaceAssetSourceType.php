@@ -538,7 +538,6 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 				// Move transforms
 				foreach ($transforms as $index)
 				{
-
 					// For each file, we have to have both the source and destination
 					// for both files and transforms, so we can reliably move them
 					$destinationIndex = clone $index;
@@ -563,7 +562,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 			}
 			else
 			{
-				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
+				craft()->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
