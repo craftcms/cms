@@ -736,7 +736,7 @@ class UsersController extends BaseController
 		}
 
 		// Should we check for a new email and password?
-		if ($isNewUser || $user->isCurrent() || craft()->userSession->isAdmin())
+		if ($isNewUser || $user->isCurrent() || craft()->userSession->isAdmin() || $currentUser->can('changeUserEmails'))
 		{
 			$newEmail    = craft()->request->getPost('email');
 			$newPassword = false;
@@ -764,7 +764,7 @@ class UsersController extends BaseController
 			if (!$isNewUser)
 			{
 				// And it's the current user or an admin...
-				if ($user->isCurrent() || craft()->userSession->isAdmin())
+				if ($user->isCurrent() || craft()->userSession->isAdmin() || $user->can('changeUserEmails'))
 				{
 					// Check to see if you're editing yourself and a new password has been set..
 					if ($user->isCurrent() && $newPassword)
@@ -772,7 +772,7 @@ class UsersController extends BaseController
 						$verifyExistingPassword = true;
 					}
 
-					// Both current users and admins change emails.
+					// If a new email, everyone has to validate their password.
 					if ($newEmail)
 					{
 						$verifyExistingPassword = true;

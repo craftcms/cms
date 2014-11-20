@@ -84,7 +84,12 @@ class UserPermissionsService extends BaseApplicationComponent
 						'label' => Craft::t('Assign user groups and permissions')
 					),
 					'administrateUsers' => array(
-						'label' => Craft::t('Administrate users')
+						'label' => Craft::t('Administrate users'),
+						'nested' => array(
+							'changeUserEmails' => array(
+								'label' => Craft::t('Change user email addresses')
+							)
+						)
 					)
 				),
 			),

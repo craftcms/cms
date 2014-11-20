@@ -90,7 +90,7 @@
 							}) }}
 						{% endif %}
 
-					{% elseif account.isCurrent() or currentUser.admin %}
+					{% elseif account.isCurrent() or currentUser.admin or currentUser.can('changeUserEmails') %}
 
 						{% set emailInput %}
 							<table class="fullwidth inputs">
