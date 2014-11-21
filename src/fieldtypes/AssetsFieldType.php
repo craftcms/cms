@@ -79,6 +79,9 @@ class AssetsFieldType extends BaseElementFieldType
 			$fileKindOptions[] = array('value' => $value, 'label' => $kind['label']);
 		}
 
+		$namespace = craft()->templates->getNamespace();
+		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
+
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
 			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
@@ -86,6 +89,7 @@ class AssetsFieldType extends BaseElementFieldType
 			'settings'          => $this->getSettings(),
 			'type'              => $this->getName(),
 			'fileKindOptions'   => $fileKindOptions,
+			'isMatrix'          => $isMatrix,
 		));
 	}
 

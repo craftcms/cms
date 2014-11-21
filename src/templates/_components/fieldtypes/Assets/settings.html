@@ -38,6 +38,14 @@
 	reverseToggle: 'multi-folder-settings'
 }) }}
 
+{% set uploadLocationNote = "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t %}
+{% if isMatrix %}
+	{% set uploadLocationNote = uploadLocationNote|replace({
+		'{slug}': '{owner.slug}',
+		'{author.username}': '{owner.author.username}'
+	}) %}
+{% endif %}
+
 <div id="multi-folder-settings"{% if settings.useSingleFolder %} class="hidden"{% endif %}>
 	{% if folderOptions %}
 		{{ forms.checkboxSelectField({
@@ -57,7 +65,7 @@
 
 	{{ forms.field({
 		label: "Default Upload Location"|t,
-		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ "Note that the subfolder path can contain variables like <code>{slug}</code>, <code>{author.username}</code> or <code>{owner.slug}</code>, <code>{owner.author.username}</code> if inside of Matrix."|t,
+		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ uploadLocationNote,
 		errors: settings.getErrors('defaultUploadLocationSubpath')
 	}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
 </div>
@@ -65,7 +73,7 @@
 <div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
 	{{ forms.field({
 		label: "Upload Location"|t,
-		instructions: "Note that the subfolder path can contain variables like <code>{slug}</code>, <code>{author.username}</code> or <code>{owner.slug}</code>, <code>{owner.author.username}</code> if inside of Matrix.."|t,
+		instructions: uploadLocationNote,
 		errors: settings.getErrors('singleUploadLocationSubpath')
 	}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
 </div>
