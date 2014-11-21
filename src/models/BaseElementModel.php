@@ -273,7 +273,7 @@ abstract class BaseElementModel extends BaseModel
 				craft()->setSiteUrl($siteUrl);
 			}
 
-			return $url;
+			return url_encode($url);
 		}
 	}
 
