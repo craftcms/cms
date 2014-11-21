@@ -57,7 +57,7 @@
 
 	{{ forms.field({
 		label: "Default Upload Location"|t,
-		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t,
+		instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t ~' '~ "Note that the subfolder path can contain variables like <code>{slug}</code>, <code>{author.username}</code> or <code>{owner.slug}</code>, <code>{owner.author.username}</code> if inside of Matrix."|t,
 		errors: settings.getErrors('defaultUploadLocationSubpath')
 	}, uploadLocationInput('defaultUploadLocation', settings, sourceOptions)) }}
 </div>
