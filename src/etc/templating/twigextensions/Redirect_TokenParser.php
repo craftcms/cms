@@ -26,10 +26,25 @@ class Redirect_TokenParser extends \Twig_TokenParser
 	public function parse(\Twig_Token $token)
 	{
 		$lineno = $token->getLine();
-		$path = $this->parser->getExpressionParser()->parseExpression();
+		$stream = $this->parser->getStream();
+
+		if ($stream->test(\Twig_Token::STRING_TYPE))
+		{
+			$path = $this->parser->getExpressionParser()->parseExpression();
+		}
+
+		if ($stream->test(\Twig_Token::NUMBER_TYPE))
+		{
+			$httpStatusCode = $this->parser->getExpressionParser()->parseExpression();
+		}
+		else
+		{
+			$httpStatusCode = new \Twig_Node_Expression_Constant(302, 1);
+		}
+
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new Redirect_Node(array('path' => $path), array(), $lineno, $this->getTag());
+		return new Redirect_Node(array('path' => $path, 'httpStatusCode' => $httpStatusCode), array(), $lineno, $this->getTag());
 	}
 
 	/**
