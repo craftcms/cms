@@ -710,7 +710,7 @@ Field = Garnish.Base.extend(
 						'<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
 					'</div>' +
 				'</div>' +
-				'<div class="field checkbox">' +
+				'<div class="field checkboxfield">' +
 					'<label>' +
 						'<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
 						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
@@ -721,7 +721,7 @@ Field = Garnish.Base.extend(
 		if (Craft.isLocalized)
 		{
 			html +=
-				'<div class="field checkbox">' +
+				'<div class="field checkboxfield">' +
 					'<label>' +
 						'<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
 						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
