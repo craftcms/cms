@@ -986,13 +986,13 @@ class CategoriesService extends BaseApplicationComponent
 		}
 
 		// Is it set to the top level now, but it hadn't been before?
-		if ($category->newParentId === '0' && $category->level != 1)
+		if ($category->newParentId === '' && $category->level != 1)
 		{
 			return true;
 		}
 
 		// Is it set to be under a parent now, but didn't have one before?
-		if ($category->newParentId !== '0' && $category->level == 1)
+		if ($category->newParentId !== '' && $category->level == 1)
 		{
 			return true;
 		}
@@ -1005,7 +1005,7 @@ class CategoriesService extends BaseApplicationComponent
 		$criteria->localeEnabled = null;
 
 		$oldParent = $criteria->first();
-		$oldParentId = ($oldParent ? $oldParent->id : '0');
+		$oldParentId = ($oldParent ? $oldParent->id : '');
 
 		if ($category->newParentId != $oldParentId)
 		{
