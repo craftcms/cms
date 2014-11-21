@@ -249,6 +249,13 @@ return array(
 	'limitAutoSlugsToAscii' => false,
 
 	/**
+	 * The method that is used to dump logging context information. Defaults to `var_export`. If you experience circular
+	 * reference errors, you can change it to `print_r`. Any kind of callable method (static, user defined lambda, etc.)
+	 * could also be used.
+	 */
+	'logDumpMethod' => 'var_export',
+
+	/**
 	 * The URI Craft should use for user login.  Note that this only affects front-end site requests.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale

@@ -26,7 +26,7 @@ class FileLogRoute extends \CFileLogRoute
 		$this->setLogPath(craft()->path->getLogPath());
 
 		$this->levels = craft()->config->get('devMode') ? '' : 'error,warning';
-		$this->filter = craft()->config->get('devMode') ? 'CLogFilter' : null;
+		$this->filter = craft()->config->get('devMode') ? 'Craft\\LogFilter' : null;
 
 		parent::init();
 	}
