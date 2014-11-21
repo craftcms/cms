@@ -302,10 +302,18 @@ class UsersController extends BaseController
 			}
 
 			$newPassword = craft()->request->getRequiredPost('newPassword');
-
 			$userToProcess->newPassword = $newPassword;
 
-			if (craft()->users->changePassword($userToProcess))
+			if ($userToProcess->passwordResetRequired)
+			{
+				$forceDifferentPassword = true;
+			}
+			else
+			{
+				$forceDifferentPassword = false;
+			}
+
+			if (craft()->users->changePassword($userToProcess, $forceDifferentPassword))
 			{
 				if ($userToProcess->status == UserStatus::Pending)
 				{

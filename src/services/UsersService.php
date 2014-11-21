@@ -286,7 +286,7 @@ class UsersService extends BaseApplicationComponent
 		// If newPassword is set at all, even to an empty string, validate & set it.
 		if ($user->newPassword !== null)
 		{
-			$this->_setPasswordOnUserRecord($user, $userRecord, false);
+			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}
 
 		if ($user->hasErrors())
@@ -295,6 +295,7 @@ class UsersService extends BaseApplicationComponent
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Set a default status of pending, if one wasn't supplied.
@@ -572,15 +573,16 @@ class UsersService extends BaseApplicationComponent
 	/**
 	 * Changes a user’s password.
 	 *
-	 * @param UserModel $user The user.
+	 * @param UserModel $user           The user.
+	 * @param bool      $forceDifferent Whether to force the new password to be different than any existing password.
 	 *
 	 * @return bool Whether the user’s new password was saved successfully.
 	 */
-	public function changePassword(UserModel $user)
+	public function changePassword(UserModel $user, $forceDifferent = false)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
-		if ($this->_setPasswordOnUserRecord($user, $userRecord))
+		if ($this->_setPasswordOnUserRecord($user, $userRecord, true, $forceDifferent))
 		{
 			$userRecord->save();
 			return true;
@@ -1498,10 +1500,12 @@ class UsersService extends BaseApplicationComponent
 	 * @param bool       $updatePasswordResetRequired Whether the user’s
 	 *                                                {@link UserModel::passwordResetRequired passwordResetRequired}
 	 *                                                attribute should be set `false`. Default is `true`.
+	 * @param bool       $forceDifferentPassword      Whether to force a new password to be different from any existing
+	 *                                                password.
 	 *
 	 * @return bool
 	 */
-	private function _setPasswordOnUserRecord(UserModel $user, UserRecord $userRecord, $updatePasswordResetRequired = true)
+	private function _setPasswordOnUserRecord(UserModel $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
 	{
 		// Validate the password first
 		$passwordModel = new PasswordModel();
@@ -1509,18 +1513,50 @@ class UsersService extends BaseApplicationComponent
 
 		$validates = false;
 
+		// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
+		if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
+		{
+			$passwordErrorField = 'password';
+		}
+		else
+		{
+			$passwordErrorField = 'newPassword';
+		}
+
 		if ($passwordModel->validate())
 		{
-			// Fire an 'onBeforeSetPassword' event
-			$event = new Event($this, array(
-				'password' => $user->newPassword,
-				'user'     => $user
-			));
+			if ($forceDifferentPassword)
+			{
+				// See if the passwords are the same.
+				if (craft()->security->checkPassword($user->newPassword, $userRecord->password))
+				{
+					$user->addErrors(array(
+						$passwordErrorField => Craft::t('That password is the same as your old password. Please choose a new one.'),
+					));
+				}
+				else
+				{
+					$validates = true;
+				}
+			}
+			else
+			{
+				$validates = true;
+			}
 
-			$this->onBeforeSetPassword($event);
+			if ($validates)
+			{
+				// Fire an 'onBeforeSetPassword' event
+				$event = new Event($this, array(
+					'password' => $user->newPassword,
+					'user'     => $user
+				));
 
-			// Is the event is giving us the go-ahead?
-			$validates = $event->performAction;
+				$this->onBeforeSetPassword($event);
+
+				// Is the event is giving us the go-ahead?
+				$validates = $event->performAction;
+			}
 		}
 
 		if ($validates)
@@ -1547,19 +1583,9 @@ class UsersService extends BaseApplicationComponent
 		}
 		else
 		{
-			// If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
-			if (!$user->id && craft()->systemSettings->getSetting('users', 'allowPublicRegistration'))
-			{
-				$user->addErrors(array(
-					'password' => $passwordModel->getErrors('password')
-				));
-			}
-			else
-			{
-				$user->addErrors(array(
-					'newPassword' => $passwordModel->getErrors('password')
-				));
-			}
+			$user->addErrors(array(
+				$passwordErrorField => $passwordModel->getErrors('password')
+			));
 
 			$success = false;
 		}
