@@ -138,7 +138,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 								storageKey: 'RichTextFieldType.LinkToEntry',
 								sources: this.sectionSources,
 								criteria: { locale: this.elementLocale },
-								onSelect: function(entries)
+								onSelect: $.proxy(function(entries)
 								{
 									if (entries.length)
 									{
@@ -151,7 +151,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 										this.redactor.code.sync();
 									}
 									this.redactor.dropdown.hideAll();
-								},
+								}, this),
 								closeOtherModals: false
 							});
 						}
@@ -173,7 +173,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 							this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
 								storageKey: 'RichTextFieldType.LinkToAsset',
 								criteria: { locale: this.elementLocale },
-								onSelect: function(assets)
+								onSelect: $.proxy(function(assets)
 								{
 									if (assets.length)
 									{
@@ -186,7 +186,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 										this.redactor.code.sync();
 									}
 									this.redactor.dropdown.hideAll();
-								},
+								}, this),
 								closeOtherModals: false,
 								canSelectImageTransforms: true
 							});
