@@ -65,7 +65,7 @@
 <div id="single-folder-settings"{% if not settings.useSingleFolder %} class="hidden"{% endif %}>
 	{{ forms.field({
 		label: "Upload Location"|t,
-		instructions: "Note that the subfolder path can contain variables like <code>{slug}</code> or <code>{author.username}</code>."|t,
+		instructions: "Note that the subfolder path can contain variables like <code>{slug}</code>, <code>{author.username}</code> or <code>{owner.slug}</code>, <code>{owner.author.username}</code> if inside of Matrix.."|t,
 		errors: settings.getErrors('singleUploadLocationSubpath')
 	}, uploadLocationInput('singleUploadLocation', settings, sourceOptions)) }}
 </div>
