@@ -468,13 +468,13 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Is it set to the top level now, but it hadn't been before?
-		if ($entry->parentId === '0' && $entry->level != 1)
+		if ($entry->parentId === '' && $entry->level != 1)
 		{
 			return true;
 		}
 
 		// Is it set to be under a parent now, but didn't have one before?
-		if ($entry->parentId !== '0' && $entry->level == 1)
+		if ($entry->parentId !== '' && $entry->level == 1)
 		{
 			return true;
 		}
@@ -487,7 +487,7 @@ class EntriesService extends BaseApplicationComponent
 		$criteria->localeEnabled = null;
 
 		$oldParent = $criteria->first();
-		$oldParentId = ($oldParent ? $oldParent->id : '0');
+		$oldParentId = ($oldParent ? $oldParent->id : '');
 
 		if ($entry->parentId != $oldParentId)
 		{
