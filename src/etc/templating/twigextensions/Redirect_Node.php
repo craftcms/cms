@@ -29,7 +29,7 @@ class Redirect_Node extends \Twig_Node
 		    ->addDebugInfo($this)
 		    ->write('\Craft\craft()->request->redirect(\Craft\UrlHelper::getUrl(')
 		    ->subcompile($this->getNode('path'))
-		    ->write("), true, ")
+		    ->raw("), true, ")
 		    ->subcompile($this->getNode('httpStatusCode'))
 		    ->raw(");\n");
 	}
