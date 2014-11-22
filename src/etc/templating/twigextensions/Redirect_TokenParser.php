@@ -28,10 +28,7 @@ class Redirect_TokenParser extends \Twig_TokenParser
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
 
-		if ($stream->test(\Twig_Token::STRING_TYPE))
-		{
-			$path = $this->parser->getExpressionParser()->parseExpression();
-		}
+		$path = $this->parser->getExpressionParser()->parseExpression();
 
 		if ($stream->test(\Twig_Token::NUMBER_TYPE))
 		{
