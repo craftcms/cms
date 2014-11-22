@@ -984,6 +984,8 @@ input.checkbox:disabled + label,
 .disabled div.checkbox { cursor: default; }
 input.checkbox + label:empty,
 div.checkbox:empty { @include padding-left(12px); }
+input.checkbox + label:empty:after,
+div.checkbox:empty:after { content: '.'; font-size: 0; } /* fixes a RTL bug */
 input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
@@ -995,7 +997,10 @@ input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before { background: hsl($hue, 10%, 85%); @include icon; line-height: 12px; }
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
-.sel div.checkbox:not(.indeterminate):before { content: 'check'; font-size: 13px; text-indent: 1px; }
+.sel div.checkbox:not(.indeterminate):before { content: 'check'; font-size: 13px;
+	body.ltr & { text-indent: 1px; }
+	body.rtl & { text-indent: -2px; }
+}
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before { content: 'minus'; font-size: 7px; text-align: center; }
 
