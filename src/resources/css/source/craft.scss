@@ -815,7 +815,7 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 	body.rtl & { background-image: url(../images/resizehandle_rtl.png); }
 }
 
-.modal.alert .body { padding-left: 76px; }
+.modal.alert .body { @include padding-left(76px); }
 .modal.alert .body:before { @include icon; @include margin(-6px, 0, 0, -58px); @include floatleft; content: 'alert'; font-size: 40px; color: $lighttextcolor; }
 
 .hud { position: absolute; display: none; top: 0; }
