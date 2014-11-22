@@ -507,15 +507,39 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Attaches an event listener, or remembers it for later if the component has not been initialized yet.
+	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
 	 *
-	 * @param string $event
-	 * @param mixed  $handler
+	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
+	 * handler for {@link EntriesService::onSaveEntry()}, you would do this:
+	 *
+	 * ```php
+	 * craft()->on('entries.saveEntry', function(Event $event) {
+	 *     // ...
+	 * });
+	 * ```
+	 *
+	 * Note that the actual event name (`saveEntry`) does not need to include the “`on`”.
+	 *
+	 * By default, event handlers will not get attached if Craft is current in the middle of updating itself or a
+	 * plugin. If you want the event to fire even in that condition, pass `true` to the $evenDuringUpdates argument.
+	 *
+	 * @param string $event             The event to listen for.
+	 * @param mixed  $handler           The event handler.
+	 * @param bool   $evenDuringUpdates Whether the event handler should be attached when Craft’s updater is running.
+	 *                                  Default is `false`.
 	 *
 	 * @return null
 	 */
-	public function on($event, $handler)
+	public function on($event, $handler, $evenDuringUpdates = false)
 	{
+		if (
+			!$evenDuringUpdates &&
+			$this->request->getActionSegments() == array('update', 'updateDatabase')
+		)
+		{
+			return;
+		}
+
 		list($componentId, $eventName) = explode('.', $event, 2);
 
 		$component = $this->getComponent($componentId, false);
