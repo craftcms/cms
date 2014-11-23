@@ -538,7 +538,21 @@ class Image
 					$normalizedQuality = 9;
 				}
 
-				return array('png_compression_level' => $normalizedQuality, 'flatten' => false);
+				$options = array('png_compression_level' => $normalizedQuality, 'flatten' => false);
+				$pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
+
+				if (is_array($pngInfo) && isset($pngInfo['channels']))
+				{
+					$format = 'png' . (8 * $pngInfo['channels']);
+				}
+				else
+				{
+					$format = 'png32';
+				}
+
+				$options['png_format'] = $format;
+
+				return $options;
 			}
 
 			default:
