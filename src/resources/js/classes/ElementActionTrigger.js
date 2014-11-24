@@ -24,6 +24,12 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
 	updateTrigger: function()
 	{
+		// Ignore if the last element was just unselected
+		if (Craft.elementIndex.elementSelect.totalSelected == 0)
+		{
+			return;
+		}
+
 		if (this.validateSelection())
 		{
 			this.enableTrigger();
