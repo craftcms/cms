@@ -38,12 +38,10 @@ class SetStatusElementAction extends BaseElementAction
 		// Figure out which element IDs we need to update
 		if ($this->getParams()->status == BaseElementModel::ENABLED)
 		{
-			$criteria->status = BaseElementModel::DISABLED;
 			$sqlNewStatus = '1';
 		}
 		else
 		{
-			$criteria->status = BaseElementModel::ENABLED;
 			$sqlNewStatus = '0';
 		}
 
@@ -55,6 +53,17 @@ class SetStatusElementAction extends BaseElementAction
 			array('enabled' => $sqlNewStatus),
 			array('in', 'id', $elementIds)
 		);
+
+		if ($this->getParams()->status == BaseElementModel::ENABLED)
+		{
+			// Enable their locale as well
+			craft()->db->createCommand()->update(
+				'elements_i18n',
+				array('enabled' => $sqlNewStatus),
+				array('and', array('in', 'elementId', $elementIds), 'locale = :locale'),
+				array(':locale' => $criteria->locale)
+			);
+		}
 
 		// Clear their template caches
 		craft()->templateCache->deleteCacheById($elementIds);
