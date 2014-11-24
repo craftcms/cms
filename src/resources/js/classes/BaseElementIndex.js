@@ -33,6 +33,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	$scroller: null,
 	$toolbar: null,
 	$toolbarTableRow: null,
+	toolbarOffset: null,
 	$selectAllContainer: null,
 	$selectAllCheckbox: null,
 	$search: null,
@@ -131,6 +132,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
 		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
+
+		if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true))
+		{
+			this.addListener(Garnish.$win, 'scroll resize', 'updateFixedToolbar');
+		}
 
 		// Initialize the sources
 		// ---------------------------------------------------------------------
@@ -331,6 +337,48 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			return this._morePending;
 		}
+	},
+
+	updateFixedToolbar: function()
+	{
+		if (!this.toolbarOffset)
+		{
+			this.toolbarOffset = this.$toolbar.offset().top;
+
+			if (!this.toolbarOffset)
+			{
+				return;
+			}
+		}
+
+		this.updateFixedToolbar._styles = {};
+
+		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
+
+		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset)
+		{
+			if (!this.$toolbar.hasClass('fixed'))
+			{
+				this.$toolbar.addClass('fixed');
+				this.updateFixedToolbar._styles.position = 'fixed';
+				this.updateFixedToolbar._styles.top = 0;
+				this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
+			}
+
+			this.updateFixedToolbar._styles.width = this.$main.width();
+		}
+		else
+		{
+			if (this.$toolbar.hasClass('fixed'))
+			{
+				this.$toolbar.removeClass('fixed');
+				this.updateFixedToolbar._styles.position = 'relative';
+				this.updateFixedToolbar._styles.width = 'auto';
+				this.$elements.css('padding-top', '');
+			}
+		}
+
+		this.$toolbar.css(this.updateFixedToolbar._styles);
 	},
 
 	initSource: function($source)

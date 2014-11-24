@@ -278,7 +278,8 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.toolbar { position: relative; margin: 24px 0; min-height: 30px; }
+.toolbar { position: relative; margin: 21px -1px; padding: 7px 1px; min-height: 30px; }
+.toolbar.fixed { background: #fff; z-index: 1; @include box-shadow(0 1px 0 rgba(0,0,0,0.05)); }
 .toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
 table.inputs td:not(:first-child) { @include padding-left(14px); }
