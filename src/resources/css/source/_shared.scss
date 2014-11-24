@@ -184,9 +184,9 @@ $noticecolor: #5286d9;
 	body.rtl & { float: left; }
 }
 
-@mixin margin($t, $r, $b, $l) {
-	body.ltr & { margin: $t $r $b $l; }
-	body.rtl & { margin: $t $l $b $r; }
+@mixin margin($t, $r, $b, $l, $important: '') {
+	body.ltr & { margin: $t $r $b $l unquote($important); }
+	body.rtl & { margin: $t $l $b $r unquote($important); }
 }
 
 @mixin margin-left($margin...) {

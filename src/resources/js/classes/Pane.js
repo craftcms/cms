@@ -253,23 +253,20 @@ Craft.Pane = Garnish.Base.extend(
 			if (this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._contentOffset - 24)
 			{
 				// Set the top position to the difference
-				this.updateSidebarStyles._styles.top = this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._contentOffset;
+				this.updateSidebarStyles._styles.position = 'fixed';
+				this.updateSidebarStyles._styles.top = '24px';
 			}
 			else
 			{
-				this.updateSidebarStyles._styles.top = -24;
+				this.updateSidebarStyles._styles.position = 'absolute';
+				this.updateSidebarStyles._styles.top = 'auto';
 			}
 
 			// Now figure out how tall the sidebar can be
-			this.updateSidebarStyles._styles.maxHeight = Math.min(this.updateSidebarStyles._contentHeight - this.updateSidebarStyles._styles.top, this.updateSidebarStyles._windowHeight - 48);
-
-			// The sidebar should be at least 100px tall if possible
-			if (this.updateSidebarStyles._styles.top != 0 && this.updateSidebarStyles._styles.maxHeight < 100)
-			{
-				this.updateSidebarStyles.newTop = Math.max(-24, this.updateSidebarStyles._styles.top - (100 - this.updateSidebarStyles._styles.maxHeight));
-				this.updateSidebarStyles._styles.maxHeight += this.updateSidebarStyles._styles.top - this.updateSidebarStyles.newTop;
-				this.updateSidebarStyles._styles.top = this.updateSidebarStyles.newTop;
-			}
+			this.updateSidebarStyles._styles.maxHeight = Math.min(
+				this.updateSidebarStyles._contentHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._contentOffset),
+				this.updateSidebarStyles._windowHeight - 48
+			);
 
 			this.$sidebar.css(this.updateSidebarStyles._styles);
 		}
