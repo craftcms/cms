@@ -1613,7 +1613,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		if (safeMenuActions.length || destructiveMenuActions.length)
 		{
 			var $menuTrigger = $('<form/>'),
-				$btn = $('<div class="btn menubtn" data-icon="settings " title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger),
+				$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger),
 				$menu = $('<ul class="menu"/>').appendTo($menuTrigger),
 				$safeList = this._createMenuTriggerList(safeMenuActions),
 				$destructiveList = this._createMenuTriggerList(destructiveMenuActions);
