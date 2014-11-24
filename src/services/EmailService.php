@@ -334,21 +334,12 @@ class EmailService extends BaseApplicationComponent
 				$email->addAddress($testToEmail, 'Test Email');
 			}
 			// If they have the test email config var set to a non-empty array use the values instead of the supplied email.
-			else
+			else if (is_array($testToEmail) && count($testToEmail) > 0)
 			{
-				if (is_array($testToEmail) && count($testToEmail) > 0)
+				foreach ($testToEmail as $testEmail)
 				{
-					foreach ($testToEmail as $email)
-					{
-						$email->addAddress($email, 'Test Email');
-					}
+					$email->addAddress($testEmail, 'Test Email');
 				}
-			}
-
-			// If they have the test email config var set to something, use it instead of the supplied email.
-			if (($testToEmail = craft()->config->get('testToEmailAddress')) != '')
-			{
-				$email->addAddress($testToEmail, 'Test Email');
 			}
 			else
 			{
