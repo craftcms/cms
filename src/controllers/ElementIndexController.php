@@ -291,6 +291,11 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getAvailableActions()
 	{
+		if (craft()->request->isMobileBrowser())
+		{
+			return;
+		}
+
 		$actions = $this->_elementType->getAvailableActions($this->_sourceKey);
 
 		if ($actions)

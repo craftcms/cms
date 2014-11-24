@@ -42,20 +42,22 @@
 						</th>
 						<td data-title="{{ 'Developer'|t }}"><a{% if developerUrl %} href="{{ developerUrl }}" target="_blank"{% endif %}>{{ plugin.getDeveloper() }}</a></td>
 						<td data-title="{{ 'Status'|t }}">
-							<form method="post" accept-charset="UTF-8">
-								<input type="hidden" name="pluginClass" value="{{ classHandle }}">
-								{{ getCsrfInput() }}
+							{% if isInstalled %}
+								<form method="post" accept-charset="UTF-8">
+									<input type="hidden" name="pluginClass" value="{{ classHandle }}">
+									{{ getCsrfInput() }}
 
-								{% if isEnabled %}
-									<span class="status on"></span> {{ "Enabled"|t }} 
-									<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
-								{% elseif isInstalled %}
-									<span class="status off"></span> {{ "Disabled"|t }} 
-									<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enablePlugin">
-								{% else %}
-									<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
-								{% endif %}
-							</form>
+									{% if isEnabled %}
+										<span class="status on"></span> {{ "Enabled"|t }} 
+										<input type="button" value="{{ 'Disable'|t }}" class="btn small formsubmit" data-action="plugins/disablePlugin">
+									{% else %}
+										<span class="status off"></span> {{ "Disabled"|t }} 
+										<input type="button" value="{{ 'Enable'|t }}" class="btn small formsubmit" data-action="plugins/enablePlugin">
+									{% endif %}
+								</form>
+							{% else %}
+								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
+							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">
 							<form method="post" accept-charset="UTF-8">
@@ -63,9 +65,9 @@
 								{{ getCsrfInput() }}
 
 								{% if isInstalled %}
-									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">
+									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small fullwidth formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">
 								{% else %}
-									<input type="button" value="{{ 'Install'|t }}" class="btn small formsubmit" data-action="plugins/installPlugin">
+									<input type="button" value="{{ 'Install'|t }}" class="btn small fullwidth formsubmit" data-action="plugins/installPlugin">
 								{% endif %}
 							</form>
 						</td>

@@ -278,12 +278,12 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.toolbar { position: relative; margin: 24px 0; height: 30px; }
+.toolbar { position: relative; margin: 24px 0; min-height: 30px; }
 .toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
 
 table.inputs td:not(:first-child) { @include padding-left(14px); }
-table.inputs td > .btn { display: block; }
-table.inputs td > .btngroup { float: none; }
+table.inputs :not(.btngroup) > .btn,
+table.inputs .btngroup { display: block; float: none; }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
@@ -378,6 +378,16 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btngroup .btn:not(:last-child) { @include border-right(1px solid rgba(0,0,0,0.1)); }
 
 .btngroup.disabled .btn { cursor: default; }
+
+.btngroup .btn:first-child:nth-last-child(1) { width: 100%; }
+.btngroup .btn:first-child:nth-last-child(2) { width: 50%; }
+.btngroup .btn:first-child:nth-last-child(2) ~ .btn { width: calc(50% + 1px); }
+.btngroup .btn:first-child:nth-last-child(3) { width: 34%; }
+.btngroup .btn:first-child:nth-last-child(3) ~ .btn { width: calc(33% + 1px); }
+.btngroup .btn:first-child:nth-last-child(4) { width: 25%; }
+.btngroup .btn:first-child:nth-last-child(4) ~ .btn { width: calc(25% + 1px); }
+.btngroup .btn:first-child:nth-last-child(5) { width: 20%; }
+.btngroup .btn:first-child:nth-last-child(5) ~ .btn { width: calc(20% + 1px); }
 
 /* menu buttons */
 .menubtn { @include user-select(none); }
@@ -506,7 +516,7 @@ td.thin { width: 0.01% !important; vertical-align: middle; }
 table.data th:not(:first-child),
 table.data td:not(:first-child) { @include padding-left(14px); }
 table.data thead th,
-table.data thead td { padding-top: 4px; padding-bottom: 4px; cursor: default; }
+table.data thead td { padding-top: 4px; padding-bottom: 4px; width: auto; cursor: default; }
 table.data tbody th,
 table.data tbody td { padding-top: 7px; padding-bottom: 7px; border-bottom: 1px dotted $hrcolor; }
 table.data tbody tr:first-child th,
@@ -521,29 +531,25 @@ table.data td .btngroup { display: inline; }
 
 /* collapsable data tables for small screens
    based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
-table.data.collapsed,
-table.data.collapsed tbody,
-table.data.collapsed tbody tr,
-table.data.collapsed tbody th,
-table.data.collapsed tbody td { display: block; border: none; padding: 0; @include alignleft; white-space: normal; }
-table.data.collapsed tbody th,
-table.data.collapsed tbody td { padding: 2px 0; }
-table.data.collapsed thead { display: none; }
-table.data.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hrcolor; }
-table.data.collapsed tbody .thin { @include margin-right(5px); @include floatleft; width: auto; }
-table.data.collapsed tbody th[data-title],
-table.data.collapsed tbody td[data-title] { @include margin-right(0); float: none; }
-table.data.collapsed tbody th[data-title]:before,
-table.data.collapsed tbody td[data-title]:before { content: attr(data-title) ":\00A0"; font-weight: bold; }
-table.data.collapsed tbody td:empty { display: none; }
-table.data.collapsed tbody tr:after { @include clearafter; }
-table.data.collapsed tbody th:not(.thin),
-table.data.collapsed tbody td:not(.thin) { clear: both; }
-table.data.collapsed tbody td form { display: inline-block; }
-table.data.collapsed thead + tbody tr:first-child th,
-table.data.collapsed thead + tbody tr:first-child td { border-top: none; }
-table.data.collapsed tbody tr:last-child th:not(:last-child),
-table.data.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
+table.collapsed { width: auto; }
+table.collapsed,
+table.collapsed tbody,
+table.collapsed tbody tr,
+table.collapsed tbody th,
+table.collapsed tbody td { display: block; border: none; padding: 0; @include alignleft; width: auto !important; white-space: normal; }
+table.collapsed tbody th,
+table.collapsed tbody td { padding: 2px 0 !important; }
+table.collapsed thead { display: none; }
+table.collapsed tbody tr { padding: 6px 0; border-bottom: 1px dotted $hrcolor; }
+table.collapsed tbody [data-title] { @include margin-right(0); }
+table.collapsed tbody [data-title]:before { margin-right: 5px; content: attr(data-title) ":"; font-weight: bold; }
+table.collapsed tbody td:empty { display: none; }
+table.collapsed tbody tr:after { @include clearafter; }
+table.collapsed tbody td[data-title] form { display: inline-block; }
+table.collapsed thead + tbody tr:first-child th,
+table.collapsed thead + tbody tr:first-child td { border-top: none; }
+table.collapsed tbody tr:last-child th:not(:last-child),
+table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 .datatablesorthelper,
 .editabletablesorthelper { background: #fff;
@@ -1032,7 +1038,7 @@ body .redactor-box textarea { padding: 6px 7px; }
 .input.errors > .border-box,
 .text.error { border: 1px solid $errorcolor !important; }
 
-.texticon { position: relative; cursor: text; }
+.texticon { position: relative; cursor: text; min-width: 130px; }
 .texticon:before { position: absolute; top: 9px; @include left(9px); color: $lighttextcolor; }
 .texticon .text { @include padding-left(26px); }
 .texticon .clear { position: absolute; top: 6px; @include right(9px); color: $lighttextcolor; cursor: pointer; }
