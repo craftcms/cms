@@ -1636,6 +1636,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			triggers.push($menuTrigger);
 		}
 
+		// Add a filler TD
+		triggers.push('');
+
 		this._$triggers = $();
 
 		for (var i = 0; i < triggers.length; i++)
