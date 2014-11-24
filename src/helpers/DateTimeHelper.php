@@ -216,7 +216,7 @@ class DateTimeHelper
 	 *
 	 * @param string $date Unix timestamp
 	 *
-	 * @return boolboolean true if date is today, false otherwise.
+	 * @return bool true if date is today, false otherwise.
 	 */
 	public static function isToday($date)
 	{
@@ -269,6 +269,35 @@ class DateTimeHelper
 	public static function isThisMonth($date)
 	{
 		return date('m Y', $date) == date('m Y', time());
+	}
+
+	/**
+	 * @param $dateTime
+	 *
+	 * @return string
+	 */
+	public static function niceTimeAgo($dateTime)
+	{
+		// If it's today, just return the local time.
+		if (static::isToday($dateTime->getTimestamp()))
+		{
+			return $dateTime->localeTime();
+		}
+		// If it was yesterday, display 'Yesterday'
+		else if (static::wasYesterday($dateTime->getTimestamp()))
+		{
+			return Craft::t('Yesterday');
+		}
+		// If it were up to 7 days ago, display the weekday name.
+		else if (static::wasWithinLast('7 days', $dateTime->getTimestamp()))
+		{
+			return $dateTime->format('l');
+		}
+		else
+		{
+			// Otherwise, just return the local date.
+			return $dateTime->localeDate();
+		}
 	}
 
 	/**

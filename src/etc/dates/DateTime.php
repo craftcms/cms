@@ -435,4 +435,14 @@ class DateTime extends \DateTime
 	{
 		return DateTimeHelper::nice($this->getTimestamp());
 	}
+
+	/**
+	 * Returns a nicely formatted "timeAgo" string for the DateTime object.
+	 *
+	 * @return string
+	 */
+	public function niceTimeAgo()
+	{
+		return DateTimeHelper::niceTimeAgo($this);
+	}
 }
