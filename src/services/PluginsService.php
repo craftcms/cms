@@ -668,9 +668,17 @@ class PluginsService extends BaseApplicationComponent
 
 		if (IOHelper::folderExists($classSubfolderPath))
 		{
-			// See if it has any files in ClassName*Suffix.php format.
-			$filter = $pluginHandle.'(_.+)?'.$classSuffix.'\.php$';
-			$files = IOHelper::getFolderContents($classSubfolderPath, false, $filter);
+			// Enums don't have an "Enum" suffix.
+			if ($classSubfolder === 'enums')
+			{
+				$files = IOHelper::getFolderContents($classSubfolderPath, false);
+			}
+			else
+			{
+				// See if it has any files in ClassName*Suffix.php format.
+				$filter = $pluginHandle.'(_.+)?'.$classSuffix.'\.php$';
+				$files = IOHelper::getFolderContents($classSubfolderPath, false, $filter);
+			}
 
 			if ($files)
 			{

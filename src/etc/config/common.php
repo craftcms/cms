@@ -219,7 +219,7 @@ $components['components'] = array(
 );
 $components['plugins'] = array(
 	'class' => 'Craft\PluginsService',
-	'autoloadClasses' => array('Controller','Helper','Model','Record','Service','Variable','Validator'),
+	'autoloadClasses' => array('Controller','Enum','Helper','Model','Record','Service','Variable','Validator'),
 );
 
 // Craft Client components
