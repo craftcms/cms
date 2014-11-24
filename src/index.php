@@ -28,6 +28,30 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 	exit('success');
 }
 
+// These have been deprecated in PHP 6 in favor of default_charset, which defaults to 'UTF-8'
+// http://php.net/manual/en/migration56.deprecated.php
+if (version_compare(PHP_VERSION, '6.0.0') < 0)
+{
+	// Set MB to use UTF-8
+	mb_internal_encoding('UTF-8');
+	mb_http_input('UTF-8');
+	mb_http_output('UTF-8');
+}
+
+mb_detect_order('auto');
+
+// Normalize how PHP's string methods (strtoupper, etc) behave.
+setlocale(
+	LC_CTYPE,
+	'C.UTF-8',     // libc >= 2.13
+	'C.utf8',      // different spelling
+	'en_US.UTF-8', // fallback to lowest common denominator
+	'en_US.utf8'   // different spelling for fallback
+);
+
+// Set default timezone to UTC
+date_default_timezone_set('UTC');
+
 // Load and run Craft
 // -----------------------------------------------------------------------------
 
