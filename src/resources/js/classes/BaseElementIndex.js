@@ -351,34 +351,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
-		this.updateFixedToolbar._styles = {};
-
 		this.updateFixedToolbar._scrollTop = Garnish.$win.scrollTop();
 
-		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset)
+		if (this.updateFixedToolbar._scrollTop > this.toolbarOffset - 7)
 		{
 			if (!this.$toolbar.hasClass('fixed'))
 			{
+				this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
 				this.$toolbar.addClass('fixed');
-				this.updateFixedToolbar._styles.position = 'fixed';
-				this.updateFixedToolbar._styles.top = 0;
-				this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 21));
 			}
 
-			this.updateFixedToolbar._styles.width = this.$main.width();
+			this.$toolbar.css('width', this.$main.width());
 		}
 		else
 		{
 			if (this.$toolbar.hasClass('fixed'))
 			{
 				this.$toolbar.removeClass('fixed');
-				this.updateFixedToolbar._styles.position = 'relative';
-				this.updateFixedToolbar._styles.width = 'auto';
+				this.$toolbar.css('width', '');
 				this.$elements.css('padding-top', '');
 			}
 		}
-
-		this.$toolbar.css(this.updateFixedToolbar._styles);
 	},
 
 	initSource: function($source)
