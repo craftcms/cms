@@ -105,9 +105,6 @@ class WebApp extends \CWebApplication
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
-		// Set default timezone to UTC
-		date_default_timezone_set('UTC');
-
 		// Import all the built-in components
 		foreach ($this->componentAliases as $alias)
 		{
@@ -186,18 +183,6 @@ class WebApp extends \CWebApplication
 
 		// Check if the app path has changed.  If so, run the requirements check again.
 		$this->_processRequirementsCheck();
-
-		// These have been deprecated in PHP 6 in favor of default_charset, which defaults to 'UTF-8'
-		// http://php.net/manual/en/migration56.deprecated.php
-		if (version_compare(PHP_VERSION, '6.0.0') < 0)
-		{
-			// Now that we've ran the requirements checker, set MB to use UTF-8
-			mb_internal_encoding('UTF-8');
-			mb_http_input('UTF-8');
-			mb_http_output('UTF-8');
-		}
-
-		mb_detect_order('auto');
 
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
