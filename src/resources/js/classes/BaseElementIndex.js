@@ -130,7 +130,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.showingSidebar = (this.$sidebar.length && !this.$sidebar.hasClass('hidden'));
 
 		this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
-		this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$viewModeBtnTd);
+		this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
 
 		// Initialize the sources
 		// ---------------------------------------------------------------------

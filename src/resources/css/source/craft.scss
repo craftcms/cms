@@ -379,15 +379,15 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 
 .btngroup.disabled .btn { cursor: default; }
 
-.btngroup .btn:first-child:nth-last-child(1) { width: 100%; }
-.btngroup .btn:first-child:nth-last-child(2) { width: 50%; }
-.btngroup .btn:first-child:nth-last-child(2) ~ .btn { width: calc(50% + 1px); }
-.btngroup .btn:first-child:nth-last-child(3) { width: 34%; }
-.btngroup .btn:first-child:nth-last-child(3) ~ .btn { width: calc(33% + 1px); }
-.btngroup .btn:first-child:nth-last-child(4) { width: 25%; }
-.btngroup .btn:first-child:nth-last-child(4) ~ .btn { width: calc(25% + 1px); }
-.btngroup .btn:first-child:nth-last-child(5) { width: 20%; }
-.btngroup .btn:first-child:nth-last-child(5) ~ .btn { width: calc(20% + 1px); }
+.btngroup.fullwidth .btn:first-child:nth-last-child(1) { width: 100%; }
+.btngroup.fullwidth .btn:first-child:nth-last-child(2) { width: 50%; }
+.btngroup.fullwidth .btn:first-child:nth-last-child(2) ~ .btn { width: calc(50% + 1px); }
+.btngroup.fullwidth .btn:first-child:nth-last-child(3) { width: 34%; }
+.btngroup.fullwidth .btn:first-child:nth-last-child(3) ~ .btn { width: calc(33% + 1px); }
+.btngroup.fullwidth .btn:first-child:nth-last-child(4) { width: 25%; }
+.btngroup.fullwidth .btn:first-child:nth-last-child(4) ~ .btn { width: calc(25% + 1px); }
+.btngroup.fullwidth .btn:first-child:nth-last-child(5) { width: 20%; }
+.btngroup.fullwidth .btn:first-child:nth-last-child(5) ~ .btn { width: calc(20% + 1px); }
 
 /* menu buttons */
 .menubtn { @include user-select(none); }
