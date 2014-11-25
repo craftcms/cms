@@ -133,7 +133,6 @@ class ImageHelper
 		$info['color-type'] = $type[$color];
 		$samples = ((($color % 4) % 3) ? 3 : 1) + ($color > 3);
 		$info['channels'] = $samples;
-		$info['bits'] = $info['bit-depth'];
 
 		return $info;
 	}
