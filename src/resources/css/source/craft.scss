@@ -435,6 +435,9 @@ div.btn.submit input { position: absolute; left: 100%; }
 .btn.dashed { border: 1px dashed rgba(0,0,0,0.2) !important; background: none !important;
 	@include box-shadow(none !important);
 }
+.btn.dashed:not(.disabled):active,
+.btn.dashed:not(.disabled).active { background-color: hsla($hue, 10%, 50%, 0.1) !important; }
+
 /* color buttons */
 .color { display: inline-block; vertical-align: middle; width: 30px; height: 30px; border-radius: 15px; padding: 0; background: url(../images/checkers.png); cursor: pointer; }
 .color .colorpreview { top: 0; @include left(0); width: 30px; height: 30px; border-radius: 15px;
