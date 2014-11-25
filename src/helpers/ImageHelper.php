@@ -87,8 +87,7 @@ class ImageHelper
 		}
 
 		$info = unpack(
-			'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/'.
-			'Ccolor/Ccompression/Cfilter/Cinterface',
+			'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/Ccolor/Ccompression/Cfilter/Cinterface',
 			file_get_contents($file, 0, null, 0, 29)
 		);
 
