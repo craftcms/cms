@@ -96,7 +96,9 @@ class ImageHelper
 			return false;
 		}
 
-		if (array_shift($info) != "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A")
+		$sig = array_shift($info);
+
+		if ($sig != "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A" && $sig != "\x89\x50\x4E\x47\x0D\x0A\x1A")
 		{
 			// The file doesn't have a PNG signature
 			return false;
