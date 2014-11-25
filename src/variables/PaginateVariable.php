@@ -29,7 +29,7 @@ class PaginateVariable
 	/**
 	 * @var
 	 */
-	public $total;
+	public $total = 0;
 
 	/**
 	 * @var
@@ -39,7 +39,7 @@ class PaginateVariable
 	/**
 	 * @var
 	 */
-	public $totalPages;
+	public $totalPages = 0;
 
 	// Public Methods
 	// =========================================================================

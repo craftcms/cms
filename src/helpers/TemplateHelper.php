@@ -30,6 +30,13 @@ class TemplateHelper
 		$total = $criteria->total() - $criteria->offset;
 		$totalPages = ceil($total / $limit);
 
+		$paginateVariable = new PaginateVariable();
+
+		if ($totalPages == 0)
+		{
+			return array($paginateVariable, array());
+		}
+
 		if ($currentPage > $totalPages)
 		{
 			$currentPage = $totalPages;
@@ -50,7 +57,6 @@ class TemplateHelper
 			$last = $total;
 		}
 
-		$paginateVariable = new PaginateVariable();
 		$paginateVariable->first = $offset + 1;
 		$paginateVariable->last = $last;
 		$paginateVariable->total = $total;
