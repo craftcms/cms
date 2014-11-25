@@ -57,7 +57,7 @@ class ImageHelper
 
 	/**
 	 * Return a list of web safe formats.
-	 * 
+	 *
 	 * @return array
 	 */
 	public static function getWebSafeFormats()
@@ -66,17 +66,18 @@ class ImageHelper
 	}
 
 	/**
-	 * Get image-information from PNG file.
-	 * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo
+	 * Returns any info that’s embedded in a given PNG file.
+	 *
+	 * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
 	 *
 	 * @author Tom Klingenberg <lastflood.net>
 	 * @license Apache 2.0
 	 * @version 0.1.0
 	 * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
 	 *
-	 * @param string $file filename
+	 * @param string $file The path to the PNG file.
 	 *
-	 * @return array|bool image information, FALSE on error
+	 * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
 	 */
 	public static function getPngImageInfo($file) {
 
@@ -88,26 +89,30 @@ class ImageHelper
 		$info = unpack(
 			'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/'.
 			'Ccolor/Ccompression/Cfilter/Cinterface',
-			file_get_contents($file,0,null,0,29));
+			file_get_contents($file, 0, null, 0, 29)
+		);
 
-		if (empty($info))
+		if (!$info)
 		{
 			return false;
 		}
 
-		if ("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A" != array_shift($info))
+		if (array_shift($info) != "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A")
 		{
-			return false; // no PNG signature.
+			// The file doesn't have a PNG signature
+			return false;
 		}
 
-		if (13 != array_shift($info))
+		if (array_shift($info) != 13)
 		{
-			return false; // wrong length for IHDR chunk.
+			// The IHDR chunk has the wrong length
+			return false;
 		}
 
-		if ('IHDR'!==array_shift($info))
+		if (array_shift($info) !== 'IHDR')
 		{
-			return false; // a non-IHDR chunk singals invalid data.
+			// A non-IHDR chunk singals invalid data
+			return false;
 		}
 
 		$color = $info['color'];
@@ -121,7 +126,8 @@ class ImageHelper
 
 		if (empty($type[$color]))
 		{
-			return false; // invalid color value
+			// Invalid color value
+			return false;
 		}
 
 		$info['color-type'] = $type[$color];
