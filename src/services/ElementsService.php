@@ -1387,9 +1387,9 @@ class ElementsService extends BaseApplicationComponent
 	/**
 	 * Merges two elements together.
 	 *
-	 * This method will upddate the following:
+	 * This method will update the following:
 	 *
-	 * - Any relations involving the merged elmeent
+	 * - Any relations involving the merged element
 	 * - Any structures that contain the merged element
 	 * - Any reference tags in textual custom fields referencing the merged element
 	 *
