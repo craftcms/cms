@@ -220,7 +220,10 @@ class DateTimeHelper
 	 */
 	public static function isToday($date)
 	{
-		return date('Y-m-d', $date) == date('Y-m-d', time());
+		$date = new DateTime('@'.$date);
+		$now = new DateTime();
+
+		return $date->format('Y-m-d') == $now->format('Y-m-d');
 	}
 
 	/**
@@ -232,7 +235,10 @@ class DateTimeHelper
 	 */
 	public static function wasYesterday($date)
 	{
-		return date('Y-m-d', $date) == date('Y-m-d', strtotime('yesterday'));
+		$date = new DateTime('@'.$date);
+		$yesterday = new DateTime('@'.strtotime('yesterday'));
+
+		return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
 	}
 
 	/**
@@ -244,7 +250,10 @@ class DateTimeHelper
 	 */
 	public static function isThisYear($date)
 	{
-		return date('Y', $date) == date('Y', time());
+		$date = new DateTime('@'.$date);
+		$now = new DateTime();
+
+		return $date->format('Y') == $now->format('Y');
 	}
 
 	/**
@@ -256,7 +265,10 @@ class DateTimeHelper
 	 */
 	public static function isThisWeek($date)
 	{
-		return date('W Y', $date) == date('W Y', time());
+		$date = new DateTime('@'.$date);
+		$now = new DateTime();
+
+		return $date->format('W Y') == $now->format('W Y');
 	}
 
 	/**
@@ -268,15 +280,65 @@ class DateTimeHelper
 	 */
 	public static function isThisMonth($date)
 	{
-		return date('m Y', $date) == date('m Y', time());
+		$date = new DateTime('@'.$date);
+		$now = new DateTime();
+
+		return $date->format('m Y') == $now->format('m Y');
 	}
 
 	/**
+	 * Returns true if specified datetime was within the interval specified, else false.
+	 *
+	 * @param mixed $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
+	 *                            1 minute.
+	 * @param mixed $dateString   The datestring or unix timestamp to compare
+	 * @param int   $userOffset   User's offset from GMT (in hours)
+	 *
+	 * @return bool Whether the $dateString was within the specified $timeInterval.
+	 */
+	public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
+	{
+		if (is_numeric($timeInterval))
+		{
+			$timeInterval = $timeInterval.' days';
+		}
+
+		$date = static::fromString($dateString, $userOffset);
+		$interval = static::fromString('-'.$timeInterval);
+
+		if ($date >= $interval && $date <= time())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true if the specified date was in the past, otherwise false.
+	 *
+	 * @param mixed $date The datestring (a valid strtotime) or unix timestamp to check.
+	 *
+	 * @return bool true if the specified date was in the past, false otherwise.
+	 */
+	public static function wasInThePast($date)
+	{
+		return static::fromString($date) < time() ? true : false;
+	}
+
+	/**
+	 * Given a dateTime object, will return a nicely formatted string relative to the current time.
+	 *
+	 * If the dateTime object is still today, will return a localized time string.
+	 * If the dateTime object was yesterday, will return the string "Yesterday.
+	 * If the dateTime object was within the last 7 days, will return the name of the weekday it occurred on.
+	 * If the dateTime object is past 7 days, old, will return a localized date string.
+	 *
 	 * @param $dateTime
 	 *
 	 * @return string
 	 */
-	public static function niceTimeAgo($dateTime)
+	public static function niceRelativeTime($dateTime)
 	{
 		// If it's today, just return the local time.
 		if (static::isToday($dateTime->getTimestamp()))
@@ -518,49 +580,6 @@ class DateTimeHelper
 		}
 
 		return $relativeDate;
-	}
-
-	/**
-	 * Returns true if specified datetime was within the interval specified, else false.
-	 *
-	 * @param mixed $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
-	 *                            1 minute.
-	 * @param mixed $dateString   The datestring or unix timestamp to compare
-	 * @param int   $userOffset   User's offset from GMT (in hours)
-	 *
-	 * @return bool Whether the $dateString was within the specified $timeInterval.
-	 */
-	public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
-	{
-		$tmp = str_replace(' ', '', $timeInterval);
-
-		if (is_numeric($tmp))
-		{
-			$timeInterval = $tmp.' '.__('days', true);
-		}
-
-		$date = static::fromString($dateString, $userOffset);
-
-		$interval = static::fromString('-'.$timeInterval);
-
-		if ($date >= $interval && $date <= time())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns true if the specified date was in the past, otherwise false.
-	 *
-	 * @param mixed $date The datestring (a valid strtotime) or unix timestamp to check.
-	 *
-	 * @return bool true if the specified date was in the past, false otherwise.
-	 */
-	public static function wasInThePast($date)
-	{
-		return static::fromString($date) < time() ? true : false;
 	}
 
 	/**

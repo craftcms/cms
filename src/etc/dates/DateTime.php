@@ -441,8 +441,8 @@ class DateTime extends \DateTime
 	 *
 	 * @return string
 	 */
-	public function niceTimeAgo()
+	public function niceRelativeTime()
 	{
-		return DateTimeHelper::niceTimeAgo($this);
+		return DateTimeHelper::niceRelativeTime($this);
 	}
 }
