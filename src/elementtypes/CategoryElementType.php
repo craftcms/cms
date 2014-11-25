@@ -186,10 +186,36 @@ class CategoryElementType extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array(
+		$attributes = array(
 			'title' => Craft::t('Title'),
 			'uri'   => Craft::t('URI'),
 		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritDoc IElementType::getTableAttributeHtml()
+	 *
+	 * @param BaseElementModel $element
+	 * @param string           $attribute
+	 *
+	 * @return string
+	 */
+	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	{
+		// First give plugins a chance to set this
+		$pluginAttributeHtml = craft()->plugins->callFirst('getCategoryTableAttributeHtml', array($element, $attribute), true);
+
+		if ($pluginAttributeHtml)
+		{
+			return $pluginAttributeHtml;
+		}
+
+		return parent::getTableAttributeHtml($element, $attribute);
 	}
 
 	/**

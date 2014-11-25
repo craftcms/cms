@@ -111,6 +111,7 @@ class UserRecord extends BaseRecord
 			'email'                      => array(AttributeType::Email, 'required' => true),
 			'password'                   => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
 			'preferredLocale'            => array(AttributeType::Locale),
+			'weekStartDay'               => array(AttributeType::Number, 'min' => 0, 'max' => 6, 'default' => '0'),
 			'admin'                      => array(AttributeType::Bool),
 			'client'                     => array(AttributeType::Bool),
 			'locked'                     => array(AttributeType::Bool),

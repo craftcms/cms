@@ -267,6 +267,7 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->client                = $user->client;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 		$userRecord->preferredLocale       = $user->preferredLocale;
+		$userRecord->weekStartDay          = $user->weekStartDay;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
 
 		$this->_processSaveUserStatus($userRecord, $user->status);

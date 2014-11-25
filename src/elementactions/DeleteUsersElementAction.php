@@ -53,7 +53,15 @@ class DeleteUsersElementAction extends BaseElementAction
 		batch: true,
 		validateSelection: function(\$selectedItems)
 		{
-			return ($.inArray(\$selectedItems.find('.element').data('id').toString(), $undeletableIds) == -1);
+			for (var i = 0; i < \$selectedItems.length; i++)
+			{
+				if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
+				{
+					return false;
+				}
+			}
+
+			return true;
 		},
 		activate: function(\$selectedItems)
 		{

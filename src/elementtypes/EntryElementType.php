@@ -349,6 +349,9 @@ class EntryElementType extends BaseElementType
 			$attributes['expiryDate'] = Craft::t('Expiry Date');
 		}
 
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
+
 		return $attributes;
 	}
 
@@ -362,6 +365,14 @@ class EntryElementType extends BaseElementType
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
+		// First give plugins a chance to set this
+		$pluginAttributeHtml = craft()->plugins->callFirst('getEntryTableAttributeHtml', array($element, $attribute), true);
+
+		if ($pluginAttributeHtml)
+		{
+			return $pluginAttributeHtml;
+		}
+
 		switch ($attribute)
 		{
 			case 'section':

@@ -27,6 +27,40 @@ class SuspendUsersElementAction extends BaseElementAction
 	}
 
 	/**
+	 * @inheritDoc ISavableComponentType::getTriggerHtml()
+	 *
+	 * @return string|null
+	 */
+	public function getTriggerHtml()
+	{
+		$userId = JsonHelper::encode(craft()->userSession->getUser()->id);
+
+		$js = <<<EOT
+(function()
+{
+	var trigger = new Craft.ElementActionTrigger({
+		handle: 'SuspendUsers',
+		batch: true,
+		validateSelection: function(\$selectedItems)
+		{
+			for (var i = 0; i < \$selectedItems.length; i++)
+			{
+				if (\$selectedItems.eq(i).find('.element').data('id') == $userId)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+	});
+})();
+EOT;
+
+		craft()->templates->includeJs($js);
+	}
+
+	/**
 	 * @inheritDoc IElementAction::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria

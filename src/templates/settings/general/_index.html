@@ -57,6 +57,7 @@
 
 		{{ forms.selectField({
 			label: "Timezone"|t,
+			warning: (craft.config.timezone ? configWarning('timezone')),
 			id: 'timezone',
 			name: 'timezone',
 			value: info.timezone,

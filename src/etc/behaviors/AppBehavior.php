@@ -394,6 +394,23 @@ class AppBehavior extends BaseBehavior
 	}
 
 	/**
+	 * Returns the system timezone.
+	 *
+	 * @return string
+	 */
+	public function getTimezone()
+	{
+		$timezone = craft()->config->get('timezone');
+
+		if ($timezone)
+		{
+			return $timezone;
+		}
+
+		return $this->getInfo('timezone');
+	}
+
+	/**
 	 * Returns the site UID.
 	 *
 	 * @return string

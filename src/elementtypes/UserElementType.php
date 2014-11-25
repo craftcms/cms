@@ -180,6 +180,9 @@ class UserElementType extends BaseElementType
 			);
 		}
 
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyUserTableAttributes', array(&$attributes, $source));
+
 		return $attributes;
 	}
 
@@ -193,6 +196,14 @@ class UserElementType extends BaseElementType
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
+		// First give plugins a chance to set this
+		$pluginAttributeHtml = craft()->plugins->callFirst('getUserTableAttributeHtml', array($element, $attribute), true);
+
+		if ($pluginAttributeHtml)
+		{
+			return $pluginAttributeHtml;
+		}
+
 		switch ($attribute)
 		{
 			case 'email':

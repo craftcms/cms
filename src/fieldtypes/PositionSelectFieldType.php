@@ -45,7 +45,7 @@ class PositionSelectFieldType extends BaseFieldType
 	{
 		return craft()->templates->render('_components/fieldtypes/PositionSelect/settings', array(
 			'settings'   => $this->getSettings(),
-			'allOptions' => static::_getOptions(),
+			'allOptions' => array_keys(static::_getOptions()),
 		));
 	}
 
@@ -85,10 +85,11 @@ class PositionSelectFieldType extends BaseFieldType
 		}
 
 		return craft()->templates->render('_components/fieldtypes/PositionSelect/input', array(
-			'id'      => $id,
-			'name'    => $name,
-			'value'   => $value,
-			'options' => $options,
+			'id'         => $id,
+			'name'       => $name,
+			'value'      => $value,
+			'options'    => $options,
+			'allOptions' => $this->_getOptions(),
 		));
 	}
 
@@ -103,7 +104,7 @@ class PositionSelectFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'options' => array(AttributeType::Mixed, 'default' => static::_getOptions()),
+			'options' => array(AttributeType::Mixed, 'default' => array_keys(static::_getOptions())),
 		);
 	}
 
@@ -117,6 +118,13 @@ class PositionSelectFieldType extends BaseFieldType
 	 */
 	private static function _getOptions()
 	{
-		return array('left', 'center', 'right', 'full', 'drop-left', 'drop-right');
+		return array(
+			'left'       => Craft::t('Left'),
+			'center'     => Craft::t('Center'),
+			'right'      => Craft::t('Right'),
+			'full'       => Craft::t('Full'),
+			'drop-left'  => Craft::t('Drop-left'),
+			'drop-right' => Craft::t('Drop-right'),
+		);
 	}
 }

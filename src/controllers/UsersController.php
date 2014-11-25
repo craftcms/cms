@@ -830,6 +830,7 @@ class UsersController extends BaseController
 		$user->firstName       = craft()->request->getPost('firstName', $user->firstName);
 		$user->lastName        = craft()->request->getPost('lastName', $user->lastName);
 		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
+		$user->weekStartDay    = craft()->request->getPost('weekStartDay', $user->weekStartDay);
 
 		if ($isNewUser)
 		{

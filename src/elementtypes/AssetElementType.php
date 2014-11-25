@@ -192,12 +192,17 @@ class AssetElementType extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array(
+		$attributes = array(
 			'title'        => Craft::t('Title'),
 			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('Size'),
 			'dateModified' => Craft::t('Date Modified'),
 		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes, $source));
+
+		return $attributes;
 	}
 
 	/**
@@ -210,6 +215,14 @@ class AssetElementType extends BaseElementType
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
+		// First give plugins a chance to set this
+		$pluginAttributeHtml = craft()->plugins->callFirst('getAssetTableAttributeHtml', array($element, $attribute), true);
+
+		if ($pluginAttributeHtml)
+		{
+			return $pluginAttributeHtml;
+		}
+
 		switch ($attribute)
 		{
 			case 'filename':
