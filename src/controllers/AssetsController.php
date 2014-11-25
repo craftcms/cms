@@ -193,6 +193,7 @@ class AssetsController extends BaseController
 
 		$this->returnJson(array('success' => true, 'fileId' => $fileId));
 	}
+
 	/**
 	 * Create a folder.
 	 *
