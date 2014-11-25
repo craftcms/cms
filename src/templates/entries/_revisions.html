@@ -30,7 +30,7 @@
 				{% for version in versions %}
 					<li><a{% if entry.getClassHandle() == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
 						{{ "Version {num}"|t({ num: version.num }) }}
-						<span class="light">{{ version.dateCreated.niceTimeAgo() }}, {{ version.creator }}</span>
+						<span class="light">{{ version.dateCreated.niceRelativeTime() }}, {{ version.creator }}</span>
 					</a></li>
 				{% endfor %}
 			</ul>
