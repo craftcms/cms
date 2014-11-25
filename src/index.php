@@ -30,7 +30,7 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 
 // These have been deprecated in PHP 6 in favor of default_charset, which defaults to 'UTF-8'
 // http://php.net/manual/en/migration56.deprecated.php
-if (version_compare(PHP_VERSION, '6.0.0') < 0)
+if (PHP_VERSION_ID < 60000)
 {
 	// Set MB to use UTF-8
 	mb_internal_encoding('UTF-8');
