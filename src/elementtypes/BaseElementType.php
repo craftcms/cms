@@ -302,7 +302,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 				if ($date)
 				{
-					return $date->niceRelativeTime();
+					return $date->uiTimestamp();
 				}
 				else
 				{

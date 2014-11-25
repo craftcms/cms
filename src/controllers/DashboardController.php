@@ -100,7 +100,7 @@ class DashboardController extends BaseController
 		{
 			if (isset($item['date']))
 			{
-				$item['date'] = $item['date']->niceRelativeTime();
+				$item['date'] = $item['date']->uiTimestamp();
 			}
 			else
 			{

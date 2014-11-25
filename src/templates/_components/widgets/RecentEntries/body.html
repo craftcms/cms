@@ -7,7 +7,7 @@
 						<a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
 						<span class="light">
 							{% if entry.postDate %}
-								{{ entry.postDate.niceRelativeTime() }}
+								{{ entry.postDate.uiTimestamp() }}
 							{% endif %}
 							{% if CraftEdition >= CraftClient %}
 								{{ entry.author ? ', ' ~ entry.author.username }}

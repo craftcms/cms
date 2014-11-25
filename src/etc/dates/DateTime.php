@@ -427,7 +427,7 @@ class DateTime extends \DateTime
 	}
 
 	/**
-	 * Returns a nicely formatted date string for given Datetime string.
+	 * Returns a nicely formatted date string.
 	 *
 	 * @return string
 	 */
@@ -437,12 +437,17 @@ class DateTime extends \DateTime
 	}
 
 	/**
-	 * Returns a nicely formatted "timeAgo" string for the DateTime object.
+	 * Returns a UI-facing timestamp.
+	 *
+	 * - If the date/time is from today, only the time will be retuned in a localized format (e.g. “10:00 AM”).
+	 * - If the date/time is from yesterday, “Yesterday” will be returned.
+	 * - If the date/time is from the last 7 days, the name of the day will be returned (e.g. “Monday”).
+	 * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
 	 *
 	 * @return string
 	 */
-	public function niceRelativeTime()
+	public function uiTimestamp()
 	{
-		return DateTimeHelper::niceRelativeTime($this);
+		return DateTimeHelper::uiTimestamp($this);
 	}
 }

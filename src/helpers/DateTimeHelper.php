@@ -327,18 +327,18 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Given a dateTime object, will return a nicely formatted string relative to the current time.
+	 * Returns a UI-facing timestamp for a given {@link DateTime} object.
 	 *
-	 * If the dateTime object is still today, will return a localized time string.
-	 * If the dateTime object was yesterday, will return the string "Yesterday.
-	 * If the dateTime object was within the last 7 days, will return the name of the weekday it occurred on.
-	 * If the dateTime object is past 7 days, old, will return a localized date string.
+	 * - If the date/time is from today, only the time will be retuned in a localized format (e.g. “10:00 AM”).
+	 * - If the date/time is from yesterday, “Yesterday” will be returned.
+	 * - If the date/time is from the last 7 days, the name of the day will be returned (e.g. “Monday”).
+	 * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
 	 *
-	 * @param $dateTime
+	 * @param DateTime $dateTime The DateTime object to be formatted.
 	 *
-	 * @return string
+	 * @return string The timestamp.
 	 */
-	public static function niceRelativeTime($dateTime)
+	public static function uiTimestamp(DateTime $dateTime)
 	{
 		// If it's today, just return the local time.
 		if (static::isToday($dateTime->getTimestamp()))

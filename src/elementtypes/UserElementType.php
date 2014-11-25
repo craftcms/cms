@@ -226,7 +226,7 @@ class UserElementType extends BaseElementType
 
 				if ($date)
 				{
-					return $date->niceRelativeTime();
+					return $date->uiTimestamp();
 				}
 				else
 				{
