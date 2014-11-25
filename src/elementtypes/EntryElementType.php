@@ -376,7 +376,7 @@ class EntryElementType extends BaseElementType
 
 				if ($date)
 				{
-					return $date->localeDate();
+					return $date->niceRelativeTime();
 				}
 				else
 				{

@@ -235,7 +235,7 @@ class AssetElementType extends BaseElementType
 
 				if ($date)
 				{
-					return $date->localeDate();
+					return $date->niceRelativeTime();
 				}
 				else
 				{
