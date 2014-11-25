@@ -70,17 +70,17 @@ class ImageHelper
 	 *
 	 * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
 	 *
+	 * @param string $file The path to the PNG file.
+	 *
 	 * @author Tom Klingenberg <lastflood.net>
 	 * @license Apache 2.0
 	 * @version 0.1.0
 	 * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
 	 *
-	 * @param string $file The path to the PNG file.
-	 *
 	 * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
 	 */
-	public static function getPngImageInfo($file) {
-
+	public static function getPngImageInfo($file)
+	{
 		if (empty($file))
 		{
 			return false;
@@ -116,6 +116,7 @@ class ImageHelper
 		}
 
 		$color = $info['color'];
+
 		$type = array(
 			0 => 'Greyscale',
 			2 => 'Truecolour',

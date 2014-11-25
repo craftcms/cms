@@ -543,7 +543,7 @@ class Image
 
 				if (is_array($pngInfo) && isset($pngInfo['channels']))
 				{
-					$format = 'png' . (8 * $pngInfo['channels']);
+					$format = 'png'.(8 * $pngInfo['channels']);
 				}
 				else
 				{
