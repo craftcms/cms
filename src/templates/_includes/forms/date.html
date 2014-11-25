@@ -21,6 +21,7 @@
 		defaultDate: new Date({% if value %}{{ value.year }}, {{ value.month-1 }}, {{ value.day }}{% endif %}),
 		prevText:   '{{ "Prev"|t|e('js') }}',
 		nextText:   '{{ "Next"|t|e('js') }}',
+		firstDay:   {{ currentUser.weekStartDay }},
 	});
 
 {%- endset %}

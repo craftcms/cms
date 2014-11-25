@@ -175,6 +175,16 @@
 						}, localeInput) }}
 					{% endif %}
 
+					{% if account.isCurrent() %}
+						{{ forms.selectField({
+							label: "Week Start Day"|t,
+							id: 'weekStartDay',
+							name: 'weekStartDay',
+							options: ["Sunday"|t, "Monday", "Tuesday"|t, "Wednesday"|t, "Thursday"|t, "Friday"|t, "Saturday"|t],
+							value: account.weekStartDay
+						}) }}
+					{% endif %}
+
 					{{ saveUserButtons }}
 				</div>
 
