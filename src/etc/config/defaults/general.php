@@ -456,6 +456,13 @@ return array(
 	'testToEmailAddress' => '',
 
 	/**
+	 * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+	 *
+	 * This can be set to one of PHP’s supported timezones (http://php.net/manual/en/timezones.php).
+	 */
+	'timezone' => null,
+
+	/**
 	 * Tells Craft whether to surround all translatable strings with “@” symbols, to help find any strings that are not
 	 * being run through Craft::t() or the |translate filter.
 	 */

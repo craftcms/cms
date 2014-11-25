@@ -596,7 +596,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function getTimeZone()
 	{
-		return $this->getInfo('timezone');
+		return $this->asa('AppBehavior')->getTimezone();
 	}
 
 	/**
