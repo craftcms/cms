@@ -415,7 +415,8 @@ class ElementsService extends BaseApplicationComponent
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
-			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale));
+			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale))
+			->group('elements.id');
 
 		if ($elementType->hasContent())
 		{
@@ -1881,7 +1882,8 @@ class ElementsService extends BaseApplicationComponent
 		// Get the matched element IDs, and then have the SearchService filter them.
 		$elementIdsQuery = craft()->db->createCommand()
 			->select('elements.id')
-			->from('elements elements');
+			->from('elements elements')
+			->group('elements.id');
 
 		$elementIdsQuery->setWhere($query->getWhere());
 		$elementIdsQuery->setJoin($query->getJoin());
