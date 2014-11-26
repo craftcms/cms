@@ -145,7 +145,7 @@ var CP = Garnish.Base.extend(
 					});
 				}
 
-				this.addListener(Garnish.$win, 'beforeunload', function()
+				this.addListener(Garnish.$win, 'beforeunload', function(ev)
 				{
 					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
 					{
@@ -153,7 +153,18 @@ var CP = Garnish.Base.extend(
 
 						if (this.initialFormValues[i] != newFormValue)
 						{
-							return Craft.t('Any changes will be lost if you leave this page.');
+							var message = Craft.t('Any changes will be lost if you leave this page.');
+
+							if (ev)
+							{
+								ev.originalEvent.returnValue = message;
+							}
+							else
+							{
+								window.event.returnValue = message;
+							}
+
+							return message;
 						}
 					}
 				});
