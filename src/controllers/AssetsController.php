@@ -118,8 +118,15 @@ class AssetsController extends BaseController
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
 		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
-		$fileId = $response->getDataItem('fileId');
+
 		IOHelper::deleteFile($fileLocation, true);
+
+		if ($response->isError())
+		{
+			$this->returnErrorJson($response->getAttribute('errorMessage'));
+		}
+
+		$fileId = $response->getDataItem('fileId');
 
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);

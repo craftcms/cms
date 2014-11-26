@@ -144,6 +144,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$response = $this->insertFileByPath($filePath, $folder, $fileName);
 
+		// Make sure the file is removed.
+		IOHelper::deleteFile($filePath, true);
+
 		// Prevent sensitive information leak. Just in case.
 		$response->deleteDataItem('filePath');
 
@@ -163,63 +166,80 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
 	{
-		// We hate Javascript and PHP in our image files.
-		if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image' && ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath)))
-		{
-			craft()->images->cleanImage($localFilePath);
-		}
+		// Fire an 'onBeforeUploadAsset' event
+		$event = new Event($this, array(
+			'filePath' => $localFilePath,
+			'folder'   => $folder,
+			'filename' => $fileName
+		));
 
-		if ($preventConflicts)
+		craft()->assets->onBeforeUploadAsset($event);
+
+		if ($event->performAction)
 		{
-			$newFileName = $this->getNameReplacement($folder, $fileName);
-			$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
+			// We hate Javascript and PHP in our image files.
+			if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image' && ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath)))
+			{
+				craft()->images->cleanImage($localFilePath);
+			}
+
+			if ($preventConflicts)
+			{
+				$newFileName = $this->getNameReplacement($folder, $fileName);
+				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
+			}
+			else
+			{
+				$response = $this->insertFileInFolder($folder, $localFilePath, $fileName);
+
+				// Naming conflict. create a new file and ask the user what to do with it
+				if ($response->isConflict())
+				{
+					$newFileName = $this->getNameReplacement($folder, $fileName);
+					$conflictResponse = $response;
+					$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
+				}
+			}
+
+			if ($response->isSuccess())
+			{
+				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
+
+				$fileModel = new AssetFileModel();
+				$fileModel->sourceId = $this->model->id;
+				$fileModel->folderId = $folder->id;
+				$fileModel->filename = IOHelper::getFileName($filename);
+				$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
+				$fileModel->size = filesize($localFilePath);
+				$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
+
+				if ($fileModel->kind == 'image')
+				{
+					list ($width, $height) = getimagesize($localFilePath);
+					$fileModel->width = $width;
+					$fileModel->height = $height;
+				}
+
+				craft()->assets->storeFile($fileModel);
+
+				if (!$this->isSourceLocal() && $fileModel->kind == 'image')
+				{
+					craft()->assetTransforms->storeLocalSource($localFilePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
+				}
+
+				// Check if we stored a conflict response originally - send that back then.
+				if (isset($conflictResponse))
+				{
+					$response = $conflictResponse;
+				}
+
+				$response->setDataItem('fileId', $fileModel->id);
+			}
 		}
 		else
 		{
-			$response = $this->insertFileInFolder($folder, $localFilePath, $fileName);
-
-			// Naming conflict. create a new file and ask the user what to do with it
-			if ($response->isConflict())
-			{
-				$newFileName = $this->getNameReplacement($folder, $fileName);
-				$conflictResponse = $response;
-				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
-			}
-		}
-
-		if ($response->isSuccess())
-		{
-			$filename = IOHelper::getFileName($response->getDataItem('filePath'));
-
-			$fileModel = new AssetFileModel();
-			$fileModel->sourceId = $this->model->id;
-			$fileModel->folderId = $folder->id;
-			$fileModel->filename = IOHelper::getFileName($filename);
-			$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
-			$fileModel->size = filesize($localFilePath);
-			$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
-
-			if ($fileModel->kind == 'image')
-			{
-				list ($width, $height) = getimagesize($localFilePath);
-				$fileModel->width = $width;
-				$fileModel->height = $height;
-			}
-
-			craft()->assets->storeFile($fileModel);
-
-			if (!$this->isSourceLocal() && $fileModel->kind == 'image')
-			{
-				craft()->assetTransforms->storeLocalSource($localFilePath, craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
-			}
-
-			// Check if we stored a conflict response originally - send that back then.
-			if (isset($conflictResponse))
-			{
-				$response = $conflictResponse;
-			}
-
-			$response->setDataItem('fileId', $fileModel->id);
+			$response = new AssetOperationResponseModel();
+			$response->setError(Craft::t("The file upload was cancelled."));
 		}
 
 		return $response;
@@ -536,9 +556,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()
-				->setDataItem('folderId', $folderId)
-				->setDataItem('parentId', $parentFolder->id)
-				->setDataItem('folderName', $folderName);
+			->setDataItem('folderId', $folderId)
+			->setDataItem('parentId', $parentFolder->id)
+			->setDataItem('folderName', $folderName);
 	}
 
 	/**
