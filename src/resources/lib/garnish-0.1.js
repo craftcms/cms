@@ -5760,13 +5760,14 @@ Garnish.Select = Garnish.Base.extend({
 
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
-		if (ev.metaKey || ev.ctrlKey)
+		if (this.first !== null && ev.shiftKey)
+		{
+			// Shift key is consistent for both selection modes
+			this.selectRange($item);
+		}
+		else if (this._actAsCheckbox(ev))
 		{
 			this.toggleItem($item);
-		}
-		else if (this.first !== null && ev.shiftKey)
-		{
-			this.selectRange($item);
 		}
 	},
 
@@ -5791,31 +5792,24 @@ Garnish.Select = Garnish.Base.extend({
 
 		// was this a click?
 		if (
-			!(ev.metaKey || ev.ctrlKey) &&
+			!this._actAsCheckbox(ev) &&
 			!ev.shiftKey &&
 			Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1
 		)
 		{
-			if (this.settings.checkboxMode)
+			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
+			if (this.isSelected($item))
 			{
-				this.toggleItem($item);
+				this.clearMouseUpTimeout();
+
+				this.mouseUpTimeout = setTimeout($.proxy(function() {
+					this.deselectOthers($item);
+				}, this), 300);
 			}
 			else
 			{
-				// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
-				if (this.isSelected($item))
-				{
-					this.clearMouseUpTimeout();
-
-					this.mouseUpTimeout = setTimeout($.proxy(function() {
-						this.deselectOthers($item);
-					}, this), 300);
-				}
-				else
-				{
-					this.deselectAll();
-					this.selectItem($item, true);
-				}
+				this.deselectAll();
+				this.selectItem($item, true);
 			}
 		}
 	},
@@ -6065,6 +6059,18 @@ Garnish.Select = Garnish.Base.extend({
 
 	// Private methods
 	// =========================================================================
+
+	_actAsCheckbox: function(ev)
+	{
+		if (ev.metaKey || ev.ctrlKey)
+		{
+			return !this.settings.checkboxMode;
+		}
+		else
+		{
+			return this.settings.checkboxMode;
+		}
+	},
 
 	_canDeselect: function($items)
 	{
