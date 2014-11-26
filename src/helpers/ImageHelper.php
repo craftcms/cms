@@ -13,6 +13,13 @@ namespace Craft;
  */
 class ImageHelper
 {
+	// Constants
+	// =========================================================================
+
+	const EXIF_IFD0_ROTATE_180 = 3;
+	const EXIF_IFD0_ROTATE_90  = 6;
+	const EXIF_IFD0_ROTATE_270 = 8;
+
 	// Public Methods
 	// =========================================================================
 

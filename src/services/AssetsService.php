@@ -249,6 +249,18 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Fires an 'onBeforeUploadAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeUploadAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeUploadAsset', $event);
+	}
+
+	/**
 	 * Fires an 'onSaveAsset' event.
 	 *
 	 * @param Event $event
