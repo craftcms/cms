@@ -7,7 +7,7 @@
 ]|filter|join(' ') %}
 
 {% set value = (value is defined ? value : 1) %}
-{% set id = (id is defined ? id : 'checkbox'~random()) %}
+{% set id = (id is defined and id ? id : 'checkbox'~random()) %}
 {% set label = (label is defined ? label) %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}

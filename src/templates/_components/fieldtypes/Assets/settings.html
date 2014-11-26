@@ -81,14 +81,14 @@
 {{ forms.checkboxField({
 	label: "Restrict allowed file types?"|t,
 	class: 'restrictFiles',
-	id: '',
+	id: 'restrictFiles',
 	name: 'restrictFiles',
 	value: 1,
 	checked: settings.restrictFiles,
 	toggle: 'restrict-allowed-types'
 }) }}
 
-<div id="restrict-allowed-types" {% if not settings.restrictFiles %}class="hidden indent"{% endif %}>
+<div id="restrict-allowed-types"{% if not settings.restrictFiles %} class="hidden indent"{% endif %}>
 	{% for option in fileKindOptions %}
 		{{ forms.checkboxField({
 			label: option.label,
