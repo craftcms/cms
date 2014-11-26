@@ -462,7 +462,7 @@ class UserModel extends BaseElementModel
 			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
 			'password'                   => AttributeType::String,
 			'preferredLocale'            => AttributeType::Locale,
-			'weekStartDay'               => AttributeType::Number,
+			'weekStartDay'               => array(AttributeType::Number, 'default' => 0),
 			'admin'                      => AttributeType::Bool,
 			'client'                     => AttributeType::Bool,
 			'locked'                     => AttributeType::Bool,
