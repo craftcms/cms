@@ -34,7 +34,9 @@
 					<div data-id="{{ blockType.id }}" class="hidden">
 						{% for field in blockType.getFields() %}
 							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
-								<div class="name{% if field.required %} required{% endif %}">{{ field.name }}&nbsp;</div>
+								<div class="name{% if field.required %} required{% endif %}">
+									{%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t }}</em>{% endif -%}
+								&nbsp;</div>
 								<div class="handle code">{{ field.handle }}&nbsp;</div>
 								<div class="actions">
 									<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
@@ -62,9 +64,8 @@
 									label: "Name"|t,
 									id: fieldId~'-name',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]',
-									value: field.name,
+									value: (field.name != '__blank__' ? field.name),
 									errors: field.getErrors('name'),
-									required: true,
 									autofocus: true
 								}) }}
 

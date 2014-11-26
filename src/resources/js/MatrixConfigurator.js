@@ -463,7 +463,7 @@ var BlockType = Garnish.Base.extend(
 
 		var $item = $(
 			'<div class="matrixconfigitem mci-field" data-id="'+id+'">' +
-				'<div class="name">&nbsp;</div>' +
+				'<div class="name"><em class="light">'+Craft.t('(blank)')+'</em>&nbsp;</div>' +
 				'<div class="handle code">&nbsp;</div>' +
 				'<div class="actions">' +
 					'<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
@@ -607,7 +607,8 @@ Field = Garnish.Base.extend(
 
 	updateNameLabel: function()
 	{
-		this.$nameLabel.html(Craft.escapeHtml(this.$nameInput.val())+'&nbsp;');
+		var val = this.$nameInput.val();
+		this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">'+Craft.t('(blank)')+'</em>')+'&nbsp;');
 	},
 
 	updateHandleLabel: function()
