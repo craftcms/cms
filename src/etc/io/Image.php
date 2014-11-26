@@ -341,6 +341,36 @@ class Image
 	}
 
 	/**
+	 * Rotate an image by degrees.
+	 *
+	 * @param int $degrees
+	 *
+	 * @return Image
+	 */
+	public function rotate($degrees)
+	{
+		$this->_image->rotate($degrees);
+
+		return $this;
+	}
+
+	/**
+	 * Strip EXIF data from the image.
+	 *
+	 * @return $this
+	 */
+	public function stripExifData()
+	{
+		if (craft()->images->isImagick())
+		{
+			$this->_image->getImagick()->stripImage();
+		}
+
+		// GD can't save EXIF data anyway, just pretend we stripped the data.
+		return $this;
+	}
+
+	/**
 	 * Set image quality.
 	 *
 	 * @param int $quality
@@ -410,8 +440,9 @@ class Image
 		{
 			$exifReader = new \Imagine\Image\Metadata\ExifMetadataReader();
 			$this->_instance->setMetadataReader($exifReader);
+			$exif = $this->_instance->open($filePath)->metadata();
 
-			return (array) $this->_instance->open($filePath)->metadata();
+			return $exif->toArray();
 		}
 		catch (\Imagine\Exception\NotSupportedException $exception)
 		{

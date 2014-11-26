@@ -143,7 +143,60 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function cleanImage($filePath)
 	{
-		return $this->loadImage($filePath)->saveAs($filePath, true);
+		if (craft()->config->get('rotateImagesOnUploadByExifData'))
+		{
+			return $this->rotateImageByExifData($filePath);
+		}
+		else
+		{
+			return $this->loadImage($filePath)->stripExifData()->saveAs($filePath, true);
+		}
+	}
+
+	/**
+	 * Rotate image according to it's EXIF data.
+	 *
+	 * @param string $filePath
+	 * @param bool   $preserveExifData if set to true, will preserve EXIF data, if Imagick is used.
+	 *
+	 * @return null
+	 */
+	public function rotateImageByExifData($filePath, $preserveExifData = false)
+	{
+		$exif = $this->getExifMetadata($filePath);
+
+		$degrees = 0;
+
+		if (!empty($exif['ifd0.Orientation']))
+		{
+			switch ($exif['ifd0.Orientation'])
+			{
+				case ImageHelper::EXIF_IFD0_ROTATE_180:
+				{
+					$degrees = 180;
+					break;
+				}
+				case ImageHelper::EXIF_IFD0_ROTATE_90:
+				{
+					$degrees = 90;
+					break;
+				}
+				case ImageHelper::EXIF_IFD0_ROTATE_270:
+				{
+					$degrees = 270;
+					break;
+				}
+			}
+		}
+
+		$image = $this->loadImage($filePath)->rotate($degrees);
+
+		if (!$preserveExifData)
+		{
+			$image->stripExifData();
+		}
+
+		return $image->saveAs($filePath, true);
 	}
 
 	/**
