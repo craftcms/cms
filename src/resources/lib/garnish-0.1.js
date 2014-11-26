@@ -231,7 +231,7 @@ Garnish = $.extend(Garnish, {
 	 * Returns whether this is a mobile browser.
 	 * Detection script courtesy of http://detectmobilebrowsers.com
 	 *
-	 * Last updated: 2013-02-04
+	 * Last updated: 2014-11-24
 	 *
 	 * @param bool detectTablets
 	 * @return bool
@@ -4852,8 +4852,9 @@ Garnish.NiceText = Garnish.Base.extend({
 			val = val.replace(/ /g, '&nbsp;');
 
 			// Line breaks
-			val = val.replace(/[\n\r]$/g, '<br/>&nbsp;');
+			val = val.replace(/[\n\r]$/g, '');
 			val = val.replace(/[\n\r]/g, '<br/>');
+			val += '<br/>&nbsp;';
 		}
 
 		this.$stage.html(val);
