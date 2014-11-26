@@ -38,14 +38,38 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	{
 		if ($this->multi)
 		{
-			$type = AttributeType::Mixed;
+			$options = $this->getSettings()->options;
+
+			// See how much data we could possibly be saving if everything was selected.
+			$length = 0;
+
+			foreach ($options as $option)
+			{
+				if (!empty($option['value']))
+				{
+					// +3 because it will be json encoded. Includes the surrounding quotes and comma.
+					$length += strlen($option['value']) + 3;
+				}
+			}
+
+			if ($length)
+			{
+				// Add +2 for the outer brackets and -1 for the last comma.
+				$length += 1;
+
+				$columnType = DbHelper::getTextualColumnTypeByContentLength($length);
+			}
+			else
+			{
+				$columnType = ColumnType::Varchar;
+			}
+
+			return array(AttributeType::String, 'column' => $columnType, 'default' => $this->getDefaultValue());
 		}
 		else
 		{
-			$type = AttributeType::String;
+			return array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'default' => $this->getDefaultValue());
 		}
-
-		return array($type, 'default' => $this->getDefaultValue());
 	}
 
 	/**
