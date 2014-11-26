@@ -346,7 +346,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		if (this.draggingLastElements && this.elementIndex.morePending)
 		{
 			// Update the element index's record of how many items are actually visible
-			this.elementIndex._totalVisible += (this.newDraggeeIndex - this.oldDraggeeIndex);
+			this.elementIndex._totalVisible += (this.newDraggeeIndexes[0] - this.oldDraggeeIndexes[0]);
 
 			var $postDraggeeItems = this.$draggee.last().nextAll();
 
