@@ -51,21 +51,9 @@ class PlainTextFieldType extends BaseFieldType
 		{
 			$columnType = ColumnType::Text;
 		}
-		else if ($maxLength <= 255)
-		{
-			$columnType = ColumnType::Varchar;
-		}
-		else if ($maxLength <= DbHelper::getTextualColumnStorageCapacity(ColumnType::Text))
-		{
-			$columnType = ColumnType::Text;
-		}
-		else if ($maxLength <= DbHelper::getTextualColumnStorageCapacity(ColumnType::MediumText))
-		{
-			$columnType = ColumnType::MediumText;
-		}
 		else
 		{
-			$columnType = ColumnType::LongText;
+			$columnType = DbHelper::getTextualColumnTypeByContentLength($maxLength);
 		}
 
 		return array(AttributeType::String, 'column' => $columnType, 'maxLength' => $maxLength);

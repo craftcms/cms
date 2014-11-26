@@ -383,6 +383,33 @@ class DbHelper
 	}
 
 	/**
+	 * Given a length of a piece of content, returns the underlying database column type to use for saving.
+	 *
+	 * @param $contentLength
+	 *
+	 * @return string
+	 */
+	public static function getTextualColumnTypeByContentLength($contentLength)
+	{
+		if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText))
+		{
+			return ColumnType::Varchar;
+		}
+		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text))
+		{
+			return ColumnType::Text;
+		}
+		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText))
+		{
+			return ColumnType::MediumText;
+		}
+		else
+		{
+			return ColumnType::LongText;
+		}
+	}
+
+	/**
 	 * Escapes commas and asterisks in a string so they are not treated as special characters in
 	 * {@link DbHelper::parseParam()}.
 	 *
