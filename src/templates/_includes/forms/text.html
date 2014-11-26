@@ -9,8 +9,13 @@
 	(size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
+{%- if showCharsLeft is defined and showCharsLeft and maxlength is defined and maxlength %}
+	{%- set style = 'padding-'~(craft.i18n.getLocaleData().getOrientation() == 'ltr' ? 'right' : 'left')~': '~(7.2*maxlength|length+14)~'px;' %}
+{%- endif %}
+
 {%- if type == 'password' %}<div class="passwordwrapper">{% endif -%}
 <input class="{{ class }}" type="{{ type }}"
+	{%- if style is defined %} style="{{ style }}"{% endif %}
 	{%- if id is defined %} id="{{ id }}"{% endif %}
 	{%- if size is defined %} size="{{ size }}"{% endif %}
 	{%- if name is defined %} name="{{ name }}"{% endif %}
