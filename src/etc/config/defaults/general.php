@@ -406,6 +406,11 @@ return array(
 	'restoreDbOnUpdateFailure' => true,
 
 	/**
+	 * Whether Craft should rotate the image according to EXIF data on upload.
+	 */
+	'rotateImagesOnUploadByExifData' => true,
+
+	/**
 	 * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
 	 * keyword index.
 	 */
