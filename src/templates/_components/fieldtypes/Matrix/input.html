@@ -14,6 +14,11 @@
 				{% if not static %}
 					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
 					<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
+					<div class="titlebar">
+						<div class="blocktype">{{ block.getType().name|t }}</div>
+						<div class="preview"></div>
+					</div>
+					<div class="checkbox" title="{{ 'Select'|t }}"></div>
 					<div class="actions">
 						<div class="status off" title="{{ 'Disabled'|t }}"></div>
 						<a class="settings icon menubtn" title="{{ 'Actions'|t }}" role="button"></a>

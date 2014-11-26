@@ -1205,22 +1205,29 @@ ul.errors li { color: $errorcolor; }
 }
 
 /* blocks */
-.matrixblock { position: relative; margin: 10px 0; padding: 14px; border-radius: 3px; background: hsl(212, 10%, 94%); @include user-select(none);
+.matrixblock { position: relative; margin: 10px 0; padding: 1px 14px 14px; border-radius: 3px; background: hsl(212, 10%, 98%); @include user-select(none); outline: none;
 	@include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1));
 }
-.matrixblock:nth-child(even) { background: hsl(212, 10%, 98%); }
 .matrixblock.disabled { opacity: 1; }
+
+.matrixblock > .titlebar { margin: 0 -13px 14px; width: calc(100% + 26px); @include box-sizing(border-box); border-radius: 2px 2px 0 0; @include padding(6px, 70px, 6px, 33px); background: hsl(212, 10%, 94%); color: $lighttextcolor; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: default; }
+.matrixblock.collapsed > .titlebar { border-radius: 2px; }
+.matrixblock.disabled > .titlebar { @include padding-right(90px); }
+.matrixblock > .titlebar > .blocktype { display: inline; color: $mediumtextcolor; }
+.matrixblock > .titlebar > .preview { @include margin-left(7px); display: inline; opacity: 0;
+	@include transition(opacity linear 100ms);
+}
+.matrixblock.collapsed > .titlebar > .preview { opacity: 1; }
+.matrixblock > .titlebar > .preview span { opacity: 0.5; }
+.matrixblock > .checkbox { position: absolute; top: 7px; @include left(14px); }
 .matrixblock > .actions > .status.off { display: none; }
 .matrixblock.disabled > .actions > .status.off { display: inline-block; @include floatleft; @include margin(4px, 10px, 0, 0); }
-.matrixblock > .actions { position: absolute; z-index: 1; top: 5px; @include right(5px); cursor: default; }
+.matrixblock > .actions { position: absolute; z-index: 1; top: 6px; @include right(5px); cursor: default; }
 .matrixblock > .actions a { padding: 0; @include margin-right(2px); width: 15px; height: 20px; text-align: center; color: rgba(0,0,0,0.2) }
 .matrixblock > .actions a:hover { width: 15px; height: 20px; text-align: center; color: $linkcolor; }
 .matrixblock > .actions a.settings:after { @include margin-left(3px); }
 .matrixblock > .fields > .field { margin: 15px 0; }
 .matrixblock > .fields > .field > .input { @include user-select(text); }
-.matrixblock > .preview { position: absolute; bottom: 5px; @include left(0); @include padding(0, 55px, 0, 10px); height: 18px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: $mediumtextcolor; cursor: default; @include box-sizing(border-box); }
-.matrixblock.disabled > .preview { @include padding-right(75px); }
-.matrixblock > .preview span { opacity: 0.5; }
 .matrix > .buttons { margin-top: 0; height: 30px; }
 
 /* categories */
