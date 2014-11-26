@@ -2422,8 +2422,8 @@ Garnish.DragSort = Garnish.Drag.extend({
 	$heightedContainer: null,
 	$insertion: null,
 	insertionVisible: false,
-	oldDraggeeIndex: null,
-	newDraggeeIndex: null,
+	oldDraggeeIndexes: null,
+	newDraggeeIndexes: null,
 	closestItem: null,
 
 	_midpointVersion: 0,
@@ -2526,7 +2526,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 	 */
 	onDragStart: function()
 	{
-		this.oldDraggeeIndex = this._getDraggeeIndex();
+		this.oldDraggeeIndexes = this._getDraggeeIndexes();
 
 		// Is the target item not the first item in the draggee?
 		if (
@@ -2602,9 +2602,9 @@ Garnish.DragSort = Garnish.Drag.extend({
 
 		// Has the item actually moved?
 		this.$items = $().add(this.$items);
-		this.newDraggeeIndex = this._getDraggeeIndex();
+		this.newDraggeeIndexes = this._getDraggeeIndexes();
 
-		if (this.newDraggeeIndex != this.oldDraggeeIndex)
+		if (this.newDraggeeIndexes.join(',') != this.oldDraggeeIndexes.join(','))
 		{
 			this.onSortChange();
 		}
@@ -2642,9 +2642,16 @@ Garnish.DragSort = Garnish.Drag.extend({
 		return $.inArray(item, this.$items);
 	},
 
-	_getDraggeeIndex: function()
+	_getDraggeeIndexes: function()
 	{
-		return this._getItemIndex(this.$draggee[0]);
+		var indexes = [];
+
+		for (var i = 0; i < this.$draggee.length; i++)
+		{
+			indexes.push(this._getItemIndex(this.$draggee[i]))
+		}
+
+		return indexes;
 	},
 
 	/**
@@ -5753,13 +5760,14 @@ Garnish.Select = Garnish.Base.extend({
 
 		var $item = $($.data(ev.currentTarget, 'select-item'));
 
-		if (ev.metaKey || ev.ctrlKey)
+		if (this.first !== null && ev.shiftKey)
+		{
+			// Shift key is consistent for both selection modes
+			this.selectRange($item);
+		}
+		else if (this._actAsCheckbox(ev))
 		{
 			this.toggleItem($item);
-		}
-		else if (this.first !== null && ev.shiftKey)
-		{
-			this.selectRange($item);
 		}
 	},
 
@@ -5784,31 +5792,24 @@ Garnish.Select = Garnish.Base.extend({
 
 		// was this a click?
 		if (
-			!(ev.metaKey || ev.ctrlKey) &&
+			!this._actAsCheckbox(ev) &&
 			!ev.shiftKey &&
 			Garnish.getDist(this.mousedownX, this.mousedownY, ev.pageX, ev.pageY) < 1
 		)
 		{
-			if (this.settings.checkboxMode)
+			// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
+			if (this.isSelected($item))
 			{
-				this.toggleItem($item);
+				this.clearMouseUpTimeout();
+
+				this.mouseUpTimeout = setTimeout($.proxy(function() {
+					this.deselectOthers($item);
+				}, this), 300);
 			}
 			else
 			{
-				// If this is already selected, wait a moment to see if this is a double click before making any rash decisions
-				if (this.isSelected($item))
-				{
-					this.clearMouseUpTimeout();
-
-					this.mouseUpTimeout = setTimeout($.proxy(function() {
-						this.deselectOthers($item);
-					}, this), 300);
-				}
-				else
-				{
-					this.deselectAll();
-					this.selectItem($item, true);
-				}
+				this.deselectAll();
+				this.selectItem($item, true);
 			}
 		}
 	},
@@ -5818,6 +5819,11 @@ Garnish.Select = Garnish.Base.extend({
 	 */
 	onKeyDown: function(ev)
 	{
+		if ($(ev.target).is('input,textarea,button'))
+		{
+			return;
+		}
+
 		var metaKey = (ev.metaKey || ev.ctrlKey);
 
 		if (!this.settings.checkboxMode || !this.$focusable.length)
@@ -6053,6 +6059,18 @@ Garnish.Select = Garnish.Base.extend({
 
 	// Private methods
 	// =========================================================================
+
+	_actAsCheckbox: function(ev)
+	{
+		if (ev.metaKey || ev.ctrlKey)
+		{
+			return !this.settings.checkboxMode;
+		}
+		else
+		{
+			return this.settings.checkboxMode;
+		}
+	},
 
 	_canDeselect: function($items)
 	{

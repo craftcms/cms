@@ -174,6 +174,12 @@ class MatrixService extends BaseApplicationComponent
 
 		foreach ($blockType->getFields() as $field)
 		{
+			// Hack to allow blank field names
+			if (!$field->name)
+			{
+				$field->name = '__blank__';
+			}
+
 			craft()->fields->validateField($field);
 
 			// Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
@@ -304,6 +310,12 @@ class MatrixService extends BaseApplicationComponent
 
 				foreach ($blockType->getFields() as $field)
 				{
+					// Hack to allow blank field names
+					if (!$field->name)
+					{
+						$field->name = '__blank__';
+					}
+
 					if (!$fieldsService->saveField($field, false))
 					{
 						throw new Exception(Craft::t('An error occurred while saving this Matrix block type.'));
