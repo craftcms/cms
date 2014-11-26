@@ -397,6 +397,30 @@ class Image
 		return false;
 	}
 
+	/**
+	 * Return EXIF metadata for a file by it's path
+	 *
+	 * @param $filePath
+	 *
+	 * @return array
+	 */
+	public function getExifMetadata($filePath)
+	{
+		try
+		{
+			$exifReader = new \Imagine\Image\Metadata\ExifMetadataReader();
+			$this->_instance->setMetadataReader($exifReader);
+
+			return (array) $this->_instance->open($filePath)->metadata();
+		}
+		catch (\Imagine\Exception\NotSupportedException $exception)
+		{
+			Craft::log($exception->getMessage(), LogLevel::Error);
+
+			return array();
+		}
+	}
+
 	// Private Methods
 	// =========================================================================
 

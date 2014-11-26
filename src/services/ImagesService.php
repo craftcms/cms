@@ -145,4 +145,18 @@ class ImagesService extends BaseApplicationComponent
 	{
 		return $this->loadImage($filePath)->saveAs($filePath, true);
 	}
+
+	/**
+	 * Get EXIF metadata for a file by it's path.
+	 *
+	 * @param $filePath
+	 *
+	 * @return array
+	 */
+	public function getExifMetadata($filePath)
+	{
+		$image = new Image();
+
+		return $image->getExifMetadata($filePath);
+	}
 }
