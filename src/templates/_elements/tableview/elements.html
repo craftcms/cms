@@ -11,7 +11,7 @@
 {% for element in elements %}
 	<tr data-id="{{ element.id }}"{% if structureEditable %} data-level="{{ element.level }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% if showCheckboxes %}
-			<td class="thin" data-checkboxcell><div class="checkbox"></div></td>
+			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
 		{% endif %}
 		{% for attribute, label in attributes %}
 			{% if loop.first %}
