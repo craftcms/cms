@@ -207,7 +207,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 				'<div class="actions">' +
 					'<div class="status off" title="'+Craft.t('Disabled')+'"></div>' +
 					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a> ' +
-					'<div class="menu" data-align="right">' +
+					'<div class="menu">' +
 						'<ul class="padded">' +
 							'<li><a data-icon="collapse" data-action="collapse">'+Craft.t('Collapse')+'</a></li>' +
 							'<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('Expand')+'</a></li>' +
