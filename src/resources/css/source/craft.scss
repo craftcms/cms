@@ -1090,9 +1090,9 @@ body .redactor-box textarea { padding: 6px 7px; }
 body .redactor-box,
 body .redactor-toolbar,
 body .redactor-box textarea { z-index: auto !important; }
-body .redactor-box_fullscreen { z-index: 100 !important; }
+body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
 body .redactor-toolbar { background: none; @include box-shadow(none); }
-body .redactor-toolbar.toolbar_fixed_box { @include pane; z-index: 1 !important; }
+body .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
 body .redactor-toolbar li a { color: $textcolor; }
 body .redactor-toolbar li a:hover { background-color: $menuhovercolor; color: $textcolor; }
 body .redactor-toolbar li a:active,
