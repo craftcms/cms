@@ -249,7 +249,7 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fires an 'onBeforeDeleteAsset' event.
+	 * Fires an 'onBeforeUploadAsset' event.
 	 *
 	 * @param Event $event
 	 *
