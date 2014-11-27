@@ -312,17 +312,9 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 	getHiddenBlockCss: function($block)
 	{
-		var marginBottom = -($block.outerHeight());
-
-		if ($block.is(':only-child'))
-		{
-			// Without this block, there would only be a 4px gap between the field heading and the Add Block buttons
-			marginBottom -= 10;
-		}
-
 		return {
 			opacity: 0,
-			marginBottom: marginBottom
+			marginBottom: -($block.outerHeight())
 		};
 	},
 
