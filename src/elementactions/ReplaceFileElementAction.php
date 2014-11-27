@@ -27,7 +27,7 @@ class ReplaceFileElementAction extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getTriggerHtml()
+	 * @inheritDoc IElementAction::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
