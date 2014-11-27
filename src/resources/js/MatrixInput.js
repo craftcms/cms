@@ -630,7 +630,7 @@ var MatrixBlock = Garnish.Base.extend(
 
 	onMenuOptionSelect: function(option)
 	{
-		var batchAction = (this.matrix.blockSelect.totalSelected && this.matrix.blockSelect.isSelected(this.$container)),
+		var batchAction = (this.matrix.blockSelect.totalSelected > 1 && this.matrix.blockSelect.isSelected(this.$container)),
 			$option = $(option);
 
 		switch ($option.data('action'))
