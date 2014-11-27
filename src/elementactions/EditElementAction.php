@@ -58,7 +58,7 @@ EOT;
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineParams()
+	 * @inheritDoc BaseElementAction::defineParams()
 	 *
 	 * @return array
 	 */

@@ -77,7 +77,7 @@ class SetStatusElementAction extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineParams()
+	 * @inheritDoc BaseElementAction::defineParams()
 	 *
 	 * @return array
 	 */
