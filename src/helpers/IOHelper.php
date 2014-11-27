@@ -190,7 +190,9 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 		$path = $suppressErrors ? @realpath($path) : realpath($path);
 
-		if ($path === false)
+		// realpath() should just return false if the file doesn't exist, but seeing one case where
+		// it's returning an empty string instead
+		if (!$path)
 		{
 			return false;
 		}
