@@ -237,7 +237,6 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 		$folderId = craft()->request->getRequiredPost('folderId');
-		$response = craft()->assets->deleteFolderById($folderId);
 
 		try
 		{
@@ -247,6 +246,8 @@ class AssetsController extends BaseController
 		{
 			$this->returnErrorJson($e->getMessage());
 		}
+
+		$response = craft()->assets->deleteFolderById($folderId);
 
 		$this->returnJson($response->getResponseData());
 

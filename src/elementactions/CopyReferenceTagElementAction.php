@@ -27,7 +27,7 @@ class CopyReferenceTagElementAction extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getTriggerHtml()
+	 * @inheritDoc IElementAction::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
@@ -61,7 +61,7 @@ EOT;
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineParams()
+	 * @inheritDoc BaseElementAction::defineParams()
 	 *
 	 * @return array
 	 */

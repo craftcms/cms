@@ -66,7 +66,7 @@ class DeleteElementAction extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineParams()
+	 * @inheritDoc BaseElementAction::defineParams()
 	 *
 	 * @return array
 	 */
