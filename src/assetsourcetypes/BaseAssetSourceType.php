@@ -168,7 +168,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		// Fire an 'onBeforeUploadAsset' event
 		$event = new Event($this, array(
-			'filePath' => $localFilePath,
+			'path'     => $localFilePath,
 			'folder'   => $folder,
 			'filename' => $fileName
 		));
@@ -239,7 +239,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		else
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t("The file upload was cancelled."));
+			$response->setError(Craft::t('The file upload was cancelled.'));
 		}
 
 		return $response;
@@ -298,7 +298,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$file->sourceId = $folder->sourceId;
 			craft()->assets->storeFile($file);
 
-			if (!$this->isSourceLocal() && $file->kind == "image")
+			if (!$this->isSourceLocal() && $file->kind == 'image')
 			{
 				// Store copy locally for all sorts of operations.
 				craft()->assetTransforms->storeLocalSource($localCopy, craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
@@ -411,7 +411,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// For remote sources, fetch the source image and move it in the old ones place
 			if (!$this->isSourceLocal())
 			{
-				if ($replaceWith->kind == "image")
+				if ($replaceWith->kind == 'image')
 				{
 					$localCopy = $replaceWith->getTransformSource();
 					IOHelper::copyFile($localCopy, craft()->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
@@ -576,19 +576,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		if (!$parentFolder)
 		{
-			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', array('folder' => $folder->name)));
 		}
 
 		// Allow this for changing the case
 		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->folderExists($parentFolder, $newName))
 		{
-			throw new Exception(Craft::t("Folder “{folder}” already exists there.", array('folder' => $newName)));
+			throw new Exception(Craft::t('Folder “{folder}” already exists there.', array('folder' => $newName)));
 		}
 
 		// Try to rename the folder in the source
 		if (!$this->renameSourceFolder($folder, $newName))
 		{
-			throw new Exception(Craft::t("Cannot rename folder “{folder}”!", array('folder' => $folder->name)));
+			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', array('folder' => $folder->name)));
 		}
 
 		$oldFullPath = $folder->path;
@@ -1138,7 +1138,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 		else
 		{
-			throw new Exception(Craft::t("Failed to successfully mirror folder structure"));
+			throw new Exception(Craft::t('Failed to successfully mirror folder structure'));
 		}
 	}
 }
