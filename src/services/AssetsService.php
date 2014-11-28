@@ -817,7 +817,7 @@ class AssetsService extends BaseApplicationComponent
 
 				// Fire an 'onBeforeDeleteAsset' event
 				$this->onBeforeDeleteAsset(new Event($this, array(
-					'file' => $file
+					'asset' => $file
 				)));
 
 				$source->deleteFile($file);
@@ -825,7 +825,7 @@ class AssetsService extends BaseApplicationComponent
 
 				// Fire an 'onDeleteAsset' event
 				$this->onDeleteAsset(new Event($this, array(
-					'file' => $file
+					'asset' => $file
 				)));
 			}
 
