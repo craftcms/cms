@@ -2828,12 +2828,26 @@
 
 						var keyPosition = $button.offset();
 
-						// fix right placement
 						var dropdownWidth = $dropdown.width();
+
+						/* BEGIN HACK! */
+
+						if (
+							(Craft.orientation == 'rtl' && keyPosition.left >= dropdownWidth) ||
+							(keyPosition.left + dropdownWidth) > this.$box.outerWidth()
+						)
+						{
+							keyPosition.left -= (dropdownWidth - 7);
+						}
+
+						/*
+
 						if ((keyPosition.left + dropdownWidth) > $(document).width())
 						{
 							keyPosition.left -= dropdownWidth;
 						}
+
+						END HACK */
 
 						var left = keyPosition.left + 'px';
 						if (this.$toolbar.hasClass('toolbar-fixed-box'))
