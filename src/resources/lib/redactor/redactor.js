@@ -5486,6 +5486,11 @@
 					this.$modalOverlay.show();
 					this.$modalBox.show();
 
+					/* BEGIN HACK */
+					// make sure that the modal is at the end of the DOM
+					this.$modalBox.appendTo(document.body);
+					/* END HACK */
+
 					this.modal.setButtonsWidth();
 
 					this.utils.saveScroll();
