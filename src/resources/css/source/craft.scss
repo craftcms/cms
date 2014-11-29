@@ -309,7 +309,9 @@ table.inputs .btngroup { display: block; float: none; }
 .btn.active { cursor: default; }
 
 .btn:hover { text-decoration: none; }
-.disabled { opacity: 0.25; cursor: default; }
+.disabled { opacity: 0.25; }
+.disabled,
+.disabled .btn { cursor: default; }
 
 .btn:not(.submit):not(.noborder) { color: $textcolor;
 	@include linear-gradient(#fff, hsl($hue, 5%, 98%));
