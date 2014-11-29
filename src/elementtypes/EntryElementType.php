@@ -368,7 +368,7 @@ class EntryElementType extends BaseElementType
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = craft()->plugins->callFirst('getEntryTableAttributeHtml', array($element, $attribute), true);
 
-		if ($pluginAttributeHtml)
+		if ($pluginAttributeHtml !== null)
 		{
 			return $pluginAttributeHtml;
 		}

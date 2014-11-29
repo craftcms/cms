@@ -199,7 +199,7 @@ class UserElementType extends BaseElementType
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = craft()->plugins->callFirst('getUserTableAttributeHtml', array($element, $attribute), true);
 
-		if ($pluginAttributeHtml)
+		if ($pluginAttributeHtml !== null)
 		{
 			return $pluginAttributeHtml;
 		}

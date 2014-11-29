@@ -210,7 +210,7 @@ class CategoryElementType extends BaseElementType
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = craft()->plugins->callFirst('getCategoryTableAttributeHtml', array($element, $attribute), true);
 
-		if ($pluginAttributeHtml)
+		if ($pluginAttributeHtml !== null)
 		{
 			return $pluginAttributeHtml;
 		}
