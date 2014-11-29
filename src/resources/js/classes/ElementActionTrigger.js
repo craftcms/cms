@@ -14,12 +14,24 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
 		this.$trigger = $('#'+settings.handle+'-actiontrigger');
-		this.$trigger.attr('href', 'javascript:void(0)');
+
+		if (this.$trigger.prop('nodeName') == 'FORM')
+		{
+			// Remove the element index's submit handler
+			this.$trigger.off('submit');
+
+			this.addListener(this.$trigger, 'submit', 'handleTriggerFire');
+		}
+		else
+		{
+			// Prevent the element index's click handler
+			this.$trigger.attr('href', 'javascript:void(0)');
+
+			this.addListener(this.$trigger, 'click', 'handleTriggerFire');
+		}
 
 		this.updateTrigger();
 		Craft.elementIndex.elementSelect.on('selectionChange', $.proxy(this, 'updateTrigger'));
-
-		this.addListener(this.$trigger, 'click', 'handleTriggerClick');
 	},
 
 	updateTrigger: function()
@@ -84,8 +96,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		this.triggerEnabled = false;
 	},
 
-	handleTriggerClick: function()
+	handleTriggerFire: function(ev)
 	{
+		ev.preventDefault();
+		ev.stopPropagation();
+
 		if (this.triggerEnabled)
 		{
 			this.settings.activate(this.$selectedItems);
