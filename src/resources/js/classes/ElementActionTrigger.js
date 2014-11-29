@@ -112,7 +112,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 {
 	defaults: {
 		handle: null,
-		batch: false,
+		batch: true,
 		validateSelection: null,
 		activate: null
 	}
