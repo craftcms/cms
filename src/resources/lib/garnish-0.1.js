@@ -1830,6 +1830,7 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 
 	targetItemWidth: null,
 	targetItemHeight: null,
+	targetItemPositionInDraggee: null,
 
 	$draggee: null,
 
@@ -1933,6 +1934,9 @@ Garnish.Drag = Garnish.BaseDrag.extend({
 	 */
 	setDraggee: function($draggee)
 	{
+		// Record the target item's position in the draggee
+		this.targetItemPositionInDraggee = $.inArray(this.$targetItem[0], $draggee.add(this.$targetItem[0]));
+
 		// Keep the target item at the front of the list
 		this.$draggee = $([ this.$targetItem[0] ].concat($draggee.not(this.$targetItem).toArray()));
 
@@ -2528,8 +2532,9 @@ Garnish.DragSort = Garnish.Drag.extend({
 	{
 		this.oldDraggeeIndexes = this._getDraggeeIndexes();
 
-		// Is the target item not the first item in the draggee?
+		// Are we supposed to be moving the target item to the front, and is it not already there?
 		if (
+			this.settings.moveTargetItemToFront &&
 			this.$draggee.length > 1 &&
 			this._getItemIndex(this.$draggee[0]) > this._getItemIndex(this.$draggee[1])
 		)
@@ -2594,6 +2599,12 @@ Garnish.DragSort = Garnish.Drag.extend({
 	onDragStop: function()
 	{
 		this._removeInsertion();
+
+		// Should we keep the target item where it was?
+		if (!this.settings.moveTargetItemToFront && this.targetItemPositionInDraggee != 0)
+		{
+			this.$targetItem.insertAfter(this.$draggee.eq(this.targetItemPositionInDraggee));
+		}
 
 		// Return the helpers to the draggees
 		this.returnHelpersToDraggees();
@@ -2920,6 +2931,7 @@ Garnish.DragSort = Garnish.Drag.extend({
 	defaults: {
 		container: null,
 		insertion: null,
+		moveTargetItemToFront: false,
 		magnetStrength: 1,
 		onInsertionPointChange: $.noop,
 		onSortChange: $.noop
