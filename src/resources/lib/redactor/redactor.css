@@ -17,7 +17,6 @@
 .redactor-box {
   position: relative;
   overflow: visible;
-  background: #fff;
   margin-bottom: 24px;
 }
 .redactor-box iframe,
@@ -49,6 +48,10 @@
 	Z-index setup
 */
 .redactor-editor,
+.redactor-box {
+  background: #fff;
+}
+.redactor-editor,
 .redactor-box,
 .redactor-box textarea {
   z-index: auto !important;
@@ -58,12 +61,12 @@
 }
 .redactor-toolbar,
 .redactor-dropdown {
-  z-index: 1050 !important;
+  z-index: 1053 !important;
 }
 #redactor-modal-overlay,
 #redactor-modal-box,
 #redactor-modal {
-  z-index: 1051 !important;
+  z-index: 1054 !important;
 }
 /*
 	Resize
@@ -89,6 +92,12 @@ body .redactor-box-fullscreen {
   top: 0;
   left: 0;
   width: 100%;
+}
+/*
+	Utils
+*/
+.body-hidden {
+  overflow: hidden;
 }
 /*
 	Editor
@@ -339,7 +348,7 @@ body .redactor-box-fullscreen {
 */
 .redactor-toolbar-tooltip {
   position: absolute;
-  z-index: 100;
+  z-index: 1054;
   text-align: center;
   top: 0;
   left: 0;
@@ -887,7 +896,7 @@ body .redactor-box-fullscreen {
 .redactor-editor h5,
 .redactor-editor h6 {
   font-weight: bold;
-  color: #0000;
+  color: #000;
   padding: 0;
   background: none;
   text-rendering: optimizeLegibility;
