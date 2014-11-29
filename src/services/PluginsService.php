@@ -530,13 +530,13 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
 	 *
-	 * @param string $method The name of the method.
-	 * @param array  $args   Any arguments that should be passed when calling the method on the plugins.
-	 * @param bool   $ignoreEmpty Whether plugins that have the method but return an empty response should be ignored. Defaults to false.
+	 * @param string $method     The name of the method.
+	 * @param array  $args       Any arguments that should be passed when calling the method on the plugins.
+	 * @param bool   $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
 	 *
 	 * @return array An array of the plugins’ responses.
 	 */
-	public function call($method, $args = array(), $ignoreEmpty = false)
+	public function call($method, $args = array(), $ignoreNull = false)
 	{
 		$allResults = array();
 		$altMethod = 'hook'.ucfirst($method);
@@ -553,7 +553,7 @@ class PluginsService extends BaseApplicationComponent
 				$result = call_user_func_array(array($plugin, $altMethod), $args);
 			}
 
-			if (isset($result) && (!$ignoreEmpty || !empty($result)))
+			if (isset($result) && (!$ignoreNull || $result !== null))
 			{
 				$allResults[$plugin->getClassHandle()] = $result;
 				unset($result);
@@ -566,13 +566,13 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Calls a method on the first plugin that has it, and returns the result.
 	 *
-	 * @param string $method      The name of the method.
-	 * @param array  $args        Any arguments that should be passed when calling the method on the plugins.
-	 * @param bool   $ignoreEmpty Whether plugins that have the method but return an empty response should be ignored. Defaults to false.
+	 * @param string $method     The name of the method.
+	 * @param array  $args       Any arguments that should be passed when calling the method on the plugins.
+	 * @param bool   $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
 	 *
 	 * @return mixed The plugin’s response, or null.
 	 */
-	public function callFirst($method, $args = array(), $ignoreEmpty = false)
+	public function callFirst($method, $args = array(), $ignoreNull = false)
 	{
 		$altMethod = 'hook'.ucfirst($method);
 
@@ -588,7 +588,7 @@ class PluginsService extends BaseApplicationComponent
 				$result = call_user_func_array(array($plugin, $altMethod), $args);
 			}
 
-			if (isset($result) && (!$ignoreEmpty || !empty($result)))
+			if (isset($result) && (!$ignoreNull || $result !== null))
 			{
 				return $result;
 			}
