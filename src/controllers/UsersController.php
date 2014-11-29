@@ -1582,18 +1582,17 @@ class UsersController extends BaseController
 			)));
 
 			$isCodeValid = craft()->users->isVerificationCodeValidForUser($userToProcess, $code);
-
-			// Fire an 'onVerifyUser' event
-			craft()->users->onVerifyUser(new Event($this, array(
-				'user'        => $userToProcess,
-				'isCodeValid' => $isCodeValid
-			)));
 		}
 
 		if (!$userToProcess || !$isCodeValid)
 		{
 			$this->_processInvalidToken($userToProcess);
 		}
+
+		// Fire an 'onVerifyUser' event
+		craft()->users->onVerifyUser(new Event($this, array(
+			'user' => $userToProcess
+		)));
 
 		return array('code' => $code, 'id' => $id, 'userToProcess' => $userToProcess);
 	}
