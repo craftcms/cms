@@ -15,19 +15,21 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
 		this.$trigger = $('#'+settings.handle+'-actiontrigger');
 
-		if (this.$trigger.prop('nodeName') == 'FORM')
-		{
-			// Remove the element index's submit handler
-			this.$trigger.off('submit');
-
-			this.addListener(this.$trigger, 'submit', 'handleTriggerFire');
-		}
-		else
+		// Do we have a custom handler?
+		if (this.settings.activate)
 		{
 			// Prevent the element index's click handler
-			this.$trigger.attr('href', 'javascript:void(0)');
+			this.$trigger.data('custom-handler', true);
 
-			this.addListener(this.$trigger, 'click', 'handleTriggerFire');
+			// Is this a custom trigger?
+			if (this.$trigger.prop('nodeName') == 'FORM')
+			{
+				this.addListener(this.$trigger, 'submit', 'handleTriggerActivation');
+			}
+			else
+			{
+				this.addListener(this.$trigger, 'click', 'handleTriggerActivation');
+			}
 		}
 
 		this.updateTrigger();
@@ -96,7 +98,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		this.triggerEnabled = false;
 	},
 
-	handleTriggerFire: function(ev)
+	handleTriggerActivation: function(ev)
 	{
 		ev.preventDefault();
 		ev.stopPropagation();
@@ -112,7 +114,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		handle: null,
 		batch: false,
 		validateSelection: null,
-		activate: $.noop
+		activate: null
 	}
 });
 

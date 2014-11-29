@@ -642,8 +642,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		ev.preventDefault();
 
-		var $form = $(ev.currentTarget),
-			actionHandle = $form.data('action'),
+		var $form = $(ev.currentTarget);
+
+		// Make sure Craft.ElementActionTrigger isn't overriding this
+		if ($form.hasClass('disabled') || $form.data('custom-handler'))
+		{
+			return;
+		}
+
+		var actionHandle = $form.data('action'),
 			params = Garnish.getPostData($form);
 
 		this.submitAction(actionHandle, params);
@@ -653,12 +660,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		var $option = $(ev.option);
 
-		// Maybe it's a link
-		if (!$option.attr('href'))
+		// Make sure Craft.ElementActionTrigger isn't overriding this
+		if ($option.hasClass('disabled') || $option.data('custom-handler'))
 		{
-			var actionHandle = $option.data('action');
-			this.submitAction(actionHandle);
+			return;
 		}
+
+		var actionHandle = $option.data('action');
+		this.submitAction(actionHandle);
 	},
 
 	submitAction: function(actionHandle, params)
