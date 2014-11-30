@@ -232,7 +232,7 @@ return array(
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.
 	 */
-	'invalidTokenPath' => '',
+	'invalidUserTokenPath' => '',
 
 	/**
 	 * Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the

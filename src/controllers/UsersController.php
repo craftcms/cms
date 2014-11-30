@@ -1604,7 +1604,7 @@ class UsersController extends BaseController
 	 */
 	private function _processInvalidToken($user)
 	{
-		$url = craft()->config->getLocalized('invalidTokenPath');
+		$url = craft()->config->getLocalized('invalidUserTokenPath');
 
 		if ($url == '')
 		{

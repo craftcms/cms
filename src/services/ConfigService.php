@@ -126,7 +126,7 @@ class ConfigService extends BaseApplicationComponent
 	 * This function is used for Craft’s “localizable” config settings:
 	 *
 	 * - [siteUrl](http://buildwithcraft.com/docs/config-settings#siteUrl)
-	 * - [invalidTokenPath](http://buildwithcraft.com/docs/config-settings#invalidTokenPath)
+	 * - [invalidUserTokenPath](http://buildwithcraft.com/docs/config-settings#invalidUserTokenPath)
 	 * - [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath)
 	 * - [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath)
 	 * - [setPasswordPath](http://buildwithcraft.com/docs/config-settings#setPasswordPath)
