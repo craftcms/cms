@@ -100,7 +100,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		this._fileDrag = new Garnish.DragDrop({
 			activeDropTargetClass: 'sel',
-			helperOpacity: 0.5,
+			helperOpacity: 0.75,
 
 			filter: $.proxy(function()
 			{
@@ -135,7 +135,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this._folderDrag = new Garnish.DragDrop(
 		{
 			activeDropTargetClass: 'sel',
-			helperOpacity: 0.5,
+			helperOpacity: 0.75,
 
 			filter: $.proxy(function()
 			{
@@ -772,7 +772,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="btn submit assets-upload-button" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
+			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
 			this.addButton(this.$uploadButton);
 
 			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -1048,22 +1048,47 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			case 'table':
 			{
-				var $container = $('<div class="assets-listview assets-lv-drag" />'),
-					$table = $('<table cellpadding="0" cellspacing="0" border="0" />').appendTo($container),
-					$tbody = $('<tbody />').appendTo($table);
+				var $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod),
+					$innerContainer = $('<div class="tableview"/>').appendTo($outerContainer),
+					$table = $('<table class="data"/>').appendTo($innerContainer),
+					$tbody = $('<tbody/>').appendTo($table);
 
-				$table.width(this.$table.width());
-				$tbody.append($element);
+				$element.appendTo($tbody);
 
-				return $container;
+				// Copy the column widths
+				this._$firstRowCells = this.$elementContainer.children('tr:first').children();
+				var $helperCells = $element.children();
+
+				for (var i = 0; i < $helperCells.length; i++)
+				{
+					// Hard-set the cell widths
+					var $helperCell = $($helperCells[i]);
+
+					// Skip the checkbox cell
+					if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+					{
+						$helperCell.remove();
+						$outerContainer.css('margin-'+Craft.left, 19); // 26 - 7
+						continue;
+					}
+
+					var $firstRowCell = $(this._$firstRowCells[i]),
+						width = $firstRowCell.width();
+
+					$firstRowCell.width(width);
+					$helperCell.width(width);
+				}
+
+				return $outerContainer;
 			}
 			case 'thumbs':
 			{
-				return $('<div class="elements"/>').append(
-					$('<ul class="thumbsview assets-tv-drag"/>').append(
-						$element.removeClass('sel')
-					)
-				);
+				var $outerContainer = $('<div class="elements thumbviewhelper"/>').appendTo(Garnish.$bod),
+					$innerContainer = $('<ul class="thumbsview"/>').appendTo($outerContainer);
+
+				$element.appendTo($innerContainer);
+
+				return $outerContainer;
 			}
 		}
 

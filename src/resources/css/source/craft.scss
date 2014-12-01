@@ -558,7 +558,8 @@ table.collapsed tbody tr:last-child th:not(:last-child),
 table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 .datatablesorthelper,
-.editabletablesorthelper { background: #fff;
+.editabletablesorthelper,
+.thumbviewhelper { background: #fff;
 	@include box-shadow(0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px -1px rgba(0,0,0,0.1));
 }
 
@@ -617,6 +618,10 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 .elements .thumbsview li.has-checkbox .checkbox { position: absolute; top: 106px; @include left(4px); }
 .elements .thumbsview li.has-checkbox .element .label { @include padding-left(20px); }
+
+.thumbviewhelper { margin: -7px; padding: 7px; }
+.thumbviewhelper .thumbsview,
+.thumbviewhelper .thumbsview li { margin: 0 !important; }
 
 /* structures */
 .structure { position: relative; z-index: 1; }
