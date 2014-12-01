@@ -406,7 +406,7 @@ return array(
 	'restoreDbOnUpdateFailure' => true,
 
 	/**
-	 * Whether Craft should rotate the image according to EXIF data on upload.
+	 * Whether Craft should rotate images according to their EXIF data on upload.
 	 */
 	'rotateImagesOnUploadByExifData' => true,
 
