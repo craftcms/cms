@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "41dae4d356279bfe115de364cc8bbf1f",
+    "hash": "489be772d1dad0a4c90269a31a9848bb",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -208,6 +208,45 @@
                 "image processing"
             ],
             "time": "2014-11-11 11:36:02"
+        },
+        {
+            "name": "lsolesen/pel",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lsolesen/pel.git",
+                "reference": "abc2b03af8514f9cebfd12b1b612aa88cf5cfc57"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lsolesen/pel/zipball/abc2b03af8514f9cebfd12b1b612aa88cf5cfc57",
+                "reference": "abc2b03af8514f9cebfd12b1b612aa88cf5cfc57",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.0.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Lars Olesen",
+                    "email": "lars@intraface.dk",
+                    "homepage": "http://intraface.dk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Exif Library. A library for reading and writing Exif headers in JPEG and TIFF images using PHP.",
+            "homepage": "http://lsolesen.github.com/pel/",
+            "keywords": [
+                "template"
+            ],
+            "time": "2014-11-24 17:58:19"
         },
         {
             "name": "mockery/mockery",
@@ -1352,7 +1391,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "lsolesen/pel": 20
+    },
     "prefer-stable": false,
     "platform": [],
     "platform-dev": []
