@@ -41,7 +41,7 @@ Craft.RecentEntriesWidget = Garnish.Base.extend(
 					'<a href="'+entry.url+'">'+entry.title+'</a> ' +
 					'<span class="light">' +
 						entry.postDate +
-						(Craft.edition >= Craft.Client ? ' '+Craft.t('by {author}', { author: entry.username }) : '') +
+						(Craft.edition >= Craft.Client ? ', '+entry.username : '') +
 					'</span>' +
 				'</td>' +
 			'</tr>'
