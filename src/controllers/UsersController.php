@@ -780,10 +780,7 @@ class UsersController extends BaseController
 			if ($verifyExistingPassword)
 			{
 				// Make sure the correct current password has been submitted
-				$currentPassword = craft()->request->getPost('password');
-				$currentHashedPassword = $currentUser->password;
-
-				if (!craft()->users->validatePassword($currentHashedPassword, $currentPassword))
+				if (!$this->_verifyExistingPassword())
 				{
 					Craft::log('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', LogLevel::Warning);
 					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
@@ -1347,18 +1344,11 @@ class UsersController extends BaseController
 	 */
 	public function actionVerifyPassword()
 	{
-		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$password = craft()->request->getRequiredParam('password');
-		$user = craft()->userSession->getUser();
-
-		if ($user)
+		if ($this->_verifyExistingPassword())
 		{
-			if (craft()->users->validatePassword($user->password, $password))
-			{
-				$this->returnJson(array('success' => true));
-			}
+			$this->returnJson(array('success' => true));
 		}
 
 		$this->returnErrorJson(Craft::t('Invalid password.'));
@@ -1472,6 +1462,26 @@ class UsersController extends BaseController
 	private function _noUserExists($userId)
 	{
 		throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+	}
+
+	/**
+	 * Verifies that the current user's password was submitted with the request.
+	 *
+	 * @return bool
+	 */
+	private function _verifyExistingPassword()
+	{
+		$currentUser = craft()->userSession->getUser();
+
+		if (!$currentUser)
+		{
+			return false;
+		}
+
+		$currentHashedPassword = $currentUser->password;
+		$currentPassword = craft()->request->getRequiredParam('password');
+
+		return craft()->users->validatePassword($currentHashedPassword, $currentPassword);
 	}
 
 	/**
