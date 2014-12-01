@@ -51,10 +51,10 @@ Craft.LivePreview = Garnish.Base.extend(
 		}
 
 		// Set the base post data
-		this.basePostData = $.extend(
-			{ action: this.settings.previewAction },
-			this.settings.previewParams
-		);
+		this.basePostData = $.extend({
+			action: this.settings.previewAction,
+			livePreview: true
+		}, this.settings.previewParams);
 
 		if (Craft.csrfTokenName)
 		{

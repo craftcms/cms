@@ -320,11 +320,10 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	public function isLivePreview()
 	{
-		return ($this->isSiteRequest() &&
-			($actionSegments = $this->getActionSegments()) &&
-			count($actionSegments) == 2 &&
-			$actionSegments[0] == 'entries' &&
-			$actionSegments[1] == 'previewEntry'
+		return (
+			$this->isSiteRequest() &&
+			$this->isActionRequest() &&
+			craft()->request->getPost('livePreview')
 		);
 	}
 
