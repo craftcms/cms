@@ -11,9 +11,10 @@
 #content h1 { color: $textcolor; }
 #content p { font-size: 17px; line-height: 1.4; }
 
-#content img { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; max-width: 870px; @include box-shadow(0 0 50px rgba(0,0,0,0.25)); }
+#content img,
+#content #video-wrapper { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; @include box-shadow(0 0 50px rgba(0,0,0,0.25)); }
+#content img { max-width: 870px; }
+#content #video-wrapper { max-width: 1040px; }
 
 #content header h1 { font-size: 40px; color: $errorcolor; }
-#content header:after { display: block; margin: 0 -24px; content: '.'; font-size: 0; height: 4px;
-	@include radial-gradient(65% 100% at 50% 0, $bgcolor, #fff);
-}
+#content header p { font-size: 19px; }
