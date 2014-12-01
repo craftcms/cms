@@ -75,11 +75,18 @@ class Requirements
 				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
-				Craft::t('GD extension with FreeType support or Imagick extension'),
-				extension_loaded('gd') || extension_loaded('imagick'),
-				true,
+				Craft::t('GD extension with FreeType support'),
+				extension_loaded('gd'),
+				(!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/class.imagick.php">Imagick</a> is required.'
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
+			),
+			new Requirement(
+				Craft::t('ImageMagick extension'),
+				extension_loaded('imagick'),
+				(!extension_loaded('gd')), // Only required if GD isn't installed
+				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
