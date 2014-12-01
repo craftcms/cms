@@ -355,22 +355,6 @@ class Image
 	}
 
 	/**
-	 * Strip EXIF data from the image.
-	 *
-	 * @return $this
-	 */
-	public function stripExifData()
-	{
-		if (craft()->images->isImagick())
-		{
-			$this->_image->getImagick()->stripImage();
-		}
-
-		// GD can't save EXIF data anyway, just pretend we stripped the data.
-		return $this;
-	}
-
-	/**
 	 * Set image quality.
 	 *
 	 * @param int $quality

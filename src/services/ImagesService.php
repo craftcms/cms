@@ -145,25 +145,25 @@ class ImagesService extends BaseApplicationComponent
 	{
 		if (craft()->config->get('rotateImagesOnUploadByExifData'))
 		{
-			return $this->rotateImageByExifData($filePath);
+			$this->rotateImageByExifData($filePath);
 		}
-		else
-		{
-			return $this->loadImage($filePath)->stripExifData()->saveAs($filePath, true);
-		}
+
+		$this->stripOrientationFromExifData($filePath);
+
+		return $this->loadImage($filePath)->saveAs($filePath, true);
+
 	}
 
 	/**
 	 * Rotate image according to it's EXIF data.
 	 *
 	 * @param string $filePath
-	 * @param bool   $preserveExifData if set to true, will preserve EXIF data, if Imagick is used.
 	 *
 	 * @return null
 	 */
-	public function rotateImageByExifData($filePath, $preserveExifData = false)
+	public function rotateImageByExifData($filePath)
 	{
-		$exif = $this->getExifMetadata($filePath);
+		$exif = $this->getExifData($filePath);
 
 		$degrees = 0;
 
@@ -191,11 +191,6 @@ class ImagesService extends BaseApplicationComponent
 
 		$image = $this->loadImage($filePath)->rotate($degrees);
 
-		if (!$preserveExifData)
-		{
-			$image->stripExifData();
-		}
-
 		return $image->saveAs($filePath, true);
 	}
 
@@ -206,10 +201,46 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @return array
 	 */
-	public function getExifMetadata($filePath)
+	public function getExifData($filePath)
 	{
 		$image = new Image();
 
 		return $image->getExifMetadata($filePath);
+	}
+
+	/**
+	 * Strip orientation from EXIF data for an image at a path.
+	 *
+	 * @param $filePath
+	 *
+	 * @return bool
+	 */
+	public function stripOrientationFromExifData($filePath)
+	{
+		$data = new \PelDataWindow(IOHelper::getFileContents($filePath));
+
+		// Is this a valid JPEG?
+		if (\PelJpeg::isValid($data))
+		{
+			$jpeg = $file = new \PelJpeg();
+			$jpeg->load($data);
+			$exif = $jpeg->getExif();
+
+			if ($exif)
+			{
+				$tiff = $exif->getTiff();
+				$ifd0 = $tiff->getIfd();
+
+				// Delete the Orientation entry and re-save the file
+				$ifd0->offsetUnset(\PelTag::ORIENTATION);
+				$file->saveFile($filePath);
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
