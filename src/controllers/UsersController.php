@@ -239,6 +239,11 @@ class UsersController extends BaseController
 	{
 		$this->requireAdmin();
 
+		if (!$this->_verifyExistingPassword())
+		{
+			throw new HttpException(403);
+		}
+
 		$userId = craft()->request->getRequiredParam('userId');
 		$user = craft()->users->getUserById($userId);
 

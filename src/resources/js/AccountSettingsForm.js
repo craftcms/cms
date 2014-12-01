@@ -13,6 +13,8 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	$lockBtns: null,
 	$currentPasswordInput: null,
 	$currentPasswordSpinner: null,
+	afterVerifyPassword: null,
+	currentPassword: null,
 
 	confirmDeleteModal: null,
 	$deleteBtn: null,
@@ -45,7 +47,12 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper);
 			this.$currentPasswordSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
-			this.currentPasswordModal = new Garnish.Modal($form);
+			this.currentPasswordModal = new Garnish.Modal($form, {
+				onHide: $.proxy(function()
+				{
+					this.afterVerifyPassword = null;
+				}, this)
+			});
 
 			new Craft.PasswordInput(this.$currentPasswordInput, {
 				onToggleInput: $.proxy(function($newPasswordInput) {
@@ -95,12 +102,18 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 				{
 					if (response.success)
 					{
-						$('<input type="hidden" name="password" value="'+password+'"/>').appendTo('#userform');
+						this.currentPassword = password;
+						$('<input type="hidden" name="password"/>').val(password).appendTo('#userform');
 						var $newPasswordInput = $('#newPassword');
 						$('#email').add($newPasswordInput).removeClass('disabled').removeAttr('disabled');
 						this.$lockBtns.remove();
 
 						new Craft.PasswordInput($newPasswordInput);
+
+						if (this.afterVerifyPassword)
+						{
+							this.afterVerifyPassword();
+						}
 
 						this.currentPasswordModal.hide();
 					}
@@ -116,9 +129,18 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 	getPasswordResetUrl: function()
 	{
+		// Make sure they've entered their password first
+		if (!this.currentPassword)
+		{
+			this.afterVerifyPassword = $.proxy(this, 'getPasswordResetUrl');
+			this.showCurrentPasswordForm();
+			return;
+		}
+
 		this.$actionSpinner.removeClass('hidden');
 
 		var data = {
+			password: this.currentPassword,
 			userId: this.userId
 		};
 
