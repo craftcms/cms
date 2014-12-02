@@ -1377,7 +1377,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 		else
 		{
-			$('<td class="thin"/>').prependTo(this.$toolbarTableRow.find('tr:first')).append($button);
+			$('<td class="thin"/>').prependTo(this.$toolbarTableRow).append($button);
 		}
 	},
 
