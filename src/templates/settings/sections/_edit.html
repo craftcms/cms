@@ -160,7 +160,8 @@
 			{% endset %}
 
 			{{ forms.field({
-				label: "Which locales should entries in this section target?"|t
+				label: "Which locales should entries in this section target?"|t,
+				errors: section.getErrors('localeErrors'),
 			}, localesInput) }}
 		{% endif %}
 

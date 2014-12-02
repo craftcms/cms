@@ -168,7 +168,7 @@ class SectionsController extends BaseController
 
 		if (craft()->isLocalized())
 		{
-			$localeIds = craft()->request->getPost('locales');
+			$localeIds = craft()->request->getPost('locales', array());
 		}
 		else
 		{

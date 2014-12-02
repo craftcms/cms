@@ -368,6 +368,11 @@ class SectionsService extends BaseApplicationComponent
 		// Make sure that all of the URL formats are set properly
 		$sectionLocales = $section->getLocales();
 
+		if (!$sectionLocales)
+		{
+			$section->addError('localeErrors', Craft::t('At least one locale must be selected for the section.'));
+		}
+
 		foreach ($sectionLocales as $localeId => $sectionLocale)
 		{
 			if ($section->type == SectionType::Single)
