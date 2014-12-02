@@ -21,7 +21,7 @@
 		label: field.name|t|e,
 		locale: field.translatable ? (locale is defined ? locale : (element ? element.locale : craft.locale)),
 		required: (not static ? required : false),
-		instructions: instructions,
+		instructions: instructions|e,
 		id: field.handle,
 		errors: errors,
 		input: input

@@ -17,7 +17,7 @@
 				<span class="locale">{{ locale }}</span>
 			{% endif %}
 			{% if instructions %}
-				<div class="instructions">{% filter md %}{{ instructions }}{% endfilter %}</div>
+				<div class="instructions">{{ instructions|md }}</div>
 			{% endif %}
 		</div>
 	{% endif %}
