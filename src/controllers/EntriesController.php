@@ -910,6 +910,9 @@ class EntriesController extends BaseEntriesController
 			$entry->postDate = new DateTime();
 		}
 
+		// Have this entry override any freshly queried entries with the same ID/locale
+		craft()->elements->setPlaceholderElement($entry);
+
 		craft()->templates->getTwig()->disableStrictVariables();
 
 		$this->renderTemplate($section->template, array(

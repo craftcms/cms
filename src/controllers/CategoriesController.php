@@ -757,6 +757,9 @@ class CategoriesController extends BaseController
 
 		craft()->setLanguage($category->locale);
 
+		// Have this category override any freshly queried categories with the same ID/locale
+		craft()->elements->setPlaceholderElement($category);
+
 		craft()->templates->getTwig()->disableStrictVariables();
 
 		$this->renderTemplate($group->template, array(

@@ -15,6 +15,14 @@ namespace Craft;
  */
 class ElementsService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var array
+	 */
+	private $_placeholderElements;
+
 	// Public Methods
 	// =========================================================================
 
@@ -251,60 +259,75 @@ class ElementsService extends BaseApplicationComponent
 				}
 				else
 				{
+					$locale = $criteria->locale;
 					$elementType = $criteria->getElementType();
 					$indexBy = $criteria->indexBy;
 					$lastElement = null;
 
 					foreach ($results as $result)
 					{
-						// Make a copy to pass to the onPopulateElement event
-						$originalResult = array_merge($result);
-
-						if ($contentTable)
+						// Do we have a placeholder for this elmeent?
+						if (isset($this->_placeholderElements[$result['id']][$locale]))
 						{
-							// Separate the content values from the main element attributes
-							$content = array(
-								'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
-								'elementId' => $result['id'],
-								'locale'    => $criteria->locale,
-								'title'     => (isset($result['title']) ? $result['title'] : null)
-							);
+							$element = $this->_placeholderElements[$result['id']][$locale];
+						}
+						else
+						{
+							// Make a copy to pass to the onPopulateElement event
+							$originalResult = array_merge($result);
 
-							unset($result['title']);
-
-							if ($fieldColumns)
+							if ($contentTable)
 							{
-								foreach ($fieldColumns as $column)
+								// Separate the content values from the main element attributes
+								$content = array(
+									'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
+									'elementId' => $result['id'],
+									'locale'    => $locale,
+									'title'     => (isset($result['title']) ? $result['title'] : null)
+								);
+
+								unset($result['title']);
+
+								if ($fieldColumns)
 								{
-									// Account for results where multiple fields have the same handle, but from
-									// different columns e.g. two Matrix block types that each have a field with the
-									// same handle
-
-									$colName = $column['column'];
-									$fieldHandle = $column['handle'];
-
-									if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
+									foreach ($fieldColumns as $column)
 									{
-										$content[$fieldHandle] = $result[$colName];
-									}
+										// Account for results where multiple fields have the same handle, but from
+										// different columns e.g. two Matrix block types that each have a field with the
+										// same handle
 
-									unset($result[$colName]);
+										$colName = $column['column'];
+										$fieldHandle = $column['handle'];
+
+										if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
+										{
+											$content[$fieldHandle] = $result[$colName];
+										}
+
+										unset($result[$colName]);
+									}
 								}
 							}
-						}
 
-						$result['locale'] = $criteria->locale;
-						$element = $elementType->populateElementModel($result);
+							$result['locale'] = $locale;
+							$element = $elementType->populateElementModel($result);
 
-						// Was an element returned?
-						if (!$element || !($element instanceof BaseElementModel))
-						{
-							continue;
-						}
+							// Was an element returned?
+							if (!$element || !($element instanceof BaseElementModel))
+							{
+								continue;
+							}
 
-						if ($contentTable)
-						{
-							$element->setContent($content);
+							if ($contentTable)
+							{
+								$element->setContent($content);
+							}
+
+							// Fire an 'onPopulateElement' event
+							$this->onPopulateElement(new Event($this, array(
+								'element' => $element,
+								'result'  => $originalResult
+							)));
 						}
 
 						if ($indexBy)
@@ -327,12 +350,6 @@ class ElementsService extends BaseApplicationComponent
 						}
 
 						$lastElement = $element;
-
-						// Fire an 'onPopulateElement' event
-						$this->onPopulateElement(new Event($this, array(
-							'element' => $element,
-							'result'  => $originalResult
-						)));
 					}
 
 					$lastElement->setNext(false);
@@ -1806,6 +1823,30 @@ class ElementsService extends BaseApplicationComponent
 
 		return $str;
 	}
+
+	/**
+	 * Stores a placeholder element that {@link findElements()} should use instead of populating a new element with a
+	 * matching ID and locale.
+	 *
+	 * This is used by Live Preview and Sharing features.
+	 *
+	 * @param BaseElementModel $element The element currently being edited by Live Preview.
+	 *
+	 * @return null
+	 */
+	public function setPlaceholderElement(BaseElementModel $element)
+	{
+		// Won't be able to do anything with this if it doesn't have an ID or locale
+		if (!$element->id || !$element->locale)
+		{
+			return;
+		}
+
+		$this->_placeholderElements[$element->id][$element->locale] = $element;
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Fires an 'onPopulateElement' event.
