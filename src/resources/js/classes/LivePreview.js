@@ -178,7 +178,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		for (var i= 0; i < $fields.length; i++)
 		{
 			var $field = $($fields[i]),
-				$clone = $field.clone();
+				$clone = this._getClone($field);
 
 			// It's important that the actual field is added to the DOM *after* the clone,
 			// so any radio buttons in the field get deselected from the clone rather than the actual field.
@@ -295,7 +295,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		for (var i = 0; i < this.fields.length; i++)
 		{
 			var field = this.fields[i];
-			field.$newClone = field.$field.clone();
+			field.$newClone = this._getClone(field.$field);
 
 			// It's important that the actual field is added to the DOM *after* the clone,
 			// so any radio buttons in the field get deselected from the clone rather than the actual field.
@@ -380,6 +380,20 @@ Craft.LivePreview = Garnish.Base.extend(
 		{
 			return false;
 		}
+	},
+
+	_getClone: function($field)
+	{
+		var $clone = $field.clone();
+
+		// clone() won't account for input values that have changed since the original HTML set them
+		Garnish.copyInputValues($field, $clone);
+
+		// Remove any id= attributes
+		$clone.attr('id', '');
+		$clone.find('[id]').attr('id', '');
+
+		return $clone;
 	},
 
 	_onDragStart: function()
