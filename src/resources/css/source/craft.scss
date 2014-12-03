@@ -605,7 +605,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 /* table views */
 .elements .tableview tr { outline: none; }
 .elements .tableview td { position: relative; }
-.elements .tableview .move { display: block; @include floatleft; @include margin(5px, 0, 0, -14px); font-size: 11px; }
+.elements .tableview .move { display: block; position: absolute; top: 50%; @include margin(-13px, 0, 0, -14px); font-size: 11px; }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
