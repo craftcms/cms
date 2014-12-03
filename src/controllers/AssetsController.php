@@ -176,29 +176,16 @@ class AssetsController extends BaseController
 			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
 
-			if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
-			{
-				$useOldFilename = true;
-			}
-			else
-			{
-				$useOldFilename = false;
-			}
-
-			// Insert the new file and preventing conflicts.
 			$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
 			$insertedFileId = $response->getDataItem('fileId');
+
 			$newFile = craft()->assets->getFileById($insertedFileId);
 
-			// Now, overwrite the file to be replaced
 			if ($newFile && $existingFile)
 			{
-				craft()->assets->uploadFile($targetFolderId, AssetConflictResolution::Replace, $insertedFileId, $existingFile->filename);
-
-				if (!$useOldFilename)
-				{
-					craft()->assets->renameFile($existingFile, $fileName, AssetConflictResolution::Replace);
-				}
+				$source = craft()->assetSources->populateSourceType($newFile->getSource());
+				$source->replaceFile($existingFile, $newFile, false);
+				craft()->assets->deleteFiles($newFile->id);
 				IOHelper::deleteFile($fileLocation, true);
 			}
 			else
