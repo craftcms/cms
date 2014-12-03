@@ -79,6 +79,22 @@ class ElementIndexController extends BaseElementsController
 	}
 
 	/**
+	 * Returns the criteria that’s defining which elements will be returned in the current request.
+	 *
+	 * Other components can fetch this like so:
+	 *
+	 * ```php
+	 * $criteria = craft()->getController()->getElementCriteria();
+	 * ```
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	public function getElementCriteria()
+	{
+		return $this->_criteria;
+	}
+
+	/**
 	 * Renders and returns an element index container, plus its first batch of elements.
 	 *
 	 * @return null
