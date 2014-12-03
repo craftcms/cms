@@ -184,6 +184,26 @@ class AssetElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		$attributes = array(
+			'title'        => Craft::t('Title'),
+			'filename'     => Craft::t('Filename'),
+			'size'         => Craft::t('Size'),
+			'dateModified' => Craft::t('Date Modified'),
+		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyAssetSortableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source

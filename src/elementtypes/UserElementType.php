@@ -150,6 +150,41 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$attributes = array(
+				'email'         => Craft::t('Email'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+		else
+		{
+			$attributes = array(
+				'username'      => Craft::t('Username'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'email'         => Craft::t('Email'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyUserSortableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source

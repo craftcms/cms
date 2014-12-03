@@ -178,6 +178,24 @@ class CategoryElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		$attributes = array(
+			'title' => Craft::t('Title'),
+			'uri'   => Craft::t('URI'),
+		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyCategorySortableAttributes', array(&$attributes));
+
+		return $attributes;
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source

@@ -316,12 +316,17 @@ class EntryElementType extends BaseElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		return array(
+		$attributes = array(
 			'title'      => Craft::t('Title'),
 			'uri'        => Craft::t('URI'),
 			'postDate'   => Craft::t('Post Date'),
 			'expiryDate' => Craft::t('Expiry Date'),
 		);
+
+		// Allow plugins to modify the attributes
+		craft()->plugins->call('modifyEntrySortableAttributes', array(&$attributes));
+
+		return $attributes;
 	}
 
 	/**
