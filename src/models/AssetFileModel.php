@@ -263,7 +263,7 @@ class AssetFileModel extends BaseElementModel
 	{
 		if ($this->hasThumb())
 		{
-			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size.'?mtime='.$this->dateModified->format('YmdHis'));
 		}
 		else
 		{
