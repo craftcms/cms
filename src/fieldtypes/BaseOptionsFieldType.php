@@ -64,7 +64,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 				$columnType = ColumnType::Varchar;
 			}
 
-			return array(AttributeType::String, 'column' => $columnType, 'default' => $this->getDefaultValue());
+			return array(AttributeType::Mixed, 'column' => $columnType, 'default' => $this->getDefaultValue());
 		}
 		else
 		{
