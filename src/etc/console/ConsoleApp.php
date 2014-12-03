@@ -26,6 +26,11 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	private $_pendingEvents;
 
+	/**
+	 * @var
+	 */
+	private $_editionComponents;
+
 	// Public Methods
 	// =========================================================================
 
@@ -65,6 +70,9 @@ class ConsoleApp extends \CConsoleApplication
 		craft()->log->removeRoute('WebLogRoute');
 		craft()->log->removeRoute('ProfileLogRoute');
 
+		// Set the edition components
+		$this->_setEditionComponents();
+
 		// Load the plugins
 		craft()->plugins->loadPlugins();
 
@@ -77,6 +85,7 @@ class ConsoleApp extends \CConsoleApplication
 		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
 			$commandsPath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
+
 			if (IOHelper::folderExists($commandsPath))
 			{
 				craft()->commandRunner->addCommands(rtrim($commandsPath, '/'));
@@ -191,6 +200,25 @@ class ConsoleApp extends \CConsoleApplication
 		return $component;
 	}
 
+	/**
+	 * Sets the application components.
+	 *
+	 * @param      $components
+	 * @param bool $merge
+	 *
+	 * @return null
+	 */
+	public function setComponents($components, $merge = true)
+	{
+		if (isset($components['editionComponents']))
+		{
+			$this->_editionComponents = $components['editionComponents'];
+			unset($components['editionComponents']);
+		}
+
+		parent::setComponents($components, $merge);
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -228,6 +256,28 @@ class ConsoleApp extends \CConsoleApplication
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Sets the edition components.
+	 *
+	 * @return null
+	 */
+	private function _setEditionComponents()
+	{
+		// Set the appropriate edition components
+		if (isset($this->_editionComponents))
+		{
+			foreach ($this->_editionComponents as $edition => $editionComponents)
+			{
+				if ($this->getEdition() >= $edition)
+				{
+					$this->setComponents($editionComponents);
+				}
+			}
+
+			unset($this->_editionComponents);
 		}
 	}
 }
