@@ -980,9 +980,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if (this.settings.context == 'index')
 		{
-			var $enabledElements = $newElements.filter(':not(.disabled)');
-			this._attachElementEvents($enabledElements);
-
 			if (!append)
 			{
 				this._fileDrag.removeAllItems();
@@ -1014,19 +1011,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 
 		this.base(append, $newElements)
-	},
-
-	_attachElementEvents: function($elements)
-	{
-		// Doubleclick opens the HUD for editing
-		this.removeListener($elements, 'dblclick');
-		this.addListener($elements, 'dblclick', $.proxy(this, '_editProperties'));
-	},
-
-	_editProperties: function(event)
-	{
-		var $element = $(event.currentTarget).find('.element');
-		new Craft.ElementEditor($element);
 	},
 
 	/**

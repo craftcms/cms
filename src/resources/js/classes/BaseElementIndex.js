@@ -610,6 +610,40 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this._setupNewElements($newElements);
 
 				this._onUpdateElements(response, false, $newElements);
+
+				// Listen for double-clicks
+				if (this.settings.context == 'index')
+				{
+					this.addListener(this.$elementContainer, 'dblclick', function(ev)
+					{
+						var $target = $(ev.target);
+
+						if ($target.prop('nodeName') == 'A')
+						{
+							// Let the link do its thing
+							return;
+						}
+
+						if ($target.hasClass('element'))
+						{
+							var $element = $target;
+						}
+						else
+						{
+							var $element = $target.closest('.element');
+
+							if (!$element.length)
+							{
+								return;
+							}
+						}
+
+						if (Garnish.hasAttr($element, 'data-editable'))
+						{
+							new Craft.ElementEditor($element);
+						}
+					});
+				}
 			}
 
 		}, this));
