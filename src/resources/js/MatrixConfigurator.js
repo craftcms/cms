@@ -664,7 +664,7 @@ Field = Garnish.Base.extend(
 		if (firstTime)
 		{
 			Craft.initUiElements($body);
-			$('body').append(footHtml);
+			Garnish.$bod.append(footHtml);
 		}
 	},
 
