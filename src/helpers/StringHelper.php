@@ -486,6 +486,36 @@ class StringHelper
 	}
 
 	/**
+	 * Uppercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to upercase.
+	 */
+	public static function uppercaseFirst($string)
+	{
+		$strlen = mb_strlen($string, static::UTF8);
+		$firstChar = mb_substr($string, 0, 1, static::UTF8);
+		$remainder = mb_substr($string, 1, $strlen - 1, static::UTF8);
+		return static::toUpperCase($firstChar).$remainder;
+	}
+
+	/**
+	 * Lowercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to lowercase.
+	 */
+	public static function lowercaseFirst($string)
+	{
+		$strlen = mb_strlen($string, static::UTF8);
+		$firstChar = mb_substr($string, 0, 1, static::UTF8);
+		$remainder = mb_substr($string, 1, $strlen - 1, static::UTF8);
+		return static::toLowerCase($firstChar).$remainder;
+	}
+
+	/**
 	 * Backslash-escapes any commas in a given string.
 	 *
 	 * @param $str The string.
