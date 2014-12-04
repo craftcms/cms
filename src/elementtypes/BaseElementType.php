@@ -168,7 +168,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		);
 
 		// Special case for sorting by structure
-		if (!empty($viewState['order']) && $viewState['order'] == 'structure')
+		if (isset($viewState['order']) && $viewState['order'] == 'structure')
 		{
 			$source = $this->getSource($sourceKey, $context);
 
