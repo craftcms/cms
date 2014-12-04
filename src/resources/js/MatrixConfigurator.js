@@ -689,7 +689,7 @@ Field = Garnish.Base.extend(
 			'<div data-id="'+this.id+'">' +
 				'<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
 					'<div class="heading">' +
-						'<label class="required" for="'+this.inputIdPrefix+'-name">'+Craft.t('Name')+'</label>' +
+						'<label for="'+this.inputIdPrefix+'-name">'+Craft.t('Name')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
@@ -705,7 +705,7 @@ Field = Garnish.Base.extend(
 				'</div>' +
 				'<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
 					'<div class="heading">' +
-						'<label class="required" for="'+this.inputIdPrefix+'-instructions">'+Craft.t('Instructions')+'</label>' +
+						'<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('Instructions')+'</label>' +
 					'</div>' +
 					'<div class="input">' +
 						'<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
