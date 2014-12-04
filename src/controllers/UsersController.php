@@ -280,8 +280,6 @@ class UsersController extends BaseController
 
 				$this->_processSetPasswordPath($userToProcess);
 
-				$code = craft()->users->setVerificationCodeOnUser($userToProcess);
-
 				$this->renderTemplate($url, array(
 					'code'    => $code,
 					'id'      => $id,
