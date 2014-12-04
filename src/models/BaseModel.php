@@ -441,14 +441,28 @@ abstract class BaseModel extends \CModel
 		// If this is a model, get the actual attributes on it
 		if ($values instanceof \CModel)
 		{
-			$values = $values->getAttributes();
+			$model = $values;
+			$values = $model->getAttributes();
+
+			// Is this a record?
+			if ($model instanceof \CActiveRecord)
+			{
+				// Set any eager-loaded relations' values
+				foreach (array_keys($model->getMetaData()->relations) as $name)
+				{
+					if ($model->hasRelated($name))
+					{
+						$this->setAttribute($name, $model->$name);
+					}
+				}
+			}
 		}
 
 		if (is_array($values) || $values instanceof \Traversable)
 		{
 			foreach ($values as $name => $value)
 			{
-				$this->setAttribute($name, $values[$name]);
+				$this->setAttribute($name, $value);
 			}
 		}
 	}
