@@ -80,11 +80,15 @@ class EntriesController extends BaseEntriesController
 			}
 		}
 
-		if (craft()->getEdition() >= Craft::Client && $variables['section']->type == SectionType::Structure)
-		{
-			// Parent Entry selector variables
-			// ---------------------------------------------------------------------
+		// Parent Entry selector variables
+		// ---------------------------------------------------------------------
 
+		if (
+			craft()->getEdition() >= Craft::Client &&
+			$variables['section']->type == SectionType::Structure &&
+			$variables['section']->maxLevels != 1
+		)
+		{
 			$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Entry));
 
 			$variables['parentOptionCriteria'] = array(

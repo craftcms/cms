@@ -204,56 +204,59 @@ class CategoriesController extends BaseController
 		// Parent Category selector variables
 		// ---------------------------------------------------------------------
 
-		$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Category));
-
-		// Define the parent options criteria
-		$variables['parentOptionCriteria'] = array(
-			'locale'        => $variables['localeId'],
-			'groupId'       => $variables['group']->id,
-			'status'        => null,
-			'localeEnabled' => null,
-		);
-
-		if ($variables['group']->maxLevels)
+		if ($variables['group']->maxLevels != 1)
 		{
-			$variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
-		}
+			$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Category));
 
-		if ($variables['category']->id)
-		{
-			// Prevent the current category, or any of its descendants, from being options
-			$idParam = array('and', 'not '.$variables['category']->id);
+			// Define the parent options criteria
+			$variables['parentOptionCriteria'] = array(
+				'locale'        => $variables['localeId'],
+				'groupId'       => $variables['group']->id,
+				'status'        => null,
+				'localeEnabled' => null,
+			);
 
-			$descendantCriteria = craft()->elements->getCriteria(ElementType::Category);
-			$descendantCriteria->descendantOf = $variables['category'];
-			$descendantCriteria->status = null;
-			$descendantCriteria->localeEnabled = null;
-			$descendantIds = $descendantCriteria->ids();
-
-			foreach ($descendantIds as $id)
+			if ($variables['group']->maxLevels)
 			{
-				$idParam[] = 'not '.$id;
+				$variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
 			}
 
-			$variables['parentOptionCriteria']['id'] = $idParam;
-		}
-
-		// Get the initially selected parent
-		$parentId = craft()->request->getParam('parentId');
-
-		if ($parentId === null && $variables['category']->id)
-		{
-			$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
-
-			if ($parentIds)
+			if ($variables['category']->id)
 			{
-				$parentId = $parentIds[0];
-			}
-		}
+				// Prevent the current category, or any of its descendants, from being options
+				$idParam = array('and', 'not '.$variables['category']->id);
 
-		if ($parentId)
-		{
-			$variables['parent'] = craft()->categories->getCategoryById($parentId, $variables['localeId']);
+				$descendantCriteria = craft()->elements->getCriteria(ElementType::Category);
+				$descendantCriteria->descendantOf = $variables['category'];
+				$descendantCriteria->status = null;
+				$descendantCriteria->localeEnabled = null;
+				$descendantIds = $descendantCriteria->ids();
+
+				foreach ($descendantIds as $id)
+				{
+					$idParam[] = 'not '.$id;
+				}
+
+				$variables['parentOptionCriteria']['id'] = $idParam;
+			}
+
+			// Get the initially selected parent
+			$parentId = craft()->request->getParam('parentId');
+
+			if ($parentId === null && $variables['category']->id)
+			{
+				$parentIds = $variables['category']->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+
+				if ($parentIds)
+				{
+					$parentId = $parentIds[0];
+				}
+			}
+
+			if ($parentId)
+			{
+				$variables['parent'] = craft()->categories->getCategoryById($parentId, $variables['localeId']);
+			}
 		}
 
 		// Other variables
