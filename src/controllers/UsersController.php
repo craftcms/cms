@@ -492,11 +492,11 @@ class UsersController extends BaseController
 		// Determine which actions should be available
 		// ---------------------------------------------------------------------
 
+		$statusActions = array();
+		$sketchyActions = array();
+
 		if (craft()->getEdition() >= Craft::Client && !$variables['isNewAccount'])
 		{
-			$statusActions = array();
-			$sketchyActions = array();
-
 			switch ($variables['account']->getStatus())
 			{
 				case UserStatus::Pending:
@@ -565,8 +565,26 @@ class UsersController extends BaseController
 					$sketchyActions[] = array('id' => 'delete-btn', 'label' => Craft::t('Delete…'));
 				}
 			}
+		}
 
-			$variables['actions'] = array_filter(array($statusActions, $sketchyActions));
+		$variables['actions'] = array();
+
+		if ($statusActions)
+		{
+			array_push($variables['actions'], $statusActions);
+		}
+
+		// Give plugins a chance to add more actions
+		$pluginActions = craft()->plugins->call('addUserAdministrationOptions', array($variables['account']), true);
+
+		if ($pluginActions)
+		{
+			$variables['actions'] = array_merge($variables['actions'], array_values($pluginActions));
+		}
+
+		if ($sketchyActions)
+		{
+			array_push($variables['actions'], $sketchyActions);
 		}
 
 		// Set the appropriate page title
