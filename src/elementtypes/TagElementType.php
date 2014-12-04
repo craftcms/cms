@@ -169,6 +169,12 @@ class TagElementType extends BaseElementType
 			$query->join('taggroups taggroups', 'taggroups.id = tags.groupId');
 			$query->andWhere(DbHelper::parseParam('taggroups.handle', $criteria->group, $query->params));
 		}
+
+		// Backwards compatibility with order=name (tags had names before 2.3)
+		if (is_string($criteria->order))
+		{
+			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order);
+		}
 	}
 
 	/**
