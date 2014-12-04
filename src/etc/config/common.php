@@ -151,7 +151,6 @@ $components['entries']['class']              = 'Craft\EntriesService';
 $components['et']['class']                   = 'Craft\EtService';
 $components['feeds']['class']                = 'Craft\FeedsService';
 $components['fields']['class']               = 'Craft\FieldsService';
-$components['fieldTypes']['class']           = 'Craft\FieldTypesService';
 $components['globals']['class']              = 'Craft\GlobalsService';
 $components['install']['class']              = 'Craft\InstallService';
 $components['images']['class']               = 'Craft\ImagesService';
@@ -230,7 +229,6 @@ $components['editionComponents'][1]['entryRevisions']['class']  = 'Craft\EntryRe
 $components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
 $components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
-$components['file']['class'] = 'Craft\File';
 $components['messages']['class'] = 'Craft\PhpMessageSource';
 $components['coreMessages']['class'] = 'Craft\PhpMessageSource';
 $components['request']['class'] = 'Craft\HttpRequestService';
