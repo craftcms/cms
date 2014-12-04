@@ -19,7 +19,7 @@ class UriValidator extends \CValidator
 	/**
 	 * @var string
 	 */
-	public $pattern = '/^[^\s]+$/';
+	public $pattern = '/^[^\s]+$/u';
 
 	// Protected Methods
 	// =========================================================================
