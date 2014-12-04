@@ -1204,7 +1204,7 @@ class ElementsService extends BaseApplicationComponent
 						ElementHelper::setValidSlug($localizedElement);
 
 						// If the slug was entirely composed of invalid characters, it will be blank now.
-						if (!$localizedElement->slug)
+						if ($originalSlug && !$localizedElement->slug)
 						{
 							$localizedElement->slug = $originalSlug;
 							$element->addError('slug', Craft::t('{attribute} is invalid.', array('attribute' => Craft::t('Slug'))));
