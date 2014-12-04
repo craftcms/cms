@@ -68,7 +68,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
-			'lcfirst'            => new \Twig_Filter_Function('lcfirst'),
+			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
 			'literal'            => new \Twig_Filter_Method($this, 'literalFilter'),
 			'markdown'           => $markdownFilter,
 			'md'                 => $markdownFilter,
@@ -82,10 +82,34 @@ class CraftTwigExtension extends \Twig_Extension
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
-			'ucfirst'            => new \Twig_Filter_Function('ucfirst'),
+			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
+	}
+
+	/**
+	 * Uppercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to upercase.
+	 */
+	public function ucfirstFilter($string)
+	{
+		return StringHelper::uppercaseFirst($string);
+	}
+
+	/**
+	 * Lowercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to lowercase.
+	 */
+	public function lcfirstFilter($string)
+	{
+		return StringHelper::lowercaseFirst($string);
 	}
 
 	/**
