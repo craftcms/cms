@@ -1781,6 +1781,7 @@ class ElementsService extends BaseApplicationComponent
 							if ($refTagsByThing)
 							{
 								$criteria = craft()->elements->getCriteria($elementTypeHandle);
+								$criteria->status = null;
 								$criteria->$thing = array_keys($refTagsByThing);
 								$elements = $criteria->find();
 
