@@ -13,6 +13,11 @@ namespace Craft;
  */
 class StringHelper
 {
+	// Constants
+	// =========================================================================
+
+	const UTF8 = 'UTF-8';
+
 	// Properties
 	// =========================================================================
 
@@ -320,7 +325,7 @@ class StringHelper
 		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
 
 		// Get rid of entities
-		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+		$str = html_entity_decode($str, ENT_QUOTES, static::UTF8);
 
 		// Remove punctuation and diacritics
 		$str = strtr($str, static::_getCharMap());
@@ -464,7 +469,7 @@ class StringHelper
 	 */
 	public static function toUpperCase($string)
 	{
-		return mb_convert_case($string, MB_CASE_UPPER, "UTF-8");
+		return mb_convert_case($string, MB_CASE_UPPER, static::UTF8);
 	}
 
 	/**
@@ -477,7 +482,7 @@ class StringHelper
 	 */
 	public static function toLowerCase($string)
 	{
-		return mb_convert_case($string, MB_CASE_LOWER, "UTF-8");
+		return mb_convert_case($string, MB_CASE_LOWER, static::UTF8);
 	}
 
 	/**
@@ -533,6 +538,6 @@ class StringHelper
 	 */
 	private static function _chr($int)
 	{
-		return html_entity_decode("&#{$int};", ENT_QUOTES, 'UTF-8');
+		return html_entity_decode("&#{$int};", ENT_QUOTES, static::UTF8);
 	}
 }
