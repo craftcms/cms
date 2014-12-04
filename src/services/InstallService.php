@@ -641,26 +641,6 @@ class InstallService extends BaseApplicationComponent
 			Craft::log('Could not save the Default field group.', LogLevel::Warning);
 		}
 
-		// Heading field
-
-		Craft::log('Creating the Heading field.');
-
-		$headingField = new FieldModel();
-		$headingField->groupId      = $group->id;
-		$headingField->name         = Craft::t('Heading');
-		$headingField->handle       = 'heading';
-		$headingField->translatable = true;
-		$headingField->type         = 'PlainText';
-
-		if (craft()->fields->saveField($headingField))
-		{
-			Craft::log('Heading field created successfully.');
-		}
-		else
-		{
-			Craft::log('Could not save the Heading field.', LogLevel::Warning);
-		}
-
 		// Body field
 
 		Craft::log('Creating the Body field.');
@@ -713,9 +693,9 @@ class InstallService extends BaseApplicationComponent
 
 		$homepageLayout = craft()->fields->assembleLayout(
 			array(
-				Craft::t('Content') => array($headingField->id, $bodyField->id)
+				Craft::t('Content') => array($bodyField->id)
 			),
-			array($headingField->id, $bodyField->id)
+			array($bodyField->id)
 		);
 
 		$homepageLayout->type = ElementType::Entry;
@@ -747,6 +727,8 @@ class InstallService extends BaseApplicationComponent
 
 		$homepageEntryTypes = $homepageSingleSection->getEntryTypes();
 		$homepageEntryType = $homepageEntryTypes[0];
+		$homepageEntryType->hasTitleField = true;
+		$homepageEntryType->titleLabel = Craft::t('Title');
 		$homepageEntryType->setFieldLayout($homepageLayout);
 
 		if (craft()->sections->saveEntryType($homepageEntryType))
@@ -771,10 +753,9 @@ class InstallService extends BaseApplicationComponent
 		$entryModel = $criteria->first();
 
 		$entryModel->locale = $inputs['locale'];
-		$entryModel->getContent()->heading = Craft::t('Welcome to {siteName}!', $vars);
-		$entryModel->getContent()->setAttributes(array(
+		$entryModel->getContent()->title = Craft::t('Welcome to {siteName}!', $vars);
+		$entryModel->setContentFromPost(array(
 			'body' => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
-			'heading' => Craft::t('Welcome to {siteName}!', $vars),
 		));
 
 		// Save the content
