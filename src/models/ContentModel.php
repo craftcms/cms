@@ -166,7 +166,7 @@ class ContentModel extends BaseModel
 			}
 
 			$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
-			$attributeConfig['label'] = $field->name;
+			$attributeConfig['label'] = ($field->name != '__blank__' ? $field->name : StringHelper::uppercaseFirst($field->handle));
 
 			if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
 			{
