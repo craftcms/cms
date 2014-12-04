@@ -165,7 +165,33 @@ interface IElementType extends IComponentType
 	/**
 	 * Defines the attributes that elements can be sorted by.
 	 *
-	 * @retrun array
+	 * This method should return an array, where the keys reference database column names that should be sorted on,
+	 * and where the values define the user-facing labels.
+	 *
+	 * ```php
+	 * return array(
+	 *     'columnName1' => Craft::t('Attribute Label 1'),
+	 *     'columnName2' => Craft::t('Attribute Label 2'),
+	 * );
+	 * ```
+	 *
+	 * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
+	 * separated by commas.
+	 *
+	 * ```php
+	 * return array(
+	 *     'columnName1, columnName2 asc' => Craft::t('Attribute Label 1'),
+	 *     'columnName3'                  => Craft::t('Attribute Label 2'),
+	 * );
+	 * ```
+	 *
+	 * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
+	 * in specifying the sort direction for the first column, though, since the end user has full control over that.
+	 *
+	 * Note that this method will only get called once for the entire index; not each time that a new source is
+	 * selected.
+	 *
+	 * @retrun array The attributes that elements can be sorted by.
 	 */
 	public function defineSortableAttributes();
 
