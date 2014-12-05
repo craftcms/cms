@@ -184,8 +184,25 @@ class AssetsController extends BaseController
 			if ($newFile && $existingFile)
 			{
 				$source = craft()->assetSources->populateSourceType($newFile->getSource());
-				$source->replaceFile($existingFile, $newFile, false);
-				craft()->assets->deleteFiles($newFile->id);
+
+				if(StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+				{
+					$filenameToUse = $existingFile->filename;
+				}
+				else
+				{
+					// If the file uploaded had to resolve a conflict, grab the final filename
+					if ($response->getDataItem('filename'))
+					{
+						$filenameToUse = $response->getDataItem('filename');
+					}
+					else
+					{
+						$filenameToUse = $fileName;
+					}
+				}
+
+				$source->replaceFile($existingFile, $newFile, $filenameToUse);
 				IOHelper::deleteFile($fileLocation, true);
 			}
 			else

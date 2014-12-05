@@ -795,11 +795,12 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Delete a list of files by an array of ids (or a single id).
 	 *
-	 * @param $fileIds
+	 * @param array $fileIds
+	 * @param bool $deleteFile Should the file be deleted along the record. Defaults to true.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function deleteFiles($fileIds)
+	public function deleteFiles($fileIds, $deleteFile = true)
 	{
 		if (!is_array($fileIds))
 		{
@@ -820,7 +821,11 @@ class AssetsService extends BaseApplicationComponent
 					'asset' => $file
 				)));
 
-				$source->deleteFile($file);
+				if ($deleteFile)
+				{
+					$source->deleteFile($file);
+				}
+
 				craft()->elements->deleteElementById($fileId);
 
 				// Fire an 'onDeleteAsset' event
@@ -1324,6 +1329,7 @@ class AssetsService extends BaseApplicationComponent
 		if ($fileId)
 		{
 			$response->setDataItem('fileId', $fileId);
+			$response->setDataItem('filename', $theNewFile->filename);
 		}
 
 		return $response;
