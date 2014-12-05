@@ -80,17 +80,19 @@
 						errors: (category.getErrors('slug')|merge(category.getErrors('uri')))
 					}) }}
 
-					{{ forms.elementSelectField({
-						label: "Parent Category"|t,
-						id: 'parentId',
-						name: 'parentId',
-						elementType: elementType,
-						addButtonLabel: "Choose"|t,
-						sources: ['group:'~group.id],
-						criteria: parentOptionCriteria,
-						limit: 1,
-						elements: (parent is defined and parent ? [parent])
-					}) }}
+					{% if parentOptionCriteria is defined %}
+						{{ forms.elementSelectField({
+							label: "Parent Category"|t,
+							id: 'parentId',
+							name: 'parentId',
+							elementType: elementType,
+							addButtonLabel: "Choose"|t,
+							sources: ['group:'~group.id],
+							criteria: parentOptionCriteria,
+							limit: 1,
+							elements: (parent is defined and parent ? [parent])
+						}) }}
+					{% endif %}
 
 					{% set statusInput %}
 						<div class="left">

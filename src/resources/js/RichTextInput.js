@@ -73,6 +73,18 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	onRedactorInit: function()
 	{
+		// Only customize the toolbar if there is one,
+		// otherwise we get a JS error due to redactor.$toolbar being undefined
+		if (this.redactor.opts.toolbar)
+		{
+			this.customizeToolbar();
+		}
+
+		this.leaveFullscreetOnSaveShortcut();
+	},
+
+	customizeToolbar: function()
+	{
 		var $imageBtn = this.replaceRedactorButton('image', Craft.t('Insert image')),
 			$linkBtn = this.replaceRedactorButton('link', Craft.t('Link'));
 
@@ -209,7 +221,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 				}
 			});
 		}
+	},
 
+	leaveFullscreetOnSaveShortcut: function()
+	{
 		if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.toggleFullscreen == 'function')
 		{
 			Craft.cp.on('beforeSaveShortcut', $.proxy(function()

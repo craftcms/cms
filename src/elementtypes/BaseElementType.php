@@ -168,7 +168,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 		);
 
 		// Special case for sorting by structure
-		if (!empty($viewState['order']) && $viewState['order'] == 'structure')
+		if (isset($viewState['order']) && $viewState['order'] == 'structure')
 		{
 			$source = $this->getSource($sourceKey, $context);
 
@@ -204,7 +204,15 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
 				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], array('asc', 'desc'))) ? $viewState['sort'] : 'asc';
 
-				$criteria->order = $order.' '.$sort;
+				// Combine them, accounting for the possibility that $order could contain multiple values,
+				// and be defensive about the possibility that the first value actually has "asc" or "desc"
+
+				// typeId             => typeId [sort]
+				// typeId, title      => typeId [sort], title
+				// typeId, title desc => typeId [sort], title desc
+				// typeId desc        => typeId [sort]
+
+				$criteria->order = preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order);
 			}
 		}
 

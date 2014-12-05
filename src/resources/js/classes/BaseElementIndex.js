@@ -1008,7 +1008,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getSortAttributeOption: function(attr)
 	{
-		return this.$sortAttributesList.find('a[data-attr='+attr+']:first');
+		return this.$sortAttributesList.find('a[data-attr="'+attr+'"]:first');
 	},
 
 	getSelectedSortAttribute: function()

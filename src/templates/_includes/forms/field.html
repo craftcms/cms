@@ -6,15 +6,15 @@
 {%- set errors = (errors is defined ? errors : null) -%}
 
 <div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
-	{% if label or locale or instructions %}
+	{% if label or instructions %}
 		<div class="heading">
 			{% if label %}
 				<label{% if required is defined and required %} class="required"{% endif %}{% if id %} for="{{ id }}"{% endif %}>
 					{{- label|raw -}}
 				</label>
-			{% endif %}
-			{% if locale %}
-				<span class="locale">{{ locale }}</span>
+				{% if locale %}
+					<span class="locale">{{ locale }}</span>
+				{% endif %}
 			{% endif %}
 			{% if instructions %}
 				<div class="instructions">{{ instructions|md }}</div>

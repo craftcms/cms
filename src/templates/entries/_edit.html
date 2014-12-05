@@ -94,7 +94,7 @@
 								disabled: isVersion
 							}) }}
 
-							{% if section.type == 'structure' %}
+							{% if parentOptionCriteria is defined %}
 								{{ forms.elementSelectField({
 									label: "Parent Entry"|t,
 									id: 'parentId',

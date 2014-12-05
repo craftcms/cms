@@ -257,7 +257,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 		}, 'fast', $.proxy(function()
 		{
 			$block.css('margin-bottom', '');
-			$('body').append(footHtml);
+			Garnish.$bod.append(footHtml);
 			Craft.initUiElements($fieldsContainer);
 			new MatrixBlock(this, $block);
 			this.blockSort.addItems($block);
