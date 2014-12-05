@@ -539,11 +539,11 @@ class UsersController extends BaseController
 
 					if (!$variables['account']->isCurrent())
 					{
-						$statusActions[] = array('action' => 'users/sendPasswordResetEmail', 'label' => 'Send password reset email');
+						$statusActions[] = array('action' => 'users/sendPasswordResetEmail', 'label' => Craft::t('Send password reset email'));
 
 						if (craft()->userSession->isAdmin())
 						{
-							$statusActions[] = array('id' => 'copy-passwordreset-url', 'label' => 'Copy password reset URL');
+							$statusActions[] = array('id' => 'copy-passwordreset-url', 'label' => Craft::t('Copy password reset URL'));
 						}
 					}
 
