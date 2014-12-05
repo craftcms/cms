@@ -46,7 +46,6 @@ class ClearCachesTool extends BaseTool
 		$caches = $this->_getFolders();
 		$caches['assetTransformIndex'] = Craft::t('Asset transform index');
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
-		$caches['assetThumbnails'] = Craft::t('Asset thumbnails');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
 		return craft()->templates->render('_includes/forms/checkboxSelect', array(
@@ -133,11 +132,6 @@ class ClearCachesTool extends BaseTool
 		{
 			craft()->db->createCommand()->truncateTable('assetindexdata');
 		}
-
-		if ($params['caches'] == '*' || in_array('assetThumbnails', $params['caches']))
-		{
-			IOHelper::clearFolder(craft()->path->getAssetsThumbsPath());
-		}
 	}
 
 	// Private Methods
@@ -158,7 +152,7 @@ class ClearCachesTool extends BaseTool
 		$folders = array(
 			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data caches'),
 			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS caches'),
-			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset thumbs'),
+			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset resources'),
 			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
 			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
 		);
