@@ -395,12 +395,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel $oldFile        The assetFileModel representing the original file.
 	 * @param AssetFileModel $replaceWith    The assetFileModel representing the new file.
-	 * @param boolean        $useOldFilename Whether or not to use the same filename as the original file..
-	 *                                       Defaults to true.
+	 * @param string         $filenameToUse  The filename to use for the replaced file. If left
+	 *                                       empty, will use the name of the new file.
 	 *
 	 * @return null
 	 */
-	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith, $useOldFilename = true)
+	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith, $filenameToUse = "")
 	{
 		if ($oldFile->kind == 'image')
 		{
@@ -419,10 +419,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
-		$newFileName = $useOldFilename ? $oldFile->filename : $replaceWith->filename;
+		$newFileName = !empty($filenameToUse) ? $filenameToUse : $oldFile->filename;
 		$folder = craft()->assets->getFolderById($oldFile->folderId);
 
-		$this->moveSourceFile($replaceWith, $folder, $newFileName, true);
+		$filenameChanges = StringHelper::toLowerCase($newFileName) != StringHelper::toLowerCase($replaceWith->filename);
+
+		// If the filename does not change, this can trigger errors in some source types.
+		if ($filenameChanges)
+		{
+			$this->moveSourceFile($replaceWith, $folder, $newFileName, true);
+		}
 
 		// Update file info
 		$oldFile->width        = $replaceWith->width;
@@ -432,10 +438,16 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$oldFile->dateModified = $replaceWith->dateModified;
 		$oldFile->filename     = $newFileName;
 
-		if (!$useOldFilename)
+		if (empty($filenameToUse))
 		{
 			$replaceWith->filename = $this->getNameReplacement($folder, $replaceWith->filename);
 			craft()->assets->storeFile($replaceWith);
+		}
+		else
+		{
+			// If the file name has not changed, we're reusing the source file,
+			// so we have to prevent deletion of source file here.
+			craft()->assets->deleteFiles($replaceWith->id, $filenameChanges);
 		}
 
 		craft()->assets->storeFile($oldFile);
