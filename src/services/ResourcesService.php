@@ -302,7 +302,7 @@ class ResourcesService extends BaseApplicationComponent
 	{
 		if (PathHelper::ensurePathIsContained($path) === false)
 		{
-			throw new HttpException(403);
+			throw new HttpException(404);
 		}
 
 		$cachedPath = $this->getCachedResourcePath($path);

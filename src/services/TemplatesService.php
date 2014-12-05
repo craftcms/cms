@@ -738,7 +738,15 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function doesTemplateExist($name)
 	{
-		return (bool) $this->findTemplate($name);
+		try
+		{
+			return (bool) $this->findTemplate($name);
+		}
+		catch (\Twig_Error_Loader $e)
+		{
+			// _validateTemplateName() han an issue with it
+			return false;
+		}
 	}
 
 	/**
