@@ -325,6 +325,11 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFolderTreeBySourceIds($allowedSourceIds)
 	{
+		if (empty($allowedSourceIds))
+		{
+			return array();
+		}
+
 		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
 		$tree = $this->_getFolderTreeByFolders($folders);
 
