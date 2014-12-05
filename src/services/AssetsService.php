@@ -1067,7 +1067,10 @@ class AssetsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
-			if (!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId))
+			if (
+				!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId)
+				&&
+				!craft()->userSession->checkAuthorization($permission.':'.$folderModel->sourceId))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
