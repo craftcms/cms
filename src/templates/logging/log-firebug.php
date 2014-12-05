@@ -1,6 +1,6 @@
 <script type="text/javascript">
 /*<![CDATA[*/
-if (typeof(console) == 'object')
+if (typeof(console) == 'object' && typeof(console.groupCollapsed) == 'function')
 {
 	console.groupCollapsed("Application Log");
 
