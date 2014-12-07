@@ -113,7 +113,7 @@ class LocalizationVariable
 	 *
 	 * @param string|null $localeId
 	 *
-	 * @return \CLocale|null
+	 * @return LocaleData|null
 	 */
 	public function getLocaleData($localeId = null)
 	{
