@@ -39,12 +39,12 @@
 						{% if craft.isLocalized() %}
 							<th class="thin nowrap">{{ locale.id }}</th>
 						{% endif %}
-						<td>
+						<td class="topalign">
 							{% set value = ((section.type == sectionType or sectionType != 'single') and section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null) %}
 							{{ _self.urlFormatText(sectionType, locale, section, 'urlFormat', value) }}
 						</td>
 						{% if sectionType == 'structure' %}
-							<td>
+							<td class="topalign">
 								{% set value = ((section.type == 'structure') and section.locales[locale.id] is defined ? section.locales[locale.id].nestedUrlFormat : '{parent.uri}/{slug}') %}
 								{{ _self.urlFormatText(sectionType, locale, section, 'nestedUrlFormat', value) }}
 							</td>

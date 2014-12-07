@@ -149,6 +149,7 @@ em, i { font-style: italic; }
 strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* text styles */
+.topalign { vertical-align: top; }
 .rightalign { @include alignright; }
 .centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
