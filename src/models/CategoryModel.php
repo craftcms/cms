@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\models;
 
 /**
  * Category model class.

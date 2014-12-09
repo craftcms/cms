@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\components;
 
 /**
  * Base component base class.
@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.etc.components
  * @since     1.0
  */
-abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
+abstract class BaseComponentType extends BaseComponent implements IComponentType
 {
 	// Properties
 	// =========================================================================

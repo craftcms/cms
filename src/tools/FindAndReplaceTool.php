@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tools;
 
 /**
  * Find and Replace tool

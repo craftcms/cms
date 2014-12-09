@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * TemplatesService provides APIs for rendering templates, as well as interacting with other areas of Craft’s

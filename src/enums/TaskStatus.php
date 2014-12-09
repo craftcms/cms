@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The TaskStatus class is an abstract class that defines the different task status options available in Craft for the

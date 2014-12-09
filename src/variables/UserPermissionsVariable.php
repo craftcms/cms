@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\variables;
 
 craft()->requireEdition(Craft::Pro);
 

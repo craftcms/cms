@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * FeedsService provides APIs for fetching remote RSS and Atom feeds.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * UserSessionService provides APIs for managing user sessions.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\records;
 
 /**
  * Element locale data record class.

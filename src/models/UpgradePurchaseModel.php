@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\models;
 
 /**
  * Used to hold edition upgrade purchase order data.

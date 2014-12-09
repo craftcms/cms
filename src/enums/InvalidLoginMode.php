@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The InvalidLoginMode class is an abstract class that defines all of the invalid login modes that are available in

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\web;
 
 /**
  * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.

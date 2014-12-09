@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * Service for image operations.

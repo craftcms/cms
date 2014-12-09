@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\models;
 
 /**
  * Field layout field model class.

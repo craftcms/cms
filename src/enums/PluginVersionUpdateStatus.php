@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The PluginVersionUpdateStatus class is an abstract class that defines the different plugin version update status

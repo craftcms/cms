@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * EAcceleratorCache implements a cache application module based on [eaccelerator](http://eaccelerator.net/).

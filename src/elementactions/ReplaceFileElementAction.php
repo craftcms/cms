@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementactions;
 
 /**
  * Replace File Element Action

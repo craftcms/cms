@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\templating\twigextensions;
 
 /**
  * Represents a paginate node.

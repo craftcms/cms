@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The CacheMethod class is an abstract class that defines all of the cache methods (except for template caching) that

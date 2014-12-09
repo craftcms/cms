@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\elements;
 
 /**
  * Parses a relatedTo param on an ElementCriteriaModel.

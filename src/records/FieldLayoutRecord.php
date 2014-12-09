@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\records;
 
 /**
  * Field layout record class

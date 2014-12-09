@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tools;
 
 /**
  * Asset Index tool.

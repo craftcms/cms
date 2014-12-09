@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * WinCache implements a cache application component based on [WinCache](http://www.iis.net/expand/wincacheforphp).

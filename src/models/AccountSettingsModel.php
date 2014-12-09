@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\models;
 
 /**
  * Validates the required User attributes for the installer.

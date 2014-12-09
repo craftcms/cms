@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft;
+namespace craft\helpers;
 
 /**
  * Class HeaderHelper

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\components;
 
 /**
  * Savable component type interface.

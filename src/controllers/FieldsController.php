@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving

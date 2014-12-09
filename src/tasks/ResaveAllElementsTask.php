@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tasks;
 
 /**
  * Resave All Elements Task.

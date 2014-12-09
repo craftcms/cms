@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.

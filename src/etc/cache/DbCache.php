@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * DbCache implements a cache application component by storing cached data in a database.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\variables;
 
 /**
  * Asset source type template variable.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementtypes;
 
 /**
  * The TagElementType class is responsible for implementing and definingtags as a native element type in Craft.

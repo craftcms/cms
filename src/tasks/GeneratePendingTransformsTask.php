@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tasks;
 
 /**
  * Generate Pending Transforms Task

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The LogLevel class is an abstract class that defines all of the different log level options that are available in

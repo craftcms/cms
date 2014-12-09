@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\db\mysql;
 
 /**
  * Class MysqlSchema
@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.etc.db.schemas
  * @since     1.0
  */
-class MysqlSchema extends \CMysqlSchema
+class Schema extends \CMysqlSchema
 {
 	// Public Methods
 	// =========================================================================

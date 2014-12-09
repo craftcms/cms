@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\db;
 
 /**
  * This class provides methods for backing up and restore Craft databases.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\assetsourcetypes;
 
 /**
  * The base class for all asset source types.  Any asset source type must extend this class.

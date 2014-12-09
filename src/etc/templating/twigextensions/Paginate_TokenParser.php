@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\templating\twigextensions;
 
 /**
  * Paginates elements via a ElementCriteriaModel instance.

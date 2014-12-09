@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementtypes;
 
 /**
  * The GlobalSetElementType class is responsible for implementing and defining globals as a native element type in

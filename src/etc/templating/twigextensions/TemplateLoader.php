@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\templating\twigextensions;
 
 /**
  * Loads Craft templates into Twig.

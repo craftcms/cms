@@ -1,8 +1,7 @@
 <?php
-namespace Craft;
-
+namespace craft\etc\components;
 /**
- * Class BaseApplicationComponent
+ * BaseComponent class
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,11 +10,10 @@ namespace Craft;
  * @package   craft.app.etc.components
  * @since     1.0
  */
-class BaseApplicationComponent extends \CApplicationComponent
+class BaseApplicationComponent extends \yii\Component
 {
 	// Public Methods
 	// =========================================================================
-
 	/**
 	 * Checks if this application component has been initialized yet, or not.
 	 *

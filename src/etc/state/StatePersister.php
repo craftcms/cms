@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\state;
 
 /**
  * StatePersister implements a file-based persistent data storage.

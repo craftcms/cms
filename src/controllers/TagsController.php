@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,

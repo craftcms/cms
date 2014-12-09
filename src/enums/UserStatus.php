@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The UserStatus class is an abstract class that defines the different user account statuses available in Craft.

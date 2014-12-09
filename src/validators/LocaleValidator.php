@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\validators;
 
 /**
  * Will validate that the given attribute is a valid site locale ID.

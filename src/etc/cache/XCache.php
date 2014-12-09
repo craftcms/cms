@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * XCache implements a cache application module based on [xcache](http://xcache.lighttpd.net/).

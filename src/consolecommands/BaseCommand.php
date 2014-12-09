@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft;
+namespace craft\consolecommands;
 
 /**
  * BaseCommand extends Yii's {@link \CConsoleCommand} and represents an executable console command.

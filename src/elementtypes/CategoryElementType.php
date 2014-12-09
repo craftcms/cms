@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementtypes;
 
 /**
  * The CategoryElementType class is responsible for implementing and defining categories as a native element type in

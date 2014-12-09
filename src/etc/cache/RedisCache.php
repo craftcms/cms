@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * RedisCache implements a cache application component based on [redis](http://redis.io/).

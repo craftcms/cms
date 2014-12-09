@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * MatrixService provides APIs for managing Matrix fields.

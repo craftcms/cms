@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\assetsourcetypes;
 
 craft()->requireEdition(Craft::Pro);
 

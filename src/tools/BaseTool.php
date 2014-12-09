@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tools;
 
 /**
  * Tool base class.

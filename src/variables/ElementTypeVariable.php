@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\variables;
 
 /**
  * Element type template variable.

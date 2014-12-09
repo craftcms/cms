@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The AssetConflictResolution class is an abstract class that defines all of the Asset conflict resolution options that

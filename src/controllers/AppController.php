@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,

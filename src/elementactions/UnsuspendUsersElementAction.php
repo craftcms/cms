@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementactions;
 
 /**
  * Unsuspend Users Element Action

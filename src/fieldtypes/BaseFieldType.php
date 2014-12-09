@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\fieldtypes;
 
 /**
  * Field type base class.

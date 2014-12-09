@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,

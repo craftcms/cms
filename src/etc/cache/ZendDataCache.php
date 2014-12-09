@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * ZendDataCache implements a cache application module based on the Zend DataCache delivered with

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\search;
 
 /**
  * Search Query class.

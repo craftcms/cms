@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.

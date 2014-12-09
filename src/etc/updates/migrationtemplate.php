@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\migrations;
 
 /**
  * The class name is the UTC timestamp in the format of {MigrationNameDesc}

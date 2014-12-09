@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\db;
 
 /**
  * Class DbConnection

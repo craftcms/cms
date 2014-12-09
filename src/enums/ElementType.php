@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The ElementType class is an abstract class that defines all of the element types that are available in Craft.

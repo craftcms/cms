@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * EntriesService provides APIs for managing entries in Craft.

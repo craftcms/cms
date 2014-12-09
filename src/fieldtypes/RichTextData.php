@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\fieldtypes;
 
 /**
  * Stores the data for Rich Text fields.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\records;
 
 /**
  * Class AssetFileRecord

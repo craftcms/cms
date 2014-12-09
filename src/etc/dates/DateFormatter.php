@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\dates;
 
 /**
  * DateFormatter class with functions for date/time-pickers.

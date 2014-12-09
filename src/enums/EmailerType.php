@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The EmailerType class is an abstract class that defines all of the email protocol options that are available in Craft.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementtypes;
 
 /**
  * The AssetElementType class is responsible for implementing and defining assets as a native element type in Craft.

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 craft()->requireEdition(Craft::Client);
 

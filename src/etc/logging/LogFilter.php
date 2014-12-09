@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\logging;
 
 /**
  * LogFilter pre-processes the logged messages before they are handled by a log route.

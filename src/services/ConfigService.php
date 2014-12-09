@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * ConfigService provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),

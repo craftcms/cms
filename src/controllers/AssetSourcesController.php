@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as

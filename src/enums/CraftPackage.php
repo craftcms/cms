@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The CraftPackage class is an abstract class that defines all of the packages that are available in Craft.

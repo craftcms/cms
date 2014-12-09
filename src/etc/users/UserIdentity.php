@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\users;
 
 /**
  * UserIdentity represents the data needed to identify a user. It contains the authentication method that checks if the

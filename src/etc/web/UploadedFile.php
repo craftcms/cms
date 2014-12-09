@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\web;
 
 /**
  * UploadedFile represents the information for an uploaded file.

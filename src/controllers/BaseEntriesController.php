@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * BaseController is a base class that any entry related controllers, such as {@link EntriesController} and

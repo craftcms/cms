@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\validators;
 
 /**
  * Class DateTimeValidator

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\assetsourcetypes;
 
 /**
  * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in

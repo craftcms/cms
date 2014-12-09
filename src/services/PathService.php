@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\services;
 
 /**
  * PathService provides APIs for getting server paths that are used by Craft.

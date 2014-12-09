@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\logging;
 
 /**
  * Class FileLogRoute

@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The DashboardController class is a controller that handles various dashboardrelated actions including managing

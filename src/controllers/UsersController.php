@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,

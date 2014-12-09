@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\elementtypes;
 
 /**
  * The EntryElementType class is responsible for implementing and defining entries as a native element type in Craft.

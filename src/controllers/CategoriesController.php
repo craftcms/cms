@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category

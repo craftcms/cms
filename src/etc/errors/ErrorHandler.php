@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\errors;
 
 /**
  * ErrorHandler handles uncaught PHP errors and exceptions.

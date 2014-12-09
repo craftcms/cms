@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\templating\twigextensions;
 
 /**
  * Internal node used by the nav node.

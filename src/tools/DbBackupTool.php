@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\tools;
 
 /**
  * Backup Database tool

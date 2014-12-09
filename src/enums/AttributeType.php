@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\enums;
 
 /**
  * The AttributeType class is an abstract class that defines all of the attribute types that are available in Craft.

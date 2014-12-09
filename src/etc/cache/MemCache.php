@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\cache;
 
 /**
  * MemCache implements a cache application component based on [memcached](http://memcached.org/).

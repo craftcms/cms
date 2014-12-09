@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,

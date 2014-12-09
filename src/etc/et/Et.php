@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\et;
 
 /**
  * Class Et

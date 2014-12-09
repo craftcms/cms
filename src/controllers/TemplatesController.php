@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the

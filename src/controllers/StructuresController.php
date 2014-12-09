@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\controllers;
 
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within

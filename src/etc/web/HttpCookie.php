@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\web;
 
 /**
  * A HttpCookie instance stores a single cookie, including the cookie name, value, domain, path, expire time and

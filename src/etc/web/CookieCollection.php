@@ -1,5 +1,5 @@
 <?php
-namespace Craft;
+namespace craft\etc\web;
 
 /**
  * CookieCollection implements a collection class to store cookies. You normally access it via
