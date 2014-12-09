@@ -17,6 +17,10 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	_mouseLevelOffset: null,
 	_targetItemOffsetX: null,
 
+	_ancestors: null,
+	_updateAncestorsFrame: null,
+	_updateAncestorsProxy: null,
+
 	_draggeeLevel: null,
 	_draggeeLevelDelta: null,
 	draggingLastElements: null,
@@ -214,6 +218,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	 */
 	onDragStart: function()
 	{
+		// Remember the previous row
+		this._ancestors = this._getAncestors(this.$targetItem, this.$targetItem.data('level'));
+
 		// Get some info we will need when determining the target level
 		this._mouseLevelOffset = this.mouseOffsetX - this._getLevelIndent(this._draggeeLevel),
 		this._targetItemOffsetX = this.$targetItem.offset().left;
@@ -242,6 +249,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	onInsertionPointChange: function()
 	{
 		this._setTargetLevelBounds();
+		this._updateAncestorsBeforeRepaint();
 		this.base();
 	},
 
@@ -299,6 +307,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				if (prevRowLevel < this._targetLevel)
 				{
 					data.parentId = $prevRow.data('id');
+
+					// Going to need these after the Ajax request completes
+					var $newParentRow = $prevRow,
+						$targetRow = this.$targetItem;
+
 					break;
 				}
 
@@ -311,6 +324,28 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				{
 					Craft.cp.displayNotice(Craft.t('New position saved.'));
 					this.onPositionChange();
+
+					// Is there a new parent?
+					if ($newParentRow)
+					{
+						// Is this row collapsed?
+						var $toggle = $newParentRow.find('> td > .toggle');
+
+						if (!$toggle.hasClass('expanded'))
+						{
+							// Remove the target item, and then expand its new parent
+							if (this.elementIndex.elementSelect)
+							{
+								this.elementIndex.elementSelect.removeItems($targetRow);
+							}
+
+							this.removeItems($targetRow);
+							$targetRow.remove();
+							this.elementIndex._totalVisible--;
+
+							this.elementIndex._expandElement($toggle);
+						}
+					}
 				}
 			}, this));
 		}
@@ -462,7 +497,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			}
 		}
 
-		this._targetLevel = this._updateIndent._closestLevel;
+		// Update the target level to whatever's closest
+		if (this._targetLevel !== (this._targetLevel = this._updateIndent._closestLevel))
+		{
+			// Target level is changing, so update the ancestors
+			this._updateAncestorsBeforeRepaint();
+		}
 
 		// Figure out which level the cursor is closest to
 		// ---------------------------------------------------------------------
@@ -500,6 +540,108 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 			elementId:   $row.data('id'),
 			locale:      $row.find('.element:first').data('locale')
 		};
+	},
+
+	/**
+	 * Returns a row's ancestor rows
+	 */
+	_getAncestors: function($row, targetLevel)
+	{
+		this._getAncestors._ancestors = [];
+
+		if (targetLevel != 0)
+		{
+			this._getAncestors._level = targetLevel;
+			this._getAncestors._$prevRow = $row.prev();
+
+			while (this._getAncestors._$prevRow.length)
+			{
+				if (this._getAncestors._$prevRow.data('level') < this._getAncestors._level)
+				{
+					this._getAncestors._ancestors.unshift(this._getAncestors._$prevRow);
+					this._getAncestors._level = this._getAncestors._$prevRow.data('level');
+
+					// Did we just reach the top?
+					if (this._getAncestors._level == 0)
+					{
+						break;
+					}
+				}
+
+				this._getAncestors._$prevRow = this._getAncestors._$prevRow.prev();
+			}
+		}
+
+		return this._getAncestors._ancestors;
+	},
+
+	/**
+	 * Prepares to have the ancestors updated before the screen is repainted.
+	 */
+	_updateAncestorsBeforeRepaint: function()
+	{
+		if (this._updateAncestorsFrame)
+		{
+			Garnish.cancelAnimationFrame(this._updateAncestorsFrame);
+		}
+
+		if (!this._updateAncestorsProxy)
+		{
+			this._updateAncestorsProxy = $.proxy(this, '_updateAncestors');
+		}
+
+		this._updateAncestorsFrame = Garnish.requestAnimationFrame(this._updateAncestorsProxy);
+	},
+
+	_updateAncestors: function()
+	{
+		this._updateAncestorsFrame = null;
+
+		// Update the old ancestors
+		// -----------------------------------------------------------------
+
+		for (this._updateAncestors._i = 0; this._updateAncestors._i < this._ancestors.length; this._updateAncestors._i++)
+		{
+			this._updateAncestors._$ancestor = this._ancestors[this._updateAncestors._i];
+
+			// One less descendant now
+			this._updateAncestors._$ancestor.data('descendants', this._updateAncestors._$ancestor.data('descendants') - 1);
+
+			// Is it now childless?
+			if (this._updateAncestors._$ancestor.data('descendants') == 0)
+			{
+				// Remove its toggle
+				this._updateAncestors._$ancestor.find('> td > .toggle:first').remove();
+			}
+		}
+
+		// Update the new ancestors
+		// -----------------------------------------------------------------
+
+		this._updateAncestors._newAncestors = this._getAncestors(this.$targetItem, this._targetLevel);
+
+		for (this._updateAncestors._i = 0; this._updateAncestors._i < this._updateAncestors._newAncestors.length; this._updateAncestors._i++)
+		{
+			this._updateAncestors._$ancestor = this._updateAncestors._newAncestors[this._updateAncestors._i];
+
+			// One more descendant now
+			this._updateAncestors._$ancestor.data('descendants', this._updateAncestors._$ancestor.data('descendants') + 1);
+
+			// Is this its first child?
+			if (this._updateAncestors._$ancestor.data('descendants') == 1)
+			{
+				// Create its toggle
+				$('<span class="toggle expanded" title="'+Craft.t('Show/hide children')+'"></span>')
+					.insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
+
+			}
+		}
+
+		this._ancestors = this._updateAncestors._newAncestors;
+
+		delete this._updateAncestors._i;
+		delete this._updateAncestors._$ancestor;
+		delete this._updateAncestors._newAncestors;
 	}
 },
 
@@ -507,7 +649,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
 {
-	BASE_PADDING: 14,
+	BASE_PADDING: 33,
 	HELPER_MARGIN: -7,
 	LEVEL_INDENT: 44,
 	MAX_GIVE: 22,
