@@ -7,7 +7,7 @@ namespace Craft;
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
  * Note that all actions in the controller, except {@link actionLogin}, {@link actionLogout}, {@link actionGetAuthTimeout},
- * {@link actionSendPasswordResetEmail}, {@link actionSetPassword} and {@link actionSaveUser} require an
+ * {@link actionSendPasswordResetEmail}, {@link actionSetPassword}, {@link actionVerifyEmail} and {@link actionSaveUser} require an
  * authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -36,7 +36,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyEmail');
 
 	// Public Methods
 	// =========================================================================
@@ -901,13 +901,20 @@ class UsersController extends BaseController
 
 				try
 				{
-					if ($isNewUser)
+					if ($isNewUser && $thisIsPublicRegistration && $newPassword)
 					{
-						craft()->users->sendActivationEmail($user);
+						craft()->users->sendNewEmailVerifyEmail($user);
 					}
 					else
 					{
-						craft()->users->sendNewEmailVerifyEmail($user);
+						if ($isNewUser)
+						{
+							craft()->users->sendActivationEmail($user);
+						}
+						else
+						{
+							craft()->users->sendNewEmailVerifyEmail($user);
+						}
 					}
 				}
 				catch (\phpmailerException $e)

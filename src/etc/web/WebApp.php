@@ -930,7 +930,8 @@ class WebApp extends \CWebApplication
 		if ($this->request->isCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword'
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword' ||
+			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail'
 		)
 		{
 			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
@@ -951,6 +952,7 @@ class WebApp extends \CWebApplication
 				$actionSegs == array('users', 'forgotpassword') ||
 				$actionSegs == array('users', 'sendPasswordResetEmail') ||
 				$actionSegs == array('users', 'setpassword') ||
+				$actionSegs == array('users', 'verifyemail') ||
 				$actionSegs[0] == 'update'
 			))
 			{
