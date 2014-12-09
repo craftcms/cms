@@ -413,6 +413,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
+		// If the selected source was just removed (maybe because its parent was collapsed),
+		// there won't be a selected source
+		if (!this.sourceSelect.totalSelected)
+		{
+			this.sourceSelect.selectItem(this.$sources.eq(0));
+			return;
+		}
+
 		if (this.selectSource(this.sourceSelect.$selectedItems))
 		{
 			this.updateElements();
