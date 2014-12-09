@@ -577,7 +577,6 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element { display: inline-block; position: relative; padding: 6px 7px; cursor: default; outline: none !important; @include user-select(none); }
 
 .element .label { display: inline-block; }
-.element .status { @include margin(0, 0, 0, 5px); }
 
 .element.hasthumb,
 .element.hasicon { @include padding-left(35px !important); }
