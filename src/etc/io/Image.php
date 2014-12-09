@@ -580,7 +580,11 @@ class Image
 				$options = array('png_compression_level' => $normalizedQuality, 'flatten' => false);
 				$pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
 
-				if (is_array($pngInfo) && isset($pngInfo['channels']))
+				// Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+				// a valid format: http://www.imagemagick.org/script/formats.php
+				// So 2 channel PNGs get converted to 4 channel.
+
+				if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2)
 				{
 					$format = 'png'.(8 * $pngInfo['channels']);
 				}
