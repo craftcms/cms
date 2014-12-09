@@ -644,16 +644,6 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the path to the CP’s Activate Account page
-	 *
-	 * @return string The Activate Account path.
-	 */
-	public function getCpActivateAccountPath()
-	{
-		return 'activate';
-	}
-
-	/**
 	 * Returns the path to the CP’s Login page.
 	 *
 	 * @return string The Login path.
