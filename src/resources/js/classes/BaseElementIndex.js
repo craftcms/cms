@@ -417,7 +417,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// there won't be a selected source
 		if (!this.sourceSelect.totalSelected)
 		{
-			this.sourceSelect.selectItem(this.$sources.eq(0));
+			this.sourceSelect.selectItem(this.$sources.first());
 			return;
 		}
 
