@@ -218,7 +218,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	 */
 	onDragStart: function()
 	{
-		// Remember the previous row
+		// Get the initial set of ancestors, before the item gets moved
 		this._ancestors = this._getAncestors(this.$targetItem, this.$targetItem.data('level'));
 
 		// Get some info we will need when determining the target level
