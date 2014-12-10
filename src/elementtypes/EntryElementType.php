@@ -398,21 +398,6 @@ class EntryElementType extends BaseElementType
 				return Craft::t($element->getSection()->name);
 			}
 
-			case 'postDate':
-			case 'expiryDate':
-			{
-				$date = $element->$attribute;
-
-				if ($date)
-				{
-					return $date->uiTimestamp();
-				}
-				else
-				{
-					return '';
-				}
-			}
-
 			default:
 			{
 				return parent::getTableAttributeHtml($element, $attribute);
