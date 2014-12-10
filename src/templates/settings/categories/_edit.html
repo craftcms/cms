@@ -81,11 +81,11 @@
 									{% if craft.isLocalized() %}
 										<th class="thin nowrap">{{ locale.id }}</th>
 									{% endif %}
-									<td>
+									<td class="topalign">
 										{% set value = (categoryGroup.locales[locale.id] is defined ? categoryGroup.locales[locale.id].urlFormat : null) %}
 										{{ _self.urlFormatText(locale, categoryGroup, 'urlFormat', value) }}
 									</td>
-									<td>
+									<td class="topalign">
 										{% set value = (categoryGroup.locales[locale.id] is defined ? categoryGroup.locales[locale.id].nestedUrlFormat : '{parent.uri}/{slug}') %}
 										{{ _self.urlFormatText(locale, categoryGroup, 'nestedUrlFormat', value) }}
 									</td>
