@@ -345,13 +345,13 @@ class UsersController extends BaseController
 	/**
 	 * Verifies that a user has access to an email address.
 	 *
-	 * @deprecated Deprecated in 2.3. Use {@link UsersController::actionSetPassword()} instead.
+	 * @deprecated Deprecated in 2.3. Use {@link UsersController::actionVerifyEmail()} instead.
 	 * @return null
 	 */
 	public function actionValidate()
 	{
-		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/setPassword instead.');
-		$this->actionSetPassword();
+		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/verifyEmail instead.');
+		$this->actionVerifyEmail();
 	}
 
 	/**
