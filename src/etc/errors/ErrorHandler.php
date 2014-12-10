@@ -80,6 +80,21 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleException($exception)
 	{
+		// Do some logging.
+		if ($exception instanceof \HttpException)
+		{
+			$status = $exception->status ? $exception->$status : '';
+			Craft::log(($status ? $status.' - ' : '').$exception->getMessage(), LogLevel::Warning);
+		}
+		else if ($exception instanceof \Twig_Error)
+		{
+			Craft::log($exception->getRawMessage(), LogLevel::Error);
+		}
+		else
+		{
+			Craft::log($exception->getMessage(), LogLevel::Error);
+		}
+
 		// Log MySQL deadlocks
 		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
 		{

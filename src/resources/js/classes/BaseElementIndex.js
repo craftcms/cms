@@ -413,6 +413,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onSourceSelectionChange: function()
 	{
+		// If the selected source was just removed (maybe because its parent was collapsed),
+		// there won't be a selected source
+		if (!this.sourceSelect.totalSelected)
+		{
+			this.sourceSelect.selectItem(this.$sources.first());
+			return;
+		}
+
 		if (this.selectSource(this.sourceSelect.$selectedItems))
 		{
 			this.updateElements();
@@ -520,19 +528,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	getControllerData: function()
 	{
 		var data = {
-			context:            this.settings.context,
-			elementType:        this.elementType,
-			criteria:           $.extend({ status: this.status, locale: this.locale }, this.settings.criteria),
-			disabledElementIds: this.settings.disabledElementIds,
-			source:             this.instanceState.selectedSource,
-			status:             this.status,
-			viewState:          this.getSelectedSourceState(),
-			search:             (this.$search ? this.$search.val() : null)
+			context:             this.settings.context,
+			elementType:         this.elementType,
+			criteria:            $.extend({ status: this.status, locale: this.locale }, this.settings.criteria),
+			disabledElementIds:  this.settings.disabledElementIds,
+			source:              this.instanceState.selectedSource,
+			status:              this.status,
+			viewState:           this.getSelectedSourceState(),
+			search:              (this.$search ? this.$search.val() : null)
 		};
 
 		// Possible that the order/sort isn't entirely accurate if we're sorting by Score
 		data.viewState.order = this.getSelectedSortAttribute();
 		data.viewState.sort = this.getSelectedSortDirection();
+
+		if (
+			this.getSelectedSourceState('mode') == 'table' &&
+			this.getSelectedSortAttribute() == 'structure'
+		)
+		{
+			data.collapsedElementIds = this.instanceState.collapsedElementIds;
+		}
 
 		return data;
 	},
@@ -610,6 +626,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this._setupNewElements($newElements);
 
 				this._onUpdateElements(response, false, $newElements);
+
+				if (
+					this.getSelectedSourceState('mode') == 'table' &&
+					this.getSelectedSortAttribute() == 'structure'
+				)
+				{
+					// Listen for toggle clicks
+					this.addListener(this.$elementContainer, 'click', function(ev)
+					{
+						var $target = $(ev.target);
+
+						if ($target.hasClass('toggle'))
+						{
+							if (this._collapseElement($target) === false)
+							{
+								this._expandElement($target);
+							}
+						}
+					});
+				}
 
 				// Listen for double-clicks
 				if (this.settings.context == 'index')
@@ -1655,6 +1691,157 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		this.onUpdateElements(append, $newElements);
+	},
+
+	_collapseElement: function($toggle, force)
+	{
+		if (!force && !$toggle.hasClass('expanded'))
+		{
+			return false;
+		}
+
+		$toggle.removeClass('expanded');
+
+		// Find and remove the descendant rows
+		var $row = $toggle.parent().parent(),
+			id = $row.data('id'),
+			level = $row.data('level'),
+			$nextRow = $row.next();
+
+		while ($nextRow.length)
+		{
+			if (Garnish.hasAttr($nextRow, 'data-spinnerrow'))
+			{
+				$nextRow.remove();
+				break;
+			}
+
+			if ($nextRow.data('level') <= level)
+			{
+				break;
+			}
+
+			if (this.elementSelect)
+			{
+				this.elementSelect.removeItems($nextRow);
+			}
+
+			if (this.structureTableSort)
+			{
+				this.structureTableSort.removeItems($nextRow)
+			}
+
+			this._totalVisible--;
+
+			var $nextNextRow = $nextRow.next();
+			$nextRow.remove();
+			$nextRow = $nextNextRow;
+		}
+
+		// Remember that this row should be collapsed
+		if (!this.instanceState.collapsedElementIds)
+		{
+			this.instanceState.collapsedElementIds = [];
+		}
+
+		this.instanceState.collapsedElementIds.push(id);
+		this.setInstanceState('collapsedElementIds', this.instanceState.collapsedElementIds);
+
+		// Bottom of the index might be viewable now
+		this.maybeLoadMore();
+	},
+
+	_expandElement: function($toggle, force)
+	{
+		if (!force && $toggle.hasClass('expanded'))
+		{
+			return false;
+		}
+
+		$toggle.addClass('expanded');
+
+		// Remove this element from our list of collapsed elements
+		if (this.instanceState.collapsedElementIds)
+		{
+			var $row = $toggle.parent().parent(),
+				id = $row.data('id'),
+				index = $.inArray(id, this.instanceState.collapsedElementIds);
+
+			if (index != -1)
+			{
+				this.instanceState.collapsedElementIds.splice(index, 1);
+				this.setInstanceState('collapsedElementIds', this.instanceState.collapsedElementIds);
+
+				// Add a temporary row
+				var $spinnerRow = this._createSpinnerRowAfter($row);
+
+				// Update the elements
+				var data = this.getControllerData();
+				data.criteria.descendantOf = id;
+
+				Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
+				{
+					// Do we even care about this anymore?
+					if (!$spinnerRow.parent().length)
+					{
+						return;
+					}
+
+					if (textStatus == 'success')
+					{
+						// Are there more descendants we didn't get in this batch?
+						if (response.more)
+						{
+							// Remove all the elements after it
+							var $nextRows = $spinnerRow.nextAll();
+
+							if (this.elementSelect)
+							{
+								this.elementSelect.removeItems($nextRows);
+							}
+
+							if (this.structureTableSort)
+							{
+								this.structureTableSort.removeItems($nextRows)
+							}
+
+							this._totalVisible -= $nextRows.length;
+						}
+
+						var $newElements = $(response.html);
+						$spinnerRow.replaceWith($newElements);
+
+						if (this.actions || this.settings.selectable)
+						{
+							this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+							this.updateActionTriggers();
+						}
+
+						if (this.structureTableSort)
+						{
+							this.structureTableSort.addItems($newElements);
+						}
+
+						// Tweak response.totalVisible to account for the elements that come before them
+						response.totalVisible += this._totalVisible;
+
+						this._onUpdateElements(response, true, $newElements);
+					}
+
+				}, this));
+			}
+		}
+	},
+
+	_createSpinnerRowAfter: function($row)
+	{
+		return $(
+			'<tr data-spinnerrow>' +
+				'<td class="centeralign" colspan="'+$row.children().length+'">' +
+					'<div class="spinner"/>' +
+				'</td>' +
+			'</tr>'
+		).insertAfter($row);
 	},
 
 	_isStructureTableDraggingLastElements: function()

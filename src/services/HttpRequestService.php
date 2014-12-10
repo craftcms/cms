@@ -1269,10 +1269,12 @@ class HttpRequestService extends \CHttpRequest
 					$setPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
 				}
 
+				$verifyEmailPath = 'verifyemail';
+
 				if (
 					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
 					($actionParam = $this->getParam('action')) !== null ||
-					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath)))
+					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath)))
 				)
 				{
 					$this->_isActionRequest = true;
@@ -1295,6 +1297,10 @@ class HttpRequestService extends \CHttpRequest
 						else if ($this->_path == $logoutPath)
 						{
 							$this->_actionSegments = array('users', 'logout');
+						}
+						else if ($this->_path == $verifyEmailPath)
+						{
+							$this->_actionSegments = array('users', 'verifyemail');
 						}
 						else
 						{

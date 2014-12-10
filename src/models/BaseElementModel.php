@@ -624,6 +624,21 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the total number of descendants that the element has.
+	 *
+	 * @return bool
+	 */
+	public function getTotalDescendants()
+	{
+		if ($this->hasDescendants())
+		{
+			return ($this->rgt - $this->lft - 1) / 2;
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
 	 * @param BaseElementModel $element

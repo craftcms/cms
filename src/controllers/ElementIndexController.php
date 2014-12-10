@@ -274,6 +274,61 @@ class ElementIndexController extends BaseElementsController
 			$criteria->setAttributes($this->_source['criteria']);
 		}
 
+		// Exclude descendants of the collapsed element IDs
+		if (!$criteria->id)
+		{
+			$collapsedElementIds = craft()->request->getParam('collapsedElementIds');
+
+			if ($collapsedElementIds)
+			{
+				// Get the actual elements
+				$collapsedElementCriteria = $criteria->copy();
+				$collapsedElementCriteria->id = $collapsedElementIds;
+				$collapsedElementCriteria->offset = 0;
+				$collapsedElementCriteria->limit = null;
+				$collapsedElementCriteria->order = 'lft asc';
+				$collapsedElementCriteria->positionedAfter = null;
+				$collapsedElementCriteria->positionedBefore = null;
+				$collapsedElements = $collapsedElementCriteria->find();
+
+				if ($collapsedElements)
+				{
+					$descendantIds = array();
+
+					$descendantCriteria = $criteria->copy();
+					$descendantCriteria->offset = 0;
+					$descendantCriteria->limit = null;
+					$descendantCriteria->order = null;
+					$descendantCriteria->positionedAfter = null;
+					$descendantCriteria->positionedBefore = null;
+
+					foreach ($collapsedElements as $element)
+					{
+						// Make sure we haven't already excluded this one, because its ancestor is collapsed as well
+						if (in_array($element->id, $descendantIds))
+						{
+							continue;
+						}
+
+						$descendantCriteria->descendantOf = $element;
+						$descendantIds = array_merge($descendantIds, $descendantCriteria->ids());
+					}
+
+					if ($descendantIds)
+					{
+						$idsParam = array('and');
+
+						foreach ($descendantIds as $id)
+						{
+							$idsParam[] = 'not '.$id;
+						}
+
+						$criteria->id = $idsParam;
+					}
+				}
+			}
+		}
+
 		return $criteria;
 	}
 

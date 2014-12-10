@@ -255,20 +255,6 @@ class UserElementType extends BaseElementType
 				}
 			}
 
-			case 'lastLoginDate':
-			{
-				$date = $element->$attribute;
-
-				if ($date)
-				{
-					return $date->uiTimestamp();
-				}
-				else
-				{
-					return '';
-				}
-			}
-
 			default:
 			{
 				return parent::getTableAttributeHtml($element, $attribute);

@@ -621,51 +621,56 @@ class MigrationHelper
 
 		// Get the CREATE TABLE sql
 		$query = craft()->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
-		$createTableSql = $query['Create Table'];
 
-		// Find the columns
-		if (preg_match_all('/^\s*`(\w+)`\s+(.*),$/m', $createTableSql, $matches, PREG_SET_ORDER))
+		// Don't want to include any views.
+		if (isset($query['Create Table']))
 		{
-			foreach ($matches as $match)
+			$createTableSql = $query['Create Table'];
+
+			// Find the columns
+			if (preg_match_all('/^\s*`(\w+)`\s+(.*),$/m', $createTableSql, $matches, PREG_SET_ORDER))
 			{
-				$name = $match[1];
-				static::$_tables[$table]->columns[$name] = (object) array(
-					'name' => $name,
-					'type' => $match[2]
-				);
+				foreach ($matches as $match)
+				{
+					$name = $match[1];
+					static::$_tables[$table]->columns[$name] = (object)array(
+						'name' => $name,
+						'type' => $match[2]
+					);
+				}
 			}
-		}
 
-		// Find the foreign keys
-		if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE (".static::$_fkRefActions."))?( ON UPDATE (".static::$_fkRefActions."))?/", $createTableSql, $matches, PREG_SET_ORDER))
-		{
-			foreach ($matches as $match)
+			// Find the foreign keys
+			if (preg_match_all("/CONSTRAINT `(\w+)` FOREIGN KEY \(`([\w`,]+)`\) REFERENCES `(\w+)` \(`([\w`,]+)`\)( ON DELETE (" . static::$_fkRefActions . "))?( ON UPDATE (" . static::$_fkRefActions . "))?/", $createTableSql, $matches, PREG_SET_ORDER))
 			{
-				$name = $match[1];
-				static::$_tables[$table]->fks[] = (object) array(
-					'name'        => $name,
-					'columns'     => explode('`,`', $match[2]),
-					'refTable'    => mb_substr($match[3], static::_getTablePrefixLength()),
-					'refColumns'  => explode('`,`', $match[4]),
-					'onDelete'    => (!empty($match[6]) ? $match[6] : null),
-					'onUpdate'    => (!empty($match[8]) ? $match[8] : null),
-					'table'       => static::$_tables[$table],
-				);
+				foreach ($matches as $match)
+				{
+					$name = $match[1];
+					static::$_tables[$table]->fks[] = (object)array(
+						'name'       => $name,
+						'columns'    => explode('`,`', $match[2]),
+						'refTable'   => mb_substr($match[3], static::_getTablePrefixLength()),
+						'refColumns' => explode('`,`', $match[4]),
+						'onDelete'   => (!empty($match[6]) ? $match[6] : null),
+						'onUpdate'   => (!empty($match[8]) ? $match[8] : null),
+						'table'      => static::$_tables[$table],
+					);
+				}
 			}
-		}
 
-		// Find the indexes
-		if (preg_match_all('/(UNIQUE )?KEY `(\w+)` \(`([\w`,]+)`\)/', $createTableSql, $matches, PREG_SET_ORDER))
-		{
-			foreach ($matches as $match)
+			// Find the indexes
+			if (preg_match_all('/(UNIQUE )?KEY `(\w+)` \(`([\w`,]+)`\)/', $createTableSql, $matches, PREG_SET_ORDER))
 			{
-				$name = $match[2];
-				static::$_tables[$table]->indexes[] = (object) array(
-					'name'    => $name,
-					'columns' => explode('`,`', $match[3]),
-					'unique'  => !empty($match[1]),
-					'table'   => static::$_tables[$table],
-				);
+				foreach ($matches as $match)
+				{
+					$name = $match[2];
+					static::$_tables[$table]->indexes[] = (object)array(
+						'name'    => $name,
+						'columns' => explode('`,`', $match[3]),
+						'unique'  => !empty($match[1]),
+						'table'   => static::$_tables[$table],
+					);
+				}
 			}
 		}
 	}

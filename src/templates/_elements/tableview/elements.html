@@ -4,12 +4,12 @@
 {% set structureEditable = structureEditable is defined ? structureEditable : false -%}
 
 {% if structure -%}
-	{% set basePadding = context == 'index' ? (showCheckboxes ? 14 : 0) + (structureEditable ? 14 : 0) : 24 %}
+	{% set basePadding = 20 + (context == 'index' ? (showCheckboxes ? 14 : 0) + (structureEditable ? 14 : 0) : 24) %}
 	{% set padding = craft.i18n.getLocaleData().getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
 
 {% for element in elements %}
-	<tr data-id="{{ element.id }}"{% if structureEditable %} data-level="{{ element.level }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+	<tr data-id="{{ element.id }}"{% if structureEditable %} data-level="{{ element.level }}" data-descendants="{{ element.getTotalDescendants() }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
 		{% if showCheckboxes %}
 			<td class="thin" data-checkboxcell><div class="checkbox" title="{{ 'Select'|t }}"></div></td>
 		{% endif %}
@@ -17,6 +17,7 @@
 			{% if loop.first %}
 				<td data-title="{{ label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
 					{%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t }}" role="button">&nbsp;</a>{% endif %}
+					{%- if structure and element.hasDescendants() %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif %}" title="{{ 'Show/hide children'|t }}"></span>{% endif %}
 					{%- include "_elements/element" -%}
 				</td>
 			{% else %}

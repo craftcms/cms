@@ -389,6 +389,9 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 
+	// Events
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Fires an 'onBeforeSaveEntry' event.
 	 *

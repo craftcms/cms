@@ -440,11 +440,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function sendActivationEmail(UserModel $user)
 	{
-		$userRecord = $this->_getUserRecordById($user->id);
-		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-		$userRecord->save();
-
-		$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		$url = $this->getPasswordResetUrl($user);
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -466,7 +462,9 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
+		$path = craft()->config->get('actionTrigger').'/users/verifyemail';
+		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
 
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -763,6 +761,12 @@ class UsersService extends BaseApplicationComponent
 
 			$userRecord->unverifiedEmail = null;
 			$userRecord->save();
+
+			// If the user status is pending, let's activate them.
+			if ($userRecord->pending == true)
+			{
+				$this->activateUser($user);
+			}
 		}
 	}
 

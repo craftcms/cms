@@ -13,20 +13,5 @@ namespace Craft;
  */
 class HttpException extends \CHttpException
 {
-	// Public Methods
-	// =========================================================================
 
-	/**
-	 * @param      $status
-	 * @param null $message
-	 * @param int  $code
-	 *
-	 * @return HttpException
-	 */
-	public function __construct($status = '', $message = null, $code = 0)
-	{
-		$status = $status ? $status : '';
-		Craft::log(($status ? $status.' - ' : '').$message, LogLevel::Warning);
-		parent::__construct($status, $message, $code);
-	}
 }
