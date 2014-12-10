@@ -71,7 +71,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		this._draggeeLevel = this._targetLevel = this.$targetItem.data('level');
 		this._draggeeLevelDelta = 0;
 
-		var $draggee = $(this.$targetItem)
+		var $draggee = $(this.$targetItem),
 			$nextRow = this.$targetItem.next();
 
 		while ($nextRow.length)
