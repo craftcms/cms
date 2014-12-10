@@ -681,6 +681,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->ancestorOf instanceof BaseElementModel)
 				{
 					$criteria->ancestorOf = craft()->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->ancestorOf)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->ancestorOf)
@@ -712,6 +717,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->descendantOf instanceof BaseElementModel)
 				{
 					$criteria->descendantOf = craft()->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->descendantOf)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->descendantOf)
@@ -743,6 +753,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->siblingOf instanceof BaseElementModel)
 				{
 					$criteria->siblingOf = craft()->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->siblingOf)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->siblingOf)
@@ -790,6 +805,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->prevSiblingOf instanceof BaseElementModel)
 				{
 					$criteria->prevSiblingOf = craft()->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->prevSiblingOf)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->prevSiblingOf)
@@ -814,6 +834,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->nextSiblingOf instanceof BaseElementModel)
 				{
 					$criteria->nextSiblingOf = craft()->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->nextSiblingOf)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->nextSiblingOf)
@@ -838,6 +863,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->positionedBefore instanceof BaseElementModel)
 				{
 					$criteria->positionedBefore = craft()->elements->getElementById($criteria->positionedBefore, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->positionedBefore)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->positionedBefore)
@@ -860,6 +890,11 @@ class ElementsService extends BaseApplicationComponent
 				if (!$criteria->positionedAfter instanceof BaseElementModel)
 				{
 					$criteria->positionedAfter = craft()->elements->getElementById($criteria->positionedAfter, $elementType->getClassHandle(), $criteria->locale);
+
+					if (!$criteria->positionedAfter)
+					{
+						return false;
+					}
 				}
 
 				if ($criteria->positionedAfter)
