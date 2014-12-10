@@ -300,9 +300,27 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				{
 					data.parentId = $prevRow.data('id');
 
-					// Going to need these after the Ajax request completes
-					var $newParentRow = $prevRow,
-						$targetRow = this.$targetItem;
+					// Is this row collapsed?
+					var $toggle = $prevRow.find('> td > .toggle');
+
+					if (!$toggle.hasClass('expanded'))
+					{
+						// Make it look expanded
+						$toggle.addClass('expanded');
+
+						// Add a temporary row
+						var $spinnerRow = this.elementIndex._createSpinnerRowAfter($prevRow);
+
+						// Remove the target item
+						if (this.elementIndex.elementSelect)
+						{
+							this.elementIndex.elementSelect.removeItems(this.$targetItem);
+						}
+
+						this.removeItems(this.$targetItem);
+						this.$targetItem.remove();
+						this.elementIndex._totalVisible--;
+					}
 
 					break;
 				}
@@ -317,26 +335,11 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 					Craft.cp.displayNotice(Craft.t('New position saved.'));
 					this.onPositionChange();
 
-					// Is there a new parent?
-					if ($newParentRow)
+					// Were we waiting on this to complete so we can expand the new parent?
+					if ($spinnerRow && $spinnerRow.parent().length)
 					{
-						// Is this row collapsed?
-						var $toggle = $newParentRow.find('> td > .toggle');
-
-						if (!$toggle.hasClass('expanded'))
-						{
-							// Remove the target item, and then expand its new parent
-							if (this.elementIndex.elementSelect)
-							{
-								this.elementIndex.elementSelect.removeItems($targetRow);
-							}
-
-							this.removeItems($targetRow);
-							$targetRow.remove();
-							this.elementIndex._totalVisible--;
-
-							this.elementIndex._expandElement($toggle);
-						}
+						$spinnerRow.remove();
+						this.elementIndex._expandElement($toggle, true);
 					}
 				}
 			}, this));

@@ -639,11 +639,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 						if ($target.hasClass('toggle'))
 						{
-							if ($target.hasClass('expanded'))
-							{
-								this._collapseElement($target);
-							}
-							else
+							if (this._collapseElement($target) === false)
 							{
 								this._expandElement($target);
 							}
@@ -1697,8 +1693,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.onUpdateElements(append, $newElements);
 	},
 
-	_collapseElement: function($toggle)
+	_collapseElement: function($toggle, force)
 	{
+		if (!force && !$toggle.hasClass('expanded'))
+		{
+			return false;
+		}
+
 		$toggle.removeClass('expanded');
 
 		// Find and remove the descendant rows
@@ -1709,6 +1710,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		while ($nextRow.length)
 		{
+			if (Garnish.hasAttr($nextRow, 'data-spinnerrow'))
+			{
+				$nextRow.remove();
+				break;
+			}
+
 			if ($nextRow.data('level') <= level)
 			{
 				break;
@@ -1744,11 +1751,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.maybeLoadMore();
 	},
 
-	_expandElement: function($toggle)
+	_expandElement: function($toggle, force)
 	{
-		if (this.loadingMore)
+		if (!force && $toggle.hasClass('expanded'))
 		{
-			return;
+			return false;
 		}
 
 		$toggle.addClass('expanded');
@@ -1766,23 +1773,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.setInstanceState('collapsedElementIds', this.instanceState.collapsedElementIds);
 
 				// Add a temporary row
-				var $spinnerRow = $(
-					'<tr>' +
-						'<td class="centeralign" colspan="'+$row.children().length+'">' +
-							'<div class="spinner"/>' +
-						'</td>' +
-					'</tr>'
-				).insertAfter($row);
+				var $spinnerRow = this._createSpinnerRowAfter($row);
 
 				// Update the elements
-				this.loadingMore = true;
-
 				var data = this.getControllerData();
 				data.criteria.descendantOf = id;
 
 				Craft.postActionRequest('elementIndex/getMoreElements', data, $.proxy(function(response, textStatus)
 				{
-					this.loadingMore = false;
+					// Do we even care about this anymore?
+					if (!$spinnerRow.parent().length)
+					{
+						return;
+					}
 
 					if (textStatus == 'success')
 					{
@@ -1828,6 +1831,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				}, this));
 			}
 		}
+	},
+
+	_createSpinnerRowAfter: function($row)
+	{
+		return $(
+			'<tr data-spinnerrow>' +
+				'<td class="centeralign" colspan="'+$row.children().length+'">' +
+					'<div class="spinner"/>' +
+				'</td>' +
+			'</tr>'
+		).insertAfter($row);
 	},
 
 	_isStructureTableDraggingLastElements: function()
