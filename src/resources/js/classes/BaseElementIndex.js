@@ -990,7 +990,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			multi:             (this.actions || this.settings.multiSelect),
 			vertical:          (this.getSelectedSourceState('mode') != 'thumbs'),
 			handle:            (this.settings.context == 'index' ? '.checkbox, .element' : null),
-			filter:            ':not(a)',
+			filter:            ':not(a):not(.toggle)',
 			checkboxMode:      (this.settings.context == 'index' && this.actions),
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
