@@ -1075,7 +1075,7 @@ class AssetsService extends BaseApplicationComponent
 			if (
 				!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId)
 				&&
-				!craft()->userSession->checkAuthorization($permission.':'.$folderModel->sourceId))
+				!craft()->userSession->checkAuthorization($permission.':'.$folderModel->id))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
