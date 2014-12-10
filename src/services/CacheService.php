@@ -163,7 +163,18 @@ class CacheService extends BaseApplicationComponent
 	 */
 	public function get($id)
 	{
-		return $this->_cacheComponent->get($id);
+		// In case there is a problem un-serializing the data.
+		try
+		{
+			$value = $this->_cacheComponent->get($id);
+		}
+		catch (\Exception $e)
+		{
+			Craft::log('There was an error retrieving a value from cache with the key: '.$id.'. Error: '.$e->getMessage());
+			$value = false;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -178,7 +189,18 @@ class CacheService extends BaseApplicationComponent
 	 */
 	public function mget($ids)
 	{
-		return $this->_cacheComponent->mget($ids);
+		// In case there is a problem un-serializing the data.
+		try
+		{
+			$value = $this->_cacheComponent->get($ids);
+		}
+		catch (\Exception $e)
+		{
+			Craft::log('There was an error retrieving a value from cache with the keys: '.implode(',', $ids).'. Error: '.$e->getMessage());
+			$value = false;
+		}
+
+		return $value;
 	}
 
 	/**
