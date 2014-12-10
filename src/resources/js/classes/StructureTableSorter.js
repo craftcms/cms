@@ -469,6 +469,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		// How far has the cursor moved?
 		this._updateIndent._mouseDist = this.realMouseX - this.mousedownX;
 
+		// Flip that if this is RTL
+		if (Craft.orientation == 'rtl')
+		{
+			this._updateIndent._mouseDist *= -1;
+		}
+
 		// What is that in indentation levels?
 		this._updateIndent._indentationDist = Math.round(this._updateIndent._mouseDist / Craft.StructureTableSorter.LEVEL_INDENT);
 
