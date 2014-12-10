@@ -14,9 +14,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 
 	_titleHelperCellOuterWidth: null,
 
-	_mouseLevelOffset: null,
-	_targetItemOffsetX: null,
-
 	_ancestors: null,
 	_updateAncestorsFrame: null,
 	_updateAncestorsProxy: null,
@@ -71,7 +68,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	 */
 	findDraggee: function()
 	{
-		this._draggeeLevel = this.$targetItem.data('level');
+		this._draggeeLevel = this._targetLevel = this.$targetItem.data('level');
 		this._draggeeLevelDelta = 0;
 
 		var $draggee = $(this.$targetItem)
@@ -219,10 +216,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	{
 		// Get the initial set of ancestors, before the item gets moved
 		this._ancestors = this._getAncestors(this.$targetItem, this.$targetItem.data('level'));
-
-		// Get some info we will need when determining the target level
-		this._mouseLevelOffset = this.mouseOffsetX - this._getLevelIndent(this._draggeeLevel),
-		this._targetItemOffsetX = this.$targetItem.offset().left;
 
 		// Set the initial target level bounds
 		this._setTargetLevelBounds();
@@ -470,44 +463,45 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 	 */
 	_updateIndent: function(forcePositionChange)
 	{
-		// Figure out where the mouse is relative to the target item
-		this._updateIndent._mouseOffset = this.realMouseX - this._targetItemOffsetX;
-
-		// Figure out which level the cursor is closest to
+		// Figure out the target level
 		// ---------------------------------------------------------------------
 
-		this._updateIndent._closestLevel = null;
-		this._updateIndent._closestMouseDist = null;
-		this._updateIndent._closestLevelIndent = null;
+		// How far has the cursor moved?
+		this._updateIndent._mouseDist = this.realMouseX - this.mousedownX;
 
-		for (this._updateIndent._level = this._targetLevelBounds.min; this._updateIndent._level <= this._targetLevelBounds.max; this._updateIndent._level++)
+		// What is that in indentation levels?
+		this._updateIndent._indentationDist = Math.round(this._updateIndent._mouseDist / Craft.StructureTableSorter.LEVEL_INDENT);
+
+		// Combine with the original level to get the new target level
+		this._updateIndent._targetLevel = this._draggeeLevel + this._updateIndent._indentationDist;
+
+		// Contain it within our min/max levels
+		if (this._updateIndent._targetLevel < this._targetLevelBounds.min)
 		{
-			this._updateIndent._levelIndent = this._getLevelIndent(this._updateIndent._level)
-			this._updateIndent._mouseDist = Math.abs(this._updateIndent._levelIndent + this._mouseLevelOffset - this._updateIndent._mouseOffset);
-
-			if (
-				this._updateIndent._closestLevel === null ||
-				this._updateIndent._mouseDist < this._updateIndent._closestMouseDist
-			)
-			{
-				this._updateIndent._closestLevel = this._updateIndent._level;
-				this._updateIndent._closestMouseDist = this._updateIndent._mouseDist;
-				this._updateIndent._closestLevelIndent = this._updateIndent._levelIndent;
-			}
+			this._updateIndent._indentationDist += (this._targetLevelBounds.min - this._updateIndent._targetLevel);
+			this._updateIndent._targetLevel = this._targetLevelBounds.min;
+		}
+		else if (this._updateIndent._targetLevel > this._targetLevelBounds.max)
+		{
+			this._updateIndent._indentationDist -= (this._updateIndent._targetLevel - this._targetLevelBounds.max);
+			this._updateIndent._targetLevel = this._targetLevelBounds.max;
 		}
 
-		// Update the target level to whatever's closest
-		if (this._targetLevel !== (this._targetLevel = this._updateIndent._closestLevel))
+		// Has the target level changed?
+		if (this._targetLevel !== (this._targetLevel = this._updateIndent._targetLevel))
 		{
 			// Target level is changing, so update the ancestors
 			this._updateAncestorsBeforeRepaint();
 		}
 
-		// Figure out which level the cursor is closest to
+		// Update the UI
 		// ---------------------------------------------------------------------
 
-		// How far is the cursor stretching it away?
-		this._updateIndent._magnetImpact = Math.round((this._updateIndent._mouseOffset - this._updateIndent._closestLevelIndent) / 15);
+		// How far away is the cursor from the exact target level distance?
+		this._updateIndent._targetLevelMouseDiff = this._updateIndent._mouseDist - (this._updateIndent._indentationDist * Craft.StructureTableSorter.LEVEL_INDENT);
+
+		// What's the magnet impact of that?
+		this._updateIndent._magnetImpact = Math.round(this._updateIndent._targetLevelMouseDiff / 15);
 
 		// Put it on a leash
 		if (Math.abs(this._updateIndent._magnetImpact) > Craft.StructureTableSorter.MAX_GIVE)
@@ -516,7 +510,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		}
 
 		// Apply the new margin/width
-		this._updateIndent._closestLevelMagnetIndent = this._updateIndent._closestLevelIndent + this._updateIndent._magnetImpact;
+		this._updateIndent._closestLevelMagnetIndent = this._getLevelIndent(this._targetLevel) + this._updateIndent._magnetImpact;
 		this.helpers[0].css('margin-'+Craft.left, this._updateIndent._closestLevelMagnetIndent + this._helperMargin);
 		this._$titleHelperCell.width(this._titleHelperCellOuterWidth - (this._updateIndent._closestLevelMagnetIndent + Craft.StructureTableSorter.BASE_PADDING));
 	},
@@ -648,7 +642,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 // =============================================================================
 
 {
-	BASE_PADDING: 33,
+	BASE_PADDING: 36,
 	HELPER_MARGIN: -7,
 	LEVEL_INDENT: 44,
 	MAX_GIVE: 22,
