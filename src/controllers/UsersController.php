@@ -356,6 +356,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Verifies that a user has access to an email address.
+	 *
+	 * @return null
 	 */
 	public function actionVerifyEmail()
 	{
