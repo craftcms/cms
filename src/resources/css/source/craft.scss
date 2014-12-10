@@ -619,9 +619,11 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 /* table views */
 .elements .tableview tr { outline: none; }
+.elements .tableview th,
+.elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
-.elements .tableview .move { display: block; position: absolute; top: 11px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
-.elements .tableview .toggle { display: block; position: absolute; top: 11px; @include margin-left(-20px); }
+.elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
+.elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
 .elements .tableview .move + .toggle { @include margin-left(-34px); }
 
 /* thumbs views */
@@ -881,7 +883,7 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 .elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
 .elementselectormodal .body .main .elements .tableview table tr th,
-.elementselectormodal .body .main .elements .tableview table tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
+.elementselectormodal .body .main .elements .tableview table tr td { cursor: default;}
 .elementselectormodal .body .main .elements .tableview table tr th:first-child,
 .elementselectormodal .body .main .elements .tableview table tr td:first-child { @include padding-left(24px); }
 .elementselectormodal .body .main .elements .tableview table tr th:last-child,
