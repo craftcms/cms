@@ -177,7 +177,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 				this._titleHelperCellOuterWidth = width + padding - (this.elementIndex.actions ? 12 : 0);
 
 				$helperCell.css('padding-'+Craft.left, Craft.StructureTableSorter.BASE_PADDING);
-				$outerContainer.css('margin-'+Craft.left, padding + this._helperMargin);
 			}
 		}
 
