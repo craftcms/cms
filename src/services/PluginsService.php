@@ -964,7 +964,7 @@ class PluginsService extends BaseApplicationComponent
 		else
 		{
 			// Sort plugins by name
-			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray, SORT_NATURAL | SORT_FLAG_CASE);
+			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray);
 		}
 	}
 }

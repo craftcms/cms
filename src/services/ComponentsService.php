@@ -269,7 +269,7 @@ class ComponentsService extends BaseApplicationComponent
 		else
 		{
 			// Sort plugins by name
-			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $components, SORT_NATURAL | SORT_FLAG_CASE);
+			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $components);
 		}
 
 		return $components;
