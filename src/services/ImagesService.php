@@ -163,6 +163,11 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function rotateImageByExifData($filePath)
 	{
+		if (!ImageHelper::canHaveExifData($filePath))
+		{
+			return null;
+		}
+
 		$exif = $this->getExifData($filePath);
 
 		$degrees = 0;
@@ -203,6 +208,11 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function getExifData($filePath)
 	{
+		if (!ImageHelper::canHaveExifData($filePath))
+		{
+			return null;
+		}
+
 		$image = new Image();
 
 		return $image->getExifMetadata($filePath);
@@ -217,6 +227,11 @@ class ImagesService extends BaseApplicationComponent
 	 */
 	public function stripOrientationFromExifData($filePath)
 	{
+		if (!ImageHelper::canHaveExifData($filePath))
+		{
+			return null;
+		}
+
 		$data = new \PelDataWindow(IOHelper::getFileContents($filePath));
 
 		// Is this a valid JPEG?

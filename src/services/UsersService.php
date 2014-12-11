@@ -462,9 +462,16 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
-		$path = craft()->config->get('actionTrigger').'/users/verifyemail';
-		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
+			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
 
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -502,9 +509,16 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
-		$path = craft()->config->get('actionTrigger').'/users/setpassword';
-		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = craft()->config->get('actionTrigger').'/users/setpassword';
+			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
 
 		return $url;
 	}
