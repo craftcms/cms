@@ -1805,6 +1805,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 								this.structureTableSort.removeItems($nextRows)
 							}
 
+							$nextRows.remove();
 							this._totalVisible -= $nextRows.length;
 						}
 

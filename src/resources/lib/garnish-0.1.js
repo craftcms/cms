@@ -700,7 +700,7 @@ Garnish.Base = Base.extend({
 	{
 		this._eventHandlers = [];
 		this._namespace = '.Garnish'+Math.floor(Math.random()*1000000000);
-		this._$listeners = $();
+		this._listeners = [];
 		this.init.apply(this, arguments);
 	},
 
@@ -862,7 +862,10 @@ Garnish.Base = Base.extend({
 		}, this));
 
 		// Remember that we're listening to this element
-		this._$listeners = this._$listeners.add(elem);
+		if ($.inArray(elem, this._listeners) == -1)
+		{
+			this._listeners.push(elem);
+		}
 
 		// Prep for activate event?
 		if ($.inArray('activate', events) != -1 && !$elem.data('garnish-activatable'))
@@ -1041,7 +1044,7 @@ Garnish.Base = Base.extend({
 
 	destroy: function()
 	{
-		this.removeAllListeners(this._$listeners);
+		this.removeAllListeners(this._listeners);
 	}
 });
 
@@ -1310,7 +1313,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			this.addListener(item, 'mousedown', '_handleMouseDown');
 		}
 
-		this.$items = $().add(this.$items.add(items));
+		this.$items = this.$items.add(items);
 	},
 
 	/**
@@ -5586,7 +5589,6 @@ Garnish.Select = Garnish.Base.extend({
 
 			// Add the item
 			$.data(item, 'select', this);
-			this.$items = this.$items.add(item);
 
 			// Get the handle
 			if (this.settings.handle)
@@ -5622,6 +5624,7 @@ Garnish.Select = Garnish.Base.extend({
 			this.addListener(item, 'keydown', 'onKeyDown');
 		}
 
+		this.$items = this.$items.add($items);
 		this.updateIndexes();
 	},
 
