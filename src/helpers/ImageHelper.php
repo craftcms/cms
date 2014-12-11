@@ -145,4 +145,18 @@ class ImageHelper
 
 		return $info;
 	}
+
+	/**
+	 * Return true if the file can have EXIF information embedded.
+	 *
+	 * @param string $filePath the file path to check.
+	 *
+	 * @return bool
+	 */
+	public static function canHaveExifData($filePath)
+	{
+		$extension = IOHelper::getExtension($filePath);
+
+		return in_array(StringHelper::toLowerCase($extension), array('jpg', 'jpeg', 'tiff'));
+	}
 }
