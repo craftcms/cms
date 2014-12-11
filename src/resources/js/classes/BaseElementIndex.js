@@ -1710,28 +1710,25 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		while ($nextRow.length)
 		{
-			if (Garnish.hasAttr($nextRow, 'data-spinnerrow'))
+			if (!Garnish.hasAttr($nextRow, 'data-spinnerrow'))
 			{
-				$nextRow.remove();
-				break;
-			}
+				if ($nextRow.data('level') <= level)
+				{
+					break;
+				}
 
-			if ($nextRow.data('level') <= level)
-			{
-				break;
-			}
+				if (this.elementSelect)
+				{
+					this.elementSelect.removeItems($nextRow);
+				}
 
-			if (this.elementSelect)
-			{
-				this.elementSelect.removeItems($nextRow);
-			}
+				if (this.structureTableSort)
+				{
+					this.structureTableSort.removeItems($nextRow)
+				}
 
-			if (this.structureTableSort)
-			{
-				this.structureTableSort.removeItems($nextRow)
+				this._totalVisible--;
 			}
-
-			this._totalVisible--;
 
 			var $nextNextRow = $nextRow.next();
 			$nextRow.remove();
@@ -1807,6 +1804,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 							$nextRows.remove();
 							this._totalVisible -= $nextRows.length;
+						}
+						else
+						{
+							// Maintain the current 'more' status so
+							response.more = this._morePending;
 						}
 
 						var $newElements = $(response.html);
