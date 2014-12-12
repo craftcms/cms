@@ -1241,6 +1241,9 @@ class UsersService extends BaseApplicationComponent
 		}
 	}
 
+	// Events
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Fires an 'onBeforeSaveUser' event.
 	 *
