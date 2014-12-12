@@ -25,7 +25,7 @@
 							<ul class="padded">
 								<li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t }}</a></li>
 								{% for status, label in elementType.getStatuses() %}
-									<li><a data-status="{{ status }}"><span class="status {{ status }}"></span> {{ label }}</a></li>
+									<li><a data-status="{{ status }}"><span class="status {{ status }}"></span>{{ label }}</a></li>
 								{% endfor %}
 							</ul>
 						</div>

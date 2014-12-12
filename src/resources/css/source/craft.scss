@@ -594,7 +594,7 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .element .label { display: inline-block; }
 
 .element.hasthumb,
-.element.hasicon { @include padding-left(35px !important); }
+.element.hasicon { @include padding-left(40px !important); }
 .elements .thumbsview .element.hasthumb,
 .elements .thumbsview .element.hasicon { @include padding-left(0 !important); }
 .element.hasthumb .elementthumb,
@@ -718,7 +718,7 @@ ul.tree,
 .tree li .toggle { @include margin(7px, 0, 0, -15px); }
 
 /* status icons */
-.status { display: inline-block; @include margin-right(5px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
+.status { display: inline-block; @include margin-right(10px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
 
 .status.on,
 .status.live,
