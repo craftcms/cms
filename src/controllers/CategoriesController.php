@@ -270,7 +270,7 @@ class CategoriesController extends BaseController
 		else
 		{
 			$variables['docTitle'] = Craft::t($variables['category']->title);
-			$variables['title'] = HtmlHelper::encode(Craft::t($variables['category']->title));
+			$variables['title'] = Craft::t($variables['category']->title);
 		}
 
 		// Breadcrumbs
