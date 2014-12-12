@@ -150,6 +150,50 @@ class UserGroupsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Assigns a user to the default user group.
+	 *
+	 * This method is called toward the end of a public registration request.
+	 *
+	 * @param UserModel $user The user that was just registered.
+	 *
+	 * @return bool Whether the user was assigned to the default group.
+	 */
+	public function assignUserToDefaultGroup(UserModel $user)
+	{
+		$defaultGroupId = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+		if ($defaultGroupId)
+		{
+			// Fire an 'onBeforeAssignUserToDefaultGroup' event
+			$event = new Event($this, array(
+				'user'           => $user,
+				'defaultGroupId' => $defaultGroupId
+			));
+
+			$this->onBeforeAssignUserToDefaultGroup($event);
+
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
+			{
+				$success = $this->assignUserToGroups($user->id, array($defaultGroupId));
+
+				if ($success)
+				{
+					// Fire an 'onAssignUserToDefaultGroup' event
+					$this->onAssignUserToDefaultGroup(new Event($this, array(
+						'user'           => $user,
+						'defaultGroupId' => $defaultGroupId
+					)));
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Deletes a user group by its ID.
 	 *
 	 * @param int $groupId
@@ -160,6 +204,33 @@ class UserGroupsService extends BaseApplicationComponent
 	{
 		craft()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeAssignUserToDefaultGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeAssignUserToDefaultGroup(Event $event)
+	{
+		$this->raiseEvent('onBeforeAssignUserToDefaultGroup', $event);
+	}
+
+	/**
+	 * Fires an 'onAssignUserToDefaultGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onAssignUserToDefaultGroup(Event $event)
+	{
+		$this->raiseEvent('onAssignUserToDefaultGroup', $event);
 	}
 
 	// Private Methods
