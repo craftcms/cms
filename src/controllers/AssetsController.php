@@ -172,6 +172,19 @@ class AssetsController extends BaseController
 				$this->returnErrorJson($e->getMessage());
 			}
 
+			// Fire an 'onBeforeReplaceAsset' event
+			$event = new Event($this, array(
+				'asset' => $existingFile
+			));
+
+			craft()->assets->onBeforeReplaceAsset($event);
+
+			// Is the event preventing this from happening?
+			if (!$event->performAction)
+			{
+				throw new Exception(Craft::t('The file could not be replaced.'));
+			}
+
 			$fileName = $_FILES['replaceFile']['name'];
 			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
@@ -185,7 +198,7 @@ class AssetsController extends BaseController
 			{
 				$source = craft()->assetSources->populateSourceType($newFile->getSource());
 
-				if(StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+				if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
 				{
 					$filenameToUse = $existingFile->filename;
 				}
@@ -214,6 +227,11 @@ class AssetsController extends BaseController
 		{
 			$this->returnErrorJson($exception->getMessage());
 		}
+
+		// Fire an 'onReplaceAsset' event
+		craft()->assets->onBeforeReplaceAsset(new Event($this, array(
+			'asset' => $existingFile
+		)));
 
 		$this->returnJson(array('success' => true, 'fileId' => $fileId));
 	}
