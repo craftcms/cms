@@ -119,12 +119,12 @@ class UserGroupsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Assigns a user to groups
+	 * Assigns a user to a given list of user groups.
 	 *
-	 * @param int       $userId
-	 * @param int|array $groupIds
+	 * @param int       $userId   The user’s ID.
+	 * @param int|array $groupIds The groups’ IDs.
 	 *
-	 * @return bool
+	 * @return bool Whether the users were successfully assigned to the groups.
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
