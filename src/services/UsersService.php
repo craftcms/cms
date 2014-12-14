@@ -247,7 +247,7 @@ class UsersService extends BaseApplicationComponent
 
 			if (!$userRecord)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $user->id)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}.”', array('id' => $user->id)));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -1470,7 +1470,7 @@ class UsersService extends BaseApplicationComponent
 
 		if (!$userRecord)
 		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $userId)));
+			throw new Exception(Craft::t('No user exists with the ID “{id}.”', array('id' => $userId)));
 		}
 
 		return $userRecord;
