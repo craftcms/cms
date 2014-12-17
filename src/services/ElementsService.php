@@ -1614,6 +1614,15 @@ class ElementsService extends BaseApplicationComponent
 
 				foreach ($records as $record)
 				{
+					// If this element still has any children, move them up before the one getting deleted.
+					$children = $record->children()->findAll();
+
+					foreach ($children as $child)
+					{
+						$child->moveBefore($record);
+					}
+
+					// Delete this element's node
 					$record->deleteNode();
 				}
 			}
