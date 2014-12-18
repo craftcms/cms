@@ -501,6 +501,9 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Deletes an entry.
 	 *
+	 * @throws Exception
+	 * @throws HttpException
+	 * @throws \Exception
 	 * @return null
 	 */
 	public function actionDeleteEntry()
@@ -510,6 +513,12 @@ class EntriesController extends BaseEntriesController
 		$entryId = craft()->request->getRequiredPost('entryId');
 		$localeId = craft()->request->getPost('locale');
 		$entry = craft()->entries->getEntryById($entryId, $localeId);
+
+		if (!$entry)
+		{
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+		}
+
 		$currentUser = craft()->userSession->getUser();
 
 		if ($entry->authorId == $currentUser->id)
