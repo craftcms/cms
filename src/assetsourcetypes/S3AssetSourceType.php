@@ -49,25 +49,36 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public static function getBucketList($keyId, $secret)
 	{
 		$s3 = new \S3($keyId, $secret);
-		$buckets = @$s3->listBuckets();
+		$s3->setExceptions(true);
 
-		if (empty($buckets))
+		try
 		{
-			throw new Exception(Craft::t("Credentials rejected by target host."));
+			$buckets = $s3->listBuckets();
+		}
+		catch (\Exception $exception)
+		{
+			// Re-throw a proper Craft Exception
+			throw new Exception($exception->getMessage());
 		}
 
 		$bucketList = array();
 
 		foreach ($buckets as $bucket)
 		{
-			$location = $s3->getBucketLocation($bucket);
+			try
+			{
+				$location = $s3->getBucketLocation($bucket);
+				$bucketList[] = array(
+					'bucket' => $bucket,
+					'location' => $location,
+					'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
+				);
 
-			$bucketList[] = array(
-				'bucket' => $bucket,
-				'location' => $location,
-				'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
-			);
-
+			}
+			catch (\Exception $exception)
+			{
+				continue;
+			}
 		}
 
 		return $bucketList;
@@ -729,6 +740,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if (is_null($this->_s3))
 		{
 			$this->_s3 = new \S3($settings->keyId, $settings->secret);
+			$this->_s3->setExceptions(true);
 		}
 
 		\S3::setAuth($settings->keyId, $settings->secret);
