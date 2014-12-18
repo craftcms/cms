@@ -163,6 +163,13 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function prepValueFromPost($value)
 	{
+		// Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
+		// if any text was typed into the field, and then deleted
+		if ($value == '<p><br></p>')
+		{
+			$value = '';
+		}
+
 		if ($value)
 		{
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
