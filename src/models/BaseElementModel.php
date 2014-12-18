@@ -110,7 +110,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function __isset($name)
 	{
-		if (parent::__isset($name) || $this->getFieldByHandle($name))
+		if ($name == 'title' || parent::__isset($name) || $this->getFieldByHandle($name))
 		{
 			return true;
 		}
@@ -759,7 +759,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function offsetExists($offset)
 	{
-		if (parent::offsetExists($offset) || $this->getFieldByHandle($offset))
+		if ($offset == 'title' || parent::offsetExists($offset) || $this->getFieldByHandle($offset))
 		{
 			return true;
 		}
