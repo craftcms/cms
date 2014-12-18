@@ -196,6 +196,19 @@ class MatrixFieldType extends BaseFieldType
 
 			if (is_array($value))
 			{
+				$prevElement = null;
+
+				foreach ($value as $element)
+				{
+					if ($prevElement)
+					{
+						$prevElement->setNext($element);
+						$element->setPrev($prevElement);
+					}
+
+					$prevElement = $element;
+				}
+
 				$criteria->setMatchedElements($value);
 			}
 			else if ($value === '')
