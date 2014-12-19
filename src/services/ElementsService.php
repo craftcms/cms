@@ -1636,11 +1636,13 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$condition = array('id' => $elementIds[0]);
 				$matrixBlockCondition = array('ownerId' => $elementIds[0]);
+				$searchIndexCondition = array('elementId' => $elementIds[0]);
 			}
 			else
 			{
 				$condition = array('in', 'id', $elementIds);
 				$matrixBlockCondition = array('in', 'ownerId', $elementIds);
+				$searchIndexCondition = array('in', 'elementId', $elementIds);
 			}
 
 			// First delete any Matrix blocks that belong to this element(s)
@@ -1655,7 +1657,11 @@ class ElementsService extends BaseApplicationComponent
 				craft()->matrix->deleteBlockById($matrixBlockIds);
 			}
 
+			// Delete the elements table rows, which will cascade across all other InnoDB tables
 			$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+
+			// The searchindex table is MyISAM, though
+			craft()->db->createCommand()->delete('searchindex', $searchIndexCondition);
 
 			if ($transaction !== null)
 			{
