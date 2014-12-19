@@ -40,6 +40,7 @@ Craft.Tool = Garnish.Base.extend(
 				'</div>');
 
 			this.hud = new Garnish.HUD(this.$trigger, this.$form, {
+				positions: ['top', 'bottom', 'right', 'left'],
 				hudClass: 'hud toolhud'
 			});
 
