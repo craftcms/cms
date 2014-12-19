@@ -4579,7 +4579,8 @@ Garnish.Modal = Garnish.Base.extend({
 			this.$container.show();
 		}
 
-		this.getWidth._width = this.$container.outerWidth();
+		// Chrome might be 1px shy here for some reason
+		this.getWidth._width = this.$container.outerWidth() + 1;
 
 		if (!this.visible)
 		{
