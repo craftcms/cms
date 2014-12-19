@@ -119,7 +119,8 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$this->_includeFieldResources();
+		$configJs = $this->_getConfigJs();
+		$this->_includeFieldResources($configJs);
 
 		$id = craft()->templates->formatInputId($name);
 
@@ -127,7 +128,7 @@ class RichTextFieldType extends BaseFieldType
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
 			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
-			$this->_getConfigJs().', ' .
+			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
 		');');
 
@@ -331,20 +332,21 @@ class RichTextFieldType extends BaseFieldType
 	/**
 	 * Includes the input resources.
 	 *
+	 * @param string $configJs
+	 *
 	 * @return null
 	 */
-	private function _includeFieldResources()
+	private function _includeFieldResources($configJs)
 	{
 		craft()->templates->includeCssResource('lib/redactor/redactor.css');
-		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
 
 		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
 		craft()->templates->includeJsResource('lib/redactor/redactor.js');
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
-		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
-		craft()->templates->includeJsResource('lib/redactor/plugins/video.js');
-		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
 		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
 
@@ -360,6 +362,28 @@ class RichTextFieldType extends BaseFieldType
 				$languageId = craft()->locale->getLanguageID(craft()->language);
 				$this->_includeRedactorLangFile($languageId);
 			}
+		}
+	}
+
+	/**
+	 * Includes a plugin’s JS file, if it appears to be requested by the config file.
+	 *
+	 * @param string $configJs
+	 * @param string $plugin
+	 * @param bool $includeCss
+	 *
+	 * @return null
+	 */
+	private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+	{
+		if (preg_match('/([\'"])'.$plugin.'\1/', $configJs))
+		{
+			if ($includeCss)
+			{
+				craft()->templates->includeCssResource('lib/redactor/plugins/'.$plugin.'.css');
+			}
+
+			craft()->templates->includeJsResource('lib/redactor/plugins/'.$plugin.'.js');
 		}
 	}
 
