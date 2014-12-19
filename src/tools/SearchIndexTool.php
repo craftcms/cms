@@ -47,6 +47,9 @@ class SearchIndexTool extends BaseTool
 	{
 		if (!empty($params['start']))
 		{
+			// Truncate the searchindex table
+			craft()->db->createCommand()->truncateTable('searchindex');
+
 			// Get all the element IDs ever
 			$elements = craft()->db->createCommand()
 				->select('id, type')
