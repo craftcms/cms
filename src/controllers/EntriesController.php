@@ -58,7 +58,7 @@ class EntriesController extends BaseEntriesController
 
 		$variables['permissionSuffix'] = ':'.$variables['entry']->sectionId;
 
-		if (craft()->getEdition() >= Craft::Client && $variables['section']->type != SectionType::Single)
+		if (craft()->getEdition() == Craft::Pro && $variables['section']->type != SectionType::Single)
 		{
 			// Author selector variables
 			// ---------------------------------------------------------------------
