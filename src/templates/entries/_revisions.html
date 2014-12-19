@@ -7,7 +7,7 @@
 
 <div class="menu">
 	<ul class="padded">
-		<li><a{% if entry.getClassHandle() == 'Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t }} <span class="light">{{ entry.postDate.uiTimeStamp() }}, {{ entry.author.getName() }}</span></a></li>
+		<li><a{% if entry.getClassHandle() == 'Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t }}</a></li>
 	</ul>
 
 	{% if drafts %}
