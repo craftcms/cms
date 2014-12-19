@@ -9,7 +9,6 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 	$deleteActionRadios: null,
 	$deleteSpinner: null,
 
-	currentPasswordModal: null,
 	userSelect: null,
 	_deleting: false,
 
@@ -76,6 +75,8 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 			},
 			onSelectElements: $.proxy(function()
 			{
+				this.updateSizeAndPosition();
+
 				if (!this.$deleteActionRadios.first().prop('checked'))
 				{
 					this.$deleteActionRadios.first().click();
