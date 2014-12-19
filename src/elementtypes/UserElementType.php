@@ -349,7 +349,7 @@ class UserElementType extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('users.client', $criteria->client, $query->params));
 		}
 
-		if ($criteria->can)
+		if ($criteria->can && craft()->getEdition() == Craft::Pro)
 		{
 			// Get the actual permission ID
 			if (is_numeric($criteria->can))
