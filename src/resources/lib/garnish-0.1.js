@@ -3156,32 +3156,40 @@ Garnish.HUD = Garnish.Base.extend({
 		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
 
 		// find the actual available top/right/bottom/left clearances
-		var clearances = [
-			this.windowHeight + this.windowScrollTop - this.triggerOffset.bottom, // bottom
-			this.triggerOffset.top - this.windowScrollTop,                        // top
-			this.windowWidth + this.windowScrollLeft - this.triggerOffset.right,  // right
-			this.triggerOffset.left - this.windowScrollLeft                       // left
-		];
+		var clearances = {
+			bottom: this.windowHeight + this.windowScrollTop - this.triggerOffset.bottom,
+			top:    this.triggerOffset.top - this.windowScrollTop,
+			right:  this.windowWidth + this.windowScrollLeft - this.triggerOffset.right,
+			left:   this.triggerOffset.left - this.windowScrollLeft
+		};
 
 		// Find the first position that has enough room
-		for (var i = 0; i < 4; i++)
+		this.position = null;
+
+		for (var i = 0; i < this.settings.positions.length; i++)
 		{
-			var prop = (i < 2 ? 'height' : 'width');
-			if (clearances[i] - (this.settings.windowSpacing + this.settings.triggerSpacing) >= this[prop])
+			var position = this.settings.positions[i],
+				prop = (position == 'top' || position == 'bottom' ? 'height' : 'width');
+
+			if (clearances[position] - (this.settings.windowSpacing + this.settings.triggerSpacing) >= this[prop])
 			{
-				var positionIndex = i;
+				// This is the first position that has enough room in order of preference, so we'll go with this
+				this.position = position;
 				break;
+			}
+
+			if (!this.position || clearances[position] > clearances[this.position])
+			{
+				// Use this as a fallback as it's the position with the most clearance so far
+				this.position = position;
 			}
 		}
 
-		if (typeof positionIndex == 'undefined')
+		// Just in case...
+		if (!this.position || $.inArray(this.position, ['bottom', 'top', 'right', 'left']) == -1)
 		{
-			// Just figure out which one is the biggest
-			var biggestClearance = Math.max.apply(null, clearances),
-				positionIndex = $.inArray(biggestClearance, clearances);
+			this.position = 'bottom'
 		}
-
-		this.position = Garnish.HUD.positions[positionIndex];
 
 		// Update the tip class
 		if (this.tipClass)
@@ -3189,7 +3197,7 @@ Garnish.HUD = Garnish.Base.extend({
 			this.$tip.removeClass(this.tipClass);
 		}
 
-		this.tipClass = this.settings.tipClass+'-'+Garnish.HUD.tipClasses[positionIndex];
+		this.tipClass = this.settings.tipClass+'-'+Garnish.HUD.tipClasses[this.position];
 		this.$tip.addClass(this.tipClass);
 	},
 
@@ -3292,13 +3300,13 @@ Garnish.HUD = Garnish.Base.extend({
 	}
 },
 {
-	positions: ['bottom', 'top', 'right', 'left'],
-	tipClasses: ['top', 'bottom', 'left', 'right'],
+	tipClasses: { bottom: 'top', top: 'bottom', right: 'left', left: 'right'},
 
 	defaults: {
 		hudClass: 'hud',
 		tipClass: 'tip',
 		bodyClass: 'body',
+		positions: ['bottom', 'top', 'right', 'left'],
 		triggerSpacing: 10,
 		windowSpacing: 10,
 		tipWidth: 30,
