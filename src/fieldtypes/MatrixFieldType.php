@@ -167,7 +167,7 @@ class MatrixFieldType extends BaseFieldType
 	 *
 	 * @param mixed $value
 	 *
-	 * @return ElementCriteriaModel|array
+	 * @return ElementCriteriaModel
 	 */
 	public function prepValue($value)
 	{
@@ -434,11 +434,10 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function getSearchKeywords($value)
 	{
-		$criteria = $this->prepValue(null);
 		$keywords = array();
 		$contentService = craft()->content;
 
-		foreach ($criteria->find() as $block)
+		foreach ($value as $block)
 		{
 			$originalContentTable      = $contentService->contentTable;
 			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
