@@ -172,12 +172,12 @@ class AssetsController extends BaseController
 				$this->returnErrorJson($e->getMessage());
 			}
 
-			// Fire an 'onBeforeReplaceAsset' event
+			// Fire an 'onBeforeReplaceFile' event
 			$event = new Event($this, array(
 				'asset' => $existingFile
 			));
 
-			craft()->assets->onBeforeReplaceAsset($event);
+			craft()->assets->onBeforeReplaceFile($event);
 
 			// Is the event preventing this from happening?
 			if (!$event->performAction)
@@ -228,8 +228,8 @@ class AssetsController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		// Fire an 'onReplaceAsset' event
-		craft()->assets->onBeforeReplaceAsset(new Event($this, array(
+		// Fire an 'onReplaceFile' event
+		craft()->assets->onReplaceFile(new Event($this, array(
 			'asset' => $existingFile
 		)));
 

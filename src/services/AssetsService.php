@@ -1103,27 +1103,27 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Fires an 'onBeforeReplaceAsset' event.
+	 * Fires an 'onBeforeReplaceFile' event.
 	 *
 	 * @param Event $event
 	 *
 	 * @return null
 	 */
-	public function onBeforeReplaceAsset(Event $event)
+	public function onBeforeReplaceFile(Event $event)
 	{
-		$this->raiseEvent('onBeforeReplaceAsset', $event);
+		$this->raiseEvent('onBeforeReplaceFile', $event);
 	}
 
 	/**
-	 * Fires an 'onReplaceAsset' event.
+	 * Fires an 'onReplaceFile' event.
 	 *
 	 * @param Event $event
 	 *
 	 * @return null
 	 */
-	public function onReplaceAsset(Event $event)
+	public function onReplaceFile(Event $event)
 	{
-		$this->raiseEvent('onReplaceAsset', $event);
+		$this->raiseEvent('onReplaceFile', $event);
 	}
 
 	/**
