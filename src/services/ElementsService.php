@@ -1068,7 +1068,7 @@ class ElementsService extends BaseApplicationComponent
 
 			if (!$elementRecord)
 			{
-				throw new Exception(Craft::t('No element exists with the ID “{id}”', array('id' => $element->id)));
+				throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
 			}
 		}
 		else

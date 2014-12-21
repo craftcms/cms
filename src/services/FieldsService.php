@@ -1037,7 +1037,7 @@ class FieldsService extends BaseApplicationComponent
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No field group exists with the ID “{id}”', array('id' => $group->id)));
+				throw new Exception(Craft::t('No field group exists with the ID “{id}”.', array('id' => $group->id)));
 			}
 		}
 		else
@@ -1068,7 +1068,7 @@ class FieldsService extends BaseApplicationComponent
 
 				if (!$this->_fieldRecordsById[$fieldId])
 				{
-					throw new Exception(Craft::t('No field exists with the ID “{id}”', array('id' => $fieldId)));
+					throw new Exception(Craft::t('No field exists with the ID “{id}”.', array('id' => $fieldId)));
 				}
 			}
 

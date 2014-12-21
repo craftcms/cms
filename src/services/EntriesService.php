@@ -78,7 +78,7 @@ class EntriesService extends BaseApplicationComponent
 
 				if (!$parentEntry)
 				{
-					throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->parentId)));
+					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->parentId)));
 				}
 			}
 			else
@@ -96,7 +96,7 @@ class EntriesService extends BaseApplicationComponent
 
 			if (!$entryRecord)
 			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
 			}
 		}
 		else
@@ -109,7 +109,7 @@ class EntriesService extends BaseApplicationComponent
 
 		if (!$section)
 		{
-			throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $entry->sectionId)));
+			throw new Exception(Craft::t('No section exists with the ID “{id}”.', array('id' => $entry->sectionId)));
 		}
 
 		// Verify that the section is available in this locale

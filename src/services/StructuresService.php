@@ -60,7 +60,7 @@ class StructuresService extends BaseApplicationComponent
 
 			if (!$structureRecord)
 			{
-				throw new Exception(Craft::t('No structure exists with the ID “{id}”', array('id' => $structure->id)));
+				throw new Exception(Craft::t('No structure exists with the ID “{id}”.', array('id' => $structure->id)));
 			}
 		}
 		else

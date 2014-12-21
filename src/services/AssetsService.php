@@ -124,7 +124,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if (!$fileRecord)
 			{
-				throw new Exception(Craft::t("No asset exists with the ID “{id}”", array('id' => $file->id)));
+				throw new Exception(Craft::t("No asset exists with the ID “{id}”.", array('id' => $file->id)));
 			}
 		}
 		else

@@ -527,7 +527,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 
 			if (!$draftRecord)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draft->draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draft->draftId)));
 			}
 		}
 		else

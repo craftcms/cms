@@ -133,7 +133,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			if (!$transformRecord)
 			{
-				throw new Exception(Craft::t('Can’t find the transform with ID “{id}”', array('id' => $transform->id)));
+				throw new Exception(Craft::t('Can’t find the transform with ID “{id}”.', array('id' => $transform->id)));
 			}
 		}
 		else

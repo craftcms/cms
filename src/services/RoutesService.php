@@ -99,7 +99,7 @@ class RoutesService extends BaseApplicationComponent
 
 			if (!$routeRecord)
 			{
-				throw new Exception(Craft::t('No route exists with the ID “{id}”', array('id' => $routeId)));
+				throw new Exception(Craft::t('No route exists with the ID “{id}”.', array('id' => $routeId)));
 			}
 		}
 		else
