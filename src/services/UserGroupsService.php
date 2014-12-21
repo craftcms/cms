@@ -272,6 +272,6 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	private function _noGroupExists($groupId)
 	{
-		throw new Exception(Craft::t('No group exists with the ID “{id}”', array('id' => $groupId)));
+		throw new Exception(Craft::t('No group exists with the ID “{id}”.', array('id' => $groupId)));
 	}
 }

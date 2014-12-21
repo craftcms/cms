@@ -355,7 +355,7 @@ class SectionsController extends BaseController
 
 			if (!$entryType)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryTypeId)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', array('id' => $entryTypeId)));
 			}
 		}
 		else

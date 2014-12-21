@@ -516,7 +516,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entryId)));
 		}
 
 		$currentUser = craft()->userSession->getUser();
@@ -834,7 +834,7 @@ class EntriesController extends BaseEntriesController
 
 			if (!$entry)
 			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entryId)));
 			}
 		}
 		else
