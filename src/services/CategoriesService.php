@@ -682,7 +682,7 @@ class CategoriesService extends BaseApplicationComponent
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = craft()->elements->saveElement($category, false);
+				$success = craft()->elements->saveElement($category);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
 				if (!$success)
