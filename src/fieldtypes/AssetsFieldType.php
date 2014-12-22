@@ -203,10 +203,6 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 			else
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId(
-					$settings->defaultUploadLocationSource,
-					$settings->defaultUploadLocationSubpath);
-
 				// Find the files with temp sources and just move those.
 				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
@@ -219,6 +215,14 @@ class AssetsFieldType extends BaseElementFieldType
 				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
+				}
+
+				// If we have some files to move, make sure the folder exists.
+				if (!empty($filesToMove))
+				{
+					$targetFolderId = $this->_resolveSourcePathToFolderId(
+						$settings->defaultUploadLocationSource,
+						$settings->defaultUploadLocationSubpath);
 				}
 			}
 
