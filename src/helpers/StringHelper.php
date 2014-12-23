@@ -339,13 +339,13 @@ class StringHelper
 			foreach ($ignore as $word)
 			{
 				$word = preg_quote(static::_normalizeKeywords($word));
-				$str  = preg_replace("/\b{$word}\b/", '', $str);
+				$str  = preg_replace("/\b{$word}\b/u", '', $str);
 			}
 		}
 
 		// Strip out new lines and superfluous spaces
-		$str = preg_replace('/[\n\r]+/', ' ', $str);
-		$str = preg_replace('/\s{2,}/', ' ', $str);
+		$str = preg_replace('/[\n\r]+/u', ' ', $str);
+		$str = preg_replace('/\s{2,}/u', ' ', $str);
 
 		// Trim white space
 		$str = trim($str);
