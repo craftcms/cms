@@ -112,7 +112,7 @@ class DateTime extends \DateTime
 				$date = $dt['date'];
 				$format = $dateFormatter->getDatepickerPhpFormat();
 
-				// Check for a two-digit year
+				// Check for a two-digit year as well
 				$altFormat = str_replace('Y', 'y', $format);
 
 				if (static::createFromFormat($altFormat, $date) !== false)
@@ -351,7 +351,23 @@ class DateTime extends \DateTime
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getTimepickerPhpFormat();
 
-		return $this->format($format);
+		$time = $this->format($format);
+
+		// Replace "AM" and "PM" with the localized versions
+		$localeData = craft()->i18n->getLocaleData();
+		$amName = $localeData->getAMName();
+		$pmName = $localeData->getPMName();
+
+		if ($amName != 'AM' || $pmName != 'PM')
+		{
+			$time = str_replace(
+				array('am', 'AM', 'pm', 'PM'),
+				array($amName, $amName, $pmName, $pmName),
+				$time
+			);
+		}
+
+		return $time;
 	}
 
 	/**
