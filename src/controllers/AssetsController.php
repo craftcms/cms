@@ -131,9 +131,9 @@ class AssetsController extends BaseController
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);
 		$html = craft()->templates->render('_elements/element', array('element' => $element));
-		$css = craft()->templates->getHeadHtml();
+		$headHtml = craft()->templates->getHeadHtml();
 
-		$this->returnJson(array('html' => $html, 'css' => $css));
+		$this->returnJson(array('html' => $html, 'headHtml' => $headHtml));
 	}
 
 	/**

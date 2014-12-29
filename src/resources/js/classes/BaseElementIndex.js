@@ -1658,8 +1658,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	_onUpdateElements: function(response, append, $newElements)
 	{
-		$('head').append(response.headHtml);
-		Garnish.$bod.append(response.footHtml);
+		Craft.appendHeadHtml(response.headHtml);
+		Craft.appendFootHtml(response.footHtml);
 
 		if (this._isStructureTableDraggingLastElements())
 		{
@@ -1922,8 +1922,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		}
 
 		this._$triggers.insertAfter(this.$selectAllContainer);
-		$('head').append(this.actionsHeadHtml);
-		Garnish.$bod.append(this.actionsFootHtml);
+		Craft.appendHeadHtml(this.actionsHeadHtml);
+		Craft.appendFootHtml(this.actionsFootHtml)
 
 		Craft.initUiElements(this._$triggers);
 
