@@ -175,6 +175,17 @@ abstract class BaseElementFieldType extends BaseFieldType
 			{
 				$criteria->order = 'sortOrder';
 			}
+
+			if (!$this->allowMultipleSources && $this->getSettings()->source)
+			{
+				$source = $this->getElementType()->getSource($this->getSettings()->source);
+
+				// Does the source specify any criteria attributes?
+				if (!empty($source['criteria']))
+				{
+					$criteria->setAttributes($source['criteria']);
+				}
+			}
 		}
 		else
 		{
