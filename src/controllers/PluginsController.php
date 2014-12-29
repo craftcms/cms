@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,

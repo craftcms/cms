@@ -1,7 +1,7 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
-use craft\models\AccountSettings;
+use craft\app\models\AccountSettings;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database

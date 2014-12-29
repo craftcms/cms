@@ -1,5 +1,5 @@
 <?php
-namespace craft\variables;
+namespace craft\app\variables;
 
 /**
  * Component template variable class

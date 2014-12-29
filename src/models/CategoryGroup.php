@@ -1,7 +1,7 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
-use craft\etc\behaviors\FieldLayout;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * Category group model.
@@ -42,7 +42,7 @@ class CategoryGroupModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayout(ElementType::Category),
+			'fieldLayout' => new FieldLayoutTrait(ElementType::Category),
 		);
 	}
 

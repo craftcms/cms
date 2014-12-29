@@ -1,7 +1,7 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
-use craft\etc\behaviors\FieldLayout;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * GlobalSet model class
@@ -42,7 +42,7 @@ class GlobalSetModel extends BaseElementModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayout(ElementType::GlobalSet),
+			'fieldLayout' => new FieldLayoutTrait(ElementType::GlobalSet),
 		);
 	}
 

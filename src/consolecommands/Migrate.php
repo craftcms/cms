@@ -1,5 +1,5 @@
 <?php
-namespace craft\consolecommands;
+namespace craft\app\consolecommands;
 
 /**
  * Migrate is a command for managing Craft and plugin database migrations.

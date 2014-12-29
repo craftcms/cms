@@ -1,9 +1,9 @@
 <?php
-namespace craft\assetsourcetypes;
+namespace craft\app\assetsourcetypes;
 
-use craft\models\AssetFile;
-use craft\models\AssetFolder;
-use craft\models\AssetOperationResponse;
+use craft\app\models\AssetFile;
+use craft\app\models\AssetFolder;
+use craft\app\models\AssetOperationResponse;
 
 /**
  * The base class for all asset source types.  Any asset source type must extend this class.

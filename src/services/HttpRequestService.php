@@ -1,5 +1,5 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
 /**
  * HttpRequestService provides APIs for getting information about the current HTTP request.

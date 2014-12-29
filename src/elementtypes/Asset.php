@@ -1,8 +1,8 @@
 <?php
-namespace craft\elementtypes;
+namespace craft\app\elementtypes;
 
-use craft\models\AssetFile;
-use craft\models\AssetFolder;
+use craft\app\models\AssetFile;
+use craft\app\models\AssetFolder;
 
 /**
  * The Asset class is responsible for implementing and defining assets as a native element type in Craft.

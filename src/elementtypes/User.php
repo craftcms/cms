@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementtypes;
+namespace craft\app\elementtypes;
 
 /**
  * The User class is responsible for implementing and defining users as a native element type in Craft.

@@ -1,8 +1,8 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
-use craft\helpers\AppHelper;
+use craft\app\components\BaseComponent;
+use craft\app\helpers\AppHelper;
 
 /**
  * ConfigService provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),

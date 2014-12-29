@@ -1,5 +1,5 @@
 <?php
-namespace craft\validators;
+namespace craft\app\validators;
 
 /**
  * Will validate that the given attribute is a valid URL format.

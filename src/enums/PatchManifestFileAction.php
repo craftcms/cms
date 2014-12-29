@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The PatchManifestFileAction class is an abstract class that defines all of the different path manifest file actions

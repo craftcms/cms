@@ -1,10 +1,10 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\assetsourcetypes\Temp;
-use craft\etc\components\BaseComponent;
-use craft\models\AssetFile;
-use craft\models\AssetFolder;
+use craft\app\assetsourcetypes\Temp;
+use craft\app\components\BaseComponent;
+use craft\app\models\AssetFile;
+use craft\app\models\AssetFolder;
 
 /**
  * Class AssetsService

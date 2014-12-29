@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.

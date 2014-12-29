@@ -1,9 +1,9 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
-use craft\models\AssetIndexData;
-use craft\models\AssetSource;
+use craft\app\components\BaseComponent;
+use craft\app\models\AssetIndexData;
+use craft\app\models\AssetSource;
 
 /**
  * Class AssetIndexingService

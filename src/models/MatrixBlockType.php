@@ -1,7 +1,7 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
-use craft\etc\behaviors\FieldLayout;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * Matrix block type model class.
@@ -47,7 +47,7 @@ class MatrixBlockTypeModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayout(ElementType::MatrixBlock),
+			'fieldLayout' => new FieldLayoutTrait(ElementType::MatrixBlock),
 		);
 	}
 

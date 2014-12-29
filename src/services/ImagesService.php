@@ -1,8 +1,8 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
-use craft\helpers\AppHelper;
+use craft\app\components\BaseComponent;
+use craft\app\helpers\AppHelper;
 
 /**
  * Service for image operations.

@@ -1,5 +1,5 @@
 <?php
-namespace craft\fieldtypes\data;
+namespace craft\app\fieldtypes\data;
 
 /**
  * Single-select option field data class.

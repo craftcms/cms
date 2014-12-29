@@ -1,5 +1,5 @@
 <?php
-namespace craft\helpers;
+namespace craft\app\helpers;
 
 /**
  * Helper class for template variables.

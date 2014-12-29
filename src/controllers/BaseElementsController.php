@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The BaseElementsController class provides some common methods for {@link ElementsController} and {@link ElementIndexController}.

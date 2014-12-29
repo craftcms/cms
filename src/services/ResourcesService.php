@@ -1,7 +1,7 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
+use craft\app\components\BaseComponent;
 
 /**
  * Class ResourcesService
@@ -480,7 +480,7 @@ class ResourcesService extends BaseComponent
 
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
-			$sourceFile = craft()->path->getAppPath().'etc/assets/fileicons/'.$sourceSize['size'].'.png';
+			$sourceFile = craft()->path->getAppPath().'resources/images/fileicons/'.$sourceSize['size'].'.png';
 			$image = imagecreatefrompng($sourceFile);
 
 			// Text placement.
@@ -488,7 +488,7 @@ class ResourcesService extends BaseComponent
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = StringHelper::toUpperCase($ext);
-				$font = craft()->path->getAppPath().'etc/assets/helveticaneue-webfont.ttf';
+				$font = craft()->path->getAppPath().'resources/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
 				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);

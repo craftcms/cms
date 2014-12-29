@@ -1,5 +1,5 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
 /**
  * Category group locale model class.

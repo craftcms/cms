@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as

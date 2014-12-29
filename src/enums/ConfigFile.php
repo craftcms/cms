@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The ConfigFile class is an abstract class that defines all of the config file options that are available in Craft.

@@ -1,5 +1,5 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
 /**
  * This model represents an Asset Operation Response.

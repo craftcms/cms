@@ -1,8 +1,8 @@
 <?php
-namespace craft\assetsourcetypes;
+namespace craft\app\assetsourcetypes;
 
-use craft\models\AssetFile;
-use craft\models\AssetFolder;
+use craft\app\models\AssetFile;
+use craft\app\models\AssetFolder;
 
 craft()->requireEdition(Craft::Pro);
 

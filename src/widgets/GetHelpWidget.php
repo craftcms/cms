@@ -1,5 +1,5 @@
 <?php
-namespace craft\widgets;
+namespace craft\app\widgets;
 
 /**
  * Get Help widget.

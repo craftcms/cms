@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementtypes;
+namespace craft\app\elementtypes;
 
 /**
  * This interface defines the contract that all element types must implement via {@link BaseElementType}.

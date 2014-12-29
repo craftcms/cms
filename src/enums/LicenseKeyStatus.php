@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The LicenseKeyStatus class is an abstract class that defines all of the license key status states that are available

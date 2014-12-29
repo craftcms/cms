@@ -1,7 +1,7 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
-use craft\etc\behaviors\FieldLayout;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * Entry type model class.
@@ -34,7 +34,7 @@ class EntryTypeModel extends BaseModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayout(ElementType::Entry),
+			'fieldLayout' => new FieldLayoutTrait(ElementType::Entry),
 		);
 	}
 

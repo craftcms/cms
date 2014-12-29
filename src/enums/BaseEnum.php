@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The BaseEnum class is an abstract class that all enums in Craft inherit. It provides some functionality that mimics

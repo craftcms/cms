@@ -1,5 +1,5 @@
 <?php
-namespace craft\tools;
+namespace craft\app\tools;
 
 /**
  * Search Index tool.

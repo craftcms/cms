@@ -1,5 +1,5 @@
 <?php
-namespace craft\widgets;
+namespace craft\app\widgets;
 
 /**
  * Widget base class.

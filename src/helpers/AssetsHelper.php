@@ -1,7 +1,7 @@
 <?php
-namespace craft\helpers;
+namespace craft\app\helpers;
 
-use craft\models\AssetFile;
+use craft\app\models\AssetFile;
 
 /**
  * Class AssetsHelper

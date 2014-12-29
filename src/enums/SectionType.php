@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The SectionType class is an abstract class that defines the different section types available in Craft.

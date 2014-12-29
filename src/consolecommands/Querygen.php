@@ -1,5 +1,5 @@
 <?php
-namespace craft\consolecommands;
+namespace craft\app\consolecommands;
 
 /**
  * The query generator console command.

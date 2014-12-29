@@ -1,5 +1,5 @@
 <?php
-namespace craft\fieldtypes\data;
+namespace craft\app\fieldtypes\data;
 
 /**
  * Multi-select option field data class.

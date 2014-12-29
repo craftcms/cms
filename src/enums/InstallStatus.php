@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The InstallStatus class is an abstract class that defines all of the install status states that are available in Craft during installation.

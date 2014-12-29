@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The RequirementResult class is an abstract class that defines the different requirement result status results

@@ -1,5 +1,5 @@
 <?php
-namespace craft\validators;
+namespace craft\app\validators;
 
 /**
  * Class UrlValidator

@@ -1,5 +1,5 @@
 <?php
-namespace craft\records;
+namespace craft\app\records;
 
 craft()->requireEdition(Craft::Pro);
 

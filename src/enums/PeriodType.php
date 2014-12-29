@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The PeriodType class is an abstract class that defines the various time period lengths that are available in Craft.

@@ -1,7 +1,7 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
-use craft\etc\behaviors\FieldLayout;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * The AssetSource model class.
@@ -42,7 +42,7 @@ class AssetSource extends BaseComponentModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayout(ElementType::Entry),
+			'fieldLayout' => new FieldLayoutTrait(ElementType::Entry),
 		);
 	}
 

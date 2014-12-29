@@ -1,7 +1,7 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
-use craft\models\AssetTransform;
+use craft\app\models\AssetTransform;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,

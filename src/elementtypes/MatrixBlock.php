@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementtypes;
+namespace craft\app\elementtypes;
 
 /**
  * The MatrixBlock class is responsible for implementing and defining Matrix blocks as a native element type

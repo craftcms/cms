@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementactions;
+namespace craft\app\elementactions;
 
 /**
  * Suspend Users Element Action

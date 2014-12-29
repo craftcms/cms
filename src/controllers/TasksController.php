@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task

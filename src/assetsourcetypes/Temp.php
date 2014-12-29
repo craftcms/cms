@@ -1,5 +1,5 @@
 <?php
-namespace craft\assetsourcetypes;
+namespace craft\app\assetsourcetypes;
 
 /**
  * A temporary asset source type class.

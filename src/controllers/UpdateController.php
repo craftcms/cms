@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available

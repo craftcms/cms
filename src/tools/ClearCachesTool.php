@@ -1,5 +1,5 @@
 <?php
-namespace craft\tools;
+namespace craft\app\tools;
 
 /**
  * Clear Caches tool.

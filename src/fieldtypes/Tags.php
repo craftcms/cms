@@ -1,5 +1,5 @@
 <?php
-namespace craft\fieldtypes;
+namespace craft\app\fieldtypes;
 
 /**
  * Tags fieldtype

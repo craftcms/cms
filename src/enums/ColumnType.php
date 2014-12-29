@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The ColumnType class is an abstract class that defines all of the abstract column types that will eventually be

@@ -1,5 +1,5 @@
 <?php
-namespace craft\tasks;
+namespace craft\app\tasks;
 
 /**
  * Delete Stale Template Caches Task

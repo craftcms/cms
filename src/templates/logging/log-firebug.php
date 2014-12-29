@@ -29,21 +29,21 @@ if (typeof(console) == 'object' && typeof(console.groupCollapsed) == 'function')
 
 	$serverInfo = mb_substr($message, $serverPos);
 
-	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $getInfo, Craft\Craft::t('GET Info'), $forced);
-	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $cookieInfo, Craft\Craft::t('COOKIE Info'), $forced);
+	craft\app\helpers\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $getInfo, craft\app\Craft::t('GET Info'), $forced);
+	craft\app\helpers\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $cookieInfo, craft\app\Craft::t('COOKIE Info'), $forced);
 
 	if ($sessionInfo)
 	{
-		Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $sessionInfo, Craft\Craft::t('SESSION Info'), $forced);
+		craft\app\helpers\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $sessionInfo, craft\app\Craft::t('SESSION Info'), $forced);
 	}
 
-	Craft\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $serverInfo, Craft\Craft::t('SERVER Info'), $forced);
+	craft\app\helpers\LoggingHelper::processFireBugLogEntry($level, $timestamp, $category, $serverInfo, craft\app\Craft::t('SERVER Info'), $forced);
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";
 
 	foreach ($data as $log)
 	{
-		Craft\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0], null, isset($log[4]) ? $log[4] : false);
+		craft\app\helpers\LoggingHelper::processFireBugLogEntry($log[1], $log[3], $log[2], $log[0], null, isset($log[4]) ? $log[4] : false);
 	}
 
 	echo "\tconsole.groupEnd();\n";

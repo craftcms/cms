@@ -1,5 +1,5 @@
 <?php
-namespace craft\helpers;
+namespace craft\app\helpers;
 
 /**
  * App helper.
@@ -136,7 +136,7 @@ class AppHelper
 	 */
 	public static function getByteValueFromPhpSizeString($value)
 	{
-		craft()->deprecator->log('craft\helpers\App::getByteValueFromPhpSizeString()', 'craft\helpers\App::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
+		craft()->deprecator->log('craft\app\helpers\App::getByteValueFromPhpSizeString()', 'craft\app\helpers\App::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
 		return static::_normalizePhpConfigValueToBytes($value);
 	}
 

@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementactions;
+namespace craft\app\elementactions;
 
 /**
  * New Child Element Action

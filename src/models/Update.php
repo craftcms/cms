@@ -1,5 +1,5 @@
 <?php
-namespace craft\models;
+namespace craft\app\models;
 
 /**
  * Stores all of the available update info.
@@ -44,7 +44,7 @@ class UpdateModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$attributes['app']      = array(AttributeType::Mixed, 'model' => '\craft\models\AppUpdate');
+		$attributes['app']      = array(AttributeType::Mixed, 'model' => '\craft\app\models\AppUpdate');
 		$attributes['plugins']  = AttributeType::Mixed;
 		$attributes['errors']   = AttributeType::Mixed;
 

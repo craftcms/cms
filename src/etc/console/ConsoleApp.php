@@ -1,5 +1,5 @@
 <?php
-namespace craft\etc\console;
+namespace craft\app\etc\console;
 
 /**
  * Class ConsoleApp
@@ -50,8 +50,8 @@ class ConsoleApp extends \CConsoleApplication
 			Craft::import($alias);
 		}
 
-		// Attach our Craft app behavior.
-		$this->attachBehavior('craft\etc\behaviors\App', new \craft\etc\behaviors\App());
+		// Attach our Craft app trait.
+		$this->attachBehavior('craft\app\base\ApplicationTrait', new \craft\app\base\ApplicationTrait());
 
 		// Initialize Cache and LogRouter right away (order is important)
 		$this->getComponent('cache');
@@ -100,7 +100,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function getLanguage()
 	{
-		return $this->asa('craft\etc\behaviors\App')->getLanguage();
+		return $this->asa('craft\app\base\ApplicationTrait')->getLanguage();
 	}
 
 	/**
@@ -112,7 +112,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->asa('craft\etc\behaviors\App')->setLanguage($language);
+		$this->asa('craft\app\base\ApplicationTrait')->setLanguage($language);
 	}
 
 	/**
@@ -189,7 +189,7 @@ class ConsoleApp extends \CConsoleApplication
 		{
 			if ($id === 'db')
 			{
-				$dbConnection = $this->asa('craft\etc\behaviors\App')->createDbConnection();
+				$dbConnection = $this->asa('craft\app\base\ApplicationTrait')->createDbConnection();
 				$this->setComponent('db', $dbConnection);
 			}
 

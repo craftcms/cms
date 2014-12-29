@@ -1,5 +1,5 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
 /**
  * Class SecurityService

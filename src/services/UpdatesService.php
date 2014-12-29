@@ -1,8 +1,8 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
-use craft\models\AppUpdate;
+use craft\app\components\BaseComponent;
+use craft\app\models\AppUpdate;
 
 /**
  * Class UpdatesService

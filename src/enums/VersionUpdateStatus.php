@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The VersionUpdateStatus class is an abstract class that defines the different update status states available in Craft.

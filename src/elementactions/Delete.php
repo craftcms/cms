@@ -1,5 +1,5 @@
 <?php
-namespace craft\elementactions;
+namespace craft\app\elementactions;
 
 /**
  * Delete Element Action

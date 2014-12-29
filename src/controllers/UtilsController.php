@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The UtilsController class is a controller that handles various utility related tasks such as displaying server info,

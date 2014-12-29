@@ -1,5 +1,5 @@
 <?php
-namespace craft\etc\console;
+namespace craft\app\etc\console;
 
 /**
  * Class ConsoleCommandRunner

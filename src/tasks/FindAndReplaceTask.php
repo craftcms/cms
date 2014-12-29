@@ -1,5 +1,5 @@
 <?php
-namespace craft\tasks;
+namespace craft\app\tasks;
 
 /**
  * Find and Replace task.

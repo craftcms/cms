@@ -1,5 +1,5 @@
 <?php
-namespace craft\enums;
+namespace craft\app\enums;
 
 /**
  * The ComponentType class is an abstract class that defines all of the component types that are available in Craft.

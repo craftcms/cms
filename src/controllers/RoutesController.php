@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and

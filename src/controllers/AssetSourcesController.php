@@ -1,8 +1,8 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
-use craft\assetsourcetypes\S3;
-use craft\models\AssetSource;
+use craft\app\assetsourcetypes\S3;
+use craft\app\models\AssetSource;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
@@ -244,7 +244,7 @@ class AssetSourcesController extends BaseController
 			// to mock up a SourceType object here.
 			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
-			/** @var \craft\assetsourcetypes\Rackspace $source */
+			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);
 			$this->returnJson($source->getRegionList());
 		}
@@ -273,7 +273,7 @@ class AssetSourcesController extends BaseController
 			// to mock up a SourceType object here.
 			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
-			/** @var \craft\assetsourcetypes\Rackspace $source */
+			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);
 			$this->returnJson($source->getContainerList());
 		}

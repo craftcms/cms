@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as

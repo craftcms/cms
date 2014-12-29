@@ -1,8 +1,8 @@
 <?php
-namespace craft\services;
+namespace craft\app\services;
 
-use craft\etc\components\BaseComponent;
-use craft\fieldtypes\Matrix;
+use craft\app\components\BaseComponent;
+use craft\app\fieldtypes\Matrix;
 
 /**
  * MatrixService provides APIs for managing Matrix fields.

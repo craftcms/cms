@@ -1,5 +1,5 @@
 <?php
-namespace craft\controllers;
+namespace craft\app\controllers;
 
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and
