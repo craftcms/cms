@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class ResourcesService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class ResourcesService extends BaseApplicationComponent
+class ResourcesService extends BaseComponent
 {
 	// Constants
 	// =========================================================================

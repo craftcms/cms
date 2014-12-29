@@ -1,6 +1,10 @@
 <?php
 namespace craft\services;
 
+use craft\assetsourcetypes\Temp;
+use craft\etc\components\BaseComponent;
+use craft\models\AssetSource;
+
 /**
  * Class AssetSourcesService
  *
@@ -12,7 +16,7 @@ namespace craft\services;
  * @since      1.0
  * @deprecated This class will have several breaking changes in Craft 3.0.
  */
-class AssetSourcesService extends BaseApplicationComponent
+class AssetSourcesService extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -80,11 +84,11 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Populates an asset source type with a given source.
 	 *
-	 * @param AssetSourceModel $source
+	 * @param AssetSource $source
 	 *
 	 * @return BaseAssetSourceType|null
 	 */
-	public function populateSourceType(AssetSourceModel $source)
+	public function populateSourceType(AssetSource $source)
 	{
 		return craft()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
 	}
@@ -262,17 +266,17 @@ class AssetSourcesService extends BaseApplicationComponent
 	 *
 	 * @param int $sourceId
 	 *
-	 * @return AssetSourceModel|null
+	 * @return AssetSource|null
 	 */
 	public function getSourceById($sourceId)
 	{
 		// Temporary source?
 		if (is_null($sourceId))
 		{
-			$source = new AssetSourceModel();
+			$source = new AssetSource();
 			$source->id = $sourceId;
-			$source->name = TempAssetSourceType::sourceName;
-			$source->type = TempAssetSourceType::sourceType;
+			$source->name = Temp::sourceName;
+			$source->type = Temp::sourceType;
 			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');
 			return $source;
 		}
@@ -310,12 +314,12 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Saves an asset source.
 	 *
-	 * @param AssetSourceModel $source
+	 * @param AssetSource $source
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveSource(AssetSourceModel $source)
+	public function saveSource(AssetSource $source)
 	{
 		$sourceRecord = $this->_getSourceRecordById($source->id);
 
@@ -323,7 +327,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		if (!$isNewSource)
 		{
-			$oldSource = AssetSourceModel::populateModel($sourceRecord);
+			$oldSource = AssetSource::populateModel($sourceRecord);
 		}
 
 		$sourceRecord->name          = $source->name;
@@ -528,7 +532,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 *
 	 * @param array $result
 	 *
-	 * @return AssetSourceModel
+	 * @return AssetSource
 	 */
 	private function _populateSource($result)
 	{
@@ -537,7 +541,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			$result['settings'] = JsonHelper::decode($result['settings']);
 		}
 
-		return new AssetSourceModel($result);
+		return new AssetSource($result);
 	}
 
 	/**

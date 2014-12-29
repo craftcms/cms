@@ -2,7 +2,7 @@
 namespace craft\helpers;
 
 /**
- * Class AppHelper
+ * App helper.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -112,7 +112,9 @@ class AppHelper
 	 * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
 	 *
 	 * @param string $var The PHP config setting to retrieve.
-	 * @param int The size in bytes.
+	 * @param        int  The size in bytes.
+	 *
+	 * @return int
 	 */
 	public static function getPhpConfigValueInBytes($var)
 	{
@@ -134,7 +136,7 @@ class AppHelper
 	 */
 	public static function getByteValueFromPhpSizeString($value)
 	{
-		craft()->deprecator->log('AppHelper::getByteValueFromPhpSizeString()', 'AppHelper::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
+		craft()->deprecator->log('craft\helpers\App::getByteValueFromPhpSizeString()', 'craft\helpers\App::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
 		return static::_normalizePhpConfigValueToBytes($value);
 	}
 
@@ -146,7 +148,8 @@ class AppHelper
 	 *
 	 * Used by getPhpConfigValueInBytes() and getByteValueFromPhpSizeString() so long as we have to keep the latter around.
 	 *
-	 * @param mixed $var
+	 * @param mixed $value
+	 *
 	 * @return int
 	 */
 	private static function _normalizePhpConfigValueToBytes($value)

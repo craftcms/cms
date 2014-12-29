@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * PathService provides APIs for getting server paths that are used by Craft.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class PathService extends BaseApplicationComponent
+class PathService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

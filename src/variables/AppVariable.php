@@ -1,6 +1,8 @@
 <?php
 namespace craft\variables;
 
+use craft\helpers\AppHelper;
+
 /**
  * Class AppVariable
  *

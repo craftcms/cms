@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * UsersService provides APIs for managing users.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class UsersService extends BaseApplicationComponent
+class UsersService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

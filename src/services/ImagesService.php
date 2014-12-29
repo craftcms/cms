@@ -1,6 +1,9 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+use craft\helpers\AppHelper;
+
 /**
  * Service for image operations.
  *
@@ -11,7 +14,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class ImagesService extends BaseApplicationComponent
+class ImagesService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

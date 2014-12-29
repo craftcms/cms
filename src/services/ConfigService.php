@@ -1,6 +1,9 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+use craft\helpers\AppHelper;
+
 /**
  * ConfigService provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
@@ -14,7 +17,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class ConfigService extends BaseApplicationComponent
+class ConfigService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

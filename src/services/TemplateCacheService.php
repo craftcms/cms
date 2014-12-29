@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class TemplateCacheService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     2.0
  */
-class TemplateCacheService extends BaseApplicationComponent
+class TemplateCacheService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

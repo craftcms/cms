@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * FeedsService provides APIs for fetching remote RSS and Atom feeds.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class FeedsService extends BaseApplicationComponent
+class FeedsService extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

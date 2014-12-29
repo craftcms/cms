@@ -51,7 +51,7 @@ class ConsoleApp extends \CConsoleApplication
 		}
 
 		// Attach our Craft app behavior.
-		$this->attachBehavior('AppBehavior', new AppBehavior());
+		$this->attachBehavior('craft\etc\behaviors\App', new \craft\etc\behaviors\App());
 
 		// Initialize Cache and LogRouter right away (order is important)
 		$this->getComponent('cache');
@@ -100,7 +100,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function getLanguage()
 	{
-		return $this->asa('AppBehavior')->getLanguage();
+		return $this->asa('craft\etc\behaviors\App')->getLanguage();
 	}
 
 	/**
@@ -112,7 +112,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->asa('AppBehavior')->setLanguage($language);
+		$this->asa('craft\etc\behaviors\App')->setLanguage($language);
 	}
 
 	/**
@@ -189,7 +189,7 @@ class ConsoleApp extends \CConsoleApplication
 		{
 			if ($id === 'db')
 			{
-				$dbConnection = $this->asa('AppBehavior')->createDbConnection();
+				$dbConnection = $this->asa('craft\etc\behaviors\App')->createDbConnection();
 				$this->setComponent('db', $dbConnection);
 			}
 

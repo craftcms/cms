@@ -97,7 +97,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 				if (typeof this.assetSelectionModal == 'undefined')
 				{
 					this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
-						storageKey: 'RichTextFieldType.ChooseImage',
+						storageKey: 'RichText.ChooseImage',
 						multiSelect: true,
 						criteria: { locale: this.elementLocale, kind: 'image' },
 						onSelect: $.proxy(function(assets, transform)
@@ -147,7 +147,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 						if (typeof this.entrySelectionModal == 'undefined')
 						{
 							this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
-								storageKey: 'RichTextFieldType.LinkToEntry',
+								storageKey: 'RichText.LinkToEntry',
 								sources: this.sectionSources,
 								criteria: { locale: this.elementLocale },
 								onSelect: $.proxy(function(entries)
@@ -183,7 +183,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 						if (typeof this.assetLinkSelectionModal == 'undefined')
 						{
 							this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
-								storageKey: 'RichTextFieldType.LinkToAsset',
+								storageKey: 'RichText.LinkToAsset',
 								criteria: { locale: this.elementLocale },
 								onSelect: $.proxy(function(assets)
 								{

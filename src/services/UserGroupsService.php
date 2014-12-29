@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 craft()->requireEdition(Craft::Pro);
 
 /**
@@ -13,7 +15,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     1.0
  */
-class UserGroupsService extends BaseApplicationComponent
+class UserGroupsService extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

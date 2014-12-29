@@ -100,7 +100,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	 */
 	protected function getSettingsModel()
 	{
-		return new Model($this->defineSettings());
+		return new Params($this->defineSettings());
 	}
 
 	/**

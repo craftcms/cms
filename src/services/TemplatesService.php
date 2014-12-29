@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * TemplatesService provides APIs for rendering templates, as well as interacting with other areas of Craft’s
  * templating system.
@@ -14,7 +16,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class TemplatesService extends BaseApplicationComponent
+class TemplatesService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

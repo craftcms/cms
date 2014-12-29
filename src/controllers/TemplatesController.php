@@ -1,6 +1,8 @@
 <?php
 namespace craft\controllers;
 
+use craft\helpers\AppHelper;
+
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
  * control panel and front-end of a Craft site.

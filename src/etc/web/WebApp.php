@@ -1,6 +1,8 @@
 <?php
 namespace craft\etc\web;
 
+use craft\etc\behaviors\App;
+
 /**
  * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
  * @property AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
@@ -112,7 +114,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// Attach our Craft app behavior.
-		$this->attachBehavior('AppBehavior', new AppBehavior());
+		$this->attachBehavior('craft\etc\behaviors\App', new App());
 
 		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
 		$this->getComponent('cache');
@@ -271,7 +273,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLanguage()
 	{
-		return $this->asa('AppBehavior')->getLanguage();
+		return $this->asa('craft\etc\behaviors\App')->getLanguage();
 	}
 
 	/**
@@ -283,7 +285,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->asa('AppBehavior')->setLanguage($language);
+		$this->asa('craft\etc\behaviors\App')->setLanguage($language);
 	}
 
 	/**
@@ -562,7 +564,7 @@ class WebApp extends \CWebApplication
 		{
 			if ($id === 'db')
 			{
-				$dbConnection = $this->asa('AppBehavior')->createDbConnection();
+				$dbConnection = $this->asa('craft\etc\behaviors\App')->createDbConnection();
 				$this->setComponent('db', $dbConnection);
 			}
 
@@ -589,14 +591,14 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Returns the system time zone.  Note that this method cannot be in {@link AppBehavior}, because Yii will check
+	 * Returns the system time zone.  Note that this method cannot be in {@link craft\etc\behaviors\App}, because Yii will check
 	 * {@link \CApplication::getTimeZone()} instead.
 	 *
 	 * @return string
 	 */
 	public function getTimeZone()
 	{
-		return $this->asa('AppBehavior')->getTimezone();
+		return $this->asa('craft\etc\behaviors\App')->getTimezone();
 	}
 
 	/**

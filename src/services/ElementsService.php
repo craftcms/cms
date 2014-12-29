@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * ElementsService provides APIs for managing elements.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class ElementsService extends BaseApplicationComponent
+class ElementsService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

@@ -1,6 +1,9 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+use craft\fieldtypes\Matrix;
+
 /**
  * MatrixService provides APIs for managing Matrix fields.
  *
@@ -13,7 +16,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.3
  */
-class MatrixService extends BaseApplicationComponent
+class MatrixService extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -814,12 +817,12 @@ class MatrixService extends BaseApplicationComponent
 	/**
 	 * Saves a Matrix field.
 	 *
-	 * @param MatrixFieldType $fieldType The Matrix field type.
+	 * @param Matrix $fieldType The Matrix field type.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the field was saved successfully.
 	 */
-	public function saveField(MatrixFieldType $fieldType)
+	public function saveField(Matrix $fieldType)
 	{
 		$owner = $fieldType->element;
 		$field = $fieldType->model;

@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * EmailService provides APIs for sending email in Craft.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class EmailService extends BaseApplicationComponent
+class EmailService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

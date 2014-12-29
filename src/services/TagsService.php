@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class TagsService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.1
  */
-class TagsService extends BaseApplicationComponent
+class TagsService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

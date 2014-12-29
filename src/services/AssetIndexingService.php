@@ -1,6 +1,10 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+use craft\models\AssetIndexData;
+use craft\models\AssetSource;
+
 /**
  * Class AssetIndexingService
  *
@@ -12,7 +16,7 @@ namespace craft\services;
  * @since      1.0
  * @deprecated This class will have several breaking changes in Craft 3.0.
  */
-class AssetIndexingService extends BaseApplicationComponent
+class AssetIndexingService extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================
@@ -57,11 +61,11 @@ class AssetIndexingService extends BaseApplicationComponent
 	/**
 	 * Ensures a top level folder exists that matches the model.
 	 *
-	 * @param AssetSourceModel $model
+	 * @param AssetSource $model
 	 *
 	 * @return int
 	 */
-	public function ensureTopFolder(AssetSourceModel $model)
+	public function ensureTopFolder(AssetSource $model)
 	{
 		$folder = AssetFolderRecord::model()->findByAttributes(
 			array(
@@ -107,7 +111,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $sessionId
 	 * @param $offset
 	 *
-	 * @return AssetIndexDataModel|bool
+	 * @return AssetIndexData|bool
 	 */
 	public function getIndexEntry($sourceId, $sessionId, $offset)
 	{
@@ -121,7 +125,7 @@ class AssetIndexingService extends BaseApplicationComponent
 
 		if ($record)
 		{
-			return AssetIndexDataModel::populateModel($record);
+			return AssetIndexData::populateModel($record);
 		}
 
 		return false;

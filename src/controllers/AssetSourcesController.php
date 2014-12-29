@@ -1,6 +1,9 @@
 <?php
 namespace craft\controllers;
 
+use craft\assetsourcetypes\S3;
+use craft\models\AssetSource;
+
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
  * creating, editing, renaming and reordering them.
@@ -66,7 +69,7 @@ class AssetSourcesController extends BaseController
 			}
 			else
 			{
-				$variables['source'] = new AssetSourceModel();
+				$variables['source'] = new AssetSource();
 				$variables['sourceType'] = craft()->assetSources->getSourceType('Local');
 			}
 		}
@@ -124,7 +127,7 @@ class AssetSourcesController extends BaseController
 		}
 		else
 		{
-			$source = new AssetSourceModel();
+			$source = new AssetSource();
 		}
 
 		$source->name   = craft()->request->getPost('name');
@@ -215,7 +218,7 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			$this->returnJson(S3AssetSourceType::getBucketList($keyId, $secret));
+			$this->returnJson(S3::getBucketList($keyId, $secret));
 		}
 		catch (Exception $exception)
 		{
@@ -239,9 +242,9 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
+			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
-			/** @var RackspaceAssetSourceType $source */
+			/** @var \craft\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);
 			$this->returnJson($source->getRegionList());
 		}
@@ -268,9 +271,9 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
+			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
-			/** @var RackspaceAssetSourceType $source */
+			/** @var \craft\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);
 			$this->returnJson($source->getContainerList());
 		}
@@ -294,7 +297,7 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			$this->returnJson(GoogleCloudAssetSourceType::getBucketList($keyId, $secret));
+			$this->returnJson(GoogleCloud::getBucketList($keyId, $secret));
 		}
 		catch (Exception $exception)
 		{

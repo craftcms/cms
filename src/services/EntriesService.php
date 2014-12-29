@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * EntriesService provides APIs for managing entries in Craft.
  *
@@ -13,7 +15,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class EntriesService extends BaseApplicationComponent
+class EntriesService extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

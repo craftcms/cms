@@ -1,6 +1,8 @@
 <?php
 namespace craft\controllers;
 
+use craft\fieldtypes\Assets;
+
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
@@ -92,7 +94,7 @@ class AssetsController extends BaseController
 
 		$field = craft()->fields->populateFieldType(craft()->fields->getFieldById($fieldId));
 
-		if (!($field instanceof AssetsFieldType))
+		if (!($field instanceof Assets))
 		{
 			throw new Exception(Craft::t('That is not an Assets field.'));
 		}

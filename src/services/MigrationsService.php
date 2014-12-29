@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class MigrationsService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class MigrationsService extends BaseApplicationComponent
+class MigrationsService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

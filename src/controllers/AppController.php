@@ -1,6 +1,8 @@
 <?php
 namespace craft\controllers;
 
+use craft\helpers\AppHelper;
+
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
  * upgrading Craft editions and license requests.

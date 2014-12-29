@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class EtService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class EtService extends BaseApplicationComponent
+class EtService extends BaseComponent
 {
 	// Constants
 	// =========================================================================

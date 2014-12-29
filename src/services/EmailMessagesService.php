@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 craft()->requireEdition(Craft::Client);
 
 /**
@@ -13,7 +15,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     1.0
  */
-class EmailMessagesService extends BaseApplicationComponent
+class EmailMessagesService extends BaseComponent
 {
 	// Properties
 	// =========================================================================

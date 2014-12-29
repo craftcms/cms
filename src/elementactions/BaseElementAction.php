@@ -135,7 +135,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	 */
 	protected function getParamsModel()
 	{
-		return new Model($this->defineParams());
+		return new Params($this->defineParams());
 	}
 
 	/**

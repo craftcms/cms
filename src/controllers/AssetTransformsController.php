@@ -1,6 +1,8 @@
 <?php
 namespace craft\controllers;
 
+use craft\models\AssetTransform;
+
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
  * such as creating, editing and deleting transforms.
@@ -38,7 +40,7 @@ class AssetTransformsController extends BaseController
 	public function actionTransformIndex()
 	{
 		$variables['transforms'] = craft()->assetTransforms->getAllTransforms();
-		$variables['transformModes'] = AssetTransformModel::getTransformModes();
+		$variables['transformModes'] = AssetTransform::getTransformModes();
 
 		$this->renderTemplate('settings/assets/transforms/_index', $variables);
 	}
@@ -64,7 +66,7 @@ class AssetTransformsController extends BaseController
 			}
 			else
 			{
-				$variables['transform'] = new AssetTransformModel();
+				$variables['transform'] = new AssetTransform();
 			}
 		}
 
@@ -78,7 +80,7 @@ class AssetTransformsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$transform = new AssetTransformModel();
+		$transform = new AssetTransform();
 		$transform->id = craft()->request->getPost('transformId');
 		$transform->name = craft()->request->getPost('name');
 		$transform->handle = craft()->request->getPost('handle');

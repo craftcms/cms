@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Class DashboardService
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     1.0
  */
-class DashboardService extends BaseApplicationComponent
+class DashboardService extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

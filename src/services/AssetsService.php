@@ -1,6 +1,11 @@
 <?php
 namespace craft\services;
 
+use craft\assetsourcetypes\Temp;
+use craft\etc\components\BaseComponent;
+use craft\models\AssetFile;
+use craft\models\AssetFolder;
+
 /**
  * Class AssetsService
  *
@@ -12,7 +17,7 @@ namespace craft\services;
  * @since      1.0
  * @deprecated This class will have several breaking changes in Craft 3.0.
  */
-class AssetsService extends BaseApplicationComponent
+class AssetsService extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -51,7 +56,7 @@ class AssetsService extends BaseApplicationComponent
 			->order('fi.filename')
 			->queryAll();
 
-		return AssetFileModel::populateModels($files, $indexBy);
+		return AssetFile::populateModels($files, $indexBy);
 	}
 
 	/**
@@ -109,12 +114,13 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Saves the record for an asset.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFile $file
 	 *
+	 * @throws Exception
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function storeFile(AssetFileModel $file)
+	public function storeFile(AssetFile $file)
 	{
 		$isNewFile = !$file->id;
 
@@ -292,11 +298,11 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Store a folder by model and return the id.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolder $folder
 	 *
 	 * @return mixed
 	 */
-	public function storeFolder(AssetFolderModel $folder)
+	public function storeFolder(AssetFolder $folder)
 	{
 		if (empty($folder->id))
 		{
@@ -351,7 +357,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param UserModel $userModel
 	 *
 	 * @throws Exception
-	 * @return AssetFolderModel|null
+	 * @return AssetFolder|null
 	 */
 	public function getUserFolder(UserModel $userModel = null)
 	{
@@ -360,8 +366,8 @@ class AssetsService extends BaseApplicationComponent
 		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
 		{
-			$sourceTopFolder = new AssetFolderModel();
-			$sourceTopFolder->name = TempAssetSourceType::sourceName;
+			$sourceTopFolder = new AssetFolder();
+			$sourceTopFolder->name = Temp::sourceName;
 			$sourceTopFolder->id = $this->storeFolder($sourceTopFolder);
 		}
 
@@ -384,7 +390,7 @@ class AssetsService extends BaseApplicationComponent
 
 		if (!$folder)
 		{
-			$folder = new AssetFolderModel();
+			$folder = new AssetFolder();
 			$folder->parentId = $sourceTopFolder->id;
 			$folder->name = $folderName;
 			$folder->id = $this->storeFolder($folder);
@@ -418,7 +424,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $parentId
 	 * @param $folderName
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function createFolder($parentId, $folderName)
 	{
@@ -436,7 +442,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		catch (Exception $exception)
 		{
-			$response = new AssetOperationResponseModel();
+			$response = new AssetOperationResponse();
 			$response->setError($exception->getMessage());
 		}
 
@@ -450,7 +456,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $newName
 	 *
 	 * @throws Exception
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function renameFolder($folderId, $newName)
 	{
@@ -468,7 +474,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		catch (Exception $exception)
 		{
-			$response = new AssetOperationResponseModel();
+			$response = new AssetOperationResponse();
 			$response->setError($exception->getMessage());
 		}
 
@@ -482,7 +488,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param $newParentId
 	 * @param $action
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function moveFolder($folderId, $newParentId, $action)
 	{
@@ -493,7 +499,7 @@ class AssetsService extends BaseApplicationComponent
 		{
 			if (!($folder && $newParentFolder))
 			{
-				$response = new AssetOperationResponseModel();
+				$response = new AssetOperationResponse();
 				$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
 			}
 			else
@@ -504,7 +510,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		catch (Exception $exception)
 		{
-			$response = new AssetOperationResponseModel();
+			$response = new AssetOperationResponse();
 			$response->setError($exception->getMessage());
 		}
 
@@ -517,7 +523,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param int $folderId
 	 *
 	 * @throws Exception
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function deleteFolderById($folderId)
 	{
@@ -536,7 +542,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		catch (Exception $exception)
 		{
-			$response = new AssetOperationResponseModel();
+			$response = new AssetOperationResponse();
 			$response->setError($exception->getMessage());
 		}
 
@@ -548,7 +554,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param int $folderId
 	 *
-	 * @return AssetFolderModel|null
+	 * @return AssetFolder|null
 	 */
 	public function getFolderById($folderId)
 	{
@@ -560,7 +566,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if ($result)
 			{
-				$folder = new AssetFolderModel($result);
+				$folder = new AssetFolder($result);
 			}
 			else
 			{
@@ -613,7 +619,7 @@ class AssetsService extends BaseApplicationComponent
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($result);
+			$folder = AssetFolder::populateModel($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$folders[] = $folder;
 		}
@@ -624,11 +630,11 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Returns all of the folders that are descendants of a given folder.
 	 *
-	 * @param AssetFolderModel $parentFolder
+	 * @param AssetFolder $parentFolder
 	 *
 	 * @return array
 	 */
-	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
+	public function getAllDescendantFolders(AssetFolder $parentFolder)
 	{
 		$query = craft()->db->createCommand()
 			->select('f.*')
@@ -641,7 +647,7 @@ class AssetsService extends BaseApplicationComponent
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($result);
+			$folder = AssetFolder::populateModel($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$descendantFolders[$folder->id] = $folder;
 		}
@@ -654,7 +660,7 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return AssetFolderModel|null
+	 * @return AssetFolder|null
 	 */
 	public function findFolder($criteria = null)
 	{
@@ -706,7 +712,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param int    $theNewFileId The new file ID that has triggered the conflict.
 	 * @param string $fileName     The filename that is in the conflict.
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function uploadFile($folderId, $userResponse = '', $theNewFileId = 0, $fileName = '')
 	{
@@ -725,7 +731,7 @@ class AssetsService extends BaseApplicationComponent
 		}
 		catch (Exception $exception)
 		{
-			$response = new AssetOperationResponseModel();
+			$response = new AssetOperationResponse();
 			$response->setError(Craft::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
 
 			return $response;
@@ -762,7 +768,7 @@ class AssetsService extends BaseApplicationComponent
 	 *                                   (`AssetConflictResolution::KeepBoth`, `AssetConflictResolution::Replace`,
 	 *                                   or `AssetConflictResolution::Cancel).
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function insertFileByLocalPath($localPath, $fileName, $folderId, $conflictResolution = null)
 	{
@@ -803,7 +809,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param array $fileIds
 	 * @param bool $deleteFile Should the file be deleted along the record. Defaults to true.
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	public function deleteFiles($fileIds, $deleteFile = true)
 	{
@@ -812,7 +818,7 @@ class AssetsService extends BaseApplicationComponent
 			$fileIds = array($fileIds);
 		}
 
-		$response = new AssetOperationResponseModel();
+		$response = new AssetOperationResponse();
 
 		try
 		{
@@ -858,7 +864,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param array  $actions  Actions to take in case of a conflict.
 	 *
 	 * @throws Exception
-	 * @return bool|AssetOperationResponseModel
+	 * @return bool|AssetOperationResponse
 	 */
 	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
 	{
@@ -879,7 +885,7 @@ class AssetsService extends BaseApplicationComponent
 
 		$results = array();
 
-		$response = new AssetOperationResponseModel();
+		$response = new AssetOperationResponse();
 
 		$folder = $this->getFolderById($folderId);
 		$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
@@ -913,7 +919,7 @@ class AssetsService extends BaseApplicationComponent
 
 				if ($folderId == $file->folderId && ($filename == $file->filename))
 				{
-					$response = new AssetOperationResponseModel();
+					$response = new AssetOperationResponse();
 					$response->setSuccess();
 					$results[] = $response;
 				}
@@ -939,13 +945,13 @@ class AssetsService extends BaseApplicationComponent
 
 
 	/**
-	 * @param AssetFileModel $file
-	 * @param string         $filename
-	 * @param string         $action The action to take in case of a conflict.
+	 * @param AssetFile $file
+	 * @param string    $filename
+	 * @param string    $action The action to take in case of a conflict.
 	 *
-	 * @return bool|AssetOperationResponseModel
+	 * @return bool|AssetOperationResponse
 	 */
-	public function renameFile(AssetFileModel $file, $filename, $action = '')
+	public function renameFile(AssetFile $file, $filename, $action = '')
 	{
 		$response = $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
 
@@ -973,16 +979,17 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Get URL for a file.
 	 *
-	 * @param AssetFileModel $file
+	 * @param AssetFile $file
 	 * @param string         $transform
 	 *
 	 * @return string
 	 */
-	public function getUrlForFile(AssetFileModel $file, $transform = null)
+	public function getUrlForFile(AssetFile $file, $transform = null)
 	{
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
 			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+
 			return AssetsHelper::generateUrl($sourceType, $file);
 		}
 
@@ -1282,7 +1289,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param int    $theNewFileId        The id of the new file that is conflicting.
 	 * @param string $fileName            The filename that is in the conflict.
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	private function _mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName)
 	{
@@ -1307,7 +1314,7 @@ class AssetsService extends BaseApplicationComponent
 				// quick-index it, so we have a File Model to work with.
 				if (!$targetFile)
 				{
-					$targetFile = new AssetFileModel();
+					$targetFile = new AssetFile();
 					$targetFile->sourceId = $folder->sourceId;
 					$targetFile->folderId = $folder->id;
 					$targetFile->filename = $fileName;
@@ -1331,7 +1338,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 		}
 
-		$response = new AssetOperationResponseModel();
+		$response = new AssetOperationResponse();
 		$response->setSuccess();
 
 		if ($fileId)
@@ -1348,13 +1355,13 @@ class AssetsService extends BaseApplicationComponent
 	 *
 	 * @param BaseAssetSourceType $originatingSource
 	 * @param BaseAssetSourceType $targetSource
-	 * @param AssetFileModel      $file
-	 * @param AssetFolderModel    $folder
+	 * @param AssetFile           $file
+	 * @param AssetFolder         $folder
 	 * @param string              $action
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
-	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, AssetFile $file, AssetFolder $folder, $action = '')
 	{
 		$localCopy = $originatingSource->getLocalCopy($file);
 
@@ -1382,7 +1389,7 @@ class AssetsService extends BaseApplicationComponent
 	 * @param int    $theNewFileId       The id of the new file that is conflicting.
 	 * @param string $fileName           Filename of the conflicting file.
 	 *
-	 * @return AssetOperationResponseModel
+	 * @return AssetOperationResponse
 	 */
 	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
 	{

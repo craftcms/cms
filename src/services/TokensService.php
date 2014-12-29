@@ -1,6 +1,8 @@
 <?php
 namespace craft\services;
 
+use craft\etc\components\BaseComponent;
+
 /**
  * Tokens service.
  *
@@ -11,7 +13,7 @@ namespace craft\services;
  * @package   craft.app.services
  * @since     2.1
  */
-class TokensService extends BaseApplicationComponent
+class TokensService extends BaseComponent
 {
 	// Properties
 	// =========================================================================
