@@ -400,25 +400,41 @@ class ResourcesService extends BaseApplicationComponent
 	 */
 	private function _normalizeCssUrl($match)
 	{
-		// ignore root-relative, absolute, and data: URLs
+		// Ignore root-relative, absolute, and data: URLs
 		if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3]))
 		{
 			return $match[0];
 		}
 
-		$url = IOHelper::getFolderName(craft()->request->getPath()).$match[3];
+		// Clean up any relative folders at the beginning of the CSS URL
+		$requestFolder = IOHelper::getFolderName(craft()->request->getPath());
+		$requestFolderParts = array_filter(explode('/', $requestFolder));
+		$cssUrlParts = array_filter(explode('/', $match[3]));
 
-		// Make sure this is a resource URL
-		$resourceTrigger = craft()->config->getResourceTrigger();
-		$resourceTriggerPos = mb_strpos($url, $resourceTrigger);
-
-		if ($resourceTriggerPos !== false)
+		while (isset($cssUrlParts[0]) && $cssUrlParts[0] == '..' && $requestFolderParts)
 		{
-			// Give UrlHelper a chance to add the timestamp
-			$path = mb_substr($url, $resourceTriggerPos + mb_strlen($resourceTrigger));
-			$url = UrlHelper::getResourceUrl($path);
+			array_pop($requestFolderParts);
+			array_shift($cssUrlParts);
 		}
 
+		$pathParts = array_merge($requestFolderParts, $cssUrlParts);
+		$path = implode('/', $pathParts);
+		$url = UrlHelper::getUrl($path);
+
+		// Is this going to be a resource URL?
+		$rootResourceUrl = UrlHelper::getUrl(craft()->config->getResourceTrigger()).'/';
+		$rootResourceUrlLength = strlen($rootResourceUrl);
+
+		if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0)
+		{
+			// Isolate the relative resource path
+			$resourcePath = substr($url, $rootResourceUrlLength);
+
+			// Give UrlHelper a chance to add the timestamp
+			$url = UrlHelper::getResourceUrl($resourcePath);
+		}
+
+		// Return the normalized CSS URL declaration
 		return $match[1].$url.$match[4];
 	}
 
