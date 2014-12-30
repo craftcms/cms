@@ -1,5 +1,5 @@
 <?php
-namespace craft\app\plugins;
+namespace craft\app\base;
 
 /**
  * Plugin base class.
