@@ -11,7 +11,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-abstract class BaseComponentTypeInterface extends BaseComponent implements ComponentTypeInterface
+abstract class BaseComponentType extends BaseComponent implements ComponentTypeInterface
 {
 	// Properties
 	// =========================================================================

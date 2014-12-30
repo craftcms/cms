@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-abstract class BaseTaskInterface extends BaseSavableComponentType implements TaskInterface
+abstract class BaseTask extends BaseSavableComponentType implements TaskInterface
 {
 	// Properties
 	// =========================================================================

@@ -11,7 +11,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-abstract class BaseWidgetInterface extends BaseSavableComponentType implements WidgetInterface
+abstract class BaseWidget extends BaseSavableComponentType implements WidgetInterface
 {
 	// Properties
 	// =========================================================================

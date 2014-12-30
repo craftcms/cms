@@ -11,7 +11,7 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-abstract class BaseToolInterface extends BaseComponentType implements ToolInterface
+abstract class BaseTool extends BaseComponentType implements ToolInterface
 {
 	// Properties
 	// =========================================================================

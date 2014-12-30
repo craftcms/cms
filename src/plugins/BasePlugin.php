@@ -11,7 +11,7 @@ namespace craft\app\plugins;
  * @package   craft.app.plugins
  * @since     1.0
  */
-abstract class BasePluginInterface extends BaseSavableComponentType implements PluginInterface
+abstract class BasePlugin extends BaseSavableComponentType implements PluginInterface
 {
 	// Properties
 	// =========================================================================

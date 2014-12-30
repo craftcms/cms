@@ -11,7 +11,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-abstract class BaseSavableComponentType extends BaseComponentTypeInterface implements SavableComponentTypeInterface
+abstract class BaseSavableComponentType extends BaseComponentType implements SavableComponentTypeInterface
 {
 	// Properties
 	// =========================================================================
