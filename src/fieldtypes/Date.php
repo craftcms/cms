@@ -17,7 +17,7 @@ class Date extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,7 +37,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -82,7 +82,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -120,7 +120,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -139,7 +139,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::modifyElementsQuery()
+	 * @inheritDoc FieldTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
@@ -156,7 +156,7 @@ class Date extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *

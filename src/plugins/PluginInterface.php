@@ -2,7 +2,7 @@
 namespace craft\app\plugins;
 
 /**
- * Interface IPlugin
+ * Interface PluginInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\plugins;
  * @package   craft.app.plugins
  * @since     2.1
  */
-interface IPlugin extends ISavableComponentType
+interface PluginInterface extends SavableComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================

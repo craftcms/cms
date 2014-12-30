@@ -11,7 +11,7 @@ namespace craft\app\elementactions;
  * @package   craft.app.elementactions
  * @since     2.3
  */
-abstract class BaseElementAction extends BaseComponentType implements IElementAction
+abstract class BaseElementAction extends BaseComponentType implements ElementActionInterface
 {
 	// Properties
 	// =========================================================================
@@ -35,7 +35,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IElementAction::isDestructive()
+	 * @inheritDoc ElementActionInterface::isDestructive()
 	 *
 	 * @return bool
 	 */
@@ -45,7 +45,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getParams()
+	 * @inheritDoc ElementActionInterface::getParams()
 	 *
 	 * @return BaseModel
 	 */
@@ -60,7 +60,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::setParams()
+	 * @inheritDoc ElementActionInterface::setParams()
 	 *
 	 * @param array|BaseModel $values
 	 *
@@ -82,7 +82,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
@@ -92,7 +92,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getConfirmationMessage()
+	 * @inheritDoc ElementActionInterface::getConfirmationMessage()
 	 *
 	 * @return string|null
 	 */
@@ -101,7 +101,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -113,7 +113,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getMessage()
+	 * @inheritDoc ElementActionInterface::getMessage()
 	 *
 	 * @return string|null
 	 */

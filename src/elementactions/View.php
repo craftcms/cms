@@ -17,7 +17,7 @@ class View extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class View extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */

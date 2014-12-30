@@ -17,7 +17,7 @@ class SetStatus extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
@@ -27,7 +27,7 @@ class SetStatus extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *

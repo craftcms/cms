@@ -17,7 +17,7 @@ class PositionSelect extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class PositionSelect extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,7 +37,7 @@ class PositionSelect extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -50,7 +50,7 @@ class PositionSelect extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -63,7 +63,7 @@ class PositionSelect extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value

@@ -2,7 +2,7 @@
 namespace craft\app\elementactions;
 
 /**
- * Interface IElementAction
+ * Interface ElementActionInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\elementactions;
  * @package   craft.app.elementactions
  * @since     2.3
  */
-interface IElementAction extends IComponentType
+interface ElementActionInterface extends ComponentTypeInterface
 {
 	/**
 	 * Returns whether this action is destructive in nature.

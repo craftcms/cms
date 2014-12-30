@@ -17,7 +17,7 @@ class UnsuspendUsers extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class UnsuspendUsers extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *

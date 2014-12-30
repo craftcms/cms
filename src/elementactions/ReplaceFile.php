@@ -17,7 +17,7 @@ class ReplaceFile extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class ReplaceFile extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */

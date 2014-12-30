@@ -46,7 +46,7 @@ class Tags extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria

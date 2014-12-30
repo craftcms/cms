@@ -18,7 +18,7 @@ class MatrixBlock extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -28,7 +28,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasContent()
+	 * @inheritDoc ElementTypeInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -38,7 +38,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::isLocalized()
+	 * @inheritDoc ElementTypeInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineCriteriaAttributes()
+	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -64,7 +64,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getContentTableForElementsQuery()
+	 * @inheritDoc ElementTypeInterface::getContentTableForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -93,7 +93,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getFieldsForElementsQuery()
+	 * @inheritDoc ElementTypeInterface::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -118,7 +118,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::modifyElementsQuery()
+	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -154,7 +154,7 @@ class MatrixBlock extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::populateElementModel()
+	 * @inheritDoc ElementTypeInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *

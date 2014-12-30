@@ -11,13 +11,13 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     2.0
  */
-class FindAndReplaceTool extends BaseTool
+class FindAndReplaceTool extends BaseToolInterface
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class FindAndReplaceTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::getIconValue()
+	 * @inheritDoc ToolInterface::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class FindAndReplaceTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::getOptionsHtml()
+	 * @inheritDoc ToolInterface::getOptionsHtml()
 	 *
 	 * @return string
 	 */
@@ -58,7 +58,7 @@ class FindAndReplaceTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::performAction()
+	 * @inheritDoc ToolInterface::performAction()
 	 *
 	 * @param array $params
 	 *

@@ -11,7 +11,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class GetHelpWidget extends BaseWidget
+class GetHelpWidget extends BaseWidgetInterface
 {
 	// Properties
 	// =========================================================================
@@ -27,7 +27,7 @@ class GetHelpWidget extends BaseWidget
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getTitle()
+	 * @inheritDoc WidgetInterface::getTitle()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getBodyHtml()
+	 * @inheritDoc WidgetInterface::getBodyHtml()
 	 *
 	 * @return string|false
 	 */
@@ -70,7 +70,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IComponentType::isSelectable()
+	 * @inheritDoc ComponentTypeInterface::isSelectable()
 	 *
 	 * @return bool
 	 */

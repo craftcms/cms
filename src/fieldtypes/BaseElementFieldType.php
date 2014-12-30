@@ -62,7 +62,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -72,7 +72,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -82,7 +82,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -109,7 +109,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::validate()
+	 * @inheritDoc FieldTypeInterface::validate()
 	 *
 	 * @param array $value
 	 *
@@ -142,7 +142,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -194,7 +194,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
@@ -208,7 +208,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getSearchKeywords()
+	 * @inheritDoc FieldTypeInterface::getSearchKeywords()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -227,7 +227,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterElementSave()
+	 * @inheritDoc FieldTypeInterface::onAfterElementSave()
 	 *
 	 * @return null
 	 */

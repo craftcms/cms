@@ -11,7 +11,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class RecentEntriesWidget extends BaseWidget
+class RecentEntriesWidget extends BaseWidgetInterface
 {
 	// Properties
 	// =========================================================================
@@ -25,7 +25,7 @@ class RecentEntriesWidget extends BaseWidget
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -35,7 +35,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getTitle()
+	 * @inheritDoc WidgetInterface::getTitle()
 	 *
 	 * @return string
 	 */
@@ -92,7 +92,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getBodyHtml()
+	 * @inheritDoc WidgetInterface::getBodyHtml()
 	 *
 	 * @return string|false
 	 */

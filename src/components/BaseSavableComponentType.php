@@ -11,7 +11,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
+abstract class BaseSavableComponentType extends BaseComponentTypeInterface implements SavableComponentTypeInterface
 {
 	// Properties
 	// =========================================================================
@@ -32,7 +32,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettings()
+	 * @inheritDoc SavableComponentTypeInterface::getSettings()
 	 *
 	 * @return BaseModel
 	 */
@@ -47,7 +47,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::setSettings()
+	 * @inheritDoc SavableComponentTypeInterface::setSettings()
 	 *
 	 * @param array|BaseModel $values
 	 *
@@ -69,7 +69,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -79,7 +79,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *

@@ -11,13 +11,13 @@ namespace craft\app\io;
  * @package   craft.app.io
  * @since     1.0
  */
-class ZipArchive implements IZip
+class ZipArchive implements ZipInterface
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IZip::zip()
+	 * @inheritDoc ZipInterface::zip()
 	 *
 	 * @param $sourceFolder
 	 * @param $destZip
@@ -40,7 +40,7 @@ class ZipArchive implements IZip
 	}
 
 	/**
-	 * @inheritDoc IZip::unzip()
+	 * @inheritDoc ZipInterface::unzip()
 	 *
 	 * @param $srcZip
 	 * @param $destFolder
@@ -104,7 +104,7 @@ class ZipArchive implements IZip
 	}
 
 	/**
-	 * @inheritDoc IZip::add()
+	 * @inheritDoc ZipInterface::add()
 	 *
 	 * @param string $sourceZip
 	 * @param string $pathToAdd

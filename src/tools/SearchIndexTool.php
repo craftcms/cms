@@ -11,13 +11,13 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-class SearchIndexTool extends BaseTool
+class SearchIndexTool extends BaseToolInterface
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class SearchIndexTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::getIconValue()
+	 * @inheritDoc ToolInterface::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class SearchIndexTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::performAction()
+	 * @inheritDoc ToolInterface::performAction()
 	 *
 	 * @param array $params
 	 *

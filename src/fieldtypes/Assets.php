@@ -50,7 +50,7 @@ class Assets extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -96,7 +96,7 @@ class Assets extends BaseElementFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValueFromPost()
+	 * @inheritDoc FieldTypeInterface::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *
@@ -168,7 +168,7 @@ class Assets extends BaseElementFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterElementSave()
+	 * @inheritDoc FieldTypeInterface::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -236,7 +236,7 @@ class Assets extends BaseElementFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::validate()
+	 * @inheritDoc FieldTypeInterface::validate()
 	 *
 	 * @param array $value
 	 *

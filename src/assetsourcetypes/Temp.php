@@ -32,7 +32,7 @@ class Temp extends Local
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -42,7 +42,7 @@ class Temp extends Local
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -52,7 +52,7 @@ class Temp extends Local
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -91,7 +91,7 @@ class Temp extends Local
 	}
 
 	/**
-	 * @inheritDoc IComponentType::isSelectable()
+	 * @inheritDoc ComponentTypeInterface::isSelectable()
 	 *
 	 * @return bool
 	 */

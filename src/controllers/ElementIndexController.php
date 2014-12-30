@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\elementactions\ElementActionInterface;
+
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
  *
@@ -19,7 +21,7 @@ class ElementIndexController extends BaseElementsController
 	// =========================================================================
 
 	/**
-	 * @var IElementType
+	 * @var ElementTypeInterface
 	 */
 	private $_elementType;
 
@@ -323,7 +325,7 @@ class ElementIndexController extends BaseElementsController
 					$actions[$i] = $action = craft()->elements->getAction($action);
 				}
 
-				if (!($action instanceof IElementAction))
+				if (!($action instanceof ElementActionInterface))
 				{
 					unset($actions[$i]);
 				}

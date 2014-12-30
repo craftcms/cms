@@ -207,13 +207,13 @@ $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',
 	'types' => array(
-		'assetSource'   => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType', 'enableForPlugins' => false),
-		'element'       => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType',        'enableForPlugins' => true),
-		'elementAction' => array('subfolder' => 'elementactions',   'suffix' => 'ElementAction',   'instanceof' => 'IElementAction',      'enableForPlugins' => true),
-		'field'         => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType',          'enableForPlugins' => true),
-		'tool'          => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ITool',               'enableForPlugins' => false),
-		'task'          => array('subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'ITask',               'enableForPlugins' => true),
-		'widget'        => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget',             'enableForPlugins' => true),
+		'assetSource'   => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType',    'enableForPlugins' => false),
+		'element'       => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'ElementTypeInterface',   'enableForPlugins' => true),
+		'elementAction' => array('subfolder' => 'elementactions',   'suffix' => 'ElementAction',   'instanceof' => 'ElementActionInterface', 'enableForPlugins' => true),
+		'field'         => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'FieldTypeInterface',     'enableForPlugins' => true),
+		'tool'          => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ToolInterface',          'enableForPlugins' => false),
+		'task'          => array('subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'TaskInterface',          'enableForPlugins' => true),
+		'widget'        => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'WidgetInterface',        'enableForPlugins' => true),
 	)
 );
 $components['plugins'] = array(

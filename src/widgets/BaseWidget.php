@@ -11,7 +11,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-abstract class BaseWidget extends BaseSavableComponentType implements IWidget
+abstract class BaseWidgetInterface extends BaseSavableComponentType implements WidgetInterface
 {
 	// Properties
 	// =========================================================================
@@ -41,7 +41,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::isSelectable()
+	 * @inheritDoc ComponentTypeInterface::isSelectable()
 	 *
 	 * @return bool
 	 */
@@ -58,7 +58,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getTitle()
+	 * @inheritDoc WidgetInterface::getTitle()
 	 *
 	 * @return string
 	 */
@@ -69,7 +69,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getColspan()
+	 * @inheritDoc WidgetInterface::getColspan()
 	 *
 	 * @return int
 	 */
@@ -79,7 +79,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements IWidget
 	}
 
 	/**
-	 * @inheritDoc IWidget::getBodyHtml()
+	 * @inheritDoc WidgetInterface::getBodyHtml()
 	 *
 	 * @return string|false
 	 */

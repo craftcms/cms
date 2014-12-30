@@ -1070,7 +1070,7 @@ class TemplatesService extends BaseComponent
 	/**
 	 * Queues up a method to be called by a given template hook.
 	 *
-	 * For example, if you place this in your plugin’s {@link BasePlugin::init() init()} method:
+	 * For example, if you place this in your plugin’s {@link BasePluginInterface::init() init()} method:
 	 *
 	 * ```php
 	 * craft()->templates->hook('myAwesomeHook', function(&$context)

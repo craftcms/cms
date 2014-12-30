@@ -11,12 +11,12 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class GeneratePendingTransformsTask extends BaseTask
+class GeneratePendingTransformsTask extends BaseTaskInterface
 {
 	private $_indexIds;
 
 	/**
-	 * @inheritDoc ITask::getDescription()
+	 * @inheritDoc TaskInterface::getDescription()
 	 *
 	 * @return string
 	 */
@@ -26,7 +26,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::getTotalSteps()
+	 * @inheritDoc TaskInterface::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -39,7 +39,7 @@ class GeneratePendingTransformsTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::runStep()
+	 * @inheritDoc TaskInterface::runStep()
 	 *
 	 * @param int $step
 	 *

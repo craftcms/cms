@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class DeleteStaleTemplateCachesTask extends BaseTask
+class DeleteStaleTemplateCachesTask extends BaseTaskInterface
 {
 	// Properties
 	// =========================================================================
@@ -50,7 +50,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ITask::getDescription()
+	 * @inheritDoc TaskInterface::getDescription()
 	 *
 	 * @return string
 	 */
@@ -60,7 +60,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::getTotalSteps()
+	 * @inheritDoc TaskInterface::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -95,7 +95,7 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::runStep()
+	 * @inheritDoc TaskInterface::runStep()
 	 *
 	 * @param int $step
 	 *

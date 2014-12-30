@@ -17,7 +17,7 @@ class SuspendUsers extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class SuspendUsers extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
@@ -61,7 +61,7 @@ EOT;
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *

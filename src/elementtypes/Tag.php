@@ -17,7 +17,7 @@ class Tag extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasContent()
+	 * @inheritDoc ElementTypeInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -37,7 +37,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasTitles()
+	 * @inheritDoc ElementTypeInterface::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -47,7 +47,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::isLocalized()
+	 * @inheritDoc ElementTypeInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -57,7 +57,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getSources()
+	 * @inheritDoc ElementTypeInterface::getSources()
 	 *
 	 * @param string|null $context
 	 *
@@ -81,7 +81,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineSearchableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -92,7 +92,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -106,7 +106,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineCriteriaAttributes()
+	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -125,7 +125,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::modifyElementsQuery()
+	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -178,7 +178,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::populateElementModel()
+	 * @inheritDoc ElementTypeInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -190,7 +190,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getEditorHtml()
+	 * @inheritDoc ElementTypeInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -218,7 +218,7 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::saveElement()
+	 * @inheritDoc ElementTypeInterface::saveElement()
 	 *
 	 * @param BaseElementModel $element
 	 * @param array            $params

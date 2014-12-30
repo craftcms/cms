@@ -17,7 +17,7 @@ class User extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasContent()
+	 * @inheritDoc ElementTypeInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -63,7 +63,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getSources()
+	 * @inheritDoc ElementTypeInterface::getSources()
 	 *
 	 * @param string|null $context
 	 *
@@ -96,7 +96,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getAvailableActions()
+	 * @inheritDoc ElementTypeInterface::getAvailableActions()
 	 *
 	 * @param string|null $source
 	 *
@@ -140,7 +140,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineSearchableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -150,7 +150,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineSortableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineSortableAttributes()
 	 *
 	 * @retrun array
 	 */
@@ -185,7 +185,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -222,7 +222,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getTableAttributeHtml()
+	 * @inheritDoc ElementTypeInterface::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
 	 * @param string           $attribute
@@ -277,7 +277,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineCriteriaAttributes()
+	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -301,7 +301,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getElementQueryStatusCondition()
+	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
 	 *
 	 * @param DbCommand $query
 	 * @param string    $status
@@ -340,7 +340,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::modifyElementsQuery()
+	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -492,7 +492,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::populateElementModel()
+	 * @inheritDoc ElementTypeInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -504,7 +504,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getEditorHtml()
+	 * @inheritDoc ElementTypeInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *

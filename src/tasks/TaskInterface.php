@@ -2,7 +2,7 @@
 namespace craft\app\tasks;
 
 /**
- * Interface ITask
+ * Interface TaskInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-interface ITask extends ISavableComponentType
+interface TaskInterface extends SavableComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================

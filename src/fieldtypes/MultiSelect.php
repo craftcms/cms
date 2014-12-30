@@ -25,7 +25,7 @@ class MultiSelect extends BaseOptionsFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -35,7 +35,7 @@ class MultiSelect extends BaseOptionsFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $values

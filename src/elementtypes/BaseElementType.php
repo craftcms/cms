@@ -11,7 +11,7 @@ namespace craft\app\elementtypes;
  * @package   craft.app.elementtypes
  * @since     1.0
  */
-abstract class BaseElementType extends BaseComponentType implements IElementType
+abstract class BaseElementType extends BaseComponentType implements ElementTypeInterface
 {
 	// Properties
 	// =========================================================================
@@ -35,7 +35,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc IElementType::hasContent()
+	 * @inheritDoc ElementTypeInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -45,7 +45,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasTitles()
+	 * @inheritDoc ElementTypeInterface::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -55,7 +55,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::isLocalized()
+	 * @inheritDoc ElementTypeInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -65,7 +65,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasStatuses()
+	 * @inheritDoc ElementTypeInterface::hasStatuses()
 	 *
 	 * @return bool
 	 */
@@ -75,7 +75,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getStatuses()
+	 * @inheritDoc ElementTypeInterface::getStatuses()
 	 *
 	 * @return array|null
 	 */
@@ -88,7 +88,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getSources()
+	 * @inheritDoc ElementTypeInterface::getSources()
 	 *
 	 * @param null $context
 	 *
@@ -100,7 +100,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getSource()
+	 * @inheritDoc ElementTypeInterface::getSource()
 	 *
 	 * @param string $key
 	 * @param null   $context
@@ -120,7 +120,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getAvailableActions()
+	 * @inheritDoc ElementTypeInterface::getAvailableActions()
 	 *
 	 * @param string|null $source
 	 *
@@ -132,7 +132,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineSearchableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -145,7 +145,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc IElementType::getIndexHtml()
+	 * @inheritDoc ElementTypeInterface::getIndexHtml()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 * @param array                $disabledElementIds
@@ -234,7 +234,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineSortableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineSortableAttributes()
 	 *
 	 * @retrun array
 	 */
@@ -244,7 +244,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineTableAttributes()
+	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -256,7 +256,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getTableAttributeHtml()
+	 * @inheritDoc ElementTypeInterface::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
 	 * @param string           $attribute
@@ -325,7 +325,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineCriteriaAttributes()
+	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -338,7 +338,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// -----------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc IElementType::getContentTableForElementsQuery()
+	 * @inheritDoc ElementTypeInterface::getContentTableForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -350,7 +350,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getFieldsForElementsQuery()
+	 * @inheritDoc ElementTypeInterface::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -370,7 +370,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
+	 * @inheritDoc ElementTypeInterface::getContentFieldColumnsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -400,7 +400,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc IElementType::getElementQueryStatusCondition()
+	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
 	 *
 	 * @param DbCommand $query
 	 * @param string    $status
@@ -412,7 +412,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::modifyElementsQuery()
+	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
@@ -426,7 +426,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	// Element methods
 
 	/**
-	 * @inheritDoc IElementType::populateElementModel()
+	 * @inheritDoc ElementTypeInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -437,7 +437,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getEditorHtml()
+	 * @inheritDoc ElementTypeInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -473,7 +473,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::saveElement()
+	 * @inheritDoc ElementTypeInterface::saveElement()
 	 *
 	 * @param BaseElementModel $element
 	 * @param array            $params
@@ -486,7 +486,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::routeRequestForMatchedElement()
+	 * @inheritDoc ElementTypeInterface::routeRequestForMatchedElement()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -498,7 +498,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::onAfterMoveElementInStructure()
+	 * @inheritDoc ElementTypeInterface::onAfterMoveElementInStructure()
 	 *
 	 * @param BaseElementModel $element
 	 * @param int              $structureId

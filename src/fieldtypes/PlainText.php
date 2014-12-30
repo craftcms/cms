@@ -17,7 +17,7 @@ class PlainText extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class PlainText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -39,7 +39,7 @@ class PlainText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -60,7 +60,7 @@ class PlainText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value

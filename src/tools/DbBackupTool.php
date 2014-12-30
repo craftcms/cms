@@ -11,13 +11,13 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-class DbBackupTool extends BaseTool
+class DbBackupTool extends BaseToolInterface
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class DbBackupTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::getIconValue()
+	 * @inheritDoc ToolInterface::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class DbBackupTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::getOptionsHtml()
+	 * @inheritDoc ToolInterface::getOptionsHtml()
 	 *
 	 * @return string
 	 */
@@ -51,7 +51,7 @@ class DbBackupTool extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ITool::performAction()
+	 * @inheritDoc ToolInterface::performAction()
 	 *
 	 * @param array $params
 	 *

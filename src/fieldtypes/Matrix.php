@@ -17,7 +17,7 @@ class Matrix extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,7 +37,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -77,7 +77,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -143,7 +143,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterSave()
+	 * @inheritDoc FieldTypeInterface::onAfterSave()
 	 *
 	 * @return null
 	 */
@@ -153,7 +153,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onBeforeDelete()
+	 * @inheritDoc FieldTypeInterface::onBeforeDelete()
 	 *
 	 * @return null
 	 */
@@ -163,7 +163,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -209,7 +209,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -252,7 +252,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValueFromPost()
+	 * @inheritDoc FieldTypeInterface::prepValueFromPost()
 	 *
 	 * @param mixed $data
 	 *
@@ -364,7 +364,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::validate()
+	 * @inheritDoc FieldTypeInterface::validate()
 	 *
 	 * @param array $blocks
 	 *
@@ -413,7 +413,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getSearchKeywords()
+	 * @inheritDoc FieldTypeInterface::getSearchKeywords()
 	 *
 	 * @param mixed $value
 	 *
@@ -456,7 +456,7 @@ class Matrix extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterElementSave()
+	 * @inheritDoc FieldTypeInterface::onAfterElementSave()
 	 *
 	 * @return null
 	 */

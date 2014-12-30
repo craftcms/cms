@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class ResaveElementsTask extends BaseTask
+class ResaveElementsTask extends BaseTaskInterface
 {
 	// Properties
 	// =========================================================================
@@ -35,7 +35,7 @@ class ResaveElementsTask extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ITask::getDescription()
+	 * @inheritDoc TaskInterface::getDescription()
 	 *
 	 * @return string
 	 */
@@ -49,7 +49,7 @@ class ResaveElementsTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::getTotalSteps()
+	 * @inheritDoc TaskInterface::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -74,7 +74,7 @@ class ResaveElementsTask extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc ITask::runStep()
+	 * @inheritDoc TaskInterface::runStep()
 	 *
 	 * @param int $step
 	 *

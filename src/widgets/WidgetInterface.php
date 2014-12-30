@@ -2,7 +2,7 @@
 namespace craft\app\widgets;
 
 /**
- * Interface IWidget
+ * Interface WidgetInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-interface IWidget extends ISavableComponentType
+interface WidgetInterface extends SavableComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================

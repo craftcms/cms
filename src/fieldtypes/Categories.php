@@ -55,7 +55,7 @@ class Categories extends BaseElementFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
@@ -81,7 +81,7 @@ class Categories extends BaseElementFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterElementSave()
+	 * @inheritDoc FieldTypeInterface::onAfterElementSave()
 	 *
 	 * @return null
 	 */

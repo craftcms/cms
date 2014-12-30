@@ -2,7 +2,7 @@
 namespace craft\app\io;
 
 /**
- * Interface IZip
+ * Interface ZipInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\io;
  * @package   craft.app.io
  * @since     1.0
  */
-interface IZip
+interface ZipInterface
 {
 	// Public Methods
 	// =========================================================================

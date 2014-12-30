@@ -2,7 +2,7 @@
 namespace craft\app\tools;
 
 /**
- * Interface ITool
+ * Interface ToolInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,13 +11,13 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-interface ITool extends IComponentType
+interface ToolInterface extends ComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ITool::getIconValue()
+	 * @inheritDoc ToolInterface::getIconValue()
 	 *
 	 * @return string
 	 */

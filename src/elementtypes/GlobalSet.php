@@ -18,7 +18,7 @@ class GlobalSet extends BaseElementType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -28,7 +28,7 @@ class GlobalSet extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::hasContent()
+	 * @inheritDoc ElementTypeInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -38,7 +38,7 @@ class GlobalSet extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::isLocalized()
+	 * @inheritDoc ElementTypeInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class GlobalSet extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::defineCriteriaAttributes()
+	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -61,7 +61,7 @@ class GlobalSet extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::modifyElementsQuery()
+	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand $query
 	 * @param ElementCriteriaModel $criteria
@@ -81,7 +81,7 @@ class GlobalSet extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::populateElementModel()
+	 * @inheritDoc ElementTypeInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *

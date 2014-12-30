@@ -1664,7 +1664,7 @@ class ElementsService extends BaseComponent
 	/**
 	 * Returns all installed element types.
 	 *
-	 * @return IElementType[] The installed element types.
+	 * @return ElementTypeInterface[] The installed element types.
 	 */
 	public function getAllElementTypes()
 	{
@@ -1676,7 +1676,7 @@ class ElementsService extends BaseComponent
 	 *
 	 * @param string $class The element type class handle.
 	 *
-	 * @return IElementType|null The element type, or `null`.
+	 * @return ElementTypeInterface|null The element type, or `null`.
 	 */
 	public function getElementType($class)
 	{
@@ -1689,7 +1689,7 @@ class ElementsService extends BaseComponent
 	/**
 	 * Returns all installed element actions.
 	 *
-	 * @return IElementAction[] The installed element actions.
+	 * @return ElementActionInterface[] The installed element actions.
 	 */
 	public function getAllActions()
 	{
@@ -1701,7 +1701,7 @@ class ElementsService extends BaseComponent
 	 *
 	 * @param string $class The element action class handle.
 	 *
-	 * @return IElementType|null The element action, or `null`.
+	 * @return ElementTypeInterface|null The element action, or `null`.
 	 */
 	public function getAction($class)
 	{

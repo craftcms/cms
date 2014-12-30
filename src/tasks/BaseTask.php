@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-abstract class BaseTask extends BaseSavableComponentType implements ITask
+abstract class BaseTaskInterface extends BaseSavableComponentType implements TaskInterface
 {
 	// Properties
 	// =========================================================================
@@ -27,7 +27,7 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ITask::getDescription()
+	 * @inheritDoc TaskInterface::getDescription()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	}
 
 	/**
-	 * @inheritDoc ITask::getTotalSteps()
+	 * @inheritDoc TaskInterface::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -47,7 +47,7 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	}
 
 	/**
-	 * @inheritDoc ITask::runStep()
+	 * @inheritDoc TaskInterface::runStep()
 	 *
 	 * @param int $step
 	 *

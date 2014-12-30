@@ -2,7 +2,7 @@
 namespace craft\app\fieldtypes;
 
 /**
- * Interface IFieldType
+ * Interface FieldTypeInterface
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\fieldtypes;
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
-interface IFieldType extends ISavableComponentType
+interface FieldTypeInterface extends SavableComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================

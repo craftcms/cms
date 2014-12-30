@@ -17,7 +17,7 @@ class DeleteUsers extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class DeleteUsers extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::isDestructive()
+	 * @inheritDoc ElementActionInterface::isDestructive()
 	 *
 	 * @return bool
 	 */
@@ -37,7 +37,7 @@ class DeleteUsers extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getTriggerHtml()
+	 * @inheritDoc ElementActionInterface::getTriggerHtml()
 	 *
 	 * @return string|null
 	 */
@@ -83,7 +83,7 @@ EOT;
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *

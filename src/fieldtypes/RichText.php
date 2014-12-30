@@ -25,7 +25,7 @@ class RichText extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -35,7 +35,7 @@ class RichText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -71,7 +71,7 @@ class RichText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -89,7 +89,7 @@ class RichText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -110,7 +110,7 @@ class RichText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -155,7 +155,7 @@ class RichText extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValueFromPost()
+	 * @inheritDoc FieldTypeInterface::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *

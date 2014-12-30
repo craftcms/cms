@@ -11,7 +11,7 @@ namespace craft\app\elementtypes;
  * @package   craft.app.elementtypes
  * @since     1.0
  */
-interface IElementType extends IComponentType
+interface ElementTypeInterface extends ComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================
@@ -112,7 +112,7 @@ interface IElementType extends IComponentType
 	 * Returns the available element actions for a given source (if one is provided).
 	 *
 	 * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
-	 * {@link IElementAction} instance.
+	 * {@link ElementActionInterface} instance.
 	 *
 	 * @param string|null $source The selected source’s key, if any.
 	 *

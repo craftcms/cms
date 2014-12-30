@@ -11,7 +11,7 @@ namespace craft\app\fieldtypes;
  * @package   craft.app.fieldtypes
  * @since     1.0
  */
-abstract class BaseFieldType extends BaseSavableComponentType implements IFieldType
+abstract class BaseFieldType extends BaseSavableComponentType implements FieldTypeInterface
 {
 	// Properties
 	// =========================================================================
@@ -34,7 +34,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -44,7 +44,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onBeforeSave()
+	 * @inheritDoc FieldTypeInterface::onBeforeSave()
 	 *
 	 * @return null
 	 */
@@ -53,7 +53,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterSave()
+	 * @inheritDoc FieldTypeInterface::onAfterSave()
 	 *
 	 * @return null
 	 */
@@ -62,7 +62,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onBeforeDelete()
+	 * @inheritDoc FieldTypeInterface::onBeforeDelete()
 	 *
 	 * @return null
 	 */
@@ -71,7 +71,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterDelete()
+	 * @inheritDoc FieldTypeInterface::onAfterDelete()
 	 *
 	 * @return null
 	 */
@@ -80,7 +80,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getInputHtml()
+	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -111,7 +111,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValueFromPost()
+	 * @inheritDoc FieldTypeInterface::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *
@@ -131,7 +131,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::validate()
+	 * @inheritDoc FieldTypeInterface::validate()
 	 *
 	 * @param mixed $value
 	 *
@@ -143,7 +143,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::onAfterElementSave()
+	 * @inheritDoc FieldTypeInterface::onAfterElementSave()
 	 *
 	 * @return null
 	 */
@@ -152,7 +152,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::getSearchKeywords()
+	 * @inheritDoc FieldTypeInterface::getSearchKeywords()
 	 *
 	 * @param mixed $value
 	 *
@@ -164,7 +164,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *
@@ -176,7 +176,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	}
 
 	/**
-	 * @inheritDoc IFieldType::modifyElementsQuery()
+	 * @inheritDoc FieldTypeInterface::modifyElementsQuery()
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value

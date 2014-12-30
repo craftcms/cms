@@ -11,7 +11,7 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-abstract class BaseTool extends BaseComponentType implements ITool
+abstract class BaseToolInterface extends BaseComponentType implements ToolInterface
 {
 	// Properties
 	// =========================================================================
@@ -27,7 +27,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ITool::getIconValue()
+	 * @inheritDoc ToolInterface::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * @inheritDoc ITool::getOptionsHtml()
+	 * @inheritDoc ToolInterface::getOptionsHtml()
 	 *
 	 * @return string
 	 */
@@ -47,7 +47,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * @inheritDoc ITool::getButtonLabel()
+	 * @inheritDoc ToolInterface::getButtonLabel()
 	 *
 	 * @return string
 	 */
@@ -57,7 +57,7 @@ abstract class BaseTool extends BaseComponentType implements ITool
 	}
 
 	/**
-	 * @inheritDoc ITool::performAction()
+	 * @inheritDoc ToolInterface::performAction()
 	 *
 	 * @param array $params
 	 *

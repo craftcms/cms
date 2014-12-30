@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\plugins\PluginInterface;
 
 /**
  * PluginsService provides APIs for managing plugins.
@@ -900,8 +901,8 @@ class PluginsService extends BaseComponent
 
 		$plugin = new $nsClass;
 
-		// Make sure the plugin implements the IPlugin interface
-		if (!$plugin instanceof IPlugin)
+		// Make sure the plugin implements the PluginInterface
+		if (!$plugin instanceof PluginInterface)
 		{
 			return null;
 		}

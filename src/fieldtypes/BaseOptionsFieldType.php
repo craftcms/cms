@@ -30,7 +30,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IFieldType::defineContentAttribute()
+	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -117,7 +117,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc ISavableComponentType::prepSettings()
+	 * @inheritDoc SavableComponentTypeInterface::prepSettings()
 	 *
 	 * @param array $settings
 	 *
@@ -135,7 +135,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc FieldTypeInterface::prepValue()
 	 *
 	 * @param mixed $value
 	 *

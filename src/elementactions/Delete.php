@@ -17,7 +17,7 @@ class Delete extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Delete extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::isDestructive()
+	 * @inheritDoc ElementActionInterface::isDestructive()
 	 *
 	 * @return bool
 	 */
@@ -37,7 +37,7 @@ class Delete extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::getConfirmationMessage()
+	 * @inheritDoc ElementActionInterface::getConfirmationMessage()
 	 *
 	 * @return string|null
 	 */
@@ -47,7 +47,7 @@ class Delete extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc IElementAction::performAction()
+	 * @inheritDoc ElementActionInterface::performAction()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *

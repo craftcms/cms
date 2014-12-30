@@ -2,7 +2,7 @@
 namespace craft\app\components;
 
 /**
- * Component type interface.
+ * ComponentTypeInterface.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-interface IComponentType
+interface ComponentTypeInterface
 {
 	// Public Methods
 	// =========================================================================

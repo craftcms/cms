@@ -11,7 +11,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-abstract class BaseComponentType extends BaseComponent implements IComponentType
+abstract class BaseComponentTypeInterface extends BaseComponent implements ComponentTypeInterface
 {
 	// Properties
 	// =========================================================================
@@ -34,7 +34,7 @@ abstract class BaseComponentType extends BaseComponent implements IComponentType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc IComponentType::getName()
+	 * @inheritDoc ComponentTypeInterface::getName()
 	 *
 	 * @return string
 	 */
@@ -44,7 +44,7 @@ abstract class BaseComponentType extends BaseComponent implements IComponentType
 	}
 
 	/**
-	 * @inheritDoc IComponentType::getClassHandle()
+	 * @inheritDoc ComponentTypeInterface::getClassHandle()
 	 *
 	 * @return string
 	 */
@@ -70,7 +70,7 @@ abstract class BaseComponentType extends BaseComponent implements IComponentType
 	}
 
 	/**
-	 * @inheritDoc IComponentType::isSelectable()
+	 * @inheritDoc ComponentTypeInterface::isSelectable()
 	 *
 	 * @return bool
 	 */
