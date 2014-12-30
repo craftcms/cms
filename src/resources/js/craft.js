@@ -912,6 +912,62 @@ $.extend(Craft,
 		return $ul;
 	},
 
+	appendHeadHtml: function(html)
+	{
+		if (!html)
+		{
+			return;
+		}
+
+		// Prune out any link tags that are already included
+		var $existingCss = $('link[href]');
+
+		if ($existingCss.length)
+		{
+			var existingCss = [];
+
+			for (var i = 0; i < $existingCss.length; i++)
+			{
+				var href = $existingCss.eq(i).attr('href');
+				existingCss.push(href.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+			}
+
+			var regexp = new RegExp('<link\\s[^>]*href="(?:'+existingCss.join('|')+')".*?></script>', 'g');
+
+			html = html.replace(regexp, '');
+		}
+
+		$('head').append(html);
+	},
+
+	appendFootHtml: function(html)
+	{
+		if (!html)
+		{
+			return;
+		}
+
+		// Prune out any script tags that are already included
+		var $existingJs = $('script[src]');
+
+		if ($existingJs.length)
+		{
+			var existingJs = [];
+
+			for (var i = 0; i < $existingJs.length; i++)
+			{
+				var src = $existingJs.eq(i).attr('src');
+				existingJs.push(src.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&"));
+			}
+
+			var regexp = new RegExp('<script\\s[^>]*src="(?:'+existingJs.join('|')+')".*?></script>', 'g');
+
+			html = html.replace(regexp, '');
+		}
+
+		Garnish.$bod.append(html);
+	},
+
 	/**
 	 * Initializes any common UI elements in a given container.
 	 *

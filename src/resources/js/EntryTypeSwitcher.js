@@ -34,22 +34,8 @@ Craft.EntryTypeSwitcher = Garnish.Base.extend(
 				this.$fields.pane();
 				Craft.initUiElements(this.$fields);
 
-				var html = '';
-
-				if (response.headHtml)
-				{
-					html += response.headHtml;
-				}
-
-				if (response.footHtml)
-				{
-					html += response.footHtml;
-				}
-
-				if (html)
-				{
-					$(html).appendTo(Garnish.$bod);
-				}
+				Craft.appendHeadHtml(response.headHtml);
+				Craft.appendFootHtml(response.footHtml);
 
 				// Update the slug generator with the new title input
 				if (typeof slugGenerator != "undefined")

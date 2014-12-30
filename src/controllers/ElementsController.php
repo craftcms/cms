@@ -227,9 +227,10 @@ class ElementsController extends BaseElementsController
 			'<input type="hidden" name="locale" value="'.$element->locale.'">' .
 			'<div>' .
 			craft()->templates->namespaceInputs($elementType->getEditorHtml($element)) .
-			'</div>' .
-			craft()->templates->getHeadHtml() .
-			craft()->templates->getFootHtml();
+			'</div>';
+
+		$response['headHtml'] = craft()->templates->getHeadHtml();
+		$response['footHtml'] = craft()->templates->getFootHtml();
 
 		$this->returnJson($response);
 	}

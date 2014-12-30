@@ -120,7 +120,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 		else
 		{
 			var html = $(data.result.html);
-			$('head').append(data.result.css);
+			Craft.appendHeadHtml(data.result.headHtml);
 			this.selectUploadedFile(Craft.getElementInfo(html));
 		}
 
