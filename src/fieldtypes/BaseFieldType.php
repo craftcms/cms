@@ -34,6 +34,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	// =========================================================================
 
 	/**
+	 * @inheritDoc IFieldType::setElement()
+	 *
+	 * @param $element
+	 *
+	 * @return null
+	 */
+	public function setElement(BaseElementModel $element)
+	{
+		$this->element = $element;
+	}
+
+	/**
 	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed

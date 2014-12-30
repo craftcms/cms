@@ -17,6 +17,15 @@ interface IFieldType extends ISavableComponentType
 	// =========================================================================
 
 	/**
+	 * Sets the element that the field type is associated with.
+	 *
+	 * @param BaseElementModel $element
+	 *
+	 * @return null
+	 */
+	public function setElement(BaseElementModel $element);
+
+	/**
 	 * Returns the field’s content attribute config.
 	 *
 	 * The attribute config returned by this method is used to define two things:
