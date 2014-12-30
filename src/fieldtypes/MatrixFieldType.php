@@ -530,6 +530,7 @@ class MatrixFieldType extends BaseFieldType
 	{
 		$fieldTypes = array();
 
+		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
 		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
@@ -572,17 +573,31 @@ class MatrixFieldType extends BaseFieldType
 	{
 		$blockTypes = array();
 
+		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
 		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
 		foreach ($this->getSettings()->getBlockTypes() as $blockType)
 		{
+			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
+			$block = new MatrixBlockModel();
+			$block->typeId = $blockType->id;
+			$block->setOwner($this->element);
+
+			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
+
+			foreach ($fieldLayoutFields as $fieldLayoutField)
+			{
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+				$fieldType->element = $block;
+			}
+
 			craft()->templates->startJsBuffer();
 
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('_includes/fields', array(
 				'namespace' => null,
-				'fields' => $blockType->getFieldLayout()->getFields()
+				'fields'    => $fieldLayoutFields
 			)));
 
 			$footHtml = craft()->templates->clearJsBuffer();
