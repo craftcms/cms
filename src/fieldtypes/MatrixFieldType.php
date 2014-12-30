@@ -583,7 +583,11 @@ class MatrixFieldType extends BaseFieldType
 			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
 			$block = new MatrixBlockModel();
 			$block->typeId = $blockType->id;
-			$block->setOwner($this->element);
+
+			if ($this->element)
+			{
+				$block->setOwner($this->element);
+			}
 
 			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
 
