@@ -224,6 +224,19 @@ class ConsoleApp extends \CConsoleApplication
 		parent::setComponents($components, $merge);
 	}
 
+	/**
+	 * Returns the system time zone.
+	 *
+	 * Note that this method cannot be in {@link \craft\app\base\ApplicationTrait}, because Yii will check
+	 * {@link \yii\base\Application::getTimeZone()} instead.
+	 *
+	 * @return string
+	 */
+	public function getTimeZone()
+	{
+		return $this->_getTimeZone();
+	}
+
 	// Protected Methods
 	// =========================================================================
 
