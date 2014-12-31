@@ -124,7 +124,7 @@ if (file_exists($generalConfigPath))
 
 if ($devMode)
 {
-	error_reporting(E_ALL & ~E_STRICT);
+	error_reporting(E_ALL);
 	ini_set('display_errors', 1);
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
