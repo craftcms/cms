@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\models\Content as ContentModel;
+use craft\app\models\Content         as ContentModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**

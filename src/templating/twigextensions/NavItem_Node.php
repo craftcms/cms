@@ -23,8 +23,6 @@ class NavItem_Node extends \Twig_Node
 	 * @param \Twig_NodeInterface              $lowerBody
 	 * @param                                  $lineno
 	 * @param null                             $tag
-	 *
-	 * @return \Craft\NavItem_Node
 	 */
 	public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, \Twig_NodeInterface $lowerBody = null, $lineno, $tag = null)
 	{

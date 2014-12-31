@@ -2,8 +2,8 @@
 namespace craft\app\controllers;
 
 use craft\app\models\BaseElementModel;
-use craft\app\models\Category as CategoryModel;
-use craft\app\models\CategoryGroup as CategoryGroupModel;
+use craft\app\models\Category            as CategoryModel;
+use craft\app\models\CategoryGroup       as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 
 /**

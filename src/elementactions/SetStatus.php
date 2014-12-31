@@ -2,7 +2,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
 /**
  * Set Status Element Action

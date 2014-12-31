@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\models\GlobalSet          as GlobalSetModel;
 
 /**
  * Class GlobalsService

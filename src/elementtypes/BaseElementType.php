@@ -2,7 +2,7 @@
 namespace craft\app\elementtypes;
 
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
 /**
  * The base class for all Craft element types. Any element type must extend this class.

@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 
 /**
  * Class TemplateCacheService

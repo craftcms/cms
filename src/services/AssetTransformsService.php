@@ -2,8 +2,8 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\AssetFile as AssetFileModel;
-use craft\app\models\AssetTransform as AssetTransformModel;
+use craft\app\models\AssetFile                 as AssetFileModel;
+use craft\app\models\AssetTransform            as AssetTransformModel;
 use craft\app\models\AssetTransformIndexModel;
 
 /**
