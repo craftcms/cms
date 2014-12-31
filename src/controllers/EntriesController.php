@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\Entry as EntryModel;
+use \craft\app\models\Entry as EntryModel;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,

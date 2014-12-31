@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\models\PluginUpdate as PluginUpdateModel;
+use \craft\app\models\PluginUpdate as PluginUpdateModel;
 
 /**
  * Stores the available plugin update info.

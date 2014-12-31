@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\User as UserModel;
+use \craft\app\models\User as UserModel;
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,

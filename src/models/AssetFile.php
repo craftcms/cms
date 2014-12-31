@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\models\AssetFile as AssetFileModel;
+use \craft\app\models\AssetFile as AssetFileModel;
 
 /**
  * The AssetFile model class.

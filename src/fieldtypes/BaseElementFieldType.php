@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\fieldtypes;
 
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use \craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Base element fieldtype class.

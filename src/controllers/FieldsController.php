@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\Field      as FieldModel;
-use craft\app\models\FieldGroup as FieldGroupModel;
+use \craft\app\models\Field      as FieldModel;
+use \craft\app\models\FieldGroup as FieldGroupModel;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving

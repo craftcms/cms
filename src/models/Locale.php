@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
 
 /**
  * Stores locale info.

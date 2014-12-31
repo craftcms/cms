@@ -1,9 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
-use craft\app\models\BaseElementModel;
-use craft\app\models\Structure          as StructureModel;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\BaseElementModel;
+use \craft\app\models\Structure          as StructureModel;
 
 /**
  * Class StructuresService

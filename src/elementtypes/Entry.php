@@ -1,11 +1,11 @@
 <?php
 namespace craft\app\elementtypes;
 
-use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
-use craft\app\models\Entry             as EntryModel;
-use craft\app\models\EntryType         as EntryTypeModel;
-use craft\app\models\Section           as SectionModel;
+use \craft\app\models\BaseElementModel;
+use \craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use \craft\app\models\Entry             as EntryModel;
+use \craft\app\models\EntryType         as EntryTypeModel;
+use \craft\app\models\Section           as SectionModel;
 
 /**
  * The Entry class is responsible for implementing and defining entries as a native element type in Craft.

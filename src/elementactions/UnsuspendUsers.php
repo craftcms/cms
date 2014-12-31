@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\elementactions;
 
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use \craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Unsuspend Users Element Action

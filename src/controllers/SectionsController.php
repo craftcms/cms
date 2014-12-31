@@ -1,9 +1,9 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\EntryType     as EntryTypeModel;
-use craft\app\models\Section       as SectionModel;
-use craft\app\models\SectionLocale as SectionLocaleModel;
+use \craft\app\models\EntryType     as EntryTypeModel;
+use \craft\app\models\Section       as SectionModel;
+use \craft\app\models\SectionLocale as SectionLocaleModel;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as

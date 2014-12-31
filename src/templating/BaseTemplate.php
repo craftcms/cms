@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\templating;
 
-use craft\app\models\BaseElementModel;
+use \craft\app\models\BaseElementModel;
 
 /**
  * Base Twig template class.

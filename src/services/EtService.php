@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
-use craft\app\models\Et                 as EtModel;
-use craft\app\models\Update             as UpdateModel;
-use craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\Et                 as EtModel;
+use \craft\app\models\Update             as UpdateModel;
+use \craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
 
 /**
  * Class EtService

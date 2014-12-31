@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\variables;
 
-use craft\app\models\Widget as WidgetModel;
+use \craft\app\models\Widget as WidgetModel;
 
 /**
  * Dashboard functions.

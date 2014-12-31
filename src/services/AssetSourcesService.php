@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\assetsourcetypes\Temp;
-use craft\app\components\BaseComponent;
-use craft\app\models\AssetSource        as AssetSourceModel;
-use craft\app\records\AssetSource       as AssetSourceRecord;
+use \craft\app\assetsourcetypes\Temp;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\AssetSource        as AssetSourceModel;
+use \craft\app\records\AssetSource       as AssetSourceRecord;
 
 /**
  * Class AssetSourcesService

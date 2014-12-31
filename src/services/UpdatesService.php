@@ -1,11 +1,11 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\base\BasePlugin;
-use craft\app\components\BaseComponent;
-use craft\app\models\AppUpdate          as AppUpdateModel;
-use craft\app\models\PluginUpdate       as PluginUpdateModel;
-use craft\app\models\Update             as UpdateModel;
+use \craft\app\base\BasePlugin;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\AppUpdate          as AppUpdateModel;
+use \craft\app\models\PluginUpdate       as PluginUpdateModel;
+use \craft\app\models\Update             as UpdateModel;
 
 /**
  * Class UpdatesService
