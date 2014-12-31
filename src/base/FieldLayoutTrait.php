@@ -4,7 +4,7 @@ namespace craft\app\base;
 use \craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
- * Field layout trait.
+ * FieldLayoutTrait.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use \craft\app\models\FieldLayout as FieldLayoutModel;
  * @package   craft.app.base
  * @since     1.2
  */
-class FieldLayoutTrait
+trait FieldLayoutTrait
 {
 	// Properties
 	// =========================================================================
@@ -23,25 +23,8 @@ class FieldLayoutTrait
 	 */
 	private $_fieldLayout;
 
-	/**
-	 * @var
-	 */
-	private $_elementType;
-
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Constructor
-	 *
-	 * @param $elementType
-	 *
-	 * @return FieldLayoutTrait
-	 */
-	public function __construct($elementType)
-	{
-		$this->_elementType = $elementType;
-	}
 
 	/**
 	 * Returns the owner's field layout.
@@ -52,15 +35,15 @@ class FieldLayoutTrait
 	{
 		if (!isset($this->_fieldLayout))
 		{
-			if (!empty($this->getOwner()->fieldLayoutId))
+			if (!empty($this->fieldLayoutId))
 			{
-				$this->_fieldLayout = craft()->fields->getLayoutById($this->getOwner()->fieldLayoutId);
+				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
 			}
 
 			if (empty($this->_fieldLayout))
 			{
 				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = $this->_elementType;
+				$this->_fieldLayout->type = $this->_fieldLayoutElementType;
 			}
 		}
 

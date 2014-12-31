@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * EntryType model class.
  *
@@ -15,6 +13,19 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class EntryType extends BaseModel
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\FieldLayoutTrait;
+
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var The element type that entry types' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::Entry;
+
 	// Public Methods
 	// =========================================================================
 
@@ -26,16 +37,6 @@ class EntryType extends BaseModel
 	public function __toString()
 	{
 		return $this->handle;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::Entry),
-		);
 	}
 
 	/**

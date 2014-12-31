@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * MatrixBlockType model class.
  *
@@ -15,8 +13,18 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class MatrixBlockType extends BaseModel
 {
+	// Traits
+	// =========================================================================
+
+	use craft\app\base\FieldLayoutTrait;
+
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var The element type that block types' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::MatrixBlock;
 
 	/**
 	 * @var bool
@@ -39,16 +47,6 @@ class MatrixBlockType extends BaseModel
 	public function __toString()
 	{
 		return $this->handle;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::MatrixBlock),
-		);
 	}
 
 	/**

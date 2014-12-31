@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * CategoryGroup model.
  *
@@ -15,8 +13,18 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class CategoryGroup extends BaseModel
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\FieldLayoutTrait;
+
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var The element type that category groups' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::Category;
 
 	/**
 	 * @var
@@ -34,16 +42,6 @@ class CategoryGroup extends BaseModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::Category),
-		);
 	}
 
 	/**

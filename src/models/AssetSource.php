@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * The AssetSource model class.
  *
@@ -15,8 +13,18 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class AssetSource extends BaseComponentModel
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\FieldLayoutTrait;
+
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var The element type that asset sources' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::Asset;
 
 	/**
 	 * @var
@@ -34,16 +42,6 @@ class AssetSource extends BaseComponentModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::Entry),
-		);
 	}
 
 	/**

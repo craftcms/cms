@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * GlobalSet model class.
  *
@@ -15,8 +13,18 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class GlobalSet extends BaseElementModel
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\FieldLayoutTrait;
+
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var The element type that global sets' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::GlobalSet;
 
 	/**
 	 * @var string
@@ -34,16 +42,6 @@ class GlobalSet extends BaseElementModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::GlobalSet),
-		);
 	}
 
 	/**

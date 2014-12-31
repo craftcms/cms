@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
-
 /**
  * TagGroup model.
  *
@@ -15,6 +13,19 @@ use \craft\app\base\FieldLayoutTrait;
  */
 class TagGroup extends BaseModel
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\FieldLayoutTrait;
+
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var The element type that tag groups' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::Tag;
+
 	// Public Methods
 	// =========================================================================
 
@@ -26,16 +37,6 @@ class TagGroup extends BaseModel
 	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutTrait(ElementType::Tag),
-		);
 	}
 
 	// Protected Methods
