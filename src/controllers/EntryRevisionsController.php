@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\models\EntryDraft as EntryDraftModel;
 
 craft()->requireEdition(Craft::Client);
 

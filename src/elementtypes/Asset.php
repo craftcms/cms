@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\elementtypes;
 
-use \craft\app\models\AssetFile         as AssetFileModel;
-use \craft\app\models\AssetFolder       as AssetFolderModel;
-use \craft\app\models\BaseElementModel;
-use \craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use craft\app\models\AssetFile         as AssetFileModel;
+use craft\app\models\AssetFolder       as AssetFolderModel;
+use craft\app\models\BaseElementModel;
+use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
 /**
  * The Asset class is responsible for implementing and defining assets as a native element type in Craft.

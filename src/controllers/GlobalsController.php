@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\models\GlobalSet as GlobalSetModel;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,

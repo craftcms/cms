@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\AppNewRelease as AppNewReleaseModel;
+use craft\app\models\AppNewRelease as AppNewReleaseModel;
 
 /**
  * Stores the available Craft update info.

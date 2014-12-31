@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\fieldtypes;
 
-use \craft\app\models\AssetFolder as AssetFolderModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 
 /**
  * Assets fieldtype.

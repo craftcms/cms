@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\Field as FieldModel;
+use craft\app\models\Field as FieldModel;
 
 /**
  * MatrixSettings model class.

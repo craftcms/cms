@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\UserGroup as UserGroupModel;
+use craft\app\models\UserGroup as UserGroupModel;
 
 /**
  * User model class.

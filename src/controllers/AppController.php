@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\helpers\AppHelper;
-use \craft\app\models\UpgradePurchase as UpgradePurchaseModel;
+use craft\app\helpers\AppHelper;
+use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,

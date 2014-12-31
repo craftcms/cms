@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\elementactions\ElementActionInterface;
+use craft\app\elementactions\ElementActionInterface;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
