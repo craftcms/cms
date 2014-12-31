@@ -392,7 +392,7 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_doesMinVersionPass())
 		{
-			// If it's 5.3 < 5.3.12, or 5.4 < 5.4.2, still issue a warning, due to the PHP hijack bug:
+			// If it's < 5.4.2, still issue a warning, due to the PHP hijack bug:
 			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
 			if ($this->_isBadPhpVersion())
 			{
@@ -429,10 +429,7 @@ class PhpVersionRequirement extends Requirement
 	 */
 	private function _isBadPhpVersion()
 	{
-		return (
-			(version_compare(PHP_VERSION, '5.3', '>=') && version_compare(PHP_VERSION, '5.3.12', '<')) ||
-			(version_compare(PHP_VERSION, '5.4', '>=') && version_compare(PHP_VERSION, '5.4.2', '<'))
-		);
+		return (PHP_VERSION_ID < 50402);
 	}
 }
 
