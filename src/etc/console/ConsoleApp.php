@@ -13,6 +13,11 @@ namespace craft\app\etc\console;
  */
 class ConsoleApp extends \CConsoleApplication
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\ApplicationTrait;
+
 	// Properties
 	// =========================================================================
 
@@ -100,7 +105,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function getLanguage()
 	{
-		return $this->asa('craft\app\base\ApplicationTrait')->getLanguage();
+		return $this->_getLanguage();
 	}
 
 	/**
@@ -112,7 +117,7 @@ class ConsoleApp extends \CConsoleApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->asa('craft\app\base\ApplicationTrait')->setLanguage($language);
+		$this->_setLanguage($language);
 	}
 
 	/**
@@ -189,7 +194,7 @@ class ConsoleApp extends \CConsoleApplication
 		{
 			if ($id === 'db')
 			{
-				$dbConnection = $this->asa('craft\app\base\ApplicationTrait')->createDbConnection();
+				$dbConnection = $this->_createDbConnection();
 				$this->setComponent('db', $dbConnection);
 			}
 

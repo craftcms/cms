@@ -1,8 +1,6 @@
 <?php
 namespace craft\app\web;
 
-use craft\app\base\ApplicationTrait;
-
 /**
  * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
  * @property AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
@@ -63,6 +61,11 @@ use craft\app\base\ApplicationTrait;
  */
 class WebApp extends \CWebApplication
 {
+	// Traits
+	// =========================================================================
+
+	use \craft\app\base\ApplicationTrait;
+
 	// Properties
 	// =========================================================================
 
@@ -273,7 +276,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function getLanguage()
 	{
-		return $this->asa('craft\app\base\ApplicationTrait')->getLanguage();
+		return $this->_getLanguage();
 	}
 
 	/**
@@ -285,7 +288,7 @@ class WebApp extends \CWebApplication
 	 */
 	public function setLanguage($language)
 	{
-		$this->asa('craft\app\base\ApplicationTrait')->setLanguage($language);
+		$this->_setLanguage($language);
 	}
 
 	/**
@@ -564,7 +567,7 @@ class WebApp extends \CWebApplication
 		{
 			if ($id === 'db')
 			{
-				$dbConnection = $this->asa('craft\app\base\ApplicationTrait')->createDbConnection();
+				$dbConnection = $this->_createDbConnection();
 				$this->setComponent('db', $dbConnection);
 			}
 
@@ -591,14 +594,16 @@ class WebApp extends \CWebApplication
 	}
 
 	/**
-	 * Returns the system time zone.  Note that this method cannot be in {@link craft\app\base\ApplicationTrait}, because Yii will check
-	 * {@link \CApplication::getTimeZone()} instead.
+	 * Returns the system time zone.
+	 *
+	 * Note that this method cannot be in {@link \craft\app\base\ApplicationTrait}, because Yii will check
+	 * {@link \yii\base\Application::getTimeZone()} instead.
 	 *
 	 * @return string
 	 */
 	public function getTimeZone()
 	{
-		return $this->asa('craft\app\base\ApplicationTrait')->getTimezone();
+		return $this->_getTimeZone();
 	}
 
 	/**

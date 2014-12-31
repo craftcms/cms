@@ -4,7 +4,7 @@ namespace craft\app\base;
 use craft\app\helpers\AppHelper;
 
 /**
- * Class ApplicationTrait
+ * ApplicationTrait
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\helpers\AppHelper;
  * @package   craft.app.base
  * @since     3.0
  */
-class ApplicationTrait
+trait ApplicationTrait
 {
 	// Properties
 	// =========================================================================
@@ -396,23 +396,6 @@ class ApplicationTrait
 	}
 
 	/**
-	 * Returns the system timezone.
-	 *
-	 * @return string
-	 */
-	public function getTimezone()
-	{
-		$timezone = craft()->config->get('timezone');
-
-		if ($timezone)
-		{
-			return $timezone;
-		}
-
-		return $this->getInfo('timezone');
-	}
-
-	/**
 	 * Returns the site UID.
 	 *
 	 * @return string
@@ -546,44 +529,6 @@ class ApplicationTrait
 	}
 
 	/**
-	 * Returns the target application language.
-	 *
-	 * @return string
-	 */
-	public function getLanguage()
-	{
-		if (!isset($this->_language))
-		{
-			// Defend against an infinite getLanguage() loop
-			if (!$this->_gettingLanguage)
-			{
-				$this->_gettingLanguage = true;
-				$this->setLanguage($this->_getTargetLanguage());
-			}
-			else
-			{
-				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-				$this->setLanguage($this->_getFallbackLanguage());
-				$this->_gettingLanguage = false;
-			}
-		}
-
-		return $this->_language;
-	}
-
-	/**
-	 * Sets the target application language.
-	 *
-	 * @param string $language
-	 *
-	 * @return null
-	 */
-	public function setLanguage($language)
-	{
-		$this->_language = $language;
-	}
-
-	/**
 	 * Returns the Yii framework version.
 	 *
 	 * @return mixed
@@ -691,13 +636,16 @@ class ApplicationTrait
 		return $this->getEdition() == Craft::Pro;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Creates a {@link DbConnection} specifically initialized for Craft's craft()->db instance.
 	 *
 	 * @throws DbConnectException
 	 * @return DbConnection
 	 */
-	public function createDbConnection()
+	private function _createDbConnection()
 	{
 		try
 		{
@@ -751,8 +699,60 @@ class ApplicationTrait
 		return $dbConnection;
 	}
 
-	// Private Methods
-	// =========================================================================
+	/**
+	 * Returns the target application language.
+	 *
+	 * @return string
+	 */
+	private function _getLanguage()
+	{
+		if (!isset($this->_language))
+		{
+			// Defend against an infinite getLanguage() loop
+			if (!$this->_gettingLanguage)
+			{
+				$this->_gettingLanguage = true;
+				$this->setLanguage($this->_getTargetLanguage());
+			}
+			else
+			{
+				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+				$this->setLanguage($this->_getFallbackLanguage());
+				$this->_gettingLanguage = false;
+			}
+		}
+
+		return $this->_language;
+	}
+
+	/**
+	 * Sets the target application language.
+	 *
+	 * @param string $language
+	 *
+	 * @return null
+	 */
+	private function _setLanguage($language)
+	{
+		$this->_language = $language;
+	}
+
+	/**
+	 * Returns the system timezone.
+	 *
+	 * @return string
+	 */
+	private function _getTimeZone()
+	{
+		$timezone = craft()->config->get('timezone');
+
+		if ($timezone)
+		{
+			return $timezone;
+		}
+
+		return $this->getInfo('timezone');
+	}
 
 	/**
 	 * Enables or disables Maintenance Mode
