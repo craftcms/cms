@@ -40,7 +40,7 @@ class AssetSourceModel extends BaseComponentModel
 	public function behaviors()
 	{
 		return array(
-			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Asset),
 		);
 	}
 
