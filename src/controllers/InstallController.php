@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\AccountSettings;
+use \craft\app\models\AccountSettings as AccountSettingsModel;
+use \craft\app\models\SiteSettings    as SiteSettingsModel;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -84,7 +85,7 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$accountSettings = new AccountSettings();
+		$accountSettings = new AccountSettingsModel();
 		$username = craft()->request->getPost('username');
 		if (!$username)
 		{

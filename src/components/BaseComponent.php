@@ -1,5 +1,6 @@
 <?php
 namespace craft\app\components;
+
 /**
  * BaseComponent class
  *

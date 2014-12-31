@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\assetsourcetypes\S3;
-use craft\app\models\AssetSource;
+use \craft\app\assetsourcetypes\S3;
+use \craft\app\models\AssetSource   as AssetSourceModel;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
@@ -69,7 +69,7 @@ class AssetSourcesController extends BaseController
 			}
 			else
 			{
-				$variables['source'] = new AssetSource();
+				$variables['source'] = new AssetSourceModel();
 				$variables['sourceType'] = craft()->assetSources->getSourceType('Local');
 			}
 		}
@@ -127,7 +127,7 @@ class AssetSourcesController extends BaseController
 		}
 		else
 		{
-			$source = new AssetSource();
+			$source = new AssetSourceModel();
 		}
 
 		$source->name   = craft()->request->getPost('name');
@@ -242,7 +242,7 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
+			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);
@@ -271,7 +271,7 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSource(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
+			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = craft()->assetSources->populateSourceType($model);

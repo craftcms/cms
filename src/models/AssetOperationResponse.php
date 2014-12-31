@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * This model represents an Asset Operation Response.
+ * This model represents an AssetOperationResponse.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

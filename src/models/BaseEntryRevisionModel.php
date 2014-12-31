@@ -1,10 +1,12 @@
 <?php
 namespace craft\app\models;
 
+use \craft\app\models\Entry as EntryModel;
+
 craft()->requireEdition(Craft::Client);
 
 /**
- * Class BaseEntryRevisionModel
+ * Class BaseEntryRevision model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

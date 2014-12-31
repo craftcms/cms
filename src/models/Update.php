@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use \craft\app\models\PluginUpdate as PluginUpdateModel;
+
 /**
  * Stores all of the available update info.
  *
@@ -11,7 +13,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class UpdateModel extends BaseModel
+class Update extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

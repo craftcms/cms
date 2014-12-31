@@ -4,7 +4,7 @@ namespace craft\app\models;
 craft()->requireEdition(Craft::Client);
 
 /**
- * Class EntryVersionModel
+ * Class EntryVersion model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.models
  * @since     1.0
  */
-class EntryVersionModel extends BaseEntryRevisionModel
+class EntryVersion extends BaseEntryRevisionModel
 {
 	// Public Methods
 	// =========================================================================

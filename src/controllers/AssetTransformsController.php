@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\AssetTransform;
+use \craft\app\models\AssetTransform as AssetTransformModel;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
@@ -66,7 +66,7 @@ class AssetTransformsController extends BaseController
 			}
 			else
 			{
-				$variables['transform'] = new AssetTransform();
+				$variables['transform'] = new AssetTransformModel();
 			}
 		}
 
@@ -80,7 +80,7 @@ class AssetTransformsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$transform = new AssetTransform();
+		$transform = new AssetTransformModel();
 		$transform->id = craft()->request->getPost('transformId');
 		$transform->name = craft()->request->getPost('name');
 		$transform->handle = craft()->request->getPost('handle');

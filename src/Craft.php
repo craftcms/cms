@@ -1,6 +1,8 @@
 <?php
 namespace craft\app;
 
+use \craft\app\models\Info as InfoModel;
+
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *

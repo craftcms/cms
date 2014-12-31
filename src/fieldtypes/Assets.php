@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\fieldtypes;
 
-use craft\app\models\AssetFolder;
+use \craft\app\models\AssetFolder as AssetFolderModel;
 
 /**
  * Assets fieldtype.
@@ -487,7 +487,7 @@ class Assets extends BaseElementFieldType
 		if ($response->isError() || $response->isConflict())
 		{
 			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-			$newFolder = new AssetFolder(
+			$newFolder = new AssetFolderModel(
 				array(
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,

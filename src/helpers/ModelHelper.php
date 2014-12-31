@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\helpers;
 
+use \craft\app\models\BaseModel;
+use \craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
  * Class ModelHelper
  *

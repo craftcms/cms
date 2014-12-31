@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Class GetHelpModel
+ * Class GetHelp model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class GetHelpModel extends BaseModel
+class GetHelp extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

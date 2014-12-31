@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\elementactions;
 
-use craft\app\components\ComponentTypeInterface;
+use \craft\app\components\ComponentTypeInterface;
+use \craft\app\models\ElementCriteria             as ElementCriteriaModel;
 
 /**
  * Interface ElementActionInterface

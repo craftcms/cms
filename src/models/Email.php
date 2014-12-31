@@ -38,7 +38,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class EmailModel extends BaseModel
+class Email extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

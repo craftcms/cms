@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Deprecation log model.
+ * DeprecationError model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     2.0
  */
-class DeprecationErrorModel extends BaseModel
+class DeprecationError extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

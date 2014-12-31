@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use \craft\app\models\AppNewRelease as AppNewReleaseModel;
+
 /**
  * Stores the available Craft update info.
  *
@@ -28,7 +30,7 @@ class AppUpdate extends BaseModel
 	{
 		if ($name == 'releases')
 		{
-			$value = AppNewRelease::populateModels($value);
+			$value = AppNewReleaseModel::populateModels($value);
 		}
 
 		parent::setAttribute($name, $value);

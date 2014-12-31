@@ -1,9 +1,10 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
-use craft\app\models\AssetFile;
-use craft\app\models\AssetFolder;
-use craft\app\models\AssetOperationResponse;
+use \craft\app\models\AssetFile as AssetFileModel;
+use \craft\app\models\AssetFolder as AssetFolderModel;
+use \craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
+use \craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 
 /**
  * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in
@@ -198,13 +199,13 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFile                $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
-	public function putImageTransform(AssetFile $file, AssetTransformIndexModel $index, $sourceImage)
+	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
 		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
@@ -214,11 +215,11 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFile $file)
+	public function getImageSourcePath(AssetFileModel $file)
 	{
 		return $this->getSourceFileSystemPath().$file->getFolder()->path.$file->filename;
 	}
@@ -226,12 +227,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
 
-	public function getLocalCopy(AssetFile $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 		IOHelper::copyFile($this->_getFileSystemPath($file), $location);
@@ -243,12 +244,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolder $parentPath
-	 * @param string      $folderName
+	 * @param AssetFolderModel $parentPath
+	 * @param string           $folderName
 	 *
 	 * @return boolean
 	 */
-	public function folderExists(AssetFolder $parentPath, $folderName)
+	public function folderExists(AssetFolderModel $parentPath, $folderName)
 	{
 		return IOHelper::folderExists($this->getSourceFileSystemPath().$parentPath.$folderName);
 	}
@@ -283,14 +284,14 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $filePath
-	 * @param string      $fileName
+	 * @param AssetFolderModel $folder
+	 * @param string           $filePath
+	 * @param string           $fileName
 	 *
 	 * @throws Exception
-	 * @return AssetOperationResponse
+	 * @return AssetOperationResponseModel
 	 */
-	protected function insertFileInFolder(AssetFolder $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		// Check if the set file system path exists
 		$basePath = $this->getSourceFileSystemPath();
@@ -330,7 +331,7 @@ class Local extends BaseAssetSourceType
 
 		if (IOHelper::fileExists($targetPath))
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
@@ -341,7 +342,7 @@ class Local extends BaseAssetSourceType
 
 		IOHelper::changePermissions($targetPath, craft()->config->get('defaultFilePermissions'));
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()->setDataItem('filePath', $targetPath);
 	}
@@ -349,12 +350,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $fileName
+	 * @param AssetFolderModel $folder
+	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolder $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
 		$existingFiles = array();
@@ -428,14 +429,14 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFile   $file
-	 * @param AssetFolder $targetFolder
-	 * @param string      $fileName
-	 * @param bool        $overwrite
+	 * @param AssetFileModel   $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string           $fileName
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFile $file, AssetFolder $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -453,13 +454,13 @@ class Local extends BaseAssetSourceType
 
 		if ($conflict)
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t('Could not move the file “{filename}”.', array('filename' => $fileName)));
 		}
 
@@ -498,7 +499,7 @@ class Local extends BaseAssetSourceType
 			}
 		}
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
@@ -521,12 +522,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
+	 * @param AssetFolderModel $parentFolder
 	 * @param string      $folderName
 	 *
 	 * @return bool
 	 */
-	protected function createSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		if (!IOHelper::isWritable($this->getSourceFileSystemPath().$parentFolder->path))
 		{
@@ -539,12 +540,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $newName
+	 * @param AssetFolderModel $folder
+	 * @param string           $newName
 	 *
 	 * @return bool
 	 */
-	protected function renameSourceFolder(AssetFolder $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -556,12 +557,12 @@ class Local extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
-	 * @param string      $folderName
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
-	protected function deleteSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		return IOHelper::deleteFolder($this->getSourceFileSystemPath().$parentFolder->path.$folderName);
 	}
@@ -584,11 +585,11 @@ class Local extends BaseAssetSourceType
 	/**
 	 * Get a file's system path.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return string
 	 */
-	private function _getFileSystemPath(AssetFile $file)
+	private function _getFileSystemPath(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
 		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);

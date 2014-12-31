@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     2.0
  */
-class ContentModel extends BaseModel
+class Content extends BaseModel
 {
 	// Properties
 	// =========================================================================

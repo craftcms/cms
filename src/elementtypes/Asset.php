@@ -1,8 +1,10 @@
 <?php
 namespace craft\app\elementtypes;
 
-use craft\app\models\AssetFile;
-use craft\app\models\AssetFolder;
+use \craft\app\models\AssetFile         as AssetFileModel;
+use \craft\app\models\AssetFolder       as AssetFolderModel;
+use \craft\app\models\BaseElementModel;
+use \craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
 /**
  * The Asset class is responsible for implementing and defining assets as a native element type in Craft.
@@ -383,7 +385,7 @@ class Asset extends BaseElementType
 	 */
 	public function populateElementModel($row)
 	{
-		return AssetFile::populateModel($row);
+		return AssetFileModel::populateModel($row);
 	}
 
 	/**
@@ -502,14 +504,14 @@ class Asset extends BaseElementType
 	}
 
 	/**
-	 * Transforms an AssetFolder model into a source info array.
+	 * Transforms an AssetFolderModel into a source info array.
 	 *
-	 * @param AssetFolder $folder
-	 * @param bool        $includeNestedFolders
+	 * @param AssetFolderModel $folder
+	 * @param bool             $includeNestedFolders
 	 *
 	 * @return array
 	 */
-	private function _assembleSourceInfoForFolder(AssetFolder $folder, $includeNestedFolders = true)
+	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
 	{
 		$source = array(
 			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),

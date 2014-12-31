@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use \craft\app\models\Entry as EntryModel;
+
 /**
  * BaseController is a base class that any entry related controllers, such as {@link EntriesController} and
  * {@link EntryRevisionsController} extend to share common functionality.

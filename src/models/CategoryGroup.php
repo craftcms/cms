@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\base\FieldLayoutTrait;
+use \craft\app\base\FieldLayoutTrait;
 
 /**
- * Category group model.
+ * CategoryGroup model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\base\FieldLayoutTrait;
  * @package   craft.app.models
  * @since     2.0
  */
-class CategoryGroupModel extends BaseModel
+class CategoryGroup extends BaseModel
 {
 	// Properties
 	// =========================================================================

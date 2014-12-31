@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Class TaskModel
+ * Class Task model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     2.0
  */
-class TaskModel extends BaseComponentModel
+class Task extends BaseComponentModel
 {
 	// Properties
 	// =========================================================================

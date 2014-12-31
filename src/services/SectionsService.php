@@ -1,7 +1,11 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\EntryType          as EntryTypeModel;
+use \craft\app\models\Section            as SectionModel;
+use \craft\app\models\SectionLocale      as SectionLocaleModel;
+use \craft\app\models\Structure          as StructureModel;
 
 /**
  * Class SectionsService
@@ -311,8 +315,9 @@ class SectionsService extends BaseComponent
 	 *
 	 * @param SectionModel $section
 	 *
-	 * @throws \Exception
 	 * @return bool
+	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function saveSection(SectionModel $section)
 	{

@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\base\FieldLayoutTrait;
+use \craft\app\base\FieldLayoutTrait;
 
 /**
- * Entry type model class.
+ * EntryType model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\base\FieldLayoutTrait;
  * @package   craft.app.models
  * @since     1.2
  */
-class EntryTypeModel extends BaseModel
+class EntryType extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

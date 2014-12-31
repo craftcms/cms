@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Class AssetTransformIndexModel
+ * Class AssetTransformIndex model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class AssetTransformIndexModel extends BaseModel
+class AssetTransformIndex extends BaseModel
 {
 	// Public Methods
 	// =========================================================================
@@ -52,7 +52,7 @@ class AssetTransformIndexModel extends BaseModel
 			// Format detected for auto transform
 			'detectedFormat' => AttributeType::Number,
 
-			// The AssetTransform that defines the transformation to make
+			// The AssetTransformModel that defines the transformation to make
 			'transform'      => AttributeType::Mixed
 		);
 	}

@@ -13,7 +13,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.models
  * @since     1.0
  */
-class RebrandEmailModel extends BaseModel
+class RebrandEmail extends BaseModel
 {
 	// Protected Methods
 	// =========================================================================

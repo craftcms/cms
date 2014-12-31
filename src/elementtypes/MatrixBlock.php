@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\elementtypes;
 
+use \craft\app\models\ElementCriteria as ElementCriteriaModel;
+use \craft\app\models\MatrixBlock     as MatrixBlockModel;
+
 /**
  * The MatrixBlock class is responsible for implementing and defining Matrix blocks as a native element type
  * in Craft.

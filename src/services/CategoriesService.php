@@ -1,7 +1,11 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\Category            as CategoryModel;
+use \craft\app\models\CategoryGroup       as CategoryGroupModel;
+use \craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use \craft\app\models\Structure           as StructureModel;
 
 /**
  * Class CategoriesService
@@ -248,8 +252,9 @@ class CategoriesService extends BaseComponent
 	 *
 	 * @param CategoryGroupModel $group
 	 *
-	 * @throws \Exception
 	 * @return bool
+	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function saveGroup(CategoryGroupModel $group)
 	{

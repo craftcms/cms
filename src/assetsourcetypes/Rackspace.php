@@ -1,9 +1,10 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
-use craft\app\models\AssetFile;
-use craft\app\models\AssetFolder;
-use craft\app\models\AssetOperationResponse;
+use \craft\app\models\AssetFile              as AssetFileModel;
+use \craft\app\models\AssetFolder            as AssetFolderModel;
+use \craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
+use \craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
 
 craft()->requireEdition(Craft::Pro);
 
@@ -281,11 +282,11 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFile $file)
+	public function getImageSourcePath(AssetFileModel $file)
 	{
 		return craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
@@ -293,13 +294,13 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFile                $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
-	public function putImageTransform(AssetFile $file, AssetTransformIndexModel $index, $sourceImage)
+	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
 
@@ -318,12 +319,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
 
-	public function getLocalCopy(AssetFile $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 		$this->_downloadFile($this->_getRackspacePath($file), $location);
@@ -354,12 +355,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolder $parentPath
+	 * @param AssetFolderModel $parentPath
 	 * @param string      $folderName
 	 *
 	 * @return boolean
 	 */
-	public function folderExists(AssetFolder $parentPath, $folderName)
+	public function folderExists(AssetFolderModel $parentPath, $folderName)
 	{
 		return (bool) $this->_getObjectInfo($this->_getPathPrefix().$parentPath.rtrim($folderName, "/")."/");
 	}
@@ -370,12 +371,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $fileName
+	 * @param AssetFolderModel $folder
+	 * @param string           $fileName
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolder $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$prefix = $this->_getPathPrefix().$folder->path;
 		$files = $this->_getFileList($prefix);
@@ -426,14 +427,14 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
-	 * @param AssetFolder $folder
+	 * @param AssetFolderModel $folder
 	 * @param string      $filePath
 	 * @param string      $fileName
 	 *
 	 * @throws Exception
-	 * @return AssetFile
+	 * @return AssetFileModel
 	 */
-	protected function insertFileInFolder(AssetFolder $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$extension = IOHelper::getExtension($fileName);
@@ -449,7 +450,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if ($fileInfo)
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
@@ -465,7 +466,7 @@ class Rackspace extends BaseAssetSourceType
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()->setDataItem('filePath', $uriPath);
 	}
@@ -486,14 +487,14 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFile   $file
-	 * @param AssetFolder $targetFolder
-	 * @param string      $fileName
-	 * @param bool        $overwrite
+	 * @param AssetFileModel   $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string           $fileName
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFile $file, AssetFolder $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -514,7 +515,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if ($conflict)
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
@@ -570,7 +571,7 @@ class Rackspace extends BaseAssetSourceType
 			}
 		}
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
@@ -580,12 +581,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
-	 * @param string      $folderName
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
-	protected function createSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$headers = array(
 			'Content-type: application/directory',
@@ -602,12 +603,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
-	 * @param AssetFolder $folder
+	 * @param AssetFolderModel $folder
 	 * @param string      $newName
 	 *
 	 * @return bool
 	 */
-	protected function renameSourceFolder(AssetFolder $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -640,12 +641,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
-	 * @param string      $folderName
+	 * @param AssetFolderModel $parentFolder
+	 * @param string           $folderName
 	 *
 	 * @return bool
 	 */
-	protected function deleteSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$container = $this->getSettings()->container;
 		$objectsToDelete = $this->_getFileList($this->_getPathPrefix().$parentFolder->path.$folderName);
@@ -686,12 +687,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * Purge a file from Akamai CDN.
 	 *
-	 * @param AssetFolder $folder   The folder containing the file.
-	 * @param string      $filename The filename of the file.
+	 * @param AssetFolderModel $folder   The folder containing the file.
+	 * @param string           $filename The filename of the file.
 	 *
 	 * @return null
 	 */
-	protected function purgeCachedSourceFile(AssetFolder $folder, $filename)
+	protected function purgeCachedSourceFile(AssetFolderModel $folder, $filename)
 	{
 		$uriPath = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$folder->path.$filename);
 		$this->_purgeObject($uriPath);
@@ -1259,11 +1260,11 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * Get a file's Rackspace path.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return string
 	 */
-	private function _getRackspacePath(AssetFile $file)
+	private function _getRackspacePath(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
 

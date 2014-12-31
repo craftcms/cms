@@ -1,7 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\Password           as PasswordModel;
+use \craft\app\models\User               as UserModel;
 
 /**
  * UsersService provides APIs for managing users.
@@ -236,8 +238,9 @@ class UsersService extends BaseComponent
 	 *
 	 * @param UserModel $user The user to be saved.
 	 *
+	 * @return bool
+	 * @throws Exception
 	 * @throws \Exception
-	 * @return bool Whether the user was saved successfully.
 	 */
 	public function saveUser(UserModel $user)
 	{

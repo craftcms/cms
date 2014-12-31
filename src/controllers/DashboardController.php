@@ -1,8 +1,11 @@
 <?php
 namespace craft\app\controllers;
 
+use \craft\app\models\GetHelp as GetHelpModel;
+use \craft\app\models\Widget  as WidgetModel;
+
 /**
- * The DashboardController class is a controller that handles various dashboardrelated actions including managing
+ * The DashboardController class is a controller that handles various dashboard related actions including managing
  * widgets, getting {@link FeedWidget} feeds and sending {@link GetHelpWidget} support ticket requests.
  *
  * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.

@@ -1,6 +1,10 @@
 <?php
 namespace craft\app\elementtypes;
 
+use \craft\app\models\BaseElementModel;
+use \craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use \craft\app\models\Tag               as TagModel;
+
 /**
  * The Tag class is responsible for implementing and defining tags as a native element type in Craft.
  *

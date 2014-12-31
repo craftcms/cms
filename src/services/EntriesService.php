@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\Entry              as EntryModel;
 
 /**
  * EntriesService provides APIs for managing entries in Craft.
@@ -63,8 +64,9 @@ class EntriesService extends BaseComponent
 	 *
 	 * @param EntryModel $entry The entry to be saved.
 	 *
+	 * @return bool
+	 * @throws Exception
 	 * @throws \Exception
-	 * @return bool Whether the entry was saved successfully.
 	 */
 	public function saveEntry(EntryModel $entry)
 	{

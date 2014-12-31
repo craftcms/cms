@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\users;
 
+use \craft\app\models\User as UserModel;
+
 /**
  * UserIdentity represents the data needed to identify a user. It contains the authentication method that checks if the
  * provided data can identity the user.

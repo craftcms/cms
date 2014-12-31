@@ -1,7 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use \craft\app\components\BaseComponent;
+use \craft\app\models\Email              as EmailModel;
+use \craft\app\models\User               as UserModel;
 
 /**
  * EmailService provides APIs for sending email in Craft.

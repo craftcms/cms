@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class PluginNewReleaseModel extends BaseModel
+class PluginNewRelease extends BaseModel
 {
 	// Protected Methods
 	// =========================================================================

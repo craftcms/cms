@@ -1,10 +1,10 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\base\FieldLayoutTrait;
+use \craft\app\base\FieldLayoutTrait;
 
 /**
- * GlobalSet model class
+ * GlobalSet model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\base\FieldLayoutTrait;
  * @package   craft.app.models
  * @since     1.0
  */
-class GlobalSetModel extends BaseElementModel
+class GlobalSet extends BaseElementModel
 {
 	// Properties
 	// =========================================================================

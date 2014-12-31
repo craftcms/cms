@@ -1,8 +1,10 @@
 <?php
 namespace craft\app\models;
 
+use \craft\app\models\FieldLayout as FieldLayoutModel;
+
 /**
- * Field layout field model class.
+ * FieldLayoutField model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +13,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class FieldLayoutFieldModel extends BaseModel
+class FieldLayoutField extends BaseModel
 {
 	// Properties
 	// =========================================================================

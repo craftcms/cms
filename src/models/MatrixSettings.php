@@ -1,8 +1,10 @@
 <?php
 namespace craft\app\models;
 
+use \craft\app\models\Field as FieldModel;
+
 /**
- * Matrix block model class.
+ * MatrixSettings model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +13,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.3
  */
-class MatrixSettingsModel extends BaseModel
+class MatrixSettings extends BaseModel
 {
 	// Properties
 	// =========================================================================
@@ -34,7 +36,7 @@ class MatrixSettingsModel extends BaseModel
 	 *
 	 * @param FieldModel|null $matrixField
 	 *
-	 * @return MatrixSettingsModel
+	 * @return MatrixSettings
 	 */
 	public function __construct(FieldModel $matrixField = null)
 	{
