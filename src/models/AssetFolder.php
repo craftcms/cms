@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\AssetFolder as AssetFolderModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 
 /**
  * The AssetFolder model class.

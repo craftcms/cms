@@ -1,9 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\Tag                as TagModel;
-use \craft\app\models\TagGroup           as TagGroupModel;
+use craft\app\components\BaseComponent;
+use craft\app\models\Tag                as TagModel;
+use craft\app\models\TagGroup           as TagGroupModel;
 
 /**
  * Class TagsService

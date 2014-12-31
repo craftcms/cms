@@ -1,9 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\BaseElementModel;
-use \craft\app\models\ElementCriteria    as ElementCriteriaModel;
+use craft\app\components\BaseComponent;
+use craft\app\models\BaseElementModel;
+use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 
 /**
  * ElementsService provides APIs for managing elements.

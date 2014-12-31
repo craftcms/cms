@@ -1,11 +1,11 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\AssetIndexData     as AssetIndexDataModel;
-use \craft\app\models\AssetSource        as AssetSourceModel;
-use \craft\app\records\AssetFolder       as AssetFolderRecord;
-use \craft\app\records\AssetIndexData    as AssetIndexDataRecord;
+use craft\app\components\BaseComponent;
+use craft\app\models\AssetIndexData     as AssetIndexDataModel;
+use craft\app\models\AssetSource        as AssetSourceModel;
+use craft\app\records\AssetFolder       as AssetFolderRecord;
+use craft\app\records\AssetIndexData    as AssetIndexDataRecord;
 
 /**
  * Class AssetIndexingService

@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\fieldtypes\Assets;
+use craft\app\fieldtypes\Assets;
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading

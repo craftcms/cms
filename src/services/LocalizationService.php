@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\Locale             as LocaleModel;
+use craft\app\components\BaseComponent;
+use craft\app\models\Locale             as LocaleModel;
 
 /**
  * Class LocalizationService

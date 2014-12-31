@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\BaseElementModel;
+use craft\app\models\BaseElementModel;
 
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and

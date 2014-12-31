@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\helpers;
 
-use \craft\app\models\BaseElementModel;
+use craft\app\models\BaseElementModel;
 
 /**
  * Class ElementHelper

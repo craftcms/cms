@@ -1,11 +1,11 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\Category            as CategoryModel;
-use \craft\app\models\CategoryGroup       as CategoryGroupModel;
-use \craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
-use \craft\app\models\Structure           as StructureModel;
+use craft\app\components\BaseComponent;
+use craft\app\models\Category            as CategoryModel;
+use craft\app\models\CategoryGroup       as CategoryGroupModel;
+use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use craft\app\models\Structure           as StructureModel;
 
 /**
  * Class CategoriesService

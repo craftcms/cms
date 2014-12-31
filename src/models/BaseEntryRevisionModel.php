@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\Entry as EntryModel;
+use craft\app\models\Entry as EntryModel;
 
 craft()->requireEdition(Craft::Client);
 

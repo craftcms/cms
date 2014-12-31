@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\models\FieldLayout      as FieldLayoutModel;
-use \craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
+use craft\app\models\FieldLayout      as FieldLayoutModel;
+use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 
 /**
  * FieldLayoutTab model class.

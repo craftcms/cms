@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\GetHelp as GetHelpModel;
-use \craft\app\models\Widget  as WidgetModel;
+use craft\app\models\GetHelp as GetHelpModel;
+use craft\app\models\Widget  as WidgetModel;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing

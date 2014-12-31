@@ -1,9 +1,9 @@
 <?php
 namespace craft\app\services;
 
-use \craft\app\components\BaseComponent;
-use \craft\app\models\Password           as PasswordModel;
-use \craft\app\models\User               as UserModel;
+use craft\app\components\BaseComponent;
+use craft\app\models\Password           as PasswordModel;
+use craft\app\models\User               as UserModel;
 
 /**
  * UsersService provides APIs for managing users.

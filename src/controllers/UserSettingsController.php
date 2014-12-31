@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\UserGroup as UserGroupModel;
+use craft\app\models\UserGroup as UserGroupModel;
 
 craft()->requireEdition(Craft::Pro);
 

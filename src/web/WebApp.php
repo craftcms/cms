@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\web;
 
-use \craft\app\base\ApplicationTrait;
+use craft\app\base\ApplicationTrait;
 
 /**
  * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.

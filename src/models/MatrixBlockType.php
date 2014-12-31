@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\models;
 
-use \craft\app\base\FieldLayoutTrait;
+use craft\app\base\FieldLayoutTrait;
 
 /**
  * MatrixBlockType model class.

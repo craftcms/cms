@@ -1,8 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
-use \craft\app\models\Tag      as TagModel;
-use \craft\app\models\TagGroup as TagGroupModel;
+use craft\app\models\Tag      as TagModel;
+use craft\app\models\TagGroup as TagGroupModel;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,

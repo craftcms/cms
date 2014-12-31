@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\helpers;
 
-use \craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Class TemplateHelper
