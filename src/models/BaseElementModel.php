@@ -1,8 +1,11 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\models\Content as ContentModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
- * Base element model class.
+ * BaseElement model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

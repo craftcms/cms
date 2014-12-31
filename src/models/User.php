@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\models\UserGroup as UserGroupModel;
+
 /**
  * User model class.
  *
@@ -11,7 +13,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class UserModel extends BaseElementModel
+class User extends BaseElementModel
 {
 	// Properties
 	// =========================================================================

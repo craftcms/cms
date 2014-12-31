@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\models\RebrandEmail       as RebrandEmailModel;
 
 craft()->requireEdition(Craft::Client);
 

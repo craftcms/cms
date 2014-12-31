@@ -3,7 +3,9 @@ namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
 use craft\app\components\BaseComponent;
-use craft\app\models\AppUpdate;
+use craft\app\models\AppUpdate          as AppUpdateModel;
+use craft\app\models\PluginUpdate       as PluginUpdateModel;
+use craft\app\models\Update             as UpdateModel;
 
 /**
  * Class UpdatesService
@@ -220,7 +222,7 @@ class UpdatesService extends BaseComponent
 		craft()->config->maxPowerCaptain();
 
 		$updateModel = new UpdateModel();
-		$updateModel->app = new AppUpdate();
+		$updateModel->app = new AppUpdateModel();
 		$updateModel->app->localBuild   = CRAFT_BUILD;
 		$updateModel->app->localVersion = CRAFT_VERSION;
 

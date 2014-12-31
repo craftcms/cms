@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.1
  */
-class TagModel extends BaseElementModel
+class Tag extends BaseElementModel
 {
 	// Properties
 	// =========================================================================

@@ -1,8 +1,10 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
-use craft\app\models\AssetFile;
-use craft\app\models\AssetFolder;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
+use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
+use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 
 craft()->requireEdition(Craft::Pro);
 
@@ -281,11 +283,11 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFile $file)
+	public function getImageSourcePath(AssetFileModel $file)
 	{
 		return craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
@@ -293,13 +295,13 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFile                $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
-	public function putImageTransform(AssetFile $file, AssetTransformIndexModel $index, $sourceImage)
+	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
@@ -330,12 +332,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * Return true if a transform exists at the location for a file.
 	 *
-	 * @param AssetFile $file
-	 * @param           $location
+	 * @param AssetFileModel $file
+	 * @param                $location
 	 *
 	 * @return mixed
 	 */
-	public function transformExists(AssetFile $file, $location)
+	public function transformExists(AssetFileModel $file, $location)
 	{
 		$this->_prepareForRequests();
 		return (bool) @$this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
@@ -344,12 +346,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed
 	 */
 
-	public function getLocalCopy(AssetFile $file)
+	public function getLocalCopy(AssetFileModel $file)
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
@@ -362,12 +364,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::folderExists()
 	 *
-	 * @param AssetFolder $parentPath
-	 * @param string      $folderName
+	 * @param AssetFolderModel $parentPath
+	 * @param string           $folderName
 	 *
 	 * @return boolean
 	 */
-	public function folderExists(AssetFolder $parentPath, $folderName)
+	public function folderExists(AssetFolderModel $parentPath, $folderName)
 	{
 		$this->_prepareForRequests();
 		return (bool) $this->_s3->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$parentPath.rtrim($folderName, '/').'/');
@@ -397,12 +399,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $fileName
+	 * @param AssetFolderModel $folder
+	 * @param string           $fileName
 	 *
 	 * @return mixed
 	 */
-	protected function getNameReplacement(AssetFolder $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$this->_prepareForRequests();
 		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
@@ -432,14 +434,14 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::insertFileInFolder()
 	 *
-	 * @param AssetFolder $folder
-	 * @param string      $filePath
-	 * @param string      $fileName
+	 * @param AssetFolderModel $folder
+	 * @param string           $filePath
+	 * @param string           $fileName
 	 *
 	 * @throws Exception
-	 * @return AssetFile
+	 * @return AssetFileModel
 	 */
-	protected function insertFileInFolder(AssetFolder $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
 		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$extension = IOHelper::getExtension($fileName);
@@ -457,7 +459,7 @@ class S3 extends BaseAssetSourceType
 
 		if ($fileInfo)
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
@@ -469,7 +471,7 @@ class S3 extends BaseAssetSourceType
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 		return $response->setSuccess()->setDataItem('filePath', $uriPath);
 	}
 
@@ -489,14 +491,14 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFile   $file
-	 * @param AssetFolder $targetFolder
-	 * @param string      $fileName
-	 * @param bool        $overwrite
+	 * @param AssetFileModel   $file
+	 * @param AssetFolderModel $targetFolder
+	 * @param string           $fileName
+	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFile $file, AssetFolder $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -518,7 +520,7 @@ class S3 extends BaseAssetSourceType
 
 		if ($conflict)
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
 		}
 
@@ -534,7 +536,7 @@ class S3 extends BaseAssetSourceType
 
 		if (!$this->_s3->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.$file->filename, $bucket, $newServerPath, \S3::ACL_PUBLIC_READ))
 		{
-			$response = new AssetOperationResponse();
+			$response = new AssetOperationResponseModel();
 			return $response->setError(Craft::t("Could not save the file"));
 		}
 
@@ -575,7 +577,7 @@ class S3 extends BaseAssetSourceType
 			}
 		}
 
-		$response = new AssetOperationResponse();
+		$response = new AssetOperationResponseModel();
 
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
@@ -585,12 +587,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::createSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
+	 * @param AssetFolderModel $parentFolder
 	 * @param string      $folderName
 	 *
 	 * @return bool
 	 */
-	protected function createSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 
@@ -600,12 +602,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::renameSourceFolder()
 	 *
-	 * @param AssetFolder $folder
+	 * @param AssetFolderModel $folder
 	 * @param string      $newName
 	 *
 	 * @return bool
 	 */
-	protected function renameSourceFolder(AssetFolder $folder, $newName)
+	protected function renameSourceFolder(AssetFolderModel $folder, $newName)
 	{
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
@@ -629,12 +631,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::deleteSourceFolder()
 	 *
-	 * @param AssetFolder $parentFolder
+	 * @param AssetFolderModel $parentFolder
 	 * @param string      $folderName
 	 *
 	 * @return bool
 	 */
-	protected function deleteSourceFolder(AssetFolder $parentFolder, $folderName)
+	protected function deleteSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
@@ -764,12 +766,12 @@ class S3 extends BaseAssetSourceType
 	/**
 	 * Get a file's S3 path.
 	 *
-	 * @param AssetFile $file
-	 * @param           $settings The source settings to use.
+	 * @param AssetFileModel $file
+	 * @param                $settings The source settings to use.
 	 *
 	 * @return string
 	 */
-	private function _getS3Path(AssetFile $file, $settings = null)
+	private function _getS3Path(AssetFileModel $file, $settings = null)
 	{
 		$folder = $file->getFolder();
 		return $this->_getPathPrefix($settings).$folder->path.$file->filename;

@@ -2,8 +2,9 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\AssetFile;
-use craft\app\models\AssetTransform;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetTransform as AssetTransformModel;
+use craft\app\models\AssetTransformIndexModel;
 
 /**
  * Class AssetTransformsService
@@ -56,7 +57,7 @@ class AssetTransformsService extends BaseComponent
 
 			foreach ($results as $result)
 			{
-				$transform = new AssetTransform($result);
+				$transform = new AssetTransformModel($result);
 				$this->_transformsByHandle[$transform->handle] = $transform;
 			}
 
@@ -89,7 +90,7 @@ class AssetTransformsService extends BaseComponent
 	 *
 	 * @param string $handle
 	 *
-	 * @return AssetTransform|null
+	 * @return AssetTransformModel|null
 	 */
 	public function getTransformByHandle($handle)
 	{
@@ -105,7 +106,7 @@ class AssetTransformsService extends BaseComponent
 
 			if ($result)
 			{
-				$transform = new AssetTransform($result);
+				$transform = new AssetTransformModel($result);
 			}
 			else
 			{
@@ -124,12 +125,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Saves an asset transform.
 	 *
-	 * @param AssetTransform $transform
+	 * @param AssetTransformModel $transform
 	 *
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function saveTransform(AssetTransform $transform)
+	public function saveTransform(AssetTransformModel $transform)
 	{
 		if ($transform->id)
 		{
@@ -202,12 +203,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Get a transform index row. If it doesn't exist - create one.
 	 *
-	 * @param AssetFile $file
-	 * @param string    $transform
+	 * @param AssetFileModel $file
+	 * @param string         $transform
 	 *
 	 * @return AssetTransformIndexModel
 	 */
-	public function getTransformIndex(AssetFile $file, $transform)
+	public function getTransformIndex(AssetFileModel $file, $transform)
 	{
 		$transform = $this->normalizeTransform($transform);
 		$transformLocation = $this->_getTransformFolderName($transform);
@@ -344,7 +345,7 @@ class AssetTransformsService extends BaseComponent
 		// For _widthxheight_mode
 		if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i', $index->location, $matches))
 		{
-			$transform           = new AssetTransform();
+			$transform           = new AssetTransformModel();
 			$transform->width    = ($matches['width']  != 'AUTO' ? $matches['width']  : null);
 			$transform->height   = ($matches['height'] != 'AUTO' ? $matches['height'] : null);
 			$transform->mode     = $matches['mode'];
@@ -418,7 +419,7 @@ class AssetTransformsService extends BaseComponent
 	}
 
 	/**
-	 * Normalize a transform from handle or a set of properties to an AssetTransform.
+	 * Normalize a transform from handle or a set of properties to an AssetTransformModel.
 	 *
 	 * @param mixed $transform
 	 *
@@ -442,13 +443,13 @@ class AssetTransformsService extends BaseComponent
 
 			throw new Exception(Craft::t("The transform “{handle}” cannot be found!", array('handle' => $transform)));
 		}
-		else if ($transform instanceof AssetTransform)
+		else if ($transform instanceof AssetTransformModel)
 		{
 			return $transform;
 		}
 		else if (is_object($transform) || is_array($transform))
 		{
-			return new AssetTransform($transform);
+			return new AssetTransformModel($transform);
 		}
 		else
 		{
@@ -609,12 +610,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Get a thumb server path by file model and size.
 	 *
-	 * @param AssetFile $fileModel
-	 * @param           $size
+	 * @param AssetFileModel $fileModel
+	 * @param                $size
 	 *
 	 * @return bool|string
 	 */
-	public function getThumbServerPath(AssetFile $fileModel, $size)
+	public function getThumbServerPath(AssetFileModel $fileModel, $size)
 	{
 		$thumbFolder = craft()->path->getAssetsThumbsPath().$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
@@ -643,12 +644,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Get a local image source to use for transforms.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @throws Exception
 	 * @return mixed
 	 */
-	public function getLocalImageSource(AssetFile $file)
+	public function getLocalImageSource(AssetFileModel $file)
 	{
 		$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
 		$imageSourcePath = $sourceType->getImageSourcePath($file);
@@ -758,12 +759,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Detect the auto web-safe format for the Assets file. Returns null, if the file is not an image.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return mixed|string
 	 * @throws Exception
 	 */
-	public function detectAutoTransformFormat(AssetFile $file)
+	public function detectAutoTransformFormat(AssetFileModel $file)
 	{
 		if (in_array(mb_strtolower($file->getExtension()), ImageHelper::getWebSafeFormats()))
 		{
@@ -814,12 +815,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Return a subfolder used by the Transform Index for the File.
 	 *
-	 * @param AssetFile               $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 *
 	 * @return mixed|string
 	 */
-	public function getTransformSubfolder(AssetFile $file, AssetTransformIndexModel $index)
+	public function getTransformSubfolder(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		$path = $index->location;
 
@@ -834,12 +835,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Return the filename used by the Transform Index for the File.
 	 *
-	 * @param AssetFile                $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 *
 	 * @return mixed
 	 */
-	public function getTransformFilename(AssetFile $file, AssetTransformIndexModel $index)
+	public function getTransformFilename(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		if (empty($index->filename))
 		{
@@ -854,12 +855,12 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Get a transform subpath used by the Transform Index for the File.
 	 *
-	 * @param AssetFile               $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 *
 	 * @return string
 	 */
-	public function getTransformSubpath(AssetFile $file, AssetTransformIndexModel $index)
+	public function getTransformSubpath(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		return $this->getTransformSubfolder($file, $index).'/'.$this->getTransformFilename($file, $index);
 	}
@@ -867,11 +868,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Delete *ALL* transform data (including thumbs and sources) associated with file.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return null
 	 */
-	public function deleteAllTransformData(AssetFile $file)
+	public function deleteAllTransformData(AssetFileModel $file)
 	{
 		$this->deleteThumbnailsForFile($file);
 		$this->deleteCreatedTransformsForFile($file);
@@ -883,11 +884,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Delete all the generated thumbnails for the file.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return null
 	 */
-	public function deleteThumbnailsForFile(AssetFile $file)
+	public function deleteThumbnailsForFile(AssetFileModel $file)
 	{
 		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
 
@@ -903,9 +904,9 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Delete created transforms for a file.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 */
-	public function deleteCreatedTransformsForFile(AssetFile $file)
+	public function deleteCreatedTransformsForFile(AssetFileModel $file)
 	{
 		$indexModels = $this->getAllCreatedTransformsForFile($file);
 
@@ -920,11 +921,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Get an array of AssetTransformIndex models for all created transforms for a file.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return array
 	 */
-	public function getAllCreatedTransformsForFile(AssetFile $file)
+	public function getAllCreatedTransformsForFile(AssetFileModel $file)
 	{
 		$records = craft()->db->createCommand()
 			->select('*')
@@ -954,11 +955,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Returns a transform's folder name.
 	 *
-	 * @param AssetTransform $transform
+	 * @param AssetTransformModel $transform
 	 *
 	 * @return string
 	 */
-	private function _getTransformFolderName(AssetTransform $transform)
+	private function _getTransformFolderName(AssetTransformModel $transform)
 	{
 		if ($transform->isNamedTransform())
 		{
@@ -973,11 +974,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Returns a named transform's folder name.
 	 *
-	 * @param AssetTransform $transform
+	 * @param AssetTransformModel $transform
 	 *
 	 * @return string
 	 */
-	private function _getNamedTransformFolderName(AssetTransform $transform)
+	private function _getNamedTransformFolderName(AssetTransformModel $transform)
 	{
 		return '_'.$transform->handle;
 	}
@@ -985,11 +986,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Returns an unnamed transform's folder name.
 	 *
-	 * @param AssetTransform $transform
+	 * @param AssetTransformModel $transform
 	 *
 	 * @return string
 	 */
-	private function _getUnnamedTransformFolderName(AssetTransform $transform)
+	private function _getUnnamedTransformFolderName(AssetTransformModel $transform)
 	{
 		return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO') .
 			'_'.($transform->mode) .
@@ -1000,13 +1001,13 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Create a transform for the file by the transform index.
 	 *
-	 * @param AssetFile           $file
+	 * @param AssetFileModel           $file
 	 * @param AssetTransformIndexModel $index
 	 *
 	 * @throws Exception if the AssetTransformIndexModel cannot be determined to have a transform
 	 * @return null
 	 */
-	private function _createTransformForFile(AssetFile $file, AssetTransformIndexModel $index)
+	private function _createTransformForFile(AssetFileModel $file, AssetTransformIndexModel $index)
 	{
 		if (!ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
@@ -1078,11 +1079,11 @@ class AssetTransformsService extends BaseComponent
 	/**
 	 * Return the thumbnail extension for a file.
 	 *
-	 * @param AssetFile $file
+	 * @param AssetFileModel $file
 	 *
 	 * @return string
 	 */
-	private function _getThumbExtension(AssetFile $file)
+	private function _getThumbExtension(AssetFileModel $file)
 	{
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))

@@ -1,6 +1,10 @@
 <?php
 namespace craft\app\services;
 
+use craft\app\models\Password as PasswordModel;
+use craft\app\models\User     as UserModel;
+use craft\app\models\Username as UsernameModel;
+
 /**
  * UserSessionService provides APIs for managing user sessions.
  *

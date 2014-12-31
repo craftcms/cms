@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\models\BaseElementModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
  * This interface defines the contract that all element types must implement via {@link BaseElementType}.
  *

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\models\AssetFile as AssetFileModel;
+
 /**
  * The AssetFile model class.
  *
@@ -95,7 +97,7 @@ class AssetFile extends BaseElementModel
 			if ($transform)
 			{
 				// Duplicate this model and set it to that transform
-				$model = new AssetFile();
+				$model = new AssetFileModel();
 
 				// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
 				foreach ($this->attributeNames() as $attributeName)
@@ -216,7 +218,7 @@ class AssetFile extends BaseElementModel
 	}
 
 	/**
-	 * @return AssetSource|null
+	 * @return AssetSourceModel|null
 	 */
 	public function getSource()
 	{
@@ -228,7 +230,7 @@ class AssetFile extends BaseElementModel
 	 *
 	 * @param mixed $transform
 	 *
-	 * @return AssetFile
+	 * @return AssetFileModel
 	 */
 	public function setTransform($transform)
 	{

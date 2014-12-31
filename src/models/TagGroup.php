@@ -4,7 +4,7 @@ namespace craft\app\models;
 use craft\app\base\FieldLayoutTrait;
 
 /**
- * Tag group model.
+ * TagGroup model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\base\FieldLayoutTrait;
  * @package   craft.app.models
  * @since     2.0
  */
-class TagGroupModel extends BaseModel
+class TagGroup extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

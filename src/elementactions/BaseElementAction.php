@@ -1,6 +1,10 @@
 <?php
 namespace craft\app\elementactions;
 
+use craft\app\models\BaseModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Params          as ParamsModel;
+
 /**
  * Element Action base class
  *
@@ -135,7 +139,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	 */
 	protected function getParamsModel()
 	{
-		return new Params($this->defineParams());
+		return new ParamsModel($this->defineParams());
 	}
 
 	/**

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\models\AssetFolder as AssetFolderModel;
+
 /**
  * The AssetFolder model class.
  *
@@ -35,7 +37,7 @@ class AssetFolder extends BaseModel
 	}
 
 	/**
-	 * @return AssetSource|null
+	 * @return AssetSourceModel|null
 	 */
 	public function getSource()
 	{
@@ -58,7 +60,7 @@ class AssetFolder extends BaseModel
 	}
 
 	/**
-	 * @return AssetFolder|null
+	 * @return AssetFolderModel|null
 	 */
 	public function getParent()
 	{
@@ -73,11 +75,11 @@ class AssetFolder extends BaseModel
 	/**
 	 * Add a child folder manually.
 	 *
-	 * @param AssetFolder $folder
+	 * @param AssetFolderModel $folder
 	 *
 	 * @return null
 	 */
-	public function addChild(AssetFolder $folder)
+	public function addChild(AssetFolderModel $folder)
 	{
 		if (is_null($this->_children))
 		{

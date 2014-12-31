@@ -2,6 +2,8 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\models\Tag                as TagModel;
+use craft\app\models\TagGroup           as TagGroupModel;
 
 /**
  * Class TagsService
@@ -161,8 +163,9 @@ class TagsService extends BaseComponent
 	 *
 	 * @param TagGroupModel $tagGroup
 	 *
-	 * @throws \Exception
 	 * @return bool
+	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function saveTagGroup(TagGroupModel $tagGroup)
 	{

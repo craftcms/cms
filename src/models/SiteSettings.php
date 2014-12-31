@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class SiteSettingsModel extends BaseModel
+class SiteSettings extends BaseModel
 {
 	// Protected Methods
 	// =========================================================================

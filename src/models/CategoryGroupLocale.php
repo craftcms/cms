@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Category group locale model class.
+ * CategoryGroupLocale model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     2.0
  */
-class CategoryGroupLocaleModel extends BaseModel
+class CategoryGroupLocale extends BaseModel
 {
 	// Properties
 	// =========================================================================

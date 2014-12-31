@@ -4,7 +4,7 @@ namespace craft\app\models;
 craft()->requireEdition(Craft::Pro);
 
 /**
- * User group model class.
+ * UserGroup model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.models
  * @since     1.0
  */
-class UserGroupModel extends BaseModel
+class UserGroup extends BaseModel
 {
 	// Public Methods
 	// =========================================================================

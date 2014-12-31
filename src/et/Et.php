@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\et;
 
+use craft\app\models\Et as EtModel;
+
 /**
  * Class Et
  *

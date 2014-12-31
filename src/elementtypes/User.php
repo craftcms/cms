@@ -1,6 +1,10 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\models\BaseElementModel;
+use craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use craft\app\models\User              as UserModel;
+
 /**
  * The User class is responsible for implementing and defining users as a native element type in Craft.
  *

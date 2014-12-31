@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\elements;
 
+use craft\app\models\BaseElementModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
  * Parses a relatedTo param on an ElementCriteriaModel.
  *

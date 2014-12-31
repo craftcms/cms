@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetSourceRecord
+ * Class AssetIndexData
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\records;
  * @package   craft.app.records
  * @since     1.0
  */
-class AssetSourceRecord extends BaseRecord
+class AssetIndexData extends BaseRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -23,7 +23,7 @@ class AssetSourceRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'assetsources';
+		return 'assetindexdata';
 	}
 
 	/**
@@ -34,7 +34,7 @@ class AssetSourceRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
+			'source' => array(static::BELONGS_TO, 'AssetSource', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 
@@ -46,8 +46,7 @@ class AssetSourceRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
+			array('columns' => array('sessionId', 'sourceId', 'offset'), 'unique' => true),
 		);
 	}
 
@@ -62,12 +61,13 @@ class AssetSourceRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'                => array(AttributeType::Name, 'required' => true),
-			'handle'              => array(AttributeType::Handle, 'required' => true),
-			'type'                => array(AttributeType::ClassName, 'required' => true),
-			'settings'            => AttributeType::Mixed,
-			'sortOrder'           => AttributeType::SortOrder,
-			'fieldLayoutId'       => AttributeType::Number,
+			'sessionId' 	=> array(ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''),
+			'sourceId' 		=> array(AttributeType::Number, 'required' => true),
+			'offset'  		=> array(AttributeType::Number, 'required' => true),
+			'uri'  			=> array(ColumnType::Varchar, 'maxLength' => 255),
+			'size' 			=> array(AttributeType::Number),
+			'recordId'		=> array(AttributeType::Number),
+
 		);
 	}
 }

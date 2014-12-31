@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\elementactions;
 
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
  * Delete Users Element Action
  *

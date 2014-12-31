@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class WidgetModel extends BaseComponentModel
+class Widget extends BaseComponentModel
 {
 
 }

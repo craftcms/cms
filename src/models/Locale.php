@@ -13,7 +13,7 @@ use craft\app\components\BaseComponent;
  * @package   craft.app.models
  * @since     1.0
  */
-class LocaleModel extends BaseComponent
+class Locale extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -36,7 +36,7 @@ class LocaleModel extends BaseComponent
 	 *
 	 * @param $id
 	 *
-	 * @return LocaleModel
+	 * @return Locale
 	 */
 	public function __construct($id)
 	{

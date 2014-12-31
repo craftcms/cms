@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetFolderRecord
+ * Class AssetSource
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\records;
  * @package   craft.app.records
  * @since     1.0
  */
-class AssetFolderRecord extends BaseRecord
+class AssetSource extends BaseRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -23,7 +23,7 @@ class AssetFolderRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'assetfolders';
+		return 'assetsources';
 	}
 
 	/**
@@ -34,8 +34,7 @@ class AssetFolderRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'parent' => array(static::BELONGS_TO, 'AssetFolderRecord', 'onDelete' => static::CASCADE),
-			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => false, 'onDelete' => static::CASCADE),
+			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
 		);
 	}
 
@@ -47,7 +46,8 @@ class AssetFolderRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('name', 'parentId', 'sourceId'), 'unique' => true),
+			array('columns' => array('name'), 'unique' => true),
+			array('columns' => array('handle'), 'unique' => true),
 		);
 	}
 
@@ -62,8 +62,12 @@ class AssetFolderRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'name'     => array(AttributeType::String, 'required' => true),
-			'path'     => array(AttributeType::String),
+			'name'                => array(AttributeType::Name, 'required' => true),
+			'handle'              => array(AttributeType::Handle, 'required' => true),
+			'type'                => array(AttributeType::ClassName, 'required' => true),
+			'settings'            => AttributeType::Mixed,
+			'sortOrder'           => AttributeType::SortOrder,
+			'fieldLayoutId'       => AttributeType::Number,
 		);
 	}
 }

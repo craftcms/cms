@@ -3,6 +3,11 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\fieldtypes\Matrix;
+use craft\app\models\FieldLayout        as FieldLayoutModel;
+use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
+use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
+use craft\app\models\MatrixBlock        as MatrixBlockModel;
+use craft\app\models\MatrixSettings     as MatrixSettingsModel;
 
 /**
  * MatrixService provides APIs for managing Matrix fields.
@@ -229,8 +234,9 @@ class MatrixService extends BaseComponent
 	 * @param bool                 $validate  Whether the block type should be validated before being saved.
 	 *                                        Defaults to `true`.
 	 *
+	 * @return bool
+	 * @throws Exception
 	 * @throws \Exception
-	 * @return bool Whether the block type was saved successfully.
 	 */
 	public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
 	{

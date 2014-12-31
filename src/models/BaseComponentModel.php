@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Base component model class.
+ * BaseComponent model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

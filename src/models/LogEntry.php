@@ -2,7 +2,7 @@
 namespace craft\app\models;
 
 /**
- * Class LogEntryModel
+ * Class LogEntry model.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.3
  */
-class LogEntryModel extends BaseModel
+class LogEntry extends BaseModel
 {
 	// Protected Methods
 	// =========================================================================

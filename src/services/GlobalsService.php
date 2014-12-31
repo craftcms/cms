@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\models\GlobalSet as GlobalSetModel;
 
 /**
  * Class GlobalsService
@@ -246,8 +247,9 @@ class GlobalsService extends BaseComponent
 	 *
 	 * @param GlobalSetModel $globalSet
 	 *
-	 * @throws \Exception
 	 * @return bool
+	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function saveSet(GlobalSetModel $globalSet)
 	{

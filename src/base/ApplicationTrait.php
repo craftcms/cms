@@ -2,6 +2,7 @@
 namespace craft\app\base;
 
 use craft\app\helpers\AppHelper;
+use craft\app\models\Info        as InfoModel;
 
 /**
  * Class ApplicationTrait

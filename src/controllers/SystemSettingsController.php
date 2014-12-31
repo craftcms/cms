@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\models\EmailSettings as EmailSettingsModel;
+use craft\app\models\GlobalSet     as GlobalSetModel;
+
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
  * displaying, saving and testing Craft settings in the control panel.

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tasks;
 
+use craft\app\models\Field as FieldModel;
+
 /**
  * Find and Replace task.
  *

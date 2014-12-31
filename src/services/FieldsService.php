@@ -2,6 +2,12 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\models\BaseModel;
+use craft\app\models\Field              as FieldModel;
+use craft\app\models\FieldGroup         as FieldGroupModel;
+use craft\app\models\FieldLayout        as FieldLayoutModel;
+use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
+use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
 
 /**
  * Class FieldsService

@@ -1,6 +1,11 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\models\BaseElementModel;
+use craft\app\models\Category as CategoryModel;
+use craft\app\models\CategoryGroup as CategoryGroupModel;
+use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.

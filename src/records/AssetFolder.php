@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetIndexDataRecord
+ * Class AssetFolder
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\records;
  * @package   craft.app.records
  * @since     1.0
  */
-class AssetIndexDataRecord extends BaseRecord
+class AssetFolder extends BaseRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -23,7 +23,7 @@ class AssetIndexDataRecord extends BaseRecord
 	 */
 	public function getTableName()
 	{
-		return 'assetindexdata';
+		return 'assetfolders';
 	}
 
 	/**
@@ -34,7 +34,8 @@ class AssetIndexDataRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'parent' => array(static::BELONGS_TO, 'AssetFolder', 'onDelete' => static::CASCADE),
+			'source' => array(static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE),
 		);
 	}
 
@@ -46,7 +47,7 @@ class AssetIndexDataRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('sessionId', 'sourceId', 'offset'), 'unique' => true),
+			array('columns' => array('name', 'parentId', 'sourceId'), 'unique' => true),
 		);
 	}
 
@@ -61,13 +62,8 @@ class AssetIndexDataRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return array(
-			'sessionId' 	=> array(ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''),
-			'sourceId' 		=> array(AttributeType::Number, 'required' => true),
-			'offset'  		=> array(AttributeType::Number, 'required' => true),
-			'uri'  			=> array(ColumnType::Varchar, 'maxLength' => 255),
-			'size' 			=> array(AttributeType::Number),
-			'recordId'		=> array(AttributeType::Number),
-
+			'name'     => array(AttributeType::String, 'required' => true),
+			'path'     => array(AttributeType::String),
 		);
 	}
 }

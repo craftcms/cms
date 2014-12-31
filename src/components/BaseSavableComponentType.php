@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\components;
 
+use craft\app\models\BaseModel;
+use craft\app\models\Params     as ParamsModel;
+
 /**
  * Base savable component class.
  *
@@ -100,7 +103,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	 */
 	protected function getSettingsModel()
 	{
-		return new Params($this->defineSettings());
+		return new ParamsModel($this->defineSettings());
 	}
 
 	/**

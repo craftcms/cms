@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\GlobalSet       as GlobalSetModel;
+
 /**
  * The GlobalSet class is responsible for implementing and defining globals as a native element type in
  * Craft.

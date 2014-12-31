@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetFileRecord
+ * Class AssetFile
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
@@ -13,7 +13,7 @@ namespace craft\app\records;
  * @package   craft.app.records
  * @since     1.0
  */
-class AssetFileRecord extends BaseRecord
+class AssetFile extends BaseRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -37,8 +37,8 @@ class AssetFileRecord extends BaseRecord
 	{
 		return array(
 			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'source'  => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => false, 'onDelete' => static::CASCADE),
-			'folder'  => array(static::BELONGS_TO, 'AssetFolderRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'source'  => array(static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE),
+			'folder'  => array(static::BELONGS_TO, 'AssetFolder', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

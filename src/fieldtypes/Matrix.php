@@ -1,6 +1,12 @@
 <?php
 namespace craft\app\fieldtypes;
 
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Field           as FieldModel;
+use craft\app\models\MatrixBlock     as MatrixBlockModel;
+use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
+use craft\app\models\MatrixSettings  as MatrixSettingsModel;
+
 /**
  * Matrix fieldtype
  *

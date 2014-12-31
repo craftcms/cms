@@ -1,8 +1,10 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+
 /**
- * Element criteria model class.
+ * ElementCriteria model class.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +13,7 @@ namespace craft\app\models;
  * @package   craft.app.models
  * @since     1.0
  */
-class ElementCriteriaModel extends BaseModel implements \Countable
+class ElementCriteria extends BaseModel implements \Countable
 {
 	// Properties
 	// =========================================================================

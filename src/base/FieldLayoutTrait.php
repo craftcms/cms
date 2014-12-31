@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\base;
 
+use craft\app\models\FieldLayout as FieldLayoutModel;
+
 /**
  * Field layout trait.
  *
