@@ -584,6 +584,8 @@ class ElementsService extends BaseComponent
 		// Convert the old childOf and parentOf params to the relatedTo param
 		// childOf(element)  => relatedTo({ source: element })
 		// parentOf(element) => relatedTo({ target: element })
+
+		// TODO: Remove this code in Craft 4
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
 			$relatedTo = array('and');
@@ -599,6 +601,8 @@ class ElementsService extends BaseComponent
 			}
 
 			$criteria->relatedTo = $relatedTo;
+
+			craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
 		}
 
 		if ($criteria->relatedTo)
@@ -885,11 +889,17 @@ class ElementsService extends BaseComponent
 				}
 			}
 
-			if ($criteria->level || $criteria->depth)
+			// TODO: Remove this code in Craft 4
+			if (!$criteria->level && $criteria->depth)
 			{
-				// TODO: 'depth' is deprecated; use 'level' instead.
-				$level = ($criteria->level ? $criteria->level : $criteria->depth);
-				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
+				$criteria->level = $criteria->depth;
+				$criteria->depth = null;
+				craft()->deprecator->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
+			}
+
+			if ($criteria->level)
+			{
+				$query->andWhere(DbHelper::parseParam('structureelements.level', $criteria->level, $query->params));
 			}
 		}
 
