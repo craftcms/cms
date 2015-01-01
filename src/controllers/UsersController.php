@@ -1601,11 +1601,16 @@ class UsersController extends BaseController
 	{
 		$url = craft()->config->getLocalized('invalidUserTokenPath');
 
+		// TODO: Remove this code in Craft 4
 		if ($url == '')
 		{
 			// Check the deprecated config setting.
-			// TODO: Add a deprecation log message in 3.0.
 			$url = craft()->config->getLocalized('activateAccountFailurePath');
+
+			if ($url)
+			{
+				craft()->deprecator->log('activateAccountFailurePath', 'The ‘activateAccountFailurePath’ has been deprecated. Use ‘invalidUserTokenPath’ instead.');
+			}
 		}
 
 		if ($url != '')
