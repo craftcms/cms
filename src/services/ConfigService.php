@@ -172,27 +172,6 @@ class ConfigService extends BaseComponent
 	}
 
 	/**
-	 * Returns a config setting value by its name, pulled from craft/config/db.php.
-	 *
-	 * @param string $item    The name of the config setting.
-	 * @param mixed  $default The default value to be returned in the event that the config setting isn’t set. Defaults to `null`.
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link get() `get('key', ConfigFile::Db)`} instead.
-	 * @return string The value of the config setting, or $default if a value could not be found.
-	 */
-	public function getDbItem($item, $default = null)
-	{
-		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(\'key\', ConfigFile::Db) instead.');
-
-		if ($value = craft()->config->get($item, Config::Db))
-		{
-			return $value;
-		}
-
-		return $default;
-	}
-
-	/**
 	 * Returns whether a config setting value exists, by a given name.
 	 *
 	 * If the config file is set up as a [multi-environment config](http://buildwithcraft.com/docs/multi-environment-configs),
