@@ -8,12 +8,14 @@ use craft\app\models\EntryDraft         as EntryDraftModel;
 use craft\app\models\EntryVersion       as EntryVersionModel;
 use craft\app\records\EntryDraft        as EntryDraftRecord;
 use craft\app\records\EntryVersion      as EntryVersionRecord;
-
+use craft\app\web\Application;
 
 craft()->requireEdition(Craft::Client);
 
 /**
- * Class EntryRevisionsService
+ * Class EntryRevisions service.
+ *
+ * An instance of the EntryRevisions service is globally accessible in Craft via {@link Application::entryRevisions `craft()->entryRevisions`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

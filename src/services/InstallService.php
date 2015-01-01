@@ -12,9 +12,12 @@ use craft\app\models\TagGroup           as TagGroupModel;
 use craft\app\models\User               as UserModel;
 use craft\app\errors\Exception;
 use craft\app\records\Migration         as MigrationRecord;
+use craft\app\web\Application;
 
 /**
- * Class InstallService
+ * Class Install service.
+ *
+ * An instance of the Install service is globally accessible in Craft via {@link Application::install `craft()->install`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

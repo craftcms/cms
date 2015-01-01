@@ -5,11 +5,14 @@ use craft\app\components\BaseComponent;
 use craft\app\Craft;
 use craft\app\models\UserGroup          as UserGroupModel;
 use craft\app\records\UserGroup         as UserGroupRecord;
+use craft\app\web\Application;
 
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Class UserGroupsService
+ * Class UserGroups service.
+ *
+ * An instance of the UserGroups service is globally accessible in Craft via {@link Application::userGroups `craft()->userGroups`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

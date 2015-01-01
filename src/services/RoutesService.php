@@ -4,9 +4,12 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\helpers\IOHelper;
 use craft\app\records\Route             as RouteRecord;
+use craft\app\web\Application;
 
 /**
- * Class RoutesService
+ * Class Routes service.
+ *
+ * An instance of the Routes service is globally accessible in Craft via {@link Application::routes `craft()->routes`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

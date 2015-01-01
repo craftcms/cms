@@ -5,12 +5,12 @@ use craft\app\components\BaseComponent;
 use craft\app\enums\ElementType;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\records\Entry             as EntryRecord;
+use craft\app\web\Application;
 
 /**
- * EntriesService provides APIs for managing entries in Craft.
+ * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of EntriesService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$entries `craft()->entries`}.
+ * An instance of the EntriesService is globally accessible in Craft via {@link Application::entries `craft()->entries`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

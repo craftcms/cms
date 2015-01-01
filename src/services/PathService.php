@@ -2,12 +2,12 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\web\Application;
 
 /**
- * PathService provides APIs for getting server paths that are used by Craft.
+ * The Path service provides APIs for getting server paths that are used by Craft.
  *
- * An instance of PathService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$path `craft()->path`}.
+ * An instance of the Path service is globally accessible in Craft via {@link Application::path `craft()->path`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

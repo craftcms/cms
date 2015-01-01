@@ -1,8 +1,12 @@
 <?php
 namespace craft\app\services;
 
+use craft\app\web\Application;
+
 /**
- * Extends CHttpSession to add support for setting the session folder and creating it if it doesn't exist.
+ * Extends \CHttpSession to add support for setting the session folder and creating it if it doesn't exist.
+ *
+ * An instance of the HttpSession service is globally accessible in Craft via {@link Application::httpSession `craft()->httpSession`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -7,12 +7,12 @@ use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 use craft\app\records\ElementLocale     as ElementLocaleRecord;
 use craft\app\records\Element           as ElementRecord;
 use craft\app\records\StructureElement  as StructureElementRecord;
+use craft\app\web\Application;
 
 /**
- * ElementsService provides APIs for managing elements.
+ * The Elements service provides APIs for managing elements.
  *
- * An instance of ElementsService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$elements `craft()->elements`}.
+ * An instance of the Elements service is globally accessible in Craft via {@link Application::elements `craft()->elements`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

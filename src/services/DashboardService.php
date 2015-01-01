@@ -6,9 +6,12 @@ use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
 use craft\app\widgets\BaseWidget;
 use craft\app\records\Widget            as WidgetRecord;
+use craft\app\web\Application;
 
 /**
- * Class DashboardService
+ * Class Dashboard service.
+ *
+ * An instance of the Dashboard service is globally accessible in Craft via {@link Application::dashboard `craft()->dashboard`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

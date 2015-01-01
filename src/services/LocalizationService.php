@@ -3,9 +3,12 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\models\Locale             as LocaleModel;
+use craft\app\web\Application;
 
 /**
- * Class LocalizationService
+ * Class Localization service.
+ *
+ * An instance of the Localization service is globally accessible in Craft via {@link Application::i18n `craft()->i18n`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

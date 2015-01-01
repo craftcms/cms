@@ -13,9 +13,12 @@ use craft\app\cache\ZendDataCache;
 use craft\app\components\BaseComponent;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;
+use craft\app\web\Application;
 
 /**
- * Class CacheService
+ * Class Cache service.
+ *
+ * An instance of the Cache service is globally accessible in Craft via {@link Application::cache `craft()->cache`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -5,9 +5,12 @@ use craft\app\assetsourcetypes\Temp;
 use craft\app\components\BaseComponent;
 use craft\app\models\AssetSource        as AssetSourceModel;
 use craft\app\records\AssetSource       as AssetSourceRecord;
+use craft\app\web\Application;
 
 /**
- * Class AssetSourcesService
+ * Class AssetSources service.
+ *
+ * An instance of the AssetSources service is globally accessible in Craft via {@link Application::assetSources `craft()->assetSources`}.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

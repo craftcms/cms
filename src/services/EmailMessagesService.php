@@ -5,11 +5,14 @@ use craft\app\components\BaseComponent;
 use craft\app\Craft;
 use craft\app\models\RebrandEmail       as RebrandEmailModel;
 use craft\app\records\EmailMessage      as EmailMessageRecord;
+use craft\app\web\Application;
 
 craft()->requireEdition(Craft::Client);
 
 /**
- * Class EmailMessagesService
+ * Class EmailMessages service.
+ *
+ * An instance of the EmailMessages service is globally accessible in Craft via {@link Application::emailMessages `craft()->emailMessages`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

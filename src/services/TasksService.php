@@ -4,9 +4,12 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\Task               as TaskModel;
 use craft\app\records\Task              as TaskRecord;
+use craft\app\web\Application;
 
 /**
- * Class TasksService
+ * Class Tasks service.
+ *
+ * An instance of the Tasks service is globally accessible in Craft via {@link Application::tasks `craft()->tasks`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

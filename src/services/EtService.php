@@ -6,9 +6,12 @@ use craft\app\models\Et                 as EtModel;
 use craft\app\models\Et;
 use craft\app\models\Update             as UpdateModel;
 use craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
+use craft\app\web\Application;
 
 /**
- * Class EtService
+ * Class Et service.
+ *
+ * An instance of the Et service is globally accessible in Craft via {@link Application::et `craft()->et`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

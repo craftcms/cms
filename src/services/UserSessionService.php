@@ -5,12 +5,12 @@ use craft\app\models\Password     as PasswordModel;
 use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;
 use craft\app\users\UserIdentity;
+use craft\app\web\Application;
 
 /**
- * UserSessionService provides APIs for managing user sessions.
+ * The UserSession service provides APIs for managing user sessions.
  *
- * An instance of UserSessionService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$userSession `craft()->userSession`}.
+ * An instance of the UserSession service is globally accessible in Craft via {@link Application::userSession `craft()->userSession`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

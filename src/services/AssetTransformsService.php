@@ -6,9 +6,12 @@ use craft\app\models\AssetFile           as AssetFileModel;
 use craft\app\models\AssetTransform      as AssetTransformModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 use craft\app\records\AssetTransform     as AssetTransformRecord;
+use craft\app\web\Application;
 
 /**
- * Class AssetTransformsService
+ * Class AssetTransforms service.
+ *
+ * An instance of the AssetTransforms service is globally accessible in Craft via {@link Application::assetTransforms `craft()->assetTransforms`}.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

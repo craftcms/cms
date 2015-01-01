@@ -9,9 +9,12 @@ use craft\app\models\Structure            as StructureModel;
 use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
 use craft\app\records\CategoryGroup       as CategoryGroupRecord;
 use craft\app\records\Category            as CategoryRecord;
+use craft\app\web\Application;
 
 /**
- * Class CategoriesService
+ * Class Categories service.
+ *
+ * An instance of the Categories service is globally accessible in Craft via {@link Application::categories `craft()->categories`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

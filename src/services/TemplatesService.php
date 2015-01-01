@@ -2,13 +2,13 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\web\Application;
 
 /**
- * TemplatesService provides APIs for rendering templates, as well as interacting with other areas of Craft’s
+ * The Templates service provides APIs for rendering templates, as well as interacting with other areas of Craft’s
  * templating system.
  *
- * An instance of TemplatesService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$templates `craft()->templates`}.
+ * An instance of the Templates service is globally accessible in Craft via {@link Application::templates `craft()->templates`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

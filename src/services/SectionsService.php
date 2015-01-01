@@ -9,9 +9,12 @@ use craft\app\models\Structure          as StructureModel;
 use craft\app\records\EntryType         as EntryTypeRecord;
 use craft\app\records\SectionLocale     as SectionLocaleRecord;
 use craft\app\records\Section           as SectionRecord;
+use craft\app\web\Application;
 
 /**
- * Class SectionsService
+ * Class Sections service.
+ *
+ * An instance of the Sections service is globally accessible in Craft via {@link Application::sections `craft()->sections`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

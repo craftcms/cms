@@ -4,12 +4,12 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\Email              as EmailModel;
 use craft\app\models\User               as UserModel;
+use craft\app\web\Application;
 
 /**
- * EmailService provides APIs for sending email in Craft.
+ * The Email service provides APIs for sending email in Craft.
  *
- * An instance of EmailService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$email `craft()->email`}.
+ * An instance of the Email service is globally accessible in Craft via {@link Application::email `craft()->email`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

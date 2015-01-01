@@ -4,9 +4,12 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Field              as FieldModel;
+use craft\app\web\Application;
 
 /**
- * Class RelationsService
+ * Class Relations service.
+ *
+ * An instance of the Relations service is globally accessible in Craft via {@link Application::relations `craft()->relations`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

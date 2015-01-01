@@ -3,9 +3,12 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\models\DeprecationError   as DeprecationErrorModel;
+use craft\app\web\Application;
 
 /**
- * Class DeprecatorService
+ * Class Deprecator service.
+ *
+ * An instance of the Deprecator service is globally accessible in Craft via {@link Application::deprecator `craft()->deprecator`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

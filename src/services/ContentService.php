@@ -5,9 +5,12 @@ use craft\app\components\BaseComponent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Content            as ContentModel;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
+use craft\app\web\Application;
 
 /**
  * Class ContentService
+ *
+ * An instance of the Content service is globally accessible in Craft via {@link Application::content `craft()->content`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

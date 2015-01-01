@@ -6,9 +6,12 @@ use craft\app\models\BaseElementModel;
 use craft\app\models\Structure          as StructureModel;
 use craft\app\records\StructureElement  as StructureElementRecord;
 use craft\app\records\Structure         as StructureRecord;
+use craft\app\web\Application;
 
 /**
- * Class StructuresService
+ * Class Structures service.
+ *
+ * An instance of the Structures service is globally accessible in Craft via {@link Application::structures `craft()->structures`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

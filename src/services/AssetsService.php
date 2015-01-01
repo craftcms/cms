@@ -10,10 +10,13 @@ use craft\app\records\AssetFile         as AssetFileRecord;
 use craft\app\records\AssetFolder       as AssetFolderRecord;
 use craft\app\models\FolderCriteria     as FolderCriteriaModel;
 use craft\app\models\User               as UserModel;
+use craft\app\web\Application;
 
 
 /**
- * Class AssetsService
+ * Class Assets service.
+ *
+ * An instance of the Assets service is globally accessible in Craft via {@link Application::assets `craft()->assets`}.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

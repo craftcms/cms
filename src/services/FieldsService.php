@@ -13,9 +13,12 @@ use craft\app\records\FieldLayoutField  as FieldLayoutFieldRecord;
 use craft\app\records\FieldLayout       as FieldLayoutRecord;
 use craft\app\records\FieldLayoutTab    as FieldLayoutTabRecord;
 use craft\app\records\Field             as FieldRecord;
+use craft\app\web\Application;
 
 /**
- * Class FieldsService
+ * Class Fields service.
+ *
+ * An instance of the Fields service is globally accessible in Craft via {@link Application::fields `craft()->fields`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

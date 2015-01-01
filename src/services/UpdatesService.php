@@ -6,9 +6,12 @@ use craft\app\components\BaseComponent;
 use craft\app\models\AppUpdate          as AppUpdateModel;
 use craft\app\models\PluginUpdate       as PluginUpdateModel;
 use craft\app\models\Update             as UpdateModel;
+use craft\app\web\Application;
 
 /**
- * Class UpdatesService
+ * Class Updates service.
+ *
+ * An instance of the Updates service is globally accessible in Craft via {@link Application::updates `craft()->updates`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

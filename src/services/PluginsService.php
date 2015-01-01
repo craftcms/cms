@@ -5,12 +5,12 @@ use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
 use craft\app\components\BaseComponent;
 use craft\app\records\Migration         as MigrationRecord;
+use craft\app\web\Application;
 
 /**
- * PluginsService provides APIs for managing plugins.
+ * The Plugins service provides APIs for managing plugins.
  *
- * An instance of PluginsService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$plugins `craft()->plugins`}.
+ * An instance of the Plugins service is globally accessible in Craft via {@link Application::plugins `craft()->plugins`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

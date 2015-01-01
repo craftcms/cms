@@ -10,12 +10,12 @@ use craft\app\models\MatrixBlock        as MatrixBlockModel;
 use craft\app\models\MatrixSettings     as MatrixSettingsModel;
 use craft\app\records\MatrixBlock       as MatrixBlockRecord;
 use craft\app\records\MatrixBlockType   as MatrixBlockTypeRecord;
+use craft\app\web\Application;
 
 /**
- * MatrixService provides APIs for managing Matrix fields.
+ * The Matrix service provides APIs for managing Matrix fields.
  *
- * An instance of MatrixService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$matrix `craft()->matrix`}.
+ * An instance of the Matrix service is globally accessible in Craft via {@link Application::matrix `craft()->matrix`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

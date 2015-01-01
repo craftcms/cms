@@ -6,12 +6,12 @@ use craft\app\models\Password           as PasswordModel;
 use craft\app\models\User               as UserModel;
 use craft\app\records\Session           as SessionRecord;
 use craft\app\records\User              as UserRecord;
+use craft\app\web\Application;
 
 /**
- * UsersService provides APIs for managing users.
+ * The Users service provides APIs for managing users.
  *
- * An instance of UsersService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$users `craft()->users`}.
+ * An instance of the Users service is globally accessible in Craft via {@link Application::users `craft()->users`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

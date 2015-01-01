@@ -4,9 +4,12 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\GlobalSet          as GlobalSetModel;
 use craft\app\records\GlobalSet         as GlobalSetRecord;
+use craft\app\web\Application;
 
 /**
- * Class GlobalsService
+ * Class Globals service.
+ *
+ * An instance of the Globals service is globally accessible in Craft via {@link Application::globals `craft()->globals`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

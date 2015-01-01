@@ -3,12 +3,12 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\Craft;
+use craft\app\web\Application;
 
 /**
- * FeedsService provides APIs for fetching remote RSS and Atom feeds.
+ * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
  *
- * An instance of FeedsService is globally accessible in Craft via
- * {@link \craft\app\web\Application::$feeds `craft()->feeds`}.
+ * An instance of the Feeds service is globally accessible in Craft via {@link Application::feeds `craft()->feeds`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -1,8 +1,12 @@
 <?php
 namespace craft\app\services;
 
+use craft\app\web\Application;
+
 /**
- * Class SecurityService
+ * Class Security service.
+ *
+ * An instance of the Security service is globally accessible in Craft via {@link Application::security `craft()->security`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -7,9 +7,12 @@ use craft\app\models\AssetIndexData     as AssetIndexDataModel;
 use craft\app\models\AssetSource        as AssetSourceModel;
 use craft\app\records\AssetFolder       as AssetFolderRecord;
 use craft\app\records\AssetIndexData    as AssetIndexDataRecord;
+use craft\app\web\Application;
 
 /**
- * Class AssetIndexingService
+ * Class AssetIndexing service.
+ *
+ * An instance of the AssetIndexing service is globally accessible in Craft via {@link Application::assetIndexing `craft()->assetIndexing`}.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
