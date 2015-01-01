@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetFile
+ * Class AssetFile record.
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
@@ -36,7 +36,7 @@ class AssetFile extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'element' => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'element' => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
 			'source'  => array(static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE),
 			'folder'  => array(static::BELONGS_TO, 'AssetFolder', 'required' => true, 'onDelete' => static::CASCADE),
 		);

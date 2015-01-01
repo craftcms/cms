@@ -8,6 +8,11 @@ use craft\app\models\FieldGroup         as FieldGroupModel;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
+use craft\app\records\FieldGroup        as FieldGroupRecord;
+use craft\app\records\FieldLayoutField  as FieldLayoutFieldRecord;
+use craft\app\records\FieldLayout       as FieldLayoutRecord;
+use craft\app\records\FieldLayoutTab    as FieldLayoutTabRecord;
+use craft\app\records\Field             as FieldRecord;
 
 /**
  * Class FieldsService
@@ -414,7 +419,7 @@ class FieldsService extends BaseComponent
 		// Give the field type a chance to prep the settings from post
 		$preppedSettings = $fieldType->prepSettings($field->settings);
 
-		// Set the prepped settings on the FieldRecord and the field type
+		// Set the prepped settings on the Field and the field type
 		$fieldRecord->settings = $preppedSettings;
 		$fieldType->setSettings($preppedSettings);
 
@@ -469,7 +474,7 @@ class FieldsService extends BaseComponent
 				// Give the field type a chance to prep the settings from post
 				$preppedSettings = $fieldType->prepSettings($field->settings);
 
-				// Set the prepped settings on the FieldRecord, FieldModel, and the field type
+				// Set the prepped settings on the Field, FieldModel, and the field type
 				$fieldRecord->settings = $field->settings = $preppedSettings;
 				$fieldType->setSettings($preppedSettings);
 

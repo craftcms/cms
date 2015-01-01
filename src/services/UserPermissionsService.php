@@ -3,6 +3,7 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\Craft;
+use craft\app\records\UserPermission    as UserPermissionRecord;
 
 craft()->requireEdition(Craft::Pro);
 

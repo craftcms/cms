@@ -2,9 +2,10 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\AssetFile                 as AssetFileModel;
-use craft\app\models\AssetTransform            as AssetTransformModel;
-use craft\app\models\AssetTransformIndex       as AssetTransformIndexModel;
+use craft\app\models\AssetFile           as AssetFileModel;
+use craft\app\models\AssetTransform      as AssetTransformModel;
+use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
+use craft\app\records\AssetTransform     as AssetTransformRecord;
 
 /**
  * Class AssetTransformsService
@@ -14,7 +15,7 @@ use craft\app\models\AssetTransformIndex       as AssetTransformIndexModel;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.services
- * @since      1.0Craft.appendFootHtml
+ * @since      1.0
  */
 class AssetTransformsService extends BaseComponent
 {

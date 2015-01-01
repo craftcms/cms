@@ -4,6 +4,7 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\enums\ElementType;
 use craft\app\models\Entry              as EntryModel;
+use craft\app\records\Entry             as EntryRecord;
 
 /**
  * EntriesService provides APIs for managing entries in Craft.

@@ -4,6 +4,7 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\Craft;
 use craft\app\models\RebrandEmail       as RebrandEmailModel;
+use craft\app\records\EmailMessage      as EmailMessageRecord;
 
 craft()->requireEdition(Craft::Client);
 
@@ -234,7 +235,7 @@ class EmailMessagesService extends BaseComponent
 	 * @param string      $key
 	 * @param string|null $localeId
 	 *
-	 * @return EmailMessageRecord
+	 * @return EmailMessage
 	 */
 	private function _getMessageRecord($key, $localeId = null)
 	{

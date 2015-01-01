@@ -2,6 +2,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\Craft;
+use craft\app\enums\UserStatus;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**

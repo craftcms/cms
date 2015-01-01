@@ -171,7 +171,7 @@ abstract class BaseElementModel extends BaseModel
 	public static function populateModel($values)
 	{
 		// Strip out the element record attributes if this is getting called from a child class based on an Active
-		// Record result eager-loaded with the ElementRecord
+		// Record result eager-loaded with the Element
 		if (isset($values['element']))
 		{
 			$elementAttributes = $values['element'];
@@ -180,7 +180,7 @@ abstract class BaseElementModel extends BaseModel
 
 		$model = parent::populateModel($values);
 
-		// Now set those ElementRecord attributes
+		// Now set those Element attributes
 		if (isset($elementAttributes))
 		{
 			if (isset($elementAttributes['i18n']))
