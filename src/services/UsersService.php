@@ -396,14 +396,6 @@ class UsersService extends BaseComponent
 				'user'      => $user,
 				'isNewUser' => $isNewUser
 			)));
-
-			if ($this->hasEventHandler('onSaveProfile'))
-			{
-				// Fire an 'onSaveProfile' event (deprecated)
-				$this->onSaveProfile(new Event($this, array(
-					'user' => $user
-				)));
-			}
 		}
 
 		return $success;
