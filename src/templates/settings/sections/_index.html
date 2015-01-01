@@ -68,15 +68,15 @@
 {% set js %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sections',
-		noObjectsSelector: '#nosections',
-		newObjectBtnSelector: '#newsectioncontainer',
+		noItemsSelector: '#nosections',
+		newItemBtnSelector: '#newsectioncontainer',
 		deleteAction: 'sections/deleteSection',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its entries?"|t }}',
-		{% if CraftEdition == CraftPersonal %}maxObjects: {{ maxSections }},{% endif %}
-		onDeleteObject: function()
+		{% if CraftEdition == CraftPersonal %}maxItems: {{ maxSections }},{% endif %}
+		onDeleteItem: function()
 		{
 			// Hide the Entries tab if that was the last one
-			if (adminTable.totalObjects == 0)
+			if (adminTable.totalItems == 0)
 			{
 				$('#nav-entries').remove();
 			}

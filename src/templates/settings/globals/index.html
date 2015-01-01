@@ -48,12 +48,12 @@
 {% set js %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sets',
-		noObjectsSelector: '#nosets',
+		noItemsSelector: '#nosets',
 		deleteAction: 'globals/deleteSet',
-		onDeleteObject: function()
+		onDeleteItem: function()
 		{
 			// Hide the Globals tab if that was the last one
-			if (adminTable.totalObjects == 0)
+			if (adminTable.totalItems == 0)
 			{
 				$('#nav-globals').remove();
 			}

@@ -4,10 +4,10 @@
 Craft.AdminTable = Garnish.Base.extend(
 {
 	settings: null,
-	totalObjects: null,
+	totalItems: null,
 	sorter: null,
 
-	$noObjects: null,
+	$noItems: null,
 	$table: null,
 	$tbody: null,
 	$deleteBtns: null,
@@ -18,18 +18,18 @@ Craft.AdminTable = Garnish.Base.extend(
 
 		if (!this.settings.allowDeleteAll)
 		{
-			this.settings.minObjects = 1;
+			this.settings.minItems = 1;
 		}
 
-		this.$noObjects = $(this.settings.noObjectsSelector);
+		this.$noItems = $(this.settings.noItemsSelector);
 		this.$table = $(this.settings.tableSelector);
 		this.$tbody  = this.$table.children('tbody');
-		this.totalObjects = this.$tbody.children().length;
+		this.totalItems = this.$tbody.children().length;
 
 		if (this.settings.sortable)
 		{
 			this.sorter = new Craft.DataTableSorter(this.$table, {
-				onSortChange: $.proxy(this, 'reorderObjects')
+				onSortChange: $.proxy(this, 'reorderItems')
 			});
 		}
 
@@ -41,7 +41,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
 	addRow: function(row)
 	{
-		if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects)
+		if (this.settings.maxItems && this.totalItems >= this.settings.maxItems)
 		{
 			// Sorry pal.
 			return;
@@ -58,12 +58,12 @@ Craft.AdminTable = Garnish.Base.extend(
 		this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
 
 		this.addListener($deleteBtn, 'click', 'handleDeleteBtnClick');
-		this.totalObjects++;
+		this.totalItems++;
 
 		this.updateUI();
 	},
 
-	reorderObjects: function()
+	reorderItems: function()
 	{
 		if (!this.settings.sortable)
 		{
@@ -103,7 +103,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
 	handleDeleteBtnClick: function(event)
 	{
-		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
+		if (this.settings.minItems && this.totalItems <= this.settings.minItems)
 		{
 			// Sorry pal.
 			return;
@@ -111,44 +111,44 @@ Craft.AdminTable = Garnish.Base.extend(
 
 		var $row = $(event.target).closest('tr');
 
-		if (this.confirmDeleteObject($row))
+		if (this.confirmDeleteItem($row))
 		{
-			this.deleteObject($row);
+			this.deleteItem($row);
 		}
 	},
 
-	confirmDeleteObject: function($row)
+	confirmDeleteItem: function($row)
 	{
-		var name = this.getObjectName($row);
+		var name = this.getItemName($row);
 		return confirm(Craft.t(this.settings.confirmDeleteMessage, { name: name }));
 	},
 
-	deleteObject: function($row)
+	deleteItem: function($row)
 	{
 		var data = {
-			id: this.getObjectId($row)
+			id: this.getItemId($row)
 		};
 
 		Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.handleDeleteObjectResponse(response, $row);
+				this.handleDeleteItemResponse(response, $row);
 			}
 		}, this));
 	},
 
-	handleDeleteObjectResponse: function(response, $row)
+	handleDeleteItemResponse: function(response, $row)
 	{
-		var id = this.getObjectId($row),
-			name = this.getObjectName($row);
+		var id = this.getItemId($row),
+			name = this.getItemName($row);
 
 		if (response.success)
 		{
 			$row.remove();
-			this.totalObjects--;
+			this.totalItems--;
 			this.updateUI();
-			this.onDeleteObject(id);
+			this.onDeleteItem(id);
 
 			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
 		}
@@ -158,17 +158,17 @@ Craft.AdminTable = Garnish.Base.extend(
 		}
 	},
 
-	onDeleteObject: function(id)
+	onDeleteItem: function(id)
 	{
-		this.settings.onDeleteObject(id);
+		this.settings.onDeleteItem(id);
 	},
 
-	getObjectId: function($row)
+	getItemId: function($row)
 	{
 		return $row.attr(this.settings.idAttribute);
 	},
 
-	getObjectName: function($row)
+	getItemName: function($row)
 	{
 		return $row.attr(this.settings.nameAttribute);
 	},
@@ -176,15 +176,15 @@ Craft.AdminTable = Garnish.Base.extend(
 	updateUI: function()
 	{
 		// Show the "No Whatever Exists" message if there aren't any
-		if (this.totalObjects == 0)
+		if (this.totalItems == 0)
 		{
 			this.$table.hide();
-			this.$noObjects.removeClass('hidden');
+			this.$noItems.removeClass('hidden');
 		}
 		else
 		{
 			this.$table.show();
-			this.$noObjects.addClass('hidden');
+			this.$noItems.addClass('hidden');
 		}
 
 		// Disable the sort buttons if there's only one row
@@ -192,7 +192,7 @@ Craft.AdminTable = Garnish.Base.extend(
 		{
 			var $moveButtons = this.$table.find('.move');
 
-			if (this.totalObjects == 1)
+			if (this.totalItems == 1)
 			{
 				$moveButtons.addClass('disabled');
 			}
@@ -202,8 +202,8 @@ Craft.AdminTable = Garnish.Base.extend(
 			}
 		}
 
-		// Disable the delete buttons if we've reached the minimum objects
-		if (this.settings.minObjects && this.totalObjects <= this.settings.minObjects)
+		// Disable the delete buttons if we've reached the minimum items
+		if (this.settings.minItems && this.totalItems <= this.settings.minItems)
 		{
 			this.$deleteBtns.addClass('disabled');
 		}
@@ -212,16 +212,16 @@ Craft.AdminTable = Garnish.Base.extend(
 			this.$deleteBtns.removeClass('disabled');
 		}
 
-		// Hide the New Whatever button if we've reached the maximum objects
-		if (this.settings.newObjectBtnSelector)
+		// Hide the New Whatever button if we've reached the maximum items
+		if (this.settings.newItemBtnSelector)
 		{
-			if (this.settings.maxObjects && this.totalObjects >= this.settings.maxObjects)
+			if (this.settings.maxItems && this.totalItems >= this.settings.maxItems)
 			{
-				$(this.settings.newObjectBtnSelector).addClass('hidden');
+				$(this.settings.newItemBtnSelector).addClass('hidden');
 			}
 			else
 			{
-				$(this.settings.newObjectBtnSelector).removeClass('hidden');
+				$(this.settings.newItemBtnSelector).removeClass('hidden');
 			}
 		}
 	}
@@ -229,14 +229,14 @@ Craft.AdminTable = Garnish.Base.extend(
 {
 	defaults: {
 		tableSelector: null,
-		noObjectsSelector: null,
-		newObjectBtnSelector: null,
+		noItemsSelector: null,
+		newItemBtnSelector: null,
 		idAttribute: 'data-id',
 		nameAttribute: 'data-name',
 		sortable: false,
 		allowDeleteAll: true,
-		minObjects: 0,
-		maxObjects: null,
+		minItems: 0,
+		maxItems: null,
 		reorderAction: null,
 		deleteAction: null,
 		reorderSuccessMessage: Craft.t('New order saved.'),
@@ -244,6 +244,6 @@ Craft.AdminTable = Garnish.Base.extend(
 		confirmDeleteMessage:  Craft.t('Are you sure you want to delete “{name}”?'),
 		deleteSuccessMessage:  Craft.t('“{name}” deleted.'),
 		deleteFailMessage:     Craft.t('Couldn’t delete “{name}”.'),
-		onDeleteObject: $.noop
+		onDeleteItem: $.noop
 	}
 });

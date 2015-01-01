@@ -297,13 +297,13 @@ var LocalesTable = Craft.AdminTable.extend(
 		this.base({
 			tableSelector: '#locales',
 			sortable: true,
-			minObjects: 1,
+			minItems: 1,
 			reorderAction: 'localization/reorderLocales',
 			deleteAction: 'localization/deleteLocale',
 		});
 	},
 
-	confirmDeleteObject: function($row)
+	confirmDeleteItem: function($row)
 	{
 		if (this.confirmDeleteModal)
 		{
@@ -324,7 +324,7 @@ var LocalesTable = Craft.AdminTable.extend(
 		return false;
 	},
 
-	onDeleteObject: function(id)
+	onDeleteItem: function(id)
 	{
 		var index = $.inArray(id, this.manager.selectedLocales);
 
@@ -370,7 +370,7 @@ var LocalesTable = Craft.AdminTable.extend(
 		this._deleting = true;
 
 		var data = {
-			id: this.getObjectId(this.$rowToDelete)
+			id: this.getItemId(this.$rowToDelete)
 		};
 
 		// Are we transferring content?
@@ -386,7 +386,7 @@ var LocalesTable = Craft.AdminTable.extend(
 				this._deleting = false;
 				this.enable();
 				this.confirmDeleteModal.hide();
-				this.handleDeleteObjectResponse(response, this.$rowToDelete);
+				this.handleDeleteItemResponse(response, this.$rowToDelete);
 			}
 		}, this));
 	},
@@ -398,8 +398,8 @@ var LocalesTable = Craft.AdminTable.extend(
 	{
 		this.$rowToDelete = $row;
 
-		var id = this.getObjectId($row),
-			name = this.getObjectName($row);
+		var id = this.getItemId($row),
+			name = this.getItemName($row);
 
 		var $form = $(
 				'<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +

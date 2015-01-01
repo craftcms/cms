@@ -41,7 +41,7 @@
 {% set js %}
 	new Craft.AdminTable({
 		tableSelector: '#taggroups',
-		noObjectsSelector: '#notaggroups',
+		noItemsSelector: '#notaggroups',
 		deleteAction: 'tags/deleteTagGroup',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t }}',
 	});
