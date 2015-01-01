@@ -998,26 +998,6 @@ abstract class BaseElementModel extends BaseModel
 		return craft()->content->fieldContext;
 	}
 
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
-	 *
-	 * @param mixed $field
-	 *
-	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://buildwithcraft.com/docs/relations#the-relatedTo-param)
-	 *             param instead.
-	 *
-	 * @return ElementCriteriaModel
-	 */
-	public function getParents($field = null)
-	{
-		craft()->deprecator->log('BaseElementModel::getParents()', 'Calling getParents() to fetch an element’s source relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
-
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->parentOf    = $this;
-		$criteria->parentField = $field;
-		return $criteria;
-	}
-
 	// Protected Methods
 	// =========================================================================
 
