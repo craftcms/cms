@@ -933,16 +933,7 @@ class PluginsService extends BaseComponent
 	 */
 	private function _sortPlugins(&$names, &$secondaryArray)
 	{
-		// TODO: Remove this check for Craft 3.
-		if (PHP_VERSION_ID < 50400)
-		{
-			// Sort plugins by name
-			array_multisort($names, $secondaryArray);
-		}
-		else
-		{
-			// Sort plugins by name
-			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray);
-		}
+		// Sort plugins by name
+		array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray);
 	}
 }

@@ -635,9 +635,6 @@ class ElementsService extends BaseComponent
 		{
 			$contentService = craft()->content;
 			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
-
-			// TODO: $fields should already be defined by now in Carft 3.0
-			$fields = $elementType->getFieldsForElementsQuery($criteria);
 			$extraCriteriaAttributes = $criteria->getExtraAttributeNames();
 
 			foreach ($fields as $field)

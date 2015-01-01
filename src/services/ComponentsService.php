@@ -266,17 +266,7 @@ class ComponentsService extends BaseComponent
 		}
 
 		// Now sort all the components by their name
-		// TODO: Remove this check for Craft 3.
-		if (PHP_VERSION_ID < 50400)
-		{
-			// Sort plugins by name
-			array_multisort($names, $components);
-		}
-		else
-		{
-			// Sort plugins by name
-			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $components);
-		}
+		array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $components);
 
 		return $components;
 	}
