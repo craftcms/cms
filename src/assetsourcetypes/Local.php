@@ -16,7 +16,6 @@ use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
  * @see        http://buildwithcraft.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
- * @deprecated This class will be removed in Craft 3.0.
  */
 class Local extends BaseAssetSourceType
 {

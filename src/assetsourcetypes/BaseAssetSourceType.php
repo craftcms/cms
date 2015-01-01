@@ -16,7 +16,6 @@ use craft\app\models\FolderCriteria         as FolderCriteriaModel;
  * @see        http://buildwithcraft.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
- * @deprecated This class will be removed in Craft 3.0.
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {
