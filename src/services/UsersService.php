@@ -408,34 +408,6 @@ class UsersService extends BaseComponent
 	}
 
 	/**
-	 * Saves a user's profile.
-	 *
-	 * @param UserModel $user
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link saveUser()} instead.
-	 * @return bool
-	 */
-	public function saveProfile(UserModel $user)
-	{
-		craft()->deprecator->log('UsersService::saveProfile()', 'UsersService::saveProfile() has been deprecated. Use saveUser() instead.');
-		return $this->saveUser($user);
-	}
-
-	/**
-	 * Fires an 'onSaveProfile' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveUser() `users.onSaveUser`} instead.
-	 * @return null
-	 */
-	public function onSaveProfile(Event $event)
-	{
-		craft()->deprecator->log('UsersService::onSaveProfile()', 'The users.onSaveProfile event has been deprecated. Use users.onSaveUser instead.');
-		$this->raiseEvent('onSaveProfile', $event);
-	}
-
-	/**
 	 * Sends a new account activation email for a user, regardless of their status.
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
@@ -1233,6 +1205,9 @@ class UsersService extends BaseComponent
 		}
 	}
 
+	// Events
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Fires an 'onBeforeSaveUser' event.
 	 *
@@ -1399,23 +1374,6 @@ class UsersService extends BaseComponent
 	public function onDeleteUser(Event $event)
 	{
 		$this->raiseEvent('onDeleteUser', $event);
-	}
-
-	// Deprecated Methods
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Sends a password reset email.
-	 *
-	 * @param UserModel $user The user to send the forgot password email to.
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link sendPasswordResetEmail()} instead.
-	 * @return bool Whether the email was sent successfully.
-	 */
-	public function sendForgotPasswordEmail(UserModel $user)
-	{
-		// TODO: Add a deprecation log in Craft 3.0
-		return $this->sendPasswordResetEmail($user);
 	}
 
 	/**
