@@ -579,23 +579,6 @@ class UsersService extends BaseComponent
 	}
 
 	/**
-	 * Handles a successful login for a user.
-	 *
-	 * @param UserModel $user         The user.
-	 * @param string    $sessionToken The session token.
-	 *
-	 * @return string The session’s UID.
-	 * @deprecated Deprecated in 2.3. Use {@link UsersService::updateUserLoginInfo() `craft()->users->updateUserLoginInfo()`}
-	 *             and {@link UserSessionService::storeSessionToken() `craft()->userSession->storeSessionToken()`} instead.
-	 */
-	public function handleSuccessfulLogin(UserModel $user, $sessionToken)
-	{
-		$this->updateUserLoginInfo($user);
-
-		return craft()->userSession->storeSessionToken($user, $sessionToken);
-	}
-
-	/**
 	 * Updates a user's record for a successful login.
 	 *
 	 * @param UserModel $user
