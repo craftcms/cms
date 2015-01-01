@@ -372,33 +372,6 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 		return $fields;
 	}
 
-	/**
-	 * @inheritDoc ElementTypeInterface::getContentFieldColumnsForElementsQuery()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
-	 * @return array
-	 */
-	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
-	{
-		$columns = array();
-		$fields = $this->getFieldsForElementsQuery($criteria);
-
-		foreach ($fields as $field)
-		{
-			if ($field->hasContentColumn())
-			{
-				$columns[] = array(
-					'handle' => $field->handle,
-					'column' => ($field->columnPrefix ? $field->columnPrefix : 'field_') . $field->handle
-				);
-			}
-		}
-
-		return $columns;
-	}
-
 	// Methods for customizing ElementCriteriaModel's for this element type...
 	// -------------------------------------------------------------------------
 
