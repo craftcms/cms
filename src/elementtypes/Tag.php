@@ -124,8 +124,6 @@ class Tag extends BaseElementType
 
 			// TODO: Deprecated
 			'name'    => AttributeType::String,
-			'set'     => AttributeType::Mixed,
-			'setId'   => AttributeType::Mixed,
 		);
 	}
 
@@ -143,27 +141,6 @@ class Tag extends BaseElementType
 			->addSelect('tags.groupId')
 			->join('tags tags', 'tags.id = elements.id');
 
-		// Still support the deprecated params
-
-		if ($criteria->name)
-		{
-			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
-		}
-
-		if ($criteria->setId && !$criteria->groupId)
-		{
-			craft()->deprecator->log('Tag::modifyElementsQuery():setId_param', 'The ‘setId’ tag param has been deprecated. Use ‘groupId’ instead.');
-			$criteria->groupId = $criteria->setId;
-			$criteria->setId = null;
-		}
-
-		if ($criteria->set && !$criteria->group)
-		{
-			craft()->deprecator->log('Tag::modifyElementsQuery():set_param', 'The ‘set’ tag param has been deprecated. Use ‘group’ instead.');
-			$criteria->group = $criteria->set;
-			$criteria->set = null;
-		}
-
 		if ($criteria->groupId)
 		{
 			$query->andWhere(DbHelper::parseParam('tags.groupId', $criteria->groupId, $query->params));
@@ -175,10 +152,23 @@ class Tag extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('taggroups.handle', $criteria->group, $query->params));
 		}
 
-		// Backwards compatibility with order=name (tags had names before 2.3)
+		// Backwards compatibility with deprecated params
+		// TODO: Remove this code in Craft 4
+
+		if ($criteria->name)
+		{
+			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
+			craft()->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+		}
+
 		if (is_string($criteria->order))
 		{
-			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order);
+			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order, -1, $count);
+
+			if ($count)
+			{
+				craft()->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+			}
 		}
 	}
 
