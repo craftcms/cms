@@ -1,0 +1,58 @@
+<?php
+namespace craft\app\records;
+
+/**
+ * Class Widget record.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
+ */
+class Widget extends BaseRecord
+{
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
+	 * @return string
+	 */
+	public function getTableName()
+	{
+		return 'widgets';
+	}
+
+	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'user' => array(static::BELONGS_TO, 'User', 'userId', 'required' => true, 'onDelete' => static::CASCADE),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'type'      => array(AttributeType::ClassName, 'required' => true),
+			'sortOrder' => AttributeType::SortOrder,
+			'settings'  => AttributeType::Mixed,
+			'enabled'   => array(AttributeType::Bool, 'default' => true),
+		);
+	}
+}

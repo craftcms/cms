@@ -6,7 +6,9 @@ use craft\app\Craft;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\models\EntryDraft         as EntryDraftModel;
 use craft\app\models\EntryVersion       as EntryVersionModel;
-use craft\app\records\EntryDraftRecord;
+use craft\app\records\EntryDraft        as EntryDraftRecord;
+use craft\app\records\EntryVersion      as EntryVersionRecord;
+
 
 craft()->requireEdition(Craft::Client);
 

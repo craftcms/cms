@@ -6,6 +6,9 @@ use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;
 use craft\app\models\SectionLocale      as SectionLocaleModel;
 use craft\app\models\Structure          as StructureModel;
+use craft\app\records\EntryType         as EntryTypeRecord;
+use craft\app\records\SectionLocale     as SectionLocaleRecord;
+use craft\app\records\Section           as SectionRecord;
 
 /**
  * Class SectionsService

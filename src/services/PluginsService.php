@@ -4,6 +4,7 @@ namespace craft\app\services;
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
 use craft\app\components\BaseComponent;
+use craft\app\records\Migration         as MigrationRecord;
 
 /**
  * PluginsService provides APIs for managing plugins.

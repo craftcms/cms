@@ -4,6 +4,9 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
+use craft\app\records\ElementLocale     as ElementLocaleRecord;
+use craft\app\records\Element           as ElementRecord;
+use craft\app\records\StructureElement  as StructureElementRecord;
 
 /**
  * ElementsService provides APIs for managing elements.

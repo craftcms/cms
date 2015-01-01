@@ -5,6 +5,7 @@ use craft\app\components\BaseComponent;
 use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
 use craft\app\widgets\BaseWidget;
+use craft\app\records\Widget            as WidgetRecord;
 
 /**
  * Class DashboardService

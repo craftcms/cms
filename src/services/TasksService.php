@@ -3,6 +3,7 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\models\Task               as TaskModel;
+use craft\app\records\Task              as TaskRecord;
 
 /**
  * Class TasksService

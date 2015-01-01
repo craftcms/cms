@@ -4,6 +4,8 @@ namespace craft\app\services;
 use craft\app\components\BaseComponent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Structure          as StructureModel;
+use craft\app\records\StructureElement  as StructureElementRecord;
+use craft\app\records\Structure         as StructureRecord;
 
 /**
  * Class StructuresService
@@ -316,7 +318,7 @@ class StructuresService extends BaseComponent
 	}
 
 	/**
-	 * Updates a BaseElementModel with the new structure attributes from a StructureElementRecord.
+	 * Updates a BaseElementModel with the new structure attributes from a StructureElement record.
 	 *
 	 * @param  int                    $structureId
 	 * @param  BaseElementModel       $element

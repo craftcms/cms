@@ -3,6 +3,7 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\dates\DateTime;
+use craft\app\records\Task              as TaskRecord;
 
 /**
  * Tokens service.

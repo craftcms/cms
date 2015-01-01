@@ -2,10 +2,13 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\models\Category            as CategoryModel;
-use craft\app\models\CategoryGroup       as CategoryGroupModel;
-use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
-use craft\app\models\Structure           as StructureModel;
+use craft\app\models\Category             as CategoryModel;
+use craft\app\models\CategoryGroup        as CategoryGroupModel;
+use craft\app\models\CategoryGroupLocale  as CategoryGroupLocaleModel;
+use craft\app\models\Structure            as StructureModel;
+use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
+use craft\app\records\CategoryGroup       as CategoryGroupRecord;
+use craft\app\records\Category            as CategoryRecord;
 
 /**
  * Class CategoriesService
@@ -948,9 +951,9 @@ class CategoriesService extends BaseComponent
 	// =========================================================================
 
 	/**
-	 * Populates a CategoryGroupModel with attributes from a CategoryGroupRecord.
+	 * Populates a CategoryGroupModel with attributes from a CategoryGroup.
 	 *
-	 * @param CategoryGroupRecord|null
+	 * @param CategoryGroup|null
 	 *
 	 * @return CategoryGroupModel|null
 	 */

@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetIndexData
+ * Class AssetIndexData record.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -2,7 +2,7 @@
 namespace craft\app\records;
 
 /**
- * Class AssetSource
+ * Class AssetSource record.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -34,7 +34,7 @@ class AssetSource extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayoutRecord', 'onDelete' => static::SET_NULL),
+			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
 		);
 	}
 
