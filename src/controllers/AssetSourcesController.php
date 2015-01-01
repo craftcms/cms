@@ -15,8 +15,7 @@ use craft\app\models\AssetSource   as AssetSourceModel;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.controllers
- * @since      1.0
- * @deprecated This class will have several breaking changes in Craft 3.0.
+ * @since      1.0Craft.appendFootHtml
  */
 class AssetSourcesController extends BaseController
 {
