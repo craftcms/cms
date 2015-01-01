@@ -480,8 +480,7 @@ class CategoriesService extends BaseComponent
 									$criteria->status = null;
 									$category = $criteria->first();
 
-									// todo: replace the getContent()->id check with 'strictLocale' param once it's added
-									if ($category && $category->getContent()->id)
+									if ($category)
 									{
 										craft()->elements->updateElementSlugAndUri($category, false, false);
 									}
