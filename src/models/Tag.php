@@ -72,16 +72,20 @@ class Tag extends BaseElementModel
 		}
 	}
 
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the tag's title.
 	 *
 	 * @deprecated Deprecated in 2.3. Use {@link $title} instead.
 	 * @return string
+	 *
+	 * @todo Remove this method in Craft 4.
 	 */
 	public function getName()
 	{
-		// TODO: Add a deprecation log in 3.0
+		craft()->deprecator->log('Tag::name', 'The TagModel ‘name’ property has been deprecated. Use ‘title’ instead.');
 		return $this->getContent()->title;
 	}
 
