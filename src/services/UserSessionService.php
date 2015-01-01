@@ -672,20 +672,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * This method has been deprecated. Use {@link UserSessionService::loginByUserId()} instead.
-	 *
-	 * @param int $userId The user’s ID.
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link UserSessionService::loginByUserId()} instead.
-	 * @return null
-	 */
-	public function impersonate($userId)
-	{
-		craft()->deprecator->log('UserSessionController::impersonate()', 'The UserSessionService->impersonate method has been deprecated. Use UserSessionService->loginByUserId instead.');
-		$this->loginByUserId($userId, false, false);
-	}
-
-	/**
 	 * Returns the login error code from the user identity.
 	 *
 	 * @return int|null The login error code, or `null` if there isn’t one.
