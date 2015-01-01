@@ -530,33 +530,16 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's children.
 	 *
-	 * @param mixed $field If this function is being used in the deprecated relationship-focused way, $field defines
-	 *                     which field (if any) to limit the relationships by.
-	 *
 	 * @return ElementCriteriaModel
 	 */
-	public function getChildren($field = null)
+	public function getChildren()
 	{
-		// TODO: deprecated
-		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that
-		// were around before Craft 1.3
-		if (
-			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
-			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
-		)
+		if (!isset($this->_childrenCriteria))
 		{
-			craft()->deprecator->log('BaseElementModel::getChildren()_for_relations', 'Calling getChildren() to fetch an element’s target relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
-			return $this->_getRelChildren($field);
+			$this->_childrenCriteria = $this->getDescendants(1);
 		}
-		else
-		{
-			if (!isset($this->_childrenCriteria))
-			{
-				$this->_childrenCriteria = $this->getDescendants(1);
-			}
 
-			return $this->_childrenCriteria;
-		}
+		return $this->_childrenCriteria;
 	}
 
 	/**
@@ -1053,22 +1036,6 @@ abstract class BaseElementModel extends BaseModel
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
-	 *
-	 * @param mixed $field
-	 *
-	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
-	 * @return ElementCriteriaModel
-	 */
-	private function _getRelChildren($field = null)
-	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->childOf    = $this;
-		$criteria->childField = $field;
-		return $criteria;
-	}
 
 	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
