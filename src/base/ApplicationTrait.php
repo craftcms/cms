@@ -621,22 +621,6 @@ trait ApplicationTrait
 		$this->_isDbConnectionValid = $value;
 	}
 
-	// Deprecated methods
-
-	/**
-	 * Returns whether a package is included in this Craft build.
-	 *
-	 * @param $packageName
-	 *
-	 * @deprecated Deprecated in 2.0. To get the installed Craft edition, use
-	 *             {@link craft\app\base\ApplicationTrait::getEdition() craft()->getEdition()}.
-	 * @return bool
-	 */
-	public function hasPackage($packageName)
-	{
-		return $this->getEdition() == Craft::Pro;
-	}
-
 	// Private Methods
 	// =========================================================================
 

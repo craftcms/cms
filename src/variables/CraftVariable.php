@@ -87,20 +87,6 @@ class CraftVariable
 		return craft()->isLocalized();
 	}
 
-	/**
-	 * Returns whether a package is included in the Craft build.
-	 *
-	 * @param string $packageName;
-	 *
-	 * @deprecated Deprecated in 2.0.
-	 * @return bool
-	 *
-	 */
-	public function hasPackage($packageName)
-	{
-		return craft()->hasPackage($packageName);
-	}
-
 	// Template variable classes
 	// -------------------------------------------------------------------------
 
