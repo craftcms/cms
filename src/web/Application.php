@@ -118,9 +118,6 @@ class Application extends \yii\web\Application
 			Craft::import($alias);
 		}
 
-		// Attach our Craft app trait.
-		$this->attachBehavior('craft\app\base\ApplicationTrait', new ApplicationTrait());
-
 		// Initialize Cache, HttpRequestService and LogRouter right away (order is important)
 		$this->getComponent('cache');
 		$this->getComponent('request');

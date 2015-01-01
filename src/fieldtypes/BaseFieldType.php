@@ -122,15 +122,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	 */
 	public function prepValueFromPost($value)
 	{
-		if (method_exists($this, 'prepPostData'))
-		{
-			craft()->deprecator->log('BaseFieldType::prepPostData()', 'BaseFieldType::prepPostData() has been deprecated. Use prepValueFromPost() instead.');
-			return $this->prepPostData($value);
-		}
-		else
-		{
-			return $value;
-		}
+		return $value;
 	}
 
 	/**

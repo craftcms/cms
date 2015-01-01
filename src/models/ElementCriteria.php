@@ -439,7 +439,7 @@ class ElementCriteria extends BaseModel implements \Countable
 			'uri'              => AttributeType::String,
 			'kind'             => AttributeType::Mixed,
 
-			// TODO: Deprecated
+			// TODO: Deprecated. Remove these in Craft 4
 			'childField'       => AttributeType::String,
 			'childOf'          => AttributeType::Mixed,
 			'depth'            => AttributeType::Number,
