@@ -470,13 +470,6 @@ class EntriesController extends BaseEntriesController
 			else
 			{
 				$userSessionService->setNotice(Craft::t('Entry saved.'));
-
-				if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{entryId}') !== false)
-				{
-					craft()->deprecator->log('EntriesController::actionSaveEntry():entryId_redirect', 'The {entryId} token within the ‘redirect’ param on entries/saveEntry requests has been deprecated. Use {id} instead.');
-					$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
-				}
-
 				$this->redirectToPostedUrl($entry);
 			}
 		}

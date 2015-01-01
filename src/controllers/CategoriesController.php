@@ -532,20 +532,6 @@ class CategoriesController extends BaseController
 		$this->_showCategory($category);
 	}
 
-	// Deprecated Methods
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Saves a category.
-	 *
-	 * @return null
-	 */
-	public function actionCreateCategory()
-	{
-		craft()->deprecator->log('CategoriesController::actionCreateCategory()', 'CategoriesController::actionCreateCategory() has been deprecated. Use CategoriesController::actionSaveCategory() instead.');
-		$this->actionSaveCategory();
-	}
-
 	// Private Methods
 	// =========================================================================
 

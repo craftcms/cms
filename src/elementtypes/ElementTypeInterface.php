@@ -327,20 +327,6 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
-	 * Returns the field column names that should be selected from the content table.
-	 *
-	 * This method will tell {@link ElementsService::buildElementsQuery()} which custom fields it should be selecting
-	 * from the {@link getContentTableForElementsQuery() content table}, as well as the custom field handle that the
-	 * column corresponds to.
-	 *
-	 * @param ElementCriteriaModel
-	 *
-	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
-	 * @return array
-	 */
-	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria);
-
-	/**
 	 * Returns the element query condition for a custom status criteria.
 	 *
 	 * If the ElementCriteriaModel’s {@link ElementCriteriaModel::status status} parameter is set to something besides

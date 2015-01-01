@@ -38,7 +38,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionForgotPassword', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyEmail');
+	protected $allowAnonymous = array('actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyEmail');
 
 	// Public Methods
 	// =========================================================================
@@ -342,18 +342,6 @@ class UsersController extends BaseController
 				'newUser' => ($userToProcess->password ? false : true),
 			));
 		}
-	}
-
-	/**
-	 * Verifies that a user has access to an email address.
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link UsersController::actionSetPassword()} instead.
-	 * @return null
-	 */
-	public function actionValidate()
-	{
-		craft()->deprecator->log('UsersController::validate()', 'The users/validate action has been deprecated. Use users/setPassword instead.');
-		$this->actionSetPassword();
 	}
 
 	/**
@@ -929,12 +917,6 @@ class UsersController extends BaseController
 
 			craft()->userSession->setNotice(Craft::t('User saved.'));
 
-			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{userId}') !== false)
-			{
-				craft()->deprecator->log('UsersController::saveUser():userId_redirect', 'The {userId} token within the ‘redirect’ param on users/saveUser requests has been deprecated. Use {id} instead.');
-				$_POST['redirect'] = str_replace('{userId}', '{id}', $_POST['redirect']);
-			}
-
 			// Is this public registration, and is the user going to be activated automatically?
 			if ($thisIsPublicRegistration && $user->status == UserStatus::Active)
 			{
@@ -956,18 +938,6 @@ class UsersController extends BaseController
 		craft()->urlManager->setRouteVariables(array(
 			'account' => $user
 		));
-	}
-
-	/**
-	 * Saves a user's profile.
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link UsersController::saveUser()} instead.
-	 * @return null
-	 */
-	public function actionSaveProfile()
-	{
-		craft()->deprecator->log('UsersController::saveProfile()', 'The users/saveProfile action has been deprecated. Use users/saveUser instead.');
-		$this->actionSaveUser();
 	}
 
 	/**
@@ -1384,21 +1354,6 @@ class UsersController extends BaseController
 		$this->returnErrorJson(Craft::t('Invalid password.'));
 	}
 
-	// Deprecated Methods
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Sends a Forgot Password email.
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link actionSendPasswordResetEmail()} instead.
-	 * @return null
-	 */
-	public function actionForgotPassword()
-	{
-		// TODO: Log a deprecation error in Craft 3
-		$this->actionSendPasswordResetEmail();
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -1646,11 +1601,16 @@ class UsersController extends BaseController
 	{
 		$url = craft()->config->getLocalized('invalidUserTokenPath');
 
+		// TODO: Remove this code in Craft 4
 		if ($url == '')
 		{
 			// Check the deprecated config setting.
-			// TODO: Add a deprecation log message in 3.0.
 			$url = craft()->config->getLocalized('activateAccountFailurePath');
+
+			if ($url)
+			{
+				craft()->deprecator->log('activateAccountFailurePath', 'The ‘activateAccountFailurePath’ has been deprecated. Use ‘invalidUserTokenPath’ instead.');
+			}
 		}
 
 		if ($url != '')

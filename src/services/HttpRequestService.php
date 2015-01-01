@@ -329,18 +329,6 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the MIME type that is going to be included in the response via the Content-Type header.
-	 *
-	 * @return string
-	 * @deprecated Deprecated in 2.2. Use {@link HeaderHelper::getMimeType()} instead.
-	 */
-	public function getMimeType()
-	{
-		// TODO: Call the deprecator here in Craft 3.0
-		return HeaderHelper::getMimeType();
-	}
-
-	/**
 	 * Returns a query string parameter, or all of them.
 	 *
 	 * If $name is specified, then the corresponding query string parameter will be returned if it exists, or

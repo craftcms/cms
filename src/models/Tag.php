@@ -73,41 +73,20 @@ class Tag extends BaseElementModel
 		}
 	}
 
-	// Deprecated functions
-
-	/**
-	 * Returns the tag group's ID.
-	 *
-	 * @deprecated Deprecated in 2.0. Use 'groupId' instead.
-	 * @return int|null
-	 */
-	public function setId()
-	{
-		craft()->deprecator->log('TagModel::setId', 'Tags’ ‘setId’ property has been deprecated. Use ‘groupId’ instead.');
-		return $this->groupId;
-	}
-
-	/**
-	 * Returns the tag's group.
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link getGroup()} instead.
-	 * @return TagGroupModel|null
-	 */
-	public function getSet()
-	{
-		craft()->deprecator->log('TagModel::getSet()', 'TagModel::getSet() has been deprecated. Use getGroup() instead.');
-		return $this->getGroup();
-	}
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the tag's title.
 	 *
 	 * @deprecated Deprecated in 2.3. Use {@link $title} instead.
 	 * @return string
+	 *
+	 * @todo Remove this method in Craft 4.
 	 */
 	public function getName()
 	{
-		// TODO: Add a deprecation log in 3.0
+		craft()->deprecator->log('Tag::name', 'The TagModel ‘name’ property has been deprecated. Use ‘title’ instead.');
 		return $this->getContent()->title;
 	}
 

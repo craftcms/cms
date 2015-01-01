@@ -398,24 +398,6 @@ class ElementCriteria extends BaseModel implements \Countable
 		}
 	}
 
-	// Deprecated Methods
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Returns an element at a specific offset.
-	 *
-	 * @param int $offset
-	 *
-	 * @deprecated Deprecated in 2.2. Use {@link nth()} instead.
-	 * @return BaseElementModel|null
-	 *
-	 */
-	public function findElementAtOffset($offset)
-	{
-		craft()->deprecator->log('ElementCriteriaModel::findElementAtOffset()', 'ElementCriteriaModel::findElementAtOffset() has been deprecated. Use nth() instead.');
-		return $this->nth($offset);
-	}
-
 	// Protected Methods
 	// =========================================================================
 

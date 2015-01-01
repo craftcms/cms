@@ -453,12 +453,15 @@ class ElementsService extends BaseComponent
 					$contentCols .= ', content.title';
 				}
 
-				// TODO: Replace this with a call to getFieldsForElementsQuery() in 3.0
-				$fieldColumns = $elementType->getContentFieldColumnsForElementsQuery($criteria);
+				$fields = $elementType->getFieldsForElementsQuery($criteria);
 
-				foreach ($fieldColumns as $column)
+				foreach ($fields as $field)
 				{
-					$contentCols .= ', content.'.$column['column'];
+					if ($field->hasContentColumn())
+					{
+						$columnPrefix = $field->columnPrefix ? $field->columnPrefix : 'field_';
+						$contentCols .= ', content.'.$columnPrefix.$field->handle;
+					}
 				}
 
 				$query->addSelect($contentCols);

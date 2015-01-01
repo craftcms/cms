@@ -530,33 +530,16 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's children.
 	 *
-	 * @param mixed $field If this function is being used in the deprecated relationship-focused way, $field defines
-	 *                     which field (if any) to limit the relationships by.
-	 *
 	 * @return ElementCriteriaModel
 	 */
-	public function getChildren($field = null)
+	public function getChildren()
 	{
-		// TODO: deprecated
-		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that
-		// were around before Craft 1.3
-		if (
-			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
-			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
-		)
+		if (!isset($this->_childrenCriteria))
 		{
-			craft()->deprecator->log('BaseElementModel::getChildren()_for_relations', 'Calling getChildren() to fetch an element’s target relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
-			return $this->_getRelChildren($field);
+			$this->_childrenCriteria = $this->getDescendants(1);
 		}
-		else
-		{
-			if (!isset($this->_childrenCriteria))
-			{
-				$this->_childrenCriteria = $this->getDescendants(1);
-			}
 
-			return $this->_childrenCriteria;
-		}
+		return $this->_childrenCriteria;
 	}
 
 	/**
@@ -768,39 +751,6 @@ abstract class BaseElementModel extends BaseModel
 	public function getAttribute($name, $flattenValue = false)
 	{
 		return parent::getAttribute($name, $flattenValue);
-	}
-
-	/**
-	 * Returns the raw content saved on this entity.
-	 *
-	 * This is now deprecated. Use getContent() to get the ContentModel instead.
-	 *
-	 * @param string|null $fieldHandle
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link getContent()} instead.
-	 * @return mixed
-	 */
-	public function getRawContent($fieldHandle = null)
-	{
-		craft()->deprecator->log('BaseElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
-
-		$content = $this->getContent();
-
-		if ($fieldHandle)
-		{
-			if (isset($content->$fieldHandle))
-			{
-				return $content->$fieldHandle;
-			}
-			else
-			{
-				return null;
-			}
-		}
-		else
-		{
-			return $content;
-		}
 	}
 
 	/**
@@ -1031,26 +981,6 @@ abstract class BaseElementModel extends BaseModel
 		return craft()->content->fieldContext;
 	}
 
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
-	 *
-	 * @param mixed $field
-	 *
-	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://buildwithcraft.com/docs/relations#the-relatedTo-param)
-	 *             param instead.
-	 *
-	 * @return ElementCriteriaModel
-	 */
-	public function getParents($field = null)
-	{
-		craft()->deprecator->log('BaseElementModel::getParents()', 'Calling getParents() to fetch an element’s source relations has been deprecated. Use the <a href="http://buildwithcraft.com/docs/relations#the-relatedTo-param">relatedTo</a> param instead.');
-
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->parentOf    = $this;
-		$criteria->parentField = $field;
-		return $criteria;
-	}
-
 	// Protected Methods
 	// =========================================================================
 
@@ -1106,22 +1036,6 @@ abstract class BaseElementModel extends BaseModel
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
-	 *
-	 * @param mixed $field
-	 *
-	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
-	 * @return ElementCriteriaModel
-	 */
-	private function _getRelChildren($field = null)
-	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->childOf    = $this;
-		$criteria->childField = $field;
-		return $criteria;
-	}
 
 	/**
 	 * Returns an element right before/after this one, from a given set of criteria.

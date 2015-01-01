@@ -55,31 +55,6 @@ class EntryRevisionsService extends BaseComponent
 	}
 
 	/**
-	 * Returns a draft by its offset.
-	 *
-	 * @param int $entryId
-	 * @param int $offset
-	 *
-	 * @deprecated Deprecated in 2.1.
-	 * @return EntryDraftModel|null
-	 */
-	public function getDraftByOffset($entryId, $offset = 0)
-	{
-		craft()->deprecator->log('EntryRevisionsService::getDraftByOffset()', 'EntryRevisionsService::getDraftByOffset() has been deprecated.');
-
-		$draftRecord = EntryDraftRecord::model()->find(array(
-			'condition' => 'entryId = :entryId AND locale = :locale',
-			'params' => array(':entryId' => $entryId, ':locale' => craft()->i18n->getPrimarySiteLocale()),
-			'offset' => $offset
-		));
-
-		if ($draftRecord)
-		{
-			return EntryDraftModel::populateModel($draftRecord);
-		}
-	}
-
-	/**
 	 * Returns drafts of a given entry.
 	 *
 	 * @param int    $entryId
@@ -284,15 +259,6 @@ class EntryRevisionsService extends BaseComponent
 			$this->onDeleteDraft(new Event($this, array(
 				'draft' => $draft,
 			)));
-
-			//
-			if ($this->hasEventHandler('onAfterDeleteDraft'))
-			{
-				// Fire an 'onAfterDeleteDraft' event (deprecated)
-				$this->onAfterDeleteDraft(new Event($this, array(
-					'draft' => $draft,
-				)));
-			}
 		}
 
 		return $success;
@@ -308,30 +274,6 @@ class EntryRevisionsService extends BaseComponent
 	public function getVersionById($versionId)
 	{
 		$versionRecord = EntryVersionRecord::model()->findById($versionId);
-
-		if ($versionRecord)
-		{
-			return EntryVersionModel::populateModel($versionRecord);
-		}
-	}
-
-	/**
-	 * Returns a version by its offset.
-	 *
-	 * @param int $entryId
-	 * @param int $offset
-	 *
-	 * @deprecated Deprecated in 2.1.
-	 * @return EntryVersionModel|null
-	 */
-	public function getVersionByOffset($entryId, $offset = 0)
-	{
-		craft()->deprecator->log('EntryRevisionsService::getVersionByOffset()', 'EntryRevisionsService::getVersionByOffset() has been deprecated.');
-
-		$versionRecord = EntryVersionRecord::model()->findByAttributes(array(
-			'entryId' => $entryId,
-			'locale'  => craft()->i18n->getPrimarySiteLocale(),
-		));
 
 		if ($versionRecord)
 		{
@@ -486,19 +428,6 @@ class EntryRevisionsService extends BaseComponent
 	 * @return null
 	 */
 	public function onDeleteDraft(Event $event)
-	{
-		$this->raiseEvent('onDeleteDraft', $event);
-	}
-
-	/**
-	 * Fires an 'onAfterDeleteDraft' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @deprecated Deprecated in 2.3. Use {@link onDeleteDraft() `entryRevisions.onDeleteDraft`} instead.
-	 * @return null
-	 */
-	public function onAfterDeleteDraft(Event $event)
 	{
 		$this->raiseEvent('onDeleteDraft', $event);
 	}

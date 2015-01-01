@@ -20,8 +20,7 @@ use craft\app\models\User               as UserModel;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.services
- * @since      1.0
- * @deprecated This class will have several breaking changes in Craft 3.0.
+ * @since      1.0Craft.appendFootHtml
  */
 class AssetsService extends BaseComponent
 {
@@ -282,20 +281,6 @@ class AssetsService extends BaseComponent
 	public function onSaveAsset(Event $event)
 	{
 		$this->raiseEvent('onSaveAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveFileContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
-	 * @return null
-	 */
-	public function onSaveFileContent(Event $event)
-	{
-		craft()->deprecator->log('AssetsService::onSaveFileContent()', 'The assets.onSaveFileContent event has been deprecated. Use assets.onSaveAsset instead.');
-		$this->raiseEvent('onSaveFileContent', $event);
 	}
 
 	//  Folders

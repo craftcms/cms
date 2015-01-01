@@ -90,13 +90,6 @@ class EntryRevisionsController extends BaseEntriesController
 		if ($draft->id && craft()->entryRevisions->saveDraft($draft))
 		{
 			craft()->userSession->setNotice(Craft::t('Draft saved.'));
-
-			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{entryId}') !== false)
-			{
-				craft()->deprecator->log('EntryRevisionsController::saveDraft():entryId_redirect', 'The {entryId} token within the ‘redirect’ param on entryRevisions/saveDraft requests has been deprecated. Use {id} instead.');
-				$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
-			}
-
 			$this->redirectToPostedUrl($draft);
 		}
 		else
@@ -244,13 +237,6 @@ class EntryRevisionsController extends BaseEntriesController
 		if (craft()->entryRevisions->publishDraft($draft))
 		{
 			craft()->userSession->setNotice(Craft::t('Draft published.'));
-
-			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{entryId}') !== false)
-			{
-				craft()->deprecator->log('EntryRevisionsController::publishDraft():entryId_redirect', 'The {entryId} token within the ‘redirect’ param on entryRevisions/publishDraft requests has been deprecated. Use {id} instead.');
-				$_POST['redirect'] = str_replace('{entryId}', '{id}', $_POST['redirect']);
-			}
-
 			$this->redirectToPostedUrl($draft);
 		}
 		else
