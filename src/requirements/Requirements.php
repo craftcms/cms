@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\requirements;
 
+use craft\app\Craft;
+
 /**
  * Class Requirements
  *

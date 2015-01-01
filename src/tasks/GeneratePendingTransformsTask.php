@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tasks;
 
+use craft\app\Craft;
+
 /**
  * Generate Pending Transforms Task
  *
@@ -11,7 +13,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class GeneratePendingTransformsTask extends BaseTaskInterface
+class GeneratePendingTransformsTask extends BaseTask
 {
 	private $_indexIds;
 

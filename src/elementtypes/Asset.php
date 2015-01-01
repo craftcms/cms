@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\Craft;
 use craft\app\models\AssetFile         as AssetFileModel;
 use craft\app\models\AssetFolder       as AssetFolderModel;
 use craft\app\models\BaseElementModel;

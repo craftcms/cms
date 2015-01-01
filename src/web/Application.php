@@ -4,55 +4,55 @@ namespace craft\app\web;
 /**
  * Craft Web Application class
  *
- * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
- * @property AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
- * @property AssetsService           $assets           The {@link AssetsService assets service}.
- * @property AssetTransformsService  $assetTransforms  The {@link AssetTransformsService assets sizes service}.
- * @property CacheService            $cache            The {@link CacheService cache service}.
- * @property CategoriesService       $categories       The {@link CategoriesService categories service}.
- * @property ComponentsService       $components       The {@link ComponentsService components service}.
- * @property ConfigService           $config           The {@link ConfigService config service}.
- * @property ContentService          $content          The {@link ContentService content service}.
- * @property DashboardService        $dashboard        The {@link DashboardService dashboard service}.
- * @property DbConnection            $db               The {@link DbConnection database connection}.
- * @property DeprecatorService       $deprecator       The {@link DeprecatorService deprecator service}.
- * @property ElementsService         $elements         The {@link ElementsService elements service}.
- * @property EmailMessagesService    $emailMessages    The {@link EmailMessagesService email messages service}.
- * @property EmailService            $email            The {@link EmailService email service}.
- * @property EntriesService          $entries          The {@link EntriesService entries service}.
- * @property EntryRevisionsService   $entryRevisions   The {@link EntryRevisionsService entry revisions service}.
- * @property EtService               $et               The {@link EtService E.T. service}.
- * @property FeedsService            $feeds            The {@link FeedsService feeds service}.
- * @property FieldsService           $fields           The {@link FieldsService fields service}.
- * @property FileCache               $fileCache        {@link FileCache File caching}.
- * @property GlobalsService          $globals          The {@link GlobalsService globals service}.
- * @property HttpRequestService      $request          The {@link HttpRequestService request service}.
- * @property HttpSessionService      $httpSession      The {@link HttpSessionService HTTP session service}.
- * @property ImagesService           $images           The {@link ImagesService images service}.
- * @property InstallService          $install          The {@link InstallService install service}.
- * @property LocalizationService     $localization     The {@link LocalizationService localization service}.
- * @property MatrixService           $matrix           The {@link MatrixService matrix service}.
- * @property MigrationsService       $migrations       The {@link MigrationsService migrations service}.
- * @property PathService             $path             The {@link PathService path service}.
- * @property PluginsService          $plugins          The {@link PluginsService plugins service}.
- * @property RelationsService        $relations        The {@link RelationsService relations service}.
- * @property ResourcesService        $resources        The {@link ResourcesService resources service}.
- * @property RoutesService           $routes           The {@link RoutesService routes service}.
- * @property SearchService           $search           The {@link SearchService search service}.
- * @property SectionsService         $sections         The {@link SectionsService sections service}.
- * @property SecurityService         $security         The {@link SecurityService security service}.
- * @property StructuresService       $structures       The {@link StructuresService structures service}.
- * @property SystemSettingsService   $systemSettings   The {@link SystemSettingsService system settings service}.
- * @property TagsService             $tags             The {@link TagsService tags service}.
- * @property TasksService            $tasks            The {@link TasksService tasks service}.
- * @property TemplateCacheService    $templateCache    The {@link TemplateCacheService template cache service}.
- * @property TemplatesService        $templates        The {@link TemplatesService template service}.
- * @property TokensService           $tokens           The {@link TokensService tokens service}.
- * @property UpdatesService          $updates          The {@link UpdatesService updates service}.
- * @property UserGroupsService       $userGroups       The {@link UserGroupsService user groups service}.
- * @property UserPermissionsService  $userPermissions  The {@link UserPermissionsService user permission service}.
- * @property UserSessionService      $userSession      The {@link UserSessionService user session service}.
- * @property UsersService            $users            The {@link UsersService users service}.
+ * @property \craft\app\services\AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
+ * @property \craft\app\services\AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
+ * @property \craft\app\services\AssetsService           $assets           The {@link AssetsService assets service}.
+ * @property \craft\app\services\AssetTransformsService  $assetTransforms  The {@link AssetTransformsService assets sizes service}.
+ * @property \craft\app\services\CacheService            $cache            The {@link CacheService cache service}.
+ * @property \craft\app\services\CategoriesService       $categories       The {@link CategoriesService categories service}.
+ * @property \craft\app\services\ComponentsService       $components       The {@link ComponentsService components service}.
+ * @property \craft\app\services\ConfigService           $config           The {@link ConfigService config service}.
+ * @property \craft\app\services\ContentService          $content          The {@link ContentService content service}.
+ * @property \craft\app\services\DashboardService        $dashboard        The {@link DashboardService dashboard service}.
+ * @property \craft\app\db\DbConnection                  $db               The {@link DbConnection database connection}.
+ * @property \craft\app\services\DeprecatorService       $deprecator       The {@link DeprecatorService deprecator service}.
+ * @property \craft\app\services\ElementsService         $elements         The {@link ElementsService elements service}.
+ * @property \craft\app\services\EmailMessagesService    $emailMessages    The {@link EmailMessagesService email messages service}.
+ * @property \craft\app\services\EmailService            $email            The {@link EmailService email service}.
+ * @property \craft\app\services\EntriesService          $entries          The {@link EntriesService entries service}.
+ * @property \craft\app\services\EntryRevisionsService   $entryRevisions   The {@link EntryRevisionsService entry revisions service}.
+ * @property \craft\app\services\EtService               $et               The {@link EtService E.T. service}.
+ * @property \craft\app\services\FeedsService            $feeds            The {@link FeedsService feeds service}.
+ * @property \craft\app\services\FieldsService           $fields           The {@link FieldsService fields service}.
+ * @property \craft\app\cache\FileCache                  $fileCache        {@link FileCache File caching}.
+ * @property \craft\app\services\GlobalsService          $globals          The {@link GlobalsService globals service}.
+ * @property \craft\app\services\HttpRequestService      $request          The {@link HttpRequestService request service}.
+ * @property \craft\app\services\HttpSessionService      $httpSession      The {@link HttpSessionService HTTP session service}.
+ * @property \craft\app\services\ImagesService           $images           The {@link ImagesService images service}.
+ * @property \craft\app\services\InstallService          $install          The {@link InstallService install service}.
+ * @property \craft\app\services\LocalizationService     $localization     The {@link LocalizationService localization service}.
+ * @property \craft\app\services\MatrixService           $matrix           The {@link MatrixService matrix service}.
+ * @property \craft\app\services\MigrationsService       $migrations       The {@link MigrationsService migrations service}.
+ * @property \craft\app\services\PathService             $path             The {@link PathService path service}.
+ * @property \craft\app\services\PluginsService          $plugins          The {@link PluginsService plugins service}.
+ * @property \craft\app\services\RelationsService        $relations        The {@link RelationsService relations service}.
+ * @property \craft\app\services\ResourcesService        $resources        The {@link ResourcesService resources service}.
+ * @property \craft\app\services\RoutesService           $routes           The {@link RoutesService routes service}.
+ * @property \craft\app\services\SearchService           $search           The {@link SearchService search service}.
+ * @property \craft\app\services\SectionsService         $sections         The {@link SectionsService sections service}.
+ * @property \craft\app\services\SecurityService         $security         The {@link SecurityService security service}.
+ * @property \craft\app\services\StructuresService       $structures       The {@link StructuresService structures service}.
+ * @property \craft\app\services\SystemSettingsService   $systemSettings   The {@link SystemSettingsService system settings service}.
+ * @property \craft\app\services\TagsService             $tags             The {@link TagsService tags service}.
+ * @property \craft\app\services\TasksService            $tasks            The {@link TasksService tasks service}.
+ * @property \craft\app\services\TemplateCacheService    $templateCache    The {@link TemplateCacheService template cache service}.
+ * @property \craft\app\services\TemplatesService        $templates        The {@link TemplatesService template service}.
+ * @property \craft\app\services\TokensService           $tokens           The {@link TokensService tokens service}.
+ * @property \craft\app\services\UpdatesService          $updates          The {@link UpdatesService updates service}.
+ * @property \craft\app\services\UserGroupsService       $userGroups       The {@link UserGroupsService user groups service}.
+ * @property \craft\app\services\UserPermissionsService  $userPermissions  The {@link UserPermissionsService user permission service}.
+ * @property \craft\app\services\UserSessionService      $userSession      The {@link UserSessionService user session service}.
+ * @property \craft\app\services\UsersService            $users            The {@link UsersService users service}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

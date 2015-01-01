@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
+use craft\app\Craft;
 use craft\app\models\AssetFile              as AssetFileModel;
 use craft\app\models\AssetFolder            as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;

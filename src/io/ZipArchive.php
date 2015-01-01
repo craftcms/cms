@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\io;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+
 /**
  * Class ZipArchive
  *

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\components;
 
+use craft\app\models\BaseModel;
+
 /**
  * SavableComponentTypeInterface.
  *

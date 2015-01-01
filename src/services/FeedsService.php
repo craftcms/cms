@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\Craft;
 
 /**
  * FeedsService provides APIs for fetching remote RSS and Atom feeds.

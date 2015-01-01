@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\Craft;
+
 /**
  * Validates the required User attributes for the installer.
  *

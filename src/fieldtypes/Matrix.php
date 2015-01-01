@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field           as FieldModel;
 use craft\app\models\MatrixBlock     as MatrixBlockModel;

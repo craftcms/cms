@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class ResaveElementsTask extends BaseTaskInterface
+class ResaveElementsTask extends BaseTask
 {
 	// Properties
 	// =========================================================================

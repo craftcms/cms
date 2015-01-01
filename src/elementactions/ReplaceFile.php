@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\elementactions;
 
+use craft\app\Craft;
+
 /**
  * Replace File Element Action
  *

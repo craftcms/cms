@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\migrations;
 
+use craft\app\db\BaseMigration;
+use craft\app\enums\ColumnType;
+
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
@@ -16,7 +19,7 @@ class m140730_000001_add_filename_and_format_to_transformindex extends BaseMigra
 
 		// Switching to new format, yay!
 		$this->addColumnAfter('assettransformindex', 'filename', array(ColumnType::Varchar, 'required' => false), 'fileId');
-		$this->addColumnAfter('assettransformindex', 'format', array(ColumnType::Varchar, 'required' => false), 'filename');
+		$this->addColumnAfter('assettransformindex', 'format', [ColumnType::Varchar, 'required' => false], 'filename');
 
 		return true;
 	}

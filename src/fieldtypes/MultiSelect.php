@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
+
 /**
  * Class MultiSelect
  *

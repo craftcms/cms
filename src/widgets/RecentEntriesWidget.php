@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\widgets;
 
+use craft\app\Craft;
+
 /**
  * Class RecentEntriesWidget
  *
@@ -11,7 +13,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class RecentEntriesWidget extends BaseWidgetInterface
+class RecentEntriesWidget extends BaseWidget
 {
 	// Properties
 	// =========================================================================

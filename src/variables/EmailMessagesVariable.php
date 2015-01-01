@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\Craft;
+use craft\app\models\RebrandEmail as RebrandEmailModel;
+
 craft()->requireEdition(Craft::Client);
 
 /**

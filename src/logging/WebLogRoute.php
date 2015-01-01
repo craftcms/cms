@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\logging;
 
+use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\IOHelper;
+
 /**
  * Class WebLogRoute
  *

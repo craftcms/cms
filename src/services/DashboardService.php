@@ -2,7 +2,9 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
+use craft\app\widgets\BaseWidget;
 
 /**
  * Class DashboardService

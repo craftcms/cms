@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\helpers;
 
+use craft\app\dates\DateTime;
+
 /**
  * Class DateTimeHelper
  *

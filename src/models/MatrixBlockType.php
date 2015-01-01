@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\enums\ElementType;
+
 /**
  * MatrixBlockType model class.
  *
@@ -16,7 +18,7 @@ class MatrixBlockType extends BaseModel
 	// Traits
 	// =========================================================================
 
-	use craft\app\base\FieldLayoutTrait;
+	use \craft\app\base\FieldLayoutTrait;
 
 	// Properties
 	// =========================================================================

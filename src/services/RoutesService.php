@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\helpers\IOHelper;
 
 /**
  * Class RoutesService

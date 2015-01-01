@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tools;
 
+use craft\app\components\BaseComponentType;
+
 /**
  * Tool base class.
  *

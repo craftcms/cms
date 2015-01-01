@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\errors;
 
+use craft\app\Craft;
+
 /**
  * Class TemplateLoaderException
  *

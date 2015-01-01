@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tasks;
 
+use craft\app\components\SavableComponentTypeInterface;
+
 /**
  * Interface TaskInterface
  *

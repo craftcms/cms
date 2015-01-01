@@ -10,6 +10,7 @@ use craft\app\models\Section            as SectionModel;
 use craft\app\models\SectionLocale      as SectionLocaleModel;
 use craft\app\models\TagGroup           as TagGroupModel;
 use craft\app\models\User               as UserModel;
+use craft\app\errors\Exception;
 
 /**
  * Class InstallService

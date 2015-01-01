@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tools;
 
+use craft\app\Craft;
+
 /**
  * Find and Replace tool
  *
@@ -11,7 +13,7 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     2.0
  */
-class FindAndReplaceTool extends BaseToolInterface
+class FindAndReplaceTool extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

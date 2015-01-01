@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+use craft\app\helpers\JsonHelper;
+
 /**
  * Class Et model.
  *

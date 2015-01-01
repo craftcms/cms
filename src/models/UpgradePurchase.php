@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Used to hold edition upgrade purchase order data.
  *

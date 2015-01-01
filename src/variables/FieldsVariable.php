@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\variables;
 
-use craft\app\models\Field as FieldModel;
+use craft\app\models\Field      as FieldModel;
+use craft\app\models\FieldGroup as FieldGroupModel;
 
 /**
  * Class FieldsVariable

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tools;
 
+use craft\app\Craft;
+
 /**
  * Backup Database tool
  *
@@ -11,7 +13,7 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-class DbBackupTool extends BaseToolInterface
+class DbBackupTool extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

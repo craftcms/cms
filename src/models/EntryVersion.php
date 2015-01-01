@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\Craft;
+use craft\app\models\EntryVersion as EntryVersionModel;
+
 craft()->requireEdition(Craft::Client);
 
 /**

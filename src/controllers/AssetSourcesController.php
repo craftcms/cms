@@ -2,7 +2,8 @@
 namespace craft\app\controllers;
 
 use craft\app\assetsourcetypes\S3;
-use craft\app\models\AssetSource   as AssetSourceModel;
+use craft\app\models\AssetSource    as AssetSourceModel;
+use craft\app\errors\HttpException;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as

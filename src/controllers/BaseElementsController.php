@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
+
 /**
  * The BaseElementsController class provides some common methods for {@link ElementsController} and {@link ElementIndexController}.
  *

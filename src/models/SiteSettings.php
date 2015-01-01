@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Validates the required Site attributes for the installer.
  *

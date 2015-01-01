@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\GlobalSet       as GlobalSetModel;
 

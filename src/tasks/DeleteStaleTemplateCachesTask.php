@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     2.0
  */
-class DeleteStaleTemplateCachesTask extends BaseTaskInterface
+class DeleteStaleTemplateCachesTask extends BaseTask
 {
 	// Properties
 	// =========================================================================

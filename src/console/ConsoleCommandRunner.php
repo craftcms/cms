@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\etc\console;
 
+use craft\app\helpers\StringHelper;
+
 /**
  * Class ConsoleCommandRunner
  *
