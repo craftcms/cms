@@ -1,6 +1,6 @@
 <?php
 
-// Initially set it here.  WebApp->init() will check devMode and override appropriately.
+// Initially set it here. Application::init() will check devMode and override appropriately.
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

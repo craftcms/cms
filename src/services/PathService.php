@@ -6,7 +6,8 @@ use craft\app\components\BaseComponent;
 /**
  * PathService provides APIs for getting server paths that are used by Craft.
  *
- * An instance of PathService is globally accessible in Craft via {@link WebApp::path `craft()->path`}.
+ * An instance of PathService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$path `craft()->path`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

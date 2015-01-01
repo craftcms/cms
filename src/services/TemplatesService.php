@@ -7,7 +7,8 @@ use craft\app\components\BaseComponent;
  * TemplatesService provides APIs for rendering templates, as well as interacting with other areas of Craft’s
  * templating system.
  *
- * An instance of TemplatesService is globally accessible in Craft via {@link WebApp::templates `craft()->templates`}.
+ * An instance of TemplatesService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$templates `craft()->templates`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

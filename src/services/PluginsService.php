@@ -8,7 +8,8 @@ use craft\app\components\BaseComponent;
 /**
  * PluginsService provides APIs for managing plugins.
  *
- * An instance of PluginsService is globally accessible in Craft via {@link WebApp::plugins `craft()->plugins`}.
+ * An instance of PluginsService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$plugins `craft()->plugins`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

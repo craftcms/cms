@@ -8,7 +8,8 @@ use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 /**
  * ElementsService provides APIs for managing elements.
  *
- * An instance of ElementsService is globally accessible in Craft via {@link WebApp::elements `craft()->elements`}.
+ * An instance of ElementsService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$elements `craft()->elements`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -73,7 +74,7 @@ class ElementsService extends BaseComponent
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element type’s class handle.
 	 * @param string $localeId    The locale to fetch the element in.
-	 *                            Defaults to {@link WebApp::language `craft()->language`}.
+	 *                            Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage`}.
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.
 	 */
@@ -107,7 +108,7 @@ class ElementsService extends BaseComponent
 	 *
 	 * @param string      $uri         The element’s URI.
 	 * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
-	 *                                 Defaults to {@link WebApp::language `craft()->language`}.
+	 *                                 Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.

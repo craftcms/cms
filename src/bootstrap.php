@@ -159,7 +159,7 @@ Yii::$enableIncludePath = false;
 
 // Load 'em up
 require CRAFT_APP_PATH.'Craft.php';
-require CRAFT_APP_PATH.'etc/web/WebApp.php';
+require CRAFT_APP_PATH.'web/Application.php';
 require CRAFT_APP_PATH.'Info.php';
 
 // Set some aliases for Craft::import()
@@ -169,8 +169,7 @@ Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
 // Load the full config
 $config = require CRAFT_APP_PATH.'etc/config/main.php';
 
-// Initialize Craft\WebApp this way so it doesn't cause a syntax error on PHP < 5.3
-$appClass = '\Craft\WebApp';
-$app = new $appClass($config);
+// Initialize the application
+$app = new craft\app\web\Application($config);
 
 return $app;

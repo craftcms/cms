@@ -2,6 +2,8 @@
 namespace craft\app\web;
 
 /**
+ * Craft Web Application class
+ *
  * @property AssetIndexingService    $assetIndexing    The {@link AssetIndexingService assets indexing service}.
  * @property AssetSourcesService     $assetSources     The {@link AssetSourcesService assets sources service}.
  * @property AssetsService           $assets           The {@link AssetsService assets service}.
@@ -59,7 +61,7 @@ namespace craft\app\web;
  * @package   craft.app.web
  * @since     1.0
  */
-class WebApp extends \CWebApplication
+class Application extends \yii\web\Application
 {
 	// Traits
 	// =========================================================================

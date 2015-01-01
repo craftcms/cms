@@ -20,7 +20,7 @@ namespace craft\app\state;
  * You should also consider using database-based persister to improve the throughput.
  *
  * StatePersister is a core application component used to store global application state. It may be accessed via
- * {@link WebApp::getStatePersister()}.
+ * {@link \craft\app\web\Application::getStatePersister()}.
  *
  *
  * Craft overrides the default {@link \CStatePersister} so it can set a custom path at runtime for our state file.

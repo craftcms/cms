@@ -465,7 +465,7 @@ class Craft extends \Yii
 /**
  * Returns the current craft() instance. This is a wrapper function for the Craft::app() instance.
  *
- * @return WebApp|ConsoleApp
+ * @return \craft\app\web\Application|\craft\app\console\Application
  */
 function craft()
 {

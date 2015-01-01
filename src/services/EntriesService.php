@@ -7,7 +7,8 @@ use craft\app\models\Entry              as EntryModel;
 /**
  * EntriesService provides APIs for managing entries in Craft.
  *
- * An instance of EntriesService is globally accessible in Craft via {@link WebApp::entries `craft()->entries`}.
+ * An instance of EntriesService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$entries `craft()->entries`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -29,7 +30,8 @@ class EntriesService extends BaseComponent
 	 * ```
 	 *
 	 * @param int    $entryId  The entry’s ID.
-	 * @param string $localeId The locale to fetch the entry in. Defaults to {@link WebApp::language `craft()->language`}.
+	 * @param string $localeId The locale to fetch the entry in.
+	 *                         Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
 	 *
 	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
 	 */

@@ -8,7 +8,8 @@ use craft\app\models\User               as UserModel;
 /**
  * UsersService provides APIs for managing users.
  *
- * An instance of UsersService is globally accessible in Craft via {@link WebApp::users `craft()->users`}.
+ * An instance of UsersService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$users `craft()->users`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

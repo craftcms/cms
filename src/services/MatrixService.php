@@ -12,7 +12,8 @@ use craft\app\models\MatrixSettings     as MatrixSettingsModel;
 /**
  * MatrixService provides APIs for managing Matrix fields.
  *
- * An instance of MatrixService is globally accessible in Craft via {@link WebApp::matrix `craft()->matrix`}.
+ * An instance of MatrixService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$matrix `craft()->matrix`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -687,7 +688,8 @@ class MatrixService extends BaseComponent
 	 * Returns a block by its ID.
 	 *
 	 * @param int    $blockId  The Matrix block’s ID.
-	 * @param string $localeId The locale ID to return. Defaults to {@link WebApp::language `craft()->language`}.
+	 * @param string $localeId The locale ID to return.
+	 *                         Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
 	 *
 	 * @return MatrixBlockModel|null The Matrix block, or `null` if it didn’t exist.
 	 */

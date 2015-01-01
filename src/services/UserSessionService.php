@@ -9,7 +9,7 @@ use craft\app\models\Username as UsernameModel;
  * UserSessionService provides APIs for managing user sessions.
  *
  * An instance of UserSessionService is globally accessible in Craft via
- * {@link WebApp::userSession `craft()->userSession`}.
+ * {@link \craft\app\web\Application::$userSession `craft()->userSession`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

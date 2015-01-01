@@ -1,8 +1,8 @@
 <?php
-namespace craft\app\etc\console;
+namespace craft\app\console;
 
 /**
- * Class ConsoleApp
+ * Craft Console Application class
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\etc\console;
  * @package   craft.app.etc.console
  * @since     1.0
  */
-class ConsoleApp extends \CConsoleApplication
+class Application extends \yii\console\Application
 {
 	// Traits
 	// =========================================================================
@@ -54,9 +54,6 @@ class ConsoleApp extends \CConsoleApplication
 		{
 			Craft::import($alias);
 		}
-
-		// Attach our Craft app trait.
-		$this->attachBehavior('craft\app\base\ApplicationTrait', new \craft\app\base\ApplicationTrait());
 
 		// Initialize Cache and LogRouter right away (order is important)
 		$this->getComponent('cache');

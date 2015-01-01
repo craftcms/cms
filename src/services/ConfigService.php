@@ -8,7 +8,8 @@ use craft\app\helpers\AppHelper;
  * ConfigService provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of ConfigService is globally accessible in Craft via {@link WebApp::config `craft()->config`}.
+ * An instance of ConfigService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::config `craft()->config`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -136,7 +137,8 @@ class ConfigService extends BaseComponent
 	 * - [setPasswordSuccessPath](http://buildwithcraft.com/docs/config-settings#setPasswordSuccessPath)
 	 *
 	 * @param string $item     The name of the config setting.
-	 * @param string $localeId The locale ID to return. Defaults to {@link WebApp::language `craft()->language`}.
+	 * @param string $localeId The locale ID to return. Defaults to
+	 *                         {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
 	 * @param string $file     The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.

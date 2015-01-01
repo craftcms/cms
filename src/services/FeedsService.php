@@ -6,7 +6,8 @@ use craft\app\components\BaseComponent;
 /**
  * FeedsService provides APIs for fetching remote RSS and Atom feeds.
  *
- * An instance of FeedsService is globally accessible in Craft via {@link WebApp::feeds `craft()->feeds`}.
+ * An instance of FeedsService is globally accessible in Craft via
+ * {@link \craft\app\web\Application::$feeds `craft()->feeds`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
