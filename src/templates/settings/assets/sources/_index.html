@@ -41,14 +41,14 @@
 {% set js %}
 	var adminTable = new Craft.AdminTable({
 		tableSelector: '#sources',
-		noObjectsSelector: '#nosources',
+		noItemsSelector: '#nosources',
 		sortable: true,
 		reorderAction: 'assetSources/reorderSources',
 		deleteAction: 'assetSources/deleteSource',
-		onDeleteObject: function()
+		onDeleteItem: function()
 		{
 			// Hide the Assets tab if that was the last one
-			if (adminTable.totalObjects == 0)
+			if (adminTable.totalItems == 0)
 			{
 				$('#nav-assets').remove();
 			}
