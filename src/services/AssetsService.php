@@ -233,14 +233,6 @@ class AssetsService extends BaseComponent
 				'asset'      => $file,
 				'isNewAsset' => $isNewFile
 			)));
-
-			if ($this->hasEventHandler('onSaveFileContent'))
-			{
-				// Fire an 'onSaveFileContent' event (deprecated)
-				$this->onSaveFileContent(new Event($this, array(
-					'file' => $file
-				)));
-			}
 		}
 
 		return $success;
@@ -1136,20 +1128,6 @@ class AssetsService extends BaseComponent
 	public function onReplaceFile(Event $event)
 	{
 		$this->raiseEvent('onReplaceFile', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveFileContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
-	 * @return null
-	 */
-	public function onSaveFileContent(Event $event)
-	{
-		craft()->deprecator->log('AssetsService::onSaveFileContent()', 'The assets.onSaveFileContent event has been deprecated. Use assets.onSaveAsset instead.');
-		$this->raiseEvent('onSaveFileContent', $event);
 	}
 
 	/**
