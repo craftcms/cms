@@ -86,17 +86,6 @@ class Tag extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
-	 *
-	 * @return array
-	 */
-	public function defineSearchableAttributes()
-	{
-		// TODO: Remove this in 3.0
-		return array('name');
-	}
-
-	/**
 	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
