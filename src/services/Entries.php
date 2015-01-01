@@ -80,13 +80,13 @@ class EntriesService extends BaseComponent
 
 		if ($hasNewParent)
 		{
-			if ($entry->parentId)
+			if ($entry->newParentId)
 			{
-				$parentEntry = $this->getEntryById($entry->parentId, $entry->locale);
+				$parentEntry = $this->getEntryById($entry->newParentId, $entry->locale);
 
 				if (!$parentEntry)
 				{
-					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->parentId)));
+					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->newParentId)));
 				}
 			}
 			else
@@ -227,7 +227,7 @@ class EntriesService extends BaseComponent
 					// Has the parent changed?
 					if ($hasNewParent)
 					{
-						if (!$entry->parentId)
+						if (!$entry->newParentId)
 						{
 							craft()->structures->appendToRoot($section->structureId, $entry);
 						}
@@ -472,20 +472,20 @@ class EntriesService extends BaseComponent
 			return true;
 		}
 
-		// Was a parentId actually submitted?
-		if ($entry->parentId === null)
+		// Was a new parent ID actually submitted?
+		if ($entry->newParentId === null)
 		{
 			return false;
 		}
 
 		// Is it set to the top level now, but it hadn't been before?
-		if ($entry->parentId === '' && $entry->level != 1)
+		if ($entry->newParentId === '' && $entry->level != 1)
 		{
 			return true;
 		}
 
 		// Is it set to be under a parent now, but didn't have one before?
-		if ($entry->parentId !== '' && $entry->level == 1)
+		if ($entry->newParentId !== '' && $entry->level == 1)
 		{
 			return true;
 		}
@@ -500,7 +500,7 @@ class EntriesService extends BaseComponent
 		$oldParent = $criteria->first();
 		$oldParentId = ($oldParent ? $oldParent->id : '');
 
-		if ($entry->parentId != $oldParentId)
+		if ($entry->newParentId != $oldParentId)
 		{
 			return true;
 		}

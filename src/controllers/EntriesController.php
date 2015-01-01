@@ -886,7 +886,7 @@ class EntriesController extends BaseEntriesController
 			$parentId = isset($parentId[0]) ? $parentId[0] : null;
 		}
 
-		$entry->parentId = $parentId;
+		$entry->newParentId = $parentId;
 
 		// Revision notes
 		$entry->revisionNotes = craft()->request->getPost('revisionNotes');
