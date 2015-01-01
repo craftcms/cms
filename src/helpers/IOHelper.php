@@ -1548,42 +1548,6 @@ class IOHelper
 	}
 
 	/**
-	 * Gets the default folder permissions from the config service.
-	 *
-	 * @deprecated Deprecated in 2.2. Use
-	 *             {@link ConfigService::get() `craft()->config->get('defaultFolderPermissions')`} instead.
-	 * @return mixed
-	 */
-	public static function getDefaultFolderPermissions()
-	{
-		return craft()->config->get('defaultFolderPermissions');
-	}
-
-	/**
-	 * Gets the writable file permissions from the config service.
-	 *
-	 * @deprecated Deprecated in 2.2. Use
-	 *             {@link ConfigService::get() `craft()->config->get('defaultFilePermissions')`} instead.
-	 * @return mixed
-	 */
-	public static function getWritableFilePermissions()
-	{
-		return craft()->config->get('defaultFilePermissions');
-	}
-
-	/**
-	 * Gets the writable folder permissions from the config service.
-	 *
-	 * @deprecated Deprecated in 2.2. Use
-	 *             {@link ConfigService::get() `craft()->config->get('defaultFolderPermissions')`} instead.
-	 * @return mixed
-	 */
-	public static function getWritableFolderPermissions()
-	{
-		return craft()->config->get('defaultFolderPermissions');
-	}
-
-	/**
 	 * Returns the last $number of modified files from a given folder ordered by
 	 * the last modified date descending.
 	 *
