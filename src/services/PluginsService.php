@@ -544,24 +544,18 @@ class PluginsService extends BaseComponent
 	public function call($method, $args = array(), $ignoreNull = false)
 	{
 		$allResults = array();
-		$altMethod = 'hook'.ucfirst($method);
 
 		foreach ($this->getPlugins() as $plugin)
 		{
 			if (method_exists($plugin, $method))
 			{
 				$result = call_user_func_array(array($plugin, $method), $args);
-			}
-			else if (method_exists($plugin, $altMethod))
-			{
-				craft()->deprecator->log('PluginsService::method_hook_prefix', 'The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().');
-				$result = call_user_func_array(array($plugin, $altMethod), $args);
-			}
 
-			if (isset($result) && (!$ignoreNull || $result !== null))
-			{
-				$allResults[$plugin->getClassHandle()] = $result;
-				unset($result);
+				if (!$ignoreNull || $result !== null)
+				{
+					$allResults[$plugin->getClassHandle()] = $result;
+					unset($result);
+				}
 			}
 		}
 
@@ -579,40 +573,18 @@ class PluginsService extends BaseComponent
 	 */
 	public function callFirst($method, $args = array(), $ignoreNull = false)
 	{
-		$altMethod = 'hook'.ucfirst($method);
-
 		foreach ($this->getPlugins() as $plugin)
 		{
 			if (method_exists($plugin, $method))
 			{
 				$result = call_user_func_array(array($plugin, $method), $args);
-			}
-			else if (method_exists($plugin, $altMethod))
-			{
-				craft()->deprecator->log('PluginsService::method_hook_prefix', 'The “hook” prefix on the '.get_class($plugin).'::'.$altMethod.'() method name has been deprecated. It should be renamed to '.$method.'().');
-				$result = call_user_func_array(array($plugin, $altMethod), $args);
-			}
 
-			if (isset($result) && (!$ignoreNull || $result !== null))
-			{
-				return $result;
+				if (!$ignoreNull || $result !== null)
+				{
+					return $result;
+				}
 			}
 		}
-	}
-
-	/**
-	 * Calls a method on all plugins that have the method.
-	 *
-	 * @param string $method The name of the method.
-	 * @param array  $args   Any arguments that should be passed when calling the method on the plugins.
-	 *
-	 * @deprecated Deprecated in 1.0.  Use {@link call()} instead.
-	 * @return array An array of the plugins’ responses.
-	 */
-	public function callHook($method, $args = array())
-	{
-		craft()->deprecator->log('PluginsService::callHook()', 'PluginsService::callHook() has been deprecated. Use call() instead.');
-		return $this->call($method, $args);
 	}
 
 	/**
