@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\widgets;
 
+use craft\app\Craft;
+
 /**
  * Class FeedWidget
  *
@@ -11,7 +13,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class FeedWidget extends BaseWidgetInterface
+class FeedWidget extends BaseWidget
 {
 	// Properties
 	// =========================================================================

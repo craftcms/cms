@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\tools;
 
+use craft\app\Craft;
+
 /**
  * Asset Index tool.
  *
@@ -11,7 +13,7 @@ namespace craft\app\tools;
  * @package   craft.app.tools
  * @since     1.0
  */
-class AssetIndexTool extends BaseToolInterface
+class AssetIndexTool extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

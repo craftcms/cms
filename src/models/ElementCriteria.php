@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\models;
 
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria        as ElementCriteriaModel;
+use craft\app\elementtypes\BaseElementType;
 
 /**
  * ElementCriteria model class.

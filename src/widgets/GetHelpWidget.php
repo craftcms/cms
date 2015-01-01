@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\widgets;
 
+use craft\app\Craft;
+
 /**
  * Get Help widget.
  *
@@ -11,7 +13,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class GetHelpWidget extends BaseWidgetInterface
+class GetHelpWidget extends BaseWidget
 {
 	// Properties
 	// =========================================================================

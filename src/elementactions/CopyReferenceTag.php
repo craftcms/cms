@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\elementactions;
 
+use craft\app\Craft;
+use craft\app\helpers\JsonHelper;
+
 /**
  * Copy Reference Tag Element Action
  *

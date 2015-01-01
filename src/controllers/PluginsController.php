@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
+
 /**
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
  * enabling, disabling and saving plugin settings in the control panel.

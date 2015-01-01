@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\base;
 
+use craft\app\components\BaseSavableComponentType;
+
 /**
  * Plugin base class.
  *

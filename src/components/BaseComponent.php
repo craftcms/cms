@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\components;
 
+use yii\base\Component;
+
 /**
  * BaseComponent class
  *
@@ -11,7 +13,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     1.0
  */
-class BaseComponent extends \yii\Component
+class BaseComponent extends Component
 {
 	// Public Methods
 	// =========================================================================

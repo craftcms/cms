@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * AssetIndexData model class.
  *

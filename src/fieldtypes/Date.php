@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
+use craft\app\enums\AttributeType;
+
 /**
  * Date fieldtype
  *

@@ -1,5 +1,6 @@
 <?php
 namespace craft\app\models;
+use craft\app\Craft;
 
 /**
  * Section model class.

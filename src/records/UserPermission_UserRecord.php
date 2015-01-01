@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\records;
 
+use craft\app\Craft;
+
 craft()->requireEdition(Craft::Pro);
 
 /**

@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\migrations;
 
+use craft\app\db\BaseMigration;
+use craft\app\enums\ElementType;
+
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */

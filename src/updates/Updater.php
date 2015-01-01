@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\updates;
 
+use craft\app\errors\Exception;
+
 /**
  * Class Updater
  *

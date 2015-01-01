@@ -1,5 +1,6 @@
 <?php
 namespace craft\app\models;
+use craft\app\enums\ElementType;
 
 /**
  * Tag model class.

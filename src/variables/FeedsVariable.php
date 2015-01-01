@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\helpers\NumberHelper;
+use craft\app\helpers\TemplateHelper;
+
 /**
  * Class FeedsVariable
  *

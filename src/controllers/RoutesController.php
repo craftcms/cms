@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
+
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
  * re-ordering routes in the control panel.

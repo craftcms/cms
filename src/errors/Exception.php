@@ -11,7 +11,7 @@ namespace craft\app\errors;
  * @package   craft.app.errors
  * @since     1.0
  */
-class Exception extends \CException
+class Exception extends \yii\base\Exception
 {
 
 }

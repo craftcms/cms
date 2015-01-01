@@ -1,7 +1,9 @@
 <?php
 namespace craft\app\controllers;
 
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\Craft;
+use craft\app\models\RebrandEmail   as RebrandEmailModel;
+use craft\app\errors\HttpException;
 
 craft()->requireEdition(Craft::Client);
 

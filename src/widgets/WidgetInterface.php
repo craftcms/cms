@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\widgets;
 
+use craft\app\components\SavableComponentTypeInterface;
+
 /**
  * Interface WidgetInterface
  *

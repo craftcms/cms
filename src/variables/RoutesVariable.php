@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\helpers\JsonHelper;
+
 /**
  * Route functions.
  *

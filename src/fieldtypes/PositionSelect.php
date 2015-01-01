@@ -1,5 +1,6 @@
 <?php
 namespace craft\app\fieldtypes;
+use craft\app\enums\AttributeType;
 
 /**
  * PositionSelect fieldtype

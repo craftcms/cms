@@ -1,6 +1,10 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\Craft;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\UrlHelper;
+
 craft()->requireEdition(Craft::Client);
 
 /**

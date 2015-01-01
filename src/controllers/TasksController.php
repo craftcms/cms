@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\helpers\JsonHelper;
+
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
  * status, re-running and deleting tasks.

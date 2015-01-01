@@ -2,6 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData     as AssetIndexDataModel;
 use craft\app\models\AssetSource        as AssetSourceModel;
 use craft\app\records\AssetFolder       as AssetFolderRecord;

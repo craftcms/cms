@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\migrations;
 
+use craft\app\db\BaseMigration;
+
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
@@ -15,7 +17,7 @@ class m140815_000001_add_format_to_transforms extends BaseMigration
 	{
 
 		// Allow transforms to have a format
-		$this->addColumnAfter('assettransforms', 'format', array(ColumnType::Varchar, 'required' => false), 'width');
+		$this->addColumnAfter('assettransforms', 'format', [ColumnType::Varchar, 'required' => false], 'width');
 
 		return true;
 	}

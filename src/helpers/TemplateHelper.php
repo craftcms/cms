@@ -1,7 +1,8 @@
 <?php
 namespace craft\app\helpers;
 
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\ElementCriteria      as ElementCriteriaModel;
+use craft\app\variables\PaginateVariable;
 
 /**
  * Class TemplateHelper

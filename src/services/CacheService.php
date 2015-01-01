@@ -1,7 +1,18 @@
 <?php
 namespace craft\app\services;
 
+use craft\app\cache\ApcCache;
+use craft\app\cache\DbCache;
+use craft\app\cache\EAcceleratorCache;
+use craft\app\cache\FileCache;
+use craft\app\cache\MemCache;
+use craft\app\cache\RedisCache;
+use craft\app\cache\WinCache;
+use craft\app\cache\XCache;
+use craft\app\cache\ZendDataCache;
 use craft\app\components\BaseComponent;
+use craft\app\enums\CacheMethod;
+use craft\app\enums\ConfigFile;
 
 /**
  * Class CacheService

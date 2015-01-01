@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\models\Locale as LocaleModel;
+
 /**
  * Localization functions.
  *

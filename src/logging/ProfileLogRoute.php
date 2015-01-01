@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\logging;
 
+use craft\app\helpers\HeaderHelper;
+
 /**
  * Class ProfileLogRoute
  *

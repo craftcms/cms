@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\variables;
 
+use craft\app\Craft;
+
 /**
  * CP functions
  *

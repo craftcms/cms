@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\elementtypes;
 
+use craft\app\Craft;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Category          as CategoryModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;

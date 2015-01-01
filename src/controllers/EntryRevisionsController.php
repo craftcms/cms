@@ -1,7 +1,9 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\errors\Exception;
 
 craft()->requireEdition(Craft::Client);
 

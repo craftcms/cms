@@ -2,7 +2,9 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\Craft;
 use craft\app\models\UserGroup          as UserGroupModel;
+use craft\app\records\UserGroupRecord;
 
 craft()->requireEdition(Craft::Pro);
 

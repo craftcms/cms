@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
+
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.
  *

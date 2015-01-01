@@ -2,9 +2,11 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
+use craft\app\Craft;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\models\EntryDraft         as EntryDraftModel;
 use craft\app\models\EntryVersion       as EntryVersionModel;
+use craft\app\records\EntryDraftRecord;
 
 craft()->requireEdition(Craft::Client);
 

@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\helpers;
 
+use craft\app\enums\ColumnType;
+
 /**
  * Migration utility methods.
  *

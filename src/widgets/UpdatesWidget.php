@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\widgets;
 
+use craft\app\Craft;
+
 /**
  * Class UpdatesWidget
  *
@@ -11,7 +13,7 @@ namespace craft\app\widgets;
  * @package   craft.app.widgets
  * @since     1.0
  */
-class UpdatesWidget extends BaseWidgetInterface
+class UpdatesWidget extends BaseWidget
 {
 	// Properties
 	// =========================================================================

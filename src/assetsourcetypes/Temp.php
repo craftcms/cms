@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
+use craft\app\Craft;
+
 /**
  * A temporary asset source type class.
  *

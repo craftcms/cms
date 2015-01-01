@@ -1,6 +1,9 @@
 <?php
 namespace craft\app\fieldtypes;
 
+use craft\app\components\BaseSavableComponentType;
+use craft\app\models\BaseElementModel;
+
 /**
  * Field type base class.
  *
