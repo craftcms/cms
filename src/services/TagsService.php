@@ -426,14 +426,6 @@ class TagsService extends BaseComponent
 				'tag'      => $tag,
 				'isNewTag' => $isNewTag
 			)));
-
-			if ($this->hasEventHandler('onSaveTagContent'))
-			{
-				// Fire an 'onSaveTagContent' event (deprecated)
-				$this->onSaveTagContent(new Event($this, array(
-					'tag' => $tag
-				)));
-			}
 		}
 
 		return $success;
