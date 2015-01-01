@@ -211,13 +211,6 @@ class SectionsController extends BaseController
 		if (craft()->sections->saveSection($section))
 		{
 			craft()->userSession->setNotice(Craft::t('Section saved.'));
-
-			if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{sectionId}') !== false)
-			{
-				craft()->deprecator->log('SectionsController::saveSection():sectionId_redirect', 'The {sectionId} token within the ‘redirect’ param on sections/saveSection requests has been deprecated. Use {id} instead.');
-				$_POST['redirect'] = str_replace('{sectionId}', '{id}', $_POST['redirect']);
-			}
-
 			$this->redirectToPostedUrl($section);
 		}
 		else
