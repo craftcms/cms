@@ -79,6 +79,7 @@ $noticecolor: #5286d9;
 @mixin transform($params...) {
 	-webkit-transform: $params;
 	-moz-transform: $params;
+	-ms-transform: $params;
 	-o-transform: $params;
 	transform: $params;
 }
@@ -86,6 +87,8 @@ $noticecolor: #5286d9;
 @mixin transition($params...) {
 	-webkit-transition: $params;
 	-moz-transition: $params;
+	-ms-transition: $params;
+	transition: $params;
 }
 
 @mixin user-select($value) {

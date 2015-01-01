@@ -127,8 +127,14 @@ Craft.ElementEditor = Garnish.Base.extend(
 	{
 		this.locale = response.locale;
 
-		this.$fieldsContainer.html(response.html)
-		Craft.initUiElements(this.$fieldsContainer);
+		this.$fieldsContainer.html(response.html);
+
+		Garnish.requestAnimationFrame($.proxy(function()
+		{
+			Craft.appendHeadHtml(response.headHtml);
+			Craft.appendFootHtml(response.footHtml);
+			Craft.initUiElements(this.$fieldsContainer);
+		}, this));
 	},
 
 	saveElement: function(ev)

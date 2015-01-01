@@ -327,7 +327,7 @@ class SectionsService extends BaseComponent
 
 			if (!$sectionRecord)
 			{
-				throw new Exception(Craft::t('No section exists with the ID “{id}”', array('id' => $section->id)));
+				throw new Exception(Craft::t('No section exists with the ID “{id}”.', array('id' => $section->id)));
 			}
 
 			$oldSection = SectionModel::populateModel($sectionRecord);
@@ -966,7 +966,7 @@ class SectionsService extends BaseComponent
 
 			if (!$entryTypeRecord)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”', array('id' => $entryType->id)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', array('id' => $entryType->id)));
 			}
 
 			$isNewEntryType = false;

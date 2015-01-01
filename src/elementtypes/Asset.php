@@ -268,20 +268,6 @@ class Asset extends BaseElementType
 				}
 			}
 
-			case 'dateModified':
-			{
-				$date = $element->$attribute;
-
-				if ($date)
-				{
-					return $date->uiTimestamp();
-				}
-				else
-				{
-					return '';
-				}
-			}
-
 			default:
 			{
 				return parent::getTableAttributeHtml($element, $attribute);

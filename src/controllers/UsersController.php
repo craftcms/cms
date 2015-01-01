@@ -346,6 +346,8 @@ class UsersController extends BaseController
 
 	/**
 	 * Verifies that a user has access to an email address.
+	 *
+	 * @return null;
 	 */
 	public function actionVerifyEmail()
 	{
@@ -879,7 +881,7 @@ class UsersController extends BaseController
 			if ($thisIsPublicRegistration)
 			{
 				// Assign them to the default user group
-				$this->_assignDefaultGroupToUser($user->id);
+				craft()->userGroups->assignUserToDefaultGroup($user);
 			}
 
 			if ($requireEmailVerification && $user->unverifiedEmail)
@@ -1467,22 +1469,6 @@ class UsersController extends BaseController
 		$currentPassword = craft()->request->getRequiredParam('password');
 
 		return craft()->users->validatePassword($currentHashedPassword, $currentPassword);
-	}
-
-	/**
-	 * @param $userId
-	 *
-	 * @return null
-	 */
-	private function _assignDefaultGroupToUser($userId)
-	{
-		// Assign them to the default user group, if any
-		$defaultGroup = craft()->systemSettings->getSetting('users', 'defaultGroup');
-
-		if ($defaultGroup)
-		{
-			craft()->userGroups->assignUserToGroups($userId, array($defaultGroup));
-		}
 	}
 
 	/**

@@ -121,7 +121,8 @@ class RichText extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$this->_includeFieldResources();
+		$configJs = $this->_getConfigJs();
+		$this->_includeFieldResources($configJs);
 
 		$id = craft()->templates->formatInputId($name);
 
@@ -129,7 +130,7 @@ class RichText extends BaseFieldType
 			'"'.craft()->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
 			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
-			$this->_getConfigJs().', ' .
+			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
 		');');
 
@@ -165,6 +166,13 @@ class RichText extends BaseFieldType
 	 */
 	public function prepValueFromPost($value)
 	{
+		// Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
+		// if any text was typed into the field, and then deleted
+		if ($value == '<p><br></p>')
+		{
+			$value = '';
+		}
+
 		if ($value)
 		{
 			// Swap any pagebreak <hr>'s with <!--pagebreak-->'s
@@ -326,9 +334,11 @@ class RichText extends BaseFieldType
 	/**
 	 * Includes the input resources.
 	 *
+	 * @param string $configJs
+	 *
 	 * @return null
 	 */
-	private function _includeFieldResources()
+	private function _includeFieldResources($configJs)
 	{
 		craft()->templates->includeCssResource('lib/redactor/redactor.css');
 		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
@@ -337,9 +347,10 @@ class RichText extends BaseFieldType
 		craft()->templates->includeJsResource('lib/redactor/redactor.js');
 		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
 
-		craft()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
-		craft()->templates->includeJsResource('lib/redactor/plugins/video.js');
-		craft()->templates->includeJsResource('lib/redactor/plugins/pagebreak.js');
+		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
+		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
 		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
 
@@ -355,6 +366,28 @@ class RichText extends BaseFieldType
 				$languageId = craft()->locale->getLanguageID(craft()->language);
 				$this->_includeRedactorLangFile($languageId);
 			}
+		}
+	}
+
+	/**
+	 * Includes a plugin’s JS file, if it appears to be requested by the config file.
+	 *
+	 * @param string $configJs
+	 * @param string $plugin
+	 * @param bool $includeCss
+	 *
+	 * @return null
+	 */
+	private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+	{
+		if (preg_match('/([\'"])'.$plugin.'\1/', $configJs))
+		{
+			if ($includeCss)
+			{
+				craft()->templates->includeCssResource('lib/redactor/plugins/'.$plugin.'.css');
+			}
+
+			craft()->templates->includeJsResource('lib/redactor/plugins/'.$plugin.'.js');
 		}
 	}
 

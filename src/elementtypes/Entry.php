@@ -242,7 +242,20 @@ class Entry extends BaseElementType
 		// Set Status
 		if ($canSetStatus)
 		{
-			$actions[] = 'SetStatus';
+			$setStatusAction = craft()->elements->getAction('SetStatus');
+			$setStatusAction->onSetStatus = function(Event $event)
+			{
+				if ($event->params['status'] == BaseElementModel::ENABLED)
+				{
+					// Set a Post Date as well
+					craft()->db->createCommand()->update(
+						'entries',
+						array('postDate' => DateTimeHelper::currentTimeForDb()),
+						array('and', array('in', 'id', $event->params['elementIds']), 'postDate is null')
+					);
+				}
+			};
+			$actions[] = $setStatusAction;
 		}
 
 		// Edit
@@ -390,21 +403,6 @@ class Entry extends BaseElementType
 			case 'section':
 			{
 				return Craft::t($element->getSection()->name);
-			}
-
-			case 'postDate':
-			case 'expiryDate':
-			{
-				$date = $element->$attribute;
-
-				if ($date)
-				{
-					return $date->uiTimestamp();
-				}
-				else
-				{
-					return '';
-				}
 			}
 
 			default:

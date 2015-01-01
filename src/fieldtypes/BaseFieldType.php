@@ -37,6 +37,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	// =========================================================================
 
 	/**
+	 * @inheritDoc FieldTypeInterface::setElement()
+	 *
+	 * @param BaseElementModel $element
+	 *
+	 * @return null
+	 */
+	public function setElement(BaseElementModel $element)
+	{
+		$this->element = $element;
+	}
+
+	/**
 	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
 	 *
 	 * @return mixed

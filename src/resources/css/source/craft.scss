@@ -47,6 +47,8 @@ body.rtl .ltr { text-align: right; direction: ltr; }
 .required:after,
 .livepreviewbtn:before,
 .sharebtn:before,
+.toggle:before,
+a.fieldtoggle:before,
 [data-icon]:before,
 [data-icon-after]:after { @include icon; }
 
@@ -133,16 +135,24 @@ li.sel a { cursor: default !important; text-decoration: none; }
 
 /* toggles */
 .toggle,
-a.fieldtoggle:before { width: 20px; height: 20px; background: no-repeat 50% 0;
-	body.ltr & { background-image: url(../images/toggle.png); }
-	body.rtl & { background-image: url(../images/toggle_rtl.png); }
+a.fieldtoggle:before { width: 20px; height: 20px; line-height: 20px; text-align: center;
+	body.ltr & { @include transform(rotate(-90deg)); }
+	body.rtl & { @include transform(rotate(90deg)); }
+	-webkit-transition: -webkit-transform linear 100ms;
+	-moz-transition: -moz-transform linear 100ms;
+	-ms-transition: -ms-transform linear 100ms;
+	transition: transform linear 100ms;
 }
+.toggle:before,
+a.fieldtoggle:before { content: '▼'; }
 
 .toggle.expanded,
-a.fieldtoggle.expanded:before { background-position: 50% -40px; }
+a.fieldtoggle.expanded:before,
+.sidebar nav li.expanded > .toggle,
+.structure li:not(.collapsed) > .row > .toggle { @include transform(rotate(0) !important); }
 
 a.fieldtoggle { display: block; position: relative; margin: 14px 0; @include padding-left(12px); color: $textcolor; text-decoration: none; }
-a.fieldtoggle:before { content: '.'; font-size: 0; display: block; position: absolute; top: -2px; @include left(-6px); }
+a.fieldtoggle:before { display: block; position: absolute; top: -2px; @include left(-6px); }
 
 /* emphasis */
 em, i { font-style: italic; }
@@ -238,14 +248,14 @@ td.right { float: none; @include alignright; }
 .sidebar nav li { position: relative; }
 .sidebar nav li a { display: block; @include margin-left(-24px); padding: 4px 0; color: $textcolor; @include user-select(none); outline: none; }
 .sidebar nav li a:hover { text-decoration: none; color: $linkcolor; }
-.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); color: #fff; background: $darkselcolor; cursor: default; }
 
 .sidebar nav li .toggle { position: absolute; top: 3px; }
-.sidebar nav li.expanded > .toggle { background-position: 50% -40px; }
-.sidebar nav li a.sel + .toggle { background-position: 50% -20px; }
-.sidebar nav li.expanded > a.sel + .toggle { background-position: 50% -60px; }
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
+
+.sidebar nav li a.sel { @include border-radius(0, 2px, 2px, 0); background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel,
+.sidebar nav li a.sel + .toggle { color: #fff; }
 
 .sidebar nav > ul > li > a { @include padding-left(24px); }
 .sidebar nav > ul > li > ul > li > a { @include padding-left(44px); }
@@ -573,14 +583,18 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 .datatablesorthelper tr:last-child th,
 .datatablesorthelper tr:last-child td { border-bottom: none !important; }
 
+.datatablesorthelper .tableview .toggle {
+	body.ltr & { @include transform(rotate(-90deg) !important); }
+	body.rtl & { @include transform(rotate(90deg) !important); }
+}
+
 /* elements */
 .element { display: inline-block; position: relative; padding: 6px 7px; cursor: default; outline: none !important; @include user-select(none); }
 
 .element .label { display: inline-block; }
-.element .status { @include margin(0, 0, 0, 5px); }
 
 .element.hasthumb,
-.element.hasicon { @include padding-left(35px !important); }
+.element.hasicon { @include padding-left(40px !important); }
 .elements .thumbsview .element.hasthumb,
 .elements .thumbsview .element.hasicon { @include padding-left(0 !important); }
 .element.hasthumb .elementthumb,
@@ -605,8 +619,12 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 
 /* table views */
 .elements .tableview tr { outline: none; }
+.elements .tableview th,
+.elements .tableview td { padding-top: 5px; padding-bottom: 5px; }
 .elements .tableview td { position: relative; }
-.elements .tableview .move { display: block; position: absolute; top: 50%; @include margin(-13px, 0, 0, -14px); font-size: 11px; }
+.elements .tableview .move { display: block; position: absolute; top: 9px; @include margin-left(-14px); font-size: 11px; text-decoration: none; }
+.elements .tableview .toggle { display: block; position: absolute; top: 9px; @include margin-left(-20px); }
+.elements .tableview .move + .toggle { @include margin-left(-34px); }
 
 /* thumbs views */
 .elements .thumbsview { @include margin(-14px, 0, 0, -14px); }
@@ -637,7 +655,6 @@ table.collapsed tbody tr:last-child td:not(:last-child) { border-bottom: none; }
 	body.rtl & { background-position: calc(100% + 1px) 0; }
 }
 .structure li .toggle { position: relative; z-index: 1; @include floatleft; @include margin(4px, -8px, 0, -12px); }
-.structure li:not(.collapsed) > .row > .toggle { background-position: 50% -40px; }
 .structure li.collapsed > ul { display: none; }
 .structure li .row:after { @include clearafter; }
 
@@ -701,7 +718,7 @@ ul.tree,
 .tree li .toggle { @include margin(7px, 0, 0, -15px); }
 
 /* status icons */
-.status { display: inline-block; @include margin-right(5px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
+.status { display: inline-block; @include margin-right(10px); width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
 
 .status.on,
 .status.live,
@@ -814,10 +831,10 @@ body #redactor-modal { z-index: 100; border-radius: 3px; background: #fff;
 
 .modal-shade,
 .hud-shade,
-body #redactor-modal_overlay { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+body #redactor-modal-box { z-index: 100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
 
 .modal-shade,
-body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
+body #redactor-modal-box { background: rgba(255,255,255,0.75); }
 
 .modal-shade.dark { background: rgba(0,0,0,0.75); }
 
@@ -866,7 +883,7 @@ body #redactor-modal_overlay { background: rgba(255,255,255,0.75); }
 .elementselectormodal .body .main .elements .tableview { margin: 0 -24px; }
 .elementselectormodal .body .main .elements .tableview table .element { display: inline-block; }
 .elementselectormodal .body .main .elements .tableview table tr th,
-.elementselectormodal .body .main .elements .tableview table tr td { padding-top: 4px; padding-bottom: 4px; cursor: default;}
+.elementselectormodal .body .main .elements .tableview table tr td { cursor: default;}
 .elementselectormodal .body .main .elements .tableview table tr th:first-child,
 .elementselectormodal .body .main .elements .tableview table tr td:first-child { @include padding-left(24px); }
 .elementselectormodal .body .main .elements .tableview table tr th:last-child,
@@ -1003,6 +1020,8 @@ input.checkbox + label:before,
 div.checkbox:before { display: block; position: absolute; top: 2px; @include left(0); width: 12px; height: 12px; content: '.'; font-size: 0; border-radius: 2px; background: #fff;
 	@include box-shadow(0 0 2px hsla(205, 100%, 60%, 0), inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 1px 2px rgba(0,0,0,0.15), inset 0 0 0 1px hsla(205, 100%, 60%, 0));
 }
+input.checkbox:disabled + label:before,
+div.checkbox.disabled:before { opacity: 0.25; }
 input.checkbox:checked + label:before,
 div.checkbox.checked:before,
 .sel div.checkbox:before,
@@ -1031,7 +1050,7 @@ input.checkbox:indeterminate:focus + label:before,
 
 .text,
 .textline,
-body .redactor-editor,
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor,
 body .redactor-box textarea { padding: 6px 7px; }
 
 .text { background: #fff; }
@@ -1101,7 +1120,7 @@ body .redactor-toolbar li a:active,
 body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
-body .redactor-editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid rgba(0,0,0,0.05); }
 .redactor-editor ul,
 .redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
 body .redactor-editor ul { list-style-type: disc; }
@@ -1270,17 +1289,9 @@ ul.errors li { color: $errorcolor; }
 	.sel .element.loading:after,
 	.element.loading.sel:after { background-image: url(../images/spinner_element_2x.gif); background-size: 20px; }
 
-	.elements .tableview .reorder { background-image: url(../images/rowreorderhandle_2x.png); background-size: 5px; }
-
 	.structure ul li { background-size: 40px;
 		body.ltr & { background-image: url(../images/branch_2x.png); }
 		body.rtl & { background-image: url(../images/branch_rtl_2x.png); }
-	}
-
-	a.fieldtoggle:before,
-	.toggle { background-size: 12px;
-		body.ltr & { background-image: url(../images/toggle_2x.png); }
-		body.rtl & { background-image: url(../images/toggle_rtl_2x.png); }
 	}
 
 	.progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }

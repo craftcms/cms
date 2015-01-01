@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\elementactions;
 
+use craft\app\enums\AttributeType;
+use craft\app\events\Event;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
@@ -38,8 +40,10 @@ class SetStatus extends BaseElementAction
 	 */
 	public function performAction(ElementCriteriaModel $criteria)
 	{
+		$status = $this->getParams()->status;
+
 		// Figure out which element IDs we need to update
-		if ($this->getParams()->status == BaseElementModel::ENABLED)
+		if ($status == BaseElementModel::ENABLED)
 		{
 			$sqlNewStatus = '1';
 		}
@@ -57,7 +61,7 @@ class SetStatus extends BaseElementAction
 			array('in', 'id', $elementIds)
 		);
 
-		if ($this->getParams()->status == BaseElementModel::ENABLED)
+		if ($status == BaseElementModel::ENABLED)
 		{
 			// Enable their locale as well
 			craft()->db->createCommand()->update(
@@ -71,9 +75,31 @@ class SetStatus extends BaseElementAction
 		// Clear their template caches
 		craft()->templateCache->deleteCacheById($elementIds);
 
+		// Fire an 'onSetStatus' event
+		$this->onSetStatus(new Event($this, array(
+			'criteria'   => $criteria,
+			'elementIds' => $elementIds,
+			'status'     => $status,
+		)));
+
 		$this->setMessage(Craft::t('Statuses updated.'));
 
 		return true;
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onSetStatus' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSetStatus(Event $event)
+	{
+		$this->raiseEvent('onSetStatus', $event);
 	}
 
 	// Protected Methods

@@ -135,7 +135,7 @@ class PluginsService extends BaseComponent
 				}
 
 				// Sort plugins by name
-				array_multisort($names, $this->_enabledPlugins);
+				$this->_sortPlugins($names, $this->_enabledPlugins);
 
 				// Now that all of the components have been imported, initialize all the plugins
 				foreach ($this->_enabledPlugins as $plugin)
@@ -263,7 +263,7 @@ class PluginsService extends BaseComponent
 					if (!empty($names))
 					{
 						// Sort plugins by name
-						array_multisort($names, $this->_allPlugins);
+						$this->_sortPlugins($names, $this->_allPlugins);
 					}
 				}
 			}
@@ -922,5 +922,26 @@ class PluginsService extends BaseComponent
 		}
 
 		return $return;
+	}
+
+	/**
+	 * @param $names
+	 * @param $secondaryArray
+	 *
+	 * @return null
+	 */
+	private function _sortPlugins(&$names, &$secondaryArray)
+	{
+		// TODO: Remove this check for Craft 3.
+		if (PHP_VERSION_ID < 50400)
+		{
+			// Sort plugins by name
+			array_multisort($names, $secondaryArray);
+		}
+		else
+		{
+			// Sort plugins by name
+			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray);
+		}
 	}
 }

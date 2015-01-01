@@ -5,7 +5,6 @@ RedactorPlugins.pagebreak = function()
 	return {
 		init: function()
 		{
-			this.fullscreen = false;
 			var $btn = this.button.add('pagebreak', 'Insert Page Break');
 			this.button.addCallback($btn, this.pagebreak.insertPageBreak);
 		},

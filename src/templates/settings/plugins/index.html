@@ -65,9 +65,9 @@
 								{{ getCsrfInput() }}
 
 								{% if isInstalled %}
-									<input type="button" value="{{ 'Uninstall'|t }}" class="btn small fullwidth formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">
+									<div class="btn small fullwidth formsubmit" data-action="plugins/uninstallPlugin" data-confirm="{{ 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.'|t({ plugin: name }) }}">{{ 'Uninstall'|t }}</div>
 								{% else %}
-									<input type="button" value="{{ 'Install'|t }}" class="btn small fullwidth formsubmit" data-action="plugins/installPlugin">
+									<div class="btn small fullwidth formsubmit" data-action="plugins/installPlugin">{{ 'Install'|t }}</div>
 								{% endif %}
 							</form>
 						</td>

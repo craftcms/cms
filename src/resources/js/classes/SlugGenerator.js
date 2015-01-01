@@ -20,7 +20,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
 			sourceVal = Craft.asciiString(sourceVal);
 		}
 
-		// Get the "words".  Split on anything that is not a unicode letter or number.
+		// Get the "words". Split on anything that is not alphanumeric.
 		var words = Craft.filterArray(XRegExp.matchChain(sourceVal, [XRegExp('[\\p{L}\\p{N}]+')]));
 
 		if (words.length)

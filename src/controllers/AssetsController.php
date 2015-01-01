@@ -132,9 +132,9 @@ class AssetsController extends BaseController
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);
 		$html = craft()->templates->render('_elements/element', array('element' => $element));
-		$css = craft()->templates->getHeadHtml();
+		$headHtml = craft()->templates->getHeadHtml();
 
-		$this->returnJson(array('html' => $html, 'css' => $css));
+		$this->returnJson(array('html' => $html, 'headHtml' => $headHtml));
 	}
 
 	/**
@@ -173,6 +173,19 @@ class AssetsController extends BaseController
 				$this->returnErrorJson($e->getMessage());
 			}
 
+			// Fire an 'onBeforeReplaceFile' event
+			$event = new Event($this, array(
+				'asset' => $existingFile
+			));
+
+			craft()->assets->onBeforeReplaceFile($event);
+
+			// Is the event preventing this from happening?
+			if (!$event->performAction)
+			{
+				throw new Exception(Craft::t('The file could not be replaced.'));
+			}
+
 			$fileName = $_FILES['replaceFile']['name'];
 			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
@@ -186,7 +199,7 @@ class AssetsController extends BaseController
 			{
 				$source = craft()->assetSources->populateSourceType($newFile->getSource());
 
-				if(StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+				if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
 				{
 					$filenameToUse = $existingFile->filename;
 				}
@@ -215,6 +228,11 @@ class AssetsController extends BaseController
 		{
 			$this->returnErrorJson($exception->getMessage());
 		}
+
+		// Fire an 'onReplaceFile' event
+		craft()->assets->onReplaceFile(new Event($this, array(
+			'asset' => $existingFile
+		)));
 
 		$this->returnJson(array('success' => true, 'fileId' => $fileId));
 	}

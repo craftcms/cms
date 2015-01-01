@@ -37,7 +37,11 @@ function craft_createFolder($path)
 		if (!mkdir($path, 0755, true))
 		{
 			// Set a 503 response header so things like Varnish won't cache a bad page.
-			http_response_code(503);
+			if (function_exists('http_response_code'))
+			{
+				http_response_code(503);
+			}
+
 			exit('Tried to create a folder at '.$path.', but could not.');
 		}
 
@@ -55,7 +59,11 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 	if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath.'/.'))
 	{
 		// Set a 503 response header so things like Varnish won't cache a bad page.
-		http_response_code(503);
+		if (function_exists('http_response_code'))
+		{
+			http_response_code(503);
+		}
+
 		exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
 	}
 
@@ -64,7 +72,11 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 		if (!is_writable($realPath))
 		{
 			// Set a 503 response header so things like Varnish won't cache a bad page.
-			http_response_code(503);
+			if (function_exists('http_response_code'))
+			{
+				http_response_code(503);
+			}
+
 			exit($realPath.' isn\'t writable by PHP. Please fix that.');
 		}
 	}

@@ -326,9 +326,7 @@ class DbBackup
 	 */
 	private function _processTable($tableName, $createQuery, $action = 'create')
 	{
-		$databaseName = craft()->config->get('database', ConfigFile::Db);
-
-		$result = PHP_EOL.'DROP TABLE IF EXISTS '.craft()->db->quoteDatabaseName($databaseName).'.'.craft()->db->quoteTableName($tableName).';'.PHP_EOL.PHP_EOL;
+		$result = PHP_EOL.'DROP TABLE IF EXISTS '.craft()->db->quoteTableName($tableName).';'.PHP_EOL.PHP_EOL;
 
 		if ($action == 'create')
 		{

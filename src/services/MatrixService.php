@@ -996,7 +996,7 @@ class MatrixService extends BaseComponent
 
 				if (!$this->_blockTypeRecordsById[$blockTypeId])
 				{
-					throw new Exception(Craft::t('No block type exists with the ID “{id}”', array('id' => $blockTypeId)));
+					throw new Exception(Craft::t('No block type exists with the ID “{id}”.', array('id' => $blockTypeId)));
 				}
 			}
 
@@ -1028,7 +1028,7 @@ class MatrixService extends BaseComponent
 
 				if (!$this->_blockRecordsById[$blockId])
 				{
-					throw new Exception(Craft::t('No block exists with the ID “{id}”', array('id' => $blockId)));
+					throw new Exception(Craft::t('No block exists with the ID “{id}”.', array('id' => $blockId)));
 				}
 			}
 

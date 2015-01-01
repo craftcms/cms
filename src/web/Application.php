@@ -909,7 +909,7 @@ class Application extends \yii\web\Application
 					$error = Craft::t('Your account doesn’t have permission to access the site when the system is offline.');
 				}
 
-				$error .= ' <a href="'.UrlHelper::getUrl(craft()->config->getLogoutPath()).'">'.Craft::t('Log out?').'</a>';
+				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl(craft()->config->getLogoutPath()).')';
 			}
 			else
 			{

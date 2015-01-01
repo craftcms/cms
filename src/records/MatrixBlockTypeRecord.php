@@ -21,7 +21,7 @@ class MatrixBlockTypeRecord extends BaseRecord
 	 *
 	 * @var bool
 	 */
-	protected $validateUniques = true;
+	public $validateUniques = true;
 
 	// Public Methods
 	// =========================================================================

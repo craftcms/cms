@@ -43,7 +43,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 			if (!$draft)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 			}
 		}
 		else
@@ -121,7 +121,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 		}
 
 		if ($draft->creatorId != craft()->userSession->getUser()->id)
@@ -158,7 +158,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 		}
 
 		if ($draft->creatorId != craft()->userSession->getUser()->id)
@@ -187,7 +187,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 		}
 
 		// Permission enforcement
@@ -195,7 +195,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $draft->id)));
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $draft->id)));
 		}
 
 		$this->enforceEditEntryPermissions($entry);
@@ -265,7 +265,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$version)
 		{
-			throw new Exception(Craft::t('No version exists with the ID “{id}”', array('id' => $versionId)));
+			throw new Exception(Craft::t('No version exists with the ID “{id}”.', array('id' => $versionId)));
 		}
 
 		// Permission enforcement
@@ -273,7 +273,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”', array('id' => $version->id)));
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $version->id)));
 		}
 
 		$this->enforceEditEntryPermissions($entry);

@@ -175,7 +175,7 @@ class TagsService extends BaseComponent
 
 			if (!$tagGroupRecord)
 			{
-				throw new Exception(Craft::t('No tag group exists with the ID “{id}”', array('id' => $tagGroup->id)));
+				throw new Exception(Craft::t('No tag group exists with the ID “{id}”.', array('id' => $tagGroup->id)));
 			}
 
 			$oldTagGroup = TagGroupModel::populateModel($tagGroupRecord);
@@ -341,7 +341,7 @@ class TagsService extends BaseComponent
 
 			if (!$tagRecord)
 			{
-				throw new Exception(Craft::t('No tag exists with the ID “{id}”', array('id' => $tag->id)));
+				throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tag->id)));
 			}
 		}
 		else

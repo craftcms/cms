@@ -124,12 +124,12 @@ class UserGroupsService extends BaseComponent
 	}
 
 	/**
-	 * Assigns a user to groups
+	 * Assigns a user to a given list of user groups.
 	 *
-	 * @param int       $userId
-	 * @param int|array $groupIds
+	 * @param int       $userId   The user’s ID.
+	 * @param int|array $groupIds The groups’ IDs.
 	 *
-	 * @return bool
+	 * @return bool Whether the users were successfully assigned to the groups.
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
@@ -155,6 +155,50 @@ class UserGroupsService extends BaseComponent
 	}
 
 	/**
+	 * Assigns a user to the default user group.
+	 *
+	 * This method is called toward the end of a public registration request.
+	 *
+	 * @param UserModel $user The user that was just registered.
+	 *
+	 * @return bool Whether the user was assigned to the default group.
+	 */
+	public function assignUserToDefaultGroup(UserModel $user)
+	{
+		$defaultGroupId = craft()->systemSettings->getSetting('users', 'defaultGroup');
+
+		if ($defaultGroupId)
+		{
+			// Fire an 'onBeforeAssignUserToDefaultGroup' event
+			$event = new Event($this, array(
+				'user'           => $user,
+				'defaultGroupId' => $defaultGroupId
+			));
+
+			$this->onBeforeAssignUserToDefaultGroup($event);
+
+			// Is the event is giving us the go-ahead?
+			if ($event->performAction)
+			{
+				$success = $this->assignUserToGroups($user->id, array($defaultGroupId));
+
+				if ($success)
+				{
+					// Fire an 'onAssignUserToDefaultGroup' event
+					$this->onAssignUserToDefaultGroup(new Event($this, array(
+						'user'           => $user,
+						'defaultGroupId' => $defaultGroupId
+					)));
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Deletes a user group by its ID.
 	 *
 	 * @param int $groupId
@@ -165,6 +209,33 @@ class UserGroupsService extends BaseComponent
 	{
 		craft()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeAssignUserToDefaultGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeAssignUserToDefaultGroup(Event $event)
+	{
+		$this->raiseEvent('onBeforeAssignUserToDefaultGroup', $event);
+	}
+
+	/**
+	 * Fires an 'onAssignUserToDefaultGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onAssignUserToDefaultGroup(Event $event)
+	{
+		$this->raiseEvent('onAssignUserToDefaultGroup', $event);
 	}
 
 	// Private Methods
@@ -206,6 +277,6 @@ class UserGroupsService extends BaseComponent
 	 */
 	private function _noGroupExists($groupId)
 	{
-		throw new Exception(Craft::t('No group exists with the ID “{id}”', array('id' => $groupId)));
+		throw new Exception(Craft::t('No group exists with the ID “{id}”.', array('id' => $groupId)));
 	}
 }

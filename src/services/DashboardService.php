@@ -324,7 +324,7 @@ class DashboardService extends BaseComponent
 	 */
 	private function _noWidgetExists($widgetId)
 	{
-		throw new Exception(Craft::t('No widget exists with the ID “{id}”', array('id' => $widgetId)));
+		throw new Exception(Craft::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
 	}
 
 	/**

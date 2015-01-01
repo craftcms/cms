@@ -163,15 +163,20 @@ Craft.FieldToggle = Garnish.Base.extend(
 
 				$target.height('auto');
 				this.showTarget._targetHeight = $target.height();
-				$target
-					.css({
-						height: this.showTarget._currentHeight,
-						overflow: 'hidden'
+				$target.css({
+					height: this.showTarget._currentHeight,
+					overflow: 'hidden'
+				});
+
+				$target.velocity('stop');
+
+				$target.velocity({ height: this.showTarget._targetHeight }, 'fast', function()
+				{
+					$target.css({
+						height: '',
+						overflow: ''
 					});
-				$target.velocity('stop')
-					.velocity({height: this.showTarget._targetHeight}, 'fast', function() {
-						$target.height('auto');
-					});
+				});
 
 				delete this.showTarget._targetHeight;
 			}
@@ -199,12 +204,12 @@ Craft.FieldToggle = Garnish.Base.extend(
 					this.$toggle.addClass('collapsed');
 				}
 
-				$target
-					.css('overflow', 'hidden')
-					.velocity('stop')
-					.velocity({height: 0}, 'fast', function() {
-						$target.addClass('hidden');
-					});
+				$target.css('overflow', 'hidden');
+				$target.velocity('stop');
+				$target.velocity({ height: 0 }, 'fast', function()
+				{
+					$target.addClass('hidden');
+				});
 			}
 		}
 	}

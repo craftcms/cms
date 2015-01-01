@@ -168,6 +168,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			'context'             => $context,
 			'elementType'         => new ElementTypeVariable($this),
 			'disabledElementIds'  => $disabledElementIds,
+			'collapsedElementIds' => craft()->request->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,
 		);
 
@@ -307,23 +308,17 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 					return '';
 				}
 			}
-			case 'dateCreated':
-			case 'dateUpdated':
-			{
-				$date = $element->$attribute;
 
-				if ($date)
-				{
-					return $date->uiTimestamp();
-				}
-				else
-				{
-					return '';
-				}
-			}
 			default:
 			{
-				return HtmlHelper::encode($element->$attribute);
+				$value = $element->$attribute;
+
+				if ($value instanceof DateTime)
+				{
+					return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+				}
+
+				return HtmlHelper::encode($value);
 			}
 		}
 	}

@@ -205,10 +205,6 @@ class Assets extends BaseElementFieldType
 			}
 			else
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId(
-					$settings->defaultUploadLocationSource,
-					$settings->defaultUploadLocationSubpath);
-
 				// Find the files with temp sources and just move those.
 				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
@@ -221,6 +217,14 @@ class Assets extends BaseElementFieldType
 				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
+				}
+
+				// If we have some files to move, make sure the folder exists.
+				if (!empty($filesToMove))
+				{
+					$targetFolderId = $this->_resolveSourcePathToFolderId(
+						$settings->defaultUploadLocationSource,
+						$settings->defaultUploadLocationSubpath);
 				}
 			}
 
@@ -338,8 +342,9 @@ class Assets extends BaseElementFieldType
 
 		if ($settings->useSingleFolder)
 		{
-			craft()->userSession->authorize('uploadToAssetSource:'.$settings->singleUploadLocationSource);
-			$folderPath = 'folder:'.$this->_determineUploadFolderId($settings).':single';
+			$folderId = $this->_determineUploadFolderId($settings);
+			craft()->userSession->authorize('uploadToAssetSource:'.$folderId);
+			$folderPath = 'folder:'.$folderId.':single';
 
 			return array($folderPath);
 		}

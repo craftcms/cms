@@ -253,7 +253,7 @@ class UsersService extends BaseComponent
 
 			if (!$userRecord)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $user->id)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $user->id)));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -440,9 +440,16 @@ class UsersService extends BaseComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
-		$path = craft()->config->get('actionTrigger').'/users/verifyemail';
-		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
+			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
 
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -480,9 +487,16 @@ class UsersService extends BaseComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
-		// Can't use getActionUrl() here b/c we want it to point to the front-end even if this is a CP request
-		$path = craft()->config->get('actionTrigger').'/users/setpassword';
-		$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = craft()->config->get('actionTrigger').'/users/setpassword';
+			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
 
 		return $url;
 	}
@@ -577,8 +591,25 @@ class UsersService extends BaseComponent
 	 * @param string    $sessionToken The session token.
 	 *
 	 * @return string The session’s UID.
+	 * @deprecated Deprecated in 2.3. Use {@link UsersService::updateUserLoginInfo() `craft()->users->updateUserLoginInfo()`}
+	 *             and {@link UserSessionService::storeSessionToken() `craft()->userSession->storeSessionToken()`} instead.
 	 */
 	public function handleSuccessfulLogin(UserModel $user, $sessionToken)
+	{
+		$this->updateUserLoginInfo($user);
+
+		return craft()->userSession->storeSessionToken($user, $sessionToken);
+	}
+
+	/**
+	 * Updates a user's record for a successful login.
+	 *
+	 * @param UserModel $user
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function updateUserLoginInfo(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
@@ -589,14 +620,7 @@ class UsersService extends BaseComponent
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
 
-		$sessionRecord = new SessionRecord();
-		$sessionRecord->userId = $user->id;
-		$sessionRecord->token = $sessionToken;
-
-		$userRecord->save();
-		$sessionRecord->save();
-
-		return $sessionRecord->uid;
+		return $userRecord->save();
 	}
 
 	/**
@@ -1417,7 +1441,7 @@ class UsersService extends BaseComponent
 
 		if (!$userRecord)
 		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”', array('id' => $userId)));
+			throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 		}
 
 		return $userRecord;
