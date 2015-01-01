@@ -353,35 +353,6 @@ class TemplatesService extends BaseComponent
 	}
 
 	/**
-	 * Prepares some HTML for inclusion in the `<head>` of the template.
-	 *
-	 * @param string $node  The HTML to be included in the template.
-	 * @param bool   $first Whether the HTML should be included before any other HTML that was already included with this
-	 *                      method.
-	 *
-	 * @deprecated Deprecated in 1.1. Use {@link includeHeadHtml()} instead.
-	 * @return null
-	 */
-	public function includeHeadNode($node, $first = false)
-	{
-		craft()->deprecator->log('TemplatesService::includeHeadNode()', 'TemplatesService::includeHeadNode() has been deprecated. includeHeadHtml() instead.');
-		$this->includeHeadHtml($node, $first);
-	}
-
-	/**
-	 * Prepares an HTML node for inclusion right above the </body> in the template.
-	 *
-	 * @param string $node The HTML to be included in the template.
-	 * @param bool   $first Whether the HTML should be included before any other HTML that was already included with this
-	 *                      method.
-	 */
-	public function includeFootNode($node, $first = false)
-	{
-		craft()->deprecator->log('TemplatesService::includeFootNode()', 'TemplatesService::includeFootNode() has been deprecated. Use includeFootNode() instead.');
-		$this->includeFootHtml($node, $first);
-	}
-
-	/**
 	 * Prepares a CSS file for inclusion in the template.
 	 *
 	 * @param string $url   The URL to the CSS file.
