@@ -918,29 +918,6 @@ class UserSessionService extends \CWebUser
 			isset($data[0], $data[1], $data[2], $data[3], $data[4], $data[5])
 		)
 		{
-			// TODO: remove this code after a while
-
-			// If $data[3] is something besides 0 or 1, it was created before Craft 2.2, and represents the auth timeout
-			// rather than whether Remember Me was checked. Let's fix that.
-			if ($data[3] != 0 && $data[3] != 1)
-			{
-				// Delete the old rememberMe cookie(s)
-				craft()->request->deleteCookie('rememberMe');
-				$this->deleteStateCookie('rememberMe');
-
-				// Replace $data[3]'s value with a 0 or 1
-				$duration = craft()->config->get('rememberedUserSessionDuration');
-
-				if (is_numeric($data[3]) && $data[3] >= DateTimeHelper::timeFormatToSeconds($duration))
-				{
-					$data[3] = 1;
-				}
-				else
-				{
-					$data[3] = 0;
-				}
-			}
-
 			return $data;
 		}
 	}
