@@ -771,39 +771,6 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns the raw content saved on this entity.
-	 *
-	 * This is now deprecated. Use getContent() to get the ContentModel instead.
-	 *
-	 * @param string|null $fieldHandle
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link getContent()} instead.
-	 * @return mixed
-	 */
-	public function getRawContent($fieldHandle = null)
-	{
-		craft()->deprecator->log('BaseElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
-
-		$content = $this->getContent();
-
-		if ($fieldHandle)
-		{
-			if (isset($content->$fieldHandle))
-			{
-				return $content->$fieldHandle;
-			}
-			else
-			{
-				return null;
-			}
-		}
-		else
-		{
-			return $content;
-		}
-	}
-
-	/**
 	 * Returns the content for the element.
 	 *
 	 * @return ContentModel
