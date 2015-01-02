@@ -4,7 +4,7 @@ namespace craft\app\widgets;
 use craft\app\components\SavableComponentTypeInterface;
 
 /**
- * Interface WidgetInterface
+ * Interface Widget.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -4,7 +4,7 @@ namespace craft\app\widgets;
 use craft\app\Craft;
 
 /**
- * Class UpdatesWidget
+ * Class Updates widget.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.widgets
  * @since     3.0
  */
-class UpdatesWidget extends BaseWidget
+class Updates extends BaseWidget
 {
 	// Properties
 	// =========================================================================
