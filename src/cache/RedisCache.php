@@ -4,12 +4,12 @@ namespace craft\app\cache;
 /**
  * RedisCache implements a cache application component based on [redis](http://redis.io/).
  *
- * RedisCache needs to be configured with {@link hostname}, {@link port} and {@link database} of the server to connect
+ * RedisCache needs to be configured with [[hostname]], [[port]] and [[database]] of the server to connect
  * to. By default RedisCache assumes there is a redis server running on localhost at port 6379 and uses the database
  * number 0.
  *
  * RedisCache also supports [the AUTH command](http://redis.io/commands/auth) of redis. When the server needs
- * authentication, you can set the {@link password} property to authenticate with the server after connect.
+ * authentication, you can set the [[password]] property to authenticate with the server after connect.
  *
  * The minimum required redis version is 2.0.0.
  *

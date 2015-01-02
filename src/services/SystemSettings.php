@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\records\SystemSettings    as SystemSettingsRecord;
 use craft\app\web\Application;
 
 /**
  * Class SystemSettings service.
  *
- * An instance of the SystemSettings service is globally accessible in Craft via {@link Application::systemSettings `craft()->systemSettings`}.
+ * An instance of the SystemSettings service is globally accessible in Craft via [[Application::systemSettings `craft()->systemSettings`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class SystemSettings extends BaseComponent
+class SystemSettings extends Component
 {
 	// Properties
 	// =========================================================================

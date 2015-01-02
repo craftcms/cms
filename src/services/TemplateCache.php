@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 use craft\app\web\Application;
 
 /**
  * Class TemplateCache service.
  *
- * An instance of the TemplateCache service is globally accessible in Craft via {@link Application::templateCache `craft()->templateCache`}.
+ * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `craft()->templateCache`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class TemplateCache extends BaseComponent
+class TemplateCache extends Component
 {
 	// Properties
 	// =========================================================================

@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData     as AssetIndexDataModel;
 use craft\app\models\AssetSource        as AssetSourceModel;
@@ -12,7 +12,7 @@ use craft\app\web\Application;
 /**
  * Class AssetIndexing service.
  *
- * An instance of the AssetIndexing service is globally accessible in Craft via {@link Application::assetIndexing `craft()->assetIndexing`}.
+ * An instance of the AssetIndexing service is globally accessible in Craft via [[Application::assetIndexing `craft()->assetIndexing`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -21,7 +21,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class AssetIndexing extends BaseComponent
+class AssetIndexing extends Component
 {
 	// Public Methods
 	// =========================================================================

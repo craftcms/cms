@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\helpers\AppHelper;
 use craft\app\web\Application;
 
@@ -9,7 +9,7 @@ use craft\app\web\Application;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the Config service is globally accessible in Craft via {@link Application::config `craft()->config`}.
+ * An instance of the Config service is globally accessible in Craft via [[Application::config `craft()->config`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Config extends BaseComponent
+class Config extends Component
 {
 	// Properties
 	// =========================================================================
@@ -123,7 +123,7 @@ class Config extends BaseComponent
 	/**
 	 * Returns a localized config setting value by its name.
 	 *
-	 * Internally, {@link get()} will be called to get the value of the config setting. If the value is an array,
+	 * Internally, [[get()]] will be called to get the value of the config setting. If the value is an array,
 	 * then only a single value in that array will be returned: the one that has a key matching the `$localeId` argument.
 	 * If no matching key is found, the first element of the array will be returned instead.
 	 *
@@ -138,7 +138,7 @@ class Config extends BaseComponent
 	 *
 	 * @param string $item     The name of the config setting.
 	 * @param string $localeId The locale ID to return. Defaults to
-	 *                         {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
+	 *                         [[\craft\app\web\Application::getLanguage() `craft()->getLanguage()`]].
 	 * @param string $file     The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.
@@ -332,7 +332,7 @@ class Config extends BaseComponent
 	 * Returns whether generated URLs should be formatted using PATH_INFO, taking the
 	 * [usePathInfo](http://buildwithcraft.com/docs/config-settings#usePathInfo) config setting value into account.
 	 *
-	 * This method will usually only be called in the event that {@link omitScriptNameInUrls()} returns `false`
+	 * This method will usually only be called in the event that [[omitScriptNameInUrls()]] returns `false`
 	 * (so “index.php” _should_ be included), and it determines what follows “index.php” in the URL.
 	 *
 	 * If it returns `true`, a forward slash will be used, making “index.php” look like just another segment of the URL
@@ -477,7 +477,7 @@ class Config extends BaseComponent
 	 * Returns the user login path based on the type of the current request.
 	 *
 	 * If it’s a front-end request, the [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath) config
-	 * setting value will be returned. Otherwise the path specified in {@link getCpLoginPath()} will be returned.
+	 * setting value will be returned. Otherwise the path specified in [[getCpLoginPath()]] will be returned.
 	 *
 	 * @return string The login path.
 	 */
@@ -495,7 +495,7 @@ class Config extends BaseComponent
 	 * Returns the user logout path based on the type of the current request.
 	 *
 	 * If it’s a front-end request, the [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath) config
-	 * setting value will be returned. Otherwise the path specified in {@link getCpLogoutPath()} will be returned.
+	 * setting value will be returned. Otherwise the path specified in [[getCpLogoutPath()]] will be returned.
 	 *
 	 * @return string The logout path.
 	 */
@@ -525,7 +525,7 @@ class Config extends BaseComponent
 	 *
 	 * @todo Create a new getActivateAccountUrl() method (probably elsewhere, such as UrlHelper) which handles
 	 * everything that setting $full to `true` currently does here. The function should accept an actual UserModel
-	 * rather than their UID, for consistency with {@link getSetPasswordPath()}. Let this function continue working as a
+	 * rather than their UID, for consistency with [[getSetPasswordPath()]]. Let this function continue working as a
 	 * wrapper for getActivateAccountUrl() for the time being, with deprecation logs.
 	 */
 	public function getActivateAccountPath($code, $uid, $full = true)

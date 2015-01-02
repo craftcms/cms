@@ -6,7 +6,7 @@ use craft\app\web\Application;
 /**
  * Class Security service.
  *
- * An instance of the Security service is globally accessible in Craft via {@link Application::security `craft()->security`}.
+ * An instance of the Security service is globally accessible in Craft via [[Application::security `craft()->security`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

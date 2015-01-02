@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Category             as CategoryModel;
 use craft\app\models\CategoryGroup        as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale  as CategoryGroupLocaleModel;
@@ -14,7 +14,7 @@ use craft\app\web\Application;
 /**
  * Class Categories service.
  *
- * An instance of the Categories service is globally accessible in Craft via {@link Application::categories `craft()->categories`}.
+ * An instance of the Categories service is globally accessible in Craft via [[Application::categories `craft()->categories`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -23,7 +23,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Categories extends BaseComponent
+class Categories extends Component
 {
 	// Properties
 	// =========================================================================

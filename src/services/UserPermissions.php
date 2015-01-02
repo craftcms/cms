@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\records\UserPermission    as UserPermissionRecord;
 use craft\app\web\Application;
@@ -11,7 +11,7 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Class UserPermissions service.
  *
- * An instance of the UserPermissions service is globally accessible in Craft via {@link Application::userPermissions `craft()->userPermissions`}.
+ * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `craft()->userPermissions`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     3.0
  */
-class UserPermissions extends BaseComponent
+class UserPermissions extends Component
 {
 	// Properties
 	// =========================================================================

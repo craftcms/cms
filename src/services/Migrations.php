@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\errors\Exception;
 use craft\app\records\Migration         as MigrationRecord;
 use craft\app\web\Application;
@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Migrations service.
  *
- * An instance of the Migrations service is globally accessible in Craft via {@link Application::migrations `craft()->migrations`}.
+ * An instance of the Migrations service is globally accessible in Craft via [[Application::migrations `craft()->migrations`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Migrations extends BaseComponent
+class Migrations extends Component
 {
 	// Properties
 	// =========================================================================

@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
 use craft\app\widgets\BaseWidget;
@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Dashboard service.
  *
- * An instance of the Dashboard service is globally accessible in Craft via {@link Application::dashboard `craft()->dashboard`}.
+ * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `craft()->dashboard`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Dashboard extends BaseComponent
+class Dashboard extends Component
 {
 	// Public Methods
 	// =========================================================================

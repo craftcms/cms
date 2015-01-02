@@ -10,7 +10,7 @@ use craft\app\cache\RedisCache;
 use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;
 use craft\app\web\Application;
@@ -18,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Class Cache service.
  *
- * An instance of the Cache service is globally accessible in Craft via {@link Application::cache `craft()->cache`}.
+ * An instance of the Cache service is globally accessible in Craft via [[Application::cache `craft()->cache`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -27,7 +27,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Cache extends BaseComponent
+class Cache extends Component
 {
 	// Properties
 	// =========================================================================

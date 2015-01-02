@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Password           as PasswordModel;
 use craft\app\models\User               as UserModel;
 use craft\app\records\Session           as SessionRecord;
@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * The Users service provides APIs for managing users.
  *
- * An instance of the Users service is globally accessible in Craft via {@link Application::users `craft()->users`}.
+ * An instance of the Users service is globally accessible in Craft via [[Application::users `craft()->users`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Users extends BaseComponent
+class Users extends Component
 {
 	// Properties
 	// =========================================================================
@@ -1468,7 +1468,7 @@ class Users extends BaseComponent
 	 * @param UserModel  $user                        The user who is getting a new password.
 	 * @param UserRecord $userRecord                  The user’s record.
 	 * @param bool       $updatePasswordResetRequired Whether the user’s
-	 *                                                {@link UserModel::passwordResetRequired passwordResetRequired}
+	 *                                                [[UserModel::passwordResetRequired passwordResetRequired]]
 	 *                                                attribute should be set `false`. Default is `true`.
 	 * @param bool       $forceDifferentPassword      Whether to force a new password to be different from any existing
 	 *                                                password.

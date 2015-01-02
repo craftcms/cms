@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\models\Field              as FieldModel;
 use craft\app\models\FieldGroup         as FieldGroupModel;
@@ -17,7 +17,7 @@ use craft\app\web\Application;
 /**
  * Class Install service.
  *
- * An instance of the Install service is globally accessible in Craft via {@link Application::install `craft()->install`}.
+ * An instance of the Install service is globally accessible in Craft via [[Application::install `craft()->install`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -26,7 +26,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Install extends BaseComponent
+class Install extends Component
 {
 	// Properties
 	// =========================================================================

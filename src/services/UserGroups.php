@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\UserGroup          as UserGroupModel;
 use craft\app\records\UserGroup         as UserGroupRecord;
@@ -12,7 +12,7 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Class UserGroups service.
  *
- * An instance of the UserGroups service is globally accessible in Craft via {@link Application::userGroups `craft()->userGroups`}.
+ * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `craft()->userGroups`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     3.0
  */
-class UserGroups extends BaseComponent
+class UserGroups extends Component
 {
 	// Public Methods
 	// =========================================================================

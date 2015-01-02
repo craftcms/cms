@@ -1,13 +1,13 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\web\Application;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
  *
- * An instance of the Path service is globally accessible in Craft via {@link Application::path `craft()->path`}.
+ * An instance of the Path service is globally accessible in Craft via [[Application::path `craft()->path`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -16,7 +16,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Path extends BaseComponent
+class Path extends Component
 {
 	// Properties
 	// =========================================================================

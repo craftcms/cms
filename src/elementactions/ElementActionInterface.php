@@ -34,8 +34,8 @@ interface ElementActionInterface extends ComponentTypeInterface
 	/**
 	 * Sets the param values.
 	 *
-	 * The values may come as a key/value array, or a {@link BaseModel} object. Either way, this method should store the
-	 * values on the model that is returned by {@link getParams()}.
+	 * The values may come as a key/value array, or a [[BaseModel]] object. Either way, this method should store the
+	 * values on the model that is returned by [[getParams()]].
 	 *
 	 * @param array|BaseModel $values The new param values.
 	 *

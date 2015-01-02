@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Et                 as EtModel;
 use craft\app\models\Update             as UpdateModel;
 use craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * Class Et service.
  *
- * An instance of the Et service is globally accessible in Craft via {@link Application::et `craft()->et`}.
+ * An instance of the Et service is globally accessible in Craft via [[Application::et `craft()->et`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Et extends BaseComponent
+class Et extends Component
 {
 	// Constants
 	// =========================================================================

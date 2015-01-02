@@ -341,8 +341,8 @@ class IOHelper
 	}
 
 	/**
-	 * If the path points to a real file, we call {@link \CFileHelper::getMimeType}, otherwise
-	 * {@link \CFileHelper::getMimeTypeByExtension}
+	 * If the path points to a real file, we call [[\CFileHelper::getMimeType]], otherwise
+	 * [[\CFileHelper::getMimeTypeByExtension]]
 	 *
 	 * @param string $path The path to test.
 	 *
@@ -361,7 +361,7 @@ class IOHelper
 	}
 
 	/**
-	 * A wrapper for {@link \CFileHelper::getMimeTypeByExtension}.
+	 * A wrapper for [[\CFileHelper::getMimeTypeByExtension]].
 	 *
 	 * @param  string $path The path to test.
 	 *
@@ -668,13 +668,13 @@ class IOHelper
 	}
 
 	/**
-	 * Will create a file on the file system at the given path and return a {@link File} object or false if we don't
+	 * Will create a file on the file system at the given path and return a [[File]] object or false if we don't
 	 * have write permissions.
 	 *
 	 * @param string $path           The path of the file to create.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return File|bool The newly created file as a {@link File} object or false if we don't have write permissions.
+	 * @return File|bool The newly created file as a [[File]] object or false if we don't have write permissions.
 	 */
 	public static function createFile($path, $suppressErrors = false)
 	{
@@ -696,14 +696,14 @@ class IOHelper
 	}
 
 	/**
-	 * Will create a folder on the file system at the given path and return a {@link Folder} object or false if we don't
+	 * Will create a folder on the file system at the given path and return a [[Folder]] object or false if we don't
 	 * have write permissions.
 	 *
 	 * @param string $path           The path of the file to create.
 	 * @param int    $permissions    The permissions to set the folder to.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return Folder|bool The newly created folder as a {@link Folder} object or false if we don't have write
+	 * @return Folder|bool The newly created folder as a [[Folder]] object or false if we don't have write
 	 *                     permissions.
 	 */
 	public static function createFolder($path, $permissions = null, $suppressErrors = false)
@@ -1664,7 +1664,7 @@ class IOHelper
 	}
 
 	/**
-	 * Used by {@link getFolderSize} to calculate the size of a folder.
+	 * Used by [[getFolderSize]] to calculate the size of a folder.
 	 *
 	 * @param string $path           The path of the folder.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
@@ -1759,7 +1759,7 @@ class IOHelper
 	}
 
 	/**
-	 * Applies an array of filter rules to the string representing the file path. Used internally by {@link dirContents}
+	 * Applies an array of filter rules to the string representing the file path. Used internally by [[dirContents]]
 	 * method.
 	 *
 	 * @param string $str   String representing file path to be filtered

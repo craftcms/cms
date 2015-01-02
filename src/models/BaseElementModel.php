@@ -883,7 +883,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns the raw content from the post data, before it was passed through {@link prepValueFromPost()}.
+	 * Returns the raw content from the post data, before it was passed through [[prepValueFromPost()]].
 	 *
 	 * @return array
 	 */

@@ -3,14 +3,14 @@ namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\records\Migration         as MigrationRecord;
 use craft\app\web\Application;
 
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the Plugins service is globally accessible in Craft via {@link Application::plugins `craft()->plugins`}.
+ * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `craft()->plugins`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Plugins extends BaseComponent
+class Plugins extends Component
 {
 	// Properties
 	// =========================================================================

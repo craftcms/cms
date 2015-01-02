@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * The UserSession service provides APIs for managing user sessions.
  *
- * An instance of the UserSession service is globally accessible in Craft via {@link Application::userSession `craft()->userSession`}.
+ * An instance of the UserSession service is globally accessible in Craft via [[Application::userSession `craft()->userSession`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -76,7 +76,7 @@ class UserSession extends \CWebUser
 	 * Initializes the application component.
 	 *
 	 * This method will determine how long user sessions are configured to last, and whether the current request
-	 * has requested to not extend the current user session, before calling {@link \CWebUser::init()}.
+	 * has requested to not extend the current user session, before calling [[\CWebUser::init()]].
 	 *
 	 * @return null
 	 */
@@ -149,7 +149,7 @@ class UserSession extends \CWebUser
 
 	/**
 	 * Returns the URL the user was trying to access before getting redirected to the login page via
-	 * {@link requireLogin()}.
+	 * [[requireLogin()]].
 	 *
 	 * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
 	 * @param bool        $delete     Whether the stored return URL should be deleted after it was fetched.
@@ -189,7 +189,7 @@ class UserSession extends \CWebUser
 	 * Stores a notice in the user’s flash data.
 	 *
 	 * The message will be stored on the user session, and can be retrieved by calling
-	 * {@link getFlash() `getFlash('notice')`} or {@link getFlashes()}.
+	 * [[getFlash() `getFlash('notice')`]] or [[getFlashes()]].
 	 *
 	 * Only one flash notice can be stored at a time.
 	 *
@@ -206,7 +206,7 @@ class UserSession extends \CWebUser
 	 * Stores an error message in the user’s flash data.
 	 *
 	 * The message will be stored on the user session, and can be retrieved by calling
-	 * {@link getFlash() `getFlash('error')`} or {@link getFlashes()}.
+	 * [[getFlash() `getFlash('error')`]] or [[getFlashes()]].
 	 *
 	 * Only one flash error message can be stored at a time.
 	 *
@@ -222,8 +222,8 @@ class UserSession extends \CWebUser
 	/**
 	 * Stores a JS file from resources/ in the user’s flash data.
 	 *
-	 * The file will be stored on the user session, and can be retrieved by calling {@link getJsResourceFlashes()} or
-	 * {@link \craft\app\services\Templates::getFootHtml()}.
+	 * The file will be stored on the user session, and can be retrieved by calling [[getJsResourceFlashes()]] or
+	 * [[\craft\app\services\Templates::getFootHtml()]].
 	 *
 	 * @param string $resource The resource path to the JS file.
 	 *
@@ -256,7 +256,7 @@ class UserSession extends \CWebUser
 	 * Stores JS in the user’s flash data.
 	 *
 	 * The Javascript code will be stored on the user session, and can be retrieved by calling
-	 * {@link getJsFlashes()} or {@link \craft\app\services\Templates::getFootHtml()}.
+	 * [[getJsFlashes()]] or [[\craft\app\services\Templates::getFootHtml()]].
 	 *
 	 * @param string $js The Javascript code.
 	 *
@@ -355,7 +355,7 @@ class UserSession extends \CWebUser
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Alias of {@link getIsGuest()}.
+	 * Alias of [[getIsGuest()]].
 	 *
 	 * @return bool
 	 */
@@ -368,7 +368,7 @@ class UserSession extends \CWebUser
 	/**
 	 * Returns whether the current user is logged in.
 	 *
-	 * The result will always just be the opposite of whatever {@link getIsGuest()} returns.
+	 * The result will always just be the opposite of whatever [[getIsGuest()]] returns.
 	 *
 	 * @return bool Whether the current user is logged in.
 	 */
@@ -481,7 +481,7 @@ class UserSession extends \CWebUser
 	}
 
 	/**
-	 * Alias of {@link requireLogin()}.
+	 * Alias of [[requireLogin()]].
 	 *
 	 * @return null
 	 */
@@ -787,7 +787,7 @@ class UserSession extends \CWebUser
 	}
 
 	/**
-	 * Alias of {@link isGuest()}.
+	 * Alias of [[isGuest()]].
 	 *
 	 * @return bool
 	 */
@@ -1061,9 +1061,9 @@ class UserSession extends \CWebUser
 	// =========================================================================
 
 	/**
-	 * Updates the authentication status according to {@link authTimeout}.
+	 * Updates the authentication status according to [[authTimeout]].
 	 *
-	 * Based on the parts of {@link \CWebUser::updateAuthStatus()} that are relevant to Craft, but this version also
+	 * Based on the parts of [[\CWebUser::updateAuthStatus()]] that are relevant to Craft, but this version also
 	 * enforces the [requireUserAgentAndIpForSession](http://buildwithcraft.com/docs/config-settings#requireUserAgentAndIpForSession)
 	 * config setting, and it won't update the timeout state if the 'dontExtendSession' param is set.
 	 *
@@ -1138,7 +1138,7 @@ class UserSession extends \CWebUser
 	/**
 	 * Restores a user session from the identity cookie.
 	 *
-	 * This method is used when automatic login ({@link allowAutoLogin}) is enabled. The user identity information is
+	 * This method is used when automatic login ([[allowAutoLogin]]) is enabled. The user identity information is
 	 * recovered from cookie.
 	 *
 	 * @todo Verify that it's totally necessary to re-save the cookie with a new user session token

@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\web\Application;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
  *
- * An instance of the Feeds service is globally accessible in Craft via {@link Application::feeds `craft()->feeds`}.
+ * An instance of the Feeds service is globally accessible in Craft via [[Application::feeds `craft()->feeds`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Feeds extends BaseComponent
+class Feeds extends Component
 {
 	// Public Methods
 	// =========================================================================
@@ -54,8 +54,8 @@ class Feeds extends BaseComponent
 	 *     - **name** – The contributor’s name
 	 *     - **url** – The contributor’s URL
 	 *     - **email** – The contributor’s email
-	 * - **date** – A {@link DateTime} object representing the item’s date.
-	 * - **dateUpdated** – A {@link DateTime} object representing the item’s last updated date.
+	 * - **date** – A [[DateTime]] object representing the item’s date.
+	 * - **dateUpdated** – A [[DateTime]] object representing the item’s last updated date.
 	 * - **permalink** – The item’s URL.
 	 * - **summary** – The item’s summary content.
 	 * - **title** – The item’s title.

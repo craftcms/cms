@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\DeprecationError   as DeprecationErrorModel;
 use craft\app\web\Application;
 
 /**
  * Class Deprecator service.
  *
- * An instance of the Deprecator service is globally accessible in Craft via {@link Application::deprecator `craft()->deprecator`}.
+ * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `craft()->deprecator`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Deprecator extends BaseComponent
+class Deprecator extends Component
 {
 	// Properties
 	// =========================================================================
@@ -296,7 +296,7 @@ class Deprecator extends BaseComponent
 	/**
 	 * Converts an array of method arguments to a string.
 	 *
-	 * Adapted from {@link \CErrorHandler::argumentsToString()}, but this one's less destructive
+	 * Adapted from [[\CErrorHandler::argumentsToString()]], but this one's less destructive
 	 *
 	 * @param $args array
 	 *

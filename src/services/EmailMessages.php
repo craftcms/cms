@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\RebrandEmail       as RebrandEmailModel;
 use craft\app\records\EmailMessage      as EmailMessageRecord;
@@ -12,7 +12,7 @@ craft()->requireEdition(Craft::Client);
 /**
  * Class EmailMessages service.
  *
- * An instance of the EmailMessages service is globally accessible in Craft via {@link Application::emailMessages `craft()->emailMessages`}.
+ * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `craft()->emailMessages`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     3.0
  */
-class EmailMessages extends BaseComponent
+class EmailMessages extends Component
 {
 	// Properties
 	// =========================================================================

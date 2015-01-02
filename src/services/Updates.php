@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\AppUpdate          as AppUpdateModel;
 use craft\app\models\PluginUpdate       as PluginUpdateModel;
 use craft\app\models\Update             as UpdateModel;
@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Updates service.
  *
- * An instance of the Updates service is globally accessible in Craft via {@link Application::updates `craft()->updates`}.
+ * An instance of the Updates service is globally accessible in Craft via [[Application::updates `craft()->updates`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Updates extends BaseComponent
+class Updates extends Component
 {
 	// Properties
 	// =========================================================================

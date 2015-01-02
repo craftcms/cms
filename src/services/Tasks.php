@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Task               as TaskModel;
 use craft\app\records\Task              as TaskRecord;
 use craft\app\web\Application;
@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Tasks service.
  *
- * An instance of the Tasks service is globally accessible in Craft via {@link Application::tasks `craft()->tasks`}.
+ * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `craft()->tasks`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Tasks extends BaseComponent
+class Tasks extends Component
 {
 	// Properties
 	// =========================================================================

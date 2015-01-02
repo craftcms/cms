@@ -4,7 +4,7 @@ namespace craft\app\controllers;
 /**
  * BaseController is a base class that all controllers in Craft extend.
  *
- * It extend's Yii's {@link \CController} overwriting specific methods as required.
+ * It extend's Yii's [[\CController]] overwriting specific methods as required.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -27,7 +27,7 @@ abstract class BaseController extends \CController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
 	 * in the individual methods.
 	 *
 	 * @var bool
@@ -40,7 +40,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Returns the request parameters that will be used for action parameter binding.
 	 *
-	 * By default, this method will return $_GET merged with {@link UrlManager::getRouteParams}.
+	 * By default, this method will return $_GET merged with [[UrlManager::getRouteParams]].
 	 *
 	 * @return array The request parameters to be used for action parameter binding.
 	 */
@@ -61,10 +61,10 @@ abstract class BaseController extends \CController
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param mixed $template      The name of the template to load in a format supported by
-	 *                             {@link \craft\app\services\Templates::findTemplate()}, or a {@link StringTemplate} object.
+	 *                             [[\craft\app\services\Templates::findTemplate()]], or a [[StringTemplate]] object.
 	 * @param array $variables     The variables that should be available to the template.
 	 * @param bool  $return        Whether to return the results, rather than output them. (Default is `false`.)
-	 * @param bool  $processOutput Whether the output should be processed by {@link processOutput()}.
+	 * @param bool  $processOutput Whether the output should be processed by [[processOutput()]].
 	 *
 	 * @throws HttpException
 	 * @return mixed The rendered template if $return is set to `true`.

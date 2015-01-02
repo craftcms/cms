@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseComponentModel;
 use craft\app\web\Application;
 
 /**
  * Class Components service.
  *
- * An instance of the Components service is globally accessible in Craft via {@link Application::components `craft()->components`}.
+ * An instance of the Components service is globally accessible in Craft via [[Application::components `craft()->components`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Components extends BaseComponent
+class Components extends Component
 {
 	// Properties
 	// =========================================================================

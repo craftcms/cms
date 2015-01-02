@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\AssetFile           as AssetFileModel;
 use craft\app\models\AssetTransform      as AssetTransformModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class AssetTransforms service.
  *
- * An instance of the AssetTransforms service is globally accessible in Craft via {@link Application::assetTransforms `craft()->assetTransforms`}.
+ * An instance of the AssetTransforms service is globally accessible in Craft via [[Application::assetTransforms `craft()->assetTransforms`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class AssetTransforms extends BaseComponent
+class AssetTransforms extends Component
 {
 	// Properties
 	// =========================================================================

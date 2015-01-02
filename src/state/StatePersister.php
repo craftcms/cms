@@ -6,9 +6,9 @@ namespace craft\app\state;
  *
  * It can be used to keep data available through multiple requests and sessions.
  *
- * By default, StatePersister stores data in a file named 'state.bin' that is located {@link \craft\app\services\Path::getStatePath()}.
+ * By default, StatePersister stores data in a file named 'state.bin' that is located [[\craft\app\services\Path::getStatePath()]].
  *
- * To retrieve the data from StatePersister, call {@link load()}. To save the data, call {@link save()}.
+ * To retrieve the data from StatePersister, call [[load()]]. To save the data, call [[save()]].
  *
  * A comparison among state persister, session and cache is as follows:
  *
@@ -20,10 +20,10 @@ namespace craft\app\state;
  * You should also consider using database-based persister to improve the throughput.
  *
  * StatePersister is a core application component used to store global application state. It may be accessed via
- * {@link \craft\app\web\Application::getStatePersister()}.
+ * [[\craft\app\web\Application::getStatePersister()]].
  *
  *
- * Craft overrides the default {@link \CStatePersister} so it can set a custom path at runtime for our state file.
+ * Craft overrides the default [[\CStatePersister]] so it can set a custom path at runtime for our state file.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

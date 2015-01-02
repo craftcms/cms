@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 use craft\app\records\ElementLocale     as ElementLocaleRecord;
@@ -12,7 +12,7 @@ use craft\app\web\Application;
 /**
  * The Elements service provides APIs for managing elements.
  *
- * An instance of the Elements service is globally accessible in Craft via {@link Application::elements `craft()->elements`}.
+ * An instance of the Elements service is globally accessible in Craft via [[Application::elements `craft()->elements`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -21,7 +21,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Elements extends BaseComponent
+class Elements extends Component
 {
 	// Properties
 	// =========================================================================
@@ -48,7 +48,7 @@ class Elements extends BaseComponent
 	 * $entries = $criteria->find();
 	 * ```
 	 *
-	 * @param string $type       The element type class handle (e.g. one of the values in the {@link ElementType} enum).
+	 * @param string $type       The element type class handle (e.g. one of the values in the [[ElementType]] enum).
 	 * @param mixed  $attributes Any criteria attribute values that should be pre-populated on the criteria model.
 	 *
 	 * @throws Exception
@@ -77,7 +77,7 @@ class Elements extends BaseComponent
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element type’s class handle.
 	 * @param string $localeId    The locale to fetch the element in.
-	 *                            Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage`}.
+	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `craft()->getLanguage`]].
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.
 	 */
@@ -111,7 +111,7 @@ class Elements extends BaseComponent
 	 *
 	 * @param string      $uri         The element’s URI.
 	 * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
-	 *                                 Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
+	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `craft()->getLanguage()`]].
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.
@@ -398,7 +398,7 @@ class Elements extends BaseComponent
 	}
 
 	/**
-	 * Preps a {@link DbCommand} object for querying for elements, based on a given element criteria.
+	 * Preps a [[DbCommand]] object for querying for elements, based on a given element criteria.
 	 *
 	 * @param ElementCriteriaModel &$criteria     The element criteria model
 	 * @param string               &$contentTable The content table that should be joined in. (This variable will
@@ -1008,7 +1008,7 @@ class Elements extends BaseComponent
 	 * Those tasks include:
 	 *
 	 * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
-	 * - Ensuring the element has a title if its type {@link BaseElementType::hasTitles() has titles}, and giving it a
+	 * - Ensuring the element has a title if its type [[BaseElementType::hasTitles() has titles]], and giving it a
 	 *   default title in the event that $validateContent is set to `false`
 	 * - Saving a row in the `elements` table
 	 * - Assigning the element’s ID on the element model, if it’s a new element
@@ -1017,7 +1017,7 @@ class Elements extends BaseComponent
 	 * - Setting a unique URI on the element, if it’s supposed to have one.
 	 * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
 	 * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
-	 * - Calling the field types’ {@link BaseFieldType::onAfterElementSave() onAfterElementSave()} methods
+	 * - Calling the field types’ [[BaseFieldType::onAfterElementSave() onAfterElementSave()]] methods
 	 * - Cleaing any template caches that the element was involved in
 	 *
 	 * This method should be called by a service’s “saveX()” method, _after_ it is done validating any attributes on
@@ -1909,7 +1909,7 @@ class Elements extends BaseComponent
 	}
 
 	/**
-	 * Stores a placeholder element that {@link findElements()} should use instead of populating a new element with a
+	 * Stores a placeholder element that [[findElements()]] should use instead of populating a new element with a
 	 * matching ID and locale.
 	 *
 	 * This is used by Live Preview and Sharing features.

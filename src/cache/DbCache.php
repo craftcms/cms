@@ -6,7 +6,7 @@ use craft\app\db\DbConnection;
 /**
  * DbCache implements a cache application component by storing cached data in a database.
  *
- * DbCache stores cache data in a DB table named {@link cacheTableName}. If the table does not exist, it will be
+ * DbCache stores cache data in a DB table named [[cacheTableName]]. If the table does not exist, it will be
  * automatically created.
  *
  * DbCache relies on [PDO](http://www.php.net/manual/en/ref.pdo.php) to access database. By default, it will use

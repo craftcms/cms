@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;
 use craft\app\models\SectionLocale      as SectionLocaleModel;
@@ -14,7 +14,7 @@ use craft\app\web\Application;
 /**
  * Class Sections service.
  *
- * An instance of the Sections service is globally accessible in Craft via {@link Application::sections `craft()->sections`}.
+ * An instance of the Sections service is globally accessible in Craft via [[Application::sections `craft()->sections`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -23,7 +23,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Sections extends BaseComponent
+class Sections extends Component
 {
 	// Properties
 	// =========================================================================

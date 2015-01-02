@@ -39,7 +39,7 @@ abstract class BasePlugin extends BaseSavableComponentType implements PluginInte
 	// =========================================================================
 
 	/**
-	 * A wrapper for writing to the log files for plugins that will ultimately call {@link Craft::log()}. This allows
+	 * A wrapper for writing to the log files for plugins that will ultimately call [[Craft::log()]]. This allows
 	 * plugins to be able to write to their own log files at `craft/storage/runtime/logs/pluginHandle.log` using
 	 * `PluginHandle::log()` syntax.
 	 *

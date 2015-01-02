@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\GlobalSet          as GlobalSetModel;
 use craft\app\records\GlobalSet         as GlobalSetRecord;
 use craft\app\web\Application;
@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Globals service.
  *
- * An instance of the Globals service is globally accessible in Craft via {@link Application::globals `craft()->globals`}.
+ * An instance of the Globals service is globally accessible in Craft via [[Application::globals `craft()->globals`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Globals extends BaseComponent
+class Globals extends Component
 {
 	// Properties
 	// =========================================================================

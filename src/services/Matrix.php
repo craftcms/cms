@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\fieldtypes\Matrix         as MatrixFieldType;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
@@ -15,7 +15,7 @@ use craft\app\web\Application;
 /**
  * The Matrix service provides APIs for managing Matrix fields.
  *
- * An instance of the Matrix service is globally accessible in Craft via {@link Application::matrix `craft()->matrix`}.
+ * An instance of the Matrix service is globally accessible in Craft via [[Application::matrix `craft()->matrix`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -24,7 +24,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Matrix extends BaseComponent
+class Matrix extends Component
 {
 	// Properties
 	// =========================================================================
@@ -691,7 +691,7 @@ class Matrix extends BaseComponent
 	 *
 	 * @param int    $blockId  The Matrix block’s ID.
 	 * @param string $localeId The locale ID to return.
-	 *                         Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
+	 *                         Defaults to [[\craft\app\web\Application::getLanguage() `craft()->getLanguage()`]].
 	 *
 	 * @return MatrixBlockModel|null The Matrix block, or `null` if it didn’t exist.
 	 */

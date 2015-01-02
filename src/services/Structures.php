@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Structure          as StructureModel;
 use craft\app\records\StructureElement  as StructureElementRecord;
@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Structures service.
  *
- * An instance of the Structures service is globally accessible in Craft via {@link Application::structures `craft()->structures`}.
+ * An instance of the Structures service is globally accessible in Craft via [[Application::structures `craft()->structures`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class StructuresService extends BaseComponent
+class StructuresService extends Component
 {
 	// Properties
 	// =========================================================================

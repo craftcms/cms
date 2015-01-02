@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\helpers\AppHelper;
 use craft\app\web\Application;
 
 /**
  * Service for image operations.
  *
- * An instance of the Images service is globally accessible in Craft via {@link Application::images `craft()->images`}.
+ * An instance of the Images service is globally accessible in Craft via [[Application::images `craft()->images`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Images extends BaseComponent
+class Images extends Component
 {
 	// Properties
 	// =========================================================================

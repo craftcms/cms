@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\web\Application;
 
 /**
  * Handles search operations.
  *
- * An instance of the Search service is globally accessible in Craft via {@link Application::search `craft()->search`}.
+ * An instance of the Search service is globally accessible in Craft via [[Application::search `craft()->search`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Search extends BaseComponent
+class Search extends Component
 {
 	// Constants
 	// =========================================================================

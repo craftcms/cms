@@ -121,7 +121,7 @@ class Application extends \yii\console\Application
 	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
 	 *
 	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
-	 * handler for {@link \craft\app\services\Entries::onSaveEntry()}, you would do this:
+	 * handler for [[\craft\app\services\Entries::onSaveEntry()]], you would do this:
 	 *
 	 * ```php
 	 * craft()->on('entries.saveEntry', function(Event $event) {
@@ -224,8 +224,8 @@ class Application extends \yii\console\Application
 	/**
 	 * Returns the system time zone.
 	 *
-	 * Note that this method cannot be in {@link \craft\app\base\ApplicationTrait}, because Yii will check
-	 * {@link \yii\base\Application::getTimeZone()} instead.
+	 * Note that this method cannot be in [[\craft\app\base\ApplicationTrait]], because Yii will check
+	 * [[\yii\base\Application::getTimeZone()]] instead.
 	 *
 	 * @return string
 	 */

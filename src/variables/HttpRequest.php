@@ -159,7 +159,7 @@ class HttpRequest
 	}
 
 	/**
-	 * Returns a {@link HttpCookie} if it exists, otherwise, null.
+	 * Returns a [[HttpCookie]] if it exists, otherwise, null.
 	 *
 	 * @param $name
 	 *

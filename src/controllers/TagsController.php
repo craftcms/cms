@@ -8,7 +8,7 @@ use craft\app\models\TagGroup as TagGroupModel;
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
  * saving, deleting, searching and creating tags and tag groups in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

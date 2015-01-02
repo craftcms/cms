@@ -4,55 +4,55 @@ namespace craft\app\web;
 /**
  * Craft Web Application class
  *
- * @property \craft\app\services\AssetIndexing    $assetIndexing    The {@link \craft\app\services\AssetIndexing assets indexing service}.
- * @property \craft\app\services\AssetSources     $assetSources     The {@link \craft\app\services\AssetSources assets sources service}.
- * @property \craft\app\services\Assets           $assets           The {@link \craft\app\services\Assets assets service}.
- * @property \craft\app\services\AssetTransforms  $assetTransforms  The {@link \craft\app\services\AssetTransforms assets sizes service}.
- * @property \craft\app\services\Cache            $cache            The {@link \craft\app\services\Cache cache service}.
- * @property \craft\app\services\Categories       $categories       The {@link \craft\app\services\Categories categories service}.
- * @property \craft\app\services\Components       $components       The {@link \craft\app\services\Components components service}.
- * @property \craft\app\services\Config           $config           The {@link \craft\app\services\Config config service}.
- * @property \craft\app\services\Content          $content          The {@link \craft\app\services\Content content service}.
- * @property \craft\app\services\Dashboard        $dashboard        The {@link \craft\app\services\Dashboard dashboard service}.
- * @property \craft\app\db\DbConnection           $db               The {@link \craft\app\db\DbConnection database connection}.
- * @property \craft\app\services\Deprecator       $deprecator       The {@link \craft\app\services\Deprecator deprecator service}.
- * @property \craft\app\services\Elements         $elements         The {@link \craft\app\services\Elements elements service}.
- * @property \craft\app\services\EmailMessages    $emailMessages    The {@link \craft\app\services\EmailMessages email messages service}.
- * @property \craft\app\services\Email            $email            The {@link \craft\app\services\Email email service}.
- * @property \craft\app\services\Entries          $entries          The {@link \craft\app\services\Entries entries service}.
- * @property \craft\app\services\EntryRevisions   $entryRevisions   The {@link \craft\app\services\EntryRevisions entry revisions service}.
- * @property \craft\app\services\Et               $et               The {@link \craft\app\services\Et E.T. service}.
- * @property \craft\app\services\Feeds            $feeds            The {@link \craft\app\services\Feeds feeds service}.
- * @property \craft\app\services\Fields           $fields           The {@link \craft\app\services\Fields fields service}.
- * @property \craft\app\cache\FileCache           $fileCache        {@link \craft\app\cache\FileCache File caching}.
- * @property \craft\app\services\Globals          $globals          The {@link \craft\app\services\Globals globals service}.
- * @property \craft\app\services\HttpRequest      $request          The {@link \craft\app\services\HttpRequest request service}.
- * @property \craft\app\services\HttpSession      $httpSession      The {@link \craft\app\services\HttpSession HTTP session service}.
- * @property \craft\app\services\Images           $images           The {@link \craft\app\services\Images images service}.
- * @property \craft\app\services\Install          $install          The {@link \craft\app\services\Install install service}.
- * @property \craft\app\services\Localization     $localization     The {@link \craft\app\services\Localization localization service}.
- * @property \craft\app\services\Matrix           $matrix           The {@link \craft\app\services\Matrix matrix service}.
- * @property \craft\app\services\Migrations       $migrations       The {@link \craft\app\services\Migrations migrations service}.
- * @property \craft\app\services\Path             $path             The {@link \craft\app\services\Path path service}.
- * @property \craft\app\services\Plugins          $plugins          The {@link \craft\app\services\Plugins plugins service}.
- * @property \craft\app\services\Relations        $relations        The {@link \craft\app\services\Relations relations service}.
- * @property \craft\app\services\Resources        $resources        The {@link \craft\app\services\Resources resources service}.
- * @property \craft\app\services\Routes           $routes           The {@link \craft\app\services\Routes routes service}.
- * @property \craft\app\services\Search           $search           The {@link \craft\app\services\Search search service}.
- * @property \craft\app\services\Sections         $sections         The {@link \craft\app\services\Sections sections service}.
- * @property \craft\app\services\Security         $security         The {@link \craft\app\services\Security security service}.
- * @property \craft\app\services\Structures       $structures       The {@link \craft\app\services\Structures structures service}.
- * @property \craft\app\services\SystemSettings   $systemSettings   The {@link \craft\app\services\SystemSettings system settings service}.
- * @property \craft\app\services\Tags             $tags             The {@link \craft\app\services\Tags tags service}.
- * @property \craft\app\services\Tasks            $tasks            The {@link \craft\app\services\Tasks tasks service}.
- * @property \craft\app\services\TemplateCache    $templateCache    The {@link \craft\app\services\TemplateCache template cache service}.
- * @property \craft\app\services\Templates        $templates        The {@link \craft\app\services\Templates template service}.
- * @property \craft\app\services\Tokens           $tokens           The {@link \craft\app\services\Tokens tokens service}.
- * @property \craft\app\services\Updates          $updates          The {@link \craft\app\services\Updates updates service}.
- * @property \craft\app\services\UserGroups       $userGroups       The {@link \craft\app\services\UserGroups user groups service}.
- * @property \craft\app\services\UserPermissions  $userPermissions  The {@link \craft\app\services\UserPermissions user permission service}.
- * @property \craft\app\services\UserSession      $userSession      The {@link \craft\app\services\UserSession user session service}.
- * @property \craft\app\services\Users            $users            The {@link \craft\app\services\Users users service}.
+ * @property \craft\app\services\AssetIndexing    $assetIndexing    The [[\craft\app\services\AssetIndexing assets indexing service]].
+ * @property \craft\app\services\AssetSources     $assetSources     The [[\craft\app\services\AssetSources assets sources service]].
+ * @property \craft\app\services\Assets           $assets           The [[\craft\app\services\Assets assets service]].
+ * @property \craft\app\services\AssetTransforms  $assetTransforms  The [[\craft\app\services\AssetTransforms assets sizes service]].
+ * @property \craft\app\services\Cache            $cache            The [[\craft\app\services\Cache cache service]].
+ * @property \craft\app\services\Categories       $categories       The [[\craft\app\services\Categories categories service]].
+ * @property \craft\app\services\Components       $components       The [[\craft\app\services\Components components service]].
+ * @property \craft\app\services\Config           $config           The [[\craft\app\services\Config config service]].
+ * @property \craft\app\services\Content          $content          The [[\craft\app\services\Content content service]].
+ * @property \craft\app\services\Dashboard        $dashboard        The [[\craft\app\services\Dashboard dashboard service]].
+ * @property \craft\app\db\DbConnection           $db               The [[\craft\app\db\DbConnection database connection]].
+ * @property \craft\app\services\Deprecator       $deprecator       The [[\craft\app\services\Deprecator deprecator service]].
+ * @property \craft\app\services\Elements         $elements         The [[\craft\app\services\Elements elements service]].
+ * @property \craft\app\services\EmailMessages    $emailMessages    The [[\craft\app\services\EmailMessages email messages service]].
+ * @property \craft\app\services\Email            $email            The [[\craft\app\services\Email email service]].
+ * @property \craft\app\services\Entries          $entries          The [[\craft\app\services\Entries entries service]].
+ * @property \craft\app\services\EntryRevisions   $entryRevisions   The [[\craft\app\services\EntryRevisions entry revisions service]].
+ * @property \craft\app\services\Et               $et               The [[\craft\app\services\Et E.T. service]].
+ * @property \craft\app\services\Feeds            $feeds            The [[\craft\app\services\Feeds feeds service]].
+ * @property \craft\app\services\Fields           $fields           The [[\craft\app\services\Fields fields service]].
+ * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
+ * @property \craft\app\services\Globals          $globals          The [[\craft\app\services\Globals globals service]].
+ * @property \craft\app\services\HttpRequest      $request          The [[\craft\app\services\HttpRequest request service]].
+ * @property \craft\app\services\HttpSession      $httpSession      The [[\craft\app\services\HttpSession HTTP session service]].
+ * @property \craft\app\services\Images           $images           The [[\craft\app\services\Images images service]].
+ * @property \craft\app\services\Install          $install          The [[\craft\app\services\Install install service]].
+ * @property \craft\app\services\Localization     $localization     The [[\craft\app\services\Localization localization service]].
+ * @property \craft\app\services\Matrix           $matrix           The [[\craft\app\services\Matrix matrix service]].
+ * @property \craft\app\services\Migrations       $migrations       The [[\craft\app\services\Migrations migrations service]].
+ * @property \craft\app\services\Path             $path             The [[\craft\app\services\Path path service]].
+ * @property \craft\app\services\Plugins          $plugins          The [[\craft\app\services\Plugins plugins service]].
+ * @property \craft\app\services\Relations        $relations        The [[\craft\app\services\Relations relations service]].
+ * @property \craft\app\services\Resources        $resources        The [[\craft\app\services\Resources resources service]].
+ * @property \craft\app\services\Routes           $routes           The [[\craft\app\services\Routes routes service]].
+ * @property \craft\app\services\Search           $search           The [[\craft\app\services\Search search service]].
+ * @property \craft\app\services\Sections         $sections         The [[\craft\app\services\Sections sections service]].
+ * @property \craft\app\services\Security         $security         The [[\craft\app\services\Security security service]].
+ * @property \craft\app\services\Structures       $structures       The [[\craft\app\services\Structures structures service]].
+ * @property \craft\app\services\SystemSettings   $systemSettings   The [[\craft\app\services\SystemSettings system settings service]].
+ * @property \craft\app\services\Tags             $tags             The [[\craft\app\services\Tags tags service]].
+ * @property \craft\app\services\Tasks            $tasks            The [[\craft\app\services\Tasks tasks service]].
+ * @property \craft\app\services\TemplateCache    $templateCache    The [[\craft\app\services\TemplateCache template cache service]].
+ * @property \craft\app\services\Templates        $templates        The [[\craft\app\services\Templates template service]].
+ * @property \craft\app\services\Tokens           $tokens           The [[\craft\app\services\Tokens tokens service]].
+ * @property \craft\app\services\Updates          $updates          The [[\craft\app\services\Updates updates service]].
+ * @property \craft\app\services\UserGroups       $userGroups       The [[\craft\app\services\UserGroups user groups service]].
+ * @property \craft\app\services\UserPermissions  $userPermissions  The [[\craft\app\services\UserPermissions user permission service]].
+ * @property \craft\app\services\UserSession      $userSession      The [[\craft\app\services\UserSession user session service]].
+ * @property \craft\app\services\Users            $users            The [[\craft\app\services\Users users service]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -457,7 +457,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the {@link \craft\app\services\HttpSession} (craft()->httpSession).
+	 * Returns the [[\craft\app\services\HttpSession]] (craft()->httpSession).
 	 *
 	 * @return \craft\app\services\HttpSession
 	 */
@@ -467,7 +467,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the {@link \craft\app\services\UserSession} (craft()->userSession).
+	 * Returns the [[\craft\app\services\UserSession]] (craft()->userSession).
 	 *
 	 * @return \craft\app\services\UserSession
 	 */
@@ -499,7 +499,7 @@ class Application extends \yii\web\Application
 	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
 	 *
 	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
-	 * handler for {@link \craft\app\services\Entries::onSaveEntry()}, you would do this:
+	 * handler for [[\craft\app\services\Entries::onSaveEntry()]], you would do this:
 	 *
 	 * ```php
 	 * craft()->on('entries.saveEntry', function(Event $event) {
@@ -595,8 +595,8 @@ class Application extends \yii\web\Application
 	/**
 	 * Returns the system time zone.
 	 *
-	 * Note that this method cannot be in {@link \craft\app\base\ApplicationTrait}, because Yii will check
-	 * {@link \yii\base\Application::getTimeZone()} instead.
+	 * Note that this method cannot be in [[\craft\app\base\ApplicationTrait]], because Yii will check
+	 * [[\yii\base\Application::getTimeZone()]] instead.
 	 *
 	 * @return string
 	 */

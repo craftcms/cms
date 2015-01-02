@@ -17,10 +17,10 @@ class Logger extends \CLogger
 	// =========================================================================
 
 	/**
-	 * This property will be passed as the parameter to {@link flush()} when it is called in {@link log()} due to the
-	 * limit of {@link autoFlush} being reached. By default, this property is false, meaning the filtered messages are
-	 * still kept in the memory by each log route after calling {@link flush()}. If this is true, the filtered messages
-	 * will be written to the actual medium each time {@link flush()} is called within {@link log()}.
+	 * This property will be passed as the parameter to [[flush()]] when it is called in [[log()]] due to the
+	 * limit of [[autoFlush]] being reached. By default, this property is false, meaning the filtered messages are
+	 * still kept in the memory by each log route after calling [[flush()]]. If this is true, the filtered messages
+	 * will be written to the actual medium each time [[flush()]] is called within [[log()]].
 	 *
 	 * @var boolean
 	 */
@@ -31,7 +31,7 @@ class Logger extends \CLogger
 
 	/**
 	 * Logs a message. Messages logged by this method may be retrieved back
-	 * via {@link getLogs}.
+	 * via [[getLogs]].
 	 *
 	 * @param string $message  The message to be logged
 	 * @param string $level    The level of the message (e.g. 'Trace', 'Warning', 'Error'). It is case-insensitive.
@@ -128,7 +128,7 @@ class Logger extends \CLogger
 	// =========================================================================
 
 	/**
-	 * Filter function used by {@link getLogs}
+	 * Filter function used by [[getLogs]]
 	 *
 	 * @param array $value The element to be filtered
 	 *
@@ -175,7 +175,7 @@ class Logger extends \CLogger
 	}
 
 	/**
-	 * Filter function used by {@link getLogs}
+	 * Filter function used by [[getLogs]]
 	 *
 	 * @param array $value The element to be filtered
 	 *

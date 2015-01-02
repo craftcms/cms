@@ -1,14 +1,14 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\web\Application;
 
 /**
  * The Templates service provides APIs for rendering templates, as well as interacting with other areas of Craft’s
  * templating system.
  *
- * An instance of the Templates service is globally accessible in Craft via {@link Application::templates `craft()->templates`}.
+ * An instance of the Templates service is globally accessible in Craft via [[Application::templates `craft()->templates`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Templates extends BaseComponent
+class Templates extends Component
 {
 	// Properties
 	// =========================================================================
@@ -129,7 +129,7 @@ class Templates extends BaseComponent
 	 * Returns the Twig Environment instance for a given template loader class.
 	 *
 	 * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
-	 *                            loader. If no class is passed in, {@link TemplateLoader} will be used.
+	 *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
 	 *
 	 * @return \Twig_Environment The Twig Environment instance.
 	 */
@@ -179,8 +179,8 @@ class Templates extends BaseComponent
 	}
 
 	/**
-	 * Returns the template path that is currently being rendered, or the full template if {@link renderString()} or
-	 * {@link renderObjectTemplate()} was called.
+	 * Returns the template path that is currently being rendered, or the full template if [[renderString()]] or
+	 * [[renderObjectTemplate()]] was called.
 	 *
 	 * @return mixed The template that is being rendered.
 	 */
@@ -483,8 +483,8 @@ class Templates extends BaseComponent
 	 * Starts a Javascript buffer.
 	 *
 	 * Javascript buffers work similarly to [output buffers](http://php.net/manual/en/intro.outcontrol.php) in PHP.
-	 * Once you’ve started a Javascript buffer, any Javascript code included with {@link includeJs()} will be included
-	 * in a buffer, and you will have the opportunity to fetch all of that code via {@link clearJsBuffer()} without
+	 * Once you’ve started a Javascript buffer, any Javascript code included with [[includeJs()]] will be included
+	 * in a buffer, and you will have the opportunity to fetch all of that code via [[clearJsBuffer()]] without
 	 * having it actually get output to the page.
 	 *
 	 * @return null
@@ -532,9 +532,9 @@ class Templates extends BaseComponent
 	 *
 	 * This will include:
 	 *
-	 * - Any CSS files included using {@link includeCssFile()} or {@link includeCssResource()}
-	 * - Any CSS included using {@link includeCss()} or {@link includeHiResCss()}
-	 * - Any HTML included using {@link includeHeadHtml()}
+	 * - Any CSS files included using [[includeCssFile()]] or [[includeCssResource()]]
+	 * - Any CSS included using [[includeCss()]] or [[includeHiResCss()]]
+	 * - Any HTML included using [[includeHeadHtml()]]
 	 *
 	 * @return string
 	 */
@@ -590,11 +590,11 @@ class Templates extends BaseComponent
 	 *
 	 * This will include:
 	 *
-	 * - Any Javascript files included in the previous request using {@link \craft\app\services\UserSession::addJsResourceFlash()}
-	 * - Any Javascript included in the previous request using {@link \craft\app\services\UserSession::addJsFlash()}
-	 * - Any Javascript files included using {@link includeJsFile()} or {@link includeJsResource()}
-	 * - Any Javascript code included using {@link includeJs()}
-	 * - Any HTML included using {@link includeFootHtml()}
+	 * - Any Javascript files included in the previous request using [[\craft\app\services\UserSession::addJsResourceFlash()]]
+	 * - Any Javascript included in the previous request using [[\craft\app\services\UserSession::addJsFlash()]]
+	 * - Any Javascript files included using [[includeJsFile()]] or [[includeJsResource()]]
+	 * - Any Javascript code included using [[includeJs()]]
+	 * - Any HTML included using [[includeFootHtml()]]
 	 *
 	 * @return string
 	 */
@@ -706,7 +706,7 @@ class Templates extends BaseComponent
 	/**
 	 * Returns whether a template exists.
 	 *
-	 * Internally, this will just call {@link findTemplate()} with the given template name, and return whether that
+	 * Internally, this will just call [[findTemplate()]] with the given template name, and return whether that
 	 * method found anything.
 	 *
 	 * @param string $name The name of the template.
@@ -754,7 +754,7 @@ class Templates extends BaseComponent
 	 * - TemplateName.htm
 	 * - TemplateName/default.htm
 	 *
-	 * The actual directory that those files will be searched for is whatever {@link \craft\app\services\Path::getTemplatesPath()}
+	 * The actual directory that those files will be searched for is whatever [[\craft\app\services\Path::getTemplatesPath()]]
 	 * returns (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
 	 * Panel request).
 	 *
@@ -870,8 +870,8 @@ class Templates extends BaseComponent
 	/**
 	 * Returns the active namespace.
 	 *
-	 * This is the default namespaces that will be used when {@link namespaceInputs()}, {@link namespaceInputName()},
-	 * and {@link namespaceInputId()} are called, if their $namespace arguments are null.
+	 * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
+	 * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
 	 *
 	 * @return string The namespace.
 	 */
@@ -883,8 +883,8 @@ class Templates extends BaseComponent
 	/**
 	 * Sets the active namespace.
 	 *
-	 * This is the default namespaces that will be used when {@link namespaceInputs()}, {@link namespaceInputName()},
-	 * and {@link namespaceInputId()} are called, if their $namespace arguments are null.
+	 * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
+	 * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
 	 *
 	 * @param string $namespace The new namespace.
 	 *
@@ -899,7 +899,7 @@ class Templates extends BaseComponent
 	 * Renames HTML input names so they belong to a namespace.
 	 *
 	 * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
-	 * that they will live within the passed-in $namespace (or the {@link getNamespace() active namespace}).
+	 * that they will live within the passed-in $namespace (or the [[getNamespace() active namespace]]).
 	 *
 	 * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
 	 * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
@@ -933,7 +933,7 @@ class Templates extends BaseComponent
 	 * ```
 	 *
 	 * @param string $html            The template with the inputs.
-	 * @param string $namespace       The namespace. Defaults to the {@link getNamespace() active namespace}.
+	 * @param string $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
 	 * @param bool   $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
 	 *
 	 * @return string The HTML with namespaced input names.
@@ -971,11 +971,11 @@ class Templates extends BaseComponent
 	/**
 	 * Namespaces an input name.
 	 *
-	 * This method applies the same namespacing treatment that {@link namespaceInputs()} does to `name=` attributes,
+	 * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
 	 * but only to a single value, which is passed directly into this method.
 	 *
 	 * @param string $inputName The input name that should be namespaced.
-	 * @param string $namespace The namespace. Defaults to the {@link getNamespace() active namespace}.
+	 * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
 	 *
 	 * @return string The namespaced input name.
 	 */
@@ -997,11 +997,11 @@ class Templates extends BaseComponent
 	/**
 	 * Namespaces an input ID.
 	 *
-	 * This method applies the same namespacing treatment that {@link namespaceInputs()} does to `id=` attributes,
+	 * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
 	 * but only to a single value, which is passed directly into this method.
 	 *
 	 * @param string $inputId   The input ID that should be namespaced.
-	 * @param string $namespace The namespace. Defaults to the {@link getNamespace() active namespace}.
+	 * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
 	 *
 	 * @return string The namespaced input ID.
 	 */
@@ -1045,7 +1045,7 @@ class Templates extends BaseComponent
 	/**
 	 * Queues up a method to be called by a given template hook.
 	 *
-	 * For example, if you place this in your plugin’s {@link BasePlugin::init() init()} method:
+	 * For example, if you place this in your plugin’s [[BasePlugin::init() init()]] method:
 	 *
 	 * ```php
 	 * craft()->templates->hook('myAwesomeHook', function(&$context)
@@ -1080,7 +1080,7 @@ class Templates extends BaseComponent
 	/**
 	 * Invokes a template hook.
 	 *
-	 * This is called by {@link Hook_Node `{% hook %}` tags).
+	 * This is called by [[Hook_Node `{% hook %]]` tags).
 	 *
 	 * @param string $hook     The hook name.
 	 * @param array  &$context The current template context.
@@ -1147,7 +1147,7 @@ class Templates extends BaseComponent
 
 	/**
 	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from
-	 * {@link Twig_Loader_Filesystem}.
+	 * [[Twig_Loader_Filesystem]].
 	 *
 	 * @param string $name
 	 *

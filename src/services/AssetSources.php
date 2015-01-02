@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\assetsourcetypes\Temp;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\AssetSource        as AssetSourceModel;
 use craft\app\records\AssetSource       as AssetSourceRecord;
 use craft\app\web\Application;
@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * Class AssetSources service.
  *
- * An instance of the AssetSources service is globally accessible in Craft via {@link Application::assetSources `craft()->assetSources`}.
+ * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `craft()->assetSources`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class AssetSources extends BaseComponent
+class AssetSources extends Component
 {
 	// Properties
 	// =========================================================================
