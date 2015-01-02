@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\models\EntryDraft         as EntryDraftModel;
@@ -24,7 +24,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     3.0
  */
-class EntryRevisions extends BaseComponent
+class EntryRevisions extends Component
 {
 	// Public Methods
 	// =========================================================================

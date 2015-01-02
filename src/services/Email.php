@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Email              as EmailModel;
 use craft\app\models\User               as UserModel;
 use craft\app\web\Application;
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Email extends BaseComponent
+class Email extends Component
 {
 	// Properties
 	// =========================================================================

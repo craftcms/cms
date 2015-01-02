@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Et                 as EtModel;
 use craft\app\models\Update             as UpdateModel;
 use craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Et extends BaseComponent
+class Et extends Component
 {
 	// Constants
 	// =========================================================================

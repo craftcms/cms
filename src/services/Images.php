@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\helpers\AppHelper;
 use craft\app\web\Application;
 
@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Images extends BaseComponent
+class Images extends Component
 {
 	// Properties
 	// =========================================================================

@@ -1,7 +1,7 @@
 <?php
-namespace craft\app\models;
+namespace craft\i18n;
 
-use craft\app\components\BaseComponent;
+use yii\base\Object;
 
 /**
  * Stores locale info.
@@ -13,7 +13,7 @@ use craft\app\components\BaseComponent;
  * @package   craft.app.models
  * @since     3.0
  */
-class Locale extends BaseComponent
+class Locale extends Object
 {
 	// Properties
 	// =========================================================================

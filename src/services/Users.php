@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Password           as PasswordModel;
 use craft\app\models\User               as UserModel;
 use craft\app\records\Session           as SessionRecord;
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Users extends BaseComponent
+class Users extends Component
 {
 	// Properties
 	// =========================================================================

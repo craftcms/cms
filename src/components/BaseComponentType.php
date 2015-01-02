@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\components;
 
+use yii\base\Object;
+
 /**
  * Base component base class.
  *
@@ -11,7 +13,7 @@ namespace craft\app\components;
  * @package   craft.app.components
  * @since     3.0
  */
-abstract class BaseComponentType extends BaseComponent implements ComponentTypeInterface
+abstract class BaseComponentType extends Object implements ComponentTypeInterface
 {
 	// Properties
 	// =========================================================================

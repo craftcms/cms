@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Tag                as TagModel;
 use craft\app\models\TagGroup           as TagGroupModel;
 use craft\app\records\TagGroup          as TagGroupRecord;
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Tags extends BaseComponent
+class Tags extends Component
 {
 	// Properties
 	// =========================================================================

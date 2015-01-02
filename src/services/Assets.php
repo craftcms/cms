@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\assetsourcetypes\Temp;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\AssetFile          as AssetFileModel;
 use craft\app\models\AssetFolder        as AssetFolderModel;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
@@ -25,7 +25,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class Assets extends BaseComponent
+class Assets extends Component
 {
 	// Properties
 	// =========================================================================

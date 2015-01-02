@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Content            as ContentModel;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Content extends BaseComponent
+class Content extends Component
 {
 	// Properties
 	// =========================================================================

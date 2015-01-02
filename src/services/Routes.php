@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\helpers\IOHelper;
 use craft\app\records\Route             as RouteRecord;
 use craft\app\web\Application;
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Routes extends BaseComponent
+class Routes extends Component
 {
 	// Public Methods
 	// =========================================================================

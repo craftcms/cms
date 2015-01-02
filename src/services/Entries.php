@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\enums\ElementType;
 use craft\app\models\Entry              as EntryModel;
 use craft\app\records\Entry             as EntryRecord;
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Entries extends BaseComponent
+class Entries extends Component
 {
 	// Public Methods
 	// =========================================================================

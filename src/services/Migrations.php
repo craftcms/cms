@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\errors\Exception;
 use craft\app\records\Migration         as MigrationRecord;
 use craft\app\web\Application;
@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Migrations extends BaseComponent
+class Migrations extends Component
 {
 	// Properties
 	// =========================================================================

@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
 use craft\app\widgets\BaseWidget;
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Dashboard extends BaseComponent
+class Dashboard extends Component
 {
 	// Public Methods
 	// =========================================================================

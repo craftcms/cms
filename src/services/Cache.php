@@ -10,7 +10,7 @@ use craft\app\cache\RedisCache;
 use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;
 use craft\app\web\Application;
@@ -27,7 +27,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Cache extends BaseComponent
+class Cache extends Component
 {
 	// Properties
 	// =========================================================================

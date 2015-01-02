@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\Category             as CategoryModel;
 use craft\app\models\CategoryGroup        as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale  as CategoryGroupLocaleModel;
@@ -23,7 +23,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Categories extends BaseComponent
+class Categories extends Component
 {
 	// Properties
 	// =========================================================================

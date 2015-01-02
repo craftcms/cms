@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\RebrandEmail       as RebrandEmailModel;
 use craft\app\records\EmailMessage      as EmailMessageRecord;
@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     3.0
  */
-class EmailMessages extends BaseComponent
+class EmailMessages extends Component
 {
 	// Properties
 	// =========================================================================

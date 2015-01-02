@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\UserGroup          as UserGroupModel;
 use craft\app\records\UserGroup         as UserGroupRecord;
@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     3.0
  */
-class UserGroups extends BaseComponent
+class UserGroups extends Component
 {
 	// Public Methods
 	// =========================================================================

@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\fieldtypes\Matrix         as MatrixFieldType;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
@@ -24,7 +24,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Matrix extends BaseComponent
+class Matrix extends Component
 {
 	// Properties
 	// =========================================================================

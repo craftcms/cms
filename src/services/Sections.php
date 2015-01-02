@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;
 use craft\app\models\SectionLocale      as SectionLocaleModel;
@@ -23,7 +23,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Sections extends BaseComponent
+class Sections extends Component
 {
 	// Properties
 	// =========================================================================

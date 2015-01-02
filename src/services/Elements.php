@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
 use craft\app\records\ElementLocale     as ElementLocaleRecord;
@@ -21,7 +21,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class Elements extends BaseComponent
+class Elements extends Component
 {
 	// Properties
 	// =========================================================================

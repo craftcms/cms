@@ -1,7 +1,7 @@
 <?php
 namespace craft\app\services;
 
-use craft\app\components\BaseComponent;
+use yii\base\Component;
 use craft\app\models\AssetFile           as AssetFileModel;
 use craft\app\models\AssetTransform      as AssetTransformModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class AssetTransforms extends BaseComponent
+class AssetTransforms extends Component
 {
 	// Properties
 	// =========================================================================
