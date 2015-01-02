@@ -118,10 +118,6 @@ class DbBackup
 			throw new Exception(Craft::t('Could not find the SQL file to restore: {filePath}', array('filePath' => $filePath)));
 		}
 
-		// Disable autoDump. If devMode is enabled there is a high chance that you'll get a mismatched
-		// beginProfile/endProfile tag pair error message if the log files rotate out.
-		Craft::getLogger()->autoDump = false;
-
 		$this->_nukeDb();
 
 		$sql = IOHelper::getFileContents($filePath, true);
