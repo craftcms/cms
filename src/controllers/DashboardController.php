@@ -13,7 +13,7 @@ use craft\app\models\Widget  as WidgetModel;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
- * widgets, getting [[FeedWidget]] feeds and sending [[GetHelpWidget]] support ticket requests.
+ * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\GetHelp]] support ticket requests.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
  *
