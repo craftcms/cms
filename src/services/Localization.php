@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use yii\base\Component;
-use craft\app\models\Locale             as LocaleModel;
+use craft\app\i18n\Locale;
 use craft\app\web\Application;
 
 /**
@@ -46,7 +46,7 @@ class Localization extends Component
 	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in
 	 * craft/app/framework/i18n/data/.
 	 *
-	 * @return array An array of LocaleModel objects.
+	 * @return Locale[] An array of [[Locale]] objects.
 	 */
 	public function getAllLocales()
 	{
@@ -55,7 +55,7 @@ class Localization extends Component
 
 		foreach ($localeIds as $localeId)
 		{
-			$locales[] = new LocaleModel($localeId);
+			$locales[] = new Locale($localeId);
 		}
 
 		return $locales;
@@ -65,13 +65,13 @@ class Localization extends Component
 	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
 	 * in craft/app/translations/.
 	 *
-	 * @return array An array of [[LocaleModel]] objects.
+	 * @return Locale[] An array of [[Locale]] objects.
 	 */
 	public function getAppLocales()
 	{
 		if (!$this->_appLocales)
 		{
-			$this->_appLocales = array(new LocaleModel('en_us'));
+			$this->_appLocales = array(new Locale('en_us'));
 
 			$path = craft()->path->getCpTranslationsPath();
 			$folders = IOHelper::getFolderContents($path, false, ".*\.php");
@@ -83,7 +83,7 @@ class Localization extends Component
 					$localeId = IOHelper::getFileName($dir, false);
 					if ($localeId != 'en_us')
 					{
-						$this->_appLocales[] = new LocaleModel($localeId);
+						$this->_appLocales[] = new Locale($localeId);
 					}
 				}
 			}
@@ -115,7 +115,7 @@ class Localization extends Component
 	 * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
 	 * in the control panel.
 	 *
-	 * @return array An array of [[LocaleModel]] objects.
+	 * @return Locale[] An array of [[Locale]] objects.
 	 */
 	public function getSiteLocales()
 	{
@@ -135,12 +135,12 @@ class Localization extends Component
 
 			foreach ($localeIds as $localeId)
 			{
-				$this->_siteLocales[] = new LocaleModel($localeId);
+				$this->_siteLocales[] = new Locale($localeId);
 			}
 
 			if (empty($this->_siteLocales))
 			{
-				$this->_siteLocales = array(new LocaleModel('en_us'));
+				$this->_siteLocales = array(new Locale('en_us'));
 			}
 		}
 
@@ -151,7 +151,7 @@ class Localization extends Component
 	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
 	 * control panel.
 	 *
-	 * @return LocaleModel A [[LocaleModel]] object representing the primary locale.
+	 * @return Locale A [[Locale]] object representing the primary locale.
 	 */
 	public function getPrimarySiteLocale()
 	{
@@ -240,11 +240,11 @@ class Localization extends Component
 	 *
 	 * @param string $localeId
 	 *
-	 * @return LocaleModel
+	 * @return Locale
 	 */
 	public function getLocaleById($localeId)
 	{
-		return new LocaleModel($localeId);
+		return new Locale($localeId);
 	}
 
 	/**
@@ -262,7 +262,7 @@ class Localization extends Component
 
 		if ($success)
 		{
-			$this->_siteLocales[] = new LocaleModel($localeId);
+			$this->_siteLocales[] = new Locale($localeId);
 
 			// Add this locale to each of the category groups
 			$categoryLocales = craft()->db->createCommand()

@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\Locale as LocaleModel;
+use craft\app\i18n\Locale;
 
 /**
  * Localization functions.
@@ -23,7 +23,7 @@ class Localization
 	/**
 	 * Gets all known languages.
 	 *
-	 * @return array
+	 * @return Locale[]
 	 */
 	public function getAllLocales()
 	{
@@ -33,7 +33,7 @@ class Localization
 	/**
 	 * Returns the locales that the application is translated for.
 	 *
-	 * @return array
+	 * @return Locale[]
 	 */
 	public function getAppLocales()
 	{
@@ -43,7 +43,7 @@ class Localization
 	/**
 	 * Returns the current locale.
 	 *
-	 * @return LocaleModel
+	 * @return Locale
 	 */
 	public function getCurrentLocale()
 	{
@@ -55,7 +55,7 @@ class Localization
 	 *
 	 * @param string $localeId
 	 *
-	 * @return LocaleModel
+	 * @return Locale
 	 */
 	public function getLocaleById($localeId)
 	{
@@ -65,7 +65,7 @@ class Localization
 	/**
 	 * Returns the locales that the site is translated for.
 	 *
-	 * @return array
+	 * @return Locale[]
 	 */
 	public function getSiteLocales()
 	{
@@ -95,7 +95,7 @@ class Localization
 	/**
 	 * Returns a list of locales that are editable by the current user.
 	 *
-	 * @return array
+	 * @return Locale[]
 	 */
 	public function getEditableLocales()
 	{
