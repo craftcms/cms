@@ -51,11 +51,11 @@ interface PluginInterface extends SavableComponentTypeInterface
 	 *
 	 * If your plugin requires a custom settings page, you can use this method to point to it.
 	 *
-	 * If this method returns anything, it will be run through {@link UrlHelper::getCpUrl()} before getting output,
+	 * If this method returns anything, it will be run through [[UrlHelper::getCpUrl()]] before getting output,
 	 * so a full URL is not necessary.
 	 *
 	 * If this method doesn’t return anything, a simple settings page will be provided for your plugin,
-	 * filled with whatever {@link getSettingsHtml()} returns.
+	 * filled with whatever [[getSettingsHtml()]] returns.
 	 *
 	 * @return string|null The URL to the plugin’s settings page, if it has a custom one.
 	 */

@@ -8,7 +8,7 @@ use craft\app\errors\HttpException;
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
  * such as creating, editing and deleting transforms.
  *
- * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

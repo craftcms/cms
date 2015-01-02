@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * The Tokens service.
  *
- * An instance of the Tokens service is globally accessible in Craft via {@link Application::tokens `craft()->tokens`}.
+ * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `craft()->tokens`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

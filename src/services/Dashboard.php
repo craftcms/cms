@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Dashboard service.
  *
- * An instance of the Dashboard service is globally accessible in Craft via {@link Application::dashboard `craft()->dashboard`}.
+ * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `craft()->dashboard`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

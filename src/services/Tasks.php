@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Tasks service.
  *
- * An instance of the Tasks service is globally accessible in Craft via {@link Application::tasks `craft()->tasks`}.
+ * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `craft()->tasks`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

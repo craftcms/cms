@@ -11,7 +11,7 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Class UserPermissions service.
  *
- * An instance of the UserPermissions service is globally accessible in Craft via {@link Application::userPermissions `craft()->userPermissions`}.
+ * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `craft()->userPermissions`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Relations service.
  *
- * An instance of the Relations service is globally accessible in Craft via {@link Application::relations `craft()->relations`}.
+ * An instance of the Relations service is globally accessible in Craft via [[Application::relations `craft()->relations`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -7,7 +7,7 @@ use craft\app\models\GlobalSet as GlobalSetModel;
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
  * deleting displaying both globals and global sets.
  *
- * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

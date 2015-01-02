@@ -8,7 +8,7 @@ use craft\app\web\Application;
 /**
  * Class TemplateCache service.
  *
- * An instance of the TemplateCache service is globally accessible in Craft via {@link Application::templateCache `craft()->templateCache`}.
+ * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `craft()->templateCache`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

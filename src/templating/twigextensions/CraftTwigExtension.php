@@ -282,7 +282,7 @@ class CraftTwigExtension extends \Twig_Extension
 
 	/**
 	 * Escapes commas and asterisks in a string so they are not treated as special characters in
-	 * {@link DbHelper::parseParam()}.
+	 * [[DbHelper::parseParam()]].
 	 *
 	 * @param string $value The param value.
 	 *

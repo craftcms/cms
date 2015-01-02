@@ -15,7 +15,7 @@ craft()->requireEdition(Craft::Client);
 /**
  * Class EntryRevisions service.
  *
- * An instance of the EntryRevisions service is globally accessible in Craft via {@link Application::entryRevisions `craft()->entryRevisions`}.
+ * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `craft()->entryRevisions`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

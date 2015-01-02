@@ -8,7 +8,7 @@ use craft\app\web\Application;
 /**
  * Class Components service.
  *
- * An instance of the Components service is globally accessible in Craft via {@link Application::components `craft()->components`}.
+ * An instance of the Components service is globally accessible in Craft via [[Application::components `craft()->components`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

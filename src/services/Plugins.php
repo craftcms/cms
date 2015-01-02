@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the Plugins service is globally accessible in Craft via {@link Application::plugins `craft()->plugins`}.
+ * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `craft()->plugins`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

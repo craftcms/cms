@@ -868,7 +868,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 	}
 
 	/**
-	 * Correct cache for {@link NestedSetBehavior::delete()} and {@link NestedSetBehavior::deleteNode()}.
+	 * Correct cache for [[NestedSetBehavior::delete()]] and [[NestedSetBehavior::deleteNode()]].
 	 */
 	private function correctCachedOnDelete()
 	{
@@ -900,7 +900,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 	}
 
 	/**
-	 * Correct cache for {@link NestedSetBehavior::addNode()}.
+	 * Correct cache for [[NestedSetBehavior::addNode()]].
 	 * @param int $key.
 	 */
 	private function correctCachedOnAddNode($key)
@@ -927,7 +927,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 	}
 
 	/**
-	 * Correct cache for {@link NestedSetBehavior::moveNode()}.
+	 * Correct cache for [[NestedSetBehavior::moveNode()]].
 	 * @param int $key.
 	 * @param int $levelDelta.
 	 */
@@ -978,7 +978,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 	}
 
 	/**
-	 * Correct cache for {@link NestedSetBehavior::moveNode()}.
+	 * Correct cache for [[NestedSetBehavior::moveNode()]].
 	 * @param int $key.
 	 * @param int $levelDelta.
 	 * @param int $root.

@@ -625,7 +625,7 @@ trait ApplicationTrait
 	// =========================================================================
 
 	/**
-	 * Creates a {@link DbConnection} specifically initialized for Craft's craft()->db instance.
+	 * Creates a [[DbConnection]] specifically initialized for Craft's craft()->db instance.
 	 *
 	 * @throws DbConnectException
 	 * @return DbConnection

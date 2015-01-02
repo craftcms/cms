@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Structures service.
  *
- * An instance of the Structures service is globally accessible in Craft via {@link Application::structures `craft()->structures`}.
+ * An instance of the Structures service is globally accessible in Craft via [[Application::structures `craft()->structures`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

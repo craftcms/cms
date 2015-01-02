@@ -79,7 +79,7 @@ class Tag extends BaseElementModel
 	/**
 	 * Returns the tag's title.
 	 *
-	 * @deprecated Deprecated in 2.3. Use {@link $title} instead.
+	 * @deprecated Deprecated in 2.3. Use [[$title]] instead.
 	 * @return string
 	 *
 	 * @todo Remove this method in Craft 4.

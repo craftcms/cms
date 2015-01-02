@@ -2,9 +2,9 @@
 namespace craft\app\consolecommands;
 
 /**
- * BaseCommand extends Yii's {@link \CConsoleCommand} and represents an executable console command.
+ * BaseCommand extends Yii's [[\CConsoleCommand]] and represents an executable console command.
  *
- * It works like {@link \CController} by parsing command line options and dispatching the request to a specific action
+ * It works like [[\CController]] by parsing command line options and dispatching the request to a specific action
  * with appropriate option values.
  *
  * Users call a console command via the following command format:
@@ -15,7 +15,7 @@ namespace craft\app\consolecommands;
  *
  * Child classes mainly needs to implement various action methods whose name must be prefixed with "action". The
  * parameters to an action method are considered as options for that specific action. The action specified as
- * {@link defaultAction} will be invoked when a user does not specify the action name in his command.
+ * [[defaultAction]] will be invoked when a user does not specify the action name in his command.
  *
  * Options are bound to action parameters via parameter names. For example, the following action method will allow us to
  * run a command with <code>yiic sitemap --type=News</code>:

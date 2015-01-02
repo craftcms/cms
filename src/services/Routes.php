@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Routes service.
  *
- * An instance of the Routes service is globally accessible in Craft via {@link Application::routes `craft()->routes`}.
+ * An instance of the Routes service is globally accessible in Craft via [[Application::routes `craft()->routes`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

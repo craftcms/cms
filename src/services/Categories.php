@@ -14,7 +14,7 @@ use craft\app\web\Application;
 /**
  * Class Categories service.
  *
- * An instance of the Categories service is globally accessible in Craft via {@link Application::categories `craft()->categories`}.
+ * An instance of the Categories service is globally accessible in Craft via [[Application::categories `craft()->categories`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

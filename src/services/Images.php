@@ -8,7 +8,7 @@ use craft\app\web\Application;
 /**
  * Service for image operations.
  *
- * An instance of the Images service is globally accessible in Craft via {@link Application::images `craft()->images`}.
+ * An instance of the Images service is globally accessible in Craft via [[Application::images `craft()->images`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -18,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Class Fields service.
  *
- * An instance of the Fields service is globally accessible in Craft via {@link Application::fields `craft()->fields`}.
+ * An instance of the Fields service is globally accessible in Craft via [[Application::fields `craft()->fields`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

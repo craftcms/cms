@@ -12,7 +12,7 @@ craft()->requireEdition(Craft::Pro);
 /**
  * Class UserGroups service.
  *
- * An instance of the UserGroups service is globally accessible in Craft via {@link Application::userGroups `craft()->userGroups`}.
+ * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `craft()->userGroups`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

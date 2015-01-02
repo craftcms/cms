@@ -6,7 +6,7 @@ use craft\app\models\Info as InfoModel;
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * It encapsulates {@link \Yii} and ultimately {@link \YiiBase}, which provides the actual implementation.
+ * It encapsulates [[\Yii]] and ultimately [[\YiiBase]], which provides the actual implementation.
  *
  * It also defines the global craft() method, which is a wrapper for the Craft::app() singleton.
  *
@@ -166,8 +166,8 @@ class Craft extends \Yii
 	}
 
 	/**
-	 * Logs a message.  Messages logged by this method may be retrieved via {@link Logger::getLogs} and may be recorded
-	 * in different media, such as file, email, database, using {@link LogRouter}.
+	 * Logs a message.  Messages logged by this method may be retrieved via [[Logger::getLogs]] and may be recorded
+	 * in different media, such as file, email, database, using [[LogRouter]].
 	 *
 	 * @param string $msg      The message to be logged.
 	 * @param string $level    The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or

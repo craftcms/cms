@@ -17,7 +17,7 @@ use craft\app\web\Application;
 /**
  * Class Install service.
  *
- * An instance of the Install service is globally accessible in Craft via {@link Application::install `craft()->install`}.
+ * An instance of the Install service is globally accessible in Craft via [[Application::install `craft()->install`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

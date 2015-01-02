@@ -7,8 +7,8 @@ use craft\app\fieldtypes\Assets;
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
  *
- * Note that all actions in the controller except {@link actionGenerateTransform} require an authenticated Craft session
- * via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller except [[actionGenerateTransform]] require an authenticated Craft session
+ * via [[BaseController::allowAnonymous]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -31,7 +31,7 @@ class AssetsController extends BaseController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
 	 * in the individual methods.
 	 *
 	 * @var bool

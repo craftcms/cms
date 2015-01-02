@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * Class Et service.
  *
- * An instance of the Et service is globally accessible in Craft via {@link Application::et `craft()->et`}.
+ * An instance of the Et service is globally accessible in Craft via [[Application::et `craft()->et`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

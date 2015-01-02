@@ -11,7 +11,7 @@ use craft\app\web\Application;
 /**
  * Class Tags service.
  *
- * An instance of the Tags service is globally accessible in Craft via {@link Application::tags `craft()->tags`}.
+ * An instance of the Tags service is globally accessible in Craft via [[Application::tags `craft()->tags`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

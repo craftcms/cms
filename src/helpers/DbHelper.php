@@ -338,7 +338,7 @@ class DbHelper
 
 	/**
 	 * Escapes commas and asterisks in a string so they are not treated as special characters in
-	 * {@link DbHelper::parseParam()}.
+	 * [[DbHelper::parseParam()]].
 	 *
 	 * @param string $value The param value.
 	 *
@@ -350,10 +350,10 @@ class DbHelper
 	}
 
 	/**
-	 * Parses a query param value and returns a {@link \CDbCommand::where()}-compatible condition.
+	 * Parses a query param value and returns a [[\CDbCommand::where()]]-compatible condition.
 	 *
 	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
-	 * string (via {@link ArrayHelper::stringToArray()}). If that is not desired behavior, you can escape the comma
+	 * string (via [[ArrayHelper::stringToArray()]]). If that is not desired behavior, you can escape the comma
 	 * with a backslash before it.
 	 *
 	 * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
@@ -367,7 +367,7 @@ class DbHelper
 	 *
 	 * @param string       $column  The database column that the param is targeting.
 	 * @param string|array $value   The param value(s).
-	 * @param array        &$params The {@link \CDbCommand::$params} array.
+	 * @param array        &$params The [[\CDbCommand::$params]] array.
 	 *
 	 * @return mixed
 	 */

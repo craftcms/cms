@@ -8,7 +8,7 @@ use craft\app\web\Application;
 /**
  * Handles search operations.
  *
- * An instance of the Search service is globally accessible in Craft via {@link Application::search `craft()->search`}.
+ * An instance of the Search service is globally accessible in Craft via [[Application::search `craft()->search`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

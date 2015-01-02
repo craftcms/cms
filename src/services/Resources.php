@@ -7,7 +7,7 @@ use craft\app\web\Application;
 /**
  * Class Resources service.
  *
- * An instance of the Resources service is globally accessible in Craft via {@link Application::resources `craft()->resources`}.
+ * An instance of the Resources service is globally accessible in Craft via [[Application::resources `craft()->resources`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

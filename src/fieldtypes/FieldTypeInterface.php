@@ -32,19 +32,19 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 *
 	 * The attribute config returned by this method is used to define two things:
 	 *
-	 * - This field’s attribute in {@link ContentModel::defineAttributes()}.
+	 * - This field’s attribute in [[ContentModel::defineAttributes()]].
 	 * - This field’s column in the craft_content table.
 	 *
 	 * The method can return a string (e.g. `AttributeType::Number`) or an array with additional settings (e.g.
 	 * `array(AttributeType::Number, 'min' => 0, 'max' => 100, 'decimals' => 2)`) if the attribute type’s default
-	 * settings defined by {@link ModelHelper::$attributeTypeDefaults} aren’t good enough.
+	 * settings defined by [[ModelHelper::$attributeTypeDefaults]] aren’t good enough.
 	 *
 	 * If you return `AttributeType::Mixed`, your field type can work with array data, and it will automatically be
 	 * JSON-encoded when getting saved to the database, and automatically JSON-decoded when getting fetched from the
 	 * database. All your field type will ever see is the actual array.
 	 *
 	 * If the field type is storing its data in its own table and doesn’t need a column in the craft_content table,
-	 * this method should return `false`. You can then save your data manually from {@link onAfterElementSave}.
+	 * this method should return `false`. You can then save your data manually from [[onAfterElementSave]].
 	 *
 	 * @return mixed The field’s content attribute config, or `false` if it’s storing data in its own table.
 	 */
@@ -60,7 +60,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * ```
 	 *
 	 * For more complex inputs, you might prefer to create a template, and render it via
-	 * {@link \craft\app\services\Templates::render()}. For example, the following code would render a template loacated at
+	 * [[\craft\app\services\Templates::render()]]. For example, the following code would render a template loacated at
 	 * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
 	 *
 	 * ```php
@@ -71,7 +71,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * ```
 	 *
 	 * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-	 * attributes within the returned HTML will probably get {@link \craft\app\services\Templates::namespaceInputs() namespaced},
+	 * attributes within the returned HTML will probably get [[\craft\app\services\Templates::namespaceInputs() namespaced]],
 	 * however your JavaScript code will be left untouched.
 	 *
 	 * For example, if getInputHtml() returns the following HTML:
@@ -101,11 +101,11 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
 	 * that simple.
 	 *
-	 * Thankfully, {@link \craft\app\services\Templates} provides a couple handy methods that can help you deal with this:
+	 * Thankfully, [[\craft\app\services\Templates]] provides a couple handy methods that can help you deal with this:
 	 *
-	 * - {@link \craft\app\services\Templates::namespaceInputId()} will give you the namespaced version of a given ID.
-	 * - {@link \craft\app\services\Templates::namespaceInputName()} will give you the namespaced version of a given input name.
-	 * - {@link \craft\app\services\Templates::formatInputId()} will format an input name to look more like an ID attribute value.
+	 * - [[\craft\app\services\Templates::namespaceInputId()]] will give you the namespaced version of a given ID.
+	 * - [[\craft\app\services\Templates::namespaceInputName()]] will give you the namespaced version of a given input name.
+	 * - [[\craft\app\services\Templates::formatInputId()]] will format an input name to look more like an ID attribute value.
 	 *
 	 * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
 	 *
@@ -139,10 +139,10 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * ```
 	 *
 	 * The same principles also apply if you’re including your JavaScript code with
-	 * {@link \craft\app\services\Templates::includeJs()}.
+	 * [[\craft\app\services\Templates::includeJs()]].
 	 *
 	 * @param string $name  The name that the field’s HTML inputs should have.
-	 * @param mixed  $value The field’s value. This will either be the {@link prepValue() prepped value}, or the raw
+	 * @param mixed  $value The field’s value. This will either be the [[prepValue() prepped value]], or the raw
 	 *                      POST value in the event of a validation error, or if the user is editing an entry
 	 *                      draft/version.
 	 *
@@ -153,8 +153,8 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	/**
 	 * Returns the input value as it should be stored in the database.
 	 *
-	 * This method is called from {@link BaseElementModel::setContentFromPost()}, and is the only chance your plugin has
-	 * to modify the POST data before it is saved to the craft_content table (assuming {@link defineContentAttribute()}
+	 * This method is called from [[BaseElementModel::setContentFromPost()]], and is the only chance your plugin has
+	 * to modify the POST data before it is saved to the craft_content table (assuming [[defineContentAttribute()]]
 	 * doesn’t return `false` and the field actually has a column in the craft_content table).
 	 *
 	 * @param mixed $value The value that was in the POST data for the field.
@@ -166,13 +166,13 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	/**
 	 * Validates the field’s value.
 	 *
-	 * The $value passed into this method will be based on the value that {@link prepValueFromPost()} returned. It may
-	 * have gone through additional modification when it was set on the {@link ContentModel} as well, depending on
-	 * the attribute type {@link defineContentAttribute()} returns.
+	 * The $value passed into this method will be based on the value that [[prepValueFromPost()]] returned. It may
+	 * have gone through additional modification when it was set on the [[ContentModel]] as well, depending on
+	 * the attribute type [[defineContentAttribute()]] returns.
 	 *
 	 * Some validation may already occur for this field without any help from this method. For example, if the field
-	 * is required by the field layout, but doesn’t have any value, the {@link ContentModel} will take care of that.
-	 * Also, if {@link defineContentAttribute()} defines any validation rules (e.g. `min` or `max` for Number
+	 * is required by the field layout, but doesn’t have any value, the [[ContentModel]] will take care of that.
+	 * Also, if [[defineContentAttribute()]] defines any validation rules (e.g. `min` or `max` for Number
 	 * attributes), those will also be applied automatically. So this method should only be used for _custom_
 	 * validation rules that aren’t already provided for free.
 	 *
@@ -186,7 +186,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	/**
 	 * Returns the search keywords that should be associated with this field.
 	 *
-	 * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. {@link \craft\app\services\Search}
+	 * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]
 	 * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
 	 *
 	 * @param mixed $value The field’s value.
@@ -238,7 +238,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * Prepares the field’s value for use.
 	 *
 	 * This method is called when the field’s value is first acessed from the element. For example, the first time
-	 * `entry.myFieldHandle` is called from a template, or right before {@link getFieldHtml()} is called. Whatever
+	 * `entry.myFieldHandle` is called from a template, or right before [[getFieldHtml()]] is called. Whatever
 	 * this method returns is what `entry.myFieldHandle` will likewise return, and what getFieldHandle()’s $value
 	 * argument will be set to.
 	 *
@@ -256,7 +256,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * If the method returns `false`, the query will be stopped before it ever gets a chance to execute.
 	 *
 	 * @param DbCommand $query The database query currently being built to find the elements.
-	 * @param mixed     $value The value that was set on this field’s corresponding {@link ElementCriteriaModel} param,
+	 * @param mixed     $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
 	 *                         if any.
 	 *
 	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.

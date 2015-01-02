@@ -7,7 +7,7 @@ use craft\app\errors\HttpException;
  * The PluginsController class is a controller that handles various plugin related tasks such installing, uninstalling,
  * enabling, disabling and saving plugin settings in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

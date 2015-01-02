@@ -5,9 +5,9 @@ namespace craft\app\controllers;
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
  * updates and running manual and auto-updates.
  *
- * Note that all actions in the controller, except for {@link actionPrepare}, {@link actionBackupDatabase},
- * {@link actionUpdateDatabase}, {@link actionCleanUp} and {@link actionRollback} require an authenticated Craft session
- * via {@link BaseController::allowAnonymous}.
+ * Note that all actions in the controller, except for [[actionPrepare]], [[actionBackupDatabase]],
+ * [[actionUpdateDatabase]], [[actionCleanUp]] and [[actionRollback]] require an authenticated Craft session
+ * via [[BaseController::allowAnonymous]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -30,7 +30,7 @@ class UpdateController extends BaseController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
 	 * in the individual methods.
 	 *
 	 * @var bool

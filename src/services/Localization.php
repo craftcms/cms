@@ -8,7 +8,7 @@ use craft\app\web\Application;
 /**
  * Class Localization service.
  *
- * An instance of the Localization service is globally accessible in Craft via {@link Application::i18n `craft()->i18n`}.
+ * An instance of the Localization service is globally accessible in Craft via [[Application::i18n `craft()->i18n`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -63,7 +63,7 @@ class Localization extends Component
 	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
 	 * in craft/app/translations/.
 	 *
-	 * @return array An array of {@link LocaleModel} objects.
+	 * @return array An array of [[LocaleModel]] objects.
 	 */
 	public function getAppLocales()
 	{
@@ -113,7 +113,7 @@ class Localization extends Component
 	 * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
 	 * in the control panel.
 	 *
-	 * @return array An array of {@link LocaleModel} objects.
+	 * @return array An array of [[LocaleModel]] objects.
 	 */
 	public function getSiteLocales()
 	{
@@ -149,7 +149,7 @@ class Localization extends Component
 	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
 	 * control panel.
 	 *
-	 * @return LocaleModel A {@link LocaleModel} object representing the primary locale.
+	 * @return LocaleModel A [[LocaleModel]] object representing the primary locale.
 	 */
 	public function getPrimarySiteLocale()
 	{

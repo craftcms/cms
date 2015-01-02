@@ -66,7 +66,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * The columns in the new  table should be specified as name-definition pairs (e.g. 'name'=>'string'), where name
 	 * stands for a column name which will be properly quoted by the method, and definition stands for the column type
-	 * which can contain an abstract DB type. The {@link getColumnType} method will be invoked to convert any abstract
+	 * which can contain an abstract DB type. The [[getColumnType]] method will be invoked to convert any abstract
 	 * type into a physical one.
 	 *
 	 * If a column is specified with definition only (e.g. 'PRIMARY KEY (name, type)'), it will be directly inserted
@@ -129,7 +129,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by
 	 *                       the method.
 	 * @param string $column The name of the new column. The name will be properly quoted by the method.
-	 * @param string $type   The column type. The {@link getColumnType} method will be invoked to convert abstract
+	 * @param string $type   The column type. The [[getColumnType]] method will be invoked to convert abstract
 	 *                       column type (if any) into the physical one. Anything that is not recognized as abstract
 	 *                       type will be kept in the generated SQL. For example, 'string' will be turned into
 	 *                       'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
@@ -337,10 +337,10 @@ abstract class BaseMigration extends \CDbMigration
 	}
 
 	/**
-	 * Executes a SQL statement. This method executes the specified SQL statement using {@link dbConnection}.
+	 * Executes a SQL statement. This method executes the specified SQL statement using [[dbConnection]].
 	 *
 	 * @param string $sql    The SQL statement to be executed.
-	 * @param array  $params Input parameters (name=>value) for the SQL execution. See {@link \CDbCommand::execute} for
+	 * @param array  $params Input parameters (name=>value) for the SQL execution. See [[\CDbCommand::execute]] for
 	 *                       more details.
 	 *
 	 * @return null
@@ -383,7 +383,7 @@ abstract class BaseMigration extends \CDbMigration
 	 * @param string $table               The table to be updated.
 	 * @param array  $columns             The column data (name=>value) to be updated.
 	 * @param mixed  $conditions          The conditions that will be put in the WHERE part. Please refer to
-	 *                                    {@link \CDbCommand::where} on how to specify conditions.
+	 *                                    [[\CDbCommand::where]] on how to specify conditions.
 	 * @param array  $params              The parameters to be bound to the query.
 	 * @param bool   $includeAuditColumns Whether to include the data for the audit columns (dateCreated, dateUpdated, uid).
 	 *
@@ -422,7 +422,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @param string $table      The table where the data will be deleted from.
 	 * @param mixed  $conditions The conditions that will be put in the WHERE part. Please refer to
-	 *                           {@link \CDbCommand::where} on how to specify conditions.
+	 *                           [[\CDbCommand::where]] on how to specify conditions.
 	 * @param array  $params     The parameters to be bound to the query.
 	 *
 	 * @return null

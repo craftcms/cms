@@ -18,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Class Cache service.
  *
- * An instance of the Cache service is globally accessible in Craft via {@link Application::cache `craft()->cache`}.
+ * An instance of the Cache service is globally accessible in Craft via [[Application::cache `craft()->cache`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

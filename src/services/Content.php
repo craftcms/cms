@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * Class Content service.
  *
- * An instance of the Content service is globally accessible in Craft via {@link Application::content `craft()->content`}.
+ * An instance of the Content service is globally accessible in Craft via [[Application::content `craft()->content`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

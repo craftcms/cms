@@ -12,7 +12,7 @@ use craft\app\web\Application;
 /**
  * Class AssetIndexing service.
  *
- * An instance of the AssetIndexing service is globally accessible in Craft via {@link Application::assetIndexing `craft()->assetIndexing`}.
+ * An instance of the AssetIndexing service is globally accessible in Craft via [[Application::assetIndexing `craft()->assetIndexing`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

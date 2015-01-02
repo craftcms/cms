@@ -329,7 +329,7 @@ class DateTimeHelper
 	}
 
 	/**
-	 * Returns a UI-facing timestamp for a given {@link DateTime} object.
+	 * Returns a UI-facing timestamp for a given [[DateTime]] object.
 	 *
 	 * - If the date/time is from today, only the time will be retuned in a localized format (e.g. “10:00 AM”).
 	 * - If the date/time is from yesterday, “Yesterday” will be returned.

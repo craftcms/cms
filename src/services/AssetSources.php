@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * Class AssetSources service.
  *
- * An instance of the AssetSources service is globally accessible in Craft via {@link Application::assetSources `craft()->assetSources`}.
+ * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `craft()->assetSources`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

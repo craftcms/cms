@@ -12,7 +12,7 @@ craft()->requireEdition(Craft::Client);
 /**
  * Class EmailMessages service.
  *
- * An instance of the EmailMessages service is globally accessible in Craft via {@link Application::emailMessages `craft()->emailMessages`}.
+ * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `craft()->emailMessages`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -14,7 +14,7 @@ use craft\app\web\Application;
 /**
  * Class Sections service.
  *
- * An instance of the Sections service is globally accessible in Craft via {@link Application::sections `craft()->sections`}.
+ * An instance of the Sections service is globally accessible in Craft via [[Application::sections `craft()->sections`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.

@@ -16,7 +16,7 @@ use craft\app\web\Application;
 /**
  * Class Assets service.
  *
- * An instance of the Assets service is globally accessible in Craft via {@link Application::assets `craft()->assets`}.
+ * An instance of the Assets service is globally accessible in Craft via [[Application::assets `craft()->assets`]].
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.

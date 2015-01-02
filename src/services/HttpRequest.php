@@ -6,7 +6,7 @@ use craft\app\web\Application;
 /**
  * The HttpRequest service provides APIs for getting information about the current HTTP request.
  *
- * An instance of the HttpRequest service is globally accessible in Craft via {@link Application::request `craft()->request`}.
+ * An instance of the HttpRequest service is globally accessible in Craft via [[Application::request `craft()->request`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -262,7 +262,7 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * Returns whether the current request should be routed to the front-end site.
 	 *
-	 * The result will always just be the opposite of whatever {@link isCpRequest()} returns.
+	 * The result will always just be the opposite of whatever [[isCpRequest()]] returns.
 	 *
 	 * @return bool Whether the current request should be routed to the front-end site.
 	 */
@@ -305,7 +305,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Returns an array of the action path segments, if this is an {@link isActionRequest() action request}.
+	 * Returns an array of the action path segments, if this is an [[isActionRequest() action request]].
 	 *
 	 * @return array|null The action path segments, or `null` if this isn’t an action request.
 	 */
@@ -474,8 +474,8 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * Returns a parameter from either the query string or POST data.
 	 *
-	 * This method will first search for the given paramater in the query string, calling {@link getQuery()} internally,
-	 * and if that doesn’t come back with a value, it will call {@link getPost()}. If that doesn’t come back with a
+	 * This method will first search for the given paramater in the query string, calling [[getQuery()]] internally,
+	 * and if that doesn’t come back with a value, it will call [[getPost()]]. If that doesn’t come back with a
 	 * value either, $defaultValue will be returned.
 	 *
 	 * ```php
@@ -514,8 +514,8 @@ class HttpRequest extends \CHttpRequest
 	 * Returns a parameter from either the query string or POST data, or bails on the request with a 400 error if that
 	 * parameter doesn’t exist anywhere.
 	 *
-	 * This method will first search for the given paramater in the query string, calling {@link getQuery()} internally,
-	 * and if that doesn’t come back with a value, it will call {@link getPost()}.
+	 * This method will first search for the given paramater in the query string, calling [[getQuery()]] internally,
+	 * and if that doesn’t come back with a value, it will call [[getPost()]].
 	 *
 	 * ```php
 	 * $foo = craft()->request->getRequiredParam('foo'); // Returns $_GET['foo'] or $_POST['foo']
@@ -587,7 +587,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns a list of languages the user has selected in their browser’s settings, canonicalized using
-	 * {@link LocaleData::getCanonicalID}.
+	 * [[LocaleData::getCanonicalID]].
 	 *
 	 * Internally, this method checks the Accept-Language header that should have accompanied the request.
 	 * If that header was not present, the method will return `false`.
@@ -649,7 +649,7 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * Sends a file to the user.
 	 *
-	 * We’re overriding this from {@link \CHttpRequest::sendFile()} so we can have more control over the headers.
+	 * We’re overriding this from [[\CHttpRequest::sendFile()]] so we can have more control over the headers.
 	 *
 	 * @param string     $path      The path to the file on the server.
 	 * @param string     $content   The contents of the file.
@@ -824,7 +824,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the cookie collection. The result can be used like an associative array. Adding {@link HttpCookie} objects
+	 * Returns the cookie collection. The result can be used like an associative array. Adding [[HttpCookie]] objects
 	 * to the collection will send the cookies to the client; and removing the objects from the collection will delete
 	 * those cookies on the client.
 	 *
@@ -872,7 +872,7 @@ class HttpRequest extends \CHttpRequest
     //    we're trying to resist the temptation of magic methods for the sake of code obviousness.
 
 	/**
-	 * Alias of {@link getIsSecureConnection()}.
+	 * Alias of [[getIsSecureConnection()]].
 	 *
 	 * @return bool
 	 */
@@ -882,7 +882,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsPostRequest()}.
+	 * Alias of [[getIsPostRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -892,7 +892,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsDeleteRequest()}.
+	 * Alias of [[getIsDeleteRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -902,7 +902,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsDeleteViaPostRequest()}.
+	 * Alias of [[getIsDeleteViaPostRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -912,7 +912,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsGetRequest()}.
+	 * Alias of [[getIsGetRequest()]].
 	 */
 	public function isGetRequest()
 	{
@@ -920,7 +920,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsPutRequest()}.
+	 * Alias of [[getIsPutRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -930,7 +930,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsPutViaPostRequest()}.
+	 * Alias of [[getIsPutViaPostRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -940,7 +940,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsAjaxRequest()}.
+	 * Alias of [[getIsAjaxRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -950,7 +950,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIsFlashRequest()}.
+	 * Alias of [[getIsFlashRequest()]].
 	 *
 	 * @return bool
 	 */
@@ -960,7 +960,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of {@link getIpAddress()}.
+	 * Alias of [[getIpAddress()]].
 	 *
 	 * @return string
 	 */
@@ -1051,7 +1051,7 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * Decodes the path info.
 	 *
-	 * Replacement for Yii's {@link \CHttpRequest::decodePathInfo()}.
+	 * Replacement for Yii's [[\CHttpRequest::decodePathInfo()]].
 	 *
 	 * @param string $pathInfo Encoded path info.
 	 *
@@ -1184,7 +1184,7 @@ class HttpRequest extends \CHttpRequest
 	// =========================================================================
 
 	/**
-	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
+	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in [[csrfCookie]] will be
 	 * applied to the generated cookie.
 	 *
 	 * @return HttpCookie the generated cookie

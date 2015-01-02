@@ -4,22 +4,22 @@ namespace craft\app\web;
 /**
  * UploadedFile represents the information for an uploaded file.
  *
- * Call {@link getInstance} to retrieve the instance of an uploaded file, and then use {@link saveAs} to save it on the
- * server. You may also query other information about the file, including {@link name}, {@link tempName}, {@link type},
- * {@link size} and {@link error}.
+ * Call [[getInstance]] to retrieve the instance of an uploaded file, and then use [[saveAs]] to save it on the
+ * server. You may also query other information about the file, including [[name]], [[tempName]], [[type]],
+ * [[size]] and [[error]].
  *
  * @property string $name          The original name of the file being uploaded.
  * @property string $tempName      The path of the uploaded file on the server. Note, this is a temporary file which
  *                                 will be automatically deleted by PHP after the current request is processed.
  * @property string $type          The MIME-type of the uploaded file (such as "image/gif"). Since this MIME type is not
  *                                 checked on the server side, do not take this value for granted. Instead, use
- *                                 {@link \CFileHelper::getMimeType} to determine the exact MIME type.
+ *                                 [[\CFileHelper::getMimeType]] to determine the exact MIME type.
  * @property int    $size          The actual size of the uploaded file in bytes.
  * @property int    $error         The error code.
- * @property bool   $hasError      Whether there is an error with the uploaded file. Check {@link error} for the
+ * @property bool   $hasError      Whether there is an error with the uploaded file. Check [[error]] for the
  *                                 detailed error code information.
- * @property string $extensionName The file extension name for {@link name}. The extension name does not include the dot
- *                                 character. An empty string is returned if {@link name} does not have an extension
+ * @property string $extensionName The file extension name for [[name]]. The extension name does not include the dot
+ *                                 character. An empty string is returned if [[name]] does not have an extension
  *                                 name.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>

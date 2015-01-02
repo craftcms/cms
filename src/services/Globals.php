@@ -9,7 +9,7 @@ use craft\app\web\Application;
 /**
  * Class Globals service.
  *
- * An instance of the Globals service is globally accessible in Craft via {@link Application::globals `craft()->globals`}.
+ * An instance of the Globals service is globally accessible in Craft via [[Application::globals `craft()->globals`]].
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
