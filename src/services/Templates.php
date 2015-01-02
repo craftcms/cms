@@ -455,8 +455,11 @@ class TemplatesService extends BaseComponent
 	 */
 	public function includeJs($js, $first = false)
 	{
+		// Trim any whitespace and ensure it ends with a semicolon.
+		$js = trim($js, " \t\n\r\0\x0B;").';';
+
 		$latestBuffer =& $this->_jsBuffers[count($this->_jsBuffers)-1];
-		ArrayHelper::prependOrAppend($latestBuffer, trim($js), $first);
+		ArrayHelper::prependOrAppend($latestBuffer, $js, $first);
 	}
 
 	/**

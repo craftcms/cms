@@ -284,7 +284,6 @@ class PluginsService extends BaseComponent
 	public function enablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -295,6 +294,14 @@ class PluginsService extends BaseComponent
 		{
 			throw new Exception(Craft::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
+
+		if ($plugin->isEnabled)
+		{
+			// Done!
+			return true;
+		}
+
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		craft()->db->createCommand()->update('plugins',
 			array('enabled' => 1),
@@ -317,8 +324,7 @@ class PluginsService extends BaseComponent
 	 */
 	public function disablePlugin($handle)
 	{
-		$plugin = $this->getPlugin($handle);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
+		$plugin = $this->getPlugin($handle, false);
 
 		if (!$plugin)
 		{
@@ -329,6 +335,14 @@ class PluginsService extends BaseComponent
 		{
 			throw new Exception(Craft::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
+
+		if (!$plugin->isEnabled)
+		{
+			// Done!
+			return true;
+		}
+
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		craft()->db->createCommand()->update('plugins',
 			array('enabled' => 0),
@@ -352,7 +366,6 @@ class PluginsService extends BaseComponent
 	public function installPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -361,8 +374,11 @@ class PluginsService extends BaseComponent
 
 		if ($plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
+			// Done!
+			return true;
 		}
+
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		$plugin->onBeforeInstall();
 
@@ -416,7 +432,6 @@ class PluginsService extends BaseComponent
 	public function uninstallPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
-		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -425,8 +440,11 @@ class PluginsService extends BaseComponent
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
+			// Done!
+			return true;
 		}
+
+		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		if (!$plugin->isEnabled)
 		{
