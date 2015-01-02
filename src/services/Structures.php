@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class StructuresService extends Component
+class Structures extends Component
 {
 	// Properties
 	// =========================================================================
