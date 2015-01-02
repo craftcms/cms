@@ -6,12 +6,8 @@ namespace craft\app\enums;
  * The BaseEnum class is an abstract class that all enums in Craft inherit. It provides some functionality that mimics
  * first-class citizen enum support in PHP.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.enums
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 abstract class BaseEnum
 {
@@ -88,4 +84,4 @@ abstract class BaseEnum
 
 		return self::$_constants;
 	}
-} 
+}

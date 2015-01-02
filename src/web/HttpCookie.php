@@ -1,16 +1,18 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\web;
 
 /**
  * A HttpCookie instance stores a single cookie, including the cookie name, value, domain, path, expire time and
  * whether it should be access over a secure connection or not..
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.web
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class HttpCookie extends \CHttpCookie
 {

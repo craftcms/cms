@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\elementactions;
 
 use craft\app\Craft;
@@ -6,12 +12,8 @@ use craft\app\Craft;
 /**
  * Replace File Element Action
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- * @package   craft.app.elementactions
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class ReplaceFile extends BaseElementAction
 {

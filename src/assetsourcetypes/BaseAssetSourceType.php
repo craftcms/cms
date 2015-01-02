@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\assetsourcetypes;
 
 use craft\app\components\BaseSavableComponentType;
@@ -15,12 +21,8 @@ use craft\app\models\FolderCriteria         as FolderCriteriaModel;
 /**
  * The base class for all asset source types.  Any asset source type must extend this class.
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
- * @package    craft.app.assetsourcetypes
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 abstract class BaseAssetSourceType extends BaseSavableComponentType
 {

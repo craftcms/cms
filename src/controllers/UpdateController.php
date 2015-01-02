@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\controllers;
 
 /**
@@ -9,12 +15,8 @@ namespace craft\app\controllers;
  * [[actionUpdateDatabase]], [[actionCleanUp]] and [[actionRollback]] require an authenticated Craft session
  * via [[BaseController::allowAnonymous]].
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.controllers
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class UpdateController extends BaseController
 {

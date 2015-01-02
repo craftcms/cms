@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\users;
 
 use craft\app\models\User as UserModel;
@@ -7,12 +13,8 @@ use craft\app\models\User as UserModel;
  * UserIdentity represents the data needed to identify a user. It contains the authentication method that checks if the
  * provided data can identity the user.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.users
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class UserIdentity extends \CUserIdentity
 {

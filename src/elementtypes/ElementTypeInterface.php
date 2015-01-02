@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\elementtypes;
 
 use craft\app\components\ComponentTypeInterface;
@@ -9,12 +15,8 @@ use craft\app\models\ElementCriteria             as ElementCriteriaModel;
 /**
  * This interface defines the contract that all element types must implement via [[BaseElementType]].
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.elementtypes
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 interface ElementTypeInterface extends ComponentTypeInterface
 {

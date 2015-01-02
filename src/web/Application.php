@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\web;
 
 /**
@@ -54,12 +60,8 @@ namespace craft\app\web;
  * @property \craft\app\services\UserSession      $userSession      The [[\craft\app\services\UserSession user session service]].
  * @property \craft\app\services\Users            $users            The [[\craft\app\services\Users users service]].
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.web
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class Application extends \yii\web\Application
 {

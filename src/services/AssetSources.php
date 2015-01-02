@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\services;
 
 use craft\app\assetsourcetypes\Temp;
@@ -12,12 +18,8 @@ use craft\app\web\Application;
  *
  * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `craft()->assetSources`]].
  *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
- * @package    craft.app.services
- * @since      3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class AssetSources extends Component
 {

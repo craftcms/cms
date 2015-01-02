@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
 namespace craft\app\templating\twigextensions;
 
 /**
@@ -6,12 +12,8 @@ namespace craft\app\templating\twigextensions;
  *
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.templating.twigextensions
- * @since     1.3
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0
  */
 class Switch_TokenParser extends \Twig_TokenParser
 {
