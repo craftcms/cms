@@ -19,13 +19,13 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class UserSessionService extends \CWebUser
+class UserSession extends \CWebUser
 {
 	// Constants
 	// =========================================================================
 
-	const FLASH_KEY_PREFIX = 'Craft.UserSessionService.flash.';
-	const FLASH_COUNTERS   = 'Craft.UserSessionService.flashcounters';
+	const FLASH_KEY_PREFIX = 'Craft.UserSession.flash.';
+	const FLASH_COUNTERS   = 'Craft.UserSession.flashcounters';
 	const AUTH_ACCESS_VAR  = '__auth_access';
 
 	// Properties
@@ -223,7 +223,7 @@ class UserSessionService extends \CWebUser
 	 * Stores a JS file from resources/ in the user’s flash data.
 	 *
 	 * The file will be stored on the user session, and can be retrieved by calling {@link getJsResourceFlashes()} or
-	 * {@link TemplatesService::getFootHtml()}.
+	 * {@link \craft\app\services\Templates::getFootHtml()}.
 	 *
 	 * @param string $resource The resource path to the JS file.
 	 *
@@ -256,7 +256,7 @@ class UserSessionService extends \CWebUser
 	 * Stores JS in the user’s flash data.
 	 *
 	 * The Javascript code will be stored on the user session, and can be retrieved by calling
-	 * {@link getJsFlashes()} or {@link TemplatesService::getFootHtml()}.
+	 * {@link getJsFlashes()} or {@link \craft\app\services\Templates::getFootHtml()}.
 	 *
 	 * @param string $js The Javascript code.
 	 *
@@ -447,7 +447,7 @@ class UserSessionService extends \CWebUser
 			// Ignore if this was called from the Login page
 			if (craft()->request->isSiteRequest() && craft()->config->get('loginPath') == craft()->request->getPath())
 			{
-				Craft::log('UserSessionService::requireLogin() was called from the Login page.', LogLevel::Warning, true);
+				Craft::log('\craft\app\services\UserSession::requireLogin() was called from the Login page.', LogLevel::Warning, true);
 				return;
 			}
 

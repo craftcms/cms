@@ -23,7 +23,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class CategoriesService extends BaseComponent
+class Categories extends BaseComponent
 {
 	// Properties
 	// =========================================================================

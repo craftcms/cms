@@ -61,7 +61,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * Returns all of the possible statuses that elements of this type may have.
 	 *
 	 * This method will be called when populating the Status menu on element indexes, for element types whose
-	 * {@link hasStatuses()} method returns `true`. It will also be called when {@link ElementsService} is querying for
+	 * {@link hasStatuses()} method returns `true`. It will also be called when {@link \craft\app\services\Elements} is querying for
 	 * elements, to ensure that the {@link ElementCriteriaModel}’s “status” parameter is set to a valid status.
 	 *
 	 * It should return an array whose keys are the status values, and values are the human-facing status labels.
@@ -130,9 +130,9 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * This method should return an array of attribute names that can be accessed on your
 	 * {@link BaseElementModel element model} (for example, the attributes defined by your element model’s
-	 * {@link BaseElementType::defineAttributes() defineAttributes()} method). {@link SearchService} will call this
-	 * method when it is indexing keywords for one of your elements, and for each attribute it returns, it will fetch
-	 * the corresponding property’s value on the element.
+	 * {@link BaseElementType::defineAttributes() defineAttributes()} method). {@link \craft\app\services\Search} will
+	 * call this method when it is indexing keywords for one of your elements, and for each attribute it returns, it will
+	 * fetch the corresponding property’s value on the element.
 	 *
 	 * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
 	 *
@@ -267,7 +267,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * This method returns an array which will get merged into the array defined in
 	 * {@link ElementCriteriaModel::defineAttributes()}, when new ElementCriteriaModel instances are created targeting
-	 * this element type (generally from {@link ElementsService::getCriteria() craft()->elements->getCriteria()}).
+	 * this element type (generally from {@link \craft\app\services\Elements::getCriteria() craft()->elements->getCriteria()}).
 	 *
 	 * If this method were to return the following:
 	 *
@@ -297,7 +297,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	/**
 	 * Returns the content table name that should be joined into an elements query for a given element criteria.
 	 *
-	 * This method will get called from {@link ElementsService::buildElementsQuery()} as it is building out a database
+	 * This method will get called from {@link \craft\app\services\Elements::buildElementsQuery()} as it is building out a database
 	 * query to fetch elements with a given criteria. It will only be called if {@link hasContent()} returns `true`.
 	 *
 	 * If this method returns `false`, no content table will be joined in, and it will be up to the elements’
@@ -318,7 +318,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * If a field has its own column in the content table, but the column name is prefixed with something besides
 	 * “field_”, make sure you set the `columnPrefix` attribute on the {@link FieldModel}, so
-	 * {@link ElementsService::buildElementsQuery()} knows which column to select.
+	 * {@link \craft\app\services\Elements::buildElementsQuery()} knows which column to select.
 	 *
 	 * @param ElementCriteriaModel
 	 *
@@ -395,7 +395,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	/**
 	 * Populates an element model based on a query result.
 	 *
-	 * This method is called by {@link ElementsService::findElements()} after it has finished fetching all of the
+	 * This method is called by {@link \craft\app\services\Elements::findElements()} after it has finished fetching all of the
 	 * matching elements’ rows from the database.
 	 *
 	 * For each row of data returned by the query, it will call this method on the element type, and it is up to this

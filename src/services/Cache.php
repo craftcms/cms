@@ -27,7 +27,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class CacheService extends BaseComponent
+class Cache extends BaseComponent
 {
 	// Properties
 	// =========================================================================

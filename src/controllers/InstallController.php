@@ -31,7 +31,7 @@ class InstallController extends BaseController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
 	 * in the individual methods.
 	 *
 	 * @var bool

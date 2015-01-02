@@ -27,11 +27,11 @@ $configArray = array(
 		),
 
 		'config' => array(
-			'class'         => 'Craft\ConfigService',
+			'class'         => '\craft\app\services\Config',
 		),
 
 		'i18n' => array(
-			'class' => 'Craft\LocalizationService',
+			'class' => '\craft\app\services\Localization',
 		),
 
 		'formatter' => array(
@@ -135,47 +135,47 @@ $cpRoutes['editionRoutes'][2]['settings/users/groups/(?P<groupId>\d+)']         
 //  Component config
 // ----------------------------------------------------------------------------
 
-$components['users']['class']                = 'Craft\UsersService';
-$components['assets']['class']               = 'Craft\AssetsService';
-$components['assetTransforms']['class']      = 'Craft\AssetTransformsService';
-$components['assetIndexing']['class']        = 'Craft\AssetIndexingService';
-$components['assetSources']['class']         = 'Craft\AssetSourcesService';
-$components['cache']['class']                = 'Craft\CacheService';
-$components['categories']['class']           = 'Craft\CategoriesService';
-$components['content']['class']              = 'Craft\ContentService';
-$components['dashboard']['class']            = 'Craft\DashboardService';
-$components['deprecator']['class']           = 'Craft\DeprecatorService';
-$components['email']['class']                = 'Craft\EmailService';
-$components['elements']['class']             = 'Craft\ElementsService';
-$components['entries']['class']              = 'Craft\EntriesService';
-$components['et']['class']                   = 'Craft\EtService';
-$components['feeds']['class']                = 'Craft\FeedsService';
-$components['fields']['class']               = 'Craft\FieldsService';
-$components['globals']['class']              = 'Craft\GlobalsService';
-$components['install']['class']              = 'Craft\InstallService';
-$components['images']['class']               = 'Craft\ImagesService';
-$components['matrix']['class']               = 'Craft\MatrixService';
-$components['migrations']['class']           = 'Craft\MigrationsService';
-$components['path']['class']                 = 'Craft\PathService';
-$components['relations']['class']            = 'Craft\RelationsService';
+$components['users']['class']                = '\craft\app\services\Users';
+$components['assets']['class']               = '\craft\app\services\Assets';
+$components['assetTransforms']['class']      = '\craft\app\services\AssetTransforms';
+$components['assetIndexing']['class']        = '\craft\app\services\AssetIndexing';
+$components['assetSources']['class']         = '\craft\app\services\AssetSources';
+$components['cache']['class']                = '\craft\app\services\Cache';
+$components['categories']['class']           = '\craft\app\services\Categories';
+$components['content']['class']              = '\craft\app\services\Content';
+$components['dashboard']['class']            = '\craft\app\services\Dashboard';
+$components['deprecator']['class']           = '\craft\app\services\Deprecator';
+$components['email']['class']                = '\craft\app\services\Email';
+$components['elements']['class']             = '\craft\app\services\Elements';
+$components['entries']['class']              = '\craft\app\services\Entries';
+$components['et']['class']                   = '\craft\app\services\Et';
+$components['feeds']['class']                = '\craft\app\services\Feeds';
+$components['fields']['class']               = '\craft\app\services\Fields';
+$components['globals']['class']              = '\craft\app\services\Globals';
+$components['install']['class']              = '\craft\app\services\Install';
+$components['images']['class']               = '\craft\app\services\Images';
+$components['matrix']['class']               = '\craft\app\services\Matrix';
+$components['migrations']['class']           = '\craft\app\services\Migrations';
+$components['path']['class']                 = '\craft\app\services\Path';
+$components['relations']['class']            = '\craft\app\services\Relations';
 $components['resources'] = array(
-	'class'     => 'Craft\ResourcesService',
+	'class'     => '\craft\app\services\Resources',
 	'dateParam' => 'd',
 );
-$components['routes']['class']               = 'Craft\RoutesService';
-$components['search']['class']               = 'Craft\SearchService';
+$components['routes']['class']               = '\craft\app\services\Routes';
+$components['search']['class']               = '\craft\app\services\Search';
 $components['sections'] = array(
-	'class' => 'Craft\SectionsService',
+	'class' => '\craft\app\services\Sections',
 	'typeLimits' => array(
 		'single'    => 5,
 		'channel'   => 1,
 		'structure' => 0
 	)
 );
-$components['security']['class']             = 'Craft\SecurityService';
-$components['structures']['class']           = 'Craft\StructuresService';
+$components['security']['class']             = '\craft\app\services\Security';
+$components['structures']['class']           = '\craft\app\services\Structures';
 $components['systemSettings'] = array(
-	'class' => 'Craft\SystemSettingsService',
+	'class' => '\craft\app\services\SystemSettings',
 	'defaults' => array(
 		'users' => array(
 			'requireEmailVerification' => true,
@@ -198,14 +198,14 @@ $components['systemSettings'] = array(
 		)
 	)
 );
-$components['tags']['class']                 = 'Craft\TagsService';
-$components['tasks']['class']                = 'Craft\TasksService';
-$components['templateCache']['class']        = 'Craft\TemplateCacheService';
-$components['templates']['class']            = 'Craft\TemplatesService';
-$components['tokens']['class']               = 'Craft\TokensService';
-$components['updates']['class']              = 'Craft\UpdatesService';
+$components['tags']['class']                 = '\craft\app\services\Tags';
+$components['tasks']['class']                = '\craft\app\services\Tasks';
+$components['templateCache']['class']        = '\craft\app\services\TemplateCache';
+$components['templates']['class']            = '\craft\app\services\Templates';
+$components['tokens']['class']               = '\craft\app\services\Tokens';
+$components['updates']['class']              = '\craft\app\services\Updates';
 $components['components'] = array(
-	'class' => 'Craft\ComponentsService',
+	'class' => '\craft\app\services\Components',
 	'types' => array(
 		'assetSource'   => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType',    'enableForPlugins' => false),
 		'element'       => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'ElementTypeInterface',   'enableForPlugins' => true),
@@ -217,17 +217,17 @@ $components['components'] = array(
 	)
 );
 $components['plugins'] = array(
-	'class' => 'Craft\PluginsService',
+	'class' => '\craft\app\services\Plugins',
 	'autoloadClasses' => array('Controller','Enum','Helper','Model','Record','Service','Variable','Validator'),
 );
 
 // Craft Client components
-$components['editionComponents'][1]['emailMessages']['class']   = 'Craft\EmailMessagesService';
-$components['editionComponents'][1]['entryRevisions']['class']  = 'Craft\EntryRevisionsService';
+$components['editionComponents'][1]['emailMessages']['class']   = '\craft\app\services\EmailMessages';
+$components['editionComponents'][1]['entryRevisions']['class']  = '\craft\app\services\EntryRevisions';
 
 // Craft Pro components
-$components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
-$components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
+$components['editionComponents'][2]['userGroups']['class']      = '\craft\app\services\UserGroups';
+$components['editionComponents'][2]['userPermissions']['class'] = '\craft\app\services\UserPermissions';
 
 $components['messages']['class'] = 'Craft\PhpMessageSource';
 $components['coreMessages']['class'] = 'Craft\PhpMessageSource';
@@ -264,10 +264,10 @@ $components['log']['routes'] = array(
 
 $components['httpSession']['autoStart']   = true;
 $components['httpSession']['cookieMode']  = 'only';
-$components['httpSession']['class']       = 'Craft\HttpSessionService';
+$components['httpSession']['class']       = '\craft\app\services\HttpSession';
 $components['httpSession']['sessionName'] = 'CraftSessionId';
 
-$components['userSession']['class'] = 'Craft\UserSessionService';
+$components['userSession']['class'] = '\craft\app\services\UserSession';
 $components['userSession']['allowAutoLogin']  = true;
 $components['userSession']['autoRenewCookie'] = true;
 

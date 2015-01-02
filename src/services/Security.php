@@ -15,7 +15,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class SecurityService extends \CSecurityManager
+class Security extends \CSecurityManager
 {
 	// Properties
 	// =========================================================================

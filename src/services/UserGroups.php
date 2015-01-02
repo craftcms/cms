@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     3.0
  */
-class UserGroupsService extends BaseComponent
+class UserGroups extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

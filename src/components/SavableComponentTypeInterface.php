@@ -56,7 +56,7 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * ```
 	 *
 	 * For more complex settings, you might prefer to create a template, and render it via
-	 * {@link TemplatesService::render()}. For example, the following code would render a template loacated at
+	 * {@link \craft\app\services\Templates::render()}. For example, the following code would render a template loacated at
 	 * craft/plugins/myplugin/templates/_settings.html, passing the settings to it:
 	 *
 	 * ```php
@@ -66,7 +66,7 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * ```
 	 *
 	 * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-	 * attributes within the returned HTML will probably get {@link TemplatesService::namespaceInputs() namespaced},
+	 * attributes within the returned HTML will probably get {@link \craft\app\services\Templates::namespaceInputs() namespaced},
 	 * however your JavaScript code will be left untouched.
 	 *
 	 * For example, if getSettingsHtml() returns the following HTML:
@@ -96,11 +96,12 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
 	 * that simple.
 	 *
-	 * Thankfully, {@link TemplatesService} provides a couple handy methods that can help you deal with this:
+	 * Thankfully, {@link \craft\app\services\Templates} service provides a couple handy methods that can help you deal
+	 * with this:
 	 *
-	 * - {@link TemplatesService::namespaceInputId()} will give you the namespaced version of a given ID.
-	 * - {@link TemplatesService::namespaceInputName()} will give you the namespaced version of a given input name.
-	 * - {@link TemplatesService::formatInputId()} will format an input name to look more like an ID attribute value.
+	 * - {@link \craft\app\services\Templates::namespaceInputId()} will give you the namespaced version of a given ID.
+	 * - {@link \craft\app\services\Templates::namespaceInputName()} will give you the namespaced version of a given input name.
+	 * - {@link \craft\app\services\Templates::formatInputId()} will format an input name to look more like an ID attribute value.
 	 *
 	 * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
 	 *
@@ -133,7 +134,7 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * ```
 	 *
 	 * The same principles also apply if you’re including your JavaScript code with
-	 * {@link TemplatesService::includeJs()}.
+	 * {@link \craft\app\services\Templates::includeJs()}.
 	 *
 	 * @return string|null
 	 */

@@ -10,7 +10,7 @@ use craft\app\web\Application;
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the EntriesService is globally accessible in Craft via {@link Application::entries `craft()->entries`}.
+ * An instance of the Entries service is globally accessible in Craft via {@link Application::entries `craft()->entries`}.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class EntriesService extends BaseComponent
+class Entries extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================
@@ -33,7 +33,7 @@ class EntriesService extends BaseComponent
 	 *
 	 * @param int    $entryId  The entry’s ID.
 	 * @param string $localeId The locale to fetch the entry in.
-	 *                         Defaults to {@link \craft\app\web\Application::getLanguage() `craft()->getLanguage()`}.
+	 *                         Defaults to {@link Application::getLanguage() `craft()->getLanguage()`}.
 	 *
 	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
 	 */

@@ -240,7 +240,7 @@ class UrlHelper
 		if ($path)
 		{
 			// If we've served this resource before, we should have a cached copy of the server path already. Use that
-			// to get its timestamp, and add timestamp to the resource URL so ResourcesService sends it with
+			// to get its timestamp, and add timestamp to the resource URL so the Resources service sends it with
 			// a Pragma: Cache header.
 			$dateParam = craft()->resources->dateParam;
 

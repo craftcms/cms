@@ -33,7 +33,7 @@ class UsersController extends BaseController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
 	 * in the individual methods.
 	 *
 	 * @var bool
@@ -1427,7 +1427,7 @@ class UsersController extends BaseController
 			// If they haven't defined a front-end set password template
 			if (!craft()->templates->doesTemplateExist(craft()->config->getLocalized('setPasswordPath')))
 			{
-				// Set PathService to use the CP templates path instead
+				// Set the Path service to use the CP templates path instead
 				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 			}
 		}

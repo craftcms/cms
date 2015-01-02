@@ -21,7 +21,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class ElementsService extends BaseComponent
+class Elements extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -653,7 +653,7 @@ class ElementsService extends BaseComponent
 						$fieldCriteria = null;
 					}
 
-					// Set the field's column prefix on ContentService
+					// Set the field's column prefix on the Content service.
 					if ($field->columnPrefix)
 					{
 						$contentService->fieldColumnPrefix = $field->columnPrefix;
@@ -957,7 +957,7 @@ class ElementsService extends BaseComponent
 
 			if ($scoredSearchResults)
 			{
-				// Order the elements in the exact order that SearchService returned them in
+				// Order the elements in the exact order that the Search service returned them in
 				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
 		}
@@ -2004,7 +2004,7 @@ class ElementsService extends BaseComponent
 	 */
 	private function _getElementIdsFromQuery(DbCommand $query)
 	{
-		// Get the matched element IDs, and then have the SearchService filter them.
+		// Get the matched element IDs, and then have the Search service filter them.
 		$elementIdsQuery = craft()->db->createCommand()
 			->select('elements.id')
 			->from('elements elements')

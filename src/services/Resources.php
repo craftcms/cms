@@ -16,7 +16,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class ResourcesService extends BaseComponent
+class Resources extends BaseComponent
 {
 	// Constants
 	// =========================================================================

@@ -59,7 +59,7 @@ abstract class BaseTemplate extends \Twig_Template
 
 		if ($elementId)
 		{
-			// Don't initialize the CacheService if we don't have to
+			// Don't initialize the TemplateCache service if we don't have to
 			$cacheService = craft()->getComponent('templateCache', false);
 
 			if ($cacheService)

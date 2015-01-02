@@ -15,7 +15,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class HttpRequestService extends \CHttpRequest
+class HttpRequest extends \CHttpRequest
 {
 	// Properties
 	// =========================================================================
@@ -1135,7 +1135,7 @@ class HttpRequestService extends \CHttpRequest
 		// Make sure nothing has been output yet
 		if (headers_sent())
 		{
-			throw new Exception(Craft::t('HttpRequestService::close() cannot be called after content has been output.'));
+			throw new Exception(Craft::t('craft()->request->close() cannot be called after content has been output.'));
 		}
 
 		// Prevent the script from ending when the browser closes the connection

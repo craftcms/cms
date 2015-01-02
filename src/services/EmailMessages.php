@@ -21,7 +21,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     3.0
  */
-class EmailMessagesService extends BaseComponent
+class EmailMessages extends BaseComponent
 {
 	// Properties
 	// =========================================================================

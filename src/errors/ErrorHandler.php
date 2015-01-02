@@ -151,7 +151,7 @@ class ErrorHandler extends \CErrorHandler
 			// Check to see if this happened while running a task
 			foreach ($trace as $step)
 			{
-				if (isset($step['class']) && $step['class'] == __NAMESPACE__.'\\TasksService' && $step['function'] == 'runTask')
+				if (isset($step['class']) && $step['class'] == '\\craft\\app\\services\\Tasks' && $step['function'] == 'runTask')
 				{
 					$task = craft()->tasks->getRunningTask();
 

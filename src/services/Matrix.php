@@ -2,7 +2,7 @@
 namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
-use craft\app\fieldtypes\Matrix;
+use craft\app\fieldtypes\Matrix         as MatrixFieldType;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
@@ -24,7 +24,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class MatrixService extends BaseComponent
+class Matrix extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -820,19 +820,19 @@ class MatrixService extends BaseComponent
 			craft()->userSession->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
 		}
 
-		// Pass this along to ElementsService for the heavy lifting
+		// Pass this along to the Elements service for the heavy lifting.
 		return craft()->elements->deleteElementById($blockIds);
 	}
 
 	/**
 	 * Saves a Matrix field.
 	 *
-	 * @param Matrix $fieldType The Matrix field type.
+	 * @param MatrixFieldType $fieldType The Matrix field type.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the field was saved successfully.
 	 */
-	public function saveField(Matrix $fieldType)
+	public function saveField(MatrixFieldType $fieldType)
 	{
 		$owner = $fieldType->element;
 		$field = $fieldType->model;

@@ -6,7 +6,7 @@ namespace craft\app\state;
  *
  * It can be used to keep data available through multiple requests and sessions.
  *
- * By default, StatePersister stores data in a file named 'state.bin' that is located {@link PathService::getStatePath()}.
+ * By default, StatePersister stores data in a file named 'state.bin' that is located {@link \craft\app\services\Path::getStatePath()}.
  *
  * To retrieve the data from StatePersister, call {@link load()}. To save the data, call {@link save()}.
  *

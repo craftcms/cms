@@ -3,7 +3,6 @@ namespace craft\app\services;
 
 use craft\app\components\BaseComponent;
 use craft\app\models\Et                 as EtModel;
-use craft\app\models\Et;
 use craft\app\models\Update             as UpdateModel;
 use craft\app\models\UpgradePurchase    as UpgradePurchaseModel;
 use craft\app\web\Application;
@@ -20,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class EtService extends BaseComponent
+class Et extends BaseComponent
 {
 	// Constants
 	// =========================================================================
@@ -66,7 +65,7 @@ class EtService extends BaseComponent
 	}
 
 	/**
-	 * @return \Craft\EtModel|null
+	 * @return EtModel|null
 	 */
 	public function getUpdateFileInfo()
 	{

@@ -8,7 +8,7 @@ use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\web\Application;
 
 /**
- * Class ContentService
+ * Class Content service.
  *
  * An instance of the Content service is globally accessible in Craft via {@link Application::content `craft()->content`}.
  *
@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class ContentService extends BaseComponent
+class Content extends BaseComponent
 {
 	// Properties
 	// =========================================================================

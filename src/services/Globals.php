@@ -18,7 +18,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class GlobalsService extends BaseComponent
+class Globals extends BaseComponent
 {
 	// Properties
 	// =========================================================================

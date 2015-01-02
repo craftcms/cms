@@ -27,7 +27,7 @@ abstract class BaseController extends \CController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * login on a few, it's best to use {@link \craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()}
 	 * in the individual methods.
 	 *
 	 * @var bool
@@ -61,7 +61,7 @@ abstract class BaseController extends \CController
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param mixed $template      The name of the template to load in a format supported by
-	 *                             {@link TemplatesService::findTemplate()}, or a {@link StringTemplate} object.
+	 *                             {@link \craft\app\services\Templates::findTemplate()}, or a {@link StringTemplate} object.
 	 * @param array $variables     The variables that should be available to the template.
 	 * @param bool  $return        Whether to return the results, rather than output them. (Default is `false`.)
 	 * @param bool  $processOutput Whether the output should be processed by {@link processOutput()}.
@@ -137,7 +137,7 @@ abstract class BaseController extends \CController
 					}
 				}
 
-				// Output it into a buffer, in case TasksService wants to close the connection prematurely
+				// Output it into a buffer, in case the Tasks service wants to close the connection prematurely
 				ob_start();
 				echo $output;
 
@@ -286,7 +286,7 @@ abstract class BaseController extends \CController
 	{
 		JsonHelper::sendJsonHeaders();
 
-		// Output it into a buffer, in case TasksService wants to close the connection prematurely
+		// Output it into a buffer, in case the Tasks service wants to close the connection prematurely
 		ob_start();
 		echo JsonHelper::encode($var);
 

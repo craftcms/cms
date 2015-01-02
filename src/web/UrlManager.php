@@ -1,6 +1,8 @@
 <?php
 namespace craft\app\web;
 
+use craft\app\services\HttpRequest;
+
 /**
  * Class UrlManager
  *
@@ -105,7 +107,7 @@ class UrlManager extends \CUrlManager
 	 * Determines which controller/action to route the request to. Routing candidates include actual template paths,
 	 * elements with URIs, and registered URL routes.
 	 *
-	 * @param HttpRequestService $request
+	 * @param HttpRequest $request
 	 *
 	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
 	 * @return string The controller/action path.

@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class DashboardService extends BaseComponent
+class Dashboard extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

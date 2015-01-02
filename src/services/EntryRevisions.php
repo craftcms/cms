@@ -24,7 +24,7 @@ craft()->requireEdition(Craft::Client);
  * @package   craft.app.services
  * @since     3.0
  */
-class EntryRevisionsService extends BaseComponent
+class EntryRevisions extends BaseComponent
 {
 	// Public Methods
 	// =========================================================================

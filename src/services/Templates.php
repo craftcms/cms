@@ -17,7 +17,7 @@ use craft\app\web\Application;
  * @package   craft.app.services
  * @since     3.0
  */
-class TemplatesService extends BaseComponent
+class Templates extends BaseComponent
 {
 	// Properties
 	// =========================================================================
@@ -590,8 +590,8 @@ class TemplatesService extends BaseComponent
 	 *
 	 * This will include:
 	 *
-	 * - Any Javascript files included in the previous request using {@link UserSessionService::addJsResourceFlash()}
-	 * - Any Javascript included in the previous request using {@link UserSessionService::addJsFlash()}
+	 * - Any Javascript files included in the previous request using {@link \craft\app\services\UserSession::addJsResourceFlash()}
+	 * - Any Javascript included in the previous request using {@link \craft\app\services\UserSession::addJsFlash()}
 	 * - Any Javascript files included using {@link includeJsFile()} or {@link includeJsResource()}
 	 * - Any Javascript code included using {@link includeJs()}
 	 * - Any HTML included using {@link includeFootHtml()}
@@ -754,7 +754,7 @@ class TemplatesService extends BaseComponent
 	 * - TemplateName.htm
 	 * - TemplateName/default.htm
 	 *
-	 * The actual directory that those files will be searched for is whatever {@link PathService::getTemplatesPath()}
+	 * The actual directory that those files will be searched for is whatever {@link \craft\app\services\Path::getTemplatesPath()}
 	 * returns (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
 	 * Panel request).
 	 *
@@ -1240,7 +1240,7 @@ class TemplatesService extends BaseComponent
 	 */
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
-		// Check if the PluginsService has been loaded yet
+		// Check if the Plugins service has been loaded yet
 		$pluginsService = craft()->getComponent('plugins', false);
 
 		if (!$pluginsService)

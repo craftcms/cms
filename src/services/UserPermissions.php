@@ -20,7 +20,7 @@ craft()->requireEdition(Craft::Pro);
  * @package   craft.app.services
  * @since     3.0
  */
-class UserPermissionsService extends BaseComponent
+class UserPermissions extends BaseComponent
 {
 	// Properties
 	// =========================================================================

@@ -724,7 +724,7 @@ class Entry extends BaseElementType
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
-		// Route this through EntriesService::saveEntry() so the proper entry events get fired.
+		// Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
 		return craft()->entries->saveEntry($element);
 	}
 

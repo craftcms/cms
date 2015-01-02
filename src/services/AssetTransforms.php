@@ -20,7 +20,7 @@ use craft\app\web\Application;
  * @package    craft.app.services
  * @since      3.0
  */
-class AssetTransformsService extends BaseComponent
+class AssetTransforms extends BaseComponent
 {
 	// Properties
 	// =========================================================================
