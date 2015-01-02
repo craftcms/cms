@@ -4,7 +4,7 @@ namespace craft\app\tasks;
 use craft\app\Craft;
 
 /**
- * Generate Pending Transforms Task
+ * The generate pending transforms task.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tasks
  * @since     3.0
  */
-class GeneratePendingTransformsTask extends BaseTask
+class GeneratePendingTransforms extends BaseTask
 {
 	private $_indexIds;
 

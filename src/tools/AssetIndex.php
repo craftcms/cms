@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tools
  * @since     3.0
  */
-class AssetIndexTool extends BaseTool
+class AssetIndex extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

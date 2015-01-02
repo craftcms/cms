@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tools
  * @since     3.0
  */
-class ClearCachesTool extends BaseTool
+class ClearCaches extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

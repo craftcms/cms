@@ -4,7 +4,7 @@ namespace craft\app\tasks;
 use craft\app\Craft;
 
 /**
- * Resave All Elements Task.
+ * The resave all elements task.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tasks
  * @since     3.0
  */
-class ResaveAllElementsTask extends BaseTask
+class ResaveAllElements extends BaseTask
 {
 	// Properties
 	// =========================================================================

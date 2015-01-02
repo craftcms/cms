@@ -2,7 +2,7 @@
 namespace craft\app\tasks;
 
 /**
- * Delete Stale Template Caches Task
+ * A task that deletes stale template caches.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     3.0
  */
-class DeleteStaleTemplateCachesTask extends BaseTask
+class DeleteStaleTemplateCaches extends BaseTask
 {
 	// Properties
 	// =========================================================================

@@ -2,7 +2,7 @@
 namespace craft\app\tasks;
 
 /**
- * Resave Elements Task
+ * The resave elements task.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\tasks;
  * @package   craft.app.tasks
  * @since     3.0
  */
-class ResaveElementsTask extends BaseTask
+class ResaveElements extends BaseTask
 {
 	// Properties
 	// =========================================================================

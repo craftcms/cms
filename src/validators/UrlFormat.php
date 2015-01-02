@@ -11,7 +11,7 @@ namespace craft\app\validators;
  * @package   craft.app.validators
  * @since     3.0
  */
-class UrlFormatValidator extends \CValidator
+class UrlFormat extends \CValidator
 {
 	// Properties
 	// =========================================================================

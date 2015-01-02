@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tools
  * @since     3.0
  */
-class FindAndReplaceTool extends BaseTool
+class FindAndReplace extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

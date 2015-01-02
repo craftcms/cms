@@ -2,10 +2,9 @@
 namespace craft\app\validators;
 
 use craft\app\Craft;
-use craft\app\helpers\DateTimeHelper;
 
 /**
- * Class DateTimeValidator
+ * Will validate that the given attribute is a valid site locale ID.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -14,7 +13,7 @@ use craft\app\helpers\DateTimeHelper;
  * @package   craft.app.validators
  * @since     3.0
  */
-class DateTimeValidator extends \CValidator
+class Locale extends \CValidator
 {
 	// Protected Methods
 	// =========================================================================
@@ -27,18 +26,12 @@ class DateTimeValidator extends \CValidator
 	 */
 	protected function validateAttribute($object, $attribute)
 	{
-		$value = $object->$attribute;
+		$locale = $object->$attribute;
 
-		if ($value)
+		if ($locale && !in_array($locale, craft()->i18n->getSiteLocaleIds()))
 		{
-			if (!($value instanceof \DateTime))
-			{
-				if (!DateTimeHelper::isValidTimeStamp((string)$value))
-				{
-					$message = Craft::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', array('object' => get_class($object), 'attribute' => $attribute));
-					$this->addError($object, $attribute, $message);
-				}
-			}
+			$message = Craft::t('Your site isn’t set up to save content for the locale “{locale}”.', array('locale' => $locale));
+			$this->addError($object, $attribute, $message);
 		}
 	}
 }

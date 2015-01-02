@@ -2,7 +2,7 @@
 namespace craft\app\validators;
 
 /**
- * Class HandleValidator
+ * Class Handle validator.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace craft\app\validators;
  * @package   craft.app.validators
  * @since     3.0
  */
-class HandleValidator extends \CValidator
+class Handle extends \CValidator
 {
 	// Properties
 	// =========================================================================

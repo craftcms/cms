@@ -13,7 +13,7 @@ use craft\app\models\Field as FieldModel;
  * @package   craft.app.tasks
  * @since     3.0
  */
-class FindAndReplaceTask extends BaseTask
+class FindAndReplace extends BaseTask
 {
 	// Properties
 	// =========================================================================

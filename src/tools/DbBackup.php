@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tools
  * @since     3.0
  */
-class DbBackupTool extends BaseTool
+class DbBackup extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

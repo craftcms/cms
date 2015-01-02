@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.tools
  * @since     3.0
  */
-class SearchIndexTool extends BaseTool
+class SearchIndex extends BaseTool
 {
 	// Public Methods
 	// =========================================================================

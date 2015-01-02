@@ -5,7 +5,7 @@ use craft\app\Craft;
 use craft\app\errors\Exception;
 
 /**
- * Class CompositeUniqueValidator
+ * Class CompositeUnique validator.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -14,7 +14,7 @@ use craft\app\errors\Exception;
  * @package   craft.app.validators
  * @since     3.0
  */
-class CompositeUniqueValidator extends \CValidator
+class CompositeUnique extends \CValidator
 {
 	// Properties
 	// =========================================================================

@@ -13,7 +13,7 @@ use craft\app\Craft;
  * @package   craft.app.validators
  * @since     3.0
  */
-class UriValidator extends \CValidator
+class Uri extends \CValidator
 {
 	// Properties
 	// =========================================================================
