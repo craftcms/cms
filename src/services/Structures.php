@@ -22,7 +22,7 @@ use craft\app\web\Application;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class StructuresService extends Component
+class Structures extends Component
 {
 	// Properties
 	// =========================================================================
