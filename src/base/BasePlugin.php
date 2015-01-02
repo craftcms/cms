@@ -8,6 +8,7 @@
 namespace craft\app\base;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\enums\LogLevel;
 
 /**
  * Plugin base class.

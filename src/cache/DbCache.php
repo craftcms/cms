@@ -8,6 +8,7 @@
 namespace craft\app\cache;
 
 use craft\app\db\DbConnection;
+use craft\app\enums\ConfigFile;
 
 /**
  * DbCache implements a cache application component by storing cached data in a database.

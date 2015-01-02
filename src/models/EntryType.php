@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\enums\ElementType;
+use craft\app\helpers\UrlHelper;
 
 /**
  * EntryType model class.

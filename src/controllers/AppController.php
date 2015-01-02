@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\CpHelper;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
 
 /**

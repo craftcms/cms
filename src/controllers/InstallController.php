@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings    as SiteSettingsModel;
 

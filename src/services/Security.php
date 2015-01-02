@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\errors\Exception;
 use craft\app\web\Application;
 
 /**

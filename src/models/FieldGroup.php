@@ -7,6 +7,8 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * FieldGroup model class.
  *

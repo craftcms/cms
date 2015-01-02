@@ -7,6 +7,8 @@
 
 namespace craft\app\logging;
 
+use craft\app\helpers\LoggingHelper;
+
 /**
  * Class FileLogRoute
  *

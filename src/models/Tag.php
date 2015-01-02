@@ -6,7 +6,9 @@
  */
 
 namespace craft\app\models;
+
 use craft\app\enums\ElementType;
+use craft\app\models\FieldLayout;
 
 /**
  * Tag model class.
@@ -50,7 +52,7 @@ class Tag extends BaseElementModel
 	/**
 	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{

@@ -7,6 +7,7 @@
 
 namespace craft\app\updates;
 
+use craft\app\Craft;
 use craft\app\errors\Exception;
 
 /**

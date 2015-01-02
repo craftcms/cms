@@ -7,8 +7,9 @@
 
 namespace craft\app\controllers;
 
-use craft\app\models\LogEntry       as LogEntryModel;
+use craft\app\models\LogEntry                   as LogEntryModel;
 use craft\app\errors\HttpException;
+use craft\app\requirements\RequirementsChecker;
 
 /**
  * The UtilsController class is a controller that handles various utility related tasks such as displaying server info,

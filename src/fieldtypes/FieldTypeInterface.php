@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\SavableComponentTypeInterface;
+use craft\app\models\BaseElementModel;
 
 /**
  * Interface FieldTypeInterface

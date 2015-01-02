@@ -7,6 +7,9 @@
 
 namespace craft\app\db;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+
 /**
  * Class BaseMigration
  *

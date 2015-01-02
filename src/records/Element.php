@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Element record class.
  *

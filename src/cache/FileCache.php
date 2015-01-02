@@ -54,7 +54,7 @@ class FileCache extends \CFileCache
 	 * @param mixed              $value      The value to be cached
 	 * @param int                $expire     The number of seconds in which the cached value will expire. 0 means never
 	 *                                       expire.
-	 * @param \ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is
+	 * @param ICacheDependency $dependency Dependency of the cached item. If the dependency changes, the item is
 	 *                                       labeled invalid.
 	 *
 	 * @return bool true if the value is successfully stored into cache, false otherwise.

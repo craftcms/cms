@@ -8,6 +8,7 @@
 namespace craft\app\logging;
 
 use craft\app\Craft;
+use craft\app\helpers\StringHelper;
 
 /**
  * Class LogRouter

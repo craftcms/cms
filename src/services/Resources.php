@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\web\Application;
 

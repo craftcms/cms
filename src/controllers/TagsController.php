@@ -7,8 +7,11 @@
 
 namespace craft\app\controllers;
 
-use craft\app\models\Tag      as TagModel;
-use craft\app\models\TagGroup as TagGroupModel;
+use craft\app\Craft;
+use craft\app\errors\HttpException;
+use craft\app\helpers\UrlHelper;
+use craft\app\models\Tag            as TagModel;
+use craft\app\models\TagGroup       as TagGroupModel;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,

@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elementtypes\ElementTypeInterface;
+use craft\app\models\ElementCriteria;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
@@ -49,7 +50,7 @@ class ElementIndexController extends BaseElementsController
 	private $_viewState;
 
 	/**
-	 * @var ElementCriteriaModel
+	 * @var ElementCriteria
 	 */
 	private $_criteria;
 

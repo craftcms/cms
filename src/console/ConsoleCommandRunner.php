@@ -7,6 +7,7 @@
 
 namespace craft\app\etc\console;
 
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 
 /**

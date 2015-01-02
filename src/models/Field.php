@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\fieldtypes\BaseFieldType;
 
 /**
  * Field model class.

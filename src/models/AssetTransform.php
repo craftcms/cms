@@ -7,6 +7,8 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
+
 /**
  * The AssetTransform model class.
  *

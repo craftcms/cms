@@ -7,7 +7,8 @@
 
 namespace craft\app\models;
 
-use craft\app\models\PluginUpdate as PluginUpdateModel;
+use craft\app\enums\AttributeType;
+use craft\app\models\PluginUpdate  as PluginUpdateModel;
 
 /**
  * Stores all of the available update info.

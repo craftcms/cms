@@ -7,6 +7,9 @@
 
 namespace craft\app\validators;
 
+use craft\app\Craft;
+use craft\app\helpers\ElementHelper;
+
 /**
  * Will validate that the given attribute is a valid URL format.
  *

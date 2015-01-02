@@ -7,6 +7,9 @@
 
 namespace craft\app\requirements;
 
+use craft\app\enums\InstallStatus;
+use craft\app\enums\RequirementResult;
+
 /**
  * Class RequirementsChecker
  *

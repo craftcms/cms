@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\enums\ComponentType;
 use craft\app\errors\HttpException;
 
 /**

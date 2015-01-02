@@ -7,9 +7,10 @@
 
 namespace craft\app\services;
 
+use craft\app\base\BasePlugin;
 use yii\base\Component;
 use craft\app\errors\Exception;
-use craft\app\records\Migration         as MigrationRecord;
+use craft\app\records\Migration as MigrationRecord;
 use craft\app\web\Application;
 
 /**

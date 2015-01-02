@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\models\EntryType      as EntryTypeModel;
 use craft\app\models\Section        as SectionModel;
 use craft\app\models\SectionLocale  as SectionLocaleModel;

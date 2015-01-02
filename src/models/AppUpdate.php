@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\models\AppNewRelease as AppNewReleaseModel;
 
 /**

@@ -7,6 +7,8 @@
 
 namespace craft\app\console;
 
+use craft\app\Craft;
+
 /**
  * Craft Console Application class
  *

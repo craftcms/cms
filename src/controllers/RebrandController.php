@@ -8,6 +8,8 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\IOHelper;
 
 craft()->requireEdition(Craft::Client);
 

@@ -7,6 +7,8 @@
 
 namespace craft\app\validators;
 
+use craft\app\helpers\StringHelper;
+
 /**
  * Class Handle validator.
  *

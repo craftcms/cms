@@ -6,7 +6,9 @@
  */
 
 namespace craft\app\models;
+
 use craft\app\Craft;
+use craft\app\enums\SectionType;
 
 /**
  * Section model class.

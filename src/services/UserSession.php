@@ -12,6 +12,7 @@ use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;
 use craft\app\users\UserIdentity;
 use craft\app\web\Application;
+use craft\app\web\HttpCookie;
 
 /**
  * The UserSession service provides APIs for managing user sessions.

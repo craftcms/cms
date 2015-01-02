@@ -7,6 +7,9 @@
 
 namespace craft\app\tasks;
 
+use craft\app\Craft;
+use craft\app\helpers\StringHelper;
+
 /**
  * The resave elements task.
  *

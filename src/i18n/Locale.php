@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\i18n;
+namespace craft\app\i18n;
 
 use yii\base\Object;
 

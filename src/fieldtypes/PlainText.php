@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
+use craft\app\enums\ColumnType;
 
 /**
  * PlainText fieldtype

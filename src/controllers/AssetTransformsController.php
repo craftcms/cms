@@ -42,7 +42,7 @@ class AssetTransformsController extends BaseController
 	public function actionTransformIndex()
 	{
 		$variables['transforms'] = craft()->assetTransforms->getAllTransforms();
-		$variables['transformModes'] = AssetTransform::getTransformModes();
+		$variables['transformModes'] = AssetTransformModel::getTransformModes();
 
 		$this->renderTemplate('settings/assets/transforms/_index', $variables);
 	}
