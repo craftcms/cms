@@ -14,7 +14,7 @@ use craft\app\models\MatrixBlock     as MatrixBlockModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
- * @since     1.3
+ * @since     3.0
  */
 class MatrixBlock extends BaseElementType
 {

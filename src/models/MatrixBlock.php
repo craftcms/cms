@@ -12,7 +12,7 @@ use craft\app\models\FieldLayout as FieldLayoutModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.models
- * @since     1.3
+ * @since     3.0
  */
 class MatrixBlock extends BaseElementModel
 {

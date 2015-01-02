@@ -9,7 +9,7 @@ namespace craft\app\i18n;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.i18n
- * @since     1.0
+ * @since     3.0
  */
 class PhpMessageSource extends \CPhpMessageSource
 {

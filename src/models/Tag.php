@@ -10,7 +10,7 @@ use craft\app\enums\ElementType;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.models
- * @since     1.1
+ * @since     3.0
  */
 class Tag extends BaseElementModel
 {

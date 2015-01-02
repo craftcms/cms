@@ -11,7 +11,7 @@ use yii\base\Component;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.components
- * @since     1.0
+ * @since     3.0
  */
 class BaseComponent extends Component
 {

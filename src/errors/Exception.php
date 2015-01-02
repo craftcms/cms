@@ -9,7 +9,7 @@ namespace craft\app\errors;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.errors
- * @since     1.0
+ * @since     3.0
  */
 class Exception extends \yii\base\Exception
 {

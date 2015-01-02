@@ -14,7 +14,7 @@ use craft\app\models\Params                 as ParamsModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.elementactions
- * @since     2.3
+ * @since     3.0
  */
 abstract class BaseElementAction extends BaseComponentType implements ElementActionInterface
 {

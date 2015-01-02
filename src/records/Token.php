@@ -9,7 +9,7 @@ namespace craft\app\records;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.records
- * @since     2.1
+ * @since     3.0
  */
 class Token extends BaseRecord
 {

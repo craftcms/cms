@@ -14,7 +14,7 @@ use craft\app\models\User              as UserModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
- * @since     1.0
+ * @since     3.0
  */
 class User extends BaseElementType
 {

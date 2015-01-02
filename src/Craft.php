@@ -15,7 +15,7 @@ use craft\app\models\Info as InfoModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app
- * @since     1.0
+ * @since     3.0
  */
 class Craft extends \Yii
 {

@@ -9,7 +9,7 @@ namespace craft\app\elementactions;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @link      http://buildwithcraft.com
  * @package   craft.app.elementactions
- * @since     2.3
+ * @since     3.0
  */
 class Edit extends BaseElementAction
 {

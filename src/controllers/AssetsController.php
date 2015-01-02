@@ -15,7 +15,7 @@ use craft\app\fieldtypes\Assets;
  * @license    http://buildwithcraft.com/license Craft License Agreement
  * @see        http://buildwithcraft.com
  * @package    craft.app.controllers
- * @since      1.0
+ * @since      3.0
  */
 class AssetsController extends BaseController
 {

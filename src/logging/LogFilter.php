@@ -14,7 +14,7 @@ namespace craft\app\logging;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.logging
- * @since     2.3
+ * @since     3.0
  */
 class LogFilter extends \CLogFilter
 {

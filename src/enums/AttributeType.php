@@ -12,7 +12,7 @@ namespace craft\app\enums;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.enums
- * @since     1.0
+ * @since     3.0
  */
 abstract class AttributeType extends BaseEnum
 {

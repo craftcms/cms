@@ -12,7 +12,7 @@ namespace craft\app\cache;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.cache
- * @since     2.0
+ * @since     3.0
  */
 class ZendDataCache extends \CZendDataCache
 {

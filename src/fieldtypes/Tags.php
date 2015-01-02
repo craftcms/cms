@@ -11,7 +11,7 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.fieldtypes
- * @since     1.2
+ * @since     3.0
  */
 class Tags extends BaseElementFieldType
 {

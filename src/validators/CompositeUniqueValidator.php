@@ -12,7 +12,7 @@ use craft\app\errors\Exception;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.validators
- * @since     1.0
+ * @since     3.0
  */
 class CompositeUniqueValidator extends \CValidator
 {

@@ -9,7 +9,7 @@ namespace craft\app\fieldtypes\data;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.fieldtypes
- * @since     1.0
+ * @since     3.0
  */
 class RichTextData extends \Twig_Markup
 {

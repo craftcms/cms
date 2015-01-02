@@ -14,7 +14,7 @@ use craft\app\models\Entry as EntryModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     2.1
+ * @since     3.0
  */
 abstract class BaseEntriesController extends BaseController
 {

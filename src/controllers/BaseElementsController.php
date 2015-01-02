@@ -13,7 +13,7 @@ use craft\app\errors\HttpException;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     2.3
+ * @since     3.0
  */
 abstract class BaseElementsController extends BaseController
 {

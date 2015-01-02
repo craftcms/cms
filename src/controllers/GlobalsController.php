@@ -14,7 +14,7 @@ use craft\app\models\GlobalSet as GlobalSetModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     1.0
+ * @since     3.0
  */
 class GlobalsController extends BaseController
 {

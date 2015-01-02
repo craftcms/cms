@@ -16,7 +16,7 @@ use craft\app\web\Application;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.services
- * @since     2.1
+ * @since     3.0
  */
 class TokensService extends BaseComponent
 {

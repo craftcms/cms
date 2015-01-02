@@ -14,7 +14,7 @@ use craft\app\web\Application;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.services
- * @since     1.0
+ * @since     3.0
  */
 class PathService extends BaseComponent
 {

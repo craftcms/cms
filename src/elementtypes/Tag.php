@@ -14,7 +14,7 @@ use craft\app\models\Tag               as TagModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
- * @since     1.1
+ * @since     3.0
  */
 class Tag extends BaseElementType
 {

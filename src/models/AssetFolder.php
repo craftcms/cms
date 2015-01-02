@@ -12,7 +12,7 @@ use craft\app\models\AssetSource as AssetSourceModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.models
- * @since     1.0
+ * @since     3.0
  */
 class AssetFolder extends BaseModel
 {

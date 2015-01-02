@@ -11,7 +11,7 @@ namespace craft\app\controllers;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.controllers
- * @since     1.0
+ * @since     3.0
  */
 abstract class BaseController extends \CController
 {

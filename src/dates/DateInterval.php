@@ -9,7 +9,7 @@ namespace craft\app\dates;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.dates
- * @since     1.0
+ * @since     3.0
  */
 class DateInterval extends \DateInterval
 {

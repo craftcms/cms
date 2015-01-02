@@ -15,7 +15,7 @@ use craft\app\models\ElementCriteria   as ElementCriteriaModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
- * @since     2.0
+ * @since     3.0
  */
 class Category extends BaseElementType
 {

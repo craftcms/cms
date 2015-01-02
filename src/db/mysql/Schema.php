@@ -9,7 +9,7 @@ namespace craft\app\db\mysql;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.db.schemas
- * @since     1.0
+ * @since     3.0
  */
 class Schema extends \CMysqlSchema
 {

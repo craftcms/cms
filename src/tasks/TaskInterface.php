@@ -11,7 +11,7 @@ use craft\app\components\SavableComponentTypeInterface;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.tasks
- * @since     2.0
+ * @since     3.0
  */
 interface TaskInterface extends SavableComponentTypeInterface
 {

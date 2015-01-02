@@ -16,7 +16,7 @@ use craft\app\models\Section           as SectionModel;
  * @license   http://buildwithcraft.com/license Craft License Agreement
  * @see       http://buildwithcraft.com
  * @package   craft.app.elementtypes
- * @since     1.0
+ * @since     3.0
  */
 class Entry extends BaseElementType
 {
