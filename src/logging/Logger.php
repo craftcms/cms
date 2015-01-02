@@ -13,7 +13,7 @@ namespace craft\app\logging;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Logger extends \CLogger
+class Logger extends yii\log\Logger
 {
 	// Properties
 	// =========================================================================
@@ -27,6 +27,15 @@ class Logger extends \CLogger
 	 * @var boolean
 	 */
 	public $autoDump = true;
+
+	/**
+     * @var integer how many messages should be logged before they are flushed from memory and sent to targets.
+     * Defaults to 1000, meaning the [[flush]] method will be invoked once every 1000 messages logged.
+     * Set this property to be 0 if you don't want to flush messages until the application terminates.
+     * This property mainly affects how much memory will be taken by the logged messages.
+     * A smaller value means less memory, but will increase the execution time due to the overhead of [[flush()]].
+     */
+    public $flushInterval = 0;
 
 	// Public Methods
 	// =========================================================================

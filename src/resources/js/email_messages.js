@@ -95,6 +95,13 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			locale: locale
 		};
 
+		// If CSRF protection isn't enabled, these won't be defined.
+		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+		{
+			// Add the CSRF token
+			data[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		}
+
 		$.post(Craft.getUrl('settings/email/_message_modal'), data, $.proxy(function(response, textStatus, jqXHR)
 		{
 			if (textStatus == 'success')
