@@ -28,7 +28,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 			).appendTo(Garnish.$bod),
 			$body = $(
 				'<div class="body">' +
-					'<p>'+Craft.t('What do you want to do with the their content?')+'</p>' +
+					'<p>'+Craft.t('What do you want to do with their content?')+'</p>' +
 					'<div class="options">' +
 						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
 						'<div id="transferselect'+this.id+'" class="elementselect">' +
