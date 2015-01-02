@@ -2,7 +2,7 @@
 namespace craft\app\helpers;
 
 use craft\app\models\ElementCriteria      as ElementCriteriaModel;
-use craft\app\variables\PaginateVariable;
+use craft\app\variables\Paginate;
 
 /**
  * Class TemplateHelper
@@ -33,7 +33,7 @@ class TemplateHelper
 		$total = $criteria->total() - $criteria->offset;
 		$totalPages = ceil($total / $limit);
 
-		$paginateVariable = new PaginateVariable();
+		$paginateVariable = new Paginate();
 
 		if ($totalPages == 0)
 		{
