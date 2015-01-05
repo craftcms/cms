@@ -977,13 +977,6 @@ Garnish.Base = Base.extend({
 						return;
 					}
 
-					// IE < 11 had a proprietary 'resize' event and 'attachEvent' method.
-					// Conveniently both dropped in 11.
-					if (document.attachEvent)
-					{
-						return;
-					}
-
 					// Is this the first resize listener added to this element?
 					if (!elem.__resizeTrigger__)
 					{
