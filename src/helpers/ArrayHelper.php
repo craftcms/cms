@@ -208,7 +208,7 @@ class ArrayHelper
 	 *
 	 * @return bool
 	 */
-	private function _isNotAnEmptyString($val)
+	private static function _isNotAnEmptyString($val)
 	{
 		return (mb_strlen($val) != 0);
 	}
