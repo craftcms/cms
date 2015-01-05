@@ -776,6 +776,11 @@ class UserSessionService extends \CWebUser
 				$error = Craft::t('You cannot access the CP while the system is offline with that account.');
 				break;
 			}
+			case UserIdentity::ERROR_PENDING_VERIFICATION:
+			{
+				$error = Craft::t('Account has not been activated.');
+				break;
+			}
 			default:
 			{
 				$error = Craft::t('Invalid username or password.');

@@ -23,6 +23,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
 	const ERROR_NO_CP_ACCESS            = 54;
 	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
+	const ERROR_PENDING_VERIFICATION    = 56;
 
 	// Properties
 	// =========================================================================
@@ -118,7 +119,6 @@ class UserIdentity extends \CUserIdentity
 		switch ($user->status)
 		{
 			// If the account is pending, they don't exist yet.
-			case UserStatus::Pending:
 			case UserStatus::Archived:
 			{
 				$this->errorCode = static::ERROR_USERNAME_INVALID;
@@ -134,6 +134,12 @@ class UserIdentity extends \CUserIdentity
 			case UserStatus::Suspended:
 			{
 				$this->errorCode = static::ERROR_ACCOUNT_SUSPENDED;
+				break;
+			}
+
+			case UserStatus::Pending:
+			{
+				$this->errorCode = static::ERROR_PENDING_VERIFICATION;
 				break;
 			}
 
