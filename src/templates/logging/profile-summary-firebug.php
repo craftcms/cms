@@ -1,6 +1,6 @@
 <script type="text/javascript">
 /*<![CDATA[*/
-if (typeof(console) == 'object')
+if (typeof(console) == 'object' && typeof console.groupCollapsed == 'function')
 {
 	console.groupCollapsed("Profiling Summary Report");
 	console.log("Time:   <?php echo sprintf('%0.5f', Craft\Craft::getLogger()->getExecutionTime()); ?>s\n");
