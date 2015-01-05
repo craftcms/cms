@@ -3578,7 +3578,7 @@ Garnish.Menu = Garnish.Base.extend({
 	{
 		this.$options = this.$options.add($options);
 		$options.data('menu', this);
-		this.addListener($options, 'click', 'selectOption');
+		this.addListener($options, 'mousedown', 'selectOption');
 	},
 
 	setPositionRelativeToTrigger: function()
