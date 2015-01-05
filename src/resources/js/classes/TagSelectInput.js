@@ -12,6 +12,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 	$addTagInput: null,
 	$spinner: null,
 
+	_ignoreBlur: false,
+
 	init: function(settings)
 	{
 		// Normalize the settings
@@ -77,6 +79,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
 		this.addListener(this.$addTagInput, 'blur', function()
 		{
+			if (this._ignoreBlur)
+			{
+				this._ignoreBlur = false;
+				return;
+			}
+
 			setTimeout($.proxy(function()
 			{
 				if (this.searchMenu)
@@ -153,6 +161,11 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 						attachToElement: this.$addTagInput,
 						onOptionSelect: $.proxy(this, 'selectTag')
 					});
+
+					this.addListener($menu, 'mousedown', $.proxy(function()
+					{
+						this._ignoreBlur = true;
+					}, this));
 
 					this.searchMenu.show();
 				}
