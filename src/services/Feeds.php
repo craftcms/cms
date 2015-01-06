@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\LogLevel;
+use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
 use craft\app\Craft;
 use craft\app\web\Application;

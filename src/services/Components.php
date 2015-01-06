@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\components\BaseComponentType;
 use yii\base\Component;
 use craft\app\models\BaseComponentModel;
 use craft\app\web\Application;

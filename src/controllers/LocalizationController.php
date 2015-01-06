@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\Craft;
 use craft\app\errors\HttpException;
+use craft\app\helpers\JsonHelper;
 
 craft()->requireEdition(Craft::Pro);
 

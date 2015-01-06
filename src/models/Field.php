@@ -9,6 +9,8 @@ namespace craft\app\models;
 
 use craft\app\Craft;
 use craft\app\fieldtypes\BaseFieldType;
+use craft\app\models\Entry              as EntryModel;
+use craft\app\models\FieldGroup         as FieldGroupModel;
 
 /**
  * Field model class.
@@ -79,7 +81,7 @@ class Field extends BaseComponentModel
 	/**
 	 * Returns the field's group.
 	 *
-	 * @return EntryUserModel
+	 * @return FieldGroupModel
 	 */
 	public function getGroup()
 	{

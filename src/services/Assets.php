@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\assetsourcetypes\Temp;
+use craft\app\enums\ElementType;
 use yii\base\Component;
 use craft\app\models\AssetFile          as AssetFileModel;
 use craft\app\models\AssetFolder        as AssetFolderModel;

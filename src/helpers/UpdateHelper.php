@@ -7,6 +7,8 @@
 
 namespace craft\app\helpers;
 
+use craft\app\db\DbBackup;
+
 /**
  * Class UpdateHelper
  *

@@ -8,6 +8,8 @@
 namespace craft\app\variables;
 
 use craft\app\Craft;
+use craft\app\helpers\StringHelper;
+use craft\app\helpers\UrlHelper;
 
 /**
  * CP functions

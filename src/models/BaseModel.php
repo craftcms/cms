@@ -7,6 +7,8 @@
 
 namespace craft\app\models;
 
+use craft\app\helpers\ModelHelper;
+
 /**
  * Model base class.
  *

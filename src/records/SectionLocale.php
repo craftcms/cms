@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class SectionLocale record.
  *
@@ -63,11 +65,11 @@ class SectionLocale extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'locale'           => array(AttributeType::Locale, 'required' => true),
-			'enabledByDefault' => array(AttributeType::Bool, 'default' => true),
+		return [
+			'locale'           => [AttributeType::Locale, 'required' => true],
+			'enabledByDefault' => [AttributeType::Bool, 'default' => true],
 			'urlFormat'        => AttributeType::UrlFormat,
 			'nestedUrlFormat'  => AttributeType::UrlFormat,
-		);
+		];
 	}
 }

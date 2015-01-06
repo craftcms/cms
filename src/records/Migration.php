@@ -7,6 +7,9 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+
 /**
  * Class Migration record.
  *

@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\StringHelper;
 use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\web\Application;

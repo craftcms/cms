@@ -6,6 +6,8 @@
  */
 
 namespace craft\app\records;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 
 /**
  * Class StructureElement record.
@@ -79,11 +81,11 @@ class StructureElement extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'root'  => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true),
-			'lft'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'rgt'   => array(AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'level' => array(AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false),
-		);
+		return [
+			'root'  => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true],
+			'lft'   => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
+			'rgt'   => [AttributeType::Number, 'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
+			'level' => [AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false],
+		];
 	}
 }

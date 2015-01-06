@@ -7,6 +7,9 @@
 
 namespace craft\app\errors;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+
 /**
  * ErrorHandler handles uncaught PHP errors and exceptions.
  *

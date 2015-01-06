@@ -7,6 +7,8 @@
 
 namespace craft\app\tasks;
 
+use craft\app\Craft;
+
 /**
  * A task that deletes stale template caches.
  *

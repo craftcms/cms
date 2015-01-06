@@ -7,6 +7,9 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\ComponentType;
+use craft\app\tasks\BaseTask;
+
 /**
  * Class Task model.
  *

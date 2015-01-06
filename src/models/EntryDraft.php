@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\models\EntryDraft as EntryDraftModel;
 
 craft()->requireEdition(Craft::Client);
@@ -74,9 +75,9 @@ class EntryDraft extends BaseEntryRevisionModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'draftId' => AttributeType::Number,
 			'name'    => AttributeType::String,
-		));
+		]);
 	}
 }

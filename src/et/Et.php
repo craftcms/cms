@@ -7,7 +7,8 @@
 
 namespace craft\app\et;
 
-use craft\app\models\Et as EtModel;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\models\Et               as EtModel;
 
 /**
  * Class Et

@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\JsonHelper;
 use yii\base\Component;
 use craft\app\Craft;
 use craft\app\models\Entry              as EntryModel;

@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\Craft;
+use craft\app\enums\LicenseKeyStatus;
 
 /**
  * Class CpHelper

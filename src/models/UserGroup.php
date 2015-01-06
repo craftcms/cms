@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 
 craft()->requireEdition(Craft::Pro);
 

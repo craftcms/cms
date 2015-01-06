@@ -7,6 +7,8 @@
 
 namespace craft\app\db;
 
+use craft\app\enums\ConfigFile;
+
 /**
  * This class provides methods for backing up and restore Craft databases.
  *

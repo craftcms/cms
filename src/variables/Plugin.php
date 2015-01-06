@@ -7,6 +7,8 @@
 
 namespace craft\app\variables;
 
+use craft\app\helpers\UrlHelper;
+
 /**
  * Plugin template variable.
  *

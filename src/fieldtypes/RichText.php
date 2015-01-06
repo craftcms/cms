@@ -8,6 +8,8 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -87,10 +89,10 @@ class RichText extends BaseFieldType
 		// It hasn't always been a settings, so default to Text if it's not set.
 		if (!$settings->getAttribute('columnType'))
 		{
-			return array(AttributeType::String, 'column' => ColumnType::Text);
+			return [AttributeType::String, 'column' => ColumnType::Text];
 		}
 
-		return array(AttributeType::String, 'column' => $settings->columnType);
+		return [AttributeType::String, 'column' => $settings->columnType];
 	}
 
 	/**

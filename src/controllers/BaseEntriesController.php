@@ -7,7 +7,8 @@
 
 namespace craft\app\controllers;
 
-use craft\app\models\Entry as EntryModel;
+use craft\app\enums\SectionType;
+use craft\app\models\Entry       as EntryModel;
 
 /**
  * BaseController is a base class that any entry related controllers, such as [[EntriesController]] and

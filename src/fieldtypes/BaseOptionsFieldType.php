@@ -7,6 +7,10 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+use craft\app\helpers\DbHelper;
+
 /**
  * Class BaseOptionsFieldType
  *
@@ -66,11 +70,11 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 				$columnType = ColumnType::Varchar;
 			}
 
-			return array(AttributeType::Mixed, 'column' => $columnType, 'default' => $this->getDefaultValue());
+			return [AttributeType::Mixed, 'column' => $columnType, 'default' => $this->getDefaultValue()];
 		}
 		else
 		{
-			return array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'default' => $this->getDefaultValue());
+			return [AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'default' => $this->getDefaultValue()];
 		}
 	}
 

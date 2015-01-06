@@ -7,6 +7,8 @@
 
 namespace craft\app\consolecommands;
 
+use craft\app\helpers\IOHelper;
+
 /**
  * Migrate is a command for managing Craft and plugin database migrations.
  *

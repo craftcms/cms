@@ -8,6 +8,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -77,9 +78,9 @@ class Delete extends BaseElementAction
 	 */
 	protected function defineParams()
 	{
-		return array(
-			'confirmationMessage' => array(AttributeType::String),
-			'successMessage'      => array(AttributeType::String),
-		);
+		return [
+			'confirmationMessage' => [AttributeType::String],
+			'successMessage'      => [AttributeType::String],
+		];
 	}
 }

@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use craft\app\enums\ElementType;
 use craft\app\models\FieldLayout;
+use craft\app\models\TagGroup     as TagGroupModel;
 
 /**
  * Tag model class.

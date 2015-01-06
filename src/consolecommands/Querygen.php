@@ -7,6 +7,8 @@
 
 namespace craft\app\consolecommands;
 
+use craft\app\enums\ColumnType;
+
 /**
  * The query generator console command.
  *

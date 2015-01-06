@@ -8,6 +8,7 @@
 namespace craft\app\assetsourcetypes;
 
 use craft\app\Craft;
+use craft\app\errors\Exception;
 
 /**
  * A temporary asset source type class.

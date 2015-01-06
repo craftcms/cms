@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\errors\Exception;
 use craft\app\fieldtypes\Assets;
 
 /**

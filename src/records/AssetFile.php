@@ -7,6 +7,9 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+
 /**
  * Class AssetFile record.
  *
@@ -66,13 +69,13 @@ class AssetFile extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'filename'		=> array(AttributeType::String, 'required' => true),
-			'kind'			=> array('column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'),
-			'width'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
-			'height'		=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
-			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
+		return [
+			'filename'		=> [AttributeType::String, 'required' => true],
+			'kind'			=> ['column' => ColumnType::Varchar, 'maxLength' => 50, 'required' => true, 'default' => 'unknown'],
+			'width'			=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt],
+			'height'		=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt],
+			'size'			=> [AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int],
 			'dateModified'	=> AttributeType::DateTime
-		);
+		];
 	}
 }

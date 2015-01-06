@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\records;
+use craft\app\enums\AttributeType;
 
 /**
  * Class EntryType record.
@@ -81,13 +82,13 @@ class EntryType extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'required' => true),
-			'hasTitleField' => array(AttributeType::Bool, 'required' => true, 'default' => true),
-			'titleLabel'    => array(AttributeType::String, 'default' => 'Title'),
+		return [
+			'name'          => [AttributeType::Name, 'required' => true],
+			'handle'        => [AttributeType::Handle, 'required' => true],
+			'hasTitleField' => [AttributeType::Bool, 'required' => true, 'default' => true],
+			'titleLabel'    => [AttributeType::String, 'default' => 'Title'],
 			'titleFormat'   => AttributeType::String,
 			'sortOrder'     => AttributeType::SortOrder,
-		);
+		];
 	}
 }

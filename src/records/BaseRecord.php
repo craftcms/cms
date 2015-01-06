@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\helpers\ModelHelper;
+
 /**
  * Active Record base class.
  *

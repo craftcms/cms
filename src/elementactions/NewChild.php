@@ -7,6 +7,8 @@
 
 namespace craft\app\elementactions;
 
+use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -76,10 +78,10 @@ EOT;
 	 */
 	protected function defineParams()
 	{
-		return array(
-			'label'       => array(AttributeType::String, 'default' => Craft::t('New Child')),
+		return [
+			'label'       => [AttributeType::String, 'default' => Craft::t('New Child')],
 			'maxLevels'   => AttributeType::Number,
 			'newChildUrl' => AttributeType::String,
-		);
+		];
 	}
 }

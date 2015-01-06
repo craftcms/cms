@@ -7,6 +7,8 @@
 
 namespace craft\app\state;
 
+use craft\app\helpers\IOHelper;
+
 /**
  * StatePersister implements a file-based persistent data storage.
  *

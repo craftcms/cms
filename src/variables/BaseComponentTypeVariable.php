@@ -8,6 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\components\BaseComponentType;
+use craft\app\helpers\VariableHelper;
 
 /**
  * Component template variable class

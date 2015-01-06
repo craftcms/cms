@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class TagGroup record.
  *
@@ -76,10 +78,10 @@ class TagGroup extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'required' => true),
+		return [
+			'name'          => [AttributeType::Name, 'required' => true],
+			'handle'        => [AttributeType::Handle, 'required' => true],
 			'fieldLayoutId' => AttributeType::Number,
-		);
+		];
 	}
 }

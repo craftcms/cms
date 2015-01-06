@@ -8,6 +8,7 @@
 namespace craft\app\updates;
 
 use craft\app\Craft;
+use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 
 /**

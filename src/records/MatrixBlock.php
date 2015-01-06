@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class MatrixBlock record.
  *
@@ -69,9 +71,9 @@ class MatrixBlock extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'sortOrder' => AttributeType::SortOrder,
 			'ownerLocale' => AttributeType::Locale,
-		);
+		];
 	}
 }

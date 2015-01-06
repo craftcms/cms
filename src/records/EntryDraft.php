@@ -8,6 +8,8 @@
 namespace craft\app\records;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 
 craft()->requireEdition(Craft::Client);
 
@@ -69,11 +71,11 @@ class EntryDraft extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'locale' => array(AttributeType::Locale, 'required' => true),
-			'name'   => array(AttributeType::String, 'required' => true),
-			'notes'  => array(AttributeType::String, 'column' => ColumnType::TinyText),
-			'data'   => array(AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText),
-		);
+		return [
+			'locale' => [AttributeType::Locale, 'required' => true],
+			'name'   => [AttributeType::String, 'required' => true],
+			'notes'  => [AttributeType::String, 'column' => ColumnType::TinyText],
+			'data'   => [AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText],
+		];
 	}
 }

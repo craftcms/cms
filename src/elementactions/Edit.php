@@ -7,6 +7,9 @@
 
 namespace craft\app\elementactions;
 
+use craft\app\Craft;
+use craft\app\enums\AttributeType;
+
 /**
  * Edit Element Action
  *
@@ -66,8 +69,8 @@ EOT;
 	 */
 	protected function defineParams()
 	{
-		return array(
-			'label' => array(AttributeType::String, 'default' => Craft::t('Edit')),
-		);
+		return [
+			'label' => [AttributeType::String, 'default' => Craft::t('Edit')],
+		];
 	}
 }

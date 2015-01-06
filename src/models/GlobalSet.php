@@ -7,7 +7,9 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
@@ -79,10 +81,10 @@ class GlobalSet extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'name'          => AttributeType::Name,
 			'handle'        => AttributeType::Handle,
 			'fieldLayoutId' => AttributeType::Number,
-		));
+		]);
 	}
 }

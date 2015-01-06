@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
 use craft\app\models\BaseElementModel;
 
 /**

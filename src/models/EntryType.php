@@ -7,8 +7,11 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
+use craft\app\models\Section       as SectionModel;
 
 /**
  * EntryType model class.
@@ -77,15 +80,15 @@ class EntryType extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'            => AttributeType::Number,
 			'sectionId'     => AttributeType::Number,
 			'fieldLayoutId' => AttributeType::Number,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
-			'hasTitleField' => array(AttributeType::Bool, 'default' => true),
-			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
+			'hasTitleField' => [AttributeType::Bool, 'default' => true],
+			'titleLabel'    => [AttributeType::String, 'default' => Craft::t('Title')],
 			'titleFormat'   => AttributeType::String,
-		);
+		];
 	}
 }

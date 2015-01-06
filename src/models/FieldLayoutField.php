@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\Field       as FieldModel;
 
 /**
  * FieldLayoutField model class.

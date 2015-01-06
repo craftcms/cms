@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\enums\AttributeType;
 use craft\app\models\BaseElementModel;
 
 /**

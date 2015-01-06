@@ -13,6 +13,7 @@ use craft\app\models\FieldLayout        as FieldLayoutModel;
 use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
 use craft\app\models\MatrixBlock        as MatrixBlockModel;
+use craft\app\models\MatrixBlockType    as MatrixBlockTypeModel;
 use craft\app\models\MatrixSettings     as MatrixSettingsModel;
 use craft\app\records\MatrixBlock       as MatrixBlockRecord;
 use craft\app\records\MatrixBlockType   as MatrixBlockTypeRecord;

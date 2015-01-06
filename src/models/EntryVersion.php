@@ -8,7 +8,8 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
-use craft\app\models\EntryVersion as EntryVersionModel;
+use craft\app\enums\AttributeType;
+use craft\app\models\EntryVersion  as EntryVersionModel;
 
 craft()->requireEdition(Craft::Client);
 
@@ -70,9 +71,9 @@ class EntryVersion extends BaseEntryRevisionModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'versionId'   => AttributeType::Number,
 			'num'         => AttributeType::Number,
-		));
+		]);
 	}
 }

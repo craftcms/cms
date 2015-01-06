@@ -7,6 +7,8 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
+
 /**
  * Categories fieldtype.
  *

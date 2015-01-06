@@ -6,6 +6,9 @@
  */
 
 namespace craft\app\records;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+use craft\app\enums\TaskStatus;
 
 /**
  * Class Task record.
@@ -77,17 +80,17 @@ class Task extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'root'          => array(AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true),
-			'lft'           => array(AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'rgt'           => array(AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false),
-			'level'         => array(AttributeType::Number,    'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false),
-			'currentStep'   => array(AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true),
-			'totalSteps'    => array(AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true),
-			'status'        => array(AttributeType::Enum,      'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running)),
-			'type'          => array(AttributeType::ClassName, 'required' => true),
+		return [
+			'root'          => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
+			'lft'           => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
+			'rgt'           => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true, 'null' => false],
+			'level'         => [AttributeType::Number,    'column' => ColumnType::SmallInt, 'unsigned' => true, 'null' => false],
+			'currentStep'   => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
+			'totalSteps'    => [AttributeType::Number,    'column' => ColumnType::Int,      'unsigned' => true],
+			'status'        => [AttributeType::Enum,      'values' => [TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running]],
+			'type'          => [AttributeType::ClassName, 'required' => true],
 			'description'   => AttributeType::String,
 			'settings'      => AttributeType::Mixed,
-		);
+		];
 	}
 }

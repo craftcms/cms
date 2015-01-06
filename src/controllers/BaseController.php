@@ -7,6 +7,8 @@
 
 namespace craft\app\controllers;
 
+use craft\app\errors\HttpException;
+
 /**
  * BaseController is a base class that all controllers in Craft extend.
  *

@@ -7,6 +7,9 @@
 
 namespace craft\app\elementactions;
 
+use craft\app\enums\AttributeType;
+use craft\app\Craft;
+
 /**
  * View Element Action
  *
@@ -71,8 +74,8 @@ EOT;
 	 */
 	protected function defineParams()
 	{
-		return array(
-			'label' => array(AttributeType::String, 'default' => Craft::t('View')),
-		);
+		return [
+			'label' => [AttributeType::String, 'default' => Craft::t('View')],
+		];
 	}
 }

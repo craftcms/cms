@@ -8,6 +8,7 @@
 namespace craft\app\console;
 
 use craft\app\Craft;
+use craft\app\logging\Logger;
 
 /**
  * Craft Console Application class

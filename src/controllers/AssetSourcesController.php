@@ -8,8 +8,10 @@
 namespace craft\app\controllers;
 
 use craft\app\assetsourcetypes\S3;
-use craft\app\models\AssetSource    as AssetSourceModel;
+use craft\app\Craft;
+use craft\app\models\AssetSource         as AssetSourceModel;
 use craft\app\errors\HttpException;
+use craft\app\variables\AssetSourceType;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
@@ -84,7 +86,7 @@ class AssetSourcesController extends BaseController
 		if (craft()->getEdition() == Craft::Pro)
 		{
 			$sourceTypes = craft()->assetSources->getAllSourceTypes();
-			$variables['sourceTypes'] = AssetSourceTypeVariable::populateVariables($sourceTypes);
+			$variables['sourceTypes'] = AssetSourceType::populateVariables($sourceTypes);
 		}
 
 		$variables['isNewSource'] = !$variables['source']->id;
