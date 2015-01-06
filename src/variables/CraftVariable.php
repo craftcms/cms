@@ -149,14 +149,6 @@ class CraftVariable
 	}
 
 	/**
-	 * @return FieldTypesVariable
-	 */
-	public function fieldTypes()
-	{
-		return new FieldTypesVariable();
-	}
-
-	/**
 	 * @return CpVariable
 	 */
 	public function cp()
