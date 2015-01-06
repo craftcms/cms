@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\MatrixBlock     as MatrixBlockModel;
+use craft\app\models\Field           as FieldModel;
 
 /**
  * The MatrixBlock class is responsible for implementing and defining Matrix blocks as a native element type

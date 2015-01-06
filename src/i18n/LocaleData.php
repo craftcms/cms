@@ -7,6 +7,7 @@
 
 namespace craft\app\i18n;
 
+use craft\app\dates\DateFormatter;
 use craft\app\helpers\IOHelper;
 
 /**

@@ -7,6 +7,8 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Email message model class.
  *
@@ -96,22 +98,22 @@ class Email extends BaseModel
 		$fromEmail = !empty($settings['emailAddress']) ? $settings['emailAddress'] : '';
 		$fromName =  !empty($settings['senderName']) ? $settings['senderName'] : '';
 
-		return array(
-			'fromEmail'         => array(AttributeType::Email, 'required' => true, 'default' => $fromEmail),
-			'fromName'          => array(AttributeType::String, 'default' => $fromName),
-			'toEmail'           => array(AttributeType::Email, 'required' => true),
-			'toFirstName'       => array(AttributeType::String),
-			'toLastName'        => array(AttributeType::String),
-			'subject'           => array(AttributeType::String, 'required' => true),
-			'body'              => array(AttributeType::String, 'required' => true),
-			'htmlBody'          => array(AttributeType::String),
-			'replyTo'           => array(AttributeType::Email),
-			'sender'            => array(AttributeType::Email),
-			'cc'                => array(AttributeType::Mixed),
-			'bcc'               => array(AttributeType::Mixed),
-			'stringAttachments' => array(AttributeType::Mixed),
-			'attachments'       => array(AttributeType::Mixed),
-			'customHeaders'     => array(AttributeType::Mixed),
-		);
+		return [
+			'fromEmail'         => [AttributeType::Email, 'required' => true, 'default' => $fromEmail],
+			'fromName'          => [AttributeType::String, 'default' => $fromName],
+			'toEmail'           => [AttributeType::Email, 'required' => true],
+			'toFirstName'       => [AttributeType::String],
+			'toLastName'        => [AttributeType::String],
+			'subject'           => [AttributeType::String, 'required' => true],
+			'body'              => [AttributeType::String, 'required' => true],
+			'htmlBody'          => [AttributeType::String],
+			'replyTo'           => [AttributeType::Email],
+			'sender'            => [AttributeType::Email],
+			'cc'                => [AttributeType::Mixed],
+			'bcc'               => [AttributeType::Mixed],
+			'stringAttachments' => [AttributeType::Mixed],
+			'attachments'       => [AttributeType::Mixed],
+			'customHeaders'     => [AttributeType::Mixed],
+		];
 	}
 }

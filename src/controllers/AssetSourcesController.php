@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\assetsourcetypes\S3;
 use craft\app\Craft;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetSource         as AssetSourceModel;
 use craft\app\errors\HttpException;
 use craft\app\variables\AssetSourceType;
@@ -100,16 +101,16 @@ class AssetSourcesController extends BaseController
 			$variables['title'] = $variables['source']->name;
 		}
 
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Assets'),   'url' => UrlHelper::getUrl('settings/assets')),
-			array('label' => Craft::t('Sources'),  'url' => UrlHelper::getUrl('settings/assets')),
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Assets'),   'url' => UrlHelper::getUrl('settings/assets')],
+			['label' => Craft::t('Sources'),  'url' => UrlHelper::getUrl('settings/assets')],
+		];
 
-		$variables['tabs'] = array(
-			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#assetsource-settings'),
-			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#assetsource-fieldlayout'),
-		);
+		$variables['tabs'] = [
+			'settings'    => ['label' => Craft::t('Settings'),     'url' => '#assetsource-settings'],
+			'fieldlayout' => ['label' => Craft::t('Field Layout'), 'url' => '#assetsource-fieldlayout'],
+		];
 
 		$this->renderTemplate('settings/assets/sources/_edit', $variables);
 	}

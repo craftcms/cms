@@ -7,6 +7,7 @@
 
 namespace craft\app\variables;
 
+use craft\app\dates\DateTime;
 use craft\app\helpers\AppHelper;
 
 /**

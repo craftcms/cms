@@ -8,6 +8,7 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\enums\SectionType;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\Entry             as EntryModel;

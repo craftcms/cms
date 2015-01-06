@@ -7,6 +7,7 @@
 
 namespace craft\app\tasks;
 
+use craft\app\Craft;
 use craft\app\models\Field as FieldModel;
 
 /**

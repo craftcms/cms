@@ -8,6 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\helpers\StringHelper;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Contains all global variables.

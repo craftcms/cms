@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use craft\app\Craft;
+use craft\app\helpers\IOHelper;
 
 /**
  * Clear Caches tool.

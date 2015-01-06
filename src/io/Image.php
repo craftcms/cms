@@ -7,6 +7,10 @@
 
 namespace craft\app\io;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
+use craft\app\helpers\IOHelper;
+
 /**
  * Class Image
  *

@@ -8,6 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\i18n\Locale;
+use craft\app\i18n\LocaleData;
 
 /**
  * Localization functions.

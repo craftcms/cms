@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\models\Et                 as EtModel;
 use craft\app\models\Update             as UpdateModel;

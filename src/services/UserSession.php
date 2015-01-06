@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\UserStatus;
 use craft\app\models\Password     as PasswordModel;
 use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;
@@ -119,6 +120,7 @@ class UserSession extends \CWebUser
 				{
 					$validUser = false;
 
+					// TODO: Remove for Craft 4.0.
 					// Keeping extra logic here so the upgrade to 2.3 won't freak.
 					// First the pre 2.3 check.
 					if ((isset($userRow['status']) && $userRow['status'] == UserStatus::Active) || (isset($userRow['status']) && $userRow['status'] == UserStatus::Pending))

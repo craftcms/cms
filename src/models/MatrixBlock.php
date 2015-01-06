@@ -8,7 +8,8 @@
 namespace craft\app\models;
 
 use craft\app\enums\ElementType;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldLayout     as FieldLayoutModel;
+use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
  * MatrixBlock model class.

@@ -7,6 +7,8 @@
 
 namespace craft\app\web;
 
+use craft\app\Craft;
+
 /**
  * Craft Web Application class
  *

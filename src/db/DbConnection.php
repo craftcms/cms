@@ -7,6 +7,8 @@
 
 namespace craft\app\db;
 
+use craft\app\enums\ConfigFile;
+
 /**
  * Class DbConnection
  *

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\models\Field as FieldModel;
 
 /**
@@ -123,8 +124,8 @@ class MatrixSettings extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'maxBlocks' => AttributeType::Number,
-		);
+		];
 	}
 }

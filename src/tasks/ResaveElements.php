@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -123,9 +124,9 @@ class ResaveElements extends BaseTask
 	 */
 	protected function defineSettings()
 	{
-		return array(
+		return [
 			'elementType' => AttributeType::String,
 			'criteria'    => AttributeType::Mixed,
-		);
+		];
 	}
 }

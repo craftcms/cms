@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\records;
+use craft\app\enums\AttributeType;
 
 /**
  * Class MatrixBlockType record.
@@ -97,10 +98,10 @@ class MatrixBlockType extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'       => array(AttributeType::Name, 'required' => true),
-			'handle'     => array(AttributeType::Handle, 'required' => true),
+		return [
+			'name'       => [AttributeType::Name, 'required' => true],
+			'handle'     => [AttributeType::Handle, 'required' => true],
 			'sortOrder'  => AttributeType::SortOrder,
-		);
+		];
 	}
 }

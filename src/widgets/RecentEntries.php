@@ -8,6 +8,7 @@
 namespace craft\app\widgets;
 
 use craft\app\Craft;
+use craft\app\helpers\JsonHelper;
 
 /**
  * Class RecentEntries widget.

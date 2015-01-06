@@ -7,8 +7,11 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\helpers\UrlHelper;
+use craft\app\models\FieldLayout   as FieldLayoutModel;
+use craft\app\models\CategoryGroup as CategoryGroupModel;
 
 /**
  * Category model class.
@@ -119,11 +122,11 @@ class Category extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'groupId' => AttributeType::Number,
 
 			// Just used for saving categories
 			'newParentId'      => AttributeType::Number,
-		));
+		]);
 	}
 }

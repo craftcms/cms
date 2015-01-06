@@ -8,6 +8,8 @@
 namespace craft\app\records;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 
 /**
  * Class User record.
@@ -107,32 +109,32 @@ class User extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
-			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
-			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
-			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
-			'email'                      => array(AttributeType::Email, 'required' => true),
-			'password'                   => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
-			'preferredLocale'            => array(AttributeType::Locale),
-			'weekStartDay'               => array(AttributeType::Number, 'min' => 0, 'max' => 6, 'required' => true, 'default' => '0'),
-			'admin'                      => array(AttributeType::Bool),
-			'client'                     => array(AttributeType::Bool),
-			'locked'                     => array(AttributeType::Bool),
-			'suspended'                  => array(AttributeType::Bool),
-			'pending'                    => array(AttributeType::Bool),
-			'archived'                   => array(AttributeType::Bool),
-			'lastLoginDate'              => array(AttributeType::DateTime),
-			'lastLoginAttemptIPAddress'  => array(AttributeType::String, 'maxLength' => 45),
-			'invalidLoginWindowStart'    => array(AttributeType::DateTime),
-			'invalidLoginCount'          => array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-			'lastInvalidLoginDate'       => array(AttributeType::DateTime),
-			'lockoutDate'                => array(AttributeType::DateTime),
-			'verificationCode'           => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char),
-			'verificationCodeIssuedDate' => array(AttributeType::DateTime),
-			'unverifiedEmail'            => array(AttributeType::Email),
-			'passwordResetRequired'      => array(AttributeType::Bool),
-			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
-		);
+		return [
+			'username'                   => [AttributeType::String, 'maxLength' => 100, 'required' => true],
+			'photo'                      => [AttributeType::String, 'maxLength' => 50],
+			'firstName'                  => [AttributeType::String, 'maxLength' => 100],
+			'lastName'                   => [AttributeType::String, 'maxLength' => 100],
+			'email'                      => [AttributeType::Email, 'required' => true],
+			'password'                   => [AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char],
+			'preferredLocale'            => [AttributeType::Locale],
+			'weekStartDay'               => [AttributeType::Number, 'min' => 0, 'max' => 6, 'required' => true, 'default' => '0'],
+			'admin'                      => [AttributeType::Bool],
+			'client'                     => [AttributeType::Bool],
+			'locked'                     => [AttributeType::Bool],
+			'suspended'                  => [AttributeType::Bool],
+			'pending'                    => [AttributeType::Bool],
+			'archived'                   => [AttributeType::Bool],
+			'lastLoginDate'              => [AttributeType::DateTime],
+			'lastLoginAttemptIPAddress'  => [AttributeType::String, 'maxLength' => 45],
+			'invalidLoginWindowStart'    => [AttributeType::DateTime],
+			'invalidLoginCount'          => [AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true],
+			'lastInvalidLoginDate'       => [AttributeType::DateTime],
+			'lockoutDate'                => [AttributeType::DateTime],
+			'verificationCode'           => [AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char],
+			'verificationCodeIssuedDate' => [AttributeType::DateTime],
+			'unverifiedEmail'            => [AttributeType::Email],
+			'passwordResetRequired'      => [AttributeType::Bool],
+			'lastPasswordChangeDate'     => [AttributeType::DateTime],
+		];
 	}
 }

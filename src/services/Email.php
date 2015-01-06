@@ -7,9 +7,11 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use yii\base\Component;
-use craft\app\models\Email              as EmailModel;
-use craft\app\models\User               as UserModel;
+use craft\app\models\Email       as EmailModel;
+use craft\app\models\User        as UserModel;
 use craft\app\web\Application;
 
 /**

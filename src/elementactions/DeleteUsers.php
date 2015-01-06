@@ -8,6 +8,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\Craft;
+use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 

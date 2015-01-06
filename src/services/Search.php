@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\helpers\StringHelper;
+use craft\app\search\SearchQuery;
 use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\web\Application;

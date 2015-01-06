@@ -7,6 +7,7 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
@@ -90,36 +91,36 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 		if (!$options)
 		{
 			// Give it a default row
-			$options = array(array('label' => '', 'value' => ''));
+			$options = [['label' => '', 'value' => '']];
 		}
 
-		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
-			array(
+		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+			[
 				'label'        => $this->getOptionsSettingsLabel(),
 				'instructions' => Craft::t('Define the available options.'),
 				'id'           => 'options',
 				'name'         => 'options',
 				'addRowLabel'  => Craft::t('Add an option'),
-				'cols'         => array(
-					'label' => array(
+				'cols'         => [
+					'label' => [
 						'heading'      => Craft::t('Option Label'),
 						'type'         => 'singleline',
 						'autopopulate' => 'value'
-					),
-					'value' => array(
+					],
+					'value' => [
 						'heading'      => Craft::t('Value'),
 						'type'         => 'singleline',
 						'class'        => 'code'
-					),
-					'default' => array(
+					],
+					'default' => [
 						'heading'      => Craft::t('Default?'),
 						'type'         => 'checkbox',
 						'class'        => 'thin'
-					),
-				),
+					],
+				],
 				'rows' => $options
-			)
-		));
+			]
+		]);
 	}
 
 	/**

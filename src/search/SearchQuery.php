@@ -7,6 +7,8 @@
 
 namespace craft\app\search;
 
+use craft\app\helpers\StringHelper;
+
 /**
  * Search Query class.
  *

@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\Entry           as EntryModel;
 use craft\app\models\User            as UserModel;
@@ -86,10 +87,10 @@ class BaseEntryRevisionModel extends EntryModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'creatorId'   => AttributeType::Number,
 			'dateUpdated' => AttributeType::DateTime,
 			'dateCreated' => AttributeType::DateTime,
-		));
+		]);
 	}
 }

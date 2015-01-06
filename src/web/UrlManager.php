@@ -7,6 +7,7 @@
 
 namespace craft\app\web;
 
+use craft\app\errors\HttpException;
 use craft\app\services\HttpRequest;
 
 /**

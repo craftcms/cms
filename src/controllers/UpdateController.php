@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\errors\EtException;
 
 /**

@@ -9,10 +9,11 @@ namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
 use craft\app\enums\PluginVersionUpdateStatus;
+use craft\app\enums\VersionUpdateStatus;
 use yii\base\Component;
-use craft\app\models\AppUpdate          as AppUpdateModel;
-use craft\app\models\PluginUpdate       as PluginUpdateModel;
-use craft\app\models\Update             as UpdateModel;
+use craft\app\models\AppUpdate                 as AppUpdateModel;
+use craft\app\models\PluginUpdate              as PluginUpdateModel;
+use craft\app\models\Update                    as UpdateModel;
 use craft\app\web\Application;
 
 /**

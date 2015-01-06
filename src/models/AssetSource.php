@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 
 /**

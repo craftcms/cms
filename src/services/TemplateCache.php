@@ -7,8 +7,9 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
-use craft\app\models\ElementCriteria    as ElementCriteriaModel;
+use craft\app\models\ElementCriteria  as ElementCriteriaModel;
 use craft\app\web\Application;
 
 /**
@@ -110,13 +111,13 @@ class TemplateCache extends Component
 		// Take the opportunity to delete any expired caches
 		$this->deleteExpiredCachesIfOverdue();
 
-		$conditions = array('and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale');
+		$conditions = ['and', 'expiryDate > :now', 'cacheKey = :key', 'locale = :locale'];
 
-		$params = array(
+		$params = [
 			':now'    => DateTimeHelper::currentTimeForDb(),
 			':key'    => $key,
 			':locale' => craft()->language
-		);
+		];
 
 		if (!$global)
 		{

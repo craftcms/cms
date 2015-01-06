@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\models\EntryType      as EntryTypeModel;
 use craft\app\models\Section        as SectionModel;
@@ -102,8 +103,8 @@ class SectionsController extends BaseController
 			$variables['title'] = Craft::t('Create a new section');
 		}
 
-		$types = array(SectionType::Single, SectionType::Channel, SectionType::Structure);
-		$variables['typeOptions'] = array();
+		$types = [SectionType::Single, SectionType::Channel, SectionType::Structure];
+		$variables['typeOptions'] = [];
 
 		// Get these strings to be caught by our translation util:
 		// Craft::t("Channel") Craft::t("Structure") Craft::t("Single")

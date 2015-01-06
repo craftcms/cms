@@ -7,9 +7,11 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use yii\base\Component;
 use craft\app\helpers\IOHelper;
-use craft\app\records\Route             as RouteRecord;
+use craft\app\records\Route     as RouteRecord;
 use craft\app\web\Application;
 
 /**

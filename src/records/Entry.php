@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 
 /**
  * Class Entry record.
@@ -89,9 +90,9 @@ class Entry extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'postDate'   => AttributeType::DateTime,
 			'expiryDate' => AttributeType::DateTime,
-		);
+		];
 	}
 }

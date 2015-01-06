@@ -8,6 +8,8 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\Tag               as TagModel;
@@ -108,14 +110,14 @@ class Tag extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'group'   => AttributeType::Mixed,
 			'groupId' => AttributeType::Mixed,
-			'order'   => array(AttributeType::String, 'default' => 'content.title asc'),
+			'order'   => [AttributeType::String, 'default' => 'content.title asc'],
 
 			// TODO: Deprecated
 			'name'    => AttributeType::String,
-		);
+		];
 	}
 
 	/**

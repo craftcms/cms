@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 
 /**
@@ -93,15 +94,15 @@ class CategoryGroup extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'            => AttributeType::Number,
 			'structureId'   => AttributeType::Number,
 			'fieldLayoutId' => AttributeType::Number,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
-			'hasUrls'       => array(AttributeType::Bool, 'default' => true),
+			'hasUrls'       => [AttributeType::Bool, 'default' => true],
 			'template'      => AttributeType::String,
 			'maxLevels'     => AttributeType::Number,
-		);
+		];
 	}
 }

@@ -11,8 +11,8 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\HttpException;
-use craft\app\models\Entry          as EntryModel;
-use craft\app\variables             as ElementTypeVariable;
+use craft\app\models\Entry           as EntryModel;
+use craft\app\variables\ElementType  as ElementTypeVariable;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,

@@ -8,6 +8,7 @@
 namespace craft\app\elementtypes;
 
 use craft\app\components\BaseComponentType;
+use craft\app\Craft;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria        as ElementCriteriaModel;
 
@@ -87,10 +88,10 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getStatuses()
 	{
-		return array(
+		return [
 			BaseElementModel::ENABLED => Craft::t('Enabled'),
 			BaseElementModel::DISABLED => Craft::t('Disabled')
-		);
+		];
 	}
 
 	/**

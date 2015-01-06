@@ -7,9 +7,10 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\ElementType;
 use yii\base\Component;
-use craft\app\models\GlobalSet          as GlobalSetModel;
-use craft\app\records\GlobalSet         as GlobalSetRecord;
+use craft\app\models\GlobalSet    as GlobalSetModel;
+use craft\app\records\GlobalSet   as GlobalSetRecord;
 use craft\app\web\Application;
 
 /**

@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 
 craft()->requireEdition(Craft::Client);
 

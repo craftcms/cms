@@ -7,6 +7,8 @@
 
 namespace craft\app\helpers;
 
+use craft\app\Craft;
+
 /**
  * Class LocalizationHelper
  *

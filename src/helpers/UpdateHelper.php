@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\db\DbBackup;
+use craft\app\enums\PatchManifestFileAction;
 
 /**
  * Class UpdateHelper
