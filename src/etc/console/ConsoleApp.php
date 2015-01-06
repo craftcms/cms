@@ -73,14 +73,14 @@ class ConsoleApp extends \CConsoleApplication
 		// Set the edition components
 		$this->_setEditionComponents();
 
+		// Call parent::init() before the plugin console command logic so the command runner gets initialized
+		parent::init();
+
 		// Load the plugins
 		craft()->plugins->loadPlugins();
 
 		// Validate some basics on the database configuration file.
 		craft()->validateDbConfigFile();
-
-		// Call parent::init before the plugin console command logic so craft()->commandRunner will be available to us.
-		parent::init();
 
 		foreach (craft()->plugins->getPlugins() as $plugin)
 		{
