@@ -320,10 +320,27 @@ class UsersController extends BaseController
 			{
 				if ($userToProcess->status == UserStatus::Pending)
 				{
+					// Activate them
 					craft()->users->activateUser($userToProcess);
+
+					// Treat this as an activation request
+					$this->_onAfterActivateUser($userToProcess);
 				}
 
-				$this->_processPostValidationRedirect($userToProcess);
+				// Can they access the CP?
+				if ($userToProcess->can('accessCp'))
+				{
+					// Send them to the login page
+					$url = craft()->config->getLoginPath();
+				}
+				else
+				{
+					// Send them to the 'setPasswordSuccessPath'.
+					$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
+					$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+				}
+
+				$this->redirect($url);
 			}
 
 			craft()->userSession->setNotice(Craft::t('Couldn’t update password.'));
@@ -364,10 +381,19 @@ class UsersController extends BaseController
 		if ($info = $this->_processTokenRequest())
 		{
 			$userToProcess = $info['userToProcess'];
+			$userIsPending = $userToProcess->status == UserStatus::Pending;
 
 			craft()->users->verifyEmailForUser($userToProcess);
 
-			$this->_processPostValidationRedirect($userToProcess);
+			if ($userIsPending)
+			{
+				// They were just activated, so treat this as an activation request
+				$this->_onAfterActivateUser($userToProcess);
+			}
+
+			// Redirect to the site/CP root
+			$url = UrlHelper::getUrl('');
+			$this->redirect($url);
 		}
 	}
 
@@ -1657,41 +1683,30 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $userToProcess
+	 * Takes over after a user has been activated.
 	 *
-	 * @throws Exception
+	 * @param UserModel $user
 	 */
-	private function _processPostValidationRedirect($userToProcess)
+	private function _onAfterActivateUser(UserModel $user)
 	{
+		// Should we log them in?
 		$loggedIn = false;
 
-		// Do we need to auto-login?
-		if (craft()->config->get('autoLoginAfterAccountActivation') === true)
+		if (craft()->config->get('autoLoginAfterAccountActivation'))
 		{
-			craft()->userSession->loginByUserId($userToProcess->id, false, true);
-			$loggedIn = true;
+			$loggedIn = craft()->userSession->loginByUserId($user->id, false, true);
 		}
 
-		// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-		if (!$userToProcess->can('accessCp'))
+		// Can they access the CP?
+		if ($user->can('accessCp'))
 		{
-			$setPasswordSuccessPath = craft()->config->getLocalized('setPasswordSuccessPath');
-			$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+			$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
+			$url = UrlHelper::getCpUrl($postCpLoginRedirect);
 		}
 		else
 		{
-			// If we didn't log them in, just send to the appropriate login page.
-			if (!$loggedIn)
-			{
-				$url = craft()->config->getLoginPath();
-			}
-			else
-			{
-				// We logged them in, so send to 'postCpLoginRedirect'.
-				$postCpLoginRedirect = craft()->config->get('postCpLoginRedirect');
-				$url = UrlHelper::getCpUrl($postCpLoginRedirect);
-			}
-
+			$activateAccountSuccessPath = craft()->config->getLocalized('activateAccountSuccessPath');
+			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 		}
 
 		$this->redirect($url);

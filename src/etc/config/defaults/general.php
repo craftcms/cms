@@ -17,6 +17,15 @@ return array(
 	'actionTrigger' => 'actions',
 
 	/**
+	 * The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
+	 * requests.
+	 *
+	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+	 * basis.
+	 */
+	'activateAccountSuccessPath' => '',
+
+	/**
 	 * Determines whether auto-generated URLs should have trailing slashes.
 	 */
 	'addTrailingSlashesToUrls' => false,
