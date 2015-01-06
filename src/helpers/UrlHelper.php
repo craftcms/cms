@@ -13,6 +13,11 @@ namespace Craft;
  */
 class UrlHelper
 {
+	// Properties
+	// =========================================================================
+
+	private static $_x;
+
 	// Public Methods
 	// =========================================================================
 
@@ -262,7 +267,15 @@ class UrlHelper
 				{
 					// Just set a random query string param on there, so even if the browser decides to cache it,
 					// the next time this happens, the cache won't be used.
-					$params['x'] = StringHelper::randomString(9);
+
+					// Use a consistent param for all resource requests with uncached paths, in case the same resource
+					// URL is requested multiple times in the same request
+					if (!isset(static::$_x))
+					{
+						static::$_x = StringHelper::randomString(9);
+					}
+
+					$params['x'] = static::$_x;
 				}
 			}
 		}
