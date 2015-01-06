@@ -594,8 +594,12 @@ class MatrixFieldType extends BaseFieldType
 			foreach ($fieldLayoutFields as $fieldLayoutField)
 			{
 				$fieldType = $fieldLayoutField->getField()->getFieldType();
-				$fieldType->element = $block;
-				$fieldType->setIsFresh(true);
+
+				if ($fieldType)
+				{
+					$fieldType->element = $block;
+					$fieldType->setIsFresh(true);
+				}
 			}
 
 			craft()->templates->startJsBuffer();
@@ -609,7 +613,11 @@ class MatrixFieldType extends BaseFieldType
 			foreach ($fieldLayoutFields as $fieldLayoutField)
 			{
 				$fieldType = $fieldLayoutField->getField()->getFieldType();
-				$fieldType->setIsFresh(null);
+
+				if ($fieldType)
+				{
+					$fieldType->setIsFresh(null);
+				}
 			}
 
 			$footHtml = craft()->templates->clearJsBuffer();
