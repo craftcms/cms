@@ -10,6 +10,7 @@ namespace craft\app\services;
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
 use craft\app\dates\DateTime;
+use craft\app\events\Event;
 use craft\app\helpers\JsonHelper;
 use yii\base\Component;
 use craft\app\records\Migration     as MigrationRecord;

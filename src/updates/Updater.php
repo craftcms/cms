@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;
+use craft\app\helpers\UpdateHelper;
 
 /**
  * Class Updater

@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\assetsourcetypes\S3;
 use craft\app\Craft;
+use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetSource         as AssetSourceModel;
 use craft\app\errors\HttpException;

@@ -8,6 +8,7 @@
 namespace craft\app\consolecommands;
 
 use craft\app\enums\ColumnType;
+use craft\app\helpers\ArrayHelper;
 
 /**
  * The query generator console command.

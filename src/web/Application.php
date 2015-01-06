@@ -8,6 +8,8 @@
 namespace craft\app\web;
 
 use craft\app\Craft;
+use craft\app\errors\HttpException;
+use craft\app\logging\Logger;
 
 /**
  * Craft Web Application class

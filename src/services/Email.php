@@ -9,9 +9,10 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\errors\Exception;
+use craft\app\helpers\StringHelper;
 use yii\base\Component;
-use craft\app\models\Email       as EmailModel;
-use craft\app\models\User        as UserModel;
+use craft\app\models\Email          as EmailModel;
+use craft\app\models\User           as UserModel;
 use craft\app\web\Application;
 
 /**

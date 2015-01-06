@@ -13,7 +13,7 @@ namespace craft\app\variables;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FieldType extends BaseComponentTypeVariable
+class FieldTypes extends BaseComponentTypeVariable
 {
 	// Public Methods
 	// =========================================================================

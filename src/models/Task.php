@@ -7,7 +7,9 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ComponentType;
+use craft\app\enums\TaskStatus;
 use craft\app\tasks\BaseTask;
 
 /**
@@ -125,13 +127,13 @@ class Task extends BaseComponentModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'level'       => AttributeType::Number,
 			'description' => AttributeType::String,
 			'parentId'    => AttributeType::Mixed,
 			'totalSteps'  => AttributeType::Number,
 			'currentStep' => AttributeType::Number,
-			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
-		));
+			'status'      => [AttributeType::Enum, 'values' => [TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running], 'default' => TaskStatus::Pending],
+		]);
 	}
 }

@@ -7,6 +7,10 @@
 
 namespace craft\app\records;
 
+use craft\app\dates\DateTime;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ModelHelper;
 
 /**
@@ -145,8 +149,8 @@ abstract class BaseRecord extends \CActiveRecord
 	public function prepAttributesForSave()
 	{
 		$attributes = $this->getAttributeConfigs();
-		$attributes['dateUpdated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
+		$attributes['dateUpdated'] = ['type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true];
+		$attributes['dateCreated'] = ['type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true];
 
 		foreach ($attributes as $name => $config)
 		{

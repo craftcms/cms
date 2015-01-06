@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\models\FieldLayout      as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 
@@ -133,11 +134,11 @@ class FieldLayoutTab extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'        => AttributeType::Number,
 			'layoutId'  => AttributeType::Number,
 			'name'      => AttributeType::Name,
 			'sortOrder' => AttributeType::SortOrder,
-		);
+		];
 	}
 }

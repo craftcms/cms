@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elementtypes\ElementTypeInterface;
+use craft\app\errors\HttpException;
 use craft\app\models\ElementCriteria                 as ElementCriteriaModel;
 
 /**

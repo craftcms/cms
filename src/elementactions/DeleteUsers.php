@@ -8,6 +8,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -147,9 +148,9 @@ EOT;
 	 */
 	protected function defineParams()
 	{
-		return array(
+		return [
 			'transferContentTo' => AttributeType::Mixed,
-		);
+		];
 	}
 
 	// Private Methods

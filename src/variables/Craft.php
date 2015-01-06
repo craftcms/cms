@@ -140,11 +140,11 @@ class Craft
 	}
 
 	/**
-	 * @return FieldTypesVariable
+	 * @return FieldTypes
 	 */
 	public function fieldTypes()
 	{
-		return new FieldTypesVariable();
+		return new FieldTypes();
 	}
 
 	/**

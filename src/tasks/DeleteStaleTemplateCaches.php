@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use craft\app\Craft;
+use craft\app\helpers\JsonHelper;
 
 /**
  * A task that deletes stale template caches.

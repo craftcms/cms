@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\Craft;
 use craft\app\enums\ElementType;
+use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\models\GlobalSet      as GlobalSetModel;
 

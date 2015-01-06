@@ -12,6 +12,8 @@ use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\fieldtypes\data\RichTextData;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\validators\Handle;
 
 /**
  * RichText fieldtype
@@ -148,7 +150,7 @@ class RichText extends BaseFieldType
 		if (strpos($value, '{') !== false)
 		{
 			// Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})\2/', function($matches)
+			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})\2/', function($matches)
 			{
 				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
 			}, $value);

@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ComponentType;
 use craft\app\models\EmailSettings  as EmailSettingsModel;

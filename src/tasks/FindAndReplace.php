@@ -8,7 +8,8 @@
 namespace craft\app\tasks;
 
 use craft\app\Craft;
-use craft\app\models\Field as FieldModel;
+use craft\app\enums\LogLevel;
+use craft\app\models\Field    as FieldModel;
 
 /**
  * Find and Replace task.

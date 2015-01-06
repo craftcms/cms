@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\GetHelp      as GetHelpModel;
 use craft\app\models\Widget       as WidgetModel;
+use craft\app\web\UploadedFile;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
