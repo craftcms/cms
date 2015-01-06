@@ -1470,7 +1470,7 @@ class UsersController extends BaseController
 		$currentHashedPassword = $currentUser->password;
 		$currentPassword = craft()->request->getRequiredParam('password');
 
-		return craft()->users->validatePassword($currentHashedPassword, $currentPassword);
+		return craft()->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
 	}
 
 	/**

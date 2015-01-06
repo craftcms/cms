@@ -178,7 +178,7 @@ class Users extends Component
 			}
 			else
 			{
-				if (craft()->security->checkPassword($code, $userRecord->verificationCode))
+				if (craft()->getSecurity()->validatePassword($code, $userRecord->verificationCode))
 				{
 					$valid = true;
 				}
@@ -1158,24 +1158,6 @@ class Users extends Component
 	}
 
 	/**
-	 * Validates a given password against a hash.
-	 *
-	 * @param string $hash     The hashed password.
-	 * @param string $password The submitted password.
-	 *
-	 * @return bool Whether the submitted password matches the hashed password.
-	 */
-	public function validatePassword($hash, $password)
-	{
-		if (craft()->security->checkPassword($password, $hash))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
 	 *
 	 * This method will check the
@@ -1500,7 +1482,7 @@ class Users extends Component
 			if ($forceDifferentPassword)
 			{
 				// See if the passwords are the same.
-				if (craft()->security->checkPassword($user->newPassword, $userRecord->password))
+				if (craft()->getSecurity()->validatePassword($user->newPassword, $userRecord->password))
 				{
 					$user->addErrors(array(
 						$passwordErrorField => Craft::t('That password is the same as your old password. Please choose a new one.'),

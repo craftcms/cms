@@ -19,7 +19,7 @@ use craft\app\web\Application;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Security extends \CSecurityManager
+class Security extends \yii\base\Security
 {
 	// Properties
 	// =========================================================================
@@ -65,25 +65,12 @@ class Security extends \CSecurityManager
 
 		if ($validateHash)
 		{
-			if (!$this->checkPassword($string, $hash))
+			if (!$this->validatePassword($string, $hash))
 			{
 				throw new Exception(Craft::t('Could not hash the given string.'));
 			}
 		}
 
 		return $hash;
-	}
-
-	/**
-	 * Validates a blowfish hash against a given string for sameness.
-	 *
-	 * @param string $string
-	 * @param string $storedHash
-	 *
-	 * @return bool
-	 */
-	public function checkPassword($string, $storedHash)
-	{
-		return \CPasswordHelper::verifyPassword($string, $storedHash);
 	}
 }
