@@ -582,6 +582,7 @@ class MatrixFieldType extends BaseFieldType
 		{
 			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
 			$block = new MatrixBlockModel();
+			$block->fieldId = $this->model->id;
 			$block->typeId = $blockType->id;
 
 			if ($this->element)
