@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ca5f007e133bb8cd3f28ed1d3b82a8cb",
+    "hash": "8a748e7a8831633b4f1b9d43f2ae62a7",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -617,45 +617,6 @@
                 "image processing"
             ],
             "time": "2013-07-10 17:25:36"
-        },
-        {
-            "name": "lsolesen/pel",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lsolesen/pel.git",
-                "reference": "7c5e77aebaca6c3b4de69a0e8387abce59177e98"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/7c5e77aebaca6c3b4de69a0e8387abce59177e98",
-                "reference": "7c5e77aebaca6c3b4de69a0e8387abce59177e98",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.0.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "authors": [
-                {
-                    "name": "Lars Olesen",
-                    "email": "lars@intraface.dk",
-                    "homepage": "http://intraface.dk",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP Exif Library. A library for reading and writing Exif headers in JPEG and TIFF images using PHP.",
-            "homepage": "http://lsolesen.github.com/pel/",
-            "keywords": [
-                "template"
-            ],
-            "time": "2015-01-06 21:50:50"
         },
         {
             "name": "mockery/mockery",
@@ -1618,17 +1579,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.1",
+            "version": "v2.6.3",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20"
+                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/3346fc090a3eb6b53d408db2903b241af51dcb20",
-                "reference": "3346fc090a3eb6b53d408db2903b241af51dcb20",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/82462a90848a52c2533aa6b598b107d68076b018",
+                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
                 "shasum": ""
             },
             "require": {
@@ -1661,7 +1622,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-12-02 20:19:20"
+            "time": "2015-01-03 15:33:07"
         },
         {
             "name": "twig/twig",
@@ -2145,9 +2106,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "RC",
-    "stability-flags": {
-        "lsolesen/pel": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
