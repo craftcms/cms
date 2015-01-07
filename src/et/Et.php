@@ -7,7 +7,11 @@
 
 namespace craft\app\et;
 
-use craft\app\models\Et as EtModel;
+use craft\app\errors\EtException;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\models\Et               as EtModel;
 
 /**
  * Class Et

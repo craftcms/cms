@@ -8,6 +8,10 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\DbHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\BaseElementModel;
 
 /**

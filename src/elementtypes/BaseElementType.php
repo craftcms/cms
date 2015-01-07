@@ -8,8 +8,10 @@
 namespace craft\app\elementtypes;
 
 use craft\app\components\BaseComponentType;
+use craft\app\Craft;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria        as ElementCriteriaModel;
+use craft\app\variables\ElementType;
 
 /**
  * The base class for all Craft element types. Any element type must extend this class.
@@ -87,10 +89,10 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getStatuses()
 	{
-		return array(
+		return [
 			BaseElementModel::ENABLED => Craft::t('Enabled'),
 			BaseElementModel::DISABLED => Craft::t('Disabled')
-		);
+		];
 	}
 
 	/**
@@ -168,7 +170,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 		$variables = array(
 			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
-			'elementType'         => new ElementTypeVariable($this),
+			'elementType'         => new ElementType($this),
 			'disabledElementIds'  => $disabledElementIds,
 			'collapsedElementIds' => craft()->request->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,

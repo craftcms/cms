@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\enums\ColumnType;
+use craft\app\enums\ConfigFile;
 
 /**
  * Class DbHelper

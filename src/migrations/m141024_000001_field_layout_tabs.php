@@ -9,6 +9,7 @@ namespace craft\app\migrations;
 
 use craft\app\Craft;
 use craft\app\db\BaseMigration;
+use craft\app\enums\ColumnType;
 use craft\app\enums\LogLevel;
 
 /**

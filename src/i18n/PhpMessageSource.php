@@ -7,6 +7,8 @@
 
 namespace craft\app\i18n;
 
+use craft\app\helpers\IOHelper;
+
 /**
  * Class PhpMessageSource
  *

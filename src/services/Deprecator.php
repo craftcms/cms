@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\JsonHelper;
 use yii\base\Component;
 use craft\app\models\DeprecationError   as DeprecationErrorModel;
 use craft\app\web\Application;
@@ -66,10 +67,10 @@ class Deprecator extends Component
 		// Don't log the same key/fingerprint twice in the same request
 		if (!isset($this->_fingerprints[$log->key]) || !in_array($log->fingerprint, $this->_fingerprints[$log->key]))
 		{
-			craft()->db->createCommand()->insertOrUpdate(static::$_tableName, array(
+			craft()->db->createCommand()->insertOrUpdate(static::$_tableName, [
 				'key'            => $log->key,
 				'fingerprint'    => $log->fingerprint
-			), array(
+			], [
 				'lastOccurrence' => DateTimeHelper::formatTimeForDb($log->lastOccurrence),
 				'file'           => $log->file,
 				'line'           => $log->line,
@@ -79,7 +80,7 @@ class Deprecator extends Component
 				'templateLine'   => $log->templateLine,
 				'message'        => $log->message,
 				'traces'         => JsonHelper::encode($log->traces),
-			));
+			]);
 
 			$this->_fingerprints[$key][] = $log->fingerprint;
 		}

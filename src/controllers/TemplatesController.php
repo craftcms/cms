@@ -7,8 +7,13 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
+use craft\app\enums\InstallStatus;
+use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\requirements\RequirementsChecker;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the

@@ -7,6 +7,8 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
+use craft\app\helpers\ImageHelper;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\errors\HttpException;
 

@@ -7,10 +7,13 @@
 
 namespace craft\app\services;
 
+use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
+use craft\app\Craft;
+use craft\app\enums\ComponentType;
 use yii\base\Component;
-use craft\app\models\AssetSource        as AssetSourceModel;
-use craft\app\records\AssetSource       as AssetSourceRecord;
+use craft\app\models\AssetSource                    as AssetSourceModel;
+use craft\app\records\AssetSource                   as AssetSourceRecord;
 use craft\app\web\Application;
 
 /**

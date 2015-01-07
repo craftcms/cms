@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetSource as AssetSourceModel;
 
@@ -139,12 +140,12 @@ class AssetFolder extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'       => AttributeType::Number,
 			'parentId' => AttributeType::Number,
 			'sourceId' => AttributeType::Number,
 			'name'     => AttributeType::String,
 			'path'     => AttributeType::String,
-		);
+		];
 	}
 }

@@ -7,6 +7,10 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+use craft\app\errors\HttpException;
+use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\web\Application;

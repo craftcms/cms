@@ -8,7 +8,12 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+use craft\app\fieldtypes\data\RichTextData;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\validators\Handle;
 
 /**
  * RichText fieldtype
@@ -87,10 +92,10 @@ class RichText extends BaseFieldType
 		// It hasn't always been a settings, so default to Text if it's not set.
 		if (!$settings->getAttribute('columnType'))
 		{
-			return array(AttributeType::String, 'column' => ColumnType::Text);
+			return [AttributeType::String, 'column' => ColumnType::Text];
 		}
 
-		return array(AttributeType::String, 'column' => $settings->columnType);
+		return [AttributeType::String, 'column' => $settings->columnType];
 	}
 
 	/**
@@ -145,7 +150,7 @@ class RichText extends BaseFieldType
 		if (strpos($value, '{') !== false)
 		{
 			// Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})\2/', function($matches)
+			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})\2/', function($matches)
 			{
 				return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
 			}, $value);
@@ -207,7 +212,7 @@ class RichText extends BaseFieldType
 		}
 
 		// Find any element URLs and swap them with ref tags
-		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/', function($matches)
+		$value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/', function($matches)
 		{
 			return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
 		}, $value);

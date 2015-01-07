@@ -7,7 +7,10 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\variables\ElementType;
+use craft\app\models\TagGroup        as TagGroupModel;
 
 /**
  * Tags fieldtype
@@ -65,7 +68,7 @@ class Tags extends BaseElementFieldType
 			$criteria->id = false;
 		}
 
-		$elementVariable = new ElementTypeVariable($this->getElementType());
+		$elementVariable = new ElementType($this->getElementType());
 
 		$tagGroup = $this->_getTagGroup();
 

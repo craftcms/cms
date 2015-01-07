@@ -7,6 +7,8 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
+
 /**
  * BaseComponentModel class.
  *
@@ -122,10 +124,10 @@ abstract class BaseComponentModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'       => AttributeType::Number,
-			'type'     => array(AttributeType::String),
+			'type'     => [AttributeType::String],
 			'settings' => AttributeType::Mixed,
-		);
+		];
 	}
 }

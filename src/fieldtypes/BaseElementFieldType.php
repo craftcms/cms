@@ -7,6 +7,7 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**

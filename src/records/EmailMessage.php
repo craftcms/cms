@@ -8,6 +8,8 @@
 namespace craft\app\records;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
 
 craft()->requireEdition(Craft::Client);
 
@@ -66,11 +68,11 @@ class EmailMessage extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'key'      => array(AttributeType::String, 'required' => true, 'maxLength' => 150, 'column' => ColumnType::Char),
-			'locale'   => array(AttributeType::Locale, 'required' => true),
-			'subject'  => array(AttributeType::String, 'required' => true, 'maxLength' => 1000),
-			'body'     => array(AttributeType::String, 'required' => true, 'column' => ColumnType::Text),
-		);
+		return [
+			'key'      => [AttributeType::String, 'required' => true, 'maxLength' => 150, 'column' => ColumnType::Char],
+			'locale'   => [AttributeType::Locale, 'required' => true],
+			'subject'  => [AttributeType::String, 'required' => true, 'maxLength' => 1000],
+			'body'     => [AttributeType::String, 'required' => true, 'column' => ColumnType::Text],
+		];
 	}
 }

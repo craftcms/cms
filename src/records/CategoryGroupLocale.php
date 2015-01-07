@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class CategoryGroupLocale record.
  *
@@ -63,10 +65,10 @@ class CategoryGroupLocale extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'required' => true),
+		return [
+			'locale'          => [AttributeType::Locale, 'required' => true],
 			'urlFormat'       => AttributeType::UrlFormat,
 			'nestedUrlFormat' => AttributeType::UrlFormat,
-		);
+		];
 	}
 }

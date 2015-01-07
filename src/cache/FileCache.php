@@ -7,6 +7,8 @@
 
 namespace craft\app\cache;
 
+use craft\app\helpers\IOHelper;
+
 /**
  * Class FileCache
  *

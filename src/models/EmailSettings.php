@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\EmailerType;
 
 /**
@@ -75,7 +76,7 @@ class EmailSettings extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'protocol'                => AttributeType::String,
 			'host'                    => AttributeType::String,
 			'port'                    => AttributeType::String,
@@ -89,6 +90,6 @@ class EmailSettings extends BaseModel
 			'senderName'              => AttributeType::String,
 			'testEmailAddress'        => AttributeType::Email,
 			'template'                => AttributeType::String,
-		);
+		];
 	}
 }

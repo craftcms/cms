@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\SectionType;
 use yii\base\Component;
 use craft\app\Craft;
 use craft\app\records\UserPermission    as UserPermissionRecord;

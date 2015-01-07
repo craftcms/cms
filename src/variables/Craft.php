@@ -8,6 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\helpers\StringHelper;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Contains all global variables.
@@ -136,14 +137,6 @@ class Craft
 	public function elements()
 	{
 		return new Elements();
-	}
-
-	/**
-	 * @return FieldTypesVariable
-	 */
-	public function fieldTypes()
-	{
-		return new FieldTypesVariable();
 	}
 
 	/**

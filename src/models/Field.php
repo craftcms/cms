@@ -8,7 +8,10 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\fieldtypes\BaseFieldType;
+use craft\app\models\Entry              as EntryModel;
+use craft\app\models\FieldGroup         as FieldGroupModel;
 
 /**
  * Field model class.
@@ -79,7 +82,7 @@ class Field extends BaseComponentModel
 	/**
 	 * Returns the field's group.
 	 *
-	 * @return EntryUserModel
+	 * @return FieldGroupModel
 	 */
 	public function getGroup()
 	{
@@ -96,7 +99,7 @@ class Field extends BaseComponentModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'groupId'      => AttributeType::Number,
 			'name'         => AttributeType::String,
 			'handle'       => AttributeType::String,
@@ -107,6 +110,6 @@ class Field extends BaseComponentModel
 
 			'oldHandle'    => AttributeType::String,
 			'columnPrefix' => AttributeType::String,
-		));
+		]);
 	}
 }

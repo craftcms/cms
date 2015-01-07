@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\records;
+use craft\app\enums\AttributeType;
 
 /**
  * Class CategoryGroup record.
@@ -78,11 +79,11 @@ class CategoryGroup extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'required' => true),
-			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
+		return [
+			'name'      => [AttributeType::Name, 'required' => true],
+			'handle'    => [AttributeType::Handle, 'required' => true],
+			'hasUrls'   => [AttributeType::Bool, 'default' => true],
 			'template'  => AttributeType::Template,
-		);
+		];
 	}
 }

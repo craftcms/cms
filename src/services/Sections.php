@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\enums\SectionType;
 use yii\base\Component;
 use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;
@@ -123,13 +125,13 @@ class Sections extends Component
 			$results = $this->_createSectionQuery()
 				->queryAll();
 
-			$this->_sectionsById = array();
+			$this->_sectionsById = [];
 
-			$typeCounts = array(
+			$typeCounts = [
 				SectionType::Single => 0,
 				SectionType::Channel => 0,
 				SectionType::Structure => 0
-			);
+			];
 
 			foreach ($results as $result)
 			{

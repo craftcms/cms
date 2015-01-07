@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 
 /**
@@ -109,13 +110,13 @@ class MatrixBlockType extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'            => AttributeType::Number,
 			'fieldId'       => AttributeType::Number,
 			'fieldLayoutId' => AttributeType::String,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
 			'sortOrder'     => AttributeType::Number,
-		);
+		];
 	}
 }

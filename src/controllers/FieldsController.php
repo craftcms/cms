@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\models\Field          as FieldModel;
 use craft\app\models\FieldGroup     as FieldGroupModel;
 use craft\app\errors\HttpException;

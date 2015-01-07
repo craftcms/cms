@@ -7,8 +7,10 @@
 
 namespace craft\app\base;
 
+use craft\app\Craft;
+use craft\app\errors\DbConnectException;
 use craft\app\helpers\AppHelper;
-use craft\app\models\Info        as InfoModel;
+use craft\app\models\Info                as InfoModel;
 
 /**
  * ApplicationTrait

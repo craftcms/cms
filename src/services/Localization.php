@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\helpers\IOHelper;
 use craft\app\i18n\LocaleData;
 use yii\base\Component;
 use craft\app\i18n\Locale;

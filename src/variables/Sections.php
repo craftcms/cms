@@ -7,6 +7,8 @@
 
 namespace craft\app\variables;
 
+use craft\app\models\Section as SectionModel;
+
 /**
  * Class Sections variable.
  *

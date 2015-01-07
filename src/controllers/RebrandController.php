@@ -8,8 +8,10 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\UrlHelper;
 
 craft()->requireEdition(Craft::Client);
 
@@ -72,13 +74,13 @@ class RebrandController extends BaseController
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
 					$html = craft()->templates->render('_components/tools/cropper_modal',
-						array(
+						[
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor,
 							'constraint' => $constraint
-						)
+						]
 					);
 
 					$this->returnJson(array('html' => $html));

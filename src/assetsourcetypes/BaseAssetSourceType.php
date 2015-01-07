@@ -10,13 +10,15 @@ namespace craft\app\assetsourcetypes;
 use craft\app\components\BaseSavableComponentType;
 use craft\app\Craft;
 use craft\app\errors\Exception;
+use craft\app\events\Event;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetFile              as AssetFileModel;
-use craft\app\models\AssetFolder            as AssetFolderModel;
-use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
-use craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
-use craft\app\models\FolderCriteria         as FolderCriteriaModel;
+use craft\app\models\AssetFile                     as AssetFileModel;
+use craft\app\models\AssetFolder                   as AssetFolderModel;
+use craft\app\models\AssetOperationResponse        as AssetOperationResponseModel;
+use craft\app\models\AssetTransformIndex           as AssetTransformIndexModel;
+use craft\app\models\FolderCriteria                as FolderCriteriaModel;
 
 /**
  * The base class for all asset source types.  Any asset source type must extend this class.

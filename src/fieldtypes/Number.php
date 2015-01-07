@@ -8,6 +8,8 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\LocalizationHelper;
 use craft\app\helpers\ModelHelper;
 
 /**
@@ -107,10 +109,10 @@ class Number extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'min'      => array(AttributeType::Number, 'default' => 0),
-			'max'      => array(AttributeType::Number, 'compare' => '>= min'),
-			'decimals' => array(AttributeType::Number, 'default' => 0),
-		);
+		return [
+			'min'      => [AttributeType::Number, 'default' => 0],
+			'max'      => [AttributeType::Number, 'compare' => '>= min'],
+			'decimals' => [AttributeType::Number, 'default' => 0],
+		];
 	}
 }

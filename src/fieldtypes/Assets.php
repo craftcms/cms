@@ -7,7 +7,10 @@
 
 namespace craft\app\fieldtypes;
 
-use craft\app\models\AssetFolder as AssetFolderModel;
+use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\models\AssetFolder    as AssetFolderModel;
+use craft\app\web\UploadedFile;
 
 /**
  * Assets fieldtype.

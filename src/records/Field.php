@@ -7,6 +7,9 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+use craft\app\enums\ColumnType;
+
 /**
  * Class Field record.
  *
@@ -154,14 +157,14 @@ class Field extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'         => array(AttributeType::Name, 'required' => true),
-			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
-			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
-			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
+		return [
+			'name'         => [AttributeType::Name, 'required' => true],
+			'handle'       => [AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords],
+			'context'      => [AttributeType::String, 'default' => 'global', 'required' => true],
+			'instructions' => [AttributeType::String, 'column' => ColumnType::Text],
 			'translatable' => AttributeType::Bool,
-			'type'         => array(AttributeType::ClassName, 'required' => true),
+			'type'         => [AttributeType::ClassName, 'required' => true],
 			'settings'     => AttributeType::Mixed,
-		);
+		];
 	}
 }

@@ -8,6 +8,9 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\enums\SectionType;
+use craft\app\errors\Exception;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\EntryType      as EntryTypeModel;
 use craft\app\models\Section        as SectionModel;
 use craft\app\models\SectionLocale  as SectionLocaleModel;
@@ -101,8 +104,8 @@ class SectionsController extends BaseController
 			$variables['title'] = Craft::t('Create a new section');
 		}
 
-		$types = array(SectionType::Single, SectionType::Channel, SectionType::Structure);
-		$variables['typeOptions'] = array();
+		$types = [SectionType::Single, SectionType::Channel, SectionType::Structure];
+		$variables['typeOptions'] = [];
 
 		// Get these strings to be caught by our translation util:
 		// Craft::t("Channel") Craft::t("Structure") Craft::t("Single")
@@ -140,10 +143,10 @@ class SectionsController extends BaseController
 			($variables['canBeSingle'] && !craft()->sections->doesHomepageExist())
 		);
 
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+		];
 
 		$this->renderTemplate('settings/sections/_edit', $variables);
 	}

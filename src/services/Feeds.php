@@ -7,6 +7,9 @@
 
 namespace craft\app\services;
 
+use craft\app\dates\DateTime;
+use craft\app\enums\LogLevel;
+use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
 use craft\app\Craft;
 use craft\app\web\Application;
@@ -106,7 +109,7 @@ class Feeds extends Component
 			$date = $item->get_date('U');
 			$dateUpdated = $item->get_updated_date('U');
 
-			$items[] = array(
+			$items[] = [
 				'authors'      => $this->_getItemAuthors($item->get_authors()),
 				'categories'   => $this->_getItemCategories($item->get_categories()),
 				'content'      => $item->get_content(true),
@@ -117,7 +120,7 @@ class Feeds extends Component
 				'summary'      => $item->get_description(true),
 				'title'        => $item->get_title(),
 				'enclosures'   => $this->_getEnclosures($item->get_enclosures()),
-			);
+			];
 		}
 
 		return $items;

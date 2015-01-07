@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Content            as ContentModel;

@@ -9,6 +9,8 @@ namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
+use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Table fieldtype
@@ -103,8 +105,8 @@ class Table extends BaseFieldType
 			JsonHelper::encode($columnSettings) .
 		');');
 
-		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
-			array(
+		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+			[
 				'label'        => Craft::t('Table Columns'),
 				'instructions' => Craft::t('Define the columns your table should have.'),
 				'id'           => 'columns',
@@ -113,11 +115,11 @@ class Table extends BaseFieldType
 				'rows'         => $columns,
 				'addRowLabel'  => Craft::t('Add a column'),
 				'initJs'       => false
-			)
-		));
+			]
+		]);
 
-		$defaultsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
-			array(
+		$defaultsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+			[
 				'label'        => Craft::t('Default Values'),
 				'instructions' => Craft::t('Define the default values for the field.'),
 				'id'           => 'defaults',
@@ -125,8 +127,8 @@ class Table extends BaseFieldType
 				'cols'         => $columns,
 				'rows'         => $defaults,
 				'initJs'       => false
-			)
-		));
+			]
+		]);
 
 		return $columnsField.$defaultsField;
 	}

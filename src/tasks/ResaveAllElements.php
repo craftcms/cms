@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 
 /**
  * The resave all elements task.
@@ -95,9 +96,9 @@ class ResaveAllElements extends BaseTask
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
+		return [
+			'locale'          => [AttributeType::Locale, 'default' => craft()->language],
 			'localizableOnly' => AttributeType::Bool
-		);
+		];
 	}
 }

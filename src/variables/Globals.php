@@ -7,6 +7,8 @@
 
 namespace craft\app\variables;
 
+use craft\app\models\GlobalSet as GlobalSetModel;
+
 /**
  * Globals functions.
  *

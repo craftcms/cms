@@ -8,6 +8,10 @@
 namespace craft\app\widgets;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\enums\ElementType;
+use craft\app\enums\SectionType;
+use craft\app\helpers\JsonHelper;
 
 /**
  * Class RecentEntries widget.
@@ -137,11 +141,11 @@ class RecentEntries extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'section' => array(AttributeType::Mixed, 'default' => '*'),
-			'locale'  => array(AttributeType::Locale, 'default' => craft()->language),
-			'limit'   => array(AttributeType::Number, 'default' => 10),
-		);
+		return [
+			'section' => [AttributeType::Mixed, 'default' => '*'],
+			'locale'  => [AttributeType::Locale, 'default' => craft()->language],
+			'limit'   => [AttributeType::Number, 'default' => 10],
+		];
 	}
 
 	// Private Methods

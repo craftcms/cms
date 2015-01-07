@@ -7,6 +7,9 @@
 
 namespace craft\app\helpers;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
+
 /**
  * Class StringHelper
  *

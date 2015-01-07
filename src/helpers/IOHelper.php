@@ -7,6 +7,9 @@
 
 namespace craft\app\helpers;
 
+use craft\app\io\File;
+use craft\app\io\Folder;
+
 /**
  * Class IOHelper
  *

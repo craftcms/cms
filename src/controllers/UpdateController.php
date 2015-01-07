@@ -7,6 +7,10 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
+use craft\app\enums\PluginVersionUpdateStatus;
+use craft\app\errors\EtException;
+
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
  * updates and running manual and auto-updates.

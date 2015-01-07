@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Element locale data record class.
  *
@@ -66,11 +68,11 @@ class ElementLocale extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'locale'  => array(AttributeType::Locale, 'required' => true),
-			'slug'    => array(AttributeType::String),
-			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
-			'enabled' => array(AttributeType::Bool, 'default' => true),
-		);
+		return [
+			'locale'  => [AttributeType::Locale, 'required' => true],
+			'slug'    => [AttributeType::String],
+			'uri'     => [AttributeType::Uri, 'label' => 'URI'],
+			'enabled' => [AttributeType::Bool, 'default' => true],
+		];
 	}
 }

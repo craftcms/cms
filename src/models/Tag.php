@@ -7,8 +7,10 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\models\FieldLayout;
+use craft\app\models\TagGroup      as TagGroupModel;
 
 /**
  * Tag model class.
@@ -104,8 +106,8 @@ class Tag extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'groupId' => AttributeType::Number,
-		));
+		]);
 	}
 }

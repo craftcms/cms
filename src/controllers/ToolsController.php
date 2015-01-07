@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use craft\app\enums\ComponentType;
 use craft\app\errors\HttpException;
+use craft\app\helpers\IOHelper;
 
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.

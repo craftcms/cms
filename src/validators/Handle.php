@@ -7,6 +7,7 @@
 
 namespace craft\app\validators;
 
+use craft\app\Craft;
 use craft\app\helpers\StringHelper;
 
 /**

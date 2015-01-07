@@ -7,6 +7,12 @@
 
 namespace craft\app\db;
 
+use craft\app\Craft;
+use craft\app\enums\ConfigFile;
+use craft\app\errors\Exception;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
+
 /**
  * This class provides methods for backing up and restore Craft databases.
  *
@@ -108,7 +114,7 @@ class DbBackup
 	 * Restores a database backup with the given backup file. Note that all tables and data in the database will be
 	 * deleted before the backup file is executed.
 	 *
-	 * @param $filePath The file path of the database backup to restore.
+	 * @param string $filePath The file path of the database backup to restore.
 	 *
 	 * @throws Exception
 	 * @return null

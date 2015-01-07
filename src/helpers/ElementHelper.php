@@ -7,6 +7,8 @@
 
 namespace craft\app\helpers;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use craft\app\models\BaseElementModel;
 
 /**

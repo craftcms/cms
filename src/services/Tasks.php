@@ -7,6 +7,9 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+use craft\app\enums\TaskStatus;
 use yii\base\Component;
 use craft\app\models\Task               as TaskModel;
 use craft\app\records\Task              as TaskRecord;

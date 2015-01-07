@@ -7,6 +7,8 @@
 
 namespace craft\app\elements;
 
+use craft\app\db\DbCommand;
+use craft\app\helpers\ArrayHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 

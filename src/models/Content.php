@@ -6,6 +6,9 @@
  */
 
 namespace craft\app\models;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\ModelHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Entry content model class.
@@ -145,12 +148,12 @@ class Content extends BaseModel
 	{
 		$requiredTitle = (isset($this->_requiredFields) && in_array('title', $this->_requiredFields));
 
-		$attributes = array(
+		$attributes = [
 			'id'        => AttributeType::Number,
 			'elementId' => AttributeType::Number,
-			'locale'    => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'title'     => array(AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255, 'label' => 'Title'),
-		);
+			'locale'    => [AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()],
+			'title'     => [AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255, 'label' => 'Title'],
+		];
 
 		foreach (craft()->fields->getAllFields() as $field)
 		{

@@ -7,6 +7,8 @@
 
 namespace craft\app\db\mysql;
 
+use craft\app\enums\ConfigFile;
+
 /**
  * Class MysqlSchema
  *

@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\ConfigFile;
 use yii\base\Component;
 use craft\app\helpers\AppHelper;
 use craft\app\web\Application;

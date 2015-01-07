@@ -7,13 +7,15 @@
 
 namespace craft\app\logging;
 
+use craft\app\helpers\StringHelper;
+
 /**
  * Class Logger
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Logger extends yii\log\Logger
+class Logger extends \yii\log\Logger
 {
 	// Properties
 	// =========================================================================

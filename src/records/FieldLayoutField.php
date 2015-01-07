@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class FieldLayoutField record.
  *
@@ -65,9 +67,9 @@ class FieldLayoutField extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'required'  => AttributeType::Bool,
 			'sortOrder' => AttributeType::SortOrder,
-		);
+		];
 	}
 }

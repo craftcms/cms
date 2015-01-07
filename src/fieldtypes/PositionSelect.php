@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\fieldtypes;
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
 /**
@@ -121,13 +122,13 @@ class PositionSelect extends BaseFieldType
 	 */
 	private static function _getOptions()
 	{
-		return array(
+		return [
 			'left'       => Craft::t('Left'),
 			'center'     => Craft::t('Center'),
 			'right'      => Craft::t('Right'),
 			'full'       => Craft::t('Full'),
 			'drop-left'  => Craft::t('Drop-left'),
 			'drop-right' => Craft::t('Drop-right'),
-		);
+		];
 	}
 }

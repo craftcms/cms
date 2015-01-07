@@ -7,6 +7,8 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\AttributeType;
+
 /**
  * Class FieldGroup record.
  *
@@ -74,8 +76,8 @@ class FieldGroup extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name' => array(AttributeType::Name, 'required' => true),
-		);
+		return [
+			'name' => [AttributeType::Name, 'required' => true],
+		];
 	}
 }

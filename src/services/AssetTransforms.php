@@ -7,6 +7,9 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\dates\DateTime;
+use craft\app\errors\Exception;
 use yii\base\Component;
 use craft\app\models\AssetFile           as AssetFileModel;
 use craft\app\models\AssetTransform      as AssetTransformModel;

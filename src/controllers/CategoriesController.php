@@ -7,7 +7,10 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
+use craft\app\enums\ElementType;
 use craft\app\errors\HttpException;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Category            as CategoryModel;
 use craft\app\models\CategoryGroup       as CategoryGroupModel;

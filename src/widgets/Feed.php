@@ -8,6 +8,8 @@
 namespace craft\app\widgets;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\JsonHelper;
 
 /**
  * Class Feed widget.
@@ -91,10 +93,10 @@ class Feed extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
-			'title' => array(AttributeType::Name, 'required' => true),
-			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
-		);
+		return [
+			'url'   => [AttributeType::Url, 'required' => true, 'label' => 'URL'],
+			'title' => [AttributeType::Name, 'required' => true],
+			'limit' => [AttributeType::Number, 'min' => 0, 'default' => 5],
+		];
 	}
 }

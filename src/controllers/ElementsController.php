@@ -7,6 +7,9 @@
 
 namespace craft\app\controllers;
 
+use craft\app\enums\ElementType;
+use craft\app\errors\HttpException;
+use craft\app\helpers\ElementHelper;
 use craft\app\models\BaseElementModel;
 
 /**
@@ -97,7 +100,7 @@ class ElementsController extends BaseElementsController
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
 		$element = craft()->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
-		if (!$element || !ElementHelper::isElementEditable($element))
+		if (!ElementHelper::isElementEditable($element) || !$element)
 		{
 			throw new HttpException(403);
 		}

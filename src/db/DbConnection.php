@@ -7,6 +7,9 @@
 
 namespace craft\app\db;
 
+use craft\app\enums\ConfigFile;
+use craft\app\helpers\ArrayHelper;
+
 /**
  * Class DbConnection
  *

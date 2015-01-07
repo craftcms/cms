@@ -7,11 +7,13 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use yii\base\Component;
-use craft\app\models\Tag                as TagModel;
-use craft\app\models\TagGroup           as TagGroupModel;
-use craft\app\records\TagGroup          as TagGroupRecord;
-use craft\app\records\Tag               as TagRecord;
+use craft\app\models\Tag        as TagModel;
+use craft\app\models\TagGroup   as TagGroupModel;
+use craft\app\records\TagGroup  as TagGroupRecord;
+use craft\app\records\Tag       as TagRecord;
 use craft\app\web\Application;
 
 /**

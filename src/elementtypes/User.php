@@ -8,6 +8,7 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\enums\UserStatus;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\User              as UserModel;
@@ -60,13 +61,13 @@ class User extends BaseElementType
 	 */
 	public function getStatuses()
 	{
-		return array(
+		return [
 			UserStatus::Active    => Craft::t('Active'),
 			UserStatus::Pending   => Craft::t('Pending'),
 			UserStatus::Locked    => Craft::t('Locked'),
 			UserStatus::Suspended => Craft::t('Suspended'),
 			UserStatus::Archived  => Craft::t('Archived')
-		);
+		];
 	}
 
 	/**

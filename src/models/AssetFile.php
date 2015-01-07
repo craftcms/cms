@@ -8,7 +8,10 @@
 namespace craft\app\models;
 
 use craft\app\enums\ElementType;
-use craft\app\models\AssetFile   as AssetFileModel;
+use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\models\AssetFile        as AssetFileModel;
+use craft\app\models\FieldLayout      as FieldLayoutModel;
 
 /**
  * The AssetFile model class.

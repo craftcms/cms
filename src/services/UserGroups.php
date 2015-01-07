@@ -7,11 +7,13 @@
 
 namespace craft\app\services;
 
+use craft\app\events\Event;
 use yii\base\Component;
 use craft\app\Craft;
-use craft\app\models\UserGroup          as UserGroupModel;
-use craft\app\records\UserGroup         as UserGroupRecord;
+use craft\app\models\UserGroup  as UserGroupModel;
+use craft\app\records\UserGroup as UserGroupRecord;
 use craft\app\web\Application;
+use craft\app\models\User       as UserModel;
 
 craft()->requireEdition(Craft::Pro);
 

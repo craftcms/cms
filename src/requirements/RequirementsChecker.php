@@ -7,6 +7,7 @@
 
 namespace craft\app\requirements;
 
+use craft\app\Craft;
 use craft\app\enums\InstallStatus;
 use craft\app\enums\RequirementResult;
 
@@ -98,10 +99,10 @@ class RequirementsChecker extends \CComponent
 	private function _calculateServerInfo()
 	{
 		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
-			Craft::t('{version} build {build}', array(
+			Craft::t('{version} build {build}', [
 				'version' => CRAFT_VERSION,
 				'build'   => CRAFT_BUILD
-			));
+			]);
 
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.craft()->getYiiVersion();

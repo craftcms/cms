@@ -7,6 +7,7 @@
 
 namespace craft\app\elementactions;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\events\Event;
 use craft\app\models\BaseElementModel;

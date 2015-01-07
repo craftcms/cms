@@ -7,6 +7,9 @@
 
 namespace craft\app\records;
 
+use craft\app\enums\ColumnType;
+use craft\app\enums\AttributeType;
+
 /**
  * Class AssetIndexData record.
  *

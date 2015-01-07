@@ -7,7 +7,9 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\ElementType;
+use craft\app\enums\UserStatus;
 use craft\app\models\UserGroup   as UserGroupModel;
 use yii\web\IdentityInterface;
 use yii\base\NotSupportedException;

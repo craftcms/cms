@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\models;
+use craft\app\enums\AttributeType;
 
 /**
  * This model represents an AssetOperationResponse.
@@ -182,9 +183,9 @@ class AssetOperationResponse extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'status'		=> array(AttributeType::Enum, 'values' => array(static::StatusError, static::StatusSuccess, static::StatusConflict)),
+		return [
+			'status'		=> [AttributeType::Enum, 'values' => [static::StatusError, static::StatusSuccess, static::StatusConflict]],
 			'errorMessage'	=> AttributeType::String
-		);
+		];
 	}
 }

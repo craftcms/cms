@@ -7,6 +7,8 @@
 
 namespace craft\app\controllers;
 
+use craft\app\dates\DateTime;
+use craft\app\helpers\IOHelper;
 use craft\app\models\LogEntry                   as LogEntryModel;
 use craft\app\errors\HttpException;
 use craft\app\requirements\RequirementsChecker;
