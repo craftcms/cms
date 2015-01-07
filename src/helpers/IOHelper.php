@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\LogLevel;
+use craft\app\errors\ErrorException;
 use craft\app\io\File;
 use craft\app\io\Folder;
 

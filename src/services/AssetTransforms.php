@@ -9,8 +9,10 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\dates\DateTime;
+use craft\app\db\DbCommand;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\models\AssetFile           as AssetFileModel;

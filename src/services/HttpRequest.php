@@ -8,9 +8,15 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
+use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\i18n\LocaleData;
 use craft\app\web\Application;
+use craft\app\web\CookieCollection;
+use craft\app\web\HttpCookie;
 
 /**
  * The HttpRequest service provides APIs for getting information about the current HTTP request.

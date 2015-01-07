@@ -7,7 +7,15 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\ComponentType;
+use craft\app\errors\Exception;
+use craft\app\events\Event;
+use craft\app\fieldtypes\BaseFieldType;
+use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
+use craft\app\models\BaseElementModel;
 use yii\base\Component;
 use craft\app\models\BaseModel;
 use craft\app\models\Field              as FieldModel;

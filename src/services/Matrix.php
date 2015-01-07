@@ -8,11 +8,14 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\models\BaseElementModel;
 use yii\base\Component;
 use craft\app\fieldtypes\Matrix         as MatrixFieldType;
 use craft\app\models\Field              as FieldModel;
@@ -1061,10 +1064,10 @@ class Matrix extends Component
 	 */
 	private function _createContentTable($name)
 	{
-		craft()->db->createCommand()->createTable($name, array(
-			'elementId' => array('column' => ColumnType::Int, 'null' => false),
-			'locale'    => array('column' => ColumnType::Locale, 'null' => false)
-		));
+		craft()->db->createCommand()->createTable($name, [
+			'elementId' => ['column' => ColumnType::Int, 'null' => false],
+			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
+		]);
 
 		craft()->db->createCommand()->createIndex($name, 'elementId,locale', true);
 		craft()->db->createCommand()->addForeignKey($name, 'elementId', 'elements', 'id', 'CASCADE', null);

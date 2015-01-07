@@ -8,9 +8,12 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
 use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;
@@ -641,7 +644,7 @@ class Sections extends Component
 								$entryIds = craft()->db->createCommand()
 									->select('id')
 									->from('entries')
-									->where('sectionId = :sectionId', array(':sectionId' => $section->id))
+									->where('sectionId = :sectionId', [':sectionId' => $section->id])
 									->queryColumn();
 
 								if ($entryIds)
@@ -656,21 +659,21 @@ class Sections extends Component
 
 									// Make sure it's enabled and all that.
 
-									craft()->db->createCommand()->update('elements', array(
+									craft()->db->createCommand()->update('elements', [
 										'enabled'  => 1,
 										'archived' => 0,
-									), array(
+									], [
 										'id' => $singleEntryId
-									));
+									]);
 
-									craft()->db->createCommand()->update('entries', array(
+									craft()->db->createCommand()->update('entries', [
 										'typeId'     => $entryTypeId,
 										'authorId'   => null,
 										'postDate'   => DateTimeHelper::currentTimeForDb(),
 										'expiryDate' => null,
-									), array(
+									], [
 										'id' => $singleEntryId
-									));
+									]);
 								}
 
 								// Make sure there's only one entry type for this section
@@ -690,29 +693,29 @@ class Sections extends Component
 
 								$singleEntryId = craft()->db->getLastInsertID();
 
-								craft()->db->createCommand()->insert('entries', array(
+								craft()->db->createCommand()->insert('entries', [
 									'id'        => $singleEntryId,
 									'sectionId' => $section->id,
 									'typeId'    => $entryTypeId,
 									'postDate'  => DateTimeHelper::currentTimeForDb()
-								));
+								]);
 							}
 
 							// Now make sure we've got all of the i18n rows in place.
 							foreach ($sectionLocales as $localeId => $sectionLocale)
 							{
-								craft()->db->createCommand()->insertOrUpdate('elements_i18n', array(
+								craft()->db->createCommand()->insertOrUpdate('elements_i18n', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId,
-								), array(
+								], [
 									'slug' => $section->handle,
 									'uri'  => $sectionLocale->urlFormat
-								));
+								]);
 
-								craft()->db->createCommand()->insertOrUpdate('content', array(
+								craft()->db->createCommand()->insertOrUpdate('content', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId
-								), array(
+								], array(
 									'title' => $section->name
 								));
 							}
@@ -762,10 +765,10 @@ class Sections extends Component
 						$criteria->localeEnabled = null;
 						$criteria->limit = null;
 
-						craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', array('section' => $section->name)), array(
+						craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', ['section' => $section->name]), [
 							'elementType' => ElementType::Entry,
 							'criteria'    => $criteria->getAttributes()
-						));
+						]);
 					}
 
 					$success = true;

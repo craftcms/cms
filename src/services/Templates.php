@@ -7,7 +7,16 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
+use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\ElementHelper;
+use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\helpers\PathHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\templating\StringTemplate;
 use craft\app\templating\twigextensions\CraftTwigExtension;

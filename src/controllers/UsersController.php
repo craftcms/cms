@@ -9,11 +9,18 @@ namespace craft\app\controllers;
 
 use craft\app\Craft;
 use craft\app\enums\AuthError;
+use craft\app\enums\ElementType;
 use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
+use craft\app\events\Event;
+use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\User           as UserModel;
+use craft\app\web\UploadedFile;
 
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
@@ -1370,11 +1377,11 @@ class UsersController extends BaseController
 	 * Handles an invalid login attempt.
 	 *
 	 * @param string|null $authError
-	 * @param User|null   $user
+	 * @param UserModel|null   $user
 	 *
 	 * @return null
 	 */
-	private function _handleInvalidLogin($authError = null, $user = null)
+	private function _handleInvalidLogin($authError = null, UserModel $user = null)
 	{
 		switch ($authError)
 		{

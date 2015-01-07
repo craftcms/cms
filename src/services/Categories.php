@@ -10,6 +10,7 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
+use craft\app\events\Event;
 use yii\base\Component;
 use craft\app\models\Category             as CategoryModel;
 use craft\app\models\CategoryGroup        as CategoryGroupModel;

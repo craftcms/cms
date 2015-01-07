@@ -7,12 +7,17 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\errors\Exception;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Content         as ContentModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\FieldLayout     as FieldLayoutModel;
+use craft\app\models\Field           as FieldModel;
+use craft\app\web\UploadedFile;
 
 /**
  * BaseElement model class.
@@ -956,7 +961,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if (!$field)
 			{
-				throw new Exception(Craft::t('No field exists with the handle “{handle}”', array('handle' => $fieldHandle)));
+				throw new Exception(Craft::t('No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
 			}
 
 			$content = $this->getContent();
@@ -1050,14 +1055,14 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'            => AttributeType::Number,
-			'enabled'       => array(AttributeType::Bool, 'default' => true),
-			'archived'      => array(AttributeType::Bool, 'default' => false),
-			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
-			'slug'          => array(AttributeType::String, 'label' => 'Slug'),
-			'uri'           => array(AttributeType::String, 'label' => 'URI'),
+			'enabled'       => [AttributeType::Bool, 'default' => true],
+			'archived'      => [AttributeType::Bool, 'default' => false],
+			'locale'        => [AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()],
+			'localeEnabled' => [AttributeType::Bool, 'default' => true],
+			'slug'          => [AttributeType::String, 'label' => 'Slug'],
+			'uri'           => [AttributeType::String, 'label' => 'URI'],
 			'dateCreated'   => AttributeType::DateTime,
 			'dateUpdated'   => AttributeType::DateTime,
 
@@ -1065,7 +1070,7 @@ abstract class BaseElementModel extends BaseModel
 			'lft'           => AttributeType::Number,
 			'rgt'           => AttributeType::Number,
 			'level'         => AttributeType::Number,
-		);
+		];
 	}
 
 	// Private Methods

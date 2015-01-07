@@ -8,6 +8,7 @@
 namespace craft\app\web;
 
 use craft\app\Craft;
+use craft\app\dates\DateInterval;
 use craft\app\enums\LogLevel;
 use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;

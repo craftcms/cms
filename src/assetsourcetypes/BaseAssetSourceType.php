@@ -10,6 +10,8 @@ namespace craft\app\assetsourcetypes;
 use craft\app\components\BaseSavableComponentType;
 use craft\app\Craft;
 use craft\app\enums\AssetConflictResolution;
+use craft\app\enums\ElementType;
+use craft\app\enums\PeriodType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\AssetsHelper;
@@ -785,14 +787,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function getPeriodList()
 	{
-		return array(
+		return [
 			PeriodType::Seconds => Craft::t('Seconds'),
 			PeriodType::Minutes => Craft::t('Minutes'),
 			PeriodType::Hours   => Craft::t('Hours'),
 			PeriodType::Days    => Craft::t('Days'),
 			PeriodType::Months  => Craft::t('Months'),
 			PeriodType::Years   => Craft::t('Years'),
-		);
+		];
 	}
 
 	// Protected Methods

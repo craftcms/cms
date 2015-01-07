@@ -9,8 +9,10 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\enums\ColumnType;
+use craft\app\enums\ElementType;
 use craft\app\enums\EmailerType;
 use craft\app\enums\LogLevel;
+use craft\app\enums\SectionType;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;

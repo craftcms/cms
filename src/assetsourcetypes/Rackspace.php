@@ -10,6 +10,7 @@ namespace craft\app\assetsourcetypes;
 use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
+use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;

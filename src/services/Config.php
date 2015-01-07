@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 use yii\base\Component;
 use craft\app\helpers\AppHelper;

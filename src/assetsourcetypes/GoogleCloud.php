@@ -12,6 +12,7 @@ use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\models\AssetFile              as AssetFileModel;
 use craft\app\models\AssetFolder            as AssetFolderModel;
@@ -747,7 +748,7 @@ class GoogleCloud extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
-	 * @param                $settings Source settings to use
+	 * @param                $settings The source settings to use
 	 *
 	 * @return string
 	 */

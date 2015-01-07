@@ -7,14 +7,20 @@
 
 namespace craft\app\services;
 
+use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\DbHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\helpers\UrlHelper;
 use yii\base\Component;
 use craft\app\models\AssetFile              as AssetFileModel;
 use craft\app\models\AssetFolder            as AssetFolderModel;
