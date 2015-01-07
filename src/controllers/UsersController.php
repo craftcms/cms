@@ -832,7 +832,7 @@ class UsersController extends BaseController
 		{
 			$user->newPassword = craft()->request->getPost('password');
 		}
-		else if ($user->isCurrent() || $currentUser->can('changeUserEmails'))
+		else if ($user->isCurrent())
 		{
 			$user->newPassword = craft()->request->getPost('newPassword');
 		}
