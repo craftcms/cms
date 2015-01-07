@@ -175,7 +175,7 @@ class ArrayHelper
 	 */
 	public static function filterEmptyStringsFromArray($arr)
 	{
-		return array_filter($arr, array('\Craft\ArrayHelper', '_isNotAnEmptyString'));
+		return array_filter($arr, array('\craft\app\helpers\ArrayHelper', '_isNotAnEmptyString'));
 	}
 
 	/**

@@ -110,7 +110,7 @@ class Logger extends \yii\log\Logger
 		}
 		else
 		{
-			$this->_categories = array_filter(array_map(array('Craft\StringHelper', 'toLowerCase'), $categories));
+			$this->_categories = array_filter(array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $categories));
 		}
 
 		if (is_string($except))
@@ -119,7 +119,7 @@ class Logger extends \yii\log\Logger
 		}
 		else
 		{
-			$this->_except = array_filter(array_map(array('Craft\StringHelper', 'toLowerCase'), $except));
+			$this->_except = array_filter(array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $except));
 		}
 
 		$ret = $this->_logs;

@@ -9,6 +9,7 @@ namespace craft\app\variables;
 
 use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\enums\ElementType;
 
 /**
  * Contains all global variables.
@@ -168,7 +169,7 @@ class Craft
 	 */
 	public function emailMessages()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (craft()->getEdition() >= \craft\app\Craft::Client)
 		{
 			return new EmailMessages();
 		}
@@ -197,7 +198,7 @@ class Craft
 	 */
 	public function entryRevisions()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (craft()->getEdition() >= \craft\app\Craft::Client)
 		{
 			return new EntryRevisions();
 		}
@@ -232,7 +233,7 @@ class Craft
 	 */
 	public function rebrand()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (craft()->getEdition() >= \craft\app\Craft::Client)
 		{
 			if (!isset($this->_rebrandVariable))
 			{
@@ -308,7 +309,7 @@ class Craft
 	 */
 	public function users($criteria = null)
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->getEdition() == \craft\app\Craft::Pro)
 		{
 			return craft()->elements->getCriteria(ElementType::User, $criteria);
 		}
@@ -319,7 +320,7 @@ class Craft
 	 */
 	public function userGroups()
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->getEdition() == \craft\app\Craft::Pro)
 		{
 			return new UserGroups();
 		}
@@ -330,7 +331,7 @@ class Craft
 	 */
 	public function userPermissions()
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (craft()->getEdition() == \craft\app\Craft::Pro)
 		{
 			return new UserPermissions();
 		}

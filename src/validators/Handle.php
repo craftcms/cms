@@ -53,7 +53,7 @@ class Handle extends \CValidator
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-			$reservedWords = array_map(array('Craft\StringHelper', 'toLowerCase'), $reservedWords);
+			$reservedWords = array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $reservedWords);
 			$lcHandle = StringHelper::toLowerCase($handle);
 
 			if (in_array($lcHandle, $reservedWords))

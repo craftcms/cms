@@ -28,4 +28,5 @@ abstract class AuthError extends BaseEnum
 	const AccountSuspended      = 'account_suspended';
 	const NoCpAccess            = 'no_cp_access';
 	const NoCpOfflineAccess     = 'no_cp_offline_access';
+	const UsernameInvalid       = 'username_invalid';
 }
