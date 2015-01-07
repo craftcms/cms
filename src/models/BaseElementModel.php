@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use craft\app\models\Content         as ContentModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\FieldLayout     as FieldLayoutModel;
 
 /**
  * BaseElement model class.

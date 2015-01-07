@@ -10,9 +10,11 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
+use craft\app\events\Event;
 use craft\app\fieldtypes\Assets;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading

@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use craft\app\Craft;
 use craft\app\enums\ElementType;
+use craft\app\enums\UserStatus;
 use craft\app\models\UserGroup   as UserGroupModel;
 
 /**

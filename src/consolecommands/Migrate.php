@@ -8,6 +8,7 @@
 namespace craft\app\consolecommands;
 
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Migrate is a command for managing Craft and plugin database migrations.

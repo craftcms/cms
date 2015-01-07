@@ -10,6 +10,7 @@ namespace craft\app\fieldtypes;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Table fieldtype

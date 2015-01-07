@@ -10,6 +10,9 @@ namespace craft\app\fieldtypes;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
+use craft\app\fieldtypes\data\MultiOptionsFieldData;
+use craft\app\fieldtypes\data\OptionData;
+use craft\app\fieldtypes\data\SingleOptionFieldData;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 

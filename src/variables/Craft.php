@@ -140,14 +140,6 @@ class Craft
 	}
 
 	/**
-	 * @return FieldTypes
-	 */
-	public function fieldTypes()
-	{
-		return new FieldTypes();
-	}
-
-	/**
 	 * @return Cp
 	 */
 	public function cp()

@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\UrlHelper;
 use yii\base\Component;
 use craft\app\models\ElementCriteria  as ElementCriteriaModel;
 use craft\app\web\Application;

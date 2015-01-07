@@ -12,6 +12,7 @@ use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ModelHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Active Record base class.

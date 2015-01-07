@@ -8,8 +8,11 @@
 namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
+use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\models\AppUpdate                 as AppUpdateModel;
 use craft\app\models\PluginUpdate              as PluginUpdateModel;

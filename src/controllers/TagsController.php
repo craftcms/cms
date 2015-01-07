@@ -10,6 +10,8 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\HttpException;
+use craft\app\helpers\DbHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Tag            as TagModel;
 use craft\app\models\TagGroup       as TagGroupModel;

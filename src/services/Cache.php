@@ -16,6 +16,7 @@ use craft\app\cache\RedisCache;
 use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
+use craft\app\Craft;
 use yii\base\Component;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;

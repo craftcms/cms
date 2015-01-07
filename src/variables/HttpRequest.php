@@ -6,7 +6,9 @@
  */
 
 namespace craft\app\variables;
+
 use craft\app\helpers\UrlHelper;
+use craft\app\web\HttpCookie;
 
 /**
  * Request functions.

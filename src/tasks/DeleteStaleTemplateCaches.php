@@ -8,6 +8,8 @@
 namespace craft\app\tasks;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
 use craft\app\helpers\JsonHelper;
 
 /**

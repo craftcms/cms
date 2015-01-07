@@ -8,7 +8,10 @@
 namespace craft\app\widgets;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
+use craft\app\helpers\JsonHelper;
+use craft\app\models\Section       as SectionModel;
 
 /**
  * Class QuickPost widget.
@@ -184,11 +187,11 @@ class QuickPost extends BaseWidget
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'section'   => array(AttributeType::Number, 'required' => true),
+		return [
+			'section'   => [AttributeType::Number, 'required' => true],
 			'entryType' => AttributeType::Number,
 			'fields'    => AttributeType::Mixed,
-		);
+		];
 	}
 
 	// Private Methods

@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\enums\UserStatus;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\Password     as PasswordModel;
 use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;

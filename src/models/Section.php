@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
 
 /**
@@ -183,16 +184,16 @@ class Section extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'                        => AttributeType::Number,
 			'structureId'               => AttributeType::Number,
 			'name'                      => AttributeType::String,
 			'handle'                    => AttributeType::String,
-			'type'                      => array(AttributeType::Enum, 'values' => array(SectionType::Single, SectionType::Channel, SectionType::Structure)),
-			'hasUrls'                   => array(AttributeType::Bool, 'default' => true),
+			'type'                      => [AttributeType::Enum, 'values' => [SectionType::Single, SectionType::Channel, SectionType::Structure]],
+			'hasUrls'                   => [AttributeType::Bool, 'default' => true],
 			'template'                  => AttributeType::String,
 			'maxLevels'                 => AttributeType::Number,
-			'enableVersioning'          => array(AttributeType::Bool, 'default' => true),
-		);
+			'enableVersioning'          => [AttributeType::Bool, 'default' => true],
+		];
 	}
 }

@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\helpers\StringHelper;
 use yii\base\Component;
 use craft\app\fieldtypes\Matrix         as MatrixFieldType;
 use craft\app\models\FieldLayout        as FieldLayoutModel;
