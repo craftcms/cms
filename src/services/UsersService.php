@@ -440,7 +440,15 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function sendActivationEmail(UserModel $user)
 	{
-		$url = $this->getPasswordResetUrl($user);
+		// If the user doesn't have a password yet, use a Password Reset URL
+		if (!$user->password)
+		{
+			$url = $this->getPasswordResetUrl($user);
+		}
+		else
+		{
+			$url = $this->getEmailVerifyUrl($user);
+		}
 
 		return craft()->email->sendEmailByKey($user, 'account_activation', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -458,20 +466,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	public function sendNewEmailVerifyEmail(UserModel $user)
 	{
-		$userRecord = $this->_getUserRecordById($user->id);
-		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-		$userRecord->save();
-
-		if ($user->can('accessCp'))
-		{
-			$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
-		}
-		else
-		{
-			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
-		}
+		$url = $this->getEmailVerifyUrl($user);
 
 		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -494,6 +489,33 @@ class UsersService extends BaseApplicationComponent
 		return craft()->email->sendEmailByKey($user, 'forgot_password', array(
 			'link' => TemplateHelper::getRaw($url),
 		));
+	}
+
+	/**
+	 * Sets a new verification code on a user, and returns their new Email Verification URL.
+	 *
+	 * @param UserModel $user The user that should get the new Email Verification URL.
+	 *
+	 * @return string The new Email Verification URL.
+	 */
+	public function getEmailVerifyUrl(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
+			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+		}
+
+		return $url;
 	}
 
 	/**

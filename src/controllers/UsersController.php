@@ -709,7 +709,17 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Registers a new user, or saves an existing user's account settings.
+	 * Provides an endpoint for saving a user account.
+	 *
+	 * This action accounts for the following scenarios:
+	 *
+	 * - An admin registering a new user account.
+	 * - An admin editing an existing user account.
+	 * - A normal user with user-administration permissions registering a new user account.
+	 * - A normal user with user-administration permissions editing an existing user account.
+	 * - A guest registering a new user account ("public registration").
+	 *
+	 * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
 	 *
 	 * @throws HttpException|Exception
 	 * @return null
@@ -719,11 +729,14 @@ class UsersController extends BaseController
 		$this->requirePostRequest();
 
 		$currentUser = craft()->userSession->getUser();
-		$thisIsPublicRegistration = false;
 		$requireEmailVerification = craft()->systemSettings->getSetting('users', 'requireEmailVerification');
+
+		// Get the user being edited
+		// ---------------------------------------------------------------------
 
 		$userId = craft()->request->getPost('userId');
 		$isNewUser = !$userId;
+		$thisIsPublicRegistration = false;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -780,90 +793,65 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		// Should we check for a new email and password?
-		if ($isNewUser || $user->isCurrent() || craft()->userSession->isAdmin() || $currentUser->can('changeUserEmails'))
+		// Handle secure properties (email and password)
+		// ---------------------------------------------------------------------
+
+		$verifyNewEmail = false;
+
+		// Are they allowed to set the email address?
+		if ($isNewUser || $user->isCurrent() || $currentUser->can('changeUserEmails'))
 		{
-			$newEmail    = craft()->request->getPost('email');
-			$newPassword = false;
+			$newEmail = craft()->request->getPost('email');
 
-			// You can only change your own password directly.
-			if ($user->isCurrent())
-			{
-				$newPassword = craft()->request->getPost('newPassword');
-			}
-
-			// If this is a new user, see if a password has been set (for front-end registration forms).
-			if ($isNewUser && $thisIsPublicRegistration)
-			{
-				$newPassword = craft()->request->getPost('password');
-			}
-
-			if ($user->id && $user->email == $newEmail)
-			{
-				$newEmail = false;
-			}
-
-			$verifyExistingPassword = false;
-
-			// If this is an existing user...
-			if (!$isNewUser)
-			{
-				// And it's the current user or an admin...
-				if ($user->isCurrent() || craft()->userSession->isAdmin() || $user->can('changeUserEmails'))
-				{
-					// Check to see if you're editing yourself and a new password has been set..
-					if ($user->isCurrent() && $newPassword)
-					{
-						$verifyExistingPassword = true;
-					}
-
-					// If a new email, everyone has to validate their password.
-					if ($newEmail)
-					{
-						$verifyExistingPassword = true;
-					}
-				}
-			}
-
-			// Do we need to verify the current user's password?
-			if ($verifyExistingPassword)
-			{
-				// Make sure the correct current password has been submitted
-				if (!$this->_verifyExistingPassword())
-				{
-					Craft::log('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', LogLevel::Warning);
-					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
-
-					// We'll let the script keep executing in case we find any other validation errors...
-				}
-			}
-
-			if ($thisIsPublicRegistration || $newPassword)
-			{
-				// Don't worry about new password validation. That will be taken care of in the service.
-				$user->newPassword = $newPassword;
-			}
-
-			if ($newEmail)
+			// Did it just change?
+			if ($newEmail && $newEmail != $user->email)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!craft()->userSession->isAdmin() || craft()->request->getPost('sendVerificationEmail')))
+				if ($requireEmailVerification && (!$currentUser->admin || craft()->request->getPost('sendVerificationEmail')))
 				{
+					// Save it as an unverified email for now
 					$user->unverifiedEmail = $newEmail;
+					$verifyNewEmail = true;
 
+					// If this is a new user, set it as their main email address too
 					if ($isNewUser)
 					{
-						// Set it as the main email too
 						$user->email = $newEmail;
 					}
 				}
 				else
 				{
+					// We trust them
 					$user->email = $newEmail;
 				}
 			}
 		}
 
+		// Are they allowed to set a new password?
+		if ($thisIsPublicRegistration)
+		{
+			$user->newPassword = craft()->request->getPost('password');
+		}
+		else if ($user->isCurrent() || $currentUser->can('changeUserEmails'))
+		{
+			$user->newPassword = craft()->request->getPost('newPassword');
+		}
+
+		// If editing an existing user and either of these properties are being changed,
+		// require the user's current password for additional security
+		if (!$isNewUser && ($newEmail || $user->newPassword))
+		{
+			if (!$this->_verifyExistingPassword())
+			{
+				Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+				$user->addError('currentPassword', Craft::t('Incorrect current password.'));
+			}
+		}
+
+		// Handle the rest of the user properties
+		// ---------------------------------------------------------------------
+
+		// Is the site set to use email addresses as usernames?
 		if (craft()->config->get('useEmailAsUsername'))
 		{
 			$user->username    =  $user->email;
@@ -878,24 +866,18 @@ class UsersController extends BaseController
 		$user->preferredLocale = craft()->request->getPost('preferredLocale', $user->preferredLocale);
 		$user->weekStartDay    = craft()->request->getPost('weekStartDay', $user->weekStartDay);
 
-		if ($isNewUser)
+		// If email verification is required, then new users will be saved in a pending state,
+		// even if an admin is doing this and opted to not send the verification email
+		if ($isNewUser && $requireEmailVerification)
 		{
-			// Check the global setting here, instead of unverifiedEmail
-			if ($requireEmailVerification)
-			{
-				$user->pending = true;
-			}
-			else
-			{
-				$user->setActive();
-			}
+			$user->pending = true;
 		}
 
 		// There are some things only admins can change
-		if (craft()->userSession->isAdmin())
+		if ($currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired', $user->passwordResetRequired);
-			$user->admin = (bool) craft()->request->getPost('admin', $user->admin);
+			$user->admin                 = (bool) craft()->request->getPost('admin', $user->admin);
 		}
 
 		// If this is Craft Pro, grab any profile content from post
@@ -905,22 +887,27 @@ class UsersController extends BaseController
 		}
 
 		// Validate and save!
+		// ---------------------------------------------------------------------
+
 		if (craft()->users->saveUser($user))
 		{
+			// Save the user's photo, if it was submitted
 			$this->_processUserPhoto($user);
 
-			if ($currentUser)
-			{
-				$this->_processUserGroupsPermissions($user, $currentUser);
-			}
-
+			// If this is public registration, assign the user to the default user group
 			if ($thisIsPublicRegistration)
 			{
 				// Assign them to the default user group
 				craft()->userGroups->assignUserToDefaultGroup($user);
 			}
+			else
+			{
+				// Assign user groups and permissions if the current user is allowed to do that
+				$this->_processUserGroupsPermissions($user);
+			}
 
-			if ($requireEmailVerification && $user->unverifiedEmail)
+			// Do we need to send a verification email out?
+			if ($verifyNewEmail)
 			{
 				// Temporarily set the unverified email on the UserModel so the verification email goes to the
 				// right place
@@ -929,20 +916,15 @@ class UsersController extends BaseController
 
 				try
 				{
-					if ($isNewUser && $thisIsPublicRegistration && $newPassword)
+					if ($isNewUser)
 					{
-						craft()->users->sendNewEmailVerifyEmail($user);
+						// Send the activation email
+						craft()->users->sendActivationEmail($user);
 					}
 					else
 					{
-						if ($isNewUser)
-						{
-							craft()->users->sendActivationEmail($user);
-						}
-						else
-						{
-							craft()->users->sendNewEmailVerifyEmail($user);
-						}
+						// Send the standard verification email
+						craft()->users->sendNewEmailVerifyEmail($user);
 					}
 				}
 				catch (\phpmailerException $e)
@@ -950,6 +932,7 @@ class UsersController extends BaseController
 					craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
 				}
 
+				// Put the original email back into place
 				$user->email = $originalEmail;
 			}
 
@@ -1573,15 +1556,14 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $user
-	 * @param $currentUser
+	 * @param UserModel $user
 	 *
 	 * @return null
 	 */
-	private function _processUserGroupsPermissions($user, $currentUser)
+	private function _processUserGroupsPermissions(UserModel $user)
 	{
 		// Save any user groups
-		if (craft()->getEdition() == Craft::Pro && $currentUser->can('assignUserPermissions'))
+		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('assignUserPermissions'))
 		{
 			// Save any user groups
 			$groupIds = craft()->request->getPost('groups');
