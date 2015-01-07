@@ -10,6 +10,7 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\enums\ColumnType;
 use craft\app\enums\LogLevel;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
 use craft\app\models\Entry         as EntryModel;
@@ -286,13 +287,13 @@ class Install extends Component
 		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
 		$table = craft()->db->addTablePrefix('searchindex');
 
-		$columns = array(
-			'elementId' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
-			'attribute' => DbHelper::generateColumnDefinition(array('column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false)),
-			'fieldId'   => DbHelper::generateColumnDefinition(array('column' => ColumnType::Int, 'null' => false)),
-			'locale'    => DbHelper::generateColumnDefinition(array('column' => ColumnType::Locale, 'null' => false)),
-			'keywords'  => DbHelper::generateColumnDefinition(array('column' => ColumnType::Text, 'null' => false)),
-		);
+		$columns = [
+			'elementId' => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),
+			'attribute' => DbHelper::generateColumnDefinition(['column' => ColumnType::Varchar, 'maxLength' => 25, 'null' => false]),
+			'fieldId'   => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),
+			'locale'    => DbHelper::generateColumnDefinition(['column' => ColumnType::Locale, 'null' => false]),
+			'keywords'  => DbHelper::generateColumnDefinition(['column' => ColumnType::Text, 'null' => false]),
+		];
 
 		craft()->db->createCommand()->setText(craft()->db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
 

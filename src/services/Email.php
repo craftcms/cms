@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\enums\EmailerType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\StringHelper;

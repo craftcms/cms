@@ -9,8 +9,12 @@ namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
+use craft\app\Craft;
 use craft\app\dates\DateTime;
+use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use yii\base\Component;
 use craft\app\records\Migration     as MigrationRecord;
@@ -391,12 +395,12 @@ class Plugins extends Component
 		try
 		{
 			// Add the plugins as a record to the database.
-			craft()->db->createCommand()->insert('plugins', array(
+			craft()->db->createCommand()->insert('plugins', [
 				'class'       => $plugin->getClassHandle(),
 				'version'     => $plugin->version,
 				'enabled'     => true,
 				'installDate' => DateTimeHelper::currentTimeForDb(),
-			));
+			]);
 
 			$plugin->isInstalled = true;
 			$plugin->isEnabled = true;

@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AuthError;
 use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
+use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\models\User           as UserModel;
 

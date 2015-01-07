@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
+use craft\app\errors\HttpException;
 use craft\app\events\Event;
 use craft\app\fieldtypes\Assets;
 use craft\app\helpers\AssetsHelper;

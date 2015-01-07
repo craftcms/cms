@@ -10,7 +10,9 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ComponentType;
+use craft\app\enums\EmailerType;
 use craft\app\enums\LogLevel;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings  as EmailSettingsModel;
 use craft\app\models\GlobalSet      as GlobalSetModel;
 use craft\app\errors\HttpException;
@@ -222,19 +224,19 @@ class SystemSettingsController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditGlobalSet(array $variables = array())
+	public function actionEditGlobalSet(array $variables = [])
 	{
 		// Breadcrumbs
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Globals'),  'url' => UrlHelper::getUrl('settings/globals'))
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Globals'),  'url' => UrlHelper::getUrl('settings/globals')]
+		];
 
 		// Tabs
-		$variables['tabs'] = array(
-			'settings'    => array('label' => Craft::t('Settings'),     'url' => '#set-settings'),
-			'fieldlayout' => array('label' => Craft::t('Field Layout'), 'url' => '#set-fieldlayout')
-		);
+		$variables['tabs'] = [
+			'settings'    => ['label' => Craft::t('Settings'),     'url' => '#set-settings'],
+			'fieldlayout' => ['label' => Craft::t('Field Layout'), 'url' => '#set-fieldlayout']
+		];
 
 		if (empty($variables['globalSet']))
 		{

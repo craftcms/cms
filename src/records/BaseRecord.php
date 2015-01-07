@@ -10,6 +10,7 @@ namespace craft\app\records;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;

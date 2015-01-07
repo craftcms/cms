@@ -10,6 +10,8 @@ namespace craft\app\web;
 use craft\app\Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\i18n\LocaleData;
 use craft\app\logging\Logger;
 
 /**
@@ -38,7 +40,6 @@ use craft\app\logging\Logger;
  * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
  * @property \craft\app\services\Globals          $globals          The [[\craft\app\services\Globals globals service]].
  * @property \craft\app\services\HttpRequest      $request          The [[\craft\app\services\HttpRequest request service]].
- * @property \craft\app\services\HttpSession      $httpSession      The [[\craft\app\services\HttpSession HTTP session service]].
  * @property \craft\app\services\Images           $images           The [[\craft\app\services\Images images service]].
  * @property \craft\app\services\Install          $install          The [[\craft\app\services\Install install service]].
  * @property \craft\app\services\Localization     $localization     The [[\craft\app\services\Localization localization service]].
@@ -62,8 +63,9 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Updates          $updates          The [[\craft\app\services\Updates updates service]].
  * @property \craft\app\services\UserGroups       $userGroups       The [[\craft\app\services\UserGroups user groups service]].
  * @property \craft\app\services\UserPermissions  $userPermissions  The [[\craft\app\services\UserPermissions user permission service]].
- * @property \craft\app\services\UserSession      $userSession      The [[\craft\app\services\UserSession user session service]].
  * @property \craft\app\services\Users            $users            The [[\craft\app\services\Users users service]].
+ * @property \craft\app\web\Session               $session          The [[\craft\app\web\Session HTTP session service]].
+ * @property \craft\app\web\User                  $user             The [[\craft\app\web\User user session service]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

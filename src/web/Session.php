@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\services;
+namespace craft\app\web;
 
 use craft\app\web\Application;
 
@@ -179,7 +179,7 @@ class Session extends \yii\web\Session
 	/**
 	 * Authorizes the user to perform an action for the duration of the session.
 	 *
-	 * @param stirng $action
+	 * @param string $action
 	 *
 	 * @return null
 	 */

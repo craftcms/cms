@@ -7,9 +7,11 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\FieldLayout      as FieldLayoutModel;
 use craft\app\models\Section          as SectionModel;
 use craft\app\models\EntryType        as EntryTypeModel;

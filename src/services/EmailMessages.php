@@ -240,7 +240,7 @@ class EmailMessages extends Component
 	 * @param string      $key
 	 * @param string|null $localeId
 	 *
-	 * @return EmailMessage
+	 * @return EmailMessageRecord
 	 */
 	private function _getMessageRecord($key, $localeId = null)
 	{

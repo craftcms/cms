@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\helpers\ImageHelper;
+use craft\app\helpers\IOHelper;
 use craft\app\io\Image;
 use yii\base\Component;
 use craft\app\helpers\AppHelper;

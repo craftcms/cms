@@ -8,6 +8,8 @@
 namespace craft\app\assetsourcetypes;
 
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
+use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\models\AssetFile              as AssetFileModel;
@@ -306,7 +308,7 @@ class Local extends BaseAssetSourceType
 
 			if (!empty($basePath))
 			{
-				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', array('folder' => $this->getBasePath())));
+				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', ['folder' => $this->getBasePath()]));
 			}
 		}
 
@@ -315,13 +317,13 @@ class Local extends BaseAssetSourceType
 		// Make sure the folder exists.
 		if (!IOHelper::folderExists($targetFolder))
 		{
-			throw new Exception(Craft::t('The folder “{folder}” does not exist.', array('folder' => $targetFolder)));
+			throw new Exception(Craft::t('The folder “{folder}” does not exist.', ['folder' => $targetFolder]));
 		}
 
 		// Make sure the folder is writable
 		if (!IOHelper::isWritable($targetFolder))
 		{
-			throw new Exception(Craft::t('The folder “{folder}” is not writable.', array('folder' => $targetFolder)));
+			throw new Exception(Craft::t('The folder “{folder}” is not writable.', ['folder' => $targetFolder]));
 		}
 
 		$fileName = AssetsHelper::cleanAssetName($fileName);
@@ -397,10 +399,10 @@ class Local extends BaseAssetSourceType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'path' => array(AttributeType::String, 'required' => true),
-			'url'  => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
-		);
+		return [
+			'path' => [AttributeType::String, 'required' => true],
+			'url'  => [AttributeType::String, 'required' => true, 'label' => 'URL'],
+		];
 	}
 
 	/**

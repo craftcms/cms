@@ -8,6 +8,8 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\enums\ElementType;
+use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;
 use yii\base\Component;
 use craft\app\fieldtypes\Matrix         as MatrixFieldType;

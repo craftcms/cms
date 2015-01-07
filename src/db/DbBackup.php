@@ -10,6 +10,7 @@ namespace craft\app\db;
 use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\errors\Exception;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 

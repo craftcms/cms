@@ -7,7 +7,11 @@
 
 namespace craft\app\et;
 
+use craft\app\Craft;
+use craft\app\enums\LicenseKeyStatus;
+use craft\app\enums\LogLevel;
 use craft\app\errors\EtException;
+use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;

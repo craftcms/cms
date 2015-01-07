@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\HttpException;
 use craft\app\web\Application;
 
 /**
@@ -398,7 +400,7 @@ class HttpRequest extends \CHttpRequest
 		}
 		else
 		{
-			throw new HttpException(400, Craft::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('GET param “{name}” doesn’t exist.', ['name' => $name]));
 		}
 	}
 

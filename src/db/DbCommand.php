@@ -6,6 +6,8 @@
  */
 
 namespace craft\app\db;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Class DbCommand

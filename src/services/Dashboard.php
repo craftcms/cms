@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
+use craft\app\errors\Exception;
 use yii\base\Component;
 use craft\app\enums\ComponentType;
 use craft\app\models\Widget             as WidgetModel;
@@ -330,7 +332,7 @@ class Dashboard extends Component
 	 */
 	private function _noWidgetExists($widgetId)
 	{
-		throw new Exception(Craft::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
+		throw new Exception(Craft::t('No widget exists with the ID “{id}”.', ['id' => $widgetId]));
 	}
 
 	/**
@@ -340,8 +342,8 @@ class Dashboard extends Component
 	 */
 	private function _getUserWidgetRecords()
 	{
-		return WidgetRecord::model()->ordered()->findAllByAttributes(array(
+		return WidgetRecord::model()->ordered()->findAllByAttributes([
 			'userId' => craft()->getUser()->getIdentity()->id
-		));
+		]);
 	}
 }

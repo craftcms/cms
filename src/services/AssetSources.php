@@ -11,6 +11,7 @@ use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
 use craft\app\Craft;
 use craft\app\enums\ComponentType;
+use craft\app\helpers\UrlHelper;
 use yii\base\Component;
 use craft\app\models\AssetSource                    as AssetSourceModel;
 use craft\app\records\AssetSource                   as AssetSourceRecord;
@@ -285,7 +286,7 @@ class AssetSources extends Component
 			$source->id = $sourceId;
 			$source->name = Temp::sourceName;
 			$source->type = Temp::sourceType;
-			$source->settings = array('path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');
+			$source->settings = ['path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
 			return $source;
 		}
 		else

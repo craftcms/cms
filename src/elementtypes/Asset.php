@@ -8,6 +8,9 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\DbHelper;
 use craft\app\models\AssetFile         as AssetFileModel;
 use craft\app\models\AssetFolder       as AssetFolderModel;
 use craft\app\models\BaseElementModel;
@@ -284,7 +287,7 @@ class Asset extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'sourceId' => AttributeType::Number,
 			'source'   => AttributeType::Handle,
 			'folderId' => AttributeType::Number,
@@ -293,8 +296,8 @@ class Asset extends BaseElementType
 			'width'    => AttributeType::Number,
 			'height'   => AttributeType::Number,
 			'size'     => AttributeType::Number,
-			'order'    => array(AttributeType::String, 'default' => 'title asc'),
-		);
+			'order'    => [AttributeType::String, 'default' => 'title asc'],
+		];
 	}
 
 	/**

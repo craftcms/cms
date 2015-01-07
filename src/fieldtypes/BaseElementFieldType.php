@@ -8,7 +8,11 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
+use craft\app\elementtypes\BaseElementType;
+use craft\app\errors\Exception;
+use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\variables\ElementType;
 
 /**
  * Base element fieldtype class.
@@ -296,9 +300,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getAddButtonLabel()
 	{
-		return Craft::t('Add {type}', array(
+		return Craft::t('Add {type}', [
 			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
-		));
+		]);
 	}
 
 	/**
@@ -346,7 +350,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		return array(
 			'jsClass'            => $this->inputJsClass,
-			'elementType'        => new ElementTypeVariable($this->getElementType()),
+			'elementType'        => new ElementType($this->getElementType()),
 			'id'                 => craft()->templates->formatInputId($name),
 			'fieldId'            => $this->model->id,
 			'storageKey'         => 'field.'.$this->model->id,

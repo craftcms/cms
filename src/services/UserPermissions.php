@@ -10,7 +10,8 @@ namespace craft\app\services;
 use craft\app\enums\SectionType;
 use yii\base\Component;
 use craft\app\Craft;
-use craft\app\records\UserPermission    as UserPermissionRecord;
+use craft\app\records\UserPermission as UserPermissionRecord;
+use craft\app\models\Section         as SectionModel;
 use craft\app\web\Application;
 
 craft()->requireEdition(Craft::Pro);

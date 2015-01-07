@@ -9,6 +9,8 @@ namespace craft\app\services;
 
 use craft\app\base\BasePlugin;
 use craft\app\Craft;
+use craft\app\dates\DateTime;
+use craft\app\db\DbCommand;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;

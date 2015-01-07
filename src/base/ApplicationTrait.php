@@ -9,7 +9,9 @@ namespace craft\app\base;
 
 use craft\app\Craft;
 use craft\app\errors\DbConnectException;
+use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\Info                as InfoModel;
 
 /**

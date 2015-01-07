@@ -8,6 +8,7 @@
 namespace craft\app\requirements;
 
 use craft\app\Craft;
+use craft\app\enums\RequirementResult;
 
 /**
  * Class Requirements

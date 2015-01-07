@@ -7,10 +7,14 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\Craft;
+use craft\app\enums\AssetConflictResolution;
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
+use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetFolder    as AssetFolderModel;
+use craft\app\models\AssetFolder             as AssetFolderModel;
 use craft\app\web\UploadedFile;
 
 /**
@@ -324,7 +328,7 @@ class Assets extends BaseElementFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array_merge(parent::defineSettings(), array(
+		return array_merge(parent::defineSettings(), [
 			'useSingleFolder'              => AttributeType::Bool,
 			'defaultUploadLocationSource'  => AttributeType::Number,
 			'defaultUploadLocationSubpath' => AttributeType::String,
@@ -332,7 +336,7 @@ class Assets extends BaseElementFieldType
 			'singleUploadLocationSubpath'  => AttributeType::String,
 			'restrictFiles'                => AttributeType::Bool,
 			'allowedKinds'                 => AttributeType::Mixed,
-		));
+		]);
 	}
 
 	/**

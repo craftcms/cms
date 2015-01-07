@@ -9,6 +9,7 @@ namespace craft\app\elements;
 
 use craft\app\db\DbCommand;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 
@@ -306,17 +307,17 @@ class ElementRelationParamParser
 							$this->_sourceLocaleParamCount++;
 							$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
 
-							$relationsJoinConditions[] = array('or', $sourcesAlias.'.sourceLocale is null', $sourcesAlias.'.sourceLocale = '.$sourceLocaleParam);
+							$relationsJoinConditions[] = ['or', $sourcesAlias.'.sourceLocale is null', $sourcesAlias.'.sourceLocale = '.$sourceLocaleParam];
 							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 						}
 
 						$query->leftJoin('relations '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
 						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
-						$condition = array('and',
+						$condition = ['and',
 							DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
 							$targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
-						);
+						];
 
 						if ($blockTypeFieldIds)
 						{
@@ -329,8 +330,8 @@ class ElementRelationParamParser
 						$sourceMatrixBlocksAlias = 'source_matrixblocks'.$this->_joinSourceMatrixBlocksCount;
 						$matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
 
-						$relationsJoinConditions = array('and', $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id');
-						$relationsJoinParams = array();
+						$relationsJoinConditions = ['and', $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id'];
+						$relationsJoinParams = [];
 
 						if (!empty($relCriteria['sourceLocale']))
 						{

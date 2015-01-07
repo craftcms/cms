@@ -7,9 +7,12 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetFile        as AssetFileModel;
 use craft\app\models\AssetSource      as AssetSourceModel;
 use craft\app\models\FieldLayout      as FieldLayoutModel;
@@ -376,7 +379,7 @@ class AssetFile extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'sourceId'		=> AttributeType::Number,
 			'folderId'		=> AttributeType::Number,
 			'filename'		=> AttributeType::String,
@@ -386,7 +389,7 @@ class AssetFile extends BaseElementModel
 			'height'		=> AttributeType::Number,
 			'size'			=> AttributeType::Number,
 			'dateModified'  => AttributeType::DateTime
-		));
+		]);
 	}
 
 	/**

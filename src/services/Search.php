@@ -7,6 +7,8 @@
 
 namespace craft\app\services;
 
+use craft\app\enums\ColumnType;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTermGroup;

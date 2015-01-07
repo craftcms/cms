@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\db\DbBackup;
 use craft\app\enums\LogLevel;
 use craft\app\enums\PatchManifestFileAction;
+use craft\app\errors\Exception;
 
 /**
  * Class UpdateHelper

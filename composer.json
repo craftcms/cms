@@ -14,6 +14,7 @@
         "phpunit/phpunit": "4.4.0",
         "erusev/parsedown": "1.1.4",
         "lsolesen/pel": "dev-master",
-        "mockery/mockery": "0.9.3"
+        "mockery/mockery": "0.9.3",
+        "phpmailer/phpmailer": "v5.2.9"
     }
 }

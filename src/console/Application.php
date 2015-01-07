@@ -8,6 +8,7 @@
 namespace craft\app\console;
 
 use craft\app\Craft;
+use craft\app\etc\console\ConsoleCommandRunner;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\logging\Logger;

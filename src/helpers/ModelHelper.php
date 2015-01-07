@@ -11,6 +11,7 @@ use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\models\BaseModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\records\BaseRecord;
 
 /**
  * Class ModelHelper

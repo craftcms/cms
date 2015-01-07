@@ -10,10 +10,12 @@ namespace craft\app\updates;
 use craft\app\base\BasePlugin;
 use craft\app\Craft;
 use craft\app\enums\LogLevel;
+use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UpdateHelper;
+use craft\app\io\Zip;
 
 /**
  * Class Updater
@@ -363,6 +365,7 @@ class Updater
 	private function _unpackPackage($downloadFilePath, $unzipFolder)
 	{
 		Craft::log('Unzipping package to '.$unzipFolder, LogLevel::Info, true);
+
 		if (Zip::unzip($downloadFilePath, $unzipFolder))
 		{
 			return true;

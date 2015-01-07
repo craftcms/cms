@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria        as ElementCriteriaModel;
 use craft\app\elementtypes\BaseElementType;
 
@@ -410,7 +411,7 @@ class ElementCriteria extends BaseModel implements \Countable
 	 */
 	protected function defineAttributes()
 	{
-		$attributes = array(
+		$attributes = [
 			'ancestorDist'     => AttributeType::Number,
 			'ancestorOf'       => AttributeType::Mixed,
 			'archived'         => AttributeType::Bool,
@@ -422,12 +423,12 @@ class ElementCriteria extends BaseModel implements \Countable
 			'id'               => AttributeType::Number,
 			'indexBy'          => AttributeType::String,
 			'level'            => AttributeType::Number,
-			'limit'            => array(AttributeType::Number, 'default' => 100),
+			'limit'            => [AttributeType::Number, 'default' => 100],
 			'locale'           => AttributeType::Locale,
-			'localeEnabled'    => array(AttributeType::Bool, 'default' => true),
+			'localeEnabled'    => [AttributeType::Bool, 'default' => true],
 			'nextSiblingOf'    => AttributeType::Mixed,
-			'offset'           => array(AttributeType::Number, 'default' => 0),
-			'order'            => array(AttributeType::String, 'default' => 'elements.dateCreated desc'),
+			'offset'           => [AttributeType::Number, 'default' => 0],
+			'order'            => [AttributeType::String, 'default' => 'elements.dateCreated desc'],
 			'positionedAfter'  => AttributeType::Mixed,
 			'positionedBefore' => AttributeType::Mixed,
 			'prevSiblingOf'    => AttributeType::Mixed,
@@ -436,7 +437,7 @@ class ElementCriteria extends BaseModel implements \Countable
 			'search'           => AttributeType::String,
 			'siblingOf'        => AttributeType::Mixed,
 			'slug'             => AttributeType::String,
-			'status'           => array(AttributeType::String, 'default' => BaseElementModel::ENABLED),
+			'status'           => [AttributeType::String, 'default' => BaseElementModel::ENABLED],
 			'title'            => AttributeType::String,
 			'uri'              => AttributeType::String,
 			'kind'             => AttributeType::Mixed,
@@ -447,7 +448,7 @@ class ElementCriteria extends BaseModel implements \Countable
 			'depth'            => AttributeType::Number,
 			'parentField'      => AttributeType::String,
 			'parentOf'         => AttributeType::Mixed,
-		);
+		];
 
 		// Mix in any custom attributes defined by the element type
 		$elementTypeAttributes = $this->_elementType->defineCriteriaAttributes();

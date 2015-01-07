@@ -7,9 +7,12 @@
 
 namespace craft\app\web;
 
+use craft\app\events\Event;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\models\Password     as PasswordModel;
 use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;
+use craft\app\records\Session     as SessionRecord;
 use craft\app\users\UserIdentity;
 use craft\app\web\Application;
 use craft\app\web\HttpCookie;
@@ -22,7 +25,7 @@ use craft\app\web\HttpCookie;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class User extends yii\web\User
+class User extends \yii\web\User
 {
 	// Properties
 	// =========================================================================

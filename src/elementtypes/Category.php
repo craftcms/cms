@@ -8,6 +8,9 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
+use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Category          as CategoryModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
@@ -250,11 +253,11 @@ class Category extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'group'   => AttributeType::Mixed,
 			'groupId' => AttributeType::Mixed,
-			'order'   => array(AttributeType::String, 'default' => 'lft'),
-		);
+			'order'   => [AttributeType::String, 'default' => 'lft'],
+		];
 	}
 
 	/**

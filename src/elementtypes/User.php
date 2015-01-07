@@ -8,7 +8,10 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
 use craft\app\enums\UserStatus;
+use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\User              as UserModel;
@@ -277,7 +280,7 @@ class User extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'admin'          => AttributeType::Bool,
 			'client'         => AttributeType::Bool,
 			'can'            => AttributeType::String,
@@ -287,11 +290,11 @@ class User extends BaseElementType
 			'groupId'        => AttributeType::Number,
 			'lastName'       => AttributeType::String,
 			'lastLoginDate'  => AttributeType::Mixed,
-			'order'          => array(AttributeType::String, 'default' => 'username asc'),
+			'order'          => [AttributeType::String, 'default' => 'username asc'],
 			'preferredLocale'=> AttributeType::String,
-			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
+			'status'         => [AttributeType::Enum, 'values' => [UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived], 'default' => UserStatus::Active],
 			'username'       => AttributeType::String,
-		);
+		];
 	}
 
 	/**

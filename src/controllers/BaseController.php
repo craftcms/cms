@@ -11,6 +11,8 @@ use craft\app\Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\JsonHelper;
+use craft\app\helpers\UrlHelper;
 
 /**
  * BaseController is a base class that all controllers in Craft extend.
@@ -326,7 +328,7 @@ abstract class BaseController extends \CController
 	 *
 	 * @return null
 	 */
-	public function returnJson($var = array())
+	public function returnJson($var = [])
 	{
 		JsonHelper::sendJsonHeaders();
 

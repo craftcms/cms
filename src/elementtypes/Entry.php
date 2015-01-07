@@ -9,6 +9,8 @@ namespace craft\app\elementtypes;
 
 use craft\app\Craft;
 use craft\app\enums\SectionType;
+use craft\app\events\Event;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\Entry             as EntryModel;
@@ -253,8 +255,8 @@ class Entry extends BaseElementType
 					// Set a Post Date as well
 					craft()->db->createCommand()->update(
 						'entries',
-						array('postDate' => DateTimeHelper::currentTimeForDb()),
-						array('and', array('in', 'id', $event->params['elementIds']), 'postDate is null')
+						['postDate' => DateTimeHelper::currentTimeForDb()],
+						['and', ['in', 'id', $event->params['elementIds']], 'postDate is null']
 					);
 				}
 			};
