@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class Logo variable.

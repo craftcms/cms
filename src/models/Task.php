@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ComponentType;
 use craft\app\enums\TaskStatus;
@@ -85,7 +86,7 @@ class Task extends BaseComponentModel
 	{
 		if (!isset($this->_taskType))
 		{
-			$this->_taskType = craft()->components->populateComponentByTypeAndModel(ComponentType::Task, $this);
+			$this->_taskType = Craft::$app->components->populateComponentByTypeAndModel(ComponentType::Task, $this);
 
 			// Might not actually exist
 			if (!$this->_taskType)

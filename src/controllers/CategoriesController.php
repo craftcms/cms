@@ -46,7 +46,7 @@ class CategoriesController extends BaseController
 	{
 		$this->requireAdmin();
 
-		$groups = craft()->categories->getAllGroups();
+		$groups = Craft::$app->categories->getAllGroups();
 
 		$this->renderTemplate('settings/categories/index', array(
 			'categoryGroups' => $groups
@@ -77,7 +77,7 @@ class CategoriesController extends BaseController
 		{
 			if (empty($variables['categoryGroup']))
 			{
-				$variables['categoryGroup'] = craft()->categories->getGroupById($variables['groupId']);
+				$variables['categoryGroup'] = Craft::$app->categories->getGroupById($variables['groupId']);
 
 				if (!$variables['categoryGroup'])
 				{
@@ -119,45 +119,45 @@ class CategoriesController extends BaseController
 		$group = new CategoryGroupModel();
 
 		// Set the simple stuff
-		$group->id        = craft()->request->getPost('groupId');
-		$group->name      = craft()->request->getPost('name');
-		$group->handle    = craft()->request->getPost('handle');
-		$group->hasUrls   = craft()->request->getPost('hasUrls');
-		$group->template  = craft()->request->getPost('template');
-		$group->maxLevels = craft()->request->getPost('maxLevels');
+		$group->id        = Craft::$app->request->getPost('groupId');
+		$group->name      = Craft::$app->request->getPost('name');
+		$group->handle    = Craft::$app->request->getPost('handle');
+		$group->hasUrls   = Craft::$app->request->getPost('hasUrls');
+		$group->template  = Craft::$app->request->getPost('template');
+		$group->maxLevels = Craft::$app->request->getPost('maxLevels');
 
 		// Locale-specific URL formats
 		$locales = array();
 
-		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+		foreach (Craft::$app->i18n->getSiteLocaleIds() as $localeId)
 		{
 			$locales[$localeId] = new CategoryGroupLocaleModel(array(
 				'locale'          => $localeId,
-				'urlFormat'       => craft()->request->getPost('urlFormat.'.$localeId),
-				'nestedUrlFormat' => craft()->request->getPost('nestedUrlFormat.'.$localeId),
+				'urlFormat'       => Craft::$app->request->getPost('urlFormat.'.$localeId),
+				'nestedUrlFormat' => Craft::$app->request->getPost('nestedUrlFormat.'.$localeId),
 			));
 		}
 
 		$group->setLocales($locales);
 
 		// Group the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Category;
 		$group->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (craft()->categories->saveGroup($group))
+		if (Craft::$app->categories->saveGroup($group))
 		{
-			craft()->getSession()->setNotice(Craft::t('Category group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Category group saved.'));
 			$this->redirectToPostedUrl($group);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save the category group.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save the category group.'));
 		}
 
 		// Send the category group back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'categoryGroup' => $group
 		));
 	}
@@ -173,9 +173,9 @@ class CategoriesController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$groupId = craft()->request->getRequiredPost('id');
+		$groupId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->categories->deleteGroupById($groupId);
+		Craft::$app->categories->deleteGroupById($groupId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -192,7 +192,7 @@ class CategoriesController extends BaseController
 	 */
 	public function actionCategoryIndex(array $variables = array())
 	{
-		$variables['groups'] = craft()->categories->getEditableGroups();
+		$variables['groups'] = Craft::$app->categories->getEditableGroups();
 
 		if (!$variables['groups'])
 		{
@@ -221,7 +221,7 @@ class CategoriesController extends BaseController
 
 		if ($variables['group']->maxLevels != 1)
 		{
-			$variables['elementType'] = new ElementTypeVariable(craft()->elements->getElementType(ElementType::Category));
+			$variables['elementType'] = new ElementTypeVariable(Craft::$app->elements->getElementType(ElementType::Category));
 
 			// Define the parent options criteria
 			$variables['parentOptionCriteria'] = array(
@@ -241,7 +241,7 @@ class CategoriesController extends BaseController
 				// Prevent the current category, or any of its descendants, from being options
 				$idParam = array('and', 'not '.$variables['category']->id);
 
-				$descendantCriteria = craft()->elements->getCriteria(ElementType::Category);
+				$descendantCriteria = Craft::$app->elements->getCriteria(ElementType::Category);
 				$descendantCriteria->descendantOf = $variables['category'];
 				$descendantCriteria->status = null;
 				$descendantCriteria->localeEnabled = null;
@@ -256,7 +256,7 @@ class CategoriesController extends BaseController
 			}
 
 			// Get the initially selected parent
-			$parentId = craft()->request->getParam('parentId');
+			$parentId = Craft::$app->request->getParam('parentId');
 
 			if ($parentId === null && $variables['category']->id)
 			{
@@ -270,7 +270,7 @@ class CategoriesController extends BaseController
 
 			if ($parentId)
 			{
-				$variables['parent'] = craft()->categories->getCategoryById($parentId, $variables['localeId']);
+				$variables['parent'] = Craft::$app->categories->getCategoryById($parentId, $variables['localeId']);
 			}
 		}
 
@@ -300,9 +300,9 @@ class CategoriesController extends BaseController
 		}
 
 		// Enable Live Preview?
-		if (!craft()->request->isMobileBrowser(true) && craft()->categories->isGroupTemplateValid($variables['group']))
+		if (!Craft::$app->request->isMobileBrowser(true) && Craft::$app->categories->isGroupTemplateValid($variables['group']))
 		{
-			craft()->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
+			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $variables['category']->getUrl(),
@@ -343,10 +343,10 @@ class CategoriesController extends BaseController
 
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
-			(craft()->isLocalized() && craft()->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+			(Craft::$app->isLocalized() && Craft::$app->getLanguage() != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
 		// Render the template!
-		craft()->templates->includeCssResource('css/category.css');
+		Craft::$app->templates->includeCssResource('css/category.css');
 		$this->renderTemplate('categories/_edit', $variables);
 	}
 
@@ -380,15 +380,15 @@ class CategoriesController extends BaseController
 
 		// Permission enforcement
 		$this->_enforceEditCategoryPermissions($category);
-		$userSessionService = craft()->getUser();
+		$userSessionService = Craft::$app->getUser();
 
 		// Populate the category with post data
 		$this->_populateCategoryModel($category);
 
 		// Save the category
-		if (craft()->categories->saveCategory($category))
+		if (Craft::$app->categories->saveCategory($category))
 		{
-			if (craft()->request->isAjaxRequest())
+			if (Craft::$app->request->isAjaxRequest())
 			{
 				$return['success']   = true;
 				$return['title']     = $category->title;
@@ -411,7 +411,7 @@ class CategoriesController extends BaseController
 		}
 		else
 		{
-			if (craft()->request->isAjaxRequest())
+			if (Craft::$app->request->isAjaxRequest())
 			{
 				$this->returnJson(array(
 					'success' => false,
@@ -423,7 +423,7 @@ class CategoriesController extends BaseController
 				$userSessionService->setError(Craft::t('Couldn’t save category.'));
 
 				// Send the category back to the template
-				craft()->urlManager->setRouteVariables(array(
+				Craft::$app->urlManager->setRouteVariables(array(
 					'category' => $category
 				));
 			}
@@ -440,8 +440,8 @@ class CategoriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$categoryId = craft()->request->getRequiredPost('categoryId');
-		$category = craft()->categories->getCategoryById($categoryId);
+		$categoryId = Craft::$app->request->getRequiredPost('categoryId');
+		$category = Craft::$app->categories->getCategoryById($categoryId);
 
 		if (!$category)
 		{
@@ -452,30 +452,30 @@ class CategoriesController extends BaseController
 		$this->requirePermission('editCategories:'.$category->groupId);
 
 		// Delete it
-		if (craft()->categories->deleteCategory($category))
+		if (Craft::$app->categories->deleteCategory($category))
 		{
-			if (craft()->request->isAjaxRequest())
+			if (Craft::$app->request->isAjaxRequest())
 			{
 				$this->returnJson(array('success' => true));
 			}
 			else
 			{
-				craft()->getSession()->setNotice(Craft::t('Category deleted.'));
+				Craft::$app->getSession()->setNotice(Craft::t('Category deleted.'));
 				$this->redirectToPostedUrl($category);
 			}
 		}
 		else
 		{
-			if (craft()->request->isAjaxRequest())
+			if (Craft::$app->request->isAjaxRequest())
 			{
 				$this->returnJson(array('success' => false));
 			}
 			else
 			{
-				craft()->getSession()->setError(Craft::t('Couldn’t delete category.'));
+				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete category.'));
 
 				// Send the category back to the template
-				craft()->urlManager->setRouteVariables(array(
+				Craft::$app->urlManager->setRouteVariables(array(
 					'category' => $category
 				));
 			}
@@ -493,7 +493,7 @@ class CategoriesController extends BaseController
 	 */
 	public function actionShareCategory($categoryId, $locale = null)
 	{
-		$category = craft()->categories->getCategoryById($categoryId, $locale);
+		$category = Craft::$app->categories->getCategoryById($categoryId, $locale);
 
 		if (!$category)
 		{
@@ -504,19 +504,19 @@ class CategoriesController extends BaseController
 		$this->_enforceEditCategoryPermissions($category);
 
 		// Make sure the category actually can be viewed
-		if (!craft()->categories->isGroupTemplateValid($category->getGroup()))
+		if (!Craft::$app->categories->isGroupTemplateValid($category->getGroup()))
 		{
 			throw new HttpException(404);
 		}
 
 		// Create the token and redirect to the category URL with the token in place
-		$token = craft()->tokens->createToken(array(
+		$token = Craft::$app->tokens->createToken(array(
 			'action' => 'categories/viewSharedCategory',
 			'params' => array('categoryId' => $categoryId, 'locale' => $category->locale)
 		));
 
 		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
-		craft()->request->redirect($url);
+		Craft::$app->request->redirect($url);
 	}
 
 	/**
@@ -532,7 +532,7 @@ class CategoriesController extends BaseController
 	{
 		$this->requireToken();
 
-		$category = craft()->categories->getCategoryById($categoryId, $locale);
+		$category = Craft::$app->categories->getCategoryById($categoryId, $locale);
 
 		if (!$category)
 		{
@@ -560,11 +560,11 @@ class CategoriesController extends BaseController
 
 		if (!empty($variables['groupHandle']))
 		{
-			$variables['group'] = craft()->categories->getGroupByHandle($variables['groupHandle']);
+			$variables['group'] = Craft::$app->categories->getGroupByHandle($variables['groupHandle']);
 		}
 		else if (!empty($variables['groupId']))
 		{
-			$variables['group'] = craft()->categories->getGroupById($variables['groupId']);
+			$variables['group'] = Craft::$app->categories->getGroupById($variables['groupId']);
 		}
 
 		if (empty($variables['group']))
@@ -575,7 +575,7 @@ class CategoriesController extends BaseController
 		// Get the locale
 		// ---------------------------------------------------------------------
 
-		$variables['localeIds'] = craft()->i18n->getEditableLocaleIds();
+		$variables['localeIds'] = Craft::$app->i18n->getEditableLocaleIds();
 
 		if (!$variables['localeIds'])
 		{
@@ -584,7 +584,7 @@ class CategoriesController extends BaseController
 
 		if (empty($variables['localeId']))
 		{
-			$variables['localeId'] = craft()->language;
+			$variables['localeId'] = Craft::$app->language;
 
 			if (!in_array($variables['localeId'], $variables['localeIds']))
 			{
@@ -607,7 +607,7 @@ class CategoriesController extends BaseController
 		{
 			if (!empty($variables['categoryId']))
 			{
-				$variables['category'] = craft()->categories->getCategoryById($variables['categoryId'], $variables['localeId']);
+				$variables['category'] = Craft::$app->categories->getCategoryById($variables['categoryId'], $variables['localeId']);
 
 				if (!$variables['category'])
 				{
@@ -665,12 +665,12 @@ class CategoriesController extends BaseController
 	 */
 	private function _getCategoryModel()
 	{
-		$categoryId = craft()->request->getPost('categoryId');
-		$localeId = craft()->request->getPost('locale');
+		$categoryId = Craft::$app->request->getPost('categoryId');
+		$localeId = Craft::$app->request->getPost('locale');
 
 		if ($categoryId)
 		{
-			$category = craft()->categories->getCategoryById($categoryId, $localeId);
+			$category = Craft::$app->categories->getCategoryById($categoryId, $localeId);
 
 			if (!$category)
 			{
@@ -680,7 +680,7 @@ class CategoriesController extends BaseController
 		else
 		{
 			$category = new CategoryModel();
-			$category->groupId = craft()->request->getRequiredPost('groupId');
+			$category->groupId = Craft::$app->request->getRequiredPost('groupId');
 
 			if ($localeId)
 			{
@@ -700,9 +700,9 @@ class CategoriesController extends BaseController
 	 */
 	private function _enforceEditCategoryPermissions(CategoryModel $category)
 	{
-		$userSessionService = craft()->getUser();
+		$userSessionService = Craft::$app->getUser();
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
 			// Make sure they have access to this locale
 			$this->requirePermission('editLocale:'.$category->locale);
@@ -722,16 +722,16 @@ class CategoriesController extends BaseController
 	private function _populateCategoryModel(CategoryModel $category)
 	{
 		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-		$category->slug    = craft()->request->getPost('slug', $category->slug);
-		$category->enabled = (bool) craft()->request->getPost('enabled', $category->enabled);
+		$category->slug    = Craft::$app->request->getPost('slug', $category->slug);
+		$category->enabled = (bool) Craft::$app->request->getPost('enabled', $category->enabled);
 
-		$category->getContent()->title = craft()->request->getPost('title', $category->title);
+		$category->getContent()->title = Craft::$app->request->getPost('title', $category->title);
 
-		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
+		$fieldsLocation = Craft::$app->request->getParam('fieldsLocation', 'fields');
 		$category->setContentFromPost($fieldsLocation);
 
 		// Parent
-		$parentId = craft()->request->getPost('parentId');
+		$parentId = Craft::$app->request->getPost('parentId');
 
 		if (is_array($parentId))
 		{
@@ -759,12 +759,12 @@ class CategoriesController extends BaseController
 			throw new HttpException(404);
 		}
 
-		craft()->setLanguage($category->locale);
+		Craft::$app->setLanguage($category->locale);
 
 		// Have this category override any freshly queried categories with the same ID/locale
-		craft()->elements->setPlaceholderElement($category);
+		Craft::$app->elements->setPlaceholderElement($category);
 
-		craft()->templates->getTwig()->disableStrictVariables();
+		Craft::$app->templates->getTwig()->disableStrictVariables();
 
 		$this->renderTemplate($group->template, array(
 			'category' => $category

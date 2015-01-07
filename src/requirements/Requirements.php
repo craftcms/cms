@@ -95,7 +95,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
-				version_compare(craft()->db->getServerVersion(), $requiredMysqlVersion, ">="),
+				version_compare(Craft::$app->db->getServerVersion(), $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', array('version' => $requiredMysqlVersion))
@@ -190,7 +190,7 @@ class Requirements
 	 */
 	private function _isInnoDbEnabled()
 	{
-		$results = craft()->db->createCommand()->setText('SHOW ENGINES')->queryAll();
+		$results = Craft::$app->db->createCommand()->setText('SHOW ENGINES')->queryAll();
 
 		foreach ($results as $result)
 		{

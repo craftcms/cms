@@ -19,7 +19,7 @@ use craft\app\models\AssetFolder            as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The S3 asset source type class. Handles the implementation of Amazon S3 as an asset source type in Craft.
@@ -124,7 +124,7 @@ class S3 extends BaseAssetSourceType
 
 		$settings->expires = $this->extractExpiryInformation($settings->expires);
 
-		return craft()->templates->render('_components/assetsourcetypes/S3/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/S3/settings', array(
 			'settings' => $settings,
 			'periods' => array_merge(array('' => ''), $this->getPeriodList())
 		));
@@ -211,14 +211,14 @@ class S3 extends BaseAssetSourceType
 						'size' => $file['size']
 					);
 
-					craft()->assetIndexing->storeIndexEntry($indexEntry);
+					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
 			}
 		}
 
 		$indexedFolderIds = array();
-		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
+		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
 		foreach ($bucketFolders as $fullPath => $nothing)
@@ -242,7 +242,7 @@ class S3 extends BaseAssetSourceType
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+		$indexEntryModel = Craft::$app->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -257,13 +257,13 @@ class S3 extends BaseAssetSourceType
 		{
 			$settings = $this->getSettings();
 
-			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+			Craft::$app->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 
 			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $this->_getPathPrefix().$uriPath);
 
-			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
+			$targetPath = Craft::$app->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
 
 			$timeModified = new DateTime('@'.$fileInfo['time']);
 
@@ -274,13 +274,13 @@ class S3 extends BaseAssetSourceType
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
-				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
-				craft()->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+				Craft::$app->assetTransforms->storeLocalSource($targetPath, $targetPath);
+				Craft::$app->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;
 
-			craft()->assets->storeFile($fileModel);
+			Craft::$app->assets->storeFile($fileModel);
 
 			return $fileModel->id;
 		}
@@ -297,7 +297,7 @@ class S3 extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+		return Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
 
 	/**
@@ -312,7 +312,7 @@ class S3 extends BaseAssetSourceType
 	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$this->_prepareForRequests();
-		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
 
 		return $this->putObject($sourceImage, $this->getSettings()->bucket, $targetFile, \S3::ACL_PUBLIC_READ);
 	}
@@ -515,7 +515,7 @@ class S3 extends BaseAssetSourceType
 
 		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
-		$conflictingRecord = craft()->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile(array(
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
 		));
@@ -524,7 +524,7 @@ class S3 extends BaseAssetSourceType
 		$settings = $this->getSettings();
 		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $newServerPath);
 
-		$conflict = !$overwrite && ($fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord)));
+		$conflict = !$overwrite && ($fileInfo || (!Craft::$app->assets->isMergeInProgress() && is_object($conflictingRecord)));
 
 		if ($conflict)
 		{
@@ -536,7 +536,7 @@ class S3 extends BaseAssetSourceType
 		$bucket = $this->getSettings()->bucket;
 
 		// Just in case we're moving from another bucket with the same access credentials.
-		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$originatingSourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 		$sourceBucket = $originatingSettings->bucket;
 
@@ -554,7 +554,7 @@ class S3 extends BaseAssetSourceType
 		{
 			if ($targetFolder->sourceId == $file->sourceId)
 			{
-				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
+				$transforms = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($file);
 
 				$destination = clone $file;
 				$destination->filename = $fileName;
@@ -569,11 +569,11 @@ class S3 extends BaseAssetSourceType
 					if (!empty($index->filename))
 					{
 						$destinationIndex->filename = $fileName;
-						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
+						Craft::$app->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$from = $file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $targetFolder->path.Craft::$app->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);
@@ -581,7 +581,7 @@ class S3 extends BaseAssetSourceType
 			}
 			else
 			{
-				craft()->assetTransforms->deleteAllTransformData($file);
+				Craft::$app->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 

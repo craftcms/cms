@@ -90,11 +90,11 @@ class Category extends BaseElementType
 
 		if ($context == 'index')
 		{
-			$groups = craft()->categories->getEditableGroups();
+			$groups = Craft::$app->categories->getEditableGroups();
 		}
 		else
 		{
-			$groups = craft()->categories->getAllGroups();
+			$groups = Craft::$app->categories->getAllGroups();
 		}
 
 		foreach ($groups as $group)
@@ -106,7 +106,7 @@ class Category extends BaseElementType
 				'data'              => array('handle' => $group->handle),
 				'criteria'          => array('groupId' => $group->id),
 				'structureId'       => $group->structureId,
-				'structureEditable' => craft()->getUser()->checkPermission('editCategories:'.$group->id),
+				'structureEditable' => Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
 			);
 		}
 
@@ -124,7 +124,7 @@ class Category extends BaseElementType
 	{
 		if (preg_match('/^group:(\d+)$/', $source, $matches))
 		{
-			$group = craft()->categories->getGroupById($matches[1]);
+			$group = Craft::$app->categories->getGroupById($matches[1]);
 		}
 
 		if (empty($group))
@@ -140,7 +140,7 @@ class Category extends BaseElementType
 		if ($group->hasUrls)
 		{
 			// View
-			$viewAction = craft()->elements->getAction('View');
+			$viewAction = Craft::$app->elements->getAction('View');
 			$viewAction->setParams(array(
 				'label' => Craft::t('View category'),
 			));
@@ -148,18 +148,18 @@ class Category extends BaseElementType
 		}
 
 		// Edit
-		$editAction = craft()->elements->getAction('Edit');
+		$editAction = Craft::$app->elements->getAction('Edit');
 		$editAction->setParams(array(
 			'label' => Craft::t('Edit category'),
 		));
 		$actions[] = $editAction;
 
 		// New Child
-		$structure = craft()->structures->getStructureById($group->structureId);
+		$structure = Craft::$app->structures->getStructureById($group->structureId);
 
 		if ($structure)
 		{
-			$newChildAction = craft()->elements->getAction('NewChild');
+			$newChildAction = Craft::$app->elements->getAction('NewChild');
 			$newChildAction->setParams(array(
 				'label'       => Craft::t('Create a new child category'),
 				'maxLevels'   => $structure->maxLevels,
@@ -169,7 +169,7 @@ class Category extends BaseElementType
 		}
 
 		// Delete
-		$deleteAction = craft()->elements->getAction('Delete');
+		$deleteAction = Craft::$app->elements->getAction('Delete');
 		$deleteAction->setParams(array(
 			'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
 			'successMessage'      => Craft::t('Categories deleted.'),
@@ -177,7 +177,7 @@ class Category extends BaseElementType
 		$actions[] = $deleteAction;
 
 		// Allow plugins to add additional actions
-		$allPluginActions = craft()->plugins->call('addCategoryActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addCategoryActions', array($source), true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -200,7 +200,7 @@ class Category extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyCategorySortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyCategorySortableAttributes', array(&$attributes));
 
 		return $attributes;
 	}
@@ -220,7 +220,7 @@ class Category extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
 
 		return $attributes;
 	}
@@ -236,7 +236,7 @@ class Category extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = craft()->plugins->callFirst('getCategoryTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', array($element, $attribute), true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -309,7 +309,7 @@ class Category extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label' => Craft::t('Title'),
 				'locale' => $element->locale,
@@ -323,7 +323,7 @@ class Category extends BaseElementType
 			)
 		));
 
-		$html .= craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label' => Craft::t('Slug'),
 				'locale' => $element->locale,
@@ -355,7 +355,7 @@ class Category extends BaseElementType
 			$element->slug = $params['slug'];
 		}
 
-		return craft()->categories->saveCategory($element);
+		return Craft::$app->categories->saveCategory($element);
 	}
 
 	/**
@@ -401,14 +401,14 @@ class Category extends BaseElementType
 		if ($element->getGroup()->structureId == $structureId)
 		{
 			// Update its URI
-			craft()->elements->updateElementSlugAndUri($element);
+			Craft::$app->elements->updateElementSlugAndUri($element);
 
 			// Make sure that each of the category's ancestors are related wherever the category is related
 			$newRelationValues = array();
 
 			$ancestorIds = $element->getAncestors()->ids();
 
-			$sources = craft()->db->createCommand()
+			$sources = Craft::$app->db->createCommand()
 				->select('fieldId, sourceId, sourceLocale')
 				->from('relations')
 				->where('targetId = :categoryId', array(':categoryId' => $element->id))
@@ -416,7 +416,7 @@ class Category extends BaseElementType
 
 			foreach ($sources as $source)
 			{
-				$existingAncestorRelations = craft()->db->createCommand()
+				$existingAncestorRelations = Craft::$app->db->createCommand()
 					->select('targetId')
 					->from('relations')
 					->where(array('and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', array('in', 'targetId', $ancestorIds)), array(
@@ -436,7 +436,7 @@ class Category extends BaseElementType
 
 			if ($newRelationValues)
 			{
-				craft()->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId'), $newRelationValues);
+				Craft::$app->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId'), $newRelationValues);
 			}
 		}
 	}

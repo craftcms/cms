@@ -16,12 +16,12 @@ use craft\app\records\UserGroup as UserGroupRecord;
 use craft\app\web\Application;
 use craft\app\models\User       as UserModel;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Class UserGroups service.
  *
- * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `craft()->userGroups`]].
+ * An instance of the UserGroups service is globally accessible in Craft via [[Application::userGroups `Craft::$app->userGroups`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -90,7 +90,7 @@ class UserGroups extends Component
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
 	{
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('g.*')
 			->from('usergroups g')
 			->join('usergroups_users gu', 'gu.groupId = g.id')
@@ -141,7 +141,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		craft()->db->createCommand()
+		Craft::$app->db->createCommand()
 			->delete('usergroups_users', array('userId' => $userId));
 
 		if ($groupIds)
@@ -156,7 +156,7 @@ class UserGroups extends Component
 				$values[] = array($groupId, $userId);
 			}
 
-			craft()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+			Craft::$app->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
 		}
 
 		return true;
@@ -173,7 +173,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToDefaultGroup(UserModel $user)
 	{
-		$defaultGroupId = craft()->systemSettings->getSetting('users', 'defaultGroup');
+		$defaultGroupId = Craft::$app->systemSettings->getSetting('users', 'defaultGroup');
 
 		if ($defaultGroupId)
 		{
@@ -215,7 +215,7 @@ class UserGroups extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		craft()->db->createCommand()->delete('usergroups', array('id' => $groupId));
+		Craft::$app->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
 	}
 

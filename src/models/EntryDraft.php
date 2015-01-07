@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\EntryDraft as EntryDraftModel;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class EntryDraft model.

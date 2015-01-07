@@ -27,7 +27,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	 */
 	public function exists($name)
 	{
-		return craft()->templates->doesTemplateExist($name);
+		return Craft::$app->templates->doesTemplateExist($name);
 	}
 
 	/**
@@ -89,7 +89,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	public function isFresh($name, $time)
 	{
 		// If this is a CP request and a DB update is needed, force a recompile.
-		if (craft()->request->isCpRequest() && craft()->updates->isCraftDbMigrationNeeded())
+		if (Craft::$app->request->isCpRequest() && Craft::$app->updates->isCraftDbMigrationNeeded())
 		{
 			return false;
 		}
@@ -118,7 +118,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	 */
 	private function _findTemplate($name)
 	{
-		$template = craft()->templates->findTemplate($name);
+		$template = Craft::$app->templates->findTemplate($name);
 
 		if (!$template)
 		{

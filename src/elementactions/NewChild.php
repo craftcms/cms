@@ -65,7 +65,7 @@ class NewChild extends BaseElementAction
 })();
 EOT;
 
-		craft()->templates->includeJs($js);
+		Craft::$app->templates->includeJs($js);
 	}
 
 	// Protected Methods

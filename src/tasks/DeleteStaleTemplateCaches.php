@@ -76,7 +76,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 		$elementId = $this->getSettings()->elementId;
 
 		// What type of element(s) are we dealing with?
-		$this->_elementType = craft()->elements->getElementTypeById($elementId);
+		$this->_elementType = Craft::$app->elements->getElementTypeById($elementId);
 
 		if (!$this->_elementType)
 		{
@@ -139,7 +139,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 		if (!in_array($row['cacheId'], $this->_deletedCacheIds))
 		{
 			$params = JsonHelper::decode($row['criteria']);
-			$criteria = craft()->elements->getCriteria($row['type'], $params);
+			$criteria = Craft::$app->elements->getCriteria($row['type'], $params);
 
 			// Chance overcorrecting a little for the sake of templates with pending elements,
 			// whose caches should be recreated (see http://craftcms.stackexchange.com/a/2611/9)
@@ -159,7 +159,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 
 			if ($cacheIdsToDelete)
 			{
-				craft()->templateCache->deleteCacheById($cacheIdsToDelete);
+				Craft::$app->templateCache->deleteCacheById($cacheIdsToDelete);
 				$this->_deletedCacheIds = array_merge($this->_deletedCacheIds, $cacheIdsToDelete);
 			}
 		}
@@ -192,7 +192,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 	 */
 	private function _getQuery()
 	{
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->from('templatecachecriteria');
 
 		if (is_array($this->_elementType))

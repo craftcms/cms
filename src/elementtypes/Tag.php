@@ -77,7 +77,7 @@ class Tag extends BaseElementType
 	{
 		$sources = array();
 
-		foreach (craft()->tags->getAllTagGroups() as $tagGroup)
+		foreach (Craft::$app->tags->getAllTagGroups() as $tagGroup)
 		{
 			$key = 'taggroup:'.$tagGroup->id;
 
@@ -152,7 +152,7 @@ class Tag extends BaseElementType
 		if ($criteria->name)
 		{
 			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
-			craft()->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
+			Craft::$app->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
 		}
 
 		if (is_string($criteria->order))
@@ -161,7 +161,7 @@ class Tag extends BaseElementType
 
 			if ($count)
 			{
-				craft()->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+				Craft::$app->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
 			}
 		}
 	}
@@ -187,7 +187,7 @@ class Tag extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label'     => Craft::t('Title'),
 				'locale'    => $element->locale,
@@ -216,6 +216,6 @@ class Tag extends BaseElementType
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
-		return craft()->tags->saveTag($element);
+		return Craft::$app->tags->saveTag($element);
 	}
 }

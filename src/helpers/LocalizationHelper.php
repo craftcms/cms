@@ -42,8 +42,8 @@ class LocalizationHelper
 	{
 		if (is_string($number))
 		{
-			$language = craft()->language;
-			$languageData = craft()->i18n->getLocaleData($language);
+			$language = Craft::$app->language;
+			$languageData = Craft::$app->i18n->getLocaleData($language);
 			$decimalSymbol = $languageData->getNumberSymbol('decimal');
 			$groupSymbol = $languageData->getNumberSymbol('group');
 

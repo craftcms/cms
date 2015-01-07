@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\helpers;
+use craft\app\Craft;
 
 /**
  * Class UrlHelper
@@ -111,7 +112,7 @@ class UrlHelper
 	public static function getUrlWithToken($url, $token)
 	{
 		return static::getUrlWithParams($url, array(
-			craft()->config->get('tokenParam') => $token
+			Craft::$app->config->get('tokenParam') => $token
 		));
 	}
 
@@ -136,7 +137,7 @@ class UrlHelper
 		}
 		else if (static::isRootRelativeUrl($url))
 		{
-			return craft()->request->getHostInfo($protocol).$url;
+			return Craft::$app->request->getHostInfo($protocol).$url;
 		}
 		else
 		{
@@ -174,9 +175,9 @@ class UrlHelper
 
 		$path = trim($path, '/');
 
-		if (craft()->request->isCpRequest())
+		if (Craft::$app->request->isCpRequest())
 		{
-			$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
+			$path = Craft::$app->config->get('cpTrigger').($path ? '/'.$path : '');
 			$cpUrl = true;
 		}
 		else
@@ -185,7 +186,7 @@ class UrlHelper
 		}
 
 		// Send all resources over SSL if this request is loaded over SSL.
-		if ($protocol === '' && craft()->request->isSecureConnection())
+		if ($protocol === '' && Craft::$app->request->isSecureConnection())
 		{
 			$protocol = 'https';
 		}
@@ -205,7 +206,7 @@ class UrlHelper
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		$path = craft()->config->get('cpTrigger').($path ? '/'.$path : '');
+		$path = Craft::$app->config->get('cpTrigger').($path ? '/'.$path : '');
 
 		return static::_getUrl($path, $params, $protocol, true, false);
 	}
@@ -244,11 +245,11 @@ class UrlHelper
 			// If we've served this resource before, we should have a cached copy of the server path already. Use that
 			// to get its timestamp, and add timestamp to the resource URL so the Resources service sends it with
 			// a Pragma: Cache header.
-			$dateParam = craft()->resources->dateParam;
+			$dateParam = Craft::$app->resources->dateParam;
 
 			if (!isset($params[$dateParam]))
 			{
-				$realPath = craft()->resources->getCachedResourcePath($path);
+				$realPath = Craft::$app->resources->getCachedResourcePath($path);
 
 				if ($realPath)
 				{
@@ -269,7 +270,7 @@ class UrlHelper
 			}
 		}
 
-		return static::getUrl(craft()->config->getResourceTrigger().'/'.$path, $params, $protocol);
+		return static::getUrl(Craft::$app->config->getResourceTrigger().'/'.$path, $params, $protocol);
 	}
 
 	/**
@@ -282,7 +283,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = craft()->config->get('actionTrigger').'/'.trim($path, '/');
+		$path = Craft::$app->config->get('actionTrigger').'/'.trim($path, '/');
 
 		return static::getUrl($path, $params, $protocol, true);
 	}
@@ -313,12 +314,12 @@ class UrlHelper
 			$path = substr($path, 0, $qpos);
 		}
 
-		$showScriptName = ($mustShowScriptName || !craft()->config->omitScriptNameInUrls());
+		$showScriptName = ($mustShowScriptName || !Craft::$app->config->omitScriptNameInUrls());
 
 		if ($cpUrl)
 		{
 			// Did they set the base URL manually?
-			$baseUrl = craft()->config->get('baseCpUrl');
+			$baseUrl = Craft::$app->config->get('baseCpUrl');
 
 			if ($baseUrl)
 			{
@@ -334,43 +335,43 @@ class UrlHelper
 				// Should we be adding that script name in?
 				if ($showScriptName)
 				{
-					$baseUrl .= craft()->request->getScriptName();
+					$baseUrl .= Craft::$app->request->getScriptName();
 				}
 			}
 			else
 			{
 				// Figure it out for ourselves, then
-				$baseUrl = craft()->request->getHostInfo($protocol);
+				$baseUrl = Craft::$app->request->getHostInfo($protocol);
 
 				if ($showScriptName)
 				{
-					$baseUrl .= craft()->request->getScriptUrl();
+					$baseUrl .= Craft::$app->request->getScriptUrl();
 				}
 				else
 				{
-					$baseUrl .= craft()->request->getBaseUrl();
+					$baseUrl .= Craft::$app->request->getBaseUrl();
 				}
 			}
 		}
 		else
 		{
-			$baseUrl = craft()->getSiteUrl($protocol);
+			$baseUrl = Craft::$app->getSiteUrl($protocol);
 
 			// Should we be adding that script name in?
 			if ($showScriptName)
 			{
-				$baseUrl .= craft()->request->getScriptName();
+				$baseUrl .= Craft::$app->request->getScriptName();
 			}
 		}
 
 		// Put it all together
-		if (!$showScriptName || craft()->config->usePathInfo())
+		if (!$showScriptName || Craft::$app->config->usePathInfo())
 		{
 			if ($path)
 			{
 				$url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-				if (craft()->request->isSiteRequest() && craft()->config->get('addTrailingSlashesToUrls'))
+				if (Craft::$app->request->isSiteRequest() && Craft::$app->config->get('addTrailingSlashesToUrls'))
 				{
 					$url .= '/';
 				}
@@ -386,7 +387,7 @@ class UrlHelper
 
 			if ($path)
 			{
-				$params = craft()->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
+				$params = Craft::$app->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
 			}
 		}
 

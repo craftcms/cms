@@ -59,7 +59,7 @@ class Paginate
 	{
 		if ($page >= 1 && $page <= $this->totalPages)
 		{
-			$path = craft()->request->getPath();
+			$path = Craft::$app->request->getPath();
 
 			if ($page != 1)
 			{
@@ -68,7 +68,7 @@ class Paginate
 					$path .= '/';
 				}
 
-				$path .= craft()->config->get('pageTrigger').$page;
+				$path .= Craft::$app->config->get('pageTrigger').$page;
 			}
 
 			return UrlHelper::getUrl($path);

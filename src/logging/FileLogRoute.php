@@ -7,6 +7,7 @@
 
 namespace craft\app\logging;
 
+use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\LoggingHelper;
 use craft\app\helpers\StringHelper;
@@ -29,10 +30,10 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	public function init()
 	{
-		$this->setLogPath(craft()->path->getLogPath());
+		$this->setLogPath(Craft::$app->path->getLogPath());
 
-		$this->levels = craft()->config->get('devMode') ? '' : 'error,warning';
-		$this->filter = craft()->config->get('devMode') ? 'Craft\\LogFilter' : null;
+		$this->levels = Craft::$app->config->get('devMode') ? '' : 'error,warning';
+		$this->filter = Craft::$app->config->get('devMode') ? 'Craft\\LogFilter' : null;
 
 		parent::init();
 	}
@@ -79,17 +80,17 @@ class FileLogRoute extends \CFileLogRoute
 			$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
 			// Check the config setting first.  Is it set to true?
-			if (craft()->config->get('useWriteFileLock') === true)
+			if (Craft::$app->config->get('useWriteFileLock') === true)
 			{
 				$lock = true;
 			}
 			// Is it set to false?
-			else if (craft()->config->get('useWriteFileLock') === false)
+			else if (Craft::$app->config->get('useWriteFileLock') === false)
 			{
 				$lock = false;
 			}
 			// Config setting it set to 'auto', so check cache.
-			else if (craft()->cache->get('useWriteFileLock') === 'yes')
+			else if (Craft::$app->cache->get('useWriteFileLock') === 'yes')
 			{
 				$lock = true;
 			}

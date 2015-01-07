@@ -53,7 +53,7 @@ class ClearCaches extends BaseTool
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
-		return craft()->templates->render('_includes/forms/checkboxSelect', array(
+		return Craft::$app->templates->render('_includes/forms/checkboxSelect', array(
 			'name'    => 'caches',
 			'options' => $caches
 		));
@@ -112,7 +112,7 @@ class ClearCaches extends BaseTool
 				{
 					if ($allFolder == 'dataCache')
 					{
-						craft()->cache->flush();
+						Craft::$app->cache->flush();
 					}
 					else
 					{
@@ -125,17 +125,17 @@ class ClearCaches extends BaseTool
 
 		if ($params['caches'] == '*' || in_array('templateCaches', $params['caches']))
 		{
-			craft()->templateCache->deleteAllCaches();
+			Craft::$app->templateCache->deleteAllCaches();
 		}
 
 		if ($params['caches'] == '*' || in_array('assetTransformIndex', $params['caches']))
 		{
-			craft()->db->createCommand()->truncateTable('assettransformindex');
+			Craft::$app->db->createCommand()->truncateTable('assettransformindex');
 		}
 
 		if ($params['caches'] == '*' || in_array('assetIndexingData', $params['caches']))
 		{
-			craft()->db->createCommand()->truncateTable('assetindexdata');
+			Craft::$app->db->createCommand()->truncateTable('assetindexdata');
 		}
 	}
 
@@ -152,7 +152,7 @@ class ClearCaches extends BaseTool
 	 */
 	private function _getFolders($obfuscate = true)
 	{
-		$runtimePath = craft()->path->getRuntimePath();
+		$runtimePath = Craft::$app->path->getRuntimePath();
 
 		$folders = array(
 			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data caches'),
@@ -162,7 +162,7 @@ class ClearCaches extends BaseTool
 			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
 		);
 
-		$pluginCachePaths = craft()->plugins->call('registerCachePaths');
+		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');
 
 		if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0)
 		{

@@ -32,7 +32,7 @@ class IncludeResource_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write('\Craft\craft()->templates->'.$function.'(')
+			->write('\Craft\Craft::$app->templates->'.$function.'(')
 			->subcompile($path);
 
 		if ($this->getAttribute('first'))

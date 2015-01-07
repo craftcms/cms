@@ -29,7 +29,7 @@ class Sections
 	 */
 	public function getAllSections($indexBy = null)
 	{
-		return craft()->sections->getAllSections($indexBy);
+		return Craft::$app->sections->getAllSections($indexBy);
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Sections
 	 */
 	public function getEditableSections($indexBy = null)
 	{
-		return craft()->sections->getEditableSections($indexBy);
+		return Craft::$app->sections->getEditableSections($indexBy);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class Sections
 	 */
 	public function getTotalSections()
 	{
-		return craft()->sections->getTotalSections();
+		return Craft::$app->sections->getTotalSections();
 	}
 
 	/**
@@ -61,7 +61,7 @@ class Sections
 	 */
 	public function getTotalEditableSections()
 	{
-		return craft()->sections->getTotalEditableSections();
+		return Craft::$app->sections->getTotalEditableSections();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class Sections
 	 */
 	public function getSectionById($sectionId)
 	{
-		return craft()->sections->getSectionById($sectionId);
+		return Craft::$app->sections->getSectionById($sectionId);
 	}
 
 	/**
@@ -85,6 +85,6 @@ class Sections
 	 */
 	public function getSectionByHandle($handle)
 	{
-		return craft()->sections->getSectionByHandle($handle);
+		return Craft::$app->sections->getSectionByHandle($handle);
 	}
 }

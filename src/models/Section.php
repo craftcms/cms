@@ -66,7 +66,7 @@ class Section extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_locales = craft()->sections->getSectionLocales($this->id, 'locale');
+				$this->_locales = Craft::$app->sections->getSectionLocales($this->id, 'locale');
 			}
 			else
 			{
@@ -122,7 +122,7 @@ class Section extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_entryTypes = craft()->sections->getEntryTypesBySectionId($this->id);
+				$this->_entryTypes = Craft::$app->sections->getEntryTypesBySectionId($this->id);
 			}
 			else
 			{
@@ -161,9 +161,9 @@ class Section extends BaseModel
 			$localeIds = array_keys($locales);
 
 			// Does this section target the current locale?
-			if (in_array(craft()->language, $localeIds))
+			if (in_array(Craft::$app->language, $localeIds))
 			{
-				$localeId = craft()->language;
+				$localeId = Craft::$app->language;
 			}
 			else
 			{

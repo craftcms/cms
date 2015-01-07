@@ -23,7 +23,7 @@ use craft\app\web\Application;
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `craft()->plugins`]].
+ * An instance of the Plugins service is globally accessible in Craft via [[Application::plugins `Craft::$app->plugins`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -104,13 +104,13 @@ class Plugins extends Component
 	{
 		if (!$this->_pluginsLoaded && !$this->_loadingPlugins)
 		{
-			if (craft()->isInstalled())
+			if (Craft::$app->isInstalled())
 			{
 				// Prevent this function from getting called twice.
 				$this->_loadingPlugins = true;
 
 				// Find all of the enabled plugins
-				$rows = craft()->db->createCommand()
+				$rows = Craft::$app->db->createCommand()
 					->select('id, class, version, settings, installDate')
 					->from('plugins')
 					->where('enabled=1')
@@ -198,7 +198,7 @@ class Plugins extends Component
 				if ($plugin)
 				{
 					// Is it installed (but disabled)?
-					$plugin->isInstalled = (bool) craft()->db->createCommand()
+					$plugin->isInstalled = (bool) Craft::$app->db->createCommand()
 						->select('count(id)')
 						->from('plugins')
 						->where(array('class' => $plugin->getClassHandle()))
@@ -232,7 +232,7 @@ class Plugins extends Component
 				$this->_allPlugins = array();
 
 				// Find all of the plugins in the plugins folder
-				$pluginsPath = craft()->path->getPluginsPath();
+				$pluginsPath = Craft::$app->path->getPluginsPath();
 				$pluginFolderContents = IOHelper::getFolderContents($pluginsPath, false);
 
 				if ($pluginFolderContents)
@@ -312,7 +312,7 @@ class Plugins extends Component
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		craft()->db->createCommand()->update('plugins',
+		Craft::$app->db->createCommand()->update('plugins',
 			array('enabled' => 1),
 			array('class' => $plugin->getClassHandle())
 		);
@@ -353,7 +353,7 @@ class Plugins extends Component
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		craft()->db->createCommand()->update('plugins',
+		Craft::$app->db->createCommand()->update('plugins',
 			array('enabled' => 0),
 			array('class' => $plugin->getClassHandle())
 		);
@@ -391,11 +391,11 @@ class Plugins extends Component
 
 		$plugin->onBeforeInstall();
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Add the plugins as a record to the database.
-			craft()->db->createCommand()->insert('plugins', [
+			Craft::$app->db->createCommand()->insert('plugins', [
 				'class'       => $plugin->getClassHandle(),
 				'version'     => $plugin->version,
 				'enabled'     => true,
@@ -406,7 +406,7 @@ class Plugins extends Component
 			$plugin->isEnabled = true;
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
-			$this->_savePluginMigrations(craft()->db->getLastInsertID(), $plugin->getClassHandle());
+			$this->_savePluginMigrations(Craft::$app->db->getLastInsertID(), $plugin->getClassHandle());
 			$this->_autoloadPluginClasses($plugin);
 			$plugin->createTables();
 
@@ -462,7 +462,7 @@ class Plugins extends Component
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_autoloadPluginClasses($plugin);
 
-			$pluginRow = craft()->db->createCommand()
+			$pluginRow = Craft::$app->db->createCommand()
 				->select('id')
 				->from('plugins')
 				->where('class=:class', array('class' => $plugin->getClassHandle()))
@@ -475,22 +475,22 @@ class Plugins extends Component
 			$pluginId = $this->_enabledPluginInfo[$handle]['id'];
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			$plugin->onBeforeUninstall();
 
 			// If the plugin has any element types, delete their elements
-			$elementTypeInfo = craft()->components->types['element'];
+			$elementTypeInfo = Craft::$app->components->types['element'];
 			$elementTypeClasses = $this->getPluginClasses($plugin, $elementTypeInfo['subfolder'], $elementTypeInfo['suffix']);
 
 			foreach ($elementTypeClasses as $class)
 			{
-				$elementType = craft()->components->initializeComponent($class, $elementTypeInfo['instanceof']);
+				$elementType = Craft::$app->components->initializeComponent($class, $elementTypeInfo['instanceof']);
 
 				if ($elementType)
 				{
-					craft()->elements->deleteElementsByType($elementType->getClassHandle());
+					Craft::$app->elements->deleteElementsByType($elementType->getClassHandle());
 				}
 			}
 
@@ -498,10 +498,10 @@ class Plugins extends Component
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			craft()->db->createCommand()->delete('plugins', array('class' => $handle));
+			Craft::$app->db->createCommand()->delete('plugins', array('class' => $handle));
 
 			// Remove any migrations.
-			craft()->db->createCommand()->delete('migrations', array('pluginId' => $pluginId));
+			Craft::$app->db->createCommand()->delete('migrations', array('pluginId' => $pluginId));
 
 			if ($transaction !== null)
 			{
@@ -550,7 +550,7 @@ class Plugins extends Component
 			// JSON-encode them and save the plugin row
 			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes());
 
-			$affectedRows = craft()->db->createCommand()->update('plugins', array(
+			$affectedRows = Craft::$app->db->createCommand()->update('plugins', array(
 				'settings' => $settings
 			), array(
 				'class' => $plugin->getClassHandle()
@@ -668,7 +668,7 @@ class Plugins extends Component
 
 		$pluginHandle = $plugin->getClassHandle();
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$pluginFolderPath = craft()->path->getPluginsPath().$pluginFolder.'/';
+		$pluginFolderPath = Craft::$app->path->getPluginsPath().$pluginFolder.'/';
 		$classSubfolderPath = $pluginFolderPath.$classSubfolder.'/';
 
 		if (IOHelper::folderExists($classSubfolderPath))
@@ -716,7 +716,7 @@ class Plugins extends Component
 	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
 	{
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$classPath = craft()->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
+		$classPath = Craft::$app->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
 
 		if (IOHelper::fileExists($classPath))
 		{
@@ -796,7 +796,7 @@ class Plugins extends Component
 	 */
 	private function _savePluginMigrations($pluginId, $pluginHandle)
 	{
-		$migrationsFolder = craft()->path->getPluginsPath().mb_strtolower($pluginHandle).'/migrations/';
+		$migrationsFolder = Craft::$app->path->getPluginsPath().mb_strtolower($pluginHandle).'/migrations/';
 
 		if (IOHelper::folderExists($migrationsFolder))
 		{
@@ -853,7 +853,7 @@ class Plugins extends Component
 			$serviceName = implode('_', $parts);
 			$serviceName = mb_substr($serviceName, 0, - mb_strlen('Service'));
 
-			if (!craft()->getComponent($serviceName, false))
+			if (!Craft::$app->getComponent($serviceName, false))
 			{
 				// Register the component with the handle as (className or className_*) minus the "Service" suffix
 				$nsClass = __NAMESPACE__.'\\'.$class;
@@ -865,7 +865,7 @@ class Plugins extends Component
 			}
 		}
 
-		craft()->setComponents($services, false);
+		Craft::$app->setComponents($services, false);
 	}
 
 	/**
@@ -884,7 +884,7 @@ class Plugins extends Component
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = craft()->path->getPluginsPath().mb_strtolower($handle).'/'.$class.'.php';
+			$path = Craft::$app->path->getPluginsPath().mb_strtolower($handle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -921,7 +921,7 @@ class Plugins extends Component
 	 */
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
-		$pluginsPath = craft()->path->getPluginsPath();
+		$pluginsPath = Craft::$app->path->getPluginsPath();
 		$fullPath = $pluginsPath.mb_strtolower($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)

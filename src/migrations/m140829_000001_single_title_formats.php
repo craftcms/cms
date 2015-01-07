@@ -8,6 +8,7 @@
 namespace craft\app\migrations;
 
 use craft\app\db\BaseMigration;
+use craft\app\Craft;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -22,7 +23,7 @@ class m140829_000001_single_title_formats extends BaseMigration
 	public function safeUp()
 	{
 		// Get the single section IDs
-		$singleIds = craft()->db->createCommand()
+		$singleIds = Craft::$app->db->createCommand()
 			->select('id')
 			->from('sections')
 			->where('type = "single"')

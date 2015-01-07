@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\io\Image;
@@ -17,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Service for image operations.
  *
- * An instance of the Images service is globally accessible in Craft via [[Application::images `craft()->images`]].
+ * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->images`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -41,7 +42,7 @@ class Images extends Component
 	{
 		if ($this->_isGd === null)
 		{
-			if (craft()->config->get('imageDriver') == 'gd')
+			if (Craft::$app->config->get('imageDriver') == 'gd')
 			{
 				$this->_isGd = true;
 			}
@@ -118,7 +119,7 @@ class Images extends Component
 		if ($toTheMax)
 		{
 			// Turn it up to 11.
-			craft()->config->maxPowerCaptain();
+			Craft::$app->config->maxPowerCaptain();
 		}
 
 		// Find out how much memory this image is going to need.
@@ -154,7 +155,7 @@ class Images extends Component
 	 */
 	public function cleanImage($filePath)
 	{
-		if (craft()->config->get('rotateImagesOnUploadByExifData'))
+		if (Craft::$app->config->get('rotateImagesOnUploadByExifData'))
 		{
 			$this->rotateImageByExifData($filePath);
 		}

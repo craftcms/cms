@@ -78,14 +78,14 @@ class Asset extends BaseElementType
 	{
 		if ($context == 'index')
 		{
-			$sourceIds = craft()->assetSources->getViewableSourceIds();
+			$sourceIds = Craft::$app->assetSources->getViewableSourceIds();
 		}
 		else
 		{
-			$sourceIds = craft()->assetSources->getAllSourceIds();
+			$sourceIds = Craft::$app->assetSources->getAllSourceIds();
 		}
 
-		$tree = craft()->assets->getFolderTreeBySourceIds($sourceIds);
+		$tree = Craft::$app->assets->getFolderTreeBySourceIds($sourceIds);
 
 		return $this->_assembleSourceList($tree);
 	}
@@ -102,7 +102,7 @@ class Asset extends BaseElementType
 	{
 		if (preg_match('/folder:(\d+)(:single)?/', $key, $matches))
 		{
-			$folder = craft()->assets->getFolderById($matches[1]);
+			$folder = Craft::$app->assets->getFolderById($matches[1]);
 
 			if ($folder)
 			{
@@ -132,14 +132,14 @@ class Asset extends BaseElementType
 		$actions = array();
 
 		// View
-		$viewAction = craft()->elements->getAction('View');
+		$viewAction = Craft::$app->elements->getAction('View');
 		$viewAction->setParams(array(
 			'label' => Craft::t('View asset'),
 		));
 		$actions[] = $viewAction;
 
 		// Edit
-		$editAction = craft()->elements->getAction('Edit');
+		$editAction = Craft::$app->elements->getAction('Edit');
 		$editAction->setParams(array(
 			'label' => Craft::t('Edit asset'),
 		));
@@ -147,34 +147,34 @@ class Asset extends BaseElementType
 
 		// Rename File
 		if (
-			craft()->assets->canUserPerformAction($folderId, 'removeFromAssetSource') &&
-			craft()->assets->canUserPerformAction($folderId, 'uploadToAssetSource')
+			Craft::$app->assets->canUserPerformAction($folderId, 'removeFromAssetSource') &&
+			Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource')
 		)
 		{
 			$actions[] = 'RenameFile';
 		}
 
 		// Replace File
-		if (craft()->assets->canUserPerformAction($folderId, 'uploadToAssetSource'))
+		if (Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource'))
 		{
 			$actions[] = 'ReplaceFile';
 		}
 
 		// Copy Reference Tag
-		$copyRefTagAction = craft()->elements->getAction('CopyReferenceTag');
+		$copyRefTagAction = Craft::$app->elements->getAction('CopyReferenceTag');
 		$copyRefTagAction->setParams(array(
 			'elementType' => 'asset',
 		));
 		$actions[] = $copyRefTagAction;
 
 		// Delete
-		if (craft()->assets->canUserPerformAction($folderId, 'removeFromAssetSource'))
+		if (Craft::$app->assets->canUserPerformAction($folderId, 'removeFromAssetSource'))
 		{
 			$actions[] = 'DeleteAssets';
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = craft()->plugins->call('addAssetActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addAssetActions', array($source), true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -209,7 +209,7 @@ class Asset extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyAssetSortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyAssetSortableAttributes', array(&$attributes));
 
 		return $attributes;
 	}
@@ -231,7 +231,7 @@ class Asset extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyAssetTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyAssetTableAttributes', array(&$attributes, $source));
 
 		return $attributes;
 	}
@@ -247,7 +247,7 @@ class Asset extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = craft()->plugins->callFirst('getAssetTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', array($element, $attribute), true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -265,7 +265,7 @@ class Asset extends BaseElementType
 			{
 				if ($element->size)
 				{
-					return craft()->formatter->formatSize($element->size);
+					return Craft::$app->formatter->formatSize($element->size);
 				}
 				else
 				{
@@ -389,7 +389,7 @@ class Asset extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label'     => Craft::t('Filename'),
 				'id'        => 'filename',
@@ -401,7 +401,7 @@ class Asset extends BaseElementType
 			)
 		));
 
-		$html .= craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'label'     => Craft::t('Title'),
 				'locale'    => $element->locale,
@@ -432,7 +432,7 @@ class Asset extends BaseElementType
 		if (!empty($params['filename']) && $params['filename'] != $element->filename)
 		{
 			// Validate the content before we do anything drastic
-			if (!craft()->content->validateContent($element))
+			if (!Craft::$app->content->validateContent($element))
 			{
 				return false;
 			}
@@ -441,7 +441,7 @@ class Asset extends BaseElementType
 			$newFilename = $params['filename'];
 
 			// Rename the file
-			$response = craft()->assets->renameFile($element, $newFilename);
+			$response = Craft::$app->assets->renameFile($element, $newFilename);
 
 			// Did it work?
 			if ($response->isConflict())
@@ -466,7 +466,7 @@ class Asset extends BaseElementType
 		if (!$success && $newFilename)
 		{
 			// Better rename it back
-			craft()->assets->renameFile($element, $oldFilename);
+			Craft::$app->assets->renameFile($element, $oldFilename);
 		}
 
 		return $success;
@@ -509,7 +509,7 @@ class Asset extends BaseElementType
 			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => array('folderId' => $folder->id),
-			'data'      => array('upload' => is_null($folder->sourceId) ? true : craft()->assets->canUserPerformAction($folder->id, 'uploadToAssetSource'))
+			'data'      => array('upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource'))
 		);
 
 		if ($includeNestedFolders)

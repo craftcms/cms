@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\Craft;
 
 /**
  * Task base class.
@@ -76,8 +77,7 @@ abstract class BaseTask extends BaseSavableComponentType implements TaskInterfac
 	 */
 	protected function runSubTask($taskClassName, $taskDescription = null, $settings = null)
 	{
-		$task
-			= craft()->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
-		return craft()->tasks->runTask($task);
+		$task = Craft::$app->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
+		return Craft::$app->tasks->runTask($task);
 	}
 }

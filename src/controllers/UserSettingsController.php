@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\models\UserGroup      as UserGroupModel;
 use craft\app\errors\HttpException;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The TagsController class is a controller that handles various user group and user settings related tasks such as
@@ -49,27 +49,27 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$group = new UserGroupModel();
-		$group->id = craft()->request->getPost('groupId');
-		$group->name = craft()->request->getPost('name');
-		$group->handle = craft()->request->getPost('handle');
+		$group->id = Craft::$app->request->getPost('groupId');
+		$group->name = Craft::$app->request->getPost('name');
+		$group->handle = Craft::$app->request->getPost('handle');
 
 		// Did it save?
-		if (craft()->userGroups->saveGroup($group))
+		if (Craft::$app->userGroups->saveGroup($group))
 		{
 			// Save the new permissions
-			$permissions = craft()->request->getPost('permissions', array());
-			craft()->userPermissions->saveGroupPermissions($group->id, $permissions);
+			$permissions = Craft::$app->request->getPost('permissions', array());
+			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
 
-			craft()->getSession()->setNotice(Craft::t('Group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Group saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save group.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save group.'));
 		}
 
 		// Send the group back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'group' => $group
 		));
 	}
@@ -84,9 +84,9 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = craft()->request->getRequiredPost('id');
+		$groupId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->userGroups->deleteGroupById($groupId);
+		Craft::$app->userGroups->deleteGroupById($groupId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -100,21 +100,21 @@ class UserSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$settings['requireEmailVerification'] = (bool) craft()->request->getPost('requireEmailVerification');
-		$settings['allowPublicRegistration'] = (bool) craft()->request->getPost('allowPublicRegistration');
-		$settings['defaultGroup'] = craft()->request->getPost('defaultGroup');
+		$settings['requireEmailVerification'] = (bool) Craft::$app->request->getPost('requireEmailVerification');
+		$settings['allowPublicRegistration'] = (bool) Craft::$app->request->getPost('allowPublicRegistration');
+		$settings['defaultGroup'] = Craft::$app->request->getPost('defaultGroup');
 
-		if (craft()->systemSettings->saveSettings('users', $settings))
+		if (Craft::$app->systemSettings->saveSettings('users', $settings))
 		{
-			craft()->getSession()->setNotice(Craft::t('User settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save user settings.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save user settings.'));
 
 			// Send the settings back to the template
-			craft()->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables(array(
 				'settings' => $settings
 			));
 		}

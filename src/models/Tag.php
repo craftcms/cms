@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\models\FieldLayout;
@@ -75,7 +76,7 @@ class Tag extends BaseElementModel
 	{
 		if ($this->groupId)
 		{
-			return craft()->tags->getTagGroupById($this->groupId);
+			return Craft::$app->tags->getTagGroupById($this->groupId);
 		}
 	}
 
@@ -92,7 +93,7 @@ class Tag extends BaseElementModel
 	 */
 	public function getName()
 	{
-		craft()->deprecator->log('Tag::name', 'The TagModel ‘name’ property has been deprecated. Use ‘title’ instead.');
+		Craft::$app->deprecator->log('Tag::name', 'The TagModel ‘name’ property has been deprecated. Use ‘title’ instead.');
 		return $this->getContent()->title;
 	}
 

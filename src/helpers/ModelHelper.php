@@ -586,7 +586,7 @@ class ModelHelper
 
 		if (isset($arr['__criteria__']))
 		{
-			return craft()->elements->getCriteria($arr['__criteria__'], $arr);
+			return Craft::$app->elements->getCriteria($arr['__criteria__'], $arr);
 		}
 
 		if (isset($arr['__model__']))

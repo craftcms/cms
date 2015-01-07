@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\enums\ComponentType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\IOHelper;
@@ -36,7 +37,7 @@ class ToolsController extends BaseController
 		$this->requireAdmin();
 
 		// Any actions here require all we can get.
-		craft()->config->maxPowerCaptain();
+		Craft::$app->config->maxPowerCaptain();
 	}
 
 	/**
@@ -48,10 +49,10 @@ class ToolsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$class = craft()->request->getRequiredPost('tool');
-		$params = craft()->request->getPost('params', array());
+		$class = Craft::$app->request->getRequiredPost('tool');
+		$params = Craft::$app->request->getPost('params', array());
 
-		$tool = craft()->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
+		$tool = Craft::$app->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
 
 		$response = $tool->performAction($params);
 		$this->returnJson($response);
@@ -64,11 +65,11 @@ class ToolsController extends BaseController
 	 */
 	public function actionDownloadBackupFile()
 	{
-		$fileName = craft()->request->getRequiredQuery('fileName');
+		$fileName = Craft::$app->request->getRequiredQuery('fileName');
 
-		if (($filePath = IOHelper::fileExists(craft()->path->getTempPath().$fileName.'.zip')) == true)
+		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().$fileName.'.zip')) == true)
 		{
-			craft()->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), array('forceDownload' => true));
+			Craft::$app->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), array('forceDownload' => true));
 		}
 	}
 }

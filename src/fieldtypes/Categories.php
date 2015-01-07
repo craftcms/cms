@@ -97,9 +97,9 @@ class Categories extends BaseElementFieldType
 		if ($categoryIds !== null)
 		{
 			// Fill in any gaps
-			$categoryIds = craft()->categories->fillGapsInCategoryIds($categoryIds);
+			$categoryIds = Craft::$app->categories->fillGapsInCategoryIds($categoryIds);
 
-			craft()->relations->saveRelations($this->model, $this->element, $categoryIds);
+			Craft::$app->relations->saveRelations($this->model, $this->element, $categoryIds);
 		}
 	}
 }

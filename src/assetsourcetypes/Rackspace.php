@@ -19,7 +19,7 @@ use craft\app\models\AssetFolder            as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The Rackspace asset source type class. Handles the implementation of Rackspace as an asset source type in Craft.
@@ -66,7 +66,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -212,14 +212,14 @@ class Rackspace extends BaseAssetSourceType
 						'size' => $file->bytes
 					);
 
-					craft()->assetIndexing->storeIndexEntry($indexEntry);
+					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
 			}
 		}
 
 		$indexedFolderIds = array();
-		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
+		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
 		foreach ($containerFolders as $fullPath => $nothing)
@@ -243,7 +243,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+		$indexEntryModel = Craft::$app->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -255,7 +255,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if ($fileModel)
 		{
-			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+			Craft::$app->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 
@@ -263,7 +263,7 @@ class Rackspace extends BaseAssetSourceType
 
 			$timeModified = new DateTime($fileInfo->lastModified, new \DateTimeZone('UTC'));
 
-			$targetPath = craft()->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
+			$targetPath = Craft::$app->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
 
 			if ($fileModel->kind == 'image' && ($fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath)))
 			{
@@ -273,13 +273,13 @@ class Rackspace extends BaseAssetSourceType
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
-				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
-				craft()->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+				Craft::$app->assetTransforms->storeLocalSource($targetPath, $targetPath);
+				Craft::$app->assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
 			}
 
 			$fileModel->dateModified = $timeModified;
 
-			craft()->assets->storeFile($fileModel);
+			Craft::$app->assets->storeFile($fileModel);
 
 			return $fileModel->id;
 		}
@@ -296,7 +296,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return craft()->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+		return Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
 
 	/**
@@ -310,7 +310,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
-		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
 
 		try
 		{
@@ -511,7 +511,7 @@ class Rackspace extends BaseAssetSourceType
 
 		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
-		$conflictingRecord = craft()->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile(array(
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
 		));
@@ -519,7 +519,7 @@ class Rackspace extends BaseAssetSourceType
 
 		$fileInfo = $this->_getObjectInfo($newServerPath);
 
-		$conflict = !$overwrite && ($fileInfo || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord)));
+		$conflict = !$overwrite && ($fileInfo || (!Craft::$app->assets->isMergeInProgress() && is_object($conflictingRecord)));
 
 		if ($conflict)
 		{
@@ -530,7 +530,7 @@ class Rackspace extends BaseAssetSourceType
 		$sourceFolder = $file->getFolder();
 
 		// Get the originating source object.
-		$originatingSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$originatingSourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 		$originatingSettings = $originatingSourceType->getSettings();
 
 		$sourceUri = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceFolder->path.$file->filename);
@@ -543,7 +543,7 @@ class Rackspace extends BaseAssetSourceType
 		{
 			if ($targetFolder->sourceId == $file->sourceId)
 			{
-				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
+				$transforms = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($file);
 
 				$destination = clone $file;
 				$destination->filename = $fileName;
@@ -558,24 +558,24 @@ class Rackspace extends BaseAssetSourceType
 					if (!empty($index->filename))
 					{
 						$destinationIndex->filename = $fileName;
-						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
+						Craft::$app->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
 					// Since Rackspace needs it's paths prepared, we deviate a little from the usual pattern.
-					$sourceTransformPath = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$sourceTransformPath = $file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
 					$sourceTransformPath = $this->_prepareRequestURI($originatingSettings->container, $originatingSettings->subfolder.$sourceTransformPath);
 
-					$targetTransformPath = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$targetTransformPath = $targetFolder->path.Craft::$app->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 					$targetTransformPath = $this->_prepareRequestURI($this->getSettings()->container, $targetTransformPath);
 
 					$this->_copyFile($sourceTransformPath, $targetTransformPath);
 
-					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+					$this->deleteSourceFile($file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index));
 				}
 			}
 			else
 			{
-				craft()->assetTransforms->deleteAllTransformData($file);
+				Craft::$app->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
@@ -742,7 +742,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _loadAccessData()
 	{
-		$rows = craft()->db->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
+		$rows = Craft::$app->db->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
 
 		foreach ($rows as $row)
 		{
@@ -763,7 +763,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _updateAccessData($connectionKey, $data)
 	{
-		$recordExists = craft()->db->createCommand()
+		$recordExists = Craft::$app->db->createCommand()
 			->select('id')
 			->where('connectionKey = :connectionKey', array(':connectionKey' => $connectionKey))
 			->from('rackspaceaccess')
@@ -771,12 +771,12 @@ class Rackspace extends BaseAssetSourceType
 
 		if ($recordExists)
 		{
-			craft()->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', array(':id' => $recordExists));
+			Craft::$app->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', array(':id' => $recordExists));
 		}
 		else
 		{
 			$data['connectionKey'] = $connectionKey;
-			craft()->db->createCommand()->insert('rackspaceaccess', $data);
+			Craft::$app->db->createCommand()->insert('rackspaceaccess', $data);
 		}
 	}
 

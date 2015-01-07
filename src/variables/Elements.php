@@ -27,7 +27,7 @@ class Elements
 	{
 		$elementTypes = array();
 
-		foreach (craft()->elements->getAllElementTypes() as $classHandle => $elementType)
+		foreach (Craft::$app->elements->getAllElementTypes() as $classHandle => $elementType)
 		{
 			$elementTypes[$classHandle] = new ElementType($elementType);
 		}
@@ -44,7 +44,7 @@ class Elements
 	 */
 	public function getElementType($class)
 	{
-		$elementType = craft()->elements->getElementType($class);
+		$elementType = Craft::$app->elements->getElementType($class);
 
 		if ($elementType)
 		{

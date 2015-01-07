@@ -29,7 +29,7 @@ class Hook_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('echo \Craft\craft()->templates->invokeHook(')
+		    ->write('echo \Craft\Craft::$app->templates->invokeHook(')
 		    ->subcompile($this->getNode('hook'))
 		    ->raw(", \$context);\n\n");
 	}

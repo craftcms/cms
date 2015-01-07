@@ -43,7 +43,7 @@ class AssetTransformsController extends BaseController
 	 */
 	public function actionTransformIndex()
 	{
-		$variables['transforms'] = craft()->assetTransforms->getAllTransforms();
+		$variables['transforms'] = Craft::$app->assetTransforms->getAllTransforms();
 		$variables['transformModes'] = AssetTransformModel::getTransformModes();
 
 		$this->renderTemplate('settings/assets/transforms/_index', $variables);
@@ -62,7 +62,7 @@ class AssetTransformsController extends BaseController
 		{
 			if (!empty($variables['handle']))
 			{
-				$variables['transform'] = craft()->assetTransforms->getTransformByHandle($variables['handle']);
+				$variables['transform'] = Craft::$app->assetTransforms->getTransformByHandle($variables['handle']);
 				if (!$variables['transform'])
 				{
 					throw new HttpException(404);
@@ -85,15 +85,15 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 
 		$transform = new AssetTransformModel();
-		$transform->id = craft()->request->getPost('transformId');
-		$transform->name = craft()->request->getPost('name');
-		$transform->handle = craft()->request->getPost('handle');
-		$transform->width = craft()->request->getPost('width');
-		$transform->height = craft()->request->getPost('height');
-		$transform->mode = craft()->request->getPost('mode');
-		$transform->position = craft()->request->getPost('position');
-		$transform->quality = craft()->request->getPost('quality');
-		$transform->format = craft()->request->getPost('format');
+		$transform->id = Craft::$app->request->getPost('transformId');
+		$transform->name = Craft::$app->request->getPost('name');
+		$transform->handle = Craft::$app->request->getPost('handle');
+		$transform->width = Craft::$app->request->getPost('width');
+		$transform->height = Craft::$app->request->getPost('height');
+		$transform->mode = Craft::$app->request->getPost('mode');
+		$transform->position = Craft::$app->request->getPost('position');
+		$transform->quality = Craft::$app->request->getPost('quality');
+		$transform->format = Craft::$app->request->getPost('format');
 
 		if (empty($transform->format))
 		{
@@ -104,38 +104,38 @@ class AssetTransformsController extends BaseController
 
 		if (empty($transform->width) && empty($transform->height))
 		{
-			craft()->getSession()->setError(Craft::t('You must set at least one of the dimensions.'));
+			Craft::$app->getSession()->setError(Craft::t('You must set at least one of the dimensions.'));
 			$errors = true;
 		}
 
 		if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1))
 		{
-			craft()->getSession()->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
+			Craft::$app->getSession()->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
 			$errors = true;
 		}
 
 		if (!empty($transform->format) && !in_array($transform->format, ImageHelper::getWebSafeFormats()))
 		{
-			craft()->getSession()->setError(Craft::t('That is not an allowed format.'));
+			Craft::$app->getSession()->setError(Craft::t('That is not an allowed format.'));
 			$errors = true;
 		}
 
 		if (!$errors)
 		{
 			// Did it save?
-			if (craft()->assetTransforms->saveTransform($transform))
+			if (Craft::$app->assetTransforms->saveTransform($transform))
 			{
-				craft()->getSession()->setNotice(Craft::t('Transform saved.'));
+				Craft::$app->getSession()->setNotice(Craft::t('Transform saved.'));
 				$this->redirectToPostedUrl($transform);
 			}
 			else
 			{
-				craft()->getSession()->setError(Craft::t('Couldn’t save source.'));
+				Craft::$app->getSession()->setError(Craft::t('Couldn’t save source.'));
 			}
 		}
 
 		// Send the transform back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'transform' => $transform
 		));
 	}
@@ -148,9 +148,9 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformId = craft()->request->getRequiredPost('id');
+		$transformId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->assetTransforms->deleteTransform($transformId);
+		Craft::$app->assetTransforms->deleteTransform($transformId);
 
 		$this->returnJson(array('success' => true));
 	}

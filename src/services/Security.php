@@ -14,7 +14,7 @@ use craft\app\web\Application;
 /**
  * Class Security service.
  *
- * An instance of the Security service is globally accessible in Craft via [[Application::security `craft()->security`]].
+ * An instance of the Security service is globally accessible in Craft via [[Application::security `Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -38,7 +38,7 @@ class Security extends \yii\base\Security
 	public function init()
 	{
 		parent::init();
-		$this->_blowFishHashCost = craft()->config->get('blowfishHashCost');
+		$this->_blowFishHashCost = Craft::$app->config->get('blowfishHashCost');
 	}
 
 	/**

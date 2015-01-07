@@ -98,7 +98,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			$options = [['label' => '', 'value' => '']];
 		}
 
-		return craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+		return Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
 				'label'        => $this->getOptionsSettingsLabel(),
 				'instructions' => Craft::t('Define the available options.'),

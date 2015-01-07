@@ -28,7 +28,7 @@ class Plugins
 	 */
 	public function getPlugin($class, $enabledOnly = true)
 	{
-		$plugin = craft()->plugins->getPlugin($class, $enabledOnly);
+		$plugin = Craft::$app->plugins->getPlugin($class, $enabledOnly);
 
 		if ($plugin)
 		{
@@ -45,7 +45,7 @@ class Plugins
 	 */
 	public function getPlugins($enabledOnly = true)
 	{
-		$plugins = craft()->plugins->getPlugins($enabledOnly);
+		$plugins = Craft::$app->plugins->getPlugins($enabledOnly);
 		return Plugin::populateVariables($plugins);
 	}
 }

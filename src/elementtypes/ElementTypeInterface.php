@@ -271,7 +271,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * This method returns an array which will get merged into the array defined in
 	 * [[ElementCriteriaModel::defineAttributes()]], when new ElementCriteriaModel instances are created targeting
-	 * this element type (generally from [[\craft\app\services\Elements::getCriteria() craft()->elements->getCriteria()]]).
+	 * this element type (generally from [[\craft\app\services\Elements::getCriteria() Craft::$app->elements->getCriteria()]]).
 	 *
 	 * If this method were to return the following:
 	 *
@@ -286,7 +286,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * do this:
 	 *
 	 * ```php
-	 * $criteria = craft()->elements->getCriteria('ThisElementType');
+	 * $criteria = Craft::$app->elements->getCriteria('ThisElementType');
 	 * $criteria->foo = 'FooParamValue';
 	 * $criteria->bar = 'BarParamValue';
 	 * ```

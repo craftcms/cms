@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -16,7 +17,7 @@ use craft\app\web\Application;
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
  *
- * An instance of the Path service is globally accessible in Craft via [[Application::path `craft()->path`]].
+ * An instance of the Path service is globally accessible in Craft via [[Application::path `Craft::$app->path`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -301,7 +302,7 @@ class Path extends Component
 	{
 		if (!isset($this->_templatesPath))
 		{
-			if (craft()->request->isCpRequest())
+			if (Craft::$app->request->isCpRequest())
 			{
 				$this->_templatesPath = $this->getCpTemplatesPath();
 			}
@@ -378,7 +379,7 @@ class Path extends Component
 	 */
 	public function getCachePath()
 	{
-		$path = craft()->config->get('cachePath', ConfigFile::FileCache);
+		$path = Craft::$app->config->get('cachePath', ConfigFile::FileCache);
 
 		if (!$path)
 		{

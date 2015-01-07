@@ -54,7 +54,7 @@ class RichText extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		$configOptions = array('' => Craft::t('Default'));
-		$configPath = craft()->path->getConfigPath().'redactor/';
+		$configPath = Craft::$app->path->getConfigPath().'redactor/';
 
 		if (IOHelper::folderExists($configPath))
 		{
@@ -74,7 +74,7 @@ class RichText extends BaseFieldType
 			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
 		);
 
-		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
 			'columns' => $columns,
@@ -112,7 +112,7 @@ class RichText extends BaseFieldType
 		if ($value)
 		{
 			// Prevent everyone from having to use the |raw filter when outputting RTE content
-			$charset = craft()->templates->getTwig()->getCharset();
+			$charset = Craft::$app->templates->getTwig()->getCharset();
 			return new RichTextData($value, $charset);
 		}
 		else
@@ -134,12 +134,12 @@ class RichText extends BaseFieldType
 		$configJs = $this->_getConfigJs();
 		$this->_includeFieldResources($configJs);
 
-		$id = craft()->templates->formatInputId($name);
+		$id = Craft::$app->templates->formatInputId($name);
 
-		craft()->templates->includeJs('new Craft.RichTextInput(' .
-			'"'.craft()->templates->namespaceInputId($id).'", ' .
+		Craft::$app->templates->includeJs('new Craft.RichTextInput(' .
+			'"'.Craft::$app->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
-			'"'.(isset($this->element) ? $this->element->locale : craft()->language).'", ' .
+			'"'.(isset($this->element) ? $this->element->locale : Craft::$app->language).'", ' .
 			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
 		');');
@@ -158,7 +158,7 @@ class RichText extends BaseFieldType
 			}, $value);
 
 			// Now parse 'em
-			$value = craft()->elements->parseRefs($value);
+			$value = Craft::$app->elements->parseRefs($value);
 		}
 
 		// Swap any <!--pagebreak-->'s with <hr>'s
@@ -297,7 +297,7 @@ class RichText extends BaseFieldType
 	private function _getSectionSources()
 	{
 		$sources = array();
-		$sections = craft()->sections->getAllSections();
+		$sections = Craft::$app->sections->getAllSections();
 		$showSingles = false;
 
 		foreach ($sections as $section)
@@ -329,7 +329,7 @@ class RichText extends BaseFieldType
 	{
 		if ($this->getSettings()->configFile)
 		{
-			$configPath = craft()->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$configPath = Craft::$app->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
 			$js = IOHelper::getFileContents($configPath);
 		}
 
@@ -350,30 +350,30 @@ class RichText extends BaseFieldType
 	 */
 	private function _includeFieldResources($configJs)
 	{
-		craft()->templates->includeCssResource('lib/redactor/redactor.css');
-		craft()->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
+		Craft::$app->templates->includeCssResource('lib/redactor/redactor.css');
+		Craft::$app->templates->includeCssResource('lib/redactor/plugins/pagebreak.css');
 
 		// Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-		craft()->templates->includeJsResource('lib/redactor/redactor.js');
-		//craft()->templates->includeJsResource('lib/redactor/redactor'.(craft()->config->get('useCompressedJs') ? '.min' : '').'.js');
+		Craft::$app->templates->includeJsResource('lib/redactor/redactor.js');
+		//Craft::$app->templates->includeJsResource('lib/redactor/redactor'.(Craft::$app->config->get('useCompressedJs') ? '.min' : '').'.js');
 
 		$this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
 		$this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-		craft()->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
+		Craft::$app->templates->includeTranslations('Insert image', 'Insert URL', 'Choose image', 'Link', 'Link to an entry', 'Insert link', 'Unlink', 'Link to an asset');
 
-		craft()->templates->includeJsResource('js/RichTextInput.js');
+		Craft::$app->templates->includeJsResource('js/RichTextInput.js');
 
 		// Check to see if the Redactor has been translated into the current locale
-		if (craft()->language != craft()->sourceLanguage)
+		if (Craft::$app->language != Craft::$app->sourceLanguage)
 		{
 			// First try to include the actual target locale
-			if (!$this->_includeRedactorLangFile(craft()->language))
+			if (!$this->_includeRedactorLangFile(Craft::$app->language))
 			{
 				// Otherwise try to load the language (without the territory half)
-				$languageId = craft()->locale->getLanguageID(craft()->language);
+				$languageId = Craft::$app->locale->getLanguageID(Craft::$app->language);
 				$this->_includeRedactorLangFile($languageId);
 			}
 		}
@@ -394,10 +394,10 @@ class RichText extends BaseFieldType
 		{
 			if ($includeCss)
 			{
-				craft()->templates->includeCssResource('lib/redactor/plugins/'.$plugin.'.css');
+				Craft::$app->templates->includeCssResource('lib/redactor/plugins/'.$plugin.'.css');
 			}
 
-			craft()->templates->includeJsResource('lib/redactor/plugins/'.$plugin.'.js');
+			Craft::$app->templates->includeJsResource('lib/redactor/plugins/'.$plugin.'.js');
 		}
 	}
 
@@ -412,9 +412,9 @@ class RichText extends BaseFieldType
 	{
 		$path = 'lib/redactor/lang/'.$lang.'.js';
 
-		if (IOHelper::fileExists(craft()->path->getResourcesPath().$path))
+		if (IOHelper::fileExists(Craft::$app->path->getResourcesPath().$path))
 		{
-			craft()->templates->includeJsResource($path);
+			Craft::$app->templates->includeJsResource($path);
 			static::$_redactorLang = $lang;
 
 			return true;

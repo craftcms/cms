@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\IOHelper;
 use craft\app\models\LogEntry                   as LogEntryModel;
@@ -62,7 +63,7 @@ class UtilsController extends BaseController
 	 */
 	public function actionPhpInfo()
 	{
-		craft()->config->maxPowerCaptain();
+		Craft::$app->config->maxPowerCaptain();
 
 		ob_start();
 		phpinfo(-1);
@@ -158,16 +159,16 @@ class UtilsController extends BaseController
 	 */
 	public function actionLogs(array $variables = array())
 	{
-		craft()->config->maxPowerCaptain();
+		Craft::$app->config->maxPowerCaptain();
 
-		if (IOHelper::folderExists(craft()->path->getLogPath()))
+		if (IOHelper::folderExists(Craft::$app->path->getLogPath()))
 		{
 			$dateTimePattern = '/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/';
 
 			$logFileNames = array();
 
 			// Grab it all.
-			$logFolderContents = IOHelper::getFolderContents(craft()->path->getLogPath());
+			$logFolderContents = IOHelper::getFolderContents(Craft::$app->path->getLogPath());
 
 			foreach ($logFolderContents as $logFolderContent)
 			{
@@ -181,7 +182,7 @@ class UtilsController extends BaseController
 			$logEntriesByRequest = array();
 			$currentLogFileName = isset($variables['currentLogFileName']) ? $variables['currentLogFileName'] : 'craft.log';
 
-			$currentFullPath = craft()->path->getLogPath().$currentLogFileName;
+			$currentFullPath = Craft::$app->path->getLogPath().$currentLogFileName;
 			if (IOHelper::fileExists($currentFullPath))
 			{
 				// Different parsing logic for phperrors.log
@@ -189,7 +190,7 @@ class UtilsController extends BaseController
 				{
 					// Split the log file's contents up into arrays of individual logs, where each item is an array of
 					// the lines of that log.
-					$contents = IOHelper::getFileContents(craft()->path->getLogPath().$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().$currentLogFileName);
 
 					$requests = explode('******************************************************************************************************', $contents);
 
@@ -345,7 +346,7 @@ class UtilsController extends BaseController
 				else
 				{
 					$logEntry = new LogEntryModel();
-					$contents = IOHelper::getFileContents(craft()->path->getLogPath().$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().$currentLogFileName);
 					$contents = str_replace("\n", "<br />", $contents);
 					$logEntry->message = $contents;
 
@@ -368,11 +369,11 @@ class UtilsController extends BaseController
 	 */
 	public function actionDeprecationErrors()
 	{
-		craft()->templates->includeCssResource('css/deprecator.css');
-		craft()->templates->includeJsResource('js/deprecator.js');
+		Craft::$app->templates->includeCssResource('css/deprecator.css');
+		Craft::$app->templates->includeJsResource('js/deprecator.js');
 
 		$this->renderTemplate('utils/deprecationerrors', array(
-			'logs' => craft()->deprecator->getLogs()
+			'logs' => Craft::$app->deprecator->getLogs()
 		));
 	}
 
@@ -385,8 +386,8 @@ class UtilsController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$logId = craft()->request->getRequiredParam('logId');
-		$log = craft()->deprecator->getLogById($logId);
+		$logId = Craft::$app->request->getRequiredParam('logId');
+		$log = Craft::$app->deprecator->getLogById($logId);
 
 		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
 			array('log' => $log)
@@ -403,8 +404,8 @@ class UtilsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		craft()->deprecator->deleteAllLogs();
-		craft()->end();
+		Craft::$app->deprecator->deleteAllLogs();
+		Craft::$app->end();
 	}
 
 	/**
@@ -417,10 +418,10 @@ class UtilsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$logId = craft()->request->getRequiredPost('logId');
+		$logId = Craft::$app->request->getRequiredPost('logId');
 
-		craft()->deprecator->deleteLogById($logId);
-		craft()->end();
+		Craft::$app->deprecator->deleteLogById($logId);
+		Craft::$app->end();
 	}
 
 	// Private Methods

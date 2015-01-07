@@ -20,7 +20,7 @@ use craft\app\web\Application;
 /**
  * Class Structures service.
  *
- * An instance of the Structures service is globally accessible in Craft via [[Application::structures `craft()->structures`]].
+ * An instance of the Structures service is globally accessible in Craft via [[Application::structures `Craft::$app->structures`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -112,7 +112,7 @@ class Structures extends Component
 			return false;
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete('structures', array(
+		$affectedRows = Craft::$app->db->createCommand()->delete('structures', array(
 			'id' => $structureId
 		));
 
@@ -363,7 +363,7 @@ class Structures extends Component
 			$action = $insertAction;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			if ($mode == 'update')
@@ -400,7 +400,7 @@ class Structures extends Component
 				$element->level = $elementRecord->level;
 
 				// Tell the element type about it
-				$elementType = craft()->elements->getElementType($element->getElementType());
+				$elementType = Craft::$app->elements->getElementType($element->getElementType());
 				$elementType->onAfterMoveElementInStructure($element, $structureId);
 			}
 			else

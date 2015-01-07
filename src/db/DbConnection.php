@@ -7,6 +7,7 @@
 
 namespace craft\app\db;
 
+use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\helpers\ArrayHelper;
 
@@ -80,7 +81,7 @@ class DbConnection extends \CDbConnection
 	public function tableExists($table, $refresh = null)
 	{
 		// Default to refreshing the tables if Craft isn't installed yet
-		if ($refresh || ($refresh === null && !craft()->isInstalled()))
+		if ($refresh || ($refresh === null && !Craft::$app->isInstalled()))
 		{
 			$this->getSchema()->refresh();
 		}
@@ -102,7 +103,7 @@ class DbConnection extends \CDbConnection
 	public function columnExists($table, $column, $refresh = null)
 	{
 		// Default to refreshing the tables if Craft isn't installed yet
-		if ($refresh || ($refresh === null && !craft()->isInstalled()))
+		if ($refresh || ($refresh === null && !Craft::$app->isInstalled()))
 		{
 			$this->getSchema()->refresh();
 		}
@@ -126,7 +127,7 @@ class DbConnection extends \CDbConnection
 	public function getNormalizedTablePrefix()
 	{
 		// Table prefixes cannot be longer than 5 characters
-		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+		$tablePrefix = rtrim(Craft::$app->config->get('tablePrefix', ConfigFile::Db), '_');
 
 		if ($tablePrefix)
 		{

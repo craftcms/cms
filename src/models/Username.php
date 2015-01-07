@@ -53,7 +53,7 @@ class Username extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$requireUsername = !craft()->config->get('useEmailAsUsername');
+		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
 
 		return array(
 			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),

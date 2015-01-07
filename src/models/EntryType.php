@@ -66,7 +66,7 @@ class EntryType extends BaseModel
 	{
 		if ($this->sectionId)
 		{
-			return craft()->sections->getSectionById($this->sectionId);
+			return Craft::$app->sections->getSectionById($this->sectionId);
 		}
 	}
 

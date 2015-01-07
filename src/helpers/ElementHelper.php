@@ -59,7 +59,7 @@ class ElementHelper
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
-		if (craft()->config->get('allowUppercaseInSlug') === false)
+		if (Craft::$app->config->get('allowUppercaseInSlug') === false)
 		{
 			// Make it lowercase
 			$slug = StringHelper::toLowerCase($slug);
@@ -68,7 +68,7 @@ class ElementHelper
 		// Get the "words". Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
 		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
-		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
+		$slug = implode(Craft::$app->config->get('slugWordSeparator'), $words);
 
 		return $slug;
 	}
@@ -94,7 +94,7 @@ class ElementHelper
 		// No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
 		if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat))
 		{
-			$element->uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+			$element->uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
 			return;
 		}
 
@@ -113,8 +113,8 @@ class ElementHelper
 			$uniqueUriParams[':elementId'] = $element->id;
 		}
 
-		$slugWordSeparator = craft()->config->get('slugWordSeparator');
-		$maxSlugIncrement = craft()->config->get('maxSlugIncrement');
+		$slugWordSeparator = Craft::$app->config->get('slugWordSeparator');
+		$maxSlugIncrement = Craft::$app->config->get('maxSlugIncrement');
 
 		for ($i = 0; $i < $maxSlugIncrement; $i++)
 		{
@@ -128,7 +128,7 @@ class ElementHelper
 			$originalSlug = $element->slug;
 			$element->slug = $testSlug;
 
-			$testUri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+			$testUri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
 
 			// Make sure we're not over our max length.
 			if (strlen($testUri) > 255)
@@ -159,7 +159,7 @@ class ElementHelper
 
 			$uniqueUriParams[':uri'] = $testUri;
 
-			$totalElements = craft()->db->createCommand()
+			$totalElements = Craft::$app->db->createCommand()
 				->select('count(id)')
 				->from('elements_i18n')
 				->where($uniqueUriConditions, $uniqueUriParams)
@@ -191,7 +191,7 @@ class ElementHelper
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
 		$element = (object) array('slug' => StringHelper::randomString());
-		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+		$uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
 
 		return (strpos($uri, $element->slug) !== false);
 	}
@@ -207,7 +207,7 @@ class ElementHelper
 	{
 		if ($element->isEditable())
 		{
-			if (craft()->isLocalized())
+			if (Craft::$app->isLocalized())
 			{
 				foreach ($element->getLocales() as $localeId => $localeInfo)
 				{
@@ -216,7 +216,7 @@ class ElementHelper
 						$localeId = $localeInfo;
 					}
 
-					if (craft()->getUser()->checkPermission('editLocale:'.$localeId))
+					if (Craft::$app->getUser()->checkPermission('editLocale:'.$localeId))
 					{
 						return true;
 					}
@@ -244,7 +244,7 @@ class ElementHelper
 
 		if ($element->isEditable())
 		{
-			if (craft()->isLocalized())
+			if (Craft::$app->isLocalized())
 			{
 				foreach ($element->getLocales() as $localeId => $localeInfo)
 				{
@@ -253,7 +253,7 @@ class ElementHelper
 						$localeId = $localeInfo;
 					}
 
-					if (craft()->getUser()->checkPermission('editLocale:'.$localeId))
+					if (Craft::$app->getUser()->checkPermission('editLocale:'.$localeId))
 					{
 						$localeIds[] = $localeId;
 					}
@@ -261,7 +261,7 @@ class ElementHelper
 			}
 			else
 			{
-				$localeIds[] = craft()->i18n->getPrimarySiteLocaleId();
+				$localeIds[] = Craft::$app->i18n->getPrimarySiteLocaleId();
 			}
 		}
 

@@ -36,7 +36,7 @@ class Fields
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return craft()->fields->getAllGroups($indexBy);
+		return Craft::$app->fields->getAllGroups($indexBy);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class Fields
 	 */
 	public function getGroupById($groupId)
 	{
-		return craft()->fields->getGroupById($groupId);
+		return Craft::$app->fields->getGroupById($groupId);
 	}
 
 	// Fields
@@ -63,7 +63,7 @@ class Fields
 	 */
 	public function getFieldById($fieldId)
 	{
-		return craft()->fields->getFieldById($fieldId);
+		return Craft::$app->fields->getFieldById($fieldId);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Fields
 	 */
 	public function getFieldByHandle($handle)
 	{
-		return craft()->fields->getFieldByHandle($handle);
+		return Craft::$app->fields->getFieldByHandle($handle);
 	}
 
 	/**
@@ -87,7 +87,7 @@ class Fields
 	 */
 	public function getAllFields($indexBy = null)
 	{
-		return craft()->fields->getAllFields($indexBy);
+		return Craft::$app->fields->getAllFields($indexBy);
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Fields
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
-		return craft()->fields->getFieldsByGroupId($groupId, $indexBy);
+		return Craft::$app->fields->getFieldsByGroupId($groupId, $indexBy);
 	}
 
 	// Layouts
@@ -115,7 +115,7 @@ class Fields
 	 */
 	public function getLayoutById($layoutId)
 	{
-		return craft()->fields->getLayoutById($layoutId);
+		return Craft::$app->fields->getLayoutById($layoutId);
 	}
 
 	/**
@@ -127,7 +127,7 @@ class Fields
 	 */
 	public function getLayoutByType($type)
 	{
-		return craft()->fields->getLayoutByType($type);
+		return Craft::$app->fields->getLayoutByType($type);
 	}
 
 	// Fieldtypes
@@ -140,7 +140,7 @@ class Fields
 	 */
 	public function getAllFieldTypes()
 	{
-		$fieldTypes = craft()->fields->getAllFieldTypes();
+		$fieldTypes = Craft::$app->fields->getAllFieldTypes();
 		return FieldType::populateVariables($fieldTypes);
 	}
 
@@ -153,7 +153,7 @@ class Fields
 	 */
 	public function getFieldType($class)
 	{
-		$fieldType = craft()->fields->getFieldType($class);
+		$fieldType = Craft::$app->fields->getFieldType($class);
 
 		if ($fieldType)
 		{

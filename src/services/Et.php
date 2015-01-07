@@ -19,7 +19,7 @@ use craft\app\web\Application;
 /**
  * Class Et service.
  *
- * An instance of the Et service is globally accessible in Craft via [[Application::et `craft()->et`]].
+ * An instance of the Et service is globally accessible in Craft via [[Application::et `Craft::$app->et`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -96,7 +96,7 @@ class Et extends Component
 			$downloadPath .= $md5.'.zip';
 		}
 
-		$updateModel = craft()->updates->getUpdates();
+		$updateModel = Craft::$app->updates->getUpdates();
 		$buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
 		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
@@ -185,7 +185,7 @@ class Et extends Component
 			if (!empty($etResponse->data['success']))
 			{
 				// Success! Let's get this sucker installed.
-				craft()->setEdition($model->edition);
+				Craft::$app->setEdition($model->edition);
 
 				return true;
 			}
@@ -237,7 +237,7 @@ class Et extends Component
 	 */
 	public function getLicenseKeyStatus()
 	{
-		return craft()->cache->get('licenseKeyStatus');
+		return Craft::$app->cache->get('licenseKeyStatus');
 	}
 
 	/**
@@ -248,7 +248,7 @@ class Et extends Component
 	 */
 	public function getLicensedDomain()
 	{
-		return craft()->cache->get('licensedDomain');
+		return Craft::$app->cache->get('licensedDomain');
 	}
 
 	/**

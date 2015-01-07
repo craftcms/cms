@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\models;
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
@@ -63,7 +64,7 @@ class Content extends BaseModel
 		// Have the attributes already been defined?
 		if (isset($this->_attributeConfigs))
 		{
-			foreach (craft()->fields->getAllFields() as $field)
+			foreach (Craft::$app->fields->getAllFields() as $field)
 			{
 				if (in_array($field->id, $this->_requiredFields) && isset($this->_attributeConfigs[$field->handle]))
 				{
@@ -93,7 +94,7 @@ class Content extends BaseModel
 	{
 		$validates = parent::validate($attributes, $clearErrors);
 
-		foreach (craft()->fields->getAllFields() as $field)
+		foreach (Craft::$app->fields->getAllFields() as $field)
 		{
 			$handle = $field->handle;
 
@@ -151,11 +152,11 @@ class Content extends BaseModel
 		$attributes = [
 			'id'        => AttributeType::Number,
 			'elementId' => AttributeType::Number,
-			'locale'    => [AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()],
+			'locale'    => [AttributeType::Locale, 'default' => Craft::$app->i18n->getPrimarySiteLocaleId()],
 			'title'     => [AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255, 'label' => 'Title'],
 		];
 
-		foreach (craft()->fields->getAllFields() as $field)
+		foreach (Craft::$app->fields->getAllFields() as $field)
 		{
 			$fieldType = $field->getFieldType();
 

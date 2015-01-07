@@ -20,12 +20,12 @@ use craft\app\records\EntryDraft   as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
 use craft\app\web\Application;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class EntryRevisions service.
  *
- * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `craft()->entryRevisions`]].
+ * An instance of the EntryRevisions service is globally accessible in Craft via [[Application::entryRevisions `Craft::$app->entryRevisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -53,7 +53,7 @@ class EntryRevisions extends Component
 			// This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
 			// inside of a structured section since the selected URL Format depends on the entry's level, and there's no
 			// reason to store the level along with the other draft data.
-			$entry = craft()->entries->getEntryById($draftRecord->entryId, $draftRecord->locale);
+			$entry = Craft::$app->entries->getEntryById($draftRecord->entryId, $draftRecord->locale);
 
 			$draft->root  = $entry->root;
 			$draft->lft   = $entry->lft;
@@ -76,12 +76,12 @@ class EntryRevisions extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->i18n->getPrimarySiteLocale();
+			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
 		}
 
 		$drafts = array();
 
-		$results = craft()->db->createCommand()
+		$results = Craft::$app->db->createCommand()
 			->select('*')
 			->from('entrydrafts')
 			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
@@ -112,7 +112,7 @@ class EntryRevisions extends Component
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
 		$editableDrafts = array();
-		$user = craft()->getUser()->getIdentity();
+		$user = Craft::$app->getUser()->getIdentity();
 
 		if ($user)
 		{
@@ -144,7 +144,7 @@ class EntryRevisions extends Component
 		if (!$draft->name && $draft->id)
 		{
 			// Get the total number of existing drafts for this entry/locale
-			$totalDrafts = craft()->db->createCommand()
+			$totalDrafts = Craft::$app->db->createCommand()
 				->from('entrydrafts')
 				->where(
 					array('and', 'entryId = :entryId', 'locale = :locale'),
@@ -200,7 +200,7 @@ class EntryRevisions extends Component
 			$draft->revisionNotes = Craft::t('Published draft “{name}”.', array('name' => $draft->name));
 		}
 
-		if (craft()->entries->saveEntry($draft))
+		if (Craft::$app->entries->saveEntry($draft))
 		{
 			// Fire an 'onPublishDraft' event
 			$this->onPublishDraft(new Event($this, array(
@@ -222,7 +222,7 @@ class EntryRevisions extends Component
 	 */
 	public function deleteDraft(EntryDraftModel $draft)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -304,12 +304,12 @@ class EntryRevisions extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->i18n->getPrimarySiteLocale();
+			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
 		}
 
 		$versions = array();
 
-		$results = craft()->db->createCommand()
+		$results = Craft::$app->db->createCommand()
 			->select('*')
 			->from('entryversions')
 			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
@@ -341,7 +341,7 @@ class EntryRevisions extends Component
 	public function saveVersion(EntryModel $entry)
 	{
 		// Get the total number of existing versions for this entry/locale
-		$totalVersions = craft()->db->createCommand()
+		$totalVersions = Craft::$app->db->createCommand()
 			->from('entryversions')
 			->where(
 				array('and', 'entryId = :entryId', 'locale = :locale'),
@@ -352,7 +352,7 @@ class EntryRevisions extends Component
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = craft()->getUser()->getIdentity() ? craft()->getUser()->getIdentity()->id : $entry->authorId;
+		$versionRecord->creatorId = Craft::$app->getUser()->getIdentity() ? Craft::$app->getUser()->getIdentity()->id : $entry->authorId;
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);
@@ -379,7 +379,7 @@ class EntryRevisions extends Component
 		// Set the version notes
 		$version->revisionNotes = Craft::t('Reverted version {num}.', array('num' => $version->num));
 
-		if (craft()->entries->saveEntry($version))
+		if (Craft::$app->entries->saveEntry($version))
 		{
 			// Fire an 'onRevertEntryToVersion' event
 			$this->onRevertEntryToVersion(new Event($this, array(
@@ -510,7 +510,7 @@ class EntryRevisions extends Component
 
 		$content = $revision->getContentFromPost();
 
-		foreach (craft()->fields->getAllFields() as $field)
+		foreach (Craft::$app->fields->getAllFields() as $field)
 		{
 			if (isset($content[$field->handle]) && $content[$field->handle] !== null)
 			{

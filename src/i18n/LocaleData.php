@@ -7,6 +7,7 @@
 
 namespace craft\app\i18n;
 
+use craft\app\Craft;
 use craft\app\dates\DateFormatter;
 use craft\app\helpers\IOHelper;
 
@@ -56,7 +57,7 @@ class LocaleData extends \CLocale
 	public static function exists($id)
 	{
 		$id = static::getCanonicalID($id);
-		$dataPath = static::$dataPath === null ? craft()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
+		$dataPath = static::$dataPath === null ? Craft::$app->path->getFrameworkPath().'i18n/data' : static::$dataPath;
 		$dataFile = $dataPath.'/'.$id.'.php';
 
 		return IOHelper::fileExists($dataFile);

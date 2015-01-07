@@ -58,14 +58,14 @@ class CraftTwigExtension extends \Twig_Extension
 	public function getFilters()
 	{
 		$translateFilter = new \Twig_Filter_Function('\Craft\Craft::t');
-		$namespaceFilter = new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputs');
+		$namespaceFilter = new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputs');
 		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
-			'currency'           => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatCurrency'),
+			'currency'           => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', array('needs_environment' => true)),
-			'datetime'           => new \Twig_Filter_Function('\Craft\craft()->dateFormatter->formatDateTime'),
-			'filesize'           => new \Twig_Filter_Function('\Craft\craft()->formatter->formatSize'),
+			'datetime'           => new \Twig_Filter_Function('\Craft\Craft::$app->dateFormatter->formatDateTime'),
+			'filesize'           => new \Twig_Filter_Function('\Craft\Craft::$app->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
@@ -76,11 +76,11 @@ class CraftTwigExtension extends \Twig_Extension
 			'md'                 => $markdownFilter,
 			'namespace'          => $namespaceFilter,
 			'ns'                 => $namespaceFilter,
-			'namespaceInputName' => new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputName'),
-			'namespaceInputId'   => new \Twig_Filter_Function('\Craft\craft()->templates->namespaceInputId'),
-			'number'             => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatDecimal'),
+			'namespaceInputName' => new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputName'),
+			'namespaceInputId'   => new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputId'),
+			'number'             => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatDecimal'),
 			'parseRefs'          => new \Twig_Filter_Method($this, 'parseRefsFilter'),
-			'percentage'         => new \Twig_Filter_Function('\Craft\craft()->numberFormatter->formatPercentage'),
+			'percentage'         => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatPercentage'),
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
@@ -151,7 +151,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function parseRefsFilter($str)
 	{
-		$str = craft()->elements->parseRefs($str);
+		$str = Craft::$app->elements->parseRefs($str);
 		return TemplateHelper::getRaw($str);
 	}
 
@@ -233,7 +233,7 @@ class CraftTwigExtension extends \Twig_Extension
 
 		foreach ($arr as $key => $object)
 		{
-			$value = craft()->templates->renderObjectTemplate($template, $object);
+			$value = Craft::$app->templates->renderObjectTemplate($template, $object);
 			$groups[$value][] = $object;
 		}
 
@@ -323,10 +323,10 @@ class CraftTwigExtension extends \Twig_Extension
 			'getCsrfInput'         => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
 			'getHeadHtml'          => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
 			'getFootHtml'          => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
-			'getTranslations'      => new \Twig_Function_Function('\Craft\craft()->templates->getTranslations'),
+			'getTranslations'      => new \Twig_Function_Function('\Craft\Craft::$app->templates->getTranslations'),
 			'max'                  => new \Twig_Function_Function('max'),
 			'min'                  => new \Twig_Function_Function('min'),
-			'renderObjectTemplate' => new \Twig_Function_Function('\Craft\craft()->templates->renderObjectTemplate'),
+			'renderObjectTemplate' => new \Twig_Function_Function('\Craft\Craft::$app->templates->renderObjectTemplate'),
 			'round'                => new \Twig_Function_Function('round'),
 			'resourceUrl'          => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
 			'shuffle'              => new \Twig_Function_Method($this, 'shuffleFunction'),
@@ -342,7 +342,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getCsrfInputFunction()
 	{
-		$html = craft()->templates->getCsrfInput();
+		$html = Craft::$app->templates->getCsrfInput();
 		return TemplateHelper::getRaw($html);
 	}
 
@@ -353,7 +353,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getHeadHtmlFunction()
 	{
-		$html = craft()->templates->getHeadHtml();
+		$html = Craft::$app->templates->getHeadHtml();
 		return TemplateHelper::getRaw($html);
 	}
 
@@ -364,7 +364,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getFootHtmlFunction()
 	{
-		$html = craft()->templates->getFootHtml();
+		$html = Craft::$app->templates->getFootHtml();
 		return TemplateHelper::getRaw($html);
 	}
 
@@ -404,23 +404,23 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['blx']   = $craftVariable;
 
 		$globals['now'] = DateTimeHelper::currentUTCDateTime();
-		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
-		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
+		$globals['loginUrl'] = UrlHelper::getUrl(Craft::$app->config->getLoginPath());
+		$globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->config->getLogoutPath());
 
-		if (craft()->isInstalled() && !craft()->updates->isCraftDbMigrationNeeded())
+		if (Craft::$app->isInstalled() && !Craft::$app->updates->isCraftDbMigrationNeeded())
 		{
-			$globals['siteName'] = craft()->getSiteName();
-			$globals['siteUrl'] = craft()->getSiteUrl();
+			$globals['siteName'] = Craft::$app->getSiteName();
+			$globals['siteUrl'] = Craft::$app->getSiteUrl();
 
-			$globals['currentUser'] = craft()->getUser()->getIdentity();
+			$globals['currentUser'] = Craft::$app->getUser()->getIdentity();
 
 			// Keep 'user' around so long as it's not hurting anyone.
 			// Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
 
-			if (craft()->request->isSiteRequest())
+			if (Craft::$app->request->isSiteRequest())
 			{
-				foreach (craft()->globals->getAllSets() as $globalSet)
+				foreach (Craft::$app->globals->getAllSets() as $globalSet)
 				{
 					$globals[$globalSet->handle] = $globalSet;
 				}
@@ -433,9 +433,9 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['user'] = null;
 		}
 
-		if (craft()->request->isCpRequest())
+		if (Craft::$app->request->isCpRequest())
 		{
-			$globals['CraftEdition']  = craft()->getEdition();
+			$globals['CraftEdition']  = Craft::$app->getEdition();
 			$globals['CraftPersonal'] = Craft::Personal;
 			$globals['CraftClient']   = Craft::Client;
 			$globals['CraftPro']      = Craft::Pro;

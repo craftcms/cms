@@ -7,6 +7,7 @@
 
 namespace craft\app\elements;
 
+use craft\app\Craft;
 use craft\app\db\DbCommand;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
@@ -248,12 +249,12 @@ class ElementRelationParamParser
 				if (is_numeric($field))
 				{
 					$fieldHandleParts = null;
-					$fieldModel = craft()->fields->getFieldById($field);
+					$fieldModel = Craft::$app->fields->getFieldById($field);
 				}
 				else
 				{
 					$fieldHandleParts = explode('.', $field);
-					$fieldModel = craft()->fields->getFieldByHandle($fieldHandleParts[0]);
+					$fieldModel = Craft::$app->fields->getFieldByHandle($fieldHandleParts[0]);
 				}
 
 				if (!$fieldModel)
@@ -271,7 +272,7 @@ class ElementRelationParamParser
 					{
 						// There could be more than one block type field with this handle, so we must loop through all
 						// of the block types on this Matrix field
-						$blockTypes = craft()->matrix->getBlockTypesByFieldId($fieldModel->id);
+						$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($fieldModel->id);
 
 						foreach ($blockTypes as $blockType)
 						{

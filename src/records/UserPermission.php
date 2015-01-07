@@ -10,7 +10,7 @@ namespace craft\app\records;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Class UserPermission record.

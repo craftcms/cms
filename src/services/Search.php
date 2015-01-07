@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
@@ -20,7 +21,7 @@ use craft\app\web\Application;
 /**
  * Handles search operations.
  *
- * An instance of the Search service is globally accessible in Craft via [[Application::search `craft()->search`]].
+ * An instance of the Search service is globally accessible in Craft via [[Application::search `Craft::$app->search`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -75,7 +76,7 @@ class Search extends Component
 	{
 		// Get the element type
 		$elementTypeClass = $element->getElementType();
-		$elementType = craft()->elements->getElementType($elementTypeClass);
+		$elementType = Craft::$app->elements->getElementType($elementTypeClass);
 
 		// Does it have any searchable attributes?
 		$searchableAttributes = $elementType->defineSearchableAttributes();
@@ -160,7 +161,7 @@ class Search extends Component
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
-			craft()->db->quoteTableName(craft()->db->addTablePrefix('searchindex')),
+			Craft::$app->db->quoteTableName(Craft::$app->db->addTablePrefix('searchindex')),
 			$where
 		);
 
@@ -168,13 +169,13 @@ class Search extends Component
 		if ($elementIds)
 		{
 			$sql .= sprintf(' AND %s IN (%s)',
-				craft()->db->quoteColumnName('elementId'),
+				Craft::$app->db->quoteColumnName('elementId'),
 				implode(',', $elementIds)
 			);
 		}
 
 		// Execute the sql
-		$results = craft()->db->createCommand()->setText($sql)->queryAll();
+		$results = Craft::$app->db->createCommand()->setText($sql)->queryAll();
 
 		// Are we scoring the results?
 		if ($scoreResults)
@@ -279,7 +280,7 @@ class Search extends Component
 
 		if (!$localeId)
 		{
-			$localeId = craft()->i18n->getPrimarySiteLocaleId();
+			$localeId = Craft::$app->i18n->getPrimarySiteLocaleId();
 		}
 
 		// Clean 'em up
@@ -325,7 +326,7 @@ class Search extends Component
 		}
 
 		// Insert/update the row in searchindex
-		craft()->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
+		Craft::$app->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
 			'keywords' => $cleanKeywords
 		), false);
 	}
@@ -734,7 +735,7 @@ class Search extends Component
 	private function _getFieldIdFromAttribute($attribute)
 	{
 		// Get field id from service
-		$field = craft()->fields->getFieldByHandle($attribute);
+		$field = Craft::$app->fields->getFieldByHandle($attribute);
 
 		// Fallback to 0
 		return ($field) ? $field->id : 0;
@@ -752,7 +753,7 @@ class Search extends Component
 	private function _sqlWhere($key, $oper, $val)
 	{
 		return sprintf("(%s %s '%s')",
-			craft()->db->quoteColumnName($key),
+			Craft::$app->db->quoteColumnName($key),
 			$oper,
 			$val
 		);
@@ -769,7 +770,7 @@ class Search extends Component
 	private function _sqlMatch($val, $bool = true)
 	{
 		return sprintf("MATCH(%s) AGAINST('%s'%s)",
-			craft()->db->quoteColumnName('keywords'),
+			Craft::$app->db->quoteColumnName('keywords'),
 			(is_array($val) ? implode(' ', $val) : $val),
 			($bool ? ' IN BOOLEAN MODE' : '')
 		);
@@ -785,7 +786,7 @@ class Search extends Component
 	private function _sqlSubSelect($where)
 	{
 		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
-		$elementIds = craft()->db->createCommand()
+		$elementIds = Craft::$app->db->createCommand()
 			->select('elementId')
 			->from('searchindex')
 			->where($where)
@@ -793,7 +794,7 @@ class Search extends Component
 
 		if ($elementIds)
 		{
-			return craft()->db->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
+			return Craft::$app->db->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
 		}
 		else
 		{

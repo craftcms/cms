@@ -17,7 +17,7 @@ use craft\app\web\Application;
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
  *
- * An instance of the Feeds service is globally accessible in Craft via [[Application::feeds `craft()->feeds`]].
+ * An instance of the Feeds service is globally accessible in Craft via [[Application::feeds `Craft::$app->feeds`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -84,7 +84,7 @@ class Feeds extends Component
 
 		if (!$cacheDuration)
 		{
-			$cacheDuration = craft()->config->getCacheDuration();
+			$cacheDuration = Craft::$app->config->getCacheDuration();
 		}
 		else
 		{
@@ -93,7 +93,7 @@ class Feeds extends Component
 
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
-		$feed->set_cache_location(craft()->path->getCachePath());
+		$feed->set_cache_location(Craft::$app->path->getCachePath());
 		$feed->set_cache_duration($cacheDuration);
 		$feed->init();
 

@@ -7,6 +7,7 @@
 
 namespace craft\app\helpers;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ConfigFile;
@@ -100,8 +101,8 @@ class DbHelper
 		{
 			$config['column'] = ColumnType::Char;
 			$config['maxLength'] = 12;
-			$config['charset'] = craft()->config->get('charset', ConfigFile::Db);
-			$config['collation'] = craft()->config->get('collation', ConfigFile::Db);
+			$config['charset'] = Craft::$app->config->get('charset', ConfigFile::Db);
+			$config['collation'] = Craft::$app->config->get('collation', ConfigFile::Db);
 		}
 		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{
@@ -522,7 +523,7 @@ class DbHelper
 
 			if (!$val instanceof \DateTime)
 			{
-				$val = DateTime::createFromString($val, craft()->getTimeZone());
+				$val = DateTime::createFromString($val, Craft::$app->getTimeZone());
 			}
 
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());

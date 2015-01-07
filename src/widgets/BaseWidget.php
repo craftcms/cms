@@ -8,6 +8,7 @@
 namespace craft\app\widgets;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\Craft;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -52,7 +53,7 @@ abstract class BaseWidget extends BaseSavableComponentType implements WidgetInte
 	 */
 	public function isSelectable()
 	{
-		if ($this->multi || !craft()->dashboard->doesUserHaveWidget($this->getClassHandle()))
+		if ($this->multi || !Craft::$app->dashboard->doesUserHaveWidget($this->getClassHandle()))
 		{
 			return true;
 		}

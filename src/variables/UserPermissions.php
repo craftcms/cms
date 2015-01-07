@@ -9,7 +9,7 @@ namespace craft\app\variables;
 
 use craft\app\Craft;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * User permission functions.
@@ -29,7 +29,7 @@ class UserPermissions
 	 */
 	public function getAllPermissions()
 	{
-		return craft()->userPermissions->getAllPermissions();
+		return Craft::$app->userPermissions->getAllPermissions();
 	}
 
 	/**
@@ -41,6 +41,6 @@ class UserPermissions
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return craft()->userPermissions->getGroupPermissionsByUserId($userId);
+		return Craft::$app->userPermissions->getGroupPermissionsByUserId($userId);
 	}
 }

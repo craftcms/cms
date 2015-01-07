@@ -48,7 +48,7 @@ class Updates extends BaseWidget
 	public function isSelectable()
 	{
 		// Gotta have update permission to get this widget
-		if (parent::isSelectable() && craft()->getUser()->checkPermission('performUpdates'))
+		if (parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates'))
 		{
 			return true;
 		}
@@ -64,19 +64,19 @@ class Updates extends BaseWidget
 	public function getBodyHtml()
 	{
 		// Make sure the user actually has permission to perform updates
-		if (!craft()->getUser()->checkPermission('performUpdates'))
+		if (!Craft::$app->getUser()->checkPermission('performUpdates'))
 		{
 			return false;
 		}
 
-		$cached = craft()->updates->isUpdateInfoCached();
+		$cached = Craft::$app->updates->isUpdateInfoCached();
 
-		if (!$cached || !craft()->updates->getTotalAvailableUpdates())
+		if (!$cached || !Craft::$app->updates->getTotalAvailableUpdates())
 		{
-			craft()->templates->includeJsResource('js/UpdatesWidget.js');
-			craft()->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.', '.($cached ? 'true' : 'false').');');
+			Craft::$app->templates->includeJsResource('js/UpdatesWidget.js');
+			Craft::$app->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.', '.($cached ? 'true' : 'false').');');
 
-			craft()->templates->includeTranslations(
+			Craft::$app->templates->includeTranslations(
 				'One update available!',
 				'{total} updates available!',
 				'Go to Updates',
@@ -87,8 +87,8 @@ class Updates extends BaseWidget
 
 		if ($cached)
 		{
-			return craft()->templates->render('_components/widgets/Updates/body', array(
-				'total' => craft()->updates->getTotalAvailableUpdates()
+			return Craft::$app->templates->render('_components/widgets/Updates/body', array(
+				'total' => Craft::$app->updates->getTotalAvailableUpdates()
 			));
 		}
 		else

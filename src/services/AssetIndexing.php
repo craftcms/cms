@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use yii\base\Component;
 use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData     as AssetIndexDataModel;
@@ -18,7 +19,7 @@ use craft\app\web\Application;
 /**
  * Class AssetIndexing service.
  *
- * An instance of the AssetIndexing service is globally accessible in Craft via [[Application::assetIndexing `craft()->assetIndexing`]].
+ * An instance of the AssetIndexing service is globally accessible in Craft via [[Application::assetIndexing `Craft::$app->assetIndexing`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -48,7 +49,7 @@ class AssetIndexing extends Component
 	 */
 	public function getIndexListForSource($sessionId, $sourceId)
 	{
-		return craft()->assetSources->getSourceTypeById($sourceId)->startIndex($sessionId);
+		return Craft::$app->assetSources->getSourceTypeById($sourceId)->startIndex($sessionId);
 	}
 
 	/**
@@ -62,7 +63,7 @@ class AssetIndexing extends Component
 	 */
 	public function processIndexForSource($sessionId, $offset, $sourceId)
 	{
-		return array('result' => craft()->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset));
+		return array('result' => Craft::$app->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset));
 	}
 
 	/**
@@ -146,7 +147,7 @@ class AssetIndexing extends Component
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
-		craft()->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
+		Craft::$app->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
 	}
 
 
@@ -163,7 +164,7 @@ class AssetIndexing extends Component
 		$output = array();
 
 		// Load the record IDs of the files that were indexed.
-		$processedFiles = craft()->db->createCommand()
+		$processedFiles = Craft::$app->db->createCommand()
 			->select('recordId')
 			->from('assetindexdata')
 			->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
@@ -171,7 +172,7 @@ class AssetIndexing extends Component
 
 		$processedFiles = array_flip($processedFiles);
 
-		$fileEntries = craft()->db->createCommand()
+		$fileEntries = Craft::$app->db->createCommand()
 			->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.path, s.name AS sourceName')
 			->from('assetfiles AS fi')
 			->join('assetfolders AS fo', 'fi.folderId = fo.id')
@@ -199,12 +200,12 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
-		craft()->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $fileIds));
-		craft()->db->createCommand()->delete('assetfiles', array('in', 'id', $fileIds));
+		Craft::$app->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $fileIds));
+		Craft::$app->db->createCommand()->delete('assetfiles', array('in', 'id', $fileIds));
 
 		foreach ($fileIds as $fileId)
 		{
-			craft()->elements->deleteElementById($fileId);
+			Craft::$app->elements->deleteElementById($fileId);
 		}
 	}
 
@@ -217,7 +218,7 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{
-		craft()->db->createCommand()->delete('assetfolders', array('in', 'id', $folderIds));
+		Craft::$app->db->createCommand()->delete('assetfolders', array('in', 'id', $folderIds));
 	}
 
 }

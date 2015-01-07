@@ -61,7 +61,7 @@ class Delete extends BaseElementAction
 	 */
 	public function performAction(ElementCriteriaModel $criteria)
 	{
-		craft()->elements->deleteElementById($criteria->ids());
+		Craft::$app->elements->deleteElementById($criteria->ids());
 
 		$this->setMessage($this->getParams()->successMessage);
 

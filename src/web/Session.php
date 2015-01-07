@@ -7,12 +7,13 @@
 
 namespace craft\app\web;
 
+use craft\app\Craft;
 use craft\app\web\Application;
 
 /**
  * Extends \CHttpSession to add support for setting the session folder and creating it if it doesn't exist.
  *
- * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `craft()->getSession()`]].
+ * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `Craft::$app->getSession()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -41,7 +42,7 @@ class Session extends \yii\web\Session
 	public function __construct($config = [])
 	{
 		// Set the state-based property names
-		$appId = craft()->config->get('appId');
+		$appId = Craft::$app->config->get('appId');
 		$stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
 		$config['flashParam']      = $stateKeyPrefix.'__flash';
 		$config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
@@ -52,7 +53,7 @@ class Session extends \yii\web\Session
 		// Set the default session cookie params
 		$cookieParams = ['httponly' => true];
 
-		if (($defaultCookieDomain = craft()->config->get('defaultCookieDomain')) !== '')
+		if (($defaultCookieDomain = Craft::$app->config->get('defaultCookieDomain')) !== '')
 		{
 			$cookieParams['domain'] = $defaultCookieDomain;
 		}
@@ -60,14 +61,14 @@ class Session extends \yii\web\Session
 		$this->setCookieParams($cookieParams);
 
 		// Should we be overriding the save path?
-		$overridePhpSessionLocation = craft()->config->get('overridePhpSessionLocation');
+		$overridePhpSessionLocation = Craft::$app->config->get('overridePhpSessionLocation');
 
 		if (
 			$overridePhpSessionLocation === true ||
 			($overridePhpSessionLocation === 'auto' && mb_strpos($this->getSavePath(), 'tcp://') === false)
 		)
 		{
-			$savePath = craft()->path->getSessionPath();
+			$savePath = Craft::$app->path->getSessionPath();
 			$this->setSavePath($savePath);
 		}
 

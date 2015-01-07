@@ -176,7 +176,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			'context'             => $context,
 			'elementType'         => new ElementType($this),
 			'disabledElementIds'  => $disabledElementIds,
-			'collapsedElementIds' => craft()->request->getParam('collapsedElementIds'),
+			'collapsedElementIds' => Craft::$app->request->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,
 		);
 
@@ -188,7 +188,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			if (isset($source['structureId']))
 			{
 				$criteria->order = 'lft asc';
-				$variables['structure'] = craft()->structures->getStructureById($source['structureId']);
+				$variables['structure'] = Craft::$app->structures->getStructureById($source['structureId']);
 
 				// Are they allowed to make changes to this structure?
 				if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable']))
@@ -196,7 +196,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 					$variables['structureEditable'] = true;
 
 					// Let StructuresController know that this user can make changes to the structure
-					craft()->getSession()->authorize('editStructure:'.$variables['structure']->id);
+					Craft::$app->getSession()->authorize('editStructure:'.$variables['structure']->id);
 				}
 			}
 			else
@@ -243,7 +243,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 		$variables['elements'] = $criteria->find();
 
 		$template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
-		return craft()->templates->render($template, $variables);
+		return Craft::$app->templates->render($template, $variables);
 	}
 
 	/**
@@ -298,7 +298,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 						$find = array('/');
 						$replace = array('/<wbr>');
 
-						$wordSeparator = craft()->config->get('slugWordSeparator');
+						$wordSeparator = Craft::$app->config->get('slugWordSeparator');
 
 						if ($wordSeparator)
 						{
@@ -365,11 +365,11 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$contentService = craft()->content;
+		$contentService = Craft::$app->content;
 		$originalFieldContext = $contentService->fieldContext;
 		$contentService->fieldContext = 'global';
 
-		$fields = craft()->fields->getAllFields();
+		$fields = Craft::$app->fields->getAllFields();
 
 		$contentService->fieldContext = $originalFieldContext;
 
@@ -431,22 +431,22 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 
 		if ($fieldLayout)
 		{
-			$originalNamespace = craft()->templates->getNamespace();
-			$namespace = craft()->templates->namespaceInputName('fields', $originalNamespace);
-			craft()->templates->setNamespace($namespace);
+			$originalNamespace = Craft::$app->templates->getNamespace();
+			$namespace = Craft::$app->templates->namespaceInputName('fields', $originalNamespace);
+			Craft::$app->templates->setNamespace($namespace);
 
 			foreach ($fieldLayout->getFields() as $fieldLayoutField)
 			{
-				$fieldHtml = craft()->templates->render('_includes/field', array(
+				$fieldHtml = Craft::$app->templates->render('_includes/field', array(
 					'element'  => $element,
 					'field'    => $fieldLayoutField->getField(),
 					'required' => $fieldLayoutField->required
 				));
 
-				$html .= craft()->templates->namespaceInputs($fieldHtml, 'fields');
+				$html .= Craft::$app->templates->namespaceInputs($fieldHtml, 'fields');
 			}
 
-			craft()->templates->setNamespace($originalNamespace);
+			Craft::$app->templates->setNamespace($originalNamespace);
 		}
 
 		return $html;
@@ -462,7 +462,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function saveElement(BaseElementModel $element, $params)
 	{
-		return craft()->elements->saveElement($element);
+		return Craft::$app->elements->saveElement($element);
 	}
 
 	/**

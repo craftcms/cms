@@ -37,7 +37,7 @@ abstract class BaseElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Element controllers are only available to the Control Panel
-		if (!craft()->request->isCpRequest())
+		if (!Craft::$app->request->isCpRequest())
 		{
 			throw new HttpException(403);
 		}
@@ -54,8 +54,8 @@ abstract class BaseElementsController extends BaseController
 	 */
 	protected function getElementType()
 	{
-		$class = craft()->request->getRequiredParam('elementType');
-		$elementType = craft()->elements->getElementType($class);
+		$class = Craft::$app->request->getRequiredParam('elementType');
+		$elementType = Craft::$app->elements->getElementType($class);
 
 		if (!$elementType)
 		{
@@ -72,6 +72,6 @@ abstract class BaseElementsController extends BaseController
 	 */
 	protected function getContext()
 	{
-		return craft()->request->getParam('context');
+		return Craft::$app->request->getParam('context');
 	}
 }

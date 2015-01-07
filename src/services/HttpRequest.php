@@ -21,7 +21,7 @@ use craft\app\web\HttpCookie;
 /**
  * The HttpRequest service provides APIs for getting information about the current HTTP request.
  *
- * An instance of the HttpRequest service is globally accessible in Craft via [[Application::request `craft()->request`]].
+ * An instance of the HttpRequest service is globally accessible in Craft via [[Application::request `Craft::$app->request`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -112,19 +112,19 @@ class HttpRequest extends \CHttpRequest
 	public function init()
 	{
 		// Is CSRF protection enabled?
-		if (craft()->config->get('enableCsrfProtection') === true)
+		if (Craft::$app->config->get('enableCsrfProtection') === true)
 		{
 			$this->enableCsrfValidation = true;
 
 			// Grab the token name.
-			$this->csrfTokenName = craft()->config->get('csrfTokenName');
+			$this->csrfTokenName = Craft::$app->config->get('csrfTokenName');
 		}
 
 		// Now initialize Yii's CHttpRequest.
 		parent::init();
 
 		// There is no path.
-		if (craft()->isConsole())
+		if (Craft::$app->isConsole())
 		{
 			$path = '';
 		}
@@ -138,7 +138,7 @@ class HttpRequest extends \CHttpRequest
 		$this->_segments = array_filter(explode('/', $path));
 
 		// Is this a CP request?
-		$this->_isCpRequest = ($this->getSegment(1) == craft()->config->get('cpTrigger'));
+		$this->_isCpRequest = ($this->getSegment(1) == Craft::$app->config->get('cpTrigger'));
 
 		if ($this->_isCpRequest)
 		{
@@ -152,7 +152,7 @@ class HttpRequest extends \CHttpRequest
 			// Match against the entire path string as opposed to just the last segment so that we can support
 			// "/page/2"-style pagination URLs
 			$path = implode('/', $this->_segments);
-			$pageTrigger = preg_quote(craft()->config->get('pageTrigger'), '/');
+			$pageTrigger = preg_quote(Craft::$app->config->get('pageTrigger'), '/');
 
 			if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match))
 			{
@@ -251,7 +251,7 @@ class HttpRequest extends \CHttpRequest
 	 */
 	public function getToken()
 	{
-		return $this->getQuery(craft()->config->get('tokenParam'));
+		return $this->getQuery(Craft::$app->config->get('tokenParam'));
 	}
 
 	/**
@@ -336,7 +336,7 @@ class HttpRequest extends \CHttpRequest
 		return (
 			$this->isSiteRequest() &&
 			$this->isActionRequest() &&
-			craft()->request->getPost('livePreview')
+			Craft::$app->request->getPost('livePreview')
 		);
 	}
 
@@ -347,19 +347,19 @@ class HttpRequest extends \CHttpRequest
 	 * $defaultValue will be returned if it doesn’t.
 	 *
 	 * ```php
-	 * $foo = craft()->request->getQuery('foo'); // Returns $_GET['foo'], if it exists
+	 * $foo = Craft::$app->request->getQuery('foo'); // Returns $_GET['foo'], if it exists
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getQuery('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
+	 * $bar = Craft::$app->request->getQuery('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
 	 * ```
 	 *
 	 * If $name is omitted, the entire $_GET array will be returned instead:
 	 *
 	 * ```php
-	 * $allTheQueryParams = craft()->request->getQuery(); // Returns $_GET
+	 * $allTheQueryParams = Craft::$app->request->getQuery(); // Returns $_GET
 	 * ```
 	 *
 	 * All values will be converted to UTF-8, regardless of the original character encoding.
@@ -380,13 +380,13 @@ class HttpRequest extends \CHttpRequest
 	 * Returns a query string parameter, or bails on the request with a 400 error if that parameter doesn’t exist.
 	 *
 	 * ```php
-	 * $foo = craft()->request->getRequiredQuery('foo'); // Returns $_GET['foo']
+	 * $foo = Craft::$app->request->getRequiredQuery('foo'); // Returns $_GET['foo']
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getRequiredQuery('foo.bar'); // Returns $_GET['foo']['bar']
+	 * $bar = Craft::$app->request->getRequiredQuery('foo.bar'); // Returns $_GET['foo']['bar']
 	 * ```
 	 *
 	 * The returned value will be converted to UTF-8, regardless of the original character encoding.
@@ -418,19 +418,19 @@ class HttpRequest extends \CHttpRequest
 	 * $defaultValue will be returned if it doesn’t.
 	 *
 	 * ```php
-	 * $foo = craft()->request->getPost('foo'); // Returns $_POST['foo'], if it exists
+	 * $foo = Craft::$app->request->getPost('foo'); // Returns $_POST['foo'], if it exists
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getPost('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
+	 * $bar = Craft::$app->request->getPost('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
 	 * ```
 	 *
 	 * If $name is omitted, the entire $_POST array will be returned instead:
 	 *
 	 * ```php
-	 * $allThePostParams = craft()->request->getPost(); // Returns $_POST
+	 * $allThePostParams = Craft::$app->request->getPost(); // Returns $_POST
 	 * ```
 	 *
 	 * All values will be converted to UTF-8, regardless of the original character encoding.
@@ -451,13 +451,13 @@ class HttpRequest extends \CHttpRequest
 	 * Returns a POST parameter, or bails on the request with a 400 error if that parameter doesn’t exist.
 	 *
 	 * ```php
-	 * $foo = craft()->request->getRequiredPost('foo'); // Returns $_POST['foo']
+	 * $foo = Craft::$app->request->getRequiredPost('foo'); // Returns $_POST['foo']
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getRequiredPost('foo.bar'); // Returns $_POST['foo']['bar']
+	 * $bar = Craft::$app->request->getRequiredPost('foo.bar'); // Returns $_POST['foo']['bar']
 	 * ```
 	 *
 	 * The returned value will be converted to UTF-8, regardless of the original character encoding.
@@ -490,13 +490,13 @@ class HttpRequest extends \CHttpRequest
 	 * value either, $defaultValue will be returned.
 	 *
 	 * ```php
-	 * $foo = craft()->request->getParam('foo'); // Returns $_GET['foo'] or $_POST['foo'], if either exist
+	 * $foo = Craft::$app->request->getParam('foo'); // Returns $_GET['foo'] or $_POST['foo'], if either exist
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
+	 * $bar = Craft::$app->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
 	 * ```
 	 *
 	 * All values will be converted to UTF-8, regardless of the original character encoding.
@@ -529,13 +529,13 @@ class HttpRequest extends \CHttpRequest
 	 * and if that doesn’t come back with a value, it will call [[getPost()]].
 	 *
 	 * ```php
-	 * $foo = craft()->request->getRequiredParam('foo'); // Returns $_GET['foo'] or $_POST['foo']
+	 * $foo = Craft::$app->request->getRequiredParam('foo'); // Returns $_GET['foo'] or $_POST['foo']
 	 * ```
 	 *
 	 * $name can also represent a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = craft()->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
+	 * $bar = Craft::$app->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
 	 * ```
 	 *
 	 * All values will be converted to UTF-8, regardless of the original character encoding.
@@ -1117,7 +1117,7 @@ class HttpRequest extends \CHttpRequest
 	public function getNormalizedPath()
 	{
 		// Get the path
-		if (craft()->config->usePathInfo())
+		if (Craft::$app->config->usePathInfo())
 		{
 			$pathInfo = $this->getPathInfo();
 			$path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
@@ -1146,7 +1146,7 @@ class HttpRequest extends \CHttpRequest
 		// Make sure nothing has been output yet
 		if (headers_sent())
 		{
-			throw new Exception(Craft::t('craft()->request->close() cannot be called after content has been output.'));
+			throw new Exception(Craft::t('Craft::$app->request->close() cannot be called after content has been output.'));
 		}
 
 		// Prevent the script from ending when the browser closes the connection
@@ -1228,7 +1228,7 @@ class HttpRequest extends \CHttpRequest
 	 */
 	private function _getQueryStringPath()
 	{
-		$pathParam = craft()->urlManager->pathParam;
+		$pathParam = Craft::$app->urlManager->pathParam;
 		return trim($this->getQuery($pathParam, ''), '/');
 	}
 
@@ -1245,12 +1245,12 @@ class HttpRequest extends \CHttpRequest
 		}
 
 		// If there's a token in the query string, then that should take precedence over everything else
-		if (!$this->getQuery(craft()->config->get('tokenParam')))
+		if (!$this->getQuery(Craft::$app->config->get('tokenParam')))
 		{
 			$firstSegment = $this->getSegment(1);
 
 			// Is this a resource request?
-			if ($firstSegment == craft()->config->getResourceTrigger())
+			if ($firstSegment == Craft::$app->config->getResourceTrigger())
 			{
 				$this->_isResourceRequest = true;
 			}
@@ -1259,21 +1259,21 @@ class HttpRequest extends \CHttpRequest
 				// Is this an action request?
 				if ($this->_isCpRequest)
 				{
-					$loginPath       = craft()->config->getCpLoginPath();
-					$logoutPath      = craft()->config->getCpLogoutPath();
-					$setPasswordPath = craft()->config->getCpSetPasswordPath();
+					$loginPath       = Craft::$app->config->getCpLoginPath();
+					$logoutPath      = Craft::$app->config->getCpLogoutPath();
+					$setPasswordPath = Craft::$app->config->getCpSetPasswordPath();
 				}
 				else
 				{
-					$loginPath       = trim(craft()->config->getLocalized('loginPath'), '/');
-					$logoutPath      = trim(craft()->config->getLocalized('logoutPath'), '/');
-					$setPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
+					$loginPath       = trim(Craft::$app->config->getLocalized('loginPath'), '/');
+					$logoutPath      = trim(Craft::$app->config->getLocalized('logoutPath'), '/');
+					$setPasswordPath = trim(Craft::$app->config->getLocalized('setPasswordPath'), '/');
 				}
 
 				$verifyEmailPath = 'verifyemail';
 
 				if (
-					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
+					($triggerMatch = ($firstSegment == Craft::$app->config->get('actionTrigger') && count($this->_segments) > 1)) ||
 					($actionParam = $this->getParam('action')) !== null ||
 					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath)))
 				)

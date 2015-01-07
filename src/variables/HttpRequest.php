@@ -28,7 +28,7 @@ class HttpRequest
 	 */
 	public function isAjax()
 	{
-		return craft()->request->isAjaxRequest();
+		return Craft::$app->request->isAjaxRequest();
 	}
 
 	/**
@@ -38,7 +38,7 @@ class HttpRequest
 	 */
 	public function isSecure()
 	{
-		return craft()->request->isSecureConnection();
+		return Craft::$app->request->isSecureConnection();
 	}
 
 	/**
@@ -48,7 +48,7 @@ class HttpRequest
 	 */
 	public function isLivePreview()
 	{
-		return craft()->request->isLivePreview();
+		return Craft::$app->request->isLivePreview();
 	}
 
 	/**
@@ -58,7 +58,7 @@ class HttpRequest
 	 */
 	public function getScriptName()
 	{
-		return craft()->request->getScriptName();
+		return Craft::$app->request->getScriptName();
 	}
 
 	/**
@@ -68,7 +68,7 @@ class HttpRequest
 	 */
 	public function getPath()
 	{
-		return craft()->request->getPath();
+		return Craft::$app->request->getPath();
 	}
 
 	/**
@@ -78,7 +78,7 @@ class HttpRequest
 	 */
 	public function getUrl()
 	{
-		$uri = craft()->request->getPath();
+		$uri = Craft::$app->request->getPath();
 		return UrlHelper::getUrl($uri);
 	}
 
@@ -89,7 +89,7 @@ class HttpRequest
 	 */
 	public function getSegments()
 	{
-		return craft()->request->getSegments();
+		return Craft::$app->request->getSegments();
 	}
 
 	/**
@@ -101,7 +101,7 @@ class HttpRequest
 	 */
 	public function getSegment($num)
 	{
-		return craft()->request->getSegment($num);
+		return Craft::$app->request->getSegment($num);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class HttpRequest
 	 */
 	public function getFirstSegment()
 	{
-		return craft()->request->getSegment(1);
+		return Craft::$app->request->getSegment(1);
 	}
 
 	/**
@@ -121,7 +121,7 @@ class HttpRequest
 	 */
 	public function getLastSegment()
 	{
-		return craft()->request->getSegment(-1);
+		return Craft::$app->request->getSegment(-1);
 	}
 
 	/**
@@ -134,7 +134,7 @@ class HttpRequest
 	 */
 	public function getParam($name, $default = null)
 	{
-		return craft()->request->getParam($name, $default);
+		return Craft::$app->request->getParam($name, $default);
 	}
 
 	/**
@@ -147,7 +147,7 @@ class HttpRequest
 	 */
 	public function getQuery($name = null, $default = null)
 	{
-		return craft()->request->getQuery($name, $default);
+		return Craft::$app->request->getQuery($name, $default);
 	}
 
 	/**
@@ -160,7 +160,7 @@ class HttpRequest
 	 */
 	public function getPost($name = null, $default = null)
 	{
-		return craft()->request->getPost($name, $default);
+		return Craft::$app->request->getPost($name, $default);
 	}
 
 	/**
@@ -172,7 +172,7 @@ class HttpRequest
 	 */
 	public function getCookie($name)
 	{
-		return craft()->request->getCookie($name);
+		return Craft::$app->request->getCookie($name);
 	}
 
 	/**
@@ -182,7 +182,7 @@ class HttpRequest
 	 */
 	public function getServerName()
 	{
-		return craft()->request->getServerName();
+		return Craft::$app->request->getServerName();
 	}
 
 	/**
@@ -192,7 +192,7 @@ class HttpRequest
 	 */
 	public function getUrlFormat()
 	{
-		if (craft()->config->usePathInfo())
+		if (Craft::$app->config->usePathInfo())
 		{
 			return 'pathinfo';
 		}
@@ -211,7 +211,7 @@ class HttpRequest
 	 */
 	public function isMobileBrowser($detectTablets = false)
 	{
-		return craft()->request->isMobileBrowser($detectTablets);
+		return Craft::$app->request->isMobileBrowser($detectTablets);
 	}
 
 	/**
@@ -221,7 +221,7 @@ class HttpRequest
 	 */
 	public function getPageNum()
 	{
-		return craft()->request->getPageNum();
+		return Craft::$app->request->getPageNum();
 	}
 
 	/**
@@ -234,7 +234,7 @@ class HttpRequest
 	 */
 	public function getHostInfo($schema = '')
 	{
-		return craft()->request->getHostInfo($schema);
+		return Craft::$app->request->getHostInfo($schema);
 	}
 
 	/**
@@ -244,7 +244,7 @@ class HttpRequest
 	 */
 	public function getScriptUrl()
 	{
-		return craft()->request->getScriptUrl();
+		return Craft::$app->request->getScriptUrl();
 	}
 
 	/**
@@ -255,7 +255,7 @@ class HttpRequest
 	 */
 	public function getPathInfo()
 	{
-		return craft()->request->getPathInfo();
+		return Craft::$app->request->getPathInfo();
 	}
 
 	/**
@@ -266,7 +266,7 @@ class HttpRequest
 	 */
 	public function getRequestUri()
 	{
-		return craft()->request->getRequestUri();
+		return Craft::$app->request->getRequestUri();
 	}
 
 	/**
@@ -276,7 +276,7 @@ class HttpRequest
 	 */
 	public function getServerPort()
 	{
-		return craft()->request->getServerPort();
+		return Craft::$app->request->getServerPort();
 	}
 
 	/**
@@ -286,7 +286,7 @@ class HttpRequest
 	 */
 	public function getUrlReferrer()
 	{
-		return craft()->request->getUrlReferrer();
+		return Craft::$app->request->getUrlReferrer();
 	}
 
 	/**
@@ -296,7 +296,7 @@ class HttpRequest
 	 */
 	public function getUserAgent()
 	{
-		return craft()->request->getUserAgent();
+		return Craft::$app->request->getUserAgent();
 	}
 
 	/**
@@ -306,7 +306,7 @@ class HttpRequest
 	 */
 	public function getUserHostAddress()
 	{
-		return craft()->request->getUserHostAddress();
+		return Craft::$app->request->getUserHostAddress();
 	}
 
 	/**
@@ -316,7 +316,7 @@ class HttpRequest
 	 */
 	public function getUserHost()
 	{
-		return craft()->request->getUserHost();
+		return Craft::$app->request->getUserHost();
 	}
 
 	/**
@@ -327,7 +327,7 @@ class HttpRequest
 	 */
 	public function getPort()
 	{
-		return craft()->request->getPort();
+		return Craft::$app->request->getPort();
 	}
 
 	/**
@@ -339,7 +339,7 @@ class HttpRequest
 	 */
 	public function getCsrfToken()
 	{
-		return craft()->request->getCsrfToken();
+		return Craft::$app->request->getCsrfToken();
 	}
 
 	/**
@@ -349,7 +349,7 @@ class HttpRequest
 	 */
 	public function getQueryString()
 	{
-		return craft()->request->getQueryString();
+		return Craft::$app->request->getQueryString();
 	}
 
 	/**
@@ -359,7 +359,7 @@ class HttpRequest
 	 */
 	public function getQueryStringWithoutPath()
 	{
-		return craft()->request->getQueryStringWithoutPath();
+		return Craft::$app->request->getQueryStringWithoutPath();
 	}
 
 	/**
@@ -373,6 +373,6 @@ class HttpRequest
 	 */
 	public function getIpAddress()
 	{
-		return craft()->request->getIpAddress();
+		return Craft::$app->request->getIpAddress();
 	}
 }

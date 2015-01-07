@@ -7,6 +7,7 @@
 
 namespace craft\app\i18n;
 
+use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -47,7 +48,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	public function init()
 	{
-		$this->basePath = craft()->path->getFrameworkPath().'messages/';
+		$this->basePath = Craft::$app->path->getFrameworkPath().'messages/';
 		parent::init();
 	}
 
@@ -69,7 +70,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			$parentMessages = parent::loadMessages($category, $language);
 
 			// See if there any craft/translations for Yii's system messages.
-			if (($filePath = IOHelper::fileExists(craft()->path->getSiteTranslationsPath().$language.'.php')) !== false)
+			if (($filePath = IOHelper::fileExists(Craft::$app->path->getSiteTranslationsPath().$language.'.php')) !== false)
 			{
 				$parentMessages = array_merge($parentMessages, include($filePath));
 			}
@@ -82,10 +83,10 @@ class PhpMessageSource extends \CPhpMessageSource
 			$this->_translations[$language] = array();
 
 			// Plugin translations get added first so they always lose out for conflicts
-			if (craft()->isInstalled() && !craft()->isInMaintenanceMode())
+			if (Craft::$app->isInstalled() && !Craft::$app->isInMaintenanceMode())
 			{
 				// Don't use PluginService, but go straight to the file system. Who cares if they are disabled.
-				$pluginPaths = IOHelper::getFolders(craft()->path->getPluginsPath());
+				$pluginPaths = IOHelper::getFolders(Craft::$app->path->getPluginsPath());
 
 				if ($pluginPaths)
 				{
@@ -97,13 +98,13 @@ class PhpMessageSource extends \CPhpMessageSource
 			}
 
 			// Craft's translations are up next
-			$paths[] = craft()->path->getCpTranslationsPath();
+			$paths[] = Craft::$app->path->getCpTranslationsPath();
 
 			// Add in Yii's i18n data, which we're going to do some special parsing on
-			$paths[] = craft()->path->getFrameworkPath().'i18n/data/';
+			$paths[] = Craft::$app->path->getFrameworkPath().'i18n/data/';
 
 			// Site translations take the highest precidence, so they get added last
-			$paths[] = craft()->path->getSiteTranslationsPath();
+			$paths[] = Craft::$app->path->getSiteTranslationsPath();
 
 			// Look for translation file from least to most specific. For example, nl.php gets loaded before nl_nl.php.
 			$translationFiles = array();

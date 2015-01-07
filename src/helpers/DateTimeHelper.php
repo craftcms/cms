@@ -181,7 +181,7 @@ class DateTimeHelper
 			}
 		}
 
-		return craft()->dateFormatter->formatDateTime($date);
+		return Craft::$app->dateFormatter->formatDateTime($date);
 	}
 
 	/**

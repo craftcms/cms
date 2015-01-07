@@ -59,7 +59,7 @@ class UserIdentity extends \CUserIdentity
 		$this->username = $username;
 		$this->password = $password;
 
-		$this->_userModel = craft()->users->getUserByUsernameOrEmail($username);
+		$this->_userModel = Craft::$app->users->getUserByUsernameOrEmail($username);
 	}
 
 	/**
@@ -69,7 +69,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = craft()->users->getUserByUsernameOrEmail($this->username);
+		$user = Craft::$app->users->getUserByUsernameOrEmail($this->username);
 
 		if ($user)
 		{
@@ -147,19 +147,19 @@ class UserIdentity extends \CUserIdentity
 			case UserStatus::Active:
 			{
 				// Validate the password
-				if (craft()->users->validatePassword($user->password, $this->password))
+				if (Craft::$app->users->validatePassword($user->password, $this->password))
 				{
 					if ($user->passwordResetRequired)
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						craft()->users->sendPasswordResetEmail($user);
+						Craft::$app->users->sendPasswordResetEmail($user);
 					}
-					else if (craft()->request->isCpRequest() && !$user->can('accessCp'))
+					else if (Craft::$app->request->isCpRequest() && !$user->can('accessCp'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_ACCESS;
 					}
-					else if (craft()->request->isCpRequest() && !craft()->isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
+					else if (Craft::$app->request->isCpRequest() && !Craft::$app->isSystemOn() && !$user->can('accessCpWhenSystemIsOff'))
 					{
 						$this->errorCode = static::ERROR_NO_CP_OFFLINE_ACCESS;
 					}
@@ -171,7 +171,7 @@ class UserIdentity extends \CUserIdentity
 				}
 				else
 				{
-					craft()->users->handleInvalidLogin($user);
+					Craft::$app->users->handleInvalidLogin($user);
 
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)
@@ -203,7 +203,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private function _getLockedAccountErrorCode()
 	{
-		if (craft()->config->get('cooldownDuration'))
+		if (Craft::$app->config->get('cooldownDuration'))
 		{
 			return static::ERROR_ACCOUNT_COOLDOWN;
 		}

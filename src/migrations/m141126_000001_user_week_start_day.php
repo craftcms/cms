@@ -28,7 +28,7 @@ class m141126_000001_user_week_start_day extends BaseMigration
 
 		$column = array(ColumnType::TinyInt, 'unsigned', 'required' => true, 'default' => '0');
 
-		if (craft()->db->columnExists('users', 'weekStartDay'))
+		if (Craft::$app->db->columnExists('users', 'weekStartDay'))
 		{
 			$this->update(
 				'users',

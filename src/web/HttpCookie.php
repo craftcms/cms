@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\web;
+use craft\app\Craft;
 
 /**
  * A HttpCookie instance stores a single cookie, including the cookie name, value, domain, path, expire time and
@@ -28,7 +29,7 @@ class HttpCookie extends \CHttpCookie
 	public function __construct($name, $value, $options = array())
 	{
 		// Set the default cookie domain. A user can always override it, if they want.
-		if (($defaultCookieDomain = craft()->config->get('defaultCookieDomain')) !== '')
+		if (($defaultCookieDomain = Craft::$app->config->get('defaultCookieDomain')) !== '')
 		{
 			$this->domain = $defaultCookieDomain;
 		}

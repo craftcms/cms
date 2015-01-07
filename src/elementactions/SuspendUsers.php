@@ -40,7 +40,7 @@ class SuspendUsers extends BaseElementAction
 	 */
 	public function getTriggerHtml()
 	{
-		$userId = JsonHelper::encode(craft()->getUser()->getIdentity()->id);
+		$userId = JsonHelper::encode(Craft::$app->getUser()->getIdentity()->id);
 
 		$js = <<<EOT
 (function()
@@ -64,7 +64,7 @@ class SuspendUsers extends BaseElementAction
 })();
 EOT;
 
-		craft()->templates->includeJs($js);
+		Craft::$app->templates->includeJs($js);
 	}
 
 	/**
@@ -88,7 +88,7 @@ EOT;
 		{
 			if (!$user->isCurrent())
 			{
-				craft()->users->suspendUser($user);
+				Craft::$app->users->suspendUser($user);
 			}
 		}
 

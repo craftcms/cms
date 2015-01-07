@@ -40,7 +40,7 @@ class PlainText extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/fieldtypes/PlainText/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PlainText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -76,7 +76,7 @@ class PlainText extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return craft()->templates->render('_components/fieldtypes/PlainText/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PlainText/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

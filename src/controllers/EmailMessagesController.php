@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\models\RebrandEmail   as RebrandEmailModel;
 use craft\app\errors\HttpException;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
@@ -50,20 +50,20 @@ class EmailMessagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$message = new RebrandEmailModel();
-		$message->key = craft()->request->getRequiredPost('key');
-		$message->subject = craft()->request->getRequiredPost('subject');
-		$message->body = craft()->request->getRequiredPost('body');
+		$message->key = Craft::$app->request->getRequiredPost('key');
+		$message->subject = Craft::$app->request->getRequiredPost('subject');
+		$message->body = Craft::$app->request->getRequiredPost('body');
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
-			$message->locale = craft()->request->getPost('locale');
+			$message->locale = Craft::$app->request->getPost('locale');
 		}
 		else
 		{
-			$message->locale = craft()->language;
+			$message->locale = Craft::$app->language;
 		}
 
-		if (craft()->emailMessages->saveMessage($message))
+		if (Craft::$app->emailMessages->saveMessage($message))
 		{
 			$this->returnJson(array('success' => true));
 		}

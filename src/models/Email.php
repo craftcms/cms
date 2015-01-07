@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
 /**
@@ -93,7 +94,7 @@ class Email extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$settings = craft()->email->getSettings();
+		$settings = Craft::$app->email->getSettings();
 
 		$fromEmail = !empty($settings['emailAddress']) ? $settings['emailAddress'] : '';
 		$fromName =  !empty($settings['senderName']) ? $settings['senderName'] : '';

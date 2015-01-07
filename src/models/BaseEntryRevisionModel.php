@@ -13,7 +13,7 @@ use craft\app\helpers\ElementHelper;
 use craft\app\models\Entry           as EntryModel;
 use craft\app\models\User            as UserModel;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class BaseEntryRevision model.
@@ -40,7 +40,7 @@ class BaseEntryRevisionModel extends EntryModel
 
 		foreach ($content as $fieldId => $value)
 		{
-			$field = craft()->fields->getFieldById($fieldId);
+			$field = Craft::$app->fields->getFieldById($fieldId);
 
 			if ($field)
 			{
@@ -59,7 +59,7 @@ class BaseEntryRevisionModel extends EntryModel
 	 */
 	public function getCreator()
 	{
-		return craft()->users->getUserById($this->creatorId);
+		return Craft::$app->users->getUserById($this->creatorId);
 	}
 
 	/**

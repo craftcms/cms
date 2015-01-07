@@ -62,7 +62,7 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * craft/plugins/myplugin/templates/_settings.html, passing the settings to it:
 	 *
 	 * ```php
-	 * return craft()->templates->render('myplugin/_settings', array(
+	 * return Craft::$app->templates->render('myplugin/_settings', array(
 	 *     'settings' => $this->getSettings()
 	 * ));
 	 * ```
@@ -111,13 +111,13 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	 * public function getSettingsHtml()
 	 * {
 	 *     // Come up with an ID value for 'foo'
-	 *     $id = craft()->templates->formatInputId('foo');
+	 *     $id = Craft::$app->templates->formatInputId('foo');
 	 *
 	 *     // Figure out what that ID is going to be namespaced into
-	 *     $namespacedId = craft()->templates->namespaceInputId($id);
+	 *     $namespacedId = Craft::$app->templates->namespaceInputId($id);
 	 *
 	 *     // Render and return the input template
-	 *     return craft()->templates->render('myplugin/_fieldinput', array(
+	 *     return Craft::$app->templates->render('myplugin/_fieldinput', array(
 	 *         'id'           => $id,
 	 *         'namespacedId' => $namespacedId,
 	 *         'settings'     => $this->getSettings()

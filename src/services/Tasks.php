@@ -18,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Class Tasks service.
  *
- * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `craft()->tasks`]].
+ * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->tasks`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -74,7 +74,7 @@ class Tasks extends Component
 		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
 		{
 			// Turn this request into a runner once everything else is done
-			craft()->attachEventHandler('onEndRequest', array($this, 'closeAndRun'));
+			Craft::$app->attachEventHandler('onEndRequest', array($this, 'closeAndRun'));
 			$this->_listeningForRequestEnd = true;
 		}
 
@@ -146,14 +146,14 @@ class Tasks extends Component
 	 */
 	public function closeAndRun()
 	{
-		// Make sure a future call to craft()->end() dosen't trigger this a second time
-		craft()->detachEventHandler('onEndRequest', array($this, 'closeAndRun'));
+		// Make sure a future call to Craft::$app->end() dosen't trigger this a second time
+		Craft::$app->detachEventHandler('onEndRequest', array($this, 'closeAndRun'));
 
 		// Make sure nothing has been output to the browser yet
 		if (!headers_sent())
 		{
 			// Close the client connection
-			craft()->request->close();
+			Craft::$app->request->close();
 
 			// Run any pending tasks
 			$this->runPendingTasks();
@@ -206,7 +206,7 @@ class Tasks extends Component
 		}
 
 		// It's go time.
-		craft()->config->maxPowerCaptain();
+		Craft::$app->config->maxPowerCaptain();
 
 		while ($task = $this->getNextPendingTask())
 		{
@@ -345,7 +345,7 @@ class Tasks extends Component
 	 */
 	public function getTaskById($taskId)
 	{
-		$result = craft()->db->createCommand()
+		$result = Craft::$app->db->createCommand()
 			->select('*')
 			->from('tasks')
 			->where('id = :id', array(':id' => $taskId))
@@ -364,7 +364,7 @@ class Tasks extends Component
 	 */
 	public function getAllTasks()
 	{
-		$results = craft()->db->createCommand()
+		$results = Craft::$app->db->createCommand()
 			->select('*')
 			->from('tasks')
 			->order('root asc, lft asc')
@@ -382,7 +382,7 @@ class Tasks extends Component
 	{
 		if (!isset($this->_runningTask))
 		{
-			$result = craft()->db->createCommand()
+			$result = Craft::$app->db->createCommand()
 				->select('*')
 				->from('tasks')
 				->where(
@@ -415,7 +415,7 @@ class Tasks extends Component
 	public function isTaskRunning()
 	{
 		// Remember that a root task could appear to be stagnant if it has sub-tasks.
-		return (bool) craft()->db->createCommand()
+		return (bool) Craft::$app->db->createCommand()
 			->from('tasks')
 			->where(
 				array('and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/),
@@ -442,7 +442,7 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		return (bool) craft()->db->createCommand()
+		return (bool) Craft::$app->db->createCommand()
 			->from('tasks')
 			->where($conditions, $params)
 			->count('id');
@@ -467,7 +467,7 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->from('tasks')
 			->where($conditions, $params);
 
@@ -487,7 +487,7 @@ class Tasks extends Component
 	 */
 	public function haveTasksFailed()
 	{
-		return (bool) craft()->db->createCommand()
+		return (bool) Craft::$app->db->createCommand()
 			->from('tasks')
 			->where(array('and', 'level = 0', 'status = :status'), array(':status' => TaskStatus::Error))
 			->count('id');
@@ -500,7 +500,7 @@ class Tasks extends Component
 	 */
 	public function getTotalTasks()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->from('tasks')
 			->where(
 				array('and', 'lft = 1', 'status != :status'),

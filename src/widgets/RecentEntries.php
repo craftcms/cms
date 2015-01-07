@@ -49,7 +49,7 @@ class RecentEntries extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/widgets/RecentEntries/settings', array(
+		return Craft::$app->templates->render('_components/widgets/RecentEntries/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -61,13 +61,13 @@ class RecentEntries extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			$sectionId = $this->getSettings()->section;
 
 			if (is_numeric($sectionId))
 			{
-				$section = craft()->sections->getSectionById($sectionId);
+				$section = Craft::$app->sections->getSectionById($sectionId);
 
 				if ($section)
 				{
@@ -86,9 +86,9 @@ class RecentEntries extends BaseWidget
 		// See if they are pulling entries from a different locale
 		$targetLocale = $this->_getTargetLocale();
 
-		if ($targetLocale && $targetLocale != craft()->language)
+		if ($targetLocale && $targetLocale != Craft::$app->language)
 		{
-			$locale = craft()->i18n->getLocaleById($targetLocale);
+			$locale = Craft::$app->i18n->getLocaleById($targetLocale);
 
 			$title = Craft::t('{title} ({locale})', array(
 				'title'  => $title,
@@ -108,7 +108,7 @@ class RecentEntries extends BaseWidget
 	{
 		$params = array();
 
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			$sectionId = $this->getSettings()->section;
 
@@ -120,13 +120,13 @@ class RecentEntries extends BaseWidget
 
 		$js = 'new Craft.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
 
-		craft()->templates->includeJsResource('js/RecentEntriesWidget.js');
-		craft()->templates->includeJs($js);
-		craft()->templates->includeTranslations('by {author}');
+		Craft::$app->templates->includeJsResource('js/RecentEntriesWidget.js');
+		Craft::$app->templates->includeJs($js);
+		Craft::$app->templates->includeTranslations('by {author}');
 
 		$entries = $this->_getEntries();
 
-		return craft()->templates->render('_components/widgets/RecentEntries/body', array(
+		return Craft::$app->templates->render('_components/widgets/RecentEntries/body', array(
 			'entries' => $entries
 		));
 	}
@@ -143,7 +143,7 @@ class RecentEntries extends BaseWidget
 	{
 		return [
 			'section' => [AttributeType::Mixed, 'default' => '*'],
-			'locale'  => [AttributeType::Locale, 'default' => craft()->language],
+			'locale'  => [AttributeType::Locale, 'default' => Craft::$app->language],
 			'limit'   => [AttributeType::Number, 'default' => 10],
 		];
 	}
@@ -180,7 +180,7 @@ class RecentEntries extends BaseWidget
 			return array();
 		}
 
-		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 		$criteria->status = null;
 		$criteria->localeEnabled = null;
 		$criteria->locale = $targetLocale;
@@ -201,7 +201,7 @@ class RecentEntries extends BaseWidget
 	{
 		$sectionIds = array();
 
-		foreach (craft()->sections->getEditableSections() as $section)
+		foreach (Craft::$app->sections->getEditableSections() as $section)
 		{
 			if ($section->type != SectionType::Single)
 			{
@@ -223,7 +223,7 @@ class RecentEntries extends BaseWidget
 		// their first editable locale.
 
 		// Figure out which locales the user is actually allowed to edit
-		$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
+		$editableLocaleIds = Craft::$app->i18n->getEditableLocaleIds();
 
 		// If they aren't allowed to edit *any* locales, return false
 		if (!$editableLocaleIds)

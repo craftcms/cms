@@ -72,16 +72,16 @@ class FindAndReplace extends BaseTask
 
 		if ($matrixFieldId)
 		{
-			$matrixField = craft()->fields->getFieldById($matrixFieldId);
+			$matrixField = Craft::$app->fields->getFieldById($matrixFieldId);
 
 			if (!$matrixField || $matrixField->type != 'Matrix')
 			{
 				return 0;
 			}
 
-			$this->_table = craft()->matrix->getContentTableName($matrixField);
+			$this->_table = Craft::$app->matrix->getContentTableName($matrixField);
 
-			$blockTypes = craft()->matrix->getBlockTypesByFieldId($matrixFieldId);
+			$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($matrixFieldId);
 
 			foreach ($blockTypes as $blockType)
 			{
@@ -97,7 +97,7 @@ class FindAndReplace extends BaseTask
 		{
 			$this->_table = 'content';
 
-			foreach (craft()->fields->getAllFields() as $field)
+			foreach (Craft::$app->fields->getAllFields() as $field)
 			{
 				$this->_checkField($field, 'field_');
 			}
@@ -123,7 +123,7 @@ class FindAndReplace extends BaseTask
 		{
 			if (isset($this->_textColumns[$step]))
 			{
-				craft()->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
+				Craft::$app->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
 				return true;
 			}
 			else
@@ -132,7 +132,7 @@ class FindAndReplace extends BaseTask
 
 				if (isset($this->_matrixFieldIds[$step]))
 				{
-					$field = craft()->fields->getFieldById($this->_matrixFieldIds[$step]);
+					$field = Craft::$app->fields->getFieldById($this->_matrixFieldIds[$step]);
 
 					if ($field)
 					{

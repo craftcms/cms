@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\BaseSavableComponentType;
+use craft\app\Craft;
 use craft\app\db\DbCommand;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
@@ -124,10 +125,10 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	public function getStaticHtml($value)
 	{
 		// Just return the input HTML with disabled inputs by default
-		craft()->templates->startJsBuffer();
+		Craft::$app->templates->startJsBuffer();
 		$inputHtml = $this->getInputHtml(StringHelper::randomString(), $value);
 		$inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
-		craft()->templates->clearJsBuffer();
+		Craft::$app->templates->clearJsBuffer();
 
 		return $inputHtml;
 	}
@@ -204,7 +205,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 			if ($this->defineContentAttribute())
 			{
 				$handle = $this->model->handle;
-				$query->andWhere(DbHelper::parseParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
+				$query->andWhere(DbHelper::parseParam('content.'.Craft::$app->content->fieldColumnPrefix.$handle, $value, $query->params));
 			}
 			else
 			{

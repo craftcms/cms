@@ -10,7 +10,7 @@ namespace craft\app\variables;
 use craft\app\Craft;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Email functions.
@@ -30,7 +30,7 @@ class EmailMessages
 	 */
 	public function getAllMessages()
 	{
-		return craft()->emailMessages->getAllMessages();
+		return Craft::$app->emailMessages->getAllMessages();
 	}
 
 	/**
@@ -43,6 +43,6 @@ class EmailMessages
 	 */
 	public function getMessage($key, $language = null)
 	{
-		return craft()->emailMessages->getMessage($key, $language);
+		return Craft::$app->emailMessages->getMessage($key, $language);
 	}
 }

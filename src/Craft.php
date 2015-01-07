@@ -59,7 +59,7 @@ class Craft extends \Yii
 	public static function dd($target, $depth = 10, $highlight = true)
 	{
 		static::dump($target, $depth, $highlight);
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**
@@ -140,7 +140,7 @@ class Craft extends \Yii
 	 * @param string|null $source    Defines which message source application component to use. Defaults to null,
 	 *                               meaning use 'coreMessages' for messages belonging to the 'yii' category and using
 	 *                               'messages' for messages belonging to Craft.
-	 * @param string|null $language  The target language. If set to null (default), craft()->getLanguage() will be used.
+	 * @param string|null $language  The target language. If set to null (default), Craft::$app->getLanguage() will be used.
 	 * @param string      $category  The message category. Please use only word letters. Note, category 'craft' is
 	 *                               reserved for Craft and 'yii' is reserved for the Yii framework.
 	 *
@@ -160,7 +160,7 @@ class Craft extends \Yii
 		}
 
 		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
-		if (craft()->config->get('translationDebugOutput'))
+		if (Craft::$app->config->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';
 		}
@@ -204,7 +204,7 @@ class Craft extends \Yii
 			}
 		}
 
-		if (craft()->isConsole())
+		if (Craft::$app->isConsole())
 		{
 			echo $msg."\n";
 		}
@@ -238,14 +238,4 @@ class Craft extends \Yii
 			\Yii::$classMap[$class] = $file;
 		}
 	}
-}
-
-/**
- * Returns the current craft() instance. This is a wrapper function for the Craft::app() instance.
- *
- * @return \craft\app\web\Application|\craft\app\console\Application
- */
-function craft()
-{
-	return Craft::app();
 }

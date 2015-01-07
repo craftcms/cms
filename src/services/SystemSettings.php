@@ -15,7 +15,7 @@ use craft\app\web\Application;
 /**
  * Class SystemSettings service.
  *
- * An instance of the SystemSettings service is globally accessible in Craft via [[Application::systemSettings `craft()->systemSettings`]].
+ * An instance of the SystemSettings service is globally accessible in Craft via [[Application::systemSettings `Craft::$app->systemSettings`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

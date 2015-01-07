@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\dates\DateInterval;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
@@ -19,7 +20,7 @@ use craft\app\records\Token           as TokenRecord;
 /**
  * The Tokens service.
  *
- * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `craft()->tokens`]].
+ * An instance of the Tokens service is globally accessible in Craft via [[Application::tokens `Craft::$app->tokens`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -54,11 +55,11 @@ class Tokens extends Component
 		if (!$expiryDate)
 		{
 			$expiryDate = DateTimeHelper::currentUTCDateTime();
-			$expiryDate->add(new DateInterval(craft()->config->get('defaultTokenDuration')));
+			$expiryDate->add(new DateInterval(Craft::$app->config->get('defaultTokenDuration')));
 		}
 
 		$tokenRecord = new TokenRecord();
-		$tokenRecord->token = craft()->security->generateRandomString(32, false);
+		$tokenRecord->token = Craft::$app->security->generateRandomString(32, false);
 		$tokenRecord->route = $route;
 
 		if ($usageLimit)
@@ -92,7 +93,7 @@ class Tokens extends Component
 		// Take the opportunity to delete any expired tokens
 		$this->deleteExpiredTokens();
 
-		$result = craft()->db->createCommand()
+		$result = Craft::$app->db->createCommand()
 			->select('id, route, usageLimit, usageCount')
 			->from('tokens')
 			->where('token = :token', array(':token' => $token))
@@ -141,7 +142,7 @@ class Tokens extends Component
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
-		$affectedRows = craft()->db->createCommand()->update('tokens', array(
+		$affectedRows = Craft::$app->db->createCommand()->update('tokens', array(
 			'usageCount' => 'usageCount + 1'
 		), array(
 			'id' => $tokenId
@@ -159,7 +160,7 @@ class Tokens extends Component
 	 */
 	public function deleteTokenById($tokenId)
 	{
-		$affectedRows = craft()->db->createCommand()->delete('tokens', array(
+		$affectedRows = Craft::$app->db->createCommand()->delete('tokens', array(
 			'id' => $tokenId
 		));
 	}
@@ -177,7 +178,7 @@ class Tokens extends Component
 			return false;
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete('tokens',
+		$affectedRows = Craft::$app->db->createCommand()->delete('tokens',
 			'expiryDate <= :now',
 			array('now' => DateTimeHelper::currentTimeForDb())
 		);

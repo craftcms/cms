@@ -10,7 +10,7 @@ namespace craft\app\variables;
 use craft\app\Craft;
 use craft\app\models\UserGroup as UserGroupModel;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * User group functions.
@@ -32,7 +32,7 @@ class UserGroups
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		return craft()->userGroups->getAllGroups($indexBy);
+		return Craft::$app->userGroups->getAllGroups($indexBy);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class UserGroups
 	 */
 	public function getGroupById($groupId)
 	{
-		return craft()->userGroups->getGroupById($groupId);
+		return Craft::$app->userGroups->getGroupById($groupId);
 	}
 
 	/**
@@ -56,6 +56,6 @@ class UserGroups
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		return craft()->userGroups->getGroupByHandle($groupHandle);
+		return Craft::$app->userGroups->getGroupByHandle($groupHandle);
 	}
 }

@@ -47,7 +47,7 @@ class ResaveElements extends BaseTask
 	 */
 	public function getDescription()
 	{
-		$elementType = craft()->elements->getElementType($this->getSettings()->elementType);
+		$elementType = Craft::$app->elements->getElementType($this->getSettings()->elementType);
 
 		return Craft::t('Resaving {type}', array(
 			'type' => StringHelper::toLowerCase($elementType->getName())
@@ -64,10 +64,10 @@ class ResaveElements extends BaseTask
 		$settings = $this->getSettings();
 
 		// Let's save ourselves some trouble and just clear all the caches for this element type
-		craft()->templateCache->deleteCachesByElementType($settings->elementType);
+		Craft::$app->templateCache->deleteCachesByElementType($settings->elementType);
 
 		// Now find the affected element IDs
-		$criteria = craft()->elements->getCriteria($settings->elementType, $settings->criteria);
+		$criteria = Craft::$app->elements->getCriteria($settings->elementType, $settings->criteria);
 		$criteria->offset = null;
 		$criteria->limit = null;
 		$criteria->order = null;
@@ -90,9 +90,9 @@ class ResaveElements extends BaseTask
 	{
 		try
 		{
-			$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
+			$element = Craft::$app->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
 
-			if (!$element || craft()->elements->saveElement($element, false))
+			if (!$element || Craft::$app->elements->saveElement($element, false))
 			{
 				return true;
 			}

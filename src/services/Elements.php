@@ -30,7 +30,7 @@ use craft\app\web\Application;
 /**
  * The Elements service provides APIs for managing elements.
  *
- * An instance of the Elements service is globally accessible in Craft via [[Application::elements `craft()->elements`]].
+ * An instance of the Elements service is globally accessible in Craft via [[Application::elements `Craft::$app->elements`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -57,7 +57,7 @@ class Elements extends Component
 	 * This should be the starting point any time you want to fetch elements in Craft.
 	 *
 	 * ```php
-	 * $criteria = craft()->elements->getCriteria(ElementType::Entry);
+	 * $criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 	 * $criteria->section = 'news';
 	 * $entries = $criteria->find();
 	 * ```
@@ -91,7 +91,7 @@ class Elements extends Component
 	 * @param int    $elementId   The element’s ID.
 	 * @param null   $elementType The element type’s class handle.
 	 * @param string $localeId    The locale to fetch the element in.
-	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `craft()->getLanguage`]].
+	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.
 	 */
@@ -125,7 +125,7 @@ class Elements extends Component
 	 *
 	 * @param string      $uri         The element’s URI.
 	 * @param string|null $localeId    The locale to look for the URI in, and to return the element in.
-	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `craft()->getLanguage()`]].
+	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
 	 * @return BaseElementModel|null The matching element, or `null`.
@@ -139,7 +139,7 @@ class Elements extends Component
 
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
 		// First get the element ID and type
@@ -161,7 +161,7 @@ class Elements extends Component
 			$conditions[] = 'elements.archived = 0';
 		}
 
-		$result = craft()->db->createCommand()
+		$result = Craft::$app->db->createCommand()
 			->select('elements.id, elements.type')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -191,7 +191,7 @@ class Elements extends Component
 	{
 		if (is_array($elementId))
 		{
-			return craft()->db->createCommand()
+			return Craft::$app->db->createCommand()
 				->selectDistinct('type')
 				->from('elements')
 				->where(array('in', 'id', $elementId))
@@ -199,7 +199,7 @@ class Elements extends Component
 		}
 		else
 		{
-			return craft()->db->createCommand()
+			return Craft::$app->db->createCommand()
 				->select('type')
 				->from('elements')
 				->where(array('id' => $elementId))
@@ -238,7 +238,7 @@ class Elements extends Component
 					return array();
 				}
 
-				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $ids));
+				$query->order(Craft::$app->db->getSchema()->orderByColumnValues('elements.id', $ids));
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
@@ -400,7 +400,7 @@ class Elements extends Component
 
 			if ($criteria->search)
 			{
-				$elementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, false);
+				$elementIds = Craft::$app->search->filterElementIdsByQuery($elementIds, $criteria->search, false);
 			}
 
 			return count($elementIds);
@@ -439,18 +439,18 @@ class Elements extends Component
 		if (!$elementType->isLocalized())
 		{
 			// The criteria *must* be set to the primary locale
-			$criteria->locale = craft()->i18n->getPrimarySiteLocaleId();
+			$criteria->locale = Craft::$app->i18n->getPrimarySiteLocaleId();
 		}
 		else if (!$criteria->locale)
 		{
 			// Default to the current app locale
-			$criteria->locale = craft()->language;
+			$criteria->locale = Craft::$app->language;
 		}
 
 		// Set up the query
 		// ---------------------------------------------------------------------
 
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -619,7 +619,7 @@ class Elements extends Component
 
 			$criteria->relatedTo = $relatedTo;
 
-			craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
+			Craft::$app->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
 		}
 
 		if ($criteria->relatedTo)
@@ -647,7 +647,7 @@ class Elements extends Component
 
 		if ($elementType->hasContent() && $contentTable)
 		{
-			$contentService = craft()->content;
+			$contentService = Craft::$app->content;
 			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
 			$extraCriteriaAttributes = $criteria->getExtraAttributeNames();
 
@@ -706,7 +706,7 @@ class Elements extends Component
 			{
 				if (!$criteria->ancestorOf instanceof BaseElementModel)
 				{
-					$criteria->ancestorOf = craft()->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->ancestorOf = Craft::$app->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->ancestorOf)
 					{
@@ -742,7 +742,7 @@ class Elements extends Component
 			{
 				if (!$criteria->descendantOf instanceof BaseElementModel)
 				{
-					$criteria->descendantOf = craft()->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->descendantOf = Craft::$app->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->descendantOf)
 					{
@@ -778,7 +778,7 @@ class Elements extends Component
 			{
 				if (!$criteria->siblingOf instanceof BaseElementModel)
 				{
-					$criteria->siblingOf = craft()->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->siblingOf = Craft::$app->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->siblingOf)
 					{
@@ -830,7 +830,7 @@ class Elements extends Component
 			{
 				if (!$criteria->prevSiblingOf instanceof BaseElementModel)
 				{
-					$criteria->prevSiblingOf = craft()->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->prevSiblingOf = Craft::$app->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->prevSiblingOf)
 					{
@@ -859,7 +859,7 @@ class Elements extends Component
 			{
 				if (!$criteria->nextSiblingOf instanceof BaseElementModel)
 				{
-					$criteria->nextSiblingOf = craft()->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->nextSiblingOf = Craft::$app->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->nextSiblingOf)
 					{
@@ -888,7 +888,7 @@ class Elements extends Component
 			{
 				if (!$criteria->positionedBefore instanceof BaseElementModel)
 				{
-					$criteria->positionedBefore = craft()->elements->getElementById($criteria->positionedBefore, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->positionedBefore = Craft::$app->elements->getElementById($criteria->positionedBefore, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->positionedBefore)
 					{
@@ -915,7 +915,7 @@ class Elements extends Component
 			{
 				if (!$criteria->positionedAfter instanceof BaseElementModel)
 				{
-					$criteria->positionedAfter = craft()->elements->getElementById($criteria->positionedAfter, $elementType->getClassHandle(), $criteria->locale);
+					$criteria->positionedAfter = Craft::$app->elements->getElementById($criteria->positionedAfter, $elementType->getClassHandle(), $criteria->locale);
 
 					if (!$criteria->positionedAfter)
 					{
@@ -943,7 +943,7 @@ class Elements extends Component
 			{
 				$criteria->level = $criteria->depth;
 				$criteria->depth = null;
-				craft()->deprecator->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
+				Craft::$app->deprecator->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
 			}
 
 			if ($criteria->level)
@@ -959,7 +959,7 @@ class Elements extends Component
 		{
 			$elementIds = $this->_getElementIdsFromQuery($query);
 			$scoredSearchResults = ($criteria->order == 'score');
-			$filteredElementIds = craft()->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
+			$filteredElementIds = Craft::$app->search->filterElementIdsByQuery($elementIds, $criteria->search, $scoredSearchResults);
 
 			// No results?
 			if (!$filteredElementIds)
@@ -972,7 +972,7 @@ class Elements extends Component
 			if ($scoredSearchResults)
 			{
 				// Order the elements in the exact order that the Search service returned them in
-				$query->order(craft()->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
+				$query->order(Craft::$app->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
 		}
 
@@ -989,7 +989,7 @@ class Elements extends Component
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('uri')
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'locale' => $localeId))
@@ -1006,7 +1006,7 @@ class Elements extends Component
 	 */
 	public function getEnabledLocalesForElement($elementId)
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('locale')
 			->from('elements_i18n')
 			->where(array('elementId' => $elementId, 'enabled' => 1))
@@ -1060,7 +1060,7 @@ class Elements extends Component
 				$validateContent = (bool) $element->enabled;
 			}
 
-			if ($validateContent && !craft()->content->validateContent($element))
+			if ($validateContent && !Craft::$app->content->validateContent($element))
 			{
 				$element->addErrors($element->getContent()->getErrors());
 				return false;
@@ -1113,7 +1113,7 @@ class Elements extends Component
 		$elementRecord->enabled = (bool) $element->enabled;
 		$elementRecord->archived = (bool) $element->archived;
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -1147,11 +1147,11 @@ class Elements extends Component
 					// Save the content
 					if ($elementType->hasContent())
 					{
-						craft()->content->saveContent($element, false, (bool)$element->id);
+						Craft::$app->content->saveContent($element, false, (bool)$element->id);
 					}
 
 					// Update the search index
-					craft()->search->indexElementAttributes($element);
+					Craft::$app->search->indexElementAttributes($element);
 
 					// Update the locale records and content
 
@@ -1244,12 +1244,12 @@ class Elements extends Component
 								if (!$isNewElement)
 								{
 									// Do we already have a content row for this locale?
-									$content = craft()->content->getContent($localizedElement);
+									$content = Craft::$app->content->getContent($localizedElement);
 								}
 
 								if (!$content)
 								{
-									$content = craft()->content->createContent($localizedElement);
+									$content = Craft::$app->content->createContent($localizedElement);
 									$content->setAttributes($element->getContent()->getAttributes());
 									$content->id = null;
 									$content->locale = $localeId;
@@ -1260,7 +1260,7 @@ class Elements extends Component
 
 							if (!$localizedElement->getContent()->id)
 							{
-								craft()->content->saveContent($localizedElement, false, false);
+								Craft::$app->content->saveContent($localizedElement, false, false);
 							}
 						}
 
@@ -1309,7 +1309,7 @@ class Elements extends Component
 						{
 							// Delete the rows that don't need to be there anymore
 
-							craft()->db->createCommand()->delete('elements_i18n', array('and',
+							Craft::$app->db->createCommand()->delete('elements_i18n', array('and',
 								'elementId = :elementId',
 								array('not in', 'locale', $localeIds)
 							), array(
@@ -1318,7 +1318,7 @@ class Elements extends Component
 
 							if ($elementType->hasContent())
 							{
-								craft()->db->createCommand()->delete($element->getContentTable(), array('and',
+								Craft::$app->db->createCommand()->delete($element->getContentTable(), array('and',
 									'elementId = :elementId',
 									array('not in', 'locale', $localeIds)
 								), array(
@@ -1351,7 +1351,7 @@ class Elements extends Component
 
 						// Finally, delete any caches involving this element. (Even do this for new elements, since they
 						// might pop up in a cached criteria.)
-						craft()->templateCache->deleteCachesByElement($element);
+						Craft::$app->templateCache->deleteCachesByElement($element);
 					}
 				}
 			}
@@ -1415,7 +1415,7 @@ class Elements extends Component
 	{
 		ElementHelper::setUniqueUri($element);
 
-		craft()->db->createCommand()->update('elements_i18n', array(
+		Craft::$app->db->createCommand()->update('elements_i18n', array(
 			'slug' => $element->slug,
 			'uri'  => $element->uri
 		), array(
@@ -1424,7 +1424,7 @@ class Elements extends Component
 		));
 
 		// Delete any caches involving this element
-		craft()->templateCache->deleteCachesByElement($element);
+		Craft::$app->templateCache->deleteCachesByElement($element);
 
 		if ($updateOtherLocales)
 		{
@@ -1446,7 +1446,7 @@ class Elements extends Component
 	 */
 	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
 	{
-		foreach (craft()->i18n->getSiteLocaleIds() as $localeId)
+		foreach (Craft::$app->i18n->getSiteLocaleIds() as $localeId)
 		{
 			if ($localeId == $element->locale)
 			{
@@ -1501,11 +1501,11 @@ class Elements extends Component
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Update any relations that point to the merged element
-			$relations = craft()->db->createCommand()
+			$relations = Craft::$app->db->createCommand()
 				->select('id, fieldId, sourceId, sourceLocale')
 				->from('relations')
 				->where(array('targetId' => $mergedElementId))
@@ -1514,7 +1514,7 @@ class Elements extends Component
 			foreach ($relations as $relation)
 			{
 				// Make sure the persisting element isn't already selected in the same field
-				$persistingElementIsRelatedToo = (bool) craft()->db->createCommand()
+				$persistingElementIsRelatedToo = (bool) Craft::$app->db->createCommand()
 					->from('relations')
 					->where(array(
 						'fieldId'      => $relation['fieldId'],
@@ -1526,7 +1526,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsRelatedToo)
 				{
-					craft()->db->createCommand()->update('relations', array(
+					Craft::$app->db->createCommand()->update('relations', array(
 						'targetId' => $prevailingElementId
 					), array(
 						'id' => $relation['id']
@@ -1535,7 +1535,7 @@ class Elements extends Component
 			}
 
 			// Update any structures that the merged element is in
-			$structureElements = craft()->db->createCommand()
+			$structureElements = Craft::$app->db->createCommand()
 				->select('id, structureId')
 				->from('structureelements')
 				->where(array('elementId' => $mergedElementId))
@@ -1544,7 +1544,7 @@ class Elements extends Component
 			foreach ($structureElements as $structureElement)
 			{
 				// Make sure the persisting element isn't already a part of that structure
-				$persistingElementIsInStructureToo = (bool) craft()->db->createCommand()
+				$persistingElementIsInStructureToo = (bool) Craft::$app->db->createCommand()
 					->from('structureElements')
 					->where(array(
 						'structureId' => $structureElement['structureId'],
@@ -1554,7 +1554,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsInStructureToo)
 				{
-					craft()->db->createCommand()->update('relations', array(
+					Craft::$app->db->createCommand()->update('relations', array(
 						'elementId' => $prevailingElementId
 					), array(
 						'id' => $structureElement['id']
@@ -1569,12 +1569,12 @@ class Elements extends Component
 			{
 				$refTagPrefix = '{'.lcfirst($elementType).':';
 
-				craft()->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
 					'find'    => $refTagPrefix.$mergedElementId.':',
 					'replace' => $refTagPrefix.$prevailingElementId.':',
 				));
 
-				craft()->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
 					'find'    => $refTagPrefix.$mergedElementId.'}',
 					'replace' => $refTagPrefix.$prevailingElementId.'}',
 				));
@@ -1627,7 +1627,7 @@ class Elements extends Component
 			$elementIds = array($elementIds);
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -1661,7 +1661,7 @@ class Elements extends Component
 
 			// Delete the caches before they drop their elementId relations (passing `false` because there's no chance
 			// this element is suddenly going to show up in a new query)
-			craft()->templateCache->deleteCachesByElementId($elementIds, false);
+			Craft::$app->templateCache->deleteCachesByElementId($elementIds, false);
 
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
@@ -1678,7 +1678,7 @@ class Elements extends Component
 			}
 
 			// First delete any Matrix blocks that belong to this element(s)
-			$matrixBlockIds = craft()->db->createCommand()
+			$matrixBlockIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('matrixblocks')
 				->where($matrixBlockCondition)
@@ -1686,14 +1686,14 @@ class Elements extends Component
 
 			if ($matrixBlockIds)
 			{
-				craft()->matrix->deleteBlockById($matrixBlockIds);
+				Craft::$app->matrix->deleteBlockById($matrixBlockIds);
 			}
 
 			// Delete the elements table rows, which will cascade across all other InnoDB tables
-			$affectedRows = craft()->db->createCommand()->delete('elements', $condition);
+			$affectedRows = Craft::$app->db->createCommand()->delete('elements', $condition);
 
 			// The searchindex table is MyISAM, though
-			craft()->db->createCommand()->delete('searchindex', $searchIndexCondition);
+			Craft::$app->db->createCommand()->delete('searchindex', $searchIndexCondition);
 
 			if ($transaction !== null)
 			{
@@ -1723,7 +1723,7 @@ class Elements extends Component
 	public function deleteElementsByType($type)
 	{
 		// Get the IDs and let deleteElementById() take care of the actual deletion
-		$elementIds = craft()->db->createCommand()
+		$elementIds = Craft::$app->db->createCommand()
 			->select('id')
 			->from('elements')
 			->where('type = :type', array(':type' => $type))
@@ -1734,7 +1734,7 @@ class Elements extends Component
 			$this->deleteElementById($elementIds);
 
 			// Delete the template caches
-			craft()->templateCache->deleteCachesByElementType($type);
+			Craft::$app->templateCache->deleteCachesByElementType($type);
 		}
 	}
 
@@ -1748,7 +1748,7 @@ class Elements extends Component
 	 */
 	public function getAllElementTypes()
 	{
-		return craft()->components->getComponentsByType(ComponentType::Element);
+		return Craft::$app->components->getComponentsByType(ComponentType::Element);
 	}
 
 	/**
@@ -1760,7 +1760,7 @@ class Elements extends Component
 	 */
 	public function getElementType($class)
 	{
-		return craft()->components->getComponentByTypeAndClass(ComponentType::Element, $class);
+		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::Element, $class);
 	}
 
 	// Element Actions
@@ -1773,7 +1773,7 @@ class Elements extends Component
 	 */
 	public function getAllActions()
 	{
-		return craft()->components->getComponentsByType(ComponentType::ElementAction);
+		return Craft::$app->components->getComponentsByType(ComponentType::ElementAction);
 	}
 
 	/**
@@ -1785,7 +1785,7 @@ class Elements extends Component
 	 */
 	public function getAction($class)
 	{
-		return craft()->components->getComponentByTypeAndClass(ComponentType::ElementAction, $class);
+		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::ElementAction, $class);
 	}
 
 	// Misc
@@ -1826,7 +1826,7 @@ class Elements extends Component
 
 				foreach ($refTagsByElementType as $elementTypeHandle => $refTags)
 				{
-					$elementType = craft()->elements->getElementType($elementTypeHandle);
+					$elementType = Craft::$app->elements->getElementType($elementTypeHandle);
 
 					if (!$elementType)
 					{
@@ -1862,7 +1862,7 @@ class Elements extends Component
 
 							if ($refTagsByThing)
 							{
-								$criteria = craft()->elements->getCriteria($elementTypeHandle);
+								$criteria = Craft::$app->elements->getCriteria($elementTypeHandle);
 								$criteria->status = null;
 								$criteria->$thing = array_keys($refTagsByThing);
 								$elements = $criteria->find();
@@ -2019,7 +2019,7 @@ class Elements extends Component
 	private function _getElementIdsFromQuery(DbCommand $query)
 	{
 		// Get the matched element IDs, and then have the Search service filter them.
-		$elementIdsQuery = craft()->db->createCommand()
+		$elementIdsQuery = Craft::$app->db->createCommand()
 			->select('elements.id')
 			->from('elements elements')
 			->group('elements.id');

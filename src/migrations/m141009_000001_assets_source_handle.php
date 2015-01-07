@@ -27,7 +27,7 @@ class m141009_000001_assets_source_handle extends BaseMigration
 		Craft::log('Adding `handle` column on assetsources table..', LogLevel::Info, true);
 		$this->addColumnAfter('assetsources', 'handle', array('maxLength' => 255, 'column' => 'varchar', 'required' => true), 'name');
 
-		$sourceRows = craft()->db->createCommand()
+		$sourceRows = Craft::$app->db->createCommand()
 			->select('id, name')
 			->from('assetsources')
 			->queryAll();
@@ -39,7 +39,7 @@ class m141009_000001_assets_source_handle extends BaseMigration
 			$sourceName = $row['name'];
 			$handle = $this->_makeHandle($sourceName);
 
-			craft()->db->createCommand()
+			Craft::$app->db->createCommand()
 				->update('assetsources', array('handle' => $handle), 'id = :sourceId', array(':sourceId' => $row['id']));
 		}
 
@@ -83,7 +83,7 @@ class m141009_000001_assets_source_handle extends BaseMigration
 
 		while (true)
 		{
-			$taken = craft()->db->createCommand()
+			$taken = Craft::$app->db->createCommand()
 				->select('handle')->from('assetsources')
 				->where('handle = :handle', array(':handle' => $handle.$appendix))
 				->queryScalar();

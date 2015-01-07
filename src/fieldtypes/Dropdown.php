@@ -48,7 +48,7 @@ class Dropdown extends BaseOptionsFieldType
 			$value = $this->getDefaultValue();
 		}
 
-		return craft()->templates->render('_includes/forms/select', array(
+		return Craft::$app->templates->render('_includes/forms/select', array(
 			'name'    => $name,
 			'value'   => $value,
 			'options' => $options

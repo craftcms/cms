@@ -52,11 +52,11 @@ class SystemSettingsController extends BaseController
 	public function actionSettingsIndex()
 	{
 		// Get all the tools
-		$tools = craft()->components->getComponentsByType(ComponentType::Tool);
+		$tools = Craft::$app->components->getComponentsByType(ComponentType::Tool);
 		ksort($tools);
 
 		// If there are no Asset sources, don't display the update Asset indexes tool.
-		if (count(craft()->assetSources->getAllSources()) == 0)
+		if (count(Craft::$app->assetSources->getAllSources()) == 0)
 		{
 			unset($tools['AssetIndex']);
 		}
@@ -77,7 +77,7 @@ class SystemSettingsController extends BaseController
 	{
 		if (empty($variables['info']))
 		{
-			$variables['info'] = craft()->getInfo();
+			$variables['info'] = Craft::$app->getInfo();
 		}
 
 		// Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
@@ -133,24 +133,24 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$info = craft()->getInfo();
+		$info = Craft::$app->getInfo();
 
-		$info->on          = (bool) craft()->request->getPost('on');
-		$info->siteName    = craft()->request->getPost('siteName');
-		$info->siteUrl     = craft()->request->getPost('siteUrl');
-		$info->timezone    = craft()->request->getPost('timezone');
+		$info->on          = (bool) Craft::$app->request->getPost('on');
+		$info->siteName    = Craft::$app->request->getPost('siteName');
+		$info->siteUrl     = Craft::$app->request->getPost('siteUrl');
+		$info->timezone    = Craft::$app->request->getPost('timezone');
 
-		if (craft()->saveInfo($info))
+		if (Craft::$app->saveInfo($info))
 		{
-			craft()->getSession()->setNotice(Craft::t('General settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save general settings.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save general settings.'));
 
 			// Send the info back to the template
-			craft()->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables(array(
 				'info' => $info
 			));
 		}
@@ -170,17 +170,17 @@ class SystemSettingsController extends BaseController
 		// If $settings is an instance of EmailSettingsModel, there were validation errors.
 		if (!$settings instanceof EmailSettingsModel)
 		{
-			if (craft()->systemSettings->saveSettings('email', $settings))
+			if (Craft::$app->systemSettings->saveSettings('email', $settings))
 			{
-				craft()->getSession()->setNotice(Craft::t('Email settings saved.'));
+				Craft::$app->getSession()->setNotice(Craft::t('Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
 		}
 
-		craft()->getSession()->setError(Craft::t('Couldn’t save email settings.'));
+		Craft::$app->getSession()->setError(Craft::t('Couldn’t save email settings.'));
 
 		// Send the settings back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'settings' => $settings
 		));
 	}
@@ -202,7 +202,7 @@ class SystemSettingsController extends BaseController
 		{
 			try
 			{
-				if (craft()->email->sendTestEmail($settings))
+				if (Craft::$app->email->sendTestEmail($settings))
 				{
 					$this->returnJson(array('success' => true));
 				}
@@ -242,7 +242,7 @@ class SystemSettingsController extends BaseController
 		{
 			if (!empty($variables['globalSetId']))
 			{
-				$variables['globalSet'] = craft()->globals->getSetById($variables['globalSetId']);
+				$variables['globalSet'] = Craft::$app->globals->getSetById($variables['globalSetId']);
 
 				if (!$variables['globalSet'])
 				{
@@ -281,31 +281,31 @@ class SystemSettingsController extends BaseController
 		$emailSettings = new EmailSettingsModel();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                    = craft()->request->getPost('protocol');
-		$emailSettings->host                        = craft()->request->getPost('host');
-		$emailSettings->port                        = craft()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (bool)craft()->request->getPost('smtpAuth');
+		$emailSettings->protocol                    = Craft::$app->request->getPost('protocol');
+		$emailSettings->host                        = Craft::$app->request->getPost('host');
+		$emailSettings->port                        = Craft::$app->request->getPost('port');
+		$emailSettings->smtpAuth                    = (bool)Craft::$app->request->getPost('smtpAuth');
 
 		if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail)
 		{
-			$emailSettings->username                = craft()->request->getPost('smtpUsername');
-			$emailSettings->password                = craft()->request->getPost('smtpPassword');
+			$emailSettings->username                = Craft::$app->request->getPost('smtpUsername');
+			$emailSettings->password                = Craft::$app->request->getPost('smtpPassword');
 		}
 		else
 		{
-			$emailSettings->username                = craft()->request->getPost('username');
-			$emailSettings->password                = craft()->request->getPost('password');
+			$emailSettings->username                = Craft::$app->request->getPost('username');
+			$emailSettings->password                = Craft::$app->request->getPost('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (bool)craft()->request->getPost('smtpKeepAlive');
-		$emailSettings->smtpSecureTransportType     = craft()->request->getPost('smtpSecureTransportType');
-		$emailSettings->timeout                     = craft()->request->getPost('timeout');
-		$emailSettings->emailAddress                = craft()->request->getPost('emailAddress');
-		$emailSettings->senderName                  = craft()->request->getPost('senderName');
+		$emailSettings->smtpKeepAlive               = (bool)Craft::$app->request->getPost('smtpKeepAlive');
+		$emailSettings->smtpSecureTransportType     = Craft::$app->request->getPost('smtpSecureTransportType');
+		$emailSettings->timeout                     = Craft::$app->request->getPost('timeout');
+		$emailSettings->emailAddress                = Craft::$app->request->getPost('emailAddress');
+		$emailSettings->senderName                  = Craft::$app->request->getPost('senderName');
 
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$settings['template'] = craft()->request->getPost('template');
+			$settings['template'] = Craft::$app->request->getPost('template');
 			$emailSettings->template = $settings['template'];
 		}
 

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\models\FieldLayout     as FieldLayoutModel;
@@ -91,7 +92,7 @@ class MatrixBlock extends BaseElementModel
 			}
 			else
 			{
-				return array(craft()->i18n->getPrimarySiteLocaleId());
+				return array(Craft::$app->i18n->getPrimarySiteLocaleId());
 			}
 		}
 	}
@@ -105,7 +106,7 @@ class MatrixBlock extends BaseElementModel
 	{
 		if ($this->typeId)
 		{
-			return craft()->matrix->getBlockTypeById($this->typeId);
+			return Craft::$app->matrix->getBlockTypeById($this->typeId);
 		}
 	}
 
@@ -118,7 +119,7 @@ class MatrixBlock extends BaseElementModel
 	{
 		if (!isset($this->_owner) && $this->ownerId)
 		{
-			$this->_owner = craft()->elements->getElementById($this->ownerId, null, $this->locale);
+			$this->_owner = Craft::$app->elements->getElementById($this->ownerId, null, $this->locale);
 
 			if (!$this->_owner)
 			{
@@ -149,7 +150,7 @@ class MatrixBlock extends BaseElementModel
 	 */
 	public function getContentTable()
 	{
-		return craft()->matrix->getContentTableName($this->_getField());
+		return Craft::$app->matrix->getContentTableName($this->_getField());
 	}
 
 	/**
@@ -203,6 +204,6 @@ class MatrixBlock extends BaseElementModel
 	 */
 	private function _getField()
 	{
-		return craft()->fields->getFieldById($this->fieldId);
+		return Craft::$app->fields->getFieldById($this->fieldId);
 	}
 }

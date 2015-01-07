@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\fieldtypes\data;
+use craft\app\Craft;
 
 /**
  * Stores the data for Rich Text fields.
@@ -45,7 +46,7 @@ class RichTextData extends \Twig_Markup
 		$this->_rawContent = $content;
 
 		// Parse the ref tags
-		$content = craft()->elements->parseRefs($content);
+		$content = Craft::$app->elements->parseRefs($content);
 		parent::__construct($content, $charset);
 	}
 

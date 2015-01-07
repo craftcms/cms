@@ -29,7 +29,7 @@ class RequireEdition_Node extends \Twig_Node
 	{
 		$compiler
 			->addDebugInfo($this)
-			->write('if (\Craft\craft()->getEdition() < ')
+			->write('if (\Craft\Craft::$app->getEdition() < ')
 			->subcompile($this->getNode('editionName'))
 			->raw(")\n")
 			->write("{\n")

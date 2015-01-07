@@ -29,7 +29,7 @@ class RequirePermission_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('\Craft\craft()->getController()->requirePermission(')
+		    ->write('\Craft\Craft::$app->getController()->requirePermission(')
 		    ->subcompile($this->getNode('permissionName'))
 		    ->raw(");\n");
 	}

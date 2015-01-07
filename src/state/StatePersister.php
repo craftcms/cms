@@ -7,6 +7,7 @@
 
 namespace craft\app\state;
 
+use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -48,7 +49,7 @@ class StatePersister extends \CStatePersister
 	 */
 	public function init()
 	{
-		$this->stateFile = craft()->path->getStatePath().'state.bin';
+		$this->stateFile = Craft::$app->path->getStatePath().'state.bin';
 		parent::init();
 	}
 

@@ -62,7 +62,7 @@ class UpdateController extends BaseController
 
 		try
 		{
-			$updates = craft()->updates->getUpdates(true);
+			$updates = Craft::$app->updates->getUpdates(true);
 		}
 		catch (EtException $e)
 		{
@@ -93,10 +93,10 @@ class UpdateController extends BaseController
 
 		$this->requireAjaxRequest();
 
-		$handle = craft()->request->getRequiredPost('handle');
+		$handle = Craft::$app->request->getRequiredPost('handle');
 
 		$return = array();
-		$updateInfo = craft()->updates->getUpdates();
+		$updateInfo = Craft::$app->updates->getUpdates();
 
 		if (!$updateInfo)
 		{
@@ -172,7 +172,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
 		$manual = false;
 		if (!$this->_isManualUpdate($data))
@@ -180,7 +180,7 @@ class UpdateController extends BaseController
 			// If it's not a manual update, make sure they have auto-update permissions.
 			$this->requirePermission('performUpdates');
 
-			if (!craft()->config->get('allowAutoUpdates'))
+			if (!Craft::$app->config->get('allowAutoUpdates'))
 			{
 				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 			}
@@ -190,7 +190,7 @@ class UpdateController extends BaseController
 			$manual = true;
 		}
 
-		$return = craft()->updates->prepareUpdate($manual, $data['handle']);
+		$return = Craft::$app->updates->prepareUpdate($manual, $data['handle']);
 
 		if (!$return['success'])
 		{
@@ -222,14 +222,14 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
-		$return = craft()->updates->processUpdateDownload($data['md5']);
+		$return = Craft::$app->updates->processUpdateDownload($data['md5']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
@@ -253,14 +253,14 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
-		$return = craft()->updates->backupFiles($data['uid']);
+		$return = Craft::$app->updates->backupFiles($data['uid']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
@@ -282,14 +282,14 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
-		$return = craft()->updates->updateFiles($data['uid']);
+		$return = Craft::$app->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
@@ -308,18 +308,18 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
 		$handle = $this->_getFixedHandle($data);
 
-		if (craft()->config->get('backupDbOnUpdate'))
+		if (Craft::$app->config->get('backupDbOnUpdate'))
 		{
-			$plugin = craft()->plugins->getPlugin($handle);
+			$plugin = Craft::$app->plugins->getPlugin($handle);
 
 			// If this a plugin, make sure it actually has new migrations before backing up the database.
-			if ($handle == 'craft' || ($plugin && craft()->migrations->getNewMigrations($plugin)))
+			if ($handle == 'craft' || ($plugin && Craft::$app->migrations->getNewMigrations($plugin)))
 			{
-				$return = craft()->updates->backupDatabase();
+				$return = Craft::$app->updates->backupDatabase();
 
 				if (!$return['success'])
 				{
@@ -346,17 +346,17 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
 		$handle = $this->_getFixedHandle($data);
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->updateDatabase($handle);
+			$return = Craft::$app->updates->updateDatabase($handle);
 		}
 		else
 		{
-			$return = craft()->updates->updateDatabase($handle);
+			$return = Craft::$app->updates->updateDatabase($handle);
 		}
 
 		if (!$return['success'])
@@ -379,7 +379,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -402,15 +402,15 @@ class UpdateController extends BaseController
 			$oldVersion = UpdateHelper::getLocalVersionFromManifest($manifestData);
 		}
 
-		craft()->updates->updateCleanUp($uid, $handle);
+		Craft::$app->updates->updateCleanUp($uid, $handle);
 
-		if ($oldVersion && version_compare($oldVersion, craft()->getVersion(), '<'))
+		if ($oldVersion && version_compare($oldVersion, Craft::$app->getVersion(), '<'))
 		{
 			$returnUrl = UrlHelper::getUrl('whats-new');
 		}
 		else
 		{
-			$returnUrl = craft()->config->get('postCpLoginRedirect');
+			$returnUrl = Craft::$app->config->get('postCpLoginRedirect');
 		}
 
 		$this->returnJson(array('alive' => true, 'finished' => true, 'returnUrl' => $returnUrl));
@@ -427,7 +427,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = craft()->request->getRequiredPost('data');
+		$data = Craft::$app->request->getRequiredPost('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -440,11 +440,11 @@ class UpdateController extends BaseController
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->rollbackUpdate($uid, $data['dbBackupPath']);
+			$return = Craft::$app->updates->rollbackUpdate($uid, $data['dbBackupPath']);
 		}
 		else
 		{
-			$return = craft()->updates->rollbackUpdate($uid);
+			$return = Craft::$app->updates->rollbackUpdate($uid);
 		}
 
 		if (!$return['success'])

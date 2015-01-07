@@ -30,7 +30,7 @@ class Locale extends \CValidator
 	{
 		$locale = $object->$attribute;
 
-		if ($locale && !in_array($locale, craft()->i18n->getSiteLocaleIds()))
+		if ($locale && !in_array($locale, Craft::$app->i18n->getSiteLocaleIds()))
 		{
 			$message = Craft::t('Your site isn’t set up to save content for the locale “{locale}”.', array('locale' => $locale));
 			$this->addError($object, $attribute, $message);

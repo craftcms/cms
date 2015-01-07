@@ -7,6 +7,7 @@
 
 namespace craft\app\logging;
 
+use craft\app\Craft;
 use craft\app\helpers\HeaderHelper;
 
 /**
@@ -29,15 +30,15 @@ class ProfileLogRoute extends \CProfileLogRoute
 	protected function render($view, $data)
 	{
 		if (
-			!craft()->isConsole() &&
-			!craft()->request->isResourceRequest() &&
-			!craft()->request->isAjaxRequest() &&
-			craft()->config->get('devMode') &&
+			!Craft::$app->isConsole() &&
+			!Craft::$app->request->isResourceRequest() &&
+			!Craft::$app->request->isAjaxRequest() &&
+			Craft::$app->config->get('devMode') &&
 			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
 		)
 		{
-			$viewFile = craft()->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
-			include(craft()->findLocalizedFile($viewFile, 'en'));
+			$viewFile = Craft::$app->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
+			include(Craft::$app->findLocalizedFile($viewFile, 'en'));
 		}
 	}
 }

@@ -28,7 +28,7 @@ class Localization
 	 */
 	public function getAllLocales()
 	{
-		return craft()->i18n->getAllLocales();
+		return Craft::$app->i18n->getAllLocales();
 	}
 
 	/**
@@ -38,7 +38,7 @@ class Localization
 	 */
 	public function getAppLocales()
 	{
-		return craft()->i18n->getAppLocales();
+		return Craft::$app->i18n->getAppLocales();
 	}
 
 	/**
@@ -48,7 +48,7 @@ class Localization
 	 */
 	public function getCurrentLocale()
 	{
-		return craft()->i18n->getLocaleById(craft()->language);
+		return Craft::$app->i18n->getLocaleById(Craft::$app->language);
 	}
 
 	/**
@@ -60,7 +60,7 @@ class Localization
 	 */
 	public function getLocaleById($localeId)
 	{
-		return craft()->i18n->getLocaleById($localeId);
+		return Craft::$app->i18n->getLocaleById($localeId);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Localization
 	 */
 	public function getSiteLocales()
 	{
-		return craft()->i18n->getSiteLocales();
+		return Craft::$app->i18n->getSiteLocales();
 	}
 
 	/**
@@ -80,7 +80,7 @@ class Localization
 	 */
 	public function getSiteLocaleIds()
 	{
-		return craft()->i18n->getSiteLocaleIds();
+		return Craft::$app->i18n->getSiteLocaleIds();
 	}
 
 	/**
@@ -90,7 +90,7 @@ class Localization
 	 */
 	public function getPrimarySiteLocale()
 	{
-		return craft()->i18n->getPrimarySiteLocale();
+		return Craft::$app->i18n->getPrimarySiteLocale();
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Localization
 	 */
 	public function getEditableLocales()
 	{
-		return craft()->i18n->getEditableLocales();
+		return Craft::$app->i18n->getEditableLocales();
 	}
 
 	/**
@@ -110,7 +110,7 @@ class Localization
 	 */
 	public function getEditableLocaleIds()
 	{
-		return craft()->i18n->getEditableLocaleIds();
+		return Craft::$app->i18n->getEditableLocaleIds();
 	}
 
 	/**
@@ -122,7 +122,7 @@ class Localization
 	 */
 	public function getLocaleData($localeId = null)
 	{
-		return craft()->i18n->getLocaleData($localeId);
+		return Craft::$app->i18n->getLocaleData($localeId);
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Localization
 	 */
 	public function getDatepickerJsFormat()
 	{
-		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		return $dateFormatter->getDatepickerJsFormat();
 	}
@@ -144,7 +144,7 @@ class Localization
 	 */
 	public function getTimepickerJsFormat()
 	{
-		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		return $dateFormatter->getTimepickerPhpFormat();
 	}

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\Field       as FieldModel;
@@ -41,7 +42,7 @@ class FieldLayoutField extends BaseModel
 		{
 			if ($this->layoutId)
 			{
-				$this->_layout = craft()->fields->getLayoutById($this->layoutId);
+				$this->_layout = Craft::$app->fields->getLayoutById($this->layoutId);
 			}
 			else
 			{
@@ -76,7 +77,7 @@ class FieldLayoutField extends BaseModel
 	{
 		if ($this->fieldId)
 		{
-			return craft()->fields->getFieldById($this->fieldId);
+			return Craft::$app->fields->getFieldById($this->fieldId);
 		}
 	}
 

@@ -23,7 +23,7 @@ use craft\app\web\Application;
 /**
  * Class AssetSources service.
  *
- * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `craft()->assetSources`]].
+ * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `Craft::$app->assetSources`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -71,13 +71,13 @@ class AssetSources extends Component
 	 */
 	public function getAllSourceTypes()
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			return craft()->components->getComponentsByType(ComponentType::AssetSource);
+			return Craft::$app->components->getComponentsByType(ComponentType::AssetSource);
 		}
 		else
 		{
-			return array(craft()->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local'));
+			return array(Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local'));
 		}
 	}
 
@@ -90,7 +90,7 @@ class AssetSources extends Component
 	 */
 	public function getSourceType($class)
 	{
-		return craft()->components->getComponentByTypeAndClass(ComponentType::AssetSource, $class);
+		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, $class);
 	}
 
 	/**
@@ -102,7 +102,7 @@ class AssetSources extends Component
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return craft()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
+		return Craft::$app->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
 	}
 
 	/**
@@ -136,7 +136,7 @@ class AssetSources extends Component
 			}
 			else
 			{
-				$this->_allSourceIds = craft()->db->createCommand()
+				$this->_allSourceIds = Craft::$app->db->createCommand()
 					->select('id')
 					->from('assetsources')
 					->queryColumn();
@@ -159,7 +159,7 @@ class AssetSources extends Component
 
 			foreach ($this->getAllSourceIds() as $sourceId)
 			{
-				if (craft()->getUser()->checkPermission('viewAssetSource:'.$sourceId))
+				if (Craft::$app->getUser()->checkPermission('viewAssetSource:'.$sourceId))
 				{
 					$this->_viewableSourceIds[] = $sourceId;
 				}
@@ -184,7 +184,7 @@ class AssetSources extends Component
 
 			foreach ($this->getAllSources() as $source)
 			{
-				if (craft()->getUser()->checkPermission('viewAssetSource:'.$source->id))
+				if (Craft::$app->getUser()->checkPermission('viewAssetSource:'.$source->id))
 				{
 					$this->_viewableSources[] = $source;
 				}
@@ -289,7 +289,7 @@ class AssetSources extends Component
 			$source->id = $sourceId;
 			$source->name = Temp::sourceName;
 			$source->type = Temp::sourceType;
-			$source->settings = ['path' => craft()->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
+			$source->settings = ['path' => Craft::$app->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
 			return $source;
 		}
 		else
@@ -359,13 +359,13 @@ class AssetSources extends Component
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 			try
 			{
 				if ($isNewSource)
 				{
 					// Set the sort order
-					$maxSortOrder = craft()->db->createCommand()
+					$maxSortOrder = Craft::$app->db->createCommand()
 						->select('max(sortOrder)')
 						->from('assetsources')
 						->queryScalar();
@@ -376,12 +376,12 @@ class AssetSources extends Component
 				if (!$isNewSource && $oldSource->fieldLayoutId)
 				{
 					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldSource->fieldLayoutId);
+					Craft::$app->fields->deleteLayoutById($oldSource->fieldLayoutId);
 				}
 
 				// Save the new one
 				$fieldLayout = $source->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
+				Craft::$app->fields->saveLayout($fieldLayout);
 
 				// Update the source record/model with the new layout ID
 				$source->fieldLayoutId = $fieldLayout->id;
@@ -398,16 +398,16 @@ class AssetSources extends Component
 				else
 				{
 					// Update the top folder's name with the source's new name
-					$topFolder = craft()->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
+					$topFolder = Craft::$app->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
 
 					if ($topFolder->name != $source->name)
 					{
 						$topFolder->name = $source->name;
-						craft()->assets->storeFolder($topFolder);
+						Craft::$app->assets->storeFolder($topFolder);
 					}
 				}
 
-				craft()->assetIndexing->ensureTopFolder($source);
+				Craft::$app->assetIndexing->ensureTopFolder($source);
 
 				if ($transaction !== null)
 				{
@@ -446,7 +446,7 @@ class AssetSources extends Component
 	 */
 	public function reorderSources($sourceIds)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -490,20 +490,20 @@ class AssetSources extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Grab the asset file ids so we can clean the elements table.
-			$assetFileIds = craft()->db->createCommand()
+			$assetFileIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('assetfiles')
 				->where(array('sourceId' => $sourceId))
 				->queryColumn();
 
-			craft()->elements->deleteElementById($assetFileIds);
+			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = craft()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('assetsources', array('id' => $sourceId));
 
 			if ($transaction !== null)
 			{
@@ -533,7 +533,7 @@ class AssetSources extends Component
 	 */
 	private function _createSourceQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
 			->from('assetsources')
 			->order('sortOrder');

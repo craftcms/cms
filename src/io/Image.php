@@ -62,7 +62,7 @@ class Image
 	 */
 	public function __construct()
 	{
-		$extension = mb_strtolower(craft()->config->get('imageDriver'));
+		$extension = mb_strtolower(Craft::$app->config->get('imageDriver'));
 
 		// If it's explicitly set, take their word for it.
 		if ($extension === 'gd')
@@ -76,7 +76,7 @@ class Image
 		else
 		{
 			// Let's try to auto-detect.
-			if (craft()->images->isGd())
+			if (Craft::$app->images->isGd())
 			{
 				$this->_instance = new \Imagine\Gd\Imagine();
 			}
@@ -86,7 +86,7 @@ class Image
 			}
 		}
 
-		$this->_quality = craft()->config->get('defaultImageQuality');
+		$this->_quality = Craft::$app->config->get('defaultImageQuality');
 	}
 
 	/**
@@ -129,7 +129,7 @@ class Image
 			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
-		if (!craft()->images->checkMemoryForImage($path))
+		if (!Craft::$app->images->checkMemoryForImage($path))
 		{
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
@@ -147,7 +147,7 @@ class Image
 
 		if ($this->_extension == 'gif')
 		{
-			if (!craft()->images->isGd() && $this->_image->layers())
+			if (!Craft::$app->images->isGd() && $this->_image->layers())
 			{
 				$this->_isAnimatedGif = true;
 			}
@@ -411,7 +411,7 @@ class Image
 	 */
 	public function isTransparent()
 	{
-		if (craft()->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
+		if (Craft::$app->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
 		{
 			return $this->_image->getImagick()->getImageAlphaChannel();
 		}
@@ -530,7 +530,7 @@ class Image
 	 */
 	private function _getResizeFilter()
 	{
-		return (craft()->images->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
+		return (Craft::$app->images->isGd() ? \Imagine\Image\ImageInterface::FILTER_UNDEFINED : \Imagine\Image\ImageInterface::FILTER_LANCZOS);
 	}
 
 	/**

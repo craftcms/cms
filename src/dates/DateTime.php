@@ -7,6 +7,7 @@
 
 namespace craft\app\dates;
 
+use craft\app\Craft;
 use craft\app\helpers\DateTimeHelper;
 
 /**
@@ -100,7 +101,7 @@ class DateTime extends \DateTime
 
 			if (!$timezone)
 			{
-				$timezone = craft()->getTimeZone();
+				$timezone = Craft::$app->getTimeZone();
 			}
 
 			if (empty($dt['date']) && empty($dt['time']))
@@ -108,7 +109,7 @@ class DateTime extends \DateTime
 				return null;
 			}
 
-			$localeData = craft()->i18n->getLocaleData(craft()->language);
+			$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
 			$dateFormatter = $localeData->getDateFormatter();
 
 			if (!empty($dt['date']))
@@ -138,7 +139,7 @@ class DateTime extends \DateTime
 			if (!empty($dt['time']))
 			{
 				// Replace the localized "AM" and "PM"
-				$localeData = craft()->i18n->getLocaleData();
+				$localeData = Craft::$app->i18n->getLocaleData();
 				$dt['time'] = str_replace(array($localeData->getAMName(), $localeData->getPMName()), array('AM', 'PM'), $dt['time']);
 
 				$date .= ' '.$dt['time'];
@@ -218,7 +219,7 @@ class DateTime extends \DateTime
 		if (!$timezone)
 		{
 			// Default to the current app timezone
-			$timezone = craft()->timezone;
+			$timezone = Craft::$app->timezone;
 		}
 
 		if (is_string($timezone))
@@ -339,7 +340,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeDate()
 	{
-		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getDatepickerPhpFormat();
 
@@ -351,7 +352,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeTime()
 	{
-		$localeData = craft()->i18n->getLocaleData(craft()->language);
+		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getTimepickerPhpFormat();
 
@@ -359,7 +360,7 @@ class DateTime extends \DateTime
 		$time = $this->format($format);
 
 		// Replace "AM" and "PM" with the localized versions
-		$localeData = craft()->i18n->getLocaleData();
+		$localeData = Craft::$app->i18n->getLocaleData();
 		$amName = $localeData->getAMName();
 		$pmName = $localeData->getPMName();
 

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
@@ -81,7 +82,7 @@ class Category extends BaseElementModel
 	 */
 	public function isEditable()
 	{
-		return craft()->getUser()->checkPermission('editCategories:'.$this->groupId);
+		return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
 	}
 
 	/**
@@ -108,7 +109,7 @@ class Category extends BaseElementModel
 	{
 		if ($this->groupId)
 		{
-			return craft()->categories->getGroupById($this->groupId);
+			return Craft::$app->categories->getGroupById($this->groupId);
 		}
 	}
 

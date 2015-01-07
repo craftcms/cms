@@ -70,7 +70,7 @@ class Et
 	 */
 	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
-		$endpoint .= craft()->config->get('endpointSuffix');
+		$endpoint .= Craft::$app->config->get('endpointSuffix');
 
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
@@ -78,18 +78,18 @@ class Et
 
 		$this->_model = new EtModel(array(
 			'licenseKey'        => $this->_getLicenseKey(),
-			'requestUrl'        => craft()->request->getHostInfo().craft()->request->getUrl(),
-			'requestIp'         => craft()->request->getIpAddress(),
+			'requestUrl'        => Craft::$app->request->getHostInfo().Craft::$app->request->getUrl(),
+			'requestIp'         => Craft::$app->request->getIpAddress(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
-			'requestPort'       => craft()->request->getPort(),
+			'requestPort'       => Craft::$app->request->getPort(),
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
-			'localEdition'      => craft()->getEdition(),
-			'userEmail'         => craft()->getUser()->getIdentity()->email,
+			'localEdition'      => Craft::$app->getEdition(),
+			'userEmail'         => Craft::$app->getUser()->getIdentity()->email,
 			'track'             => CRAFT_TRACK,
 		));
 
-		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
+		$this->_userAgent = 'Craft/'.Craft::$app->getVersion().'.'.Craft::$app->getBuild();
 	}
 
 	/**
@@ -179,7 +179,7 @@ class Et
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 			}
 
-			if (!craft()->cache->get('etConnectFailure'))
+			if (!Craft::$app->cache->get('etConnectFailure'))
 			{
 				$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 
@@ -200,9 +200,9 @@ class Et
 				if ($response->isSuccessful())
 				{
 					// Clear the connection failure cached item if it exists.
-					if (craft()->cache->get('etConnectFailure'))
+					if (Craft::$app->cache->get('etConnectFailure'))
 					{
-						craft()->cache->delete('etConnectFailure');
+						Craft::$app->cache->delete('etConnectFailure');
 					}
 
 					if ($this->_destinationFileName)
@@ -221,7 +221,7 @@ class Et
 						return IOHelper::getFileName($this->_destinationFileName);
 					}
 
-					$etModel = craft()->et->decodeEtModel($response->getBody());
+					$etModel = Craft::$app->et->decodeEtModel($response->getBody());
 
 					if ($etModel)
 					{
@@ -231,13 +231,13 @@ class Et
 						}
 
 						// Cache the license key status and which edition it has
-						craft()->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-						craft()->cache->set('licensedEdition', $etModel->licensedEdition);
-						craft()->cache->set('editionTestableDomain@'.craft()->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+						Craft::$app->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+						Craft::$app->cache->set('licensedEdition', $etModel->licensedEdition);
+						Craft::$app->cache->set('editionTestableDomain@'.Craft::$app->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
 						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 						{
-							craft()->cache->set('licensedDomain', $etModel->licensedDomain);
+							Craft::$app->cache->set('licensedDomain', $etModel->licensedDomain);
 						}
 
 						return $etModel;
@@ -246,10 +246,10 @@ class Et
 					{
 						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
-						if (craft()->cache->get('etConnectFailure'))
+						if (Craft::$app->cache->get('etConnectFailure'))
 						{
 							// There was an error, but at least we connected.
-							craft()->cache->delete('etConnectFailure');
+							Craft::$app->cache->delete('etConnectFailure');
 						}
 					}
 				}
@@ -257,10 +257,10 @@ class Et
 				{
 					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
-					if (craft()->cache->get('etConnectFailure'))
+					if (Craft::$app->cache->get('etConnectFailure'))
 					{
 						// There was an error, but at least we connected.
-						craft()->cache->delete('etConnectFailure');
+						Craft::$app->cache->delete('etConnectFailure');
 					}
 				}
 			}
@@ -270,10 +270,10 @@ class Et
 		{
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
 
-			if (craft()->cache->get('etConnectFailure'))
+			if (Craft::$app->cache->get('etConnectFailure'))
 			{
 				// There was an error, but at least we connected.
-				craft()->cache->delete('etConnectFailure');
+				Craft::$app->cache->delete('etConnectFailure');
 			}
 
 			throw $e;
@@ -283,7 +283,7 @@ class Et
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
 
 			// Cache the failure for 5 minutes so we don't try again.
-			craft()->cache->set('etConnectFailure', true, 300);
+			Craft::$app->cache->set('etConnectFailure', true, 300);
 		}
 
 		return null;
@@ -297,7 +297,7 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		$licenseKeyPath = craft()->path->getLicenseKeyPath();
+		$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
 
 		if (($keyFile = IOHelper::fileExists($licenseKeyPath)) !== false)
 		{
@@ -316,9 +316,9 @@ class Et
 	private function _setLicenseKey($key)
 	{
 		// Make sure the key file does not exist first. Et will never overwrite a license key.
-		if (($keyFile = IOHelper::fileExists(craft()->path->getLicenseKeyPath())) == false)
+		if (($keyFile = IOHelper::fileExists(Craft::$app->path->getLicenseKeyPath())) == false)
 		{
-			$keyFile = craft()->path->getLicenseKeyPath();
+			$keyFile = Craft::$app->path->getLicenseKeyPath();
 
 			if ($this->_isConfigFolderWritable())
 			{
@@ -344,6 +344,6 @@ class Et
 	 */
 	private function _isConfigFolderWritable()
 	{
-		return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
+		return IOHelper::isWritable(IOHelper::getFolderName(Craft::$app->path->getLicenseKeyPath()));
 	}
 }

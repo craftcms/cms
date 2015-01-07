@@ -33,7 +33,7 @@ class Feeds
 	{
 		$limit = NumberHelper::makeNumeric($limit);
 		$offset = NumberHelper::makeNumeric($offset);
-		$items = craft()->feeds->getFeedItems($url, $limit, $offset, $cacheDuration);
+		$items = Craft::$app->feeds->getFeedItems($url, $limit, $offset, $cacheDuration);
 
 		// Prevent everyone from having to use the |raw filter when outputting the title and content
 		$rawProperties = array('title', 'content', 'summary');

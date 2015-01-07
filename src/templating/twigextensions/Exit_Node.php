@@ -38,7 +38,7 @@ class Exit_Node extends \Twig_Node
 		}
 		else
 		{
-			$compiler->write("\Craft\craft()->end();\n");
+			$compiler->write("\Craft\Craft::$app->end();\n");
 		}
 	}
 }

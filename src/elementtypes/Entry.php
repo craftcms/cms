@@ -109,12 +109,12 @@ class Entry extends BaseElementType
 	{
 		if ($context == 'index')
 		{
-			$sections = craft()->sections->getEditableSections();
+			$sections = Craft::$app->sections->getEditableSections();
 			$editable = true;
 		}
 		else
 		{
-			$sections = craft()->sections->getAllSections();
+			$sections = Craft::$app->sections->getAllSections();
 			$editable = false;
 		}
 
@@ -175,7 +175,7 @@ class Entry extends BaseElementType
 					if ($type == SectionType::Structure)
 					{
 						$sources[$key]['structureId'] = $section->structureId;
-						$sources[$key]['structureEditable'] = craft()->getUser()->checkPermission('publishEntries:'.$section->id);
+						$sources[$key]['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
 					}
 				}
 			}
@@ -198,19 +198,19 @@ class Entry extends BaseElementType
 		{
 			case '*':
 			{
-				$sections = craft()->sections->getEditableSections();
+				$sections = Craft::$app->sections->getEditableSections();
 				break;
 			}
 			case 'singles':
 			{
-				$sections = craft()->sections->getSectionsByType(SectionType::Single);
+				$sections = Craft::$app->sections->getSectionsByType(SectionType::Single);
 				break;
 			}
 			default:
 			{
 				if (preg_match('/^section:(\d+)$/', $source, $matches))
 				{
-					$section = craft()->sections->getSectionById($matches[1]);
+					$section = Craft::$app->sections->getSectionById($matches[1]);
 				}
 
 				if (empty($section))
@@ -224,7 +224,7 @@ class Entry extends BaseElementType
 
 		// Now figure out what we can do with these
 		$actions = array();
-		$userSessionService = craft()->getUser();
+		$userSessionService = Craft::$app->getUser();
 		$canSetStatus = true;
 		$canEdit = false;
 
@@ -252,13 +252,13 @@ class Entry extends BaseElementType
 		// Set Status
 		if ($canSetStatus)
 		{
-			$setStatusAction = craft()->elements->getAction('SetStatus');
+			$setStatusAction = Craft::$app->elements->getAction('SetStatus');
 			$setStatusAction->onSetStatus = function(Event $event)
 			{
 				if ($event->params['status'] == BaseElementModel::ENABLED)
 				{
 					// Set a Post Date as well
-					craft()->db->createCommand()->update(
+					Craft::$app->db->createCommand()->update(
 						'entries',
 						['postDate' => DateTimeHelper::currentTimeForDb()],
 						['and', ['in', 'id', $event->params['elementIds']], 'postDate is null']
@@ -271,7 +271,7 @@ class Entry extends BaseElementType
 		// Edit
 		if ($canEdit)
 		{
-			$editAction = craft()->elements->getAction('Edit');
+			$editAction = Craft::$app->elements->getAction('Edit');
 			$editAction->setParams(array(
 				'label' => Craft::t('Edit entry'),
 			));
@@ -281,7 +281,7 @@ class Entry extends BaseElementType
 		if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
 		{
 			// View
-			$viewAction = craft()->elements->getAction('View');
+			$viewAction = Craft::$app->elements->getAction('View');
 			$viewAction->setParams(array(
 				'label' => Craft::t('View entry'),
 			));
@@ -299,11 +299,11 @@ class Entry extends BaseElementType
 				$userSessionService->checkPermission('createEntries:'.$section->id)
 			)
 			{
-				$structure = craft()->structures->getStructureById($section->structureId);
+				$structure = Craft::$app->structures->getStructureById($section->structureId);
 
 				if ($structure)
 				{
-					$newChildAction = craft()->elements->getAction('NewChild');
+					$newChildAction = Craft::$app->elements->getAction('NewChild');
 					$newChildAction->setParams(array(
 						'label'       => Craft::t('Create a new child entry'),
 						'maxLevels'   => $structure->maxLevels,
@@ -319,7 +319,7 @@ class Entry extends BaseElementType
 				$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
 			)
 			{
-				$deleteAction = craft()->elements->getAction('Delete');
+				$deleteAction = Craft::$app->elements->getAction('Delete');
 				$deleteAction->setParams(array(
 					'confirmationMessage' => Craft::t('Are you sure you want to delete the selected entries?'),
 					'successMessage'      => Craft::t('Entries deleted.'),
@@ -329,7 +329,7 @@ class Entry extends BaseElementType
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = craft()->plugins->call('addEntryActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addEntryActions', array($source), true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -354,7 +354,7 @@ class Entry extends BaseElementType
 		);
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyEntrySortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyEntrySortableAttributes', array(&$attributes));
 
 		return $attributes;
 	}
@@ -385,7 +385,7 @@ class Entry extends BaseElementType
 		}
 
 		// Allow plugins to modify the attributes
-		craft()->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
 
 		return $attributes;
 	}
@@ -401,7 +401,7 @@ class Entry extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = craft()->plugins->callFirst('getEntryTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', array($element, $attribute), true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -564,7 +564,7 @@ class Entry extends BaseElementType
 				}
 				else if (is_string($type))
 				{
-					$types = craft()->sections->getEntryTypesByHandle($type);
+					$types = Craft::$app->sections->getEntryTypesByHandle($type);
 
 					if ($types)
 					{
@@ -615,7 +615,7 @@ class Entry extends BaseElementType
 
 		if ($criteria->editable)
 		{
-			$user = craft()->getUser()->getIdentity();
+			$user = Craft::$app->getUser()->getIdentity();
 
 			if (!$user)
 			{
@@ -623,13 +623,13 @@ class Entry extends BaseElementType
 			}
 
 			// Limit the query to only the sections the user has permission to edit
-			$editableSectionIds = craft()->sections->getEditableSectionIds();
+			$editableSectionIds = Craft::$app->sections->getEditableSectionIds();
 			$query->andWhere(array('in', 'entries.sectionId', $editableSectionIds));
 
 			// Enforce the editPeerEntries permissions for non-Single sections
 			$noPeerConditions = array();
 
-			foreach (craft()->sections->getEditableSections() as $section)
+			foreach (Craft::$app->sections->getEditableSections() as $section)
 			{
 				if (
 					$section->type != SectionType::Single &&
@@ -665,7 +665,7 @@ class Entry extends BaseElementType
 			$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
 		}
 
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			if ($criteria->authorId)
 			{
@@ -713,7 +713,7 @@ class Entry extends BaseElementType
 	{
 		if ($element->getType()->hasTitleField)
 		{
-			$html = craft()->templates->render('entries/_titlefield', array(
+			$html = Craft::$app->templates->render('entries/_titlefield', array(
 				'entry' => $element
 			));
 		}
@@ -735,7 +735,7 @@ class Entry extends BaseElementType
 	public function saveElement(BaseElementModel $element, $params)
 	{
 		// Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
-		return craft()->entries->saveEntry($element);
+		return Craft::$app->entries->saveEntry($element);
 	}
 
 	/**
@@ -753,7 +753,7 @@ class Entry extends BaseElementType
 			$section = $element->getSection();
 
 			// Make sure the section is set to have URLs and is enabled for this locale
-			if ($section->hasUrls && array_key_exists(craft()->language, $section->getLocales()))
+			if ($section->hasUrls && array_key_exists(Craft::$app->language, $section->getLocales()))
 			{
 				return array(
 					'action' => 'templates/render',
@@ -785,7 +785,7 @@ class Entry extends BaseElementType
 
 		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
 		{
-			craft()->elements->updateElementSlugAndUri($element);
+			Craft::$app->elements->updateElementSlugAndUri($element);
 		}
 	}
 }

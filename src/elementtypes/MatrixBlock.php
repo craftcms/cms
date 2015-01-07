@@ -84,7 +84,7 @@ class MatrixBlock extends BaseElementType
 	{
 		if (!$criteria->fieldId && $criteria->id && is_numeric($criteria->id))
 		{
-			$criteria->fieldId = craft()->db->createCommand()
+			$criteria->fieldId = Craft::$app->db->createCommand()
 				->select('fieldId')
 				->from('matrixblocks')
 				->where('id = :id', array(':id' => $criteria->id))
@@ -93,11 +93,11 @@ class MatrixBlock extends BaseElementType
 
 		if ($criteria->fieldId && is_numeric($criteria->fieldId))
 		{
-			$matrixField = craft()->fields->getFieldById($criteria->fieldId);
+			$matrixField = Craft::$app->fields->getFieldById($criteria->fieldId);
 
 			if ($matrixField)
 			{
-				return craft()->matrix->getContentTableName($matrixField);
+				return Craft::$app->matrix->getContentTableName($matrixField);
 			}
 		}
 	}
@@ -113,7 +113,7 @@ class MatrixBlock extends BaseElementType
 	{
 		$fields = array();
 
-		foreach (craft()->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
+		foreach (Craft::$app->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
 		{
 			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 

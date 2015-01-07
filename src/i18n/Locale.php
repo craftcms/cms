@@ -7,6 +7,7 @@
 
 namespace craft\app\i18n;
 
+use craft\app\Craft;
 use yii\base\Object;
 
 /**
@@ -72,12 +73,12 @@ class Locale extends Object
 		// If no language is specified, default to the user's language
 		if (!$targetLocaleId)
 		{
-			$targetLocaleId = craft()->language;
+			$targetLocaleId = Craft::$app->language;
 		}
 
 		if (!isset($this->_nameInLanguage) || !array_key_exists($targetLocaleId, $this->_nameInLanguage))
 		{
-			$localeData = craft()->i18n->getLocaleData($targetLocaleId);
+			$localeData = Craft::$app->i18n->getLocaleData($targetLocaleId);
 
 			if ($localeData)
 			{

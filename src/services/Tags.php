@@ -21,7 +21,7 @@ use craft\app\web\Application;
 /**
  * Class Tags service.
  *
- * An instance of the Tags service is globally accessible in Craft via [[Application::tags `craft()->tags`]].
+ * An instance of the Tags service is globally accessible in Craft via [[Application::tags `Craft::$app->tags`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -67,7 +67,7 @@ class Tags extends Component
 			}
 			else
 			{
-				$this->_allTagGroupIds = craft()->db->createCommand()
+				$this->_allTagGroupIds = Craft::$app->db->createCommand()
 					->select('id')
 					->from('taggroups')
 					->queryColumn();
@@ -206,18 +206,18 @@ class Tags extends Component
 
 		if (!$tagGroup->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 			try
 			{
 				if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
 				{
 					// Drop the old field layout
-					craft()->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
+					Craft::$app->fields->deleteLayoutById($oldTagGroup->fieldLayoutId);
 				}
 
 				// Save the new one
 				$fieldLayout = $tagGroup->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
+				Craft::$app->fields->saveLayout($fieldLayout);
 
 				// Update the tag group record/model with the new layout ID
 				$tagGroup->fieldLayoutId = $fieldLayout->id;
@@ -273,11 +273,11 @@ class Tags extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
+			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('taggroups')
 				->where(array('id' => $tagGroupId))
@@ -285,19 +285,19 @@ class Tags extends Component
 
 			if ($fieldLayoutId)
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				Craft::$app->fields->deleteLayoutById($fieldLayoutId);
 			}
 
 			// Grab the tag ids so we can clean the elements table.
-			$tagIds = craft()->db->createCommand()
+			$tagIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('tags')
 				->where(array('groupId' => $tagGroupId))
 				->queryColumn();
 
-			craft()->elements->deleteElementById($tagIds);
+			Craft::$app->elements->deleteElementById($tagIds);
 
-			$affectedRows = craft()->db->createCommand()->delete('taggroups', array('id' => $tagGroupId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('taggroups', array('id' => $tagGroupId));
 
 			if ($transaction !== null)
 			{
@@ -330,7 +330,7 @@ class Tags extends Component
 	 */
 	public function getTagById($tagId, $localeId)
 	{
-		return craft()->elements->getElementById($tagId, ElementType::Tag, $localeId);
+		return Craft::$app->elements->getElementById($tagId, ElementType::Tag, $localeId);
 	}
 
 	/**
@@ -370,7 +370,7 @@ class Tags extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -385,7 +385,7 @@ class Tags extends Component
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = craft()->elements->saveElement($tag, false);
+				$success = Craft::$app->elements->saveElement($tag, false);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
 				if (!$success)

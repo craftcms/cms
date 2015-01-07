@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\HtmlHelper;
@@ -74,7 +75,7 @@ class AssetFile extends BaseElementModel
 	public function __isset($name)
 	{
 		// Is it a transform handle?
-		$transform = craft()->assetTransforms->getTransformByHandle($name);
+		$transform = Craft::$app->assetTransforms->getTransformByHandle($name);
 
 		if ($transform)
 		{
@@ -104,7 +105,7 @@ class AssetFile extends BaseElementModel
 		catch (\Exception $e)
 		{
 			// Is $name a transform handle?
-			$transform = craft()->assetTransforms->getTransformByHandle($name);
+			$transform = Craft::$app->assetTransforms->getTransformByHandle($name);
 			if ($transform)
 			{
 				// Duplicate this model and set it to that transform
@@ -172,7 +173,7 @@ class AssetFile extends BaseElementModel
 			if (preg_match('/field_([0-9]+)/', $folder->name, $matches))
 			{
 				$fieldId = $matches[1];
-				$field = craft()->fields->getFieldById($fieldId);
+				$field = Craft::$app->fields->getFieldById($fieldId);
 				$settings = $field->settings;
 
 				if ($settings['useSingleFolder'])
@@ -184,7 +185,7 @@ class AssetFile extends BaseElementModel
 					$sourceId = $settings['defaultUploadLocationSource'];
 				}
 
-				$source = craft()->assetSources->getSourceById($sourceId);
+				$source = Craft::$app->assetSources->getSourceById($sourceId);
 
 				if ($source)
 				{
@@ -203,7 +204,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function isEditable()
 	{
-		return craft()->getUser()->checkPermission('uploadToAssetSource:'.$this->sourceId);
+		return Craft::$app->getUser()->checkPermission('uploadToAssetSource:'.$this->sourceId);
 	}
 
 	/**
@@ -225,7 +226,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function getFolder()
 	{
-		return craft()->assets->getFolderById($this->folderId);
+		return Craft::$app->assets->getFolderById($this->folderId);
 	}
 
 	/**
@@ -233,7 +234,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function getSource()
 	{
-		return craft()->assetSources->getSourceById($this->sourceId);
+		return Craft::$app->assetSources->getSourceById($this->sourceId);
 	}
 
 	/**
@@ -245,7 +246,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function setTransform($transform)
 	{
-		$this->_transform = craft()->assetTransforms->normalizeTransform($transform);
+		$this->_transform = Craft::$app->assetTransforms->normalizeTransform($transform);
 		return $this;
 	}
 
@@ -263,7 +264,7 @@ class AssetFile extends BaseElementModel
 			$transform = $this->_transform;
 		}
 
-		return craft()->assets->getUrlForFile($this, $transform);
+		return Craft::$app->assets->getUrlForFile($this, $transform);
 	}
 
 	/**
@@ -278,7 +279,7 @@ class AssetFile extends BaseElementModel
 		if ($this->hasThumb())
 		{
 			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, array(
-				craft()->resources->dateParam => $this->dateModified->getTimestamp()
+				Craft::$app->resources->dateParam => $this->dateModified->getTimestamp()
 			));
 		}
 		else
@@ -316,7 +317,7 @@ class AssetFile extends BaseElementModel
 		if ($this->kind == 'image' && $this->_getHeight() && $this->_getWidth())
 		{
 			// Gd doesn't process bitmaps
-			if ($this->getExtension() == 'bmp' && craft()->images->isGd())
+			if ($this->getExtension() == 'bmp' && Craft::$app->images->isGd())
 			{
 				return false;
 			}
@@ -410,7 +411,7 @@ class AssetFile extends BaseElementModel
 	{
 		if (!$this->_transformSource)
 		{
-			craft()->assetTransforms->getLocalImageSource($this);
+			Craft::$app->assetTransforms->getLocalImageSource($this);
 		}
 
 		return $this->_transformSource;
@@ -464,7 +465,7 @@ class AssetFile extends BaseElementModel
 			return parent::getAttribute($dimension);
 		}
 
-		$transform = craft()->assetTransforms->normalizeTransform($transform);
+		$transform = Craft::$app->assetTransforms->normalizeTransform($transform);
 
 		$dimensions = array(
 			'width' => $transform->width,

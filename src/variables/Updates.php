@@ -25,7 +25,7 @@ class Updates
 	 */
 	public function isUpdateInfoCached()
 	{
-		return craft()->updates->isUpdateInfoCached();
+		return Craft::$app->updates->isUpdateInfoCached();
 	}
 
 	/**
@@ -35,7 +35,7 @@ class Updates
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return craft()->updates->isCriticalUpdateAvailable();
+		return Craft::$app->updates->isCriticalUpdateAvailable();
 	}
 
 	/**
@@ -45,7 +45,7 @@ class Updates
 	 */
 	public function getUnwritableFolders()
 	{
-		return craft()->updates->getUnwritableFolders();
+		return Craft::$app->updates->getUnwritableFolders();
 	}
 
 	/**
@@ -55,7 +55,7 @@ class Updates
 	 */
 	public function getUpdates($forceRefresh = false)
 	{
-		return craft()->updates->getUpdates($forceRefresh);
+		return Craft::$app->updates->getUpdates($forceRefresh);
 	}
 
 	/**
@@ -84,12 +84,12 @@ class Updates
 	 */
 	private function _getManualUpdateInfo($type)
 	{
-		if (craft()->updates->isCraftDbMigrationNeeded())
+		if (Craft::$app->updates->isCraftDbMigrationNeeded())
 		{
 			return 'Craft';
 		}
 
-		$plugins = craft()->updates->getPluginsThatNeedDbUpdate();
+		$plugins = Craft::$app->updates->getPluginsThatNeedDbUpdate();
 
 		if (!empty($plugins) && isset($plugins[0]))
 		{

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
 /**
@@ -37,7 +38,7 @@ class FieldGroup extends BaseModel
 	 */
 	public function getFields()
 	{
-		return craft()->fields->getFieldsByGroupId($this->id);
+		return Craft::$app->fields->getFieldsByGroupId($this->id);
 	}
 
 	// Protected Methods

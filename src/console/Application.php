@@ -71,34 +71,34 @@ class Application extends \yii\console\Application
 		$this->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
 
 		// Set our own custom runtime path.
-		$this->setRuntimePath(craft()->path->getRuntimePath());
+		$this->setRuntimePath(Craft::$app->path->getRuntimePath());
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
 		// No need for these.
-		craft()->log->removeRoute('WebLogRoute');
-		craft()->log->removeRoute('ProfileLogRoute');
+		Craft::$app->log->removeRoute('WebLogRoute');
+		Craft::$app->log->removeRoute('ProfileLogRoute');
 
 		// Set the edition components
 		$this->_setEditionComponents();
 
 		// Load the plugins
-		craft()->plugins->loadPlugins();
+		Craft::$app->plugins->loadPlugins();
 
 		// Validate some basics on the database configuration file.
-		craft()->validateDbConfigFile();
+		Craft::$app->validateDbConfigFile();
 
-		// Call parent::init before the plugin console command logic so craft()->commandRunner will be available to us.
+		// Call parent::init before the plugin console command logic so Craft::$app->commandRunner will be available to us.
 		parent::init();
 
-		foreach (craft()->plugins->getPlugins() as $plugin)
+		foreach (Craft::$app->plugins->getPlugins() as $plugin)
 		{
-			$commandsPath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
+			$commandsPath = Craft::$app->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
 
 			if (IOHelper::folderExists($commandsPath))
 			{
-				craft()->commandRunner->addCommands(rtrim($commandsPath, '/'));
+				Craft::$app->commandRunner->addCommands(rtrim($commandsPath, '/'));
 			}
 		}
 	}
@@ -132,7 +132,7 @@ class Application extends \yii\console\Application
 	 * handler for [[\craft\app\services\Entries::onSaveEntry()]], you would do this:
 	 *
 	 * ```php
-	 * craft()->on('entries.saveEntry', function(Event $event) {
+	 * Craft::$app->on('entries.saveEntry', function(Event $event) {
 	 *     // ...
 	 * });
 	 * ```
@@ -184,7 +184,7 @@ class Application extends \yii\console\Application
 
 	/**
 	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
-	 * do some special logic around creating the `craft()->db` application component.
+	 * do some special logic around creating the `Craft::$app->db` application component.
 	 *
 	 * @param string $id
 	 * @param bool   $createIfNull

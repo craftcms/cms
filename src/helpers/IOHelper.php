@@ -719,7 +719,7 @@ class IOHelper
 	{
 		if ($permissions == null)
 		{
-			$permissions = craft()->config->get('defaultFolderPermissions');
+			$permissions = Craft::$app->config->get('defaultFolderPermissions');
 		}
 
 		$path = static::normalizePathSeparators($path);
@@ -782,10 +782,10 @@ class IOHelper
 		if (static::isWritable($path, $suppressErrors))
 		{
 			// Let's try to use our auto-magic detection.
-			if (craft()->config->get('useWriteFileLock') === 'auto')
+			if (Craft::$app->config->get('useWriteFileLock') === 'auto')
 			{
 				// We haven't cached file lock information yet and this is not a noFileLock request.
-				if (($useFileLock = craft()->cache->get('useWriteFileLock')) === false && !$noFileLock)
+				if (($useFileLock = Craft::$app->cache->get('useWriteFileLock')) === false && !$noFileLock)
 				{
 					// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
 					set_error_handler(array(new IOHelper(), 'handleError'));
@@ -800,7 +800,7 @@ class IOHelper
 
 							// Cache the file lock info to use LOCK_EX for 2 months.
 							Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
-							craft()->cache->set('useWriteFileLock', 'yes', 5184000);
+							Craft::$app->cache->set('useWriteFileLock', 'yes', 5184000);
 							return true;
 						}
 						else
@@ -811,7 +811,7 @@ class IOHelper
 							{
 								// Cache the file lock info to not use LOCK_EX for 2 months.
 								Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
-								craft()->cache->set('useWriteFileLock', 'no', 5184000);
+								Craft::$app->cache->set('useWriteFileLock', 'no', 5184000);
 								return true;
 							}
 						}
@@ -827,7 +827,7 @@ class IOHelper
 						{
 							// Cache the file lock info to not use LOCK_EX for 2 months.
 							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
-							craft()->cache->set('useWriteFileLock', 'no', 5184000);
+							Craft::$app->cache->set('useWriteFileLock', 'no', 5184000);
 							return true;
 						}
 					}
@@ -863,7 +863,7 @@ class IOHelper
 				}
 			}
 			// We were explicitly told not to use LOCK_EX
-			else if (craft()->config->get('useWriteFileLock') === false)
+			else if (Craft::$app->config->get('useWriteFileLock') === false)
 			{
 				if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 				{
@@ -1059,7 +1059,7 @@ class IOHelper
 
 			if (!static::folderExists($destFolder, $suppressErrors))
 			{
-				static::createFolder($destFolder, craft()->config->get('defaultFolderPermissions'), $suppressErrors);
+				static::createFolder($destFolder, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
 			}
 
 			if (static::isReadable($path, $suppressErrors))
@@ -1112,7 +1112,7 @@ class IOHelper
 
 				if (!static::folderExists($destFolder, $suppressErrors))
 				{
-					static::createFolder($destFolder, craft()->config->get('defaultFolderPermissions'), $suppressErrors);
+					static::createFolder($destFolder, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
 				}
 
 				if (static::fileExists($item, $suppressErrors))
@@ -1398,9 +1398,9 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		$allowedFileExtensions = ArrayHelper::stringToArray(craft()->config->get('allowedFileExtensions'));
+		$allowedFileExtensions = ArrayHelper::stringToArray(Craft::$app->config->get('allowedFileExtensions'));
 
-		if (($extraExtensions = craft()->config->get('extraAllowedFileExtensions')) !== '')
+		if (($extraExtensions = Craft::$app->config->get('extraAllowedFileExtensions')) !== '')
 		{
 			$extraExtensions = ArrayHelper::stringToArray($extraExtensions);
 			$allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
@@ -1492,7 +1492,7 @@ class IOHelper
 	{
 		if (!IOHelper::folderExists($folderPath, $suppressErrors))
 		{
-			IOHelper::createFolder($folderPath, craft()->config->get('defaultFolderPermissions'), $suppressErrors);
+			IOHelper::createFolder($folderPath, Craft::$app->config->get('defaultFolderPermissions'), $suppressErrors);
 		}
 	}
 

@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\Field as FieldModel;
 
@@ -67,7 +68,7 @@ class MatrixSettings extends BaseModel
 		{
 			if (!empty($this->_matrixField->id))
 			{
-				$this->_blockTypes = craft()->matrix->getBlockTypesByFieldId($this->_matrixField->id);
+				$this->_blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->_matrixField->id);
 			}
 			else
 			{
@@ -106,7 +107,7 @@ class MatrixSettings extends BaseModel
 		// Enforce $clearErrors without copying code if we don't have to
 		$validates = parent::validate($attributes, $clearErrors);
 
-		if (!craft()->matrix->validateFieldSettings($this))
+		if (!Craft::$app->matrix->validateFieldSettings($this))
 		{
 			$validates = false;
 		}

@@ -45,15 +45,15 @@ class PluginsController extends BaseController
 	public function actionInstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = craft()->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->request->getRequiredPost('pluginClass');
 
-		if (craft()->plugins->installPlugin($className))
+		if (Craft::$app->plugins->installPlugin($className))
 		{
-			craft()->getSession()->setNotice(Craft::t('Plugin installed.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Plugin installed.'));
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t install plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t install plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -67,15 +67,15 @@ class PluginsController extends BaseController
 	public function actionUninstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = craft()->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->request->getRequiredPost('pluginClass');
 
-		if (craft()->plugins->uninstallPlugin($className))
+		if (Craft::$app->plugins->uninstallPlugin($className))
 		{
-			craft()->getSession()->setNotice(Craft::t('Plugin uninstalled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Plugin uninstalled.'));
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t uninstall plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t uninstall plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -89,15 +89,15 @@ class PluginsController extends BaseController
 	public function actionEnablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = craft()->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->request->getRequiredPost('pluginClass');
 
-		if (craft()->plugins->enablePlugin($className))
+		if (Craft::$app->plugins->enablePlugin($className))
 		{
-			craft()->getSession()->setNotice(Craft::t('Plugin enabled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Plugin enabled.'));
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t enable plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t enable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -111,15 +111,15 @@ class PluginsController extends BaseController
 	public function actionDisablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = craft()->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->request->getRequiredPost('pluginClass');
 
-		if (craft()->plugins->disablePlugin($className))
+		if (Craft::$app->plugins->disablePlugin($className))
 		{
-			craft()->getSession()->setNotice(Craft::t('Plugin disabled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Plugin disabled.'));
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t disable plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t disable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -134,26 +134,26 @@ class PluginsController extends BaseController
 	public function actionSavePluginSettings()
 	{
 		$this->requirePostRequest();
-		$pluginClass = craft()->request->getRequiredPost('pluginClass');
-		$settings = craft()->request->getPost('settings');
+		$pluginClass = Craft::$app->request->getRequiredPost('pluginClass');
+		$settings = Craft::$app->request->getPost('settings');
 
-		$plugin = craft()->plugins->getPlugin($pluginClass);
+		$plugin = Craft::$app->plugins->getPlugin($pluginClass);
 		if (!$plugin)
 		{
 			throw new Exception(Craft::t('No plugin exists with the class “{class}”', array('class' => $pluginClass)));
 		}
 
-		if (craft()->plugins->savePluginSettings($plugin, $settings))
+		if (Craft::$app->plugins->savePluginSettings($plugin, $settings))
 		{
-			craft()->getSession()->setNotice(Craft::t('Plugin settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Plugin settings saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 
-		craft()->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
+		Craft::$app->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'plugin' => $plugin
 		));
 	}

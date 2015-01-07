@@ -24,7 +24,7 @@ use craft\app\web\HttpCookie;
 /**
  * The User service provides APIs for managing the user authentication status.
  *
- * An instance of the User service is globally accessible in Craft via [[Application::userSession `craft()->getUser()`]].
+ * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -52,7 +52,7 @@ class User extends \yii\web\User
 	public function __construct($config = [])
 	{
 		// Set the configurable properties
-		$configService = craft()->config;
+		$configService = Craft::$app->config;
 		$config['loginUrl']    = (array) $configService->getLoginPath();
 		$config['authTimeout'] = $configService->getUserSessionDuration(false);
 
@@ -61,7 +61,7 @@ class User extends \yii\web\User
 		$config['autoRenewCookie'] = !$this->_dontExtendSession;
 
 		// Set the state-based property names
-		$appId = craft()->config->get('appId');
+		$appId = Craft::$app->config->get('appId');
 		$stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
 		$config['identityCookie']           = ['name' => $stateKeyPrefix.'_identity', 'httpOnly' => true];
 		$config['idParam']                  = $stateKeyPrefix.'__id';
@@ -99,7 +99,7 @@ class User extends \yii\web\User
 	 */
 	public function removeReturnUrl()
 	{
-		craft()->getSession()->remove($this->returnUrlParam);
+		Craft::$app->getSession()->remove($this->returnUrlParam);
 	}
 
 	// User-Based Authorization
@@ -177,13 +177,13 @@ class User extends \yii\web\User
 		$cookie->httpOnly = true;
 		$cookie->expire = time() + $duration;
 
-		if (craft()->request->isSecureConnection())
+		if (Craft::$app->request->isSecureConnection())
 		{
 			$cookie->secure = true;
 		}
 
-		$cookie->value = craft()->security->hashData(base64_encode(serialize($data)));
-		craft()->request->getCookies()->add($cookie->name, $cookie);
+		$cookie->value = Craft::$app->security->hashData(base64_encode(serialize($data)));
+		Craft::$app->request->getCookies()->add($cookie->name, $cookie);
 
 		return $cookie;
 	}
@@ -198,7 +198,7 @@ class User extends \yii\web\User
 	public function deleteStateCookie($name)
 	{
 		$name = $this->getStateKeyPrefix().$name;
-		craft()->request->deleteCookie($name);
+		Craft::$app->request->deleteCookie($name);
 	}
 
 	/**
@@ -211,7 +211,7 @@ class User extends \yii\web\User
 	public function getStateCookie($name)
 	{
 		$name = $this->getStateKeyPrefix().$name;
-		return craft()->request->getCookie($name);
+		return Craft::$app->request->getCookie($name);
 	}
 
 	/**
@@ -228,7 +228,7 @@ class User extends \yii\web\User
 			$cookie = $this->getStateCookie($cookie);
 		}
 
-		if ($cookie && !empty($cookie->value) && ($data = craft()->security->validateData($cookie->value)) !== false)
+		if ($cookie && !empty($cookie->value) && ($data = Craft::$app->security->validateData($cookie->value)) !== false)
 		{
 			return @unserialize(base64_decode($data));
 		}
@@ -313,7 +313,7 @@ class User extends \yii\web\User
 			// Is the site configured to have fixed user session durations?
 			if ($this->authTimeout)
 			{
-				$expires = craft()->getSession()->get($this->authTimeoutParam);
+				$expires = Craft::$app->getSession()->get($this->authTimeoutParam);
 				$expires = $this->getState(static::AUTH_TIMEOUT_VAR);
 
 				if ($expires !== null)
@@ -346,9 +346,9 @@ class User extends \yii\web\User
 	public function shouldExtendSession()
 	{
 		return !(
-			craft()->request->getIsGet() &&
-			craft()->request->isCpRequest() &&
-			craft()->request->getParam('dontExtendSession')
+			Craft::$app->request->getIsGet() &&
+			Craft::$app->request->isCpRequest() &&
+			Craft::$app->request->getParam('dontExtendSession')
 		);
 	}
 
@@ -363,7 +363,7 @@ class User extends \yii\web\User
 	public function processUsernameCookie($username)
 	{
 		// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
-		$rememberUsernameDuration = craft()->config->get('rememberUsernameDuration');
+		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
 
 		if ($rememberUsernameDuration)
 		{
@@ -442,9 +442,9 @@ class User extends \yii\web\User
 		{
 			// Enforce the requireUserAgentAndIpForSession config setting
 			// (helps prevent direct socket connections from trying to log in)
-			if (craft()->config->get('requireUserAgentAndIpForSession'))
+			if (Craft::$app->config->get('requireUserAgentAndIpForSession'))
 			{
-				if (!craft()->request->getUserAgent() || !craft()->request->getIpAddress())
+				if (!Craft::$app->request->getUserAgent() || !Craft::$app->request->getIpAddress())
 				{
 					Craft::log('Request didn’t meet the user agent and IP requirement for maintaining a user session.', LogLevel::Warning);
 					$this->logout(true);
@@ -496,7 +496,7 @@ class User extends \yii\web\User
 				$expiration = time() + $this->authTimeout;
 				$cookie->expire = $expiration;
 				$cookie->httpOnly = true;
-				craft()->request->getCookies()->add($cookie->name, $cookie);
+				Craft::$app->request->getCookies()->add($cookie->name, $cookie);
 			}
 		}
 	}
@@ -534,8 +534,8 @@ class User extends \yii\web\User
 				$uid = $data[2];
 				$rememberMe = $data[3];
 				$states = $data[5];
-				$currentUserAgent = craft()->request->userAgent;
-				$this->authTimeout = craft()->config->getUserSessionDuration($rememberMe);
+				$currentUserAgent = Craft::$app->request->userAgent;
+				$this->authTimeout = Craft::$app->config->getUserSessionDuration($rememberMe);
 
 				// Get the hashed token from the db based on login name and uid.
 				if (($sessionRow = $this->_findSessionToken($loginName, $uid)) !== false)
@@ -544,7 +544,7 @@ class User extends \yii\web\User
 					$userId = $sessionRow['userId'];
 
 					// Make sure the given session token matches what we have in the db.
-					$checkHashedToken= craft()->security->hashData(base64_encode(serialize($currentSessionToken)));
+					$checkHashedToken= Craft::$app->security->hashData(base64_encode(serialize($currentSessionToken)));
 
 					if (strcmp($checkHashedToken, $dbHashedToken) === 0)
 					{
@@ -557,7 +557,7 @@ class User extends \yii\web\User
 							{
 								// Generate a new session token for the database and cookie.
 								$newSessionToken = StringHelper::UUID();
-								$hashedNewToken = craft()->security->hashData(base64_encode(serialize($newSessionToken)));
+								$hashedNewToken = Craft::$app->security->hashData(base64_encode(serialize($newSessionToken)));
 								$this->_updateSessionToken($loginName, $dbHashedToken, $hashedNewToken);
 
 								// While we're let's clean up stale sessions.
@@ -645,11 +645,11 @@ class User extends \yii\web\User
 					$uid = $data[2];
 
 					// Clean up their row in the sessions table.
-					$user = craft()->users->getUserByUsernameOrEmail($loginName);
+					$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
 
 					if ($user)
 					{
-						craft()->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+						Craft::$app->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
 					}
 				}
 				else
@@ -694,7 +694,7 @@ class User extends \yii\web\User
 	 */
 	private function _findSessionToken($loginName, $uid)
 	{
-		$result = craft()->db->createCommand()
+		$result = Craft::$app->db->createCommand()
 			->select('s.token, s.userId')
 			->from('sessions s')
 			->join('users u', 's.userId = u.id')
@@ -718,9 +718,9 @@ class User extends \yii\web\User
 	 */
 	private function _updateSessionToken($loginName, $currentToken, $newToken)
 	{
-		$user = craft()->users->getUserByUsernameOrEmail($loginName);
+		$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
 
-		craft()->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
+		Craft::$app->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
 	}
 
 	/**
@@ -733,7 +733,7 @@ class User extends \yii\web\User
 		$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 		$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-		craft()->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', array('pastTime' => $pastTime));
+		Craft::$app->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', array('pastTime' => $pastTime));
 	}
 
 	/**
@@ -747,7 +747,7 @@ class User extends \yii\web\User
 		{
 			if ($id)
 			{
-				$userRow = craft()->db->createCommand()
+				$userRow = Craft::$app->db->createCommand()
 					->select('*')
 					->from('users')
 					->where('id=:id', array(':id' => $id))
@@ -784,9 +784,9 @@ class User extends \yii\web\User
 	 */
 	private function _checkUserAgentString($userAgent, $autoLogout = true)
 	{
-		if (craft()->config->get('requireMatchingUserAgentForSession'))
+		if (Craft::$app->config->get('requireMatchingUserAgentForSession'))
 		{
-			$currentUserAgent = craft()->request->getUserAgent();
+			$currentUserAgent = Craft::$app->request->getUserAgent();
 
 			if ($userAgent !== $currentUserAgent)
 			{

@@ -54,7 +54,7 @@ class Local extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/assetsourcetypes/Local/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/Local/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -86,7 +86,7 @@ class Local extends BaseAssetSourceType
 	{
 		$indexedFolderIds = array();
 
-		$indexedFolderIds[craft()->assetIndexing->ensureTopFolder($this->model)] = true;
+		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		$localPath = $this->getSourceFileSystemPath();
 
@@ -142,7 +142,7 @@ class Local extends BaseAssetSourceType
 						'size' => is_dir($file) ? 0 : filesize($file)
 					);
 
-					craft()->assetIndexing->storeIndexEntry($indexEntry);
+					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
 			}
@@ -163,7 +163,7 @@ class Local extends BaseAssetSourceType
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		$indexEntryModel = craft()->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
+		$indexEntryModel = Craft::$app->assetIndexing->getIndexEntry($this->model->id, $sessionId, $offset);
 
 		if (empty($indexEntryModel))
 		{
@@ -182,7 +182,7 @@ class Local extends BaseAssetSourceType
 
 		if ($fileModel)
 		{
-			craft()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
+			Craft::$app->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 			$fileModel->dateModified = IOHelper::getLastTimeModified($indexEntryModel->uri);
@@ -194,7 +194,7 @@ class Local extends BaseAssetSourceType
 				$fileModel->height = $height;
 			}
 
-			craft()->assets->storeFile($fileModel);
+			Craft::$app->assets->storeFile($fileModel);
 
 			return $fileModel->id;
 		}
@@ -214,7 +214,7 @@ class Local extends BaseAssetSourceType
 	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$folder =  $this->getSourceFileSystemPath().$file->getFolder()->path;
-		$targetPath = $folder.craft()->assetTransforms->getTransformSubpath($file, $index);
+		$targetPath = $folder.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
 		return IOHelper::copyFile($sourceImage, $targetPath);
 	}
 
@@ -269,7 +269,7 @@ class Local extends BaseAssetSourceType
 	{
 		$url = $this->getSettings()->url;
 
-		return craft()->config->parseEnvironmentString($url);
+		return Craft::$app->config->parseEnvironmentString($url);
 	}
 
 	/**
@@ -281,7 +281,7 @@ class Local extends BaseAssetSourceType
 	{
 		$path = $this->getSettings()->path;
 
-		return craft()->config->parseEnvironmentString($path);
+		return Craft::$app->config->parseEnvironmentString($path);
 	}
 
 	// Protected Methods
@@ -346,7 +346,7 @@ class Local extends BaseAssetSourceType
 			throw new Exception(Craft::t('Could not copy file to target destination'));
 		}
 
-		IOHelper::changePermissions($targetPath, craft()->config->get('defaultFilePermissions'));
+		IOHelper::changePermissions($targetPath, Craft::$app->config->get('defaultFilePermissions'));
 
 		$response = new AssetOperationResponseModel();
 
@@ -451,12 +451,12 @@ class Local extends BaseAssetSourceType
 
 		$newServerPath = $this->getSourceFileSystemPath().$targetFolder->path.$fileName;
 
-		$conflictingRecord = craft()->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile(array(
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
 		));
 
-		$conflict = !$overwrite && (IOHelper::fileExists($newServerPath) || (!craft()->assets->isMergeInProgress() && is_object($conflictingRecord)));
+		$conflict = !$overwrite && (IOHelper::fileExists($newServerPath) || (!Craft::$app->assets->isMergeInProgress() && is_object($conflictingRecord)));
 
 		if ($conflict)
 		{
@@ -474,7 +474,7 @@ class Local extends BaseAssetSourceType
 		{
 			if ($targetFolder->sourceId == $file->sourceId)
 			{
-				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
+				$transforms = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($file);
 
 				$destination = clone $file;
 				$destination->filename = $fileName;
@@ -489,11 +489,11 @@ class Local extends BaseAssetSourceType
 					if (!empty($index->filename))
 					{
 						$destinationIndex->filename = $fileName;
-						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
+						Craft::$app->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
-					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
-					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+					$from = $file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $targetFolder->path.Craft::$app->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
 					$this->deleteSourceFile($from);
@@ -501,7 +501,7 @@ class Local extends BaseAssetSourceType
 			}
 			else
 			{
-				craft()->assetTransforms->deleteAllTransformData($file);
+				Craft::$app->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
@@ -598,7 +598,7 @@ class Local extends BaseAssetSourceType
 	private function _getFileSystemPath(AssetFileModel $file)
 	{
 		$folder = $file->getFolder();
-		$fileSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+		$fileSourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
 		return $this->getSourceFileSystemPath($fileSourceType).$folder->path.$file->filename;
 	}

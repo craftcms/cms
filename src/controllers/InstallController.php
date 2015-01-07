@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings    as SiteSettingsModel;
@@ -52,7 +53,7 @@ class InstallController extends BaseController
 	public function init()
 	{
 		// Return a 404 if Craft is already installed
-		if (!craft()->config->get('devMode') && craft()->isInstalled())
+		if (!Craft::$app->config->get('devMode') && Craft::$app->isInstalled())
 		{
 			throw new HttpException(404);
 		}
@@ -65,10 +66,10 @@ class InstallController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		craft()->runController('templates/requirementscheck');
+		Craft::$app->runController('templates/requirementscheck');
 
 		// Guess the site name based on the server name
-		$server = craft()->request->getServerName();
+		$server = Craft::$app->request->getServerName();
 		$words = preg_split('/[\-_\.]+/', $server);
 		array_pop($words);
 		$vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
@@ -88,15 +89,15 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$accountSettings = new AccountSettingsModel();
-		$username = craft()->request->getPost('username');
+		$username = Craft::$app->request->getPost('username');
 		if (!$username)
 		{
-			$username = craft()->request->getPost('email');
+			$username = Craft::$app->request->getPost('email');
 		}
 
 		$accountSettings->username = $username;
-		$accountSettings->email = craft()->request->getPost('email');
-		$accountSettings->password = craft()->request->getPost('password');
+		$accountSettings->email = Craft::$app->request->getPost('email');
+		$accountSettings->password = Craft::$app->request->getPost('password');
 
 		if ($accountSettings->validate())
 		{
@@ -121,8 +122,8 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$siteSettings = new SiteSettingsModel();
-		$siteSettings->siteName = craft()->request->getPost('siteName');
-		$siteSettings->siteUrl = craft()->request->getPost('siteUrl');
+		$siteSettings->siteName = Craft::$app->request->getPost('siteName');
+		$siteSettings->siteUrl = Craft::$app->request->getPost('siteUrl');
 
 		if ($siteSettings->validate())
 		{
@@ -147,21 +148,21 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		$username = craft()->request->getPost('username');
+		$username = Craft::$app->request->getPost('username');
 
 		if (!$username)
 		{
-			$username = craft()->request->getPost('email');
+			$username = Craft::$app->request->getPost('email');
 		}
 
 		$inputs['username']   = $username;
-		$inputs['email']      = craft()->request->getPost('email');
-		$inputs['password']   = craft()->request->getPost('password');
-		$inputs['siteName']   = craft()->request->getPost('siteName');
-		$inputs['siteUrl']    = craft()->request->getPost('siteUrl');
-		$inputs['locale'  ]   = craft()->request->getPost('locale');
+		$inputs['email']      = Craft::$app->request->getPost('email');
+		$inputs['password']   = Craft::$app->request->getPost('password');
+		$inputs['siteName']   = Craft::$app->request->getPost('siteName');
+		$inputs['siteUrl']    = Craft::$app->request->getPost('siteUrl');
+		$inputs['locale'  ]   = Craft::$app->request->getPost('locale');
 
-		craft()->install->run($inputs);
+		Craft::$app->install->run($inputs);
 
 		$return = array('success' => true);
 		$this->returnJson($return);

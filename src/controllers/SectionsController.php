@@ -53,14 +53,14 @@ class SectionsController extends BaseController
 	 */
 	public function actionIndex(array $variables = array())
 	{
-		$variables['sections'] = craft()->sections->getAllSections();
+		$variables['sections'] = Craft::$app->sections->getAllSections();
 
 		// Can new sections be added?
-		if (craft()->getEdition() == Craft::Personal)
+		if (Craft::$app->getEdition() == Craft::Personal)
 		{
 			$variables['maxSections'] = 0;
 
-			foreach (craft()->sections->typeLimits as $limit)
+			foreach (Craft::$app->sections->typeLimits as $limit)
 			{
 				$variables['maxSections'] += $limit;
 			}
@@ -85,7 +85,7 @@ class SectionsController extends BaseController
 		{
 			if (empty($variables['section']))
 			{
-				$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
+				$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
 
 				if (!$variables['section'])
 				{
@@ -114,7 +114,7 @@ class SectionsController extends BaseController
 
 		foreach ($types as $type)
 		{
-			$allowed = (($variables['section']->id && $variables['section']->type == $type) || craft()->sections->canHaveMore($type));
+			$allowed = (($variables['section']->id && $variables['section']->type == $type) || Craft::$app->sections->canHaveMore($type));
 			$variables['canBe'.ucfirst($type)] = $allowed;
 
 			if ($allowed)
@@ -142,7 +142,7 @@ class SectionsController extends BaseController
 
 		$variables['canBeHomepage']  = (
 			($variables['section']->id && $variables['section']->isHomepage()) ||
-			($variables['canBeSingle'] && !craft()->sections->doesHomepageExist())
+			($variables['canBeSingle'] && !Craft::$app->sections->doesHomepageExist())
 		);
 
 		$variables['crumbs'] = [
@@ -165,31 +165,31 @@ class SectionsController extends BaseController
 		$section = new SectionModel();
 
 		// Shared attributes
-		$section->id               = craft()->request->getPost('sectionId');
-		$section->name             = craft()->request->getPost('name');
-		$section->handle           = craft()->request->getPost('handle');
-		$section->type             = craft()->request->getPost('type');
-		$section->enableVersioning = craft()->request->getPost('enableVersioning', true);
+		$section->id               = Craft::$app->request->getPost('sectionId');
+		$section->name             = Craft::$app->request->getPost('name');
+		$section->handle           = Craft::$app->request->getPost('handle');
+		$section->type             = Craft::$app->request->getPost('type');
+		$section->enableVersioning = Craft::$app->request->getPost('enableVersioning', true);
 
 		// Type-specific attributes
-		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);
-		$section->template   = craft()->request->getPost('types.'.$section->type.'.template');
-		$section->maxLevels  = craft()->request->getPost('types.'.$section->type.'.maxLevels');
+		$section->hasUrls    = (bool) Craft::$app->request->getPost('types.'.$section->type.'.hasUrls', true);
+		$section->template   = Craft::$app->request->getPost('types.'.$section->type.'.template');
+		$section->maxLevels  = Craft::$app->request->getPost('types.'.$section->type.'.maxLevels');
 
 		// Locale-specific attributes
 		$locales = array();
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
-			$localeIds = craft()->request->getPost('locales', array());
+			$localeIds = Craft::$app->request->getPost('locales', array());
 		}
 		else
 		{
-			$primaryLocaleId = craft()->i18n->getPrimarySiteLocaleId();
+			$primaryLocaleId = Craft::$app->i18n->getPrimarySiteLocaleId();
 			$localeIds = array($primaryLocaleId);
 		}
 
-		$isHomepage = ($section->type == SectionType::Single && craft()->request->getPost('types.'.$section->type.'.homepage'));
+		$isHomepage = ($section->type == SectionType::Single && Craft::$app->request->getPost('types.'.$section->type.'.homepage'));
 
 		foreach ($localeIds as $localeId)
 		{
@@ -200,13 +200,13 @@ class SectionsController extends BaseController
 			}
 			else
 			{
-				$urlFormat       = craft()->request->getPost('types.'.$section->type.'.urlFormat.'.$localeId);
-				$nestedUrlFormat = craft()->request->getPost('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
+				$urlFormat       = Craft::$app->request->getPost('types.'.$section->type.'.urlFormat.'.$localeId);
+				$nestedUrlFormat = Craft::$app->request->getPost('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
 			}
 
 			$locales[$localeId] = new SectionLocaleModel(array(
 				'locale'           => $localeId,
-				'enabledByDefault' => (bool) craft()->request->getPost('defaultLocaleStatuses.'.$localeId),
+				'enabledByDefault' => (bool) Craft::$app->request->getPost('defaultLocaleStatuses.'.$localeId),
 				'urlFormat'        => $urlFormat,
 				'nestedUrlFormat'  => $nestedUrlFormat,
 			));
@@ -214,21 +214,21 @@ class SectionsController extends BaseController
 
 		$section->setLocales($locales);
 
-		$section->hasUrls    = (bool) craft()->request->getPost('types.'.$section->type.'.hasUrls', true);
+		$section->hasUrls    = (bool) Craft::$app->request->getPost('types.'.$section->type.'.hasUrls', true);
 
 		// Save it
-		if (craft()->sections->saveSection($section))
+		if (Craft::$app->sections->saveSection($section))
 		{
-			craft()->getSession()->setNotice(Craft::t('Section saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Section saved.'));
 			$this->redirectToPostedUrl($section);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save section.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save section.'));
 		}
 
 		// Send the section back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'section' => $section
 		));
 	}
@@ -243,9 +243,9 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = craft()->request->getRequiredPost('id');
+		$sectionId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->sections->deleteSectionById($sectionId);
+		Craft::$app->sections->deleteSectionById($sectionId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -266,7 +266,7 @@ class SectionsController extends BaseController
 			throw new HttpException(400);
 		}
 
-		$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
+		$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
 
 		if (!$variables['section'])
 		{
@@ -299,7 +299,7 @@ class SectionsController extends BaseController
 			throw new HttpException(400);
 		}
 
-		$variables['section'] = craft()->sections->getSectionById($variables['sectionId']);
+		$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
 
 		if (!$variables['section'])
 		{
@@ -310,7 +310,7 @@ class SectionsController extends BaseController
 		{
 			if (empty($variables['entryType']))
 			{
-				$variables['entryType'] = craft()->sections->getEntryTypeById($variables['entryTypeId']);
+				$variables['entryType'] = Craft::$app->sections->getEntryTypeById($variables['entryTypeId']);
 
 				if (!$variables['entryType'] || $variables['entryType']->sectionId != $variables['section']->id)
 				{
@@ -353,11 +353,11 @@ class SectionsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entryTypeId = craft()->request->getPost('entryTypeId');
+		$entryTypeId = Craft::$app->request->getPost('entryTypeId');
 
 		if ($entryTypeId)
 		{
-			$entryType = craft()->sections->getEntryTypeById($entryTypeId);
+			$entryType = Craft::$app->sections->getEntryTypeById($entryTypeId);
 
 			if (!$entryType)
 			{
@@ -370,31 +370,31 @@ class SectionsController extends BaseController
 		}
 
 		// Set the simple stuff
-		$entryType->sectionId     = craft()->request->getRequiredPost('sectionId', $entryType->sectionId);
-		$entryType->name          = craft()->request->getPost('name', $entryType->name);
-		$entryType->handle        = craft()->request->getPost('handle', $entryType->handle);
-		$entryType->hasTitleField = (bool) craft()->request->getPost('hasTitleField', $entryType->hasTitleField);
-		$entryType->titleLabel    = craft()->request->getPost('titleLabel', $entryType->titleLabel);
-		$entryType->titleFormat   = craft()->request->getPost('titleFormat', $entryType->titleFormat);
+		$entryType->sectionId     = Craft::$app->request->getRequiredPost('sectionId', $entryType->sectionId);
+		$entryType->name          = Craft::$app->request->getPost('name', $entryType->name);
+		$entryType->handle        = Craft::$app->request->getPost('handle', $entryType->handle);
+		$entryType->hasTitleField = (bool) Craft::$app->request->getPost('hasTitleField', $entryType->hasTitleField);
+		$entryType->titleLabel    = Craft::$app->request->getPost('titleLabel', $entryType->titleLabel);
+		$entryType->titleFormat   = Craft::$app->request->getPost('titleFormat', $entryType->titleFormat);
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Entry;
 		$entryType->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (craft()->sections->saveEntryType($entryType))
+		if (Craft::$app->sections->saveEntryType($entryType))
 		{
-			craft()->getSession()->setNotice(Craft::t('Entry type saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Entry type saved.'));
 			$this->redirectToPostedUrl($entryType);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save entry type.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save entry type.'));
 		}
 
 		// Send the entry type back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'entryType' => $entryType
 		));
 	}
@@ -409,8 +409,8 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryTypeIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
-		craft()->sections->reorderEntryTypes($entryTypeIds);
+		$entryTypeIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
+		Craft::$app->sections->reorderEntryTypes($entryTypeIds);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -425,9 +425,9 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryTypeId = craft()->request->getRequiredPost('id');
+		$entryTypeId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->sections->deleteEntryTypeById($entryTypeId);
+		Craft::$app->sections->deleteEntryTypeById($entryTypeId);
 		$this->returnJson(array('success' => true));
 	}
 }

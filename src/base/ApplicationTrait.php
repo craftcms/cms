@@ -90,10 +90,10 @@ trait ApplicationTrait
 			try
 			{
 				// First check to see if DbConnection has even been initialized, yet.
-				if (craft()->getComponent('db'))
+				if (Craft::$app->getComponent('db'))
 				{
 					// If the db config isn't valid, then we'll assume it's not installed.
-					if (!craft()->getIsDbConnectionValid())
+					if (!Craft::$app->getIsDbConnectionValid())
 					{
 						return false;
 					}
@@ -108,7 +108,7 @@ trait ApplicationTrait
 				return false;
 			}
 
-			$this->_isInstalled = (craft()->isConsole() || craft()->db->tableExists('info', false));
+			$this->_isInstalled = (Craft::$app->isConsole() || Craft::$app->db->tableExists('info', false));
 		}
 
 		return $this->_isInstalled;
@@ -134,7 +134,7 @@ trait ApplicationTrait
 	{
 		if (!isset($this->_isLocalized))
 		{
-			$this->_isLocalized = ($this->getEdition() == Craft::Pro && count(craft()->i18n->getSiteLocales()) > 1);
+			$this->_isLocalized = ($this->getEdition() == Craft::Pro && count(Craft::$app->i18n->getSiteLocales()) > 1);
 		}
 
 		return $this->_isLocalized;
@@ -217,7 +217,7 @@ trait ApplicationTrait
 	 */
 	public function getLicensedEdition()
 	{
-		$licensedEdition = craft()->cache->get('licensedEdition');
+		$licensedEdition = Craft::$app->cache->get('licensedEdition');
 
 		if ($licensedEdition !== false)
 		{
@@ -296,7 +296,7 @@ trait ApplicationTrait
 	public function canUpgradeEdition()
 	{
 		// Only admins can upgrade Craft
-		if (craft()->getUser()->getIsAdmin())
+		if (Craft::$app->getUser()->getIsAdmin())
 		{
 			// If they're running on a testable domain, go for it
 			if ($this->canTestEditions())
@@ -321,7 +321,7 @@ trait ApplicationTrait
 	 */
 	public function canTestEditions()
 	{
-		return (craft()->cache->get('editionTestableDomain@'.craft()->request->getHostName()) == 1);
+		return (Craft::$app->cache->get('editionTestableDomain@'.Craft::$app->request->getHostName()) == 1);
 	}
 
 	/**
@@ -334,14 +334,14 @@ trait ApplicationTrait
 		if (!isset($this->_siteName))
 		{
 			// Start by checking the config
-			$siteName = craft()->config->getLocalized('siteName');
+			$siteName = Craft::$app->config->getLocalized('siteName');
 
 			if (!$siteName)
 			{
 				$siteName = $this->getInfo('siteName');
 
 				// Parse it for environment variables
-				$siteName = craft()->config->parseEnvironmentString($siteName);
+				$siteName = Craft::$app->config->parseEnvironmentString($siteName);
 			}
 
 			$this->_siteName = $siteName;
@@ -363,7 +363,7 @@ trait ApplicationTrait
 		if (!isset($this->_siteUrl))
 		{
 			// Start by checking the config
-			$siteUrl = craft()->config->getLocalized('siteUrl');
+			$siteUrl = Craft::$app->config->getLocalized('siteUrl');
 
 			if (!$siteUrl)
 			{
@@ -379,12 +379,12 @@ trait ApplicationTrait
 				if ($siteUrl)
 				{
 					// Parse it for environment variables
-					$siteUrl = craft()->config->parseEnvironmentString($siteUrl);
+					$siteUrl = Craft::$app->config->parseEnvironmentString($siteUrl);
 				}
 				else
 				{
 					// Figure it out for ourselves, then
-					$siteUrl = craft()->request->getBaseUrl(true);
+					$siteUrl = Craft::$app->request->getBaseUrl(true);
 				}
 			}
 
@@ -423,7 +423,7 @@ trait ApplicationTrait
 	 */
 	public function isSystemOn()
 	{
-		if (is_bool($on = craft()->config->get('isSystemOn')))
+		if (is_bool($on = Craft::$app->config->get('isSystemOn')))
 		{
 			return $on;
 		}
@@ -475,7 +475,7 @@ trait ApplicationTrait
 		{
 			if ($this->isInstalled())
 			{
-				$row = craft()->db->createCommand()
+				$row = Craft::$app->db->createCommand()
 					->from('info')
 					->limit(1)
 					->queryRow();
@@ -518,14 +518,14 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
-				craft()->db->createCommand()->update('info', $attributes);
+				Craft::$app->db->createCommand()->update('info', $attributes);
 			}
 			else
 			{
-				craft()->db->createCommand()->insert('info', $attributes);
+				Craft::$app->db->createCommand()->insert('info', $attributes);
 
 				// Set the new id
-				$info->id = craft()->db->getLastInsertID();
+				$info->id = Craft::$app->db->getLastInsertID();
 			}
 
 			// Use this as the new cached InfoModel
@@ -562,12 +562,12 @@ trait ApplicationTrait
 		{
 			$messages = array();
 
-			$databaseServerName = craft()->config->get('server', ConfigFile::Db);
-			$databaseAuthName = craft()->config->get('user', ConfigFile::Db);
-			$databaseName = craft()->config->get('database', ConfigFile::Db);
-			$databasePort = craft()->config->get('port', ConfigFile::Db);
-			$databaseCharset = craft()->config->get('charset', ConfigFile::Db);
-			$databaseCollation = craft()->config->get('collation', ConfigFile::Db);
+			$databaseServerName = Craft::$app->config->get('server', ConfigFile::Db);
+			$databaseAuthName = Craft::$app->config->get('user', ConfigFile::Db);
+			$databaseName = Craft::$app->config->get('database', ConfigFile::Db);
+			$databasePort = Craft::$app->config->get('port', ConfigFile::Db);
+			$databaseCharset = Craft::$app->config->get('charset', ConfigFile::Db);
+			$databaseCollation = Craft::$app->config->get('collation', ConfigFile::Db);
 
 			if (StringHelper::isNullOrEmpty($databaseServerName))
 			{
@@ -635,7 +635,7 @@ trait ApplicationTrait
 	// =========================================================================
 
 	/**
-	 * Creates a [[DbConnection]] specifically initialized for Craft's craft()->db instance.
+	 * Creates a [[DbConnection]] specifically initialized for Craft's Craft::$app->db instance.
 	 *
 	 * @throws DbConnectException
 	 * @return DbConnection
@@ -648,9 +648,9 @@ trait ApplicationTrait
 
 			$dbConnection->connectionString = $this->_processConnectionString();
 			$dbConnection->emulatePrepare   = true;
-			$dbConnection->username         = craft()->config->get('user', ConfigFile::Db);
-			$dbConnection->password         = craft()->config->get('password', ConfigFile::Db);
-			$dbConnection->charset          = craft()->config->get('charset', ConfigFile::Db);
+			$dbConnection->username         = Craft::$app->config->get('user', ConfigFile::Db);
+			$dbConnection->password         = Craft::$app->config->get('password', ConfigFile::Db);
+			$dbConnection->charset          = Craft::$app->config->get('charset', ConfigFile::Db);
 			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
 			$dbConnection->driverMap        = array('mysql' => 'Craft\MysqlSchema');
 
@@ -685,7 +685,7 @@ trait ApplicationTrait
 		$this->setIsDbConnectionValid(true);
 
 		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
-		if (craft()->config->get('devMode'))
+		if (Craft::$app->config->get('devMode'))
 		{
 			$dbConnection->enableProfiling = true;
 			$dbConnection->enableParamLogging = true;
@@ -739,7 +739,7 @@ trait ApplicationTrait
 	 */
 	private function _getTimeZone()
 	{
-		$timezone = craft()->config->get('timezone');
+		$timezone = Craft::$app->config->get('timezone');
 
 		if ($timezone)
 		{
@@ -771,15 +771,15 @@ trait ApplicationTrait
 	 */
 	private function _processConnectionString()
 	{
-		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
+		$unixSocket = Craft::$app->config->get('unixSocket', ConfigFile::Db);
 
 		if (!empty($unixSocket))
 		{
-			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';
+			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').Craft::$app->config->get('database', ConfigFile::Db).';';
 		}
 		else
 		{
-			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
+			return strtolower('mysql:host='.Craft::$app->config->get('server', ConfigFile::Db).';dbname=').Craft::$app->config->get('database', ConfigFile::Db).strtolower(';port='.Craft::$app->config->get('port', ConfigFile::Db).';');
 		}
 	}
 
@@ -793,9 +793,9 @@ trait ApplicationTrait
 		if ($this->isInstalled())
 		{
 			// Will any locale validation be necessary here?
-			if (craft()->request->isCpRequest() || defined('CRAFT_LOCALE'))
+			if (Craft::$app->request->isCpRequest() || defined('CRAFT_LOCALE'))
 			{
-				if (craft()->request->isCpRequest())
+				if (Craft::$app->request->isCpRequest())
 				{
 					$locale = 'auto';
 				}
@@ -805,7 +805,7 @@ trait ApplicationTrait
 				}
 
 				// Get the list of actual site locale IDs
-				$siteLocaleIds = craft()->i18n->getSiteLocaleIds();
+				$siteLocaleIds = Craft::$app->i18n->getSiteLocaleIds();
 
 				// Is it set to "auto"?
 				if ($locale == 'auto')
@@ -814,7 +814,7 @@ trait ApplicationTrait
 					try
 					{
 						// If the user is logged in *and* has a primary language set, use that
-						$user = craft()->getUser()->getIdentity();
+						$user = Craft::$app->getUser()->getIdentity();
 
 						if ($user && $user->preferredLocale)
 						{
@@ -827,7 +827,7 @@ trait ApplicationTrait
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = craft()->request->getBrowserLanguages();
+					$browserLanguages = Craft::$app->request->getBrowserLanguages();
 
 					if ($browserLanguages)
 					{
@@ -849,7 +849,7 @@ trait ApplicationTrait
 			}
 
 			// Use the primary site locale by default
-			return craft()->i18n->getPrimarySiteLocaleId();
+			return Craft::$app->i18n->getPrimarySiteLocaleId();
 		}
 		else
 		{
@@ -866,12 +866,12 @@ trait ApplicationTrait
 	private function _getFallbackLanguage()
 	{
 		// See if we have the CP translated in one of the user's browsers preferred language(s)
-		$language = craft()->getTranslatedBrowserLanguage();
+		$language = Craft::$app->getTranslatedBrowserLanguage();
 
 		// Default to the source language.
 		if (!$language)
 		{
-			$language = craft()->sourceLanguage;
+			$language = Craft::$app->sourceLanguage;
 		}
 
 		return $language;

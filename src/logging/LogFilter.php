@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\logging;
+use craft\app\Craft;
 
 /**
  * LogFilter pre-processes the logged messages before they are handled by a log route.
@@ -28,6 +29,6 @@ class LogFilter extends \CLogFilter
 	 */
 	public function __construct()
 	{
-		$this->dumper = craft()->config->get('logDumpMethod');
+		$this->dumper = Craft::$app->config->get('logDumpMethod');
 	}
 }

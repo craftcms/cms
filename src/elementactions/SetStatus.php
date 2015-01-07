@@ -31,7 +31,7 @@ class SetStatus extends BaseElementAction
 	 */
 	public function getTriggerHtml()
 	{
-		return craft()->templates->render('_components/elementactions/SetStatus/trigger');
+		return Craft::$app->templates->render('_components/elementactions/SetStatus/trigger');
 	}
 
 	/**
@@ -58,7 +58,7 @@ class SetStatus extends BaseElementAction
 		$elementIds = $criteria->ids();
 
 		// Update their statuses
-		craft()->db->createCommand()->update(
+		Craft::$app->db->createCommand()->update(
 			'elements',
 			array('enabled' => $sqlNewStatus),
 			array('in', 'id', $elementIds)
@@ -67,7 +67,7 @@ class SetStatus extends BaseElementAction
 		if ($status == BaseElementModel::ENABLED)
 		{
 			// Enable their locale as well
-			craft()->db->createCommand()->update(
+			Craft::$app->db->createCommand()->update(
 				'elements_i18n',
 				array('enabled' => $sqlNewStatus),
 				array('and', array('in', 'elementId', $elementIds), 'locale = :locale'),
@@ -76,7 +76,7 @@ class SetStatus extends BaseElementAction
 		}
 
 		// Clear their template caches
-		craft()->templateCache->deleteCacheById($elementIds);
+		Craft::$app->templateCache->deleteCacheById($elementIds);
 
 		// Fire an 'onSetStatus' event
 		$this->onSetStatus(new Event($this, array(

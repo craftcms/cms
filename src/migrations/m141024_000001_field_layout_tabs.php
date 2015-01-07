@@ -27,7 +27,7 @@ class m141024_000001_field_layout_tabs extends BaseMigration
 		Craft::log('Adding tags to all field layouts...', LogLevel::Info, true);
 
 		// Get the field layouts that don't have any tabs
-		$layoutIds = craft()->db->createCommand()
+		$layoutIds = Craft::$app->db->createCommand()
 			->select('l.id')
 			->from('fieldlayouts l')
 			->leftJoin('fieldlayouttabs t', 't.layoutId = l.id')
@@ -44,7 +44,7 @@ class m141024_000001_field_layout_tabs extends BaseMigration
 			));
 
 			// Get its ID
-			$tabId = craft()->db->getLastInsertID();
+			$tabId = Craft::$app->db->getLastInsertID();
 
 			// Assign its fields to that tab
 			$this->update('fieldlayoutfields', array(

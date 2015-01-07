@@ -164,14 +164,14 @@ class Application extends \yii\web\Application
 		$this->_processResourceRequest();
 
 		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->getUser()->shouldExtendSession()))
+		if (!$this->config->get('devMode') || (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession()))
 		{
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
 		}
 
 		// Additionally, we don't want these in the log files at all.
-		if (craft()->isInstalled() && !$this->getUser()->shouldExtendSession())
+		if (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession())
 		{
 			$this->log->removeRoute('FileLogRoute');
 		}
@@ -479,7 +479,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\web\Session]] (craft()->getSession()).
+	 * Returns the [[\craft\app\web\Session]] (Craft::$app->getSession()).
 	 *
 	 * @return \craft\app\web\Session
 	 */
@@ -489,7 +489,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\web\User]] (craft()->getUser()).
+	 * Returns the [[\craft\app\web\User]] (Craft::$app->getUser()).
 	 *
 	 * @return \craft\app\web\User
 	 */
@@ -524,7 +524,7 @@ class Application extends \yii\web\Application
 	 * handler for [[\craft\app\services\Entries::onSaveEntry()]], you would do this:
 	 *
 	 * ```php
-	 * craft()->on('entries.saveEntry', function(Event $event) {
+	 * Craft::$app->on('entries.saveEntry', function(Event $event) {
 	 *     // ...
 	 * });
 	 * ```
@@ -573,7 +573,7 @@ class Application extends \yii\web\Application
 
 	/**
 	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
-	 * do some special logic around creating the `craft()->db` application component.
+	 * do some special logic around creating the `Craft::$app->db` application component.
 	 *
 	 * @param string $id
 	 * @param bool   $createIfNull
@@ -837,7 +837,7 @@ class Application extends \yii\web\Application
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
 			{
 				// Flush the data cache, so we're not getting cached CP resource paths.
-				craft()->cache->flush();
+				Craft::$app->cache->flush();
 
 				$this->runController('templates/requirementscheck');
 			}
@@ -928,7 +928,7 @@ class Application extends \yii\web\Application
 					$error = Craft::t('Your account doesn’t have permission to access the site when the system is offline.');
 				}
 
-				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl(craft()->config->getLogoutPath()).')';
+				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl(Craft::$app->config->getLogoutPath()).')';
 			}
 			else
 			{
@@ -958,8 +958,8 @@ class Application extends \yii\web\Application
 		if ($this->request->isCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/setpassword' ||
-			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail'
+			$this->request->getPath() === Craft::$app->config->get('actionTrigger').'/users/setpassword' ||
+			$this->request->getPath() === Craft::$app->config->get('actionTrigger').'/users/verifyemail'
 		)
 		{
 			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))

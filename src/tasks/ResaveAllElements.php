@@ -56,7 +56,7 @@ class ResaveAllElements extends BaseTask
 		$this->_elementTypes = array();
 		$localizableOnly = $this->getSettings()->localizableOnly;
 
-		foreach (craft()->elements->getAllElementTypes() as $elementType)
+		foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
 		{
 			if (!$localizableOnly || $elementType->isLocalized())
 			{
@@ -97,7 +97,7 @@ class ResaveAllElements extends BaseTask
 	protected function defineSettings()
 	{
 		return [
-			'locale'          => [AttributeType::Locale, 'default' => craft()->language],
+			'locale'          => [AttributeType::Locale, 'default' => Craft::$app->language],
 			'localizableOnly' => AttributeType::Bool
 		];
 	}

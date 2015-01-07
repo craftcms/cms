@@ -236,7 +236,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getFieldLayout()
 	{
-		return craft()->fields->getLayoutByType($this->elementType);
+		return Craft::$app->fields->getLayoutByType($this->elementType);
 	}
 
 	/**
@@ -246,13 +246,13 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getLocales()
 	{
-		if (craft()->elements->getElementType($this->elementType)->isLocalized())
+		if (Craft::$app->elements->getElementType($this->elementType)->isLocalized())
 		{
-			return craft()->i18n->getSiteLocaleIds();
+			return Craft::$app->i18n->getSiteLocaleIds();
 		}
 		else
 		{
-			return array(craft()->i18n->getPrimarySiteLocaleId());
+			return array(Craft::$app->i18n->getPrimarySiteLocaleId());
 		}
 	}
 
@@ -275,15 +275,15 @@ abstract class BaseElementModel extends BaseModel
 		if ($this->uri !== null)
 		{
 			$useLocaleSiteUrl = (
-				($this->locale != craft()->language) &&
-				($localeSiteUrl = craft()->config->getLocalized('siteUrl', $this->locale))
+				($this->locale != Craft::$app->language) &&
+				($localeSiteUrl = Craft::$app->config->getLocalized('siteUrl', $this->locale))
 			);
 
 			if ($useLocaleSiteUrl)
 			{
 				// Temporarily set Craft to use this element's locale's site URL
-				$siteUrl = craft()->getSiteUrl();
-				craft()->setSiteUrl($localeSiteUrl);
+				$siteUrl = Craft::$app->getSiteUrl();
+				Craft::$app->setSiteUrl($localeSiteUrl);
 			}
 
 			if ($this->uri == '__home__')
@@ -297,7 +297,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if ($useLocaleSiteUrl)
 			{
-				craft()->setSiteUrl($siteUrl);
+				Craft::$app->setSiteUrl($siteUrl);
 			}
 
 			return $url;
@@ -510,7 +510,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_ancestorsCriteria))
 		{
-			$this->_ancestorsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_ancestorsCriteria = Craft::$app->elements->getCriteria($this->elementType);
 			$this->_ancestorsCriteria->ancestorOf = $this;
 			$this->_ancestorsCriteria->locale     = $this->locale;
 		}
@@ -536,7 +536,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_descendantsCriteria))
 		{
-			$this->_descendantsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_descendantsCriteria = Craft::$app->elements->getCriteria($this->elementType);
 			$this->_descendantsCriteria->descendantOf = $this;
 			$this->_descendantsCriteria->locale       = $this->locale;
 		}
@@ -575,7 +575,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_siblingsCriteria))
 		{
-			$this->_siblingsCriteria = craft()->elements->getCriteria($this->elementType);
+			$this->_siblingsCriteria = Craft::$app->elements->getCriteria($this->elementType);
 			$this->_siblingsCriteria->siblingOf = $this;
 			$this->_siblingsCriteria->locale    = $this->locale;
 		}
@@ -592,7 +592,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_prevSibling))
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria = Craft::$app->elements->getCriteria($this->elementType);
 			$criteria->prevSiblingOf = $this;
 			$criteria->locale        = $this->locale;
 			$criteria->status        = null;
@@ -612,7 +612,7 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_nextSibling))
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria = Craft::$app->elements->getCriteria($this->elementType);
 			$criteria->nextSiblingOf = $this;
 			$criteria->locale        = $this->locale;
 			$criteria->status        = null;
@@ -801,11 +801,11 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_content))
 		{
-			$this->_content = craft()->content->getContent($this);
+			$this->_content = Craft::$app->content->getContent($this);
 
 			if (!$this->_content)
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = Craft::$app->content->createContent($this);
 			}
 		}
 
@@ -825,7 +825,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = Craft::$app->content->createContent($this);
 			}
 
 			$this->_content->setAttributes($content);
@@ -851,7 +851,7 @@ abstract class BaseElementModel extends BaseModel
 			// look in $_FILES
 			$this->setContentPostLocation($content);
 
-			$content = craft()->request->getPost($content, array());
+			$content = Craft::$app->request->getPost($content, array());
 		}
 
 		if (!isset($this->_rawPostContent))
@@ -997,7 +997,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getContentTable()
 	{
-		return craft()->content->contentTable;
+		return Craft::$app->content->contentTable;
 	}
 
 	/**
@@ -1007,7 +1007,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getFieldColumnPrefix()
 	{
-		return craft()->content->fieldColumnPrefix;
+		return Craft::$app->content->fieldColumnPrefix;
 	}
 
 	/**
@@ -1017,7 +1017,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getFieldContext()
 	{
-		return craft()->content->fieldContext;
+		return Craft::$app->content->fieldContext;
 	}
 
 	// Protected Methods
@@ -1034,12 +1034,12 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
 		{
-			$contentService = craft()->content;
+			$contentService = Craft::$app->content;
 
 			$originalFieldContext = $contentService->fieldContext;
 			$contentService->fieldContext = $this->getFieldContext();
 
-			$this->_fieldsByHandle[$handle] = craft()->fields->getFieldByHandle($handle);
+			$this->_fieldsByHandle[$handle] = Craft::$app->fields->getFieldByHandle($handle);
 
 			$contentService->fieldContext = $originalFieldContext;
 		}
@@ -1059,7 +1059,7 @@ abstract class BaseElementModel extends BaseModel
 			'id'            => AttributeType::Number,
 			'enabled'       => [AttributeType::Bool, 'default' => true],
 			'archived'      => [AttributeType::Bool, 'default' => false],
-			'locale'        => [AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()],
+			'locale'        => [AttributeType::Locale, 'default' => Craft::$app->i18n->getPrimarySiteLocaleId()],
 			'localeEnabled' => [AttributeType::Bool, 'default' => true],
 			'slug'          => [AttributeType::String, 'label' => 'Slug'],
 			'uri'           => [AttributeType::String, 'label' => 'URI'],
@@ -1090,7 +1090,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!$criteria instanceof ElementCriteriaModel)
 			{
-				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+				$criteria = Craft::$app->elements->getCriteria($this->elementType, $criteria);
 			}
 
 			$elementIds = $criteria->ids();
@@ -1100,7 +1100,7 @@ abstract class BaseElementModel extends BaseModel
 			{
 				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel so that our 'id'
 				// modification doesn't stick
-				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
+				$criteria = Craft::$app->elements->getCriteria($this->elementType, $criteria);
 
 				$criteria->id = $elementIds[$key+$dir];
 

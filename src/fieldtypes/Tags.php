@@ -64,7 +64,7 @@ class Tags extends BaseElementFieldType
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria = Craft::$app->elements->getCriteria($this->elementType);
 			$criteria->id = false;
 		}
 
@@ -74,9 +74,9 @@ class Tags extends BaseElementFieldType
 
 		if ($tagGroup)
 		{
-			return craft()->templates->render('_components/fieldtypes/Tags/input', array(
+			return Craft::$app->templates->render('_components/fieldtypes/Tags/input', array(
 				'elementType'     => $elementVariable,
-				'id'              => craft()->templates->formatInputId($name),
+				'id'              => Craft::$app->templates->formatInputId($name),
 				'name'            => $name,
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
@@ -103,7 +103,7 @@ class Tags extends BaseElementFieldType
 
 		if ($tagGroupId)
 		{
-			return craft()->tags->getTagGroupById($tagGroupId);
+			return Craft::$app->tags->getTagGroupById($tagGroupId);
 		}
 	}
 

@@ -25,7 +25,7 @@ use craft\app\web\Application;
 /**
  * Class Cache service.
  *
- * An instance of the Cache service is globally accessible in Craft via [[Application::cache `craft()->cache`]].
+ * An instance of the Cache service is globally accessible in Craft via [[Application::cache `Craft::$app->cache`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -44,13 +44,13 @@ class Cache extends Component
 	// =========================================================================
 
 	/**
-	 * Do the ole' craft()->cache switcharoo.
+	 * Do the ole' Craft::$app->cache switcharoo.
 	 *
 	 * @return null
 	 */
 	public function init()
 	{
-		switch (craft()->config->get('cacheMethod'))
+		switch (Craft::$app->config->get('cacheMethod'))
 		{
 			case CacheMethod::APC:
 			{
@@ -61,8 +61,8 @@ class Cache extends Component
 			case CacheMethod::Db:
 			{
 				$this->_cacheComponent = new DbCache();
-				$this->_cacheComponent->gCProbability = craft()->config->get('gcProbability', ConfigFile::DbCache);
-				$this->_cacheComponent->cacheTableName = craft()->db->getNormalizedTablePrefix().craft()->config->get('cacheTableName', ConfigFile::DbCache);
+				$this->_cacheComponent->gCProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
+				$this->_cacheComponent->cacheTableName = Craft::$app->db->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
 				break;
 			}
@@ -76,27 +76,27 @@ class Cache extends Component
 			case CacheMethod::File:
 			{
 				$this->_cacheComponent = new FileCache();
-				$this->_cacheComponent->cachePath = craft()->config->get('cachePath', ConfigFile::FileCache);
-				$this->_cacheComponent->gCProbability = craft()->config->get('gcProbability', ConfigFile::FileCache);
+				$this->_cacheComponent->cachePath = Craft::$app->config->get('cachePath', ConfigFile::FileCache);
+				$this->_cacheComponent->gCProbability = Craft::$app->config->get('gcProbability', ConfigFile::FileCache);
 				break;
 			}
 
 			case CacheMethod::MemCache:
 			{
 				$this->_cacheComponent = new MemCache();
-				$this->_cacheComponent->servers = craft()->config->get('servers', ConfigFile::Memcache);
-				$this->_cacheComponent->useMemcached = craft()->config->get('useMemcached', ConfigFile::Memcache);
+				$this->_cacheComponent->servers = Craft::$app->config->get('servers', ConfigFile::Memcache);
+				$this->_cacheComponent->useMemcached = Craft::$app->config->get('useMemcached', ConfigFile::Memcache);
 				break;
 			}
 
 			case CacheMethod::Redis:
 			{
 				$this->_cacheComponent = new RedisCache();
-				$this->_cacheComponent->hostname = craft()->config->get('hostname', ConfigFile::RedisCache);
-				$this->_cacheComponent->port = craft()->config->get('port', ConfigFile::RedisCache);
-				$this->_cacheComponent->password = craft()->config->get('password', ConfigFile::RedisCache);
-				$this->_cacheComponent->database = craft()->config->get('database', ConfigFile::RedisCache);
-				$this->_cacheComponent->timeout = craft()->config->get('timeout', ConfigFile::RedisCache);
+				$this->_cacheComponent->hostname = Craft::$app->config->get('hostname', ConfigFile::RedisCache);
+				$this->_cacheComponent->port = Craft::$app->config->get('port', ConfigFile::RedisCache);
+				$this->_cacheComponent->password = Craft::$app->config->get('password', ConfigFile::RedisCache);
+				$this->_cacheComponent->database = Craft::$app->config->get('database', ConfigFile::RedisCache);
+				$this->_cacheComponent->timeout = Craft::$app->config->get('timeout', ConfigFile::RedisCache);
 				break;
 			}
 
@@ -143,7 +143,7 @@ class Cache extends Component
 	{
 		if ($expire === null)
 		{
-			$expire = craft()->config->getCacheDuration();
+			$expire = Craft::$app->config->getCacheDuration();
 		}
 
 		return $this->_cacheComponent->set($id, $value, $expire, $dependency);
@@ -166,7 +166,7 @@ class Cache extends Component
 	{
 		if ($expire === null)
 		{
-			$expire = craft()->config->getCacheDuration();
+			$expire = Craft::$app->config->getCacheDuration();
 		}
 
 		return $this->_cacheComponent->add($id, $value, $expire, $dependency);

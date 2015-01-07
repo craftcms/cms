@@ -22,7 +22,7 @@ use craft\app\models\User             as UserModel;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the Config service is globally accessible in Craft via [[Application::config `craft()->config`]].
+ * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->config`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -66,7 +66,7 @@ class Config extends Component
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * ```php
-	 * $isDevMode = craft()->config->get('devMode');
+	 * $isDevMode = Craft::$app->config->get('devMode');
 	 * ```
 	 *
 	 * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
@@ -74,7 +74,7 @@ class Config extends Component
 	 * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
 	 *
 	 * ```php
-	 * $myConfigSetting = craft()->config->get('myConfigSetting', 'myplugin');
+	 * $myConfigSetting = Craft::$app->config->get('myConfigSetting', 'myplugin');
 	 * ```
 	 *
 	 * @param string $item The name of the config setting.
@@ -103,14 +103,14 @@ class Config extends Component
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * ```php
-	 * craft()->config->set('devMode', true);
+	 * Craft::$app->config->set('devMode', true);
 	 * ```
 	 *
 	 * If you want to set a config setting from a different config file (e.g. config/myplugin.php), you can specify
 	 * its filename as a third argument.
 	 *
 	 * ```php
-	 * craft()->config->set('myConfigSetting', 'foo', 'myplugin');
+	 * Craft::$app->config->set('myConfigSetting', 'foo', 'myplugin');
 	 * ```
 	 *
 	 * @param string $item  The name of the config setting.
@@ -147,7 +147,7 @@ class Config extends Component
 	 *
 	 * @param string $item     The name of the config setting.
 	 * @param string $localeId The locale ID to return. Defaults to
-	 *                         [[\craft\app\web\Application::getLanguage() `craft()->getLanguage()`]].
+	 *                         [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 * @param string $file     The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.
@@ -160,7 +160,7 @@ class Config extends Component
 		{
 			if (!$localeId)
 			{
-				$localeId = craft()->language;
+				$localeId = Craft::$app->language;
 			}
 
 			if (isset($value[$localeId]))
@@ -195,7 +195,7 @@ class Config extends Component
 	 * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
 	 *
 	 * ```php
-	 * if (craft()->config->exists('myConfigSetting', 'myplugin'))
+	 * if (Craft::$app->config->exists('myConfigSetting', 'myplugin'))
 	 * {
 	 *     Craft::log('This site has some pretty useless config settings.');
 	 * }
@@ -229,8 +229,8 @@ class Config extends Component
 	 * [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php).
 	 *
 	 * ```php
-	 * craft()->config->get('cacheDuration'); // 'P1D'
-	 * craft()->config->getCacheDuration();   // 86400
+	 * Craft::$app->config->get('cacheDuration'); // 'P1D'
+	 * Craft::$app->config->getCacheDuration();   // 86400
 	 * ```
 	 *
 	 * @return int The cacheDuration config setting value, in seconds.
@@ -289,7 +289,7 @@ class Config extends Component
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->cache->get('omitScriptNameInUrls');
+				$cachedVal = Craft::$app->cache->get('omitScriptNameInUrls');
 
 				if ($cachedVal !== false)
 				{
@@ -306,12 +306,12 @@ class Config extends Component
 					else
 					{
 						// Cache it early so the testScriptNameRedirect request isn't checking for it too
-						craft()->cache->set('omitScriptNameInUrls', 'n');
+						Craft::$app->cache->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
 						try
 						{
-							$baseUrl = craft()->request->getHostInfo().craft()->request->getScriptUrl();
+							$baseUrl = Craft::$app->request->getHostInfo().Craft::$app->request->getScriptUrl();
 							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
 							$client = new \Guzzle\Http\Client();
@@ -329,7 +329,7 @@ class Config extends Component
 					}
 
 					// Cache it
-					craft()->cache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
+					Craft::$app->cache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
 				}
 			}
 		}
@@ -378,7 +378,7 @@ class Config extends Component
 			else
 			{
 				// Check if it's cached
-				$cachedVal = craft()->cache->get('usePathInfo');
+				$cachedVal = Craft::$app->cache->get('usePathInfo');
 
 				if ($cachedVal !== false)
 				{
@@ -401,12 +401,12 @@ class Config extends Component
 					else
 					{
 						// Cache it early so the testPathInfo request isn't checking for it too
-						craft()->cache->set('usePathInfo', 'n');
+						Craft::$app->cache->set('usePathInfo', 'n');
 
 						// Test the server for it
 						try
 						{
-							$url = craft()->request->getHostInfo().craft()->request->getScriptUrl().'/testPathInfo';
+							$url = Craft::$app->request->getHostInfo().Craft::$app->request->getScriptUrl().'/testPathInfo';
 							$client = new \Guzzle\Http\Client();
 							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
 
@@ -422,7 +422,7 @@ class Config extends Component
 					}
 
 					// Cache it
-					craft()->cache->set('usePathInfo', $this->_usePathInfo);
+					Craft::$app->cache->set('usePathInfo', $this->_usePathInfo);
 				}
 			}
 		}
@@ -440,7 +440,7 @@ class Config extends Component
 	public function maxPowerCaptain()
 	{
 		// I need more memory.
-		@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+		@ini_set('memory_limit', Craft::$app->config->get('phpMaxMemoryLimit'));
 
 		// I need more time.
 		@set_time_limit(0);
@@ -466,14 +466,14 @@ class Config extends Component
 	{
 		if ($remembered)
 		{
-			$duration = craft()->config->get('rememberedUserSessionDuration');
+			$duration = Craft::$app->config->get('rememberedUserSessionDuration');
 		}
 
 		// Even if $remembered = true, it's possible that they've disabled long-term user sessions
 		// by setting rememberedUserSessionDuration = 0
 		if (empty($duration))
 		{
-			$duration = craft()->config->get('userSessionDuration');
+			$duration = Craft::$app->config->get('userSessionDuration');
 		}
 
 		if ($duration)
@@ -492,7 +492,7 @@ class Config extends Component
 	 */
 	public function getLoginPath()
 	{
-		if (craft()->request->isSiteRequest())
+		if (Craft::$app->request->isSiteRequest())
 		{
 			return $this->getLocalized('loginPath');
 		}
@@ -510,7 +510,7 @@ class Config extends Component
 	 */
 	public function getLogoutPath()
 	{
-		if (craft()->request->isSiteRequest())
+		if (Craft::$app->request->isSiteRequest())
 		{
 			return $this->getLocalized('logoutPath');
 		}
@@ -546,7 +546,7 @@ class Config extends Component
 			return $url;
 		}
 
-		if (craft()->request->isSecureConnection())
+		if (Craft::$app->request->isSecureConnection())
 		{
 			$url = UrlHelper::getUrl($url, array(
 				'code' => $code, 'id' => $uid
@@ -588,7 +588,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (craft()->request->isSecureConnection())
+				if (Craft::$app->request->isSecureConnection())
 				{
 					$url = UrlHelper::getCpUrl($url, array(
 						'code' => $code, 'id' => $uid
@@ -608,7 +608,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (craft()->request->isSecureConnection())
+				if (Craft::$app->request->isSecureConnection())
 				{
 					$url = UrlHelper::getUrl($url, array(
 						'code' => $code, 'id' => $uid
@@ -687,7 +687,7 @@ class Config extends Component
 	 */
 	public function getResourceTrigger()
 	{
-		if (craft()->request->isCpRequest())
+		if (Craft::$app->request->isCpRequest())
 		{
 			return 'resources';
 		}

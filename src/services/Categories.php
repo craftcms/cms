@@ -24,7 +24,7 @@ use craft\app\web\Application;
 /**
  * Class Categories service.
  *
- * An instance of the Categories service is globally accessible in Craft via [[Application::categories `craft()->categories`]].
+ * An instance of the Categories service is globally accessible in Craft via [[Application::categories `Craft::$app->categories`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -75,7 +75,7 @@ class Categories extends Component
 			}
 			else
 			{
-				$this->_allGroupIds = craft()->db->createCommand()
+				$this->_allGroupIds = Craft::$app->db->createCommand()
 					->select('id')
 					->from('categorygroups')
 					->queryColumn();
@@ -98,7 +98,7 @@ class Categories extends Component
 
 			foreach ($this->getAllGroupIds() as $groupId)
 			{
-				if (craft()->getUser()->checkPermission('editCategories:'.$groupId))
+				if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId))
 				{
 					$this->_editableGroupIds[] = $groupId;
 				}
@@ -342,7 +342,7 @@ class Categories extends Component
 
 		if (!$group->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 			try
 			{
 				// Create/update the structure
@@ -353,11 +353,11 @@ class Categories extends Component
 				}
 				else
 				{
-					$structure = craft()->structures->getStructureById($oldCategoryGroup->structureId);
+					$structure = Craft::$app->structures->getStructureById($oldCategoryGroup->structureId);
 				}
 
 				$structure->maxLevels = $group->maxLevels;
-				craft()->structures->saveStructure($structure);
+				Craft::$app->structures->saveStructure($structure);
 				$groupRecord->structureId = $structure->id;
 				$group->structureId = $structure->id;
 
@@ -365,11 +365,11 @@ class Categories extends Component
 
 				if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId)
 				{
-					craft()->fields->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
+					Craft::$app->fields->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
 				}
 
 				$fieldLayout = $group->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout);
+				Craft::$app->fields->saveLayout($fieldLayout);
 				$groupRecord->fieldLayoutId = $fieldLayout->id;
 				$group->fieldLayoutId = $fieldLayout->id;
 
@@ -409,7 +409,7 @@ class Categories extends Component
 						// Has the URL format changed?
 						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
-							craft()->db->createCommand()->update('categorygroups_i18n', array(
+							Craft::$app->db->createCommand()->update('categorygroups_i18n', array(
 								'urlFormat'       => $locale->urlFormat,
 								'nestedUrlFormat' => $locale->nestedUrlFormat
 							), array(
@@ -426,7 +426,7 @@ class Categories extends Component
 				}
 
 				// Insert the new locales
-				craft()->db->createCommand()->insertAll('categorygroups_i18n',
+				Craft::$app->db->createCommand()->insertAll('categorygroups_i18n',
 					array('groupId', 'locale', 'urlFormat', 'nestedUrlFormat'),
 					$newLocaleData
 				);
@@ -440,7 +440,7 @@ class Categories extends Component
 
 					if ($droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('categorygroups_i18n', array('in', 'locale', $droppedLocaleIds));
+						Craft::$app->db->createCommand()->delete('categorygroups_i18n', array('in', 'locale', $droppedLocaleIds));
 					}
 				}
 
@@ -449,7 +449,7 @@ class Categories extends Component
 				if (!$isNewCategoryGroup)
 				{
 					// Get all of the category IDs in this group
-					$criteria = craft()->elements->getCriteria(ElementType::Category);
+					$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 					$criteria->groupId = $group->id;
 					$criteria->status = null;
 					$criteria->limit = null;
@@ -458,8 +458,8 @@ class Categories extends Component
 					// Should we be deleting
 					if ($categoryIds && $droppedLocaleIds)
 					{
-						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
-						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
+						Craft::$app->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
+						Craft::$app->db->createCommand()->delete('content', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
 					}
 
 					// Are there any locales left?
@@ -468,7 +468,7 @@ class Categories extends Component
 						// Drop the old category URIs if the group no longer has URLs
 						if (!$group->hasUrls && $oldCategoryGroup->hasUrls)
 						{
-							craft()->db->createCommand()->update('elements_i18n',
+							Craft::$app->db->createCommand()->update('elements_i18n',
 								array('uri' => null),
 								array('in', 'elementId', $categoryIds)
 							);
@@ -477,13 +477,13 @@ class Categories extends Component
 						{
 							foreach ($categoryIds as $categoryId)
 							{
-								craft()->config->maxPowerCaptain();
+								Craft::$app->config->maxPowerCaptain();
 
 								// Loop through each of the changed locales and update all of the categories’ slugs and
 								// URIs
 								foreach ($changedLocaleIds as $localeId)
 								{
-									$criteria = craft()->elements->getCriteria(ElementType::Category);
+									$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 									$criteria->id = $categoryId;
 									$criteria->locale = $localeId;
 									$criteria->status = null;
@@ -491,7 +491,7 @@ class Categories extends Component
 
 									if ($category)
 									{
-										craft()->elements->updateElementSlugAndUri($category, false, false);
+										Craft::$app->elements->updateElementSlugAndUri($category, false, false);
 									}
 								}
 							}
@@ -537,11 +537,11 @@ class Categories extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
+			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('categorygroups')
 				->where(array('id' => $groupId))
@@ -549,19 +549,19 @@ class Categories extends Component
 
 			if ($fieldLayoutId)
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				Craft::$app->fields->deleteLayoutById($fieldLayoutId);
 			}
 
 			// Grab the category ids so we can clean the elements table.
-			$categoryIds = craft()->db->createCommand()
+			$categoryIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('categories')
 				->where(array('groupId' => $groupId))
 				->queryColumn();
 
-			craft()->elements->deleteElementById($categoryIds);
+			Craft::$app->elements->deleteElementById($categoryIds);
 
-			$affectedRows = craft()->db->createCommand()->delete('categorygroups', array('id' => $groupId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('categorygroups', array('id' => $groupId));
 
 			if ($transaction !== null)
 			{
@@ -593,14 +593,14 @@ class Categories extends Component
 		if ($group->hasUrls)
 		{
 			// Set Craft to the site template path
-			$oldTemplatesPath = craft()->path->getTemplatesPath();
-			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+			$oldTemplatesPath = Craft::$app->path->getTemplatesPath();
+			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
 
 			// Does the template exist?
-			$templateExists = craft()->templates->doesTemplateExist($group->template);
+			$templateExists = Craft::$app->templates->doesTemplateExist($group->template);
 
 			// Restore the original template path
-			craft()->path->setTemplatesPath($oldTemplatesPath);
+			Craft::$app->path->setTemplatesPath($oldTemplatesPath);
 
 			if ($templateExists)
 			{
@@ -624,7 +624,7 @@ class Categories extends Component
 	 */
 	public function getCategoryById($categoryId, $localeId = null)
 	{
-		return craft()->elements->getElementById($categoryId, ElementType::Category, $localeId);
+		return Craft::$app->elements->getElementById($categoryId, ElementType::Category, $localeId);
 	}
 
 	/**
@@ -685,7 +685,7 @@ class Categories extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -700,7 +700,7 @@ class Categories extends Component
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = craft()->elements->saveElement($category);
+				$success = Craft::$app->elements->saveElement($category);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
 				if (!$success)
@@ -726,16 +726,16 @@ class Categories extends Component
 				{
 					if (!$category->newParentId)
 					{
-						craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+						Craft::$app->structures->appendToRoot($category->getGroup()->structureId, $category);
 					}
 					else
 					{
-						craft()->structures->append($category->getGroup()->structureId, $category, $parentCategory);
+						Craft::$app->structures->append($category->getGroup()->structureId, $category, $parentCategory);
 					}
 				}
 
 				// Update the category's descendants, who may be using this category's URI in their own URIs
-				craft()->elements->updateDescendantSlugsAndUris($category);
+				Craft::$app->elements->updateDescendantSlugsAndUris($category);
 			}
 			else
 			{
@@ -786,7 +786,7 @@ class Categories extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			if (!is_array($categories))
@@ -843,7 +843,7 @@ class Categories extends Component
 			return false;
 		}
 
-		$criteria = craft()->elements->getCriteria(ElementType::Category);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 		$criteria->id = $categoryId;
 		$criteria->limit = null;
 		$criteria->status = null;
@@ -874,7 +874,7 @@ class Categories extends Component
 		if ($ids)
 		{
 			// Make sure that for each selected category, all of its parents are also selected.
-			$criteria = craft()->elements->getCriteria(ElementType::Category);
+			$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 			$criteria->id = $ids;
 			$criteria->status = null;
 			$criteria->localeEnabled = false;
@@ -1016,7 +1016,7 @@ class Categories extends Component
 		}
 
 		// Is the newParentId set to a different category ID than its previous parent?
-		$criteria = craft()->elements->getCriteria(ElementType::Category);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 		$criteria->ancestorOf = $category;
 		$criteria->ancestorDist = 1;
 		$criteria->status = null;
@@ -1064,6 +1064,6 @@ class Categories extends Component
 		}
 
 		// Delete 'em
-		return craft()->elements->deleteElementById($categoryIds);
+		return Craft::$app->elements->deleteElementById($categoryIds);
 	}
 }

@@ -61,7 +61,7 @@ class CategoryGroup extends BaseModel
 		{
 			if ($this->id)
 			{
-				$this->_locales = craft()->categories->getGroupLocales($this->id, 'locale');
+				$this->_locales = Craft::$app->categories->getGroupLocales($this->id, 'locale');
 			}
 			else
 			{

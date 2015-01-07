@@ -47,7 +47,7 @@ class PositionSelect extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/fieldtypes/PositionSelect/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/settings', array(
 			'settings'   => $this->getSettings(),
 			'allOptions' => array_keys(static::_getOptions()),
 		));
@@ -76,10 +76,10 @@ class PositionSelect extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		craft()->templates->includeJsResource('js/PositionSelectInput.js');
+		Craft::$app->templates->includeJsResource('js/PositionSelectInput.js');
 
-		$id = craft()->templates->formatInputId($name);
-		craft()->templates->includeJs('new PositionSelectInput("'.craft()->templates->namespaceInputId($id).'");');
+		$id = Craft::$app->templates->formatInputId($name);
+		Craft::$app->templates->includeJs('new PositionSelectInput("'.Craft::$app->templates->namespaceInputId($id).'");');
 
 		$options = $this->getSettings()->options;
 
@@ -88,7 +88,7 @@ class PositionSelect extends BaseFieldType
 			$value = $options[0];
 		}
 
-		return craft()->templates->render('_components/fieldtypes/PositionSelect/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/input', array(
 			'id'         => $id,
 			'name'       => $name,
 			'value'      => $value,

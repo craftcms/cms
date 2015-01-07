@@ -44,7 +44,7 @@ class User extends BaseRecord
 			'preferredLocale' => array(static::BELONGS_TO, 'Locale', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
 		);
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			$relations['groups']  = array(static::MANY_MANY, 'UserGroup', 'usergroups_users(userId, groupId)');
 		}

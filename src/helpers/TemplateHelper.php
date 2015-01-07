@@ -7,6 +7,7 @@
 
 namespace craft\app\helpers;
 
+use craft\app\Craft;
 use craft\app\models\ElementCriteria      as ElementCriteriaModel;
 use craft\app\variables\Paginate;
 
@@ -30,7 +31,7 @@ class TemplateHelper
 	 */
 	public static function paginateCriteria(ElementCriteriaModel $criteria)
 	{
-		$currentPage = craft()->request->getPageNum();
+		$currentPage = Craft::$app->request->getPageNum();
 		$limit = $criteria->limit;
 		$total = $criteria->total() - $criteria->offset;
 		$totalPages = ceil($total / $limit);
@@ -85,7 +86,7 @@ class TemplateHelper
 	 */
 	public static function getRaw($value)
 	{
-		$charset = craft()->templates->getTwig()->getCharset();
+		$charset = Craft::$app->templates->getTwig()->getCharset();
 		return new \Twig_Markup($value, $charset);
 	}
 }

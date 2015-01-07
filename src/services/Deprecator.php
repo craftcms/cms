@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use yii\base\Component;
@@ -16,7 +17,7 @@ use craft\app\web\Application;
 /**
  * Class Deprecator service.
  *
- * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `craft()->deprecator`]].
+ * An instance of the Deprecator service is globally accessible in Craft via [[Application::deprecator `Craft::$app->deprecator`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -59,7 +60,7 @@ class Deprecator extends Component
 		$log->key            = $key;
 		$log->message        = $message;
 		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
-		$log->template       = (craft()->request->isSiteRequest() ? craft()->templates->getRenderingTemplate() : null);
+		$log->template       = (Craft::$app->request->isSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
 
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
@@ -67,7 +68,7 @@ class Deprecator extends Component
 		// Don't log the same key/fingerprint twice in the same request
 		if (!isset($this->_fingerprints[$log->key]) || !in_array($log->fingerprint, $this->_fingerprints[$log->key]))
 		{
-			craft()->db->createCommand()->insertOrUpdate(static::$_tableName, [
+			Craft::$app->db->createCommand()->insertOrUpdate(static::$_tableName, [
 				'key'            => $log->key,
 				'fingerprint'    => $log->fingerprint
 			], [
@@ -95,7 +96,7 @@ class Deprecator extends Component
 	 */
 	public function getTotalLogs()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->from(static::$_tableName)
 			->count('id');
 	}
@@ -111,7 +112,7 @@ class Deprecator extends Component
 	{
 		if (!isset($this->_allLogs))
 		{
-			$result = craft()->db->createCommand()
+			$result = Craft::$app->db->createCommand()
 				->select('*')
 				->from(static::$_tableName)
 				->limit($limit)
@@ -133,7 +134,7 @@ class Deprecator extends Component
 	 */
 	public function getLogById($logId)
 	{
-		$log = craft()->db->createCommand()
+		$log = Craft::$app->db->createCommand()
 			->select('*')
 			->from(static::$_tableName)
 			->where('id = :logId', array(':logId' => $logId))
@@ -154,7 +155,7 @@ class Deprecator extends Component
 	 */
 	public function deleteLogById($id)
 	{
-		$affectedRows = craft()->db->createCommand()->delete(static::$_tableName, array('id' => $id));
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName, array('id' => $id));
 		return (bool) $affectedRows;
 	}
 
@@ -165,7 +166,7 @@ class Deprecator extends Component
 	 */
 	public function deleteAllLogs()
 	{
-		$affectedRows = craft()->db->createCommand()->delete(static::$_tableName);
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName);
 		return (bool) $affectedRows;
 	}
 
@@ -193,11 +194,11 @@ class Deprecator extends Component
 
 		/* HIDE */
 		$foundPlugin = false;
-		$pluginsPath = realpath(craft()->path->getPluginsPath()).'/';
+		$pluginsPath = realpath(Craft::$app->path->getPluginsPath()).'/';
 		$pluginsPathLength = strlen($pluginsPath);
 		/* end HIDE */
 
-		$isTemplateRendering = (craft()->request->isSiteRequest() && craft()->templates->isRendering());
+		$isTemplateRendering = (Craft::$app->request->isSiteRequest() && Craft::$app->templates->isRendering());
 
 		if ($isTemplateRendering)
 		{
@@ -255,11 +256,11 @@ class Deprecator extends Component
 				if ($isTemplateRendering && !$foundTemplate)
 				{
 					// Is this a plugin's template?
-					if (!$foundPlugin && craft()->request->isCpRequest() && $logTrace['template'])
+					if (!$foundPlugin && Craft::$app->request->isCpRequest() && $logTrace['template'])
 					{
 						$firstSeg = array_shift(explode('/', $logTrace['template']));
 
-						if (craft()->plugins->getPlugin($firstSeg))
+						if (Craft::$app->plugins->getPlugin($firstSeg))
 						{
 							$log->plugin = $firstSeg;
 							$foundPlugin = true;
@@ -282,7 +283,7 @@ class Deprecator extends Component
 					$remainingFilePath = substr($filePath, $pluginsPathLength);
 					$firstSeg = array_shift(explode('/', $remainingFilePath));
 
-					if (craft()->plugins->getPlugin($firstSeg))
+					if (Craft::$app->plugins->getPlugin($firstSeg))
 					{
 						$log->plugin = $firstSeg;
 						$foundPlugin = true;

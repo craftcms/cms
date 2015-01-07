@@ -55,7 +55,7 @@ abstract class BaseController extends \CController
 	public function getActionParams()
 	{
 		$params = parent::getActionParams();
-		$routeParams = craft()->urlManager->getRouteParams();
+		$routeParams = Craft::$app->urlManager->getRouteParams();
 
 		if (is_array($routeParams))
 		{
@@ -79,7 +79,7 @@ abstract class BaseController extends \CController
 	 */
 	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
-		if (($output = craft()->templates->render($template, $variables)) !== false)
+		if (($output = Craft::$app->templates->render($template, $variables)) !== false)
 		{
 			if ($processOutput)
 			{
@@ -98,8 +98,8 @@ abstract class BaseController extends \CController
 				{
 					// Safe to assume that findTemplate() will return an actual template path here, and not `false`.
 					// If the template didn't exist, a TemplateLoaderException would have been thrown when calling
-					// craft()->templates->render().
-					$templateFile = craft()->templates->findTemplate($template);
+					// Craft::$app->templates->render().
+					$templateFile = Craft::$app->templates->findTemplate($template);
 					$extension = IOHelper::getExtension($templateFile, 'html');
 
 					if ($extension == 'twig')
@@ -117,8 +117,8 @@ abstract class BaseController extends \CController
 				if (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml')))
 				{
 					// Are there any head/foot nodes left in the queue?
-					$headHtml = craft()->templates->getHeadHtml();
-					$footHtml = craft()->templates->getFootHtml();
+					$headHtml = Craft::$app->templates->getHeadHtml();
+					$footHtml = Craft::$app->templates->getFootHtml();
 
 					if ($headHtml)
 					{
@@ -150,7 +150,7 @@ abstract class BaseController extends \CController
 				echo $output;
 
 				// End the request
-				craft()->end();
+				Craft::$app->end();
 			}
 		}
 		else
@@ -166,7 +166,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		$user = craft()->getUser();
+		$user = Craft::$app->getUser();
 
 		if ($user->getIsGuest())
 		{
@@ -186,7 +186,7 @@ abstract class BaseController extends \CController
 		$this->requireLogin();
 
 		// Make sure they're an admin
-		if (!craft()->getUser()->getIsAdmin())
+		if (!Craft::$app->getUser()->getIsAdmin())
 		{
 			throw new HttpException(403, Craft::t('This action may only be performed by admins.'));
 		}
@@ -202,7 +202,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePermission($permissionName)
 	{
-		if (!craft()->getUser()->checkPermission($permissionName))
+		if (!Craft::$app->getUser()->checkPermission($permissionName))
 		{
 			throw new HttpException(403);
 		}
@@ -218,7 +218,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAuthorization($action)
 	{
-		if (!craft()->getSession()->checkAuthorization($action))
+		if (!Craft::$app->getSession()->checkAuthorization($action))
 		{
 			throw new HttpException(403);
 		}
@@ -232,7 +232,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (craft()->request->getRequestType() !== 'POST')
+		if (Craft::$app->request->getRequestType() !== 'POST')
 		{
 			throw new HttpException(400);
 		}
@@ -246,7 +246,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!craft()->request->isAjaxRequest())
+		if (!Craft::$app->request->isAjaxRequest())
 		{
 			throw new HttpException(400);
 		}
@@ -260,7 +260,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireToken()
 	{
-		if (!craft()->request->getQuery(craft()->config->get('tokenParam')))
+		if (!Craft::$app->request->getQuery(Craft::$app->config->get('tokenParam')))
 		{
 			throw new HttpException(400);
 		}
@@ -299,7 +299,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($object = null, $default = null)
 	{
-		$url = craft()->request->getPost('redirect');
+		$url = Craft::$app->request->getPost('redirect');
 
 		if ($url === null)
 		{
@@ -309,13 +309,13 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				$url = craft()->request->getPath();
+				$url = Craft::$app->request->getPath();
 			}
 		}
 
 		if ($object)
 		{
-			$url = craft()->templates->renderObjectTemplate($url, $object);
+			$url = Craft::$app->templates->renderObjectTemplate($url, $object);
 		}
 
 		$this->redirect($url);
@@ -336,7 +336,7 @@ abstract class BaseController extends \CController
 		ob_start();
 		echo JsonHelper::encode($var);
 
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**

@@ -51,26 +51,26 @@ class StructuresController extends BaseController
 		$this->requireAjaxRequest();
 
 		// This controller is only available to the Control Panel
-		if (!craft()->request->isCpRequest())
+		if (!Craft::$app->request->isCpRequest())
 		{
 			throw new HttpException(403);
 		}
 
-		$structureId = craft()->request->getRequiredPost('structureId');
-		$elementId   = craft()->request->getRequiredPost('elementId');
-		$localeId    = craft()->request->getRequiredPost('locale');
+		$structureId = Craft::$app->request->getRequiredPost('structureId');
+		$elementId   = Craft::$app->request->getRequiredPost('elementId');
+		$localeId    = Craft::$app->request->getRequiredPost('locale');
 
 		// Make sure they have permission to edit this structure
 		$this->requireAuthorization('editStructure:'.$structureId);
 
-		$this->_structure = craft()->structures->getStructureById($structureId);
+		$this->_structure = Craft::$app->structures->getStructureById($structureId);
 
 		if (!$this->_structure)
 		{
 			throw new Exception(Craft::t('No structure exists with the ID “{id}”.', array('id' => $structureId)));
 		}
 
-		$this->_element = craft()->elements->getElementById($elementId, null, $localeId);
+		$this->_element = Craft::$app->elements->getElementById($elementId, null, $localeId);
 
 		if (!$this->_element)
 		{
@@ -85,7 +85,7 @@ class StructuresController extends BaseController
 	 */
 	public function actionGetElementLevelDelta()
 	{
-		$delta = craft()->structures->getElementLevelDelta($this->_structure->id, $this->_element);
+		$delta = Craft::$app->structures->getElementLevelDelta($this->_structure->id, $this->_element);
 
 		$this->returnJson(array(
 			'delta' => $delta
@@ -99,22 +99,22 @@ class StructuresController extends BaseController
 	 */
 	public function actionMoveElement()
 	{
-		$parentElementId = craft()->request->getPost('parentId');
-		$prevElementId   = craft()->request->getPost('prevId');
+		$parentElementId = Craft::$app->request->getPost('parentId');
+		$prevElementId   = Craft::$app->request->getPost('prevId');
 
 		if ($prevElementId)
 		{
-			$prevElement = craft()->elements->getElementById($prevElementId, null, $this->_element->locale);
-			$success = craft()->structures->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
+			$prevElement = Craft::$app->elements->getElementById($prevElementId, null, $this->_element->locale);
+			$success = Craft::$app->structures->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
 		}
 		else if ($parentElementId)
 		{
-			$parentElement = craft()->elements->getElementById($parentElementId, null, $this->_element->locale);
-			$success = craft()->structures->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
+			$parentElement = Craft::$app->elements->getElementById($parentElementId, null, $this->_element->locale);
+			$success = Craft::$app->structures->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
 		}
 		else
 		{
-			$success = craft()->structures->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
+			$success = Craft::$app->structures->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
 		}
 
 		$this->returnJson(array(

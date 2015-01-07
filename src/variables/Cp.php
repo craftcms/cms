@@ -32,41 +32,41 @@ class Cp
 	{
 		$nav['dashboard'] = array('name' => Craft::t('Dashboard'));
 
-		if (craft()->sections->getTotalEditableSections())
+		if (Craft::$app->sections->getTotalEditableSections())
 		{
 			$nav['entries'] = array('name' => Craft::t('Entries'));
 		}
 
-		$globals = craft()->globals->getEditableSets();
+		$globals = Craft::$app->globals->getEditableSets();
 
 		if ($globals)
 		{
 			$nav['globals'] = array('name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
 		}
 
-		if (craft()->categories->getEditableGroupIds())
+		if (Craft::$app->categories->getEditableGroupIds())
 		{
 			$nav['categories'] = array('name' => Craft::t('Categories'));
 		}
 
-		if (craft()->assetSources->getTotalViewableSources())
+		if (Craft::$app->assetSources->getTotalViewableSources())
 		{
 			$nav['assets'] = array('name' => Craft::t('Assets'));
 		}
 
-		if (craft()->getEdition() == Craft::Pro && craft()->getUser()->checkPermission('editUsers'))
+		if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers'))
 		{
 			$nav['users'] = array('name' => Craft::t('Users'));
 		}
 
 		// Add any Plugin nav items
-		$plugins = craft()->plugins->getPlugins();
+		$plugins = Craft::$app->plugins->getPlugins();
 
 		foreach ($plugins as $plugin)
 		{
 			if ($plugin->hasCpSection())
 			{
-				if (craft()->getUser()->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+				if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
 					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 					$nav[$lcHandle] = array('name' => $plugin->getName());
@@ -74,7 +74,7 @@ class Cp
 			}
 		}
 
-		$firstSegment = craft()->request->getSegment(1);
+		$firstSegment = Craft::$app->request->getSegment(1);
 
 		if ($firstSegment == 'myaccount')
 		{
@@ -110,7 +110,7 @@ class Cp
 		$settings[$label]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
 		$settings[$label]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			$settings[$label]['users'] = array('icon' => 'users', 'label' => Craft::t('Users'));
 		}
@@ -127,7 +127,7 @@ class Cp
 		$settings[$label]['categories'] = array('icon' => 'categories', 'label' => Craft::t('Categories'));
 		$settings[$label]['tags'] = array('icon' => 'tags', 'label' => Craft::t('Tags'));
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			$settings[$label]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
 		}
@@ -143,7 +143,7 @@ class Cp
 	public function areAlertsCached()
 	{
 		// The license key status gets cached on each Elliott request
-		return (craft()->et->getLicenseKeyStatus() !== false);
+		return (Craft::$app->et->getLicenseKeyStatus() !== false);
 	}
 
 	/**
@@ -153,6 +153,6 @@ class Cp
 	 */
 	public function getAlerts()
 	{
-		return CpHelper::getAlerts(craft()->request->getPath());
+		return CpHelper::getAlerts(Craft::$app->request->getPath());
 	}
 }

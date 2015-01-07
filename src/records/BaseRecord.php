@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -304,14 +305,14 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Create the table
-		craft()->db->createCommand()->createTable($table, $columns, null, $addIdColumn);
+		Craft::$app->db->createCommand()->createTable($table, $columns, null, $addIdColumn);
 
 		// Create the indexes
 		foreach ($indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = !empty($index['unique']);
-			craft()->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
+			Craft::$app->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
 		}
 	}
 
@@ -345,9 +346,9 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->tableExists($table))
+		if (Craft::$app->db->tableExists($table))
 		{
-			craft()->db->createCommand()->dropTable($table);
+			Craft::$app->db->createCommand()->dropTable($table);
 		}
 	}
 
@@ -391,7 +392,7 @@ abstract class BaseRecord extends \CActiveRecord
 				$onUpdate = null;
 			}
 
-			craft()->db->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
+			Craft::$app->db->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
 		}
 	}
 
@@ -405,16 +406,16 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (craft()->db->tableExists($table, true))
+		if (Craft::$app->db->tableExists($table, true))
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
 				// Make sure the record's table exists
 				$otherRecord = new $config[1];
 
-				if (craft()->db->tableExists($otherRecord->getTableName()))
+				if (Craft::$app->db->tableExists($otherRecord->getTableName()))
 				{
-					craft()->db->createCommand()->dropForeignKey($table, $config[2]);
+					Craft::$app->db->createCommand()->dropForeignKey($table, $config[2]);
 				}
 			}
 		}
@@ -598,7 +599,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 			case static::MANY_MANY:
 			{
-				$config[2] = craft()->db->tablePrefix.$config[2];
+				$config[2] = Craft::$app->db->tablePrefix.$config[2];
 				break;
 			}
 		}

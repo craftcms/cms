@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * The LocalizationController class is a controller that handles various localization related tasks such adding,
@@ -49,8 +49,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$localeId = craft()->request->getRequiredPost('id');
-		$success = craft()->i18n->addSiteLocale($localeId);
+		$localeId = Craft::$app->request->getRequiredPost('id');
+		$success = Craft::$app->i18n->addSiteLocale($localeId);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -64,8 +64,8 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$localeIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
-		$success = craft()->i18n->reorderSiteLocales($localeIds);
+		$localeIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
+		$success = Craft::$app->i18n->reorderSiteLocales($localeIds);
 		$this->returnJson(array('success' => $success));
 	}
 
@@ -79,10 +79,10 @@ class LocalizationController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$localeId = craft()->request->getRequiredPost('id');
-		$transferContentTo = craft()->request->getPost('transferContentTo');
+		$localeId = Craft::$app->request->getRequiredPost('id');
+		$transferContentTo = Craft::$app->request->getPost('transferContentTo');
 
-		$success = craft()->i18n->deleteSiteLocale($localeId, $transferContentTo);
+		$success = Craft::$app->i18n->deleteSiteLocale($localeId, $transferContentTo);
 		$this->returnJson(array('success' => $success));
 	}
 }

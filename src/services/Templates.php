@@ -27,7 +27,7 @@ use craft\app\web\Application;
  * The Templates service provides APIs for rendering templates, as well as interacting with other areas of Craft’s
  * templating system.
  *
- * An instance of the Templates service is globally accessible in Craft via [[Application::templates `craft()->templates`]].
+ * An instance of the Templates service is globally accessible in Craft via [[Application::templates `Craft::$app->templates`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -165,13 +165,13 @@ class Templates extends Component
 			$twig->addExtension(new \Twig_Extension_StringLoader());
 			$twig->addExtension(new CraftTwigExtension());
 
-			if (craft()->config->get('devMode'))
+			if (Craft::$app->config->get('devMode'))
 			{
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
 
 			// Set our timezone
-			$timezone = craft()->getTimeZone();
+			$timezone = Craft::$app->getTimeZone();
 			$twig->getExtension('core')->setTimezone($timezone);
 
 			// Give plugins a chance to add their own Twig extensions
@@ -213,7 +213,7 @@ class Templates extends Component
 
 				if (!$template)
 				{
-					$template = craft()->path->getTemplatesPath().$this->_renderingTemplate;
+					$template = Craft::$app->path->getTemplatesPath().$this->_renderingTemplate;
 				}
 			}
 
@@ -615,15 +615,15 @@ class Templates extends Component
 	 */
 	public function getFootHtml()
 	{
-		if (craft()->isInstalled() && craft()->request->isCpRequest())
+		if (Craft::$app->isInstalled() && Craft::$app->request->isCpRequest())
 		{
 			// Include any JS/resource flashes
-			foreach (craft()->getSession()->getJsResourceFlashes() as $path)
+			foreach (Craft::$app->getSession()->getJsResourceFlashes() as $path)
 			{
 				$this->includeJsResource($path);
 			}
 
-			foreach (craft()->getSession()->getJsFlashes() as $js)
+			foreach (Craft::$app->getSession()->getJsFlashes() as $js)
 			{
 				$this->includeJs($js, true);
 			}
@@ -668,9 +668,9 @@ class Templates extends Component
 	 */
 	public function getCsrfInput()
 	{
-		if (craft()->config->get('enableCsrfProtection') === true)
+		if (Craft::$app->config->get('enableCsrfProtection') === true)
 		{
-			return '<input type="hidden" name="'.craft()->config->get('csrfTokenName').'" value="'.craft()->request->getCsrfToken().'">';
+			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->request->getCsrfToken().'">';
 		}
 
 		return '';
@@ -821,7 +821,7 @@ class Templates extends Component
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Get the latest template base path
-		$templatesPath = rtrim(craft()->path->getTemplatesPath(), '/').'/';
+		$templatesPath = rtrim(Craft::$app->path->getTemplatesPath(), '/').'/';
 
 		$key = $templatesPath.':'.$name;
 
@@ -838,9 +838,9 @@ class Templates extends Component
 		$basePaths = array();
 
 		// Should we be looking for a localized version of the template?
-		if (craft()->request->isSiteRequest() && IOHelper::folderExists($templatesPath.craft()->language))
+		if (Craft::$app->request->isSiteRequest() && IOHelper::folderExists($templatesPath.Craft::$app->language))
 		{
-			$basePaths[] = $templatesPath.craft()->language.'/';
+			$basePaths[] = $templatesPath.Craft::$app->language.'/';
 		}
 
 		$basePaths[] = $templatesPath;
@@ -856,18 +856,18 @@ class Templates extends Component
 		// Otherwise maybe it's a plugin template?
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
+		if (Craft::$app->request->isCpRequest() || Craft::$app->request->isActionRequest())
 		{
 			// Sanitize
-			$name = craft()->request->decodePathInfo($name);
+			$name = Craft::$app->request->decodePathInfo($name);
 
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));
 
-			if ($pluginHandle && ($plugin = craft()->plugins->getPlugin($pluginHandle)) !== null)
+			if ($pluginHandle && ($plugin = Craft::$app->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = craft()->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/templates/';
+				$basePath = Craft::$app->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/templates/';
 
 				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);
@@ -1063,7 +1063,7 @@ class Templates extends Component
 	 * For example, if you place this in your plugin’s [[BasePlugin::init() init()]] method:
 	 *
 	 * ```php
-	 * craft()->templates->hook('myAwesomeHook', function(&$context)
+	 * Craft::$app->templates->hook('myAwesomeHook', function(&$context)
 	 * {
 	 *     $context['foo'] = 'bar';
 	 *
@@ -1146,11 +1146,11 @@ class Templates extends Component
 		{
 			$this->_twigOptions = array(
 				'base_template_class' => 'Craft\BaseTemplate',
-				'cache'               => craft()->path->getCompiledTemplatesPath(),
+				'cache'               => Craft::$app->path->getCompiledTemplatesPath(),
 				'auto_reload'         => true,
 			);
 
-			if (craft()->config->get('devMode'))
+			if (Craft::$app->config->get('devMode'))
 			{
 				$this->_twigOptions['debug'] = true;
 				$this->_twigOptions['strict_variables'] = true;
@@ -1198,15 +1198,15 @@ class Templates extends Component
 		// Set the defaultTemplateExtensions and indexTemplateFilenames vars
 		if (!isset($this->_defaultTemplateExtensions))
 		{
-			if (craft()->request->isCpRequest())
+			if (Craft::$app->request->isCpRequest())
 			{
 				$this->_defaultTemplateExtensions = array('html', 'twig');
 				$this->_indexTemplateFilenames = array('index');
 			}
 			else
 			{
-				$this->_defaultTemplateExtensions = craft()->config->get('defaultTemplateExtensions');
-				$this->_indexTemplateFilenames = craft()->config->get('indexTemplateFilenames');
+				$this->_defaultTemplateExtensions = Craft::$app->config->get('defaultTemplateExtensions');
+				$this->_indexTemplateFilenames = Craft::$app->config->get('indexTemplateFilenames');
 			}
 		}
 
@@ -1256,12 +1256,12 @@ class Templates extends Component
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
 		// Check if the Plugins service has been loaded yet
-		$pluginsService = craft()->getComponent('plugins', false);
+		$pluginsService = Craft::$app->getComponent('plugins', false);
 
 		if (!$pluginsService)
 		{
 			// It hasn't, so let's load it and call loadPlugins()
-			$pluginsService = craft()->getComponent('plugins');
+			$pluginsService = Craft::$app->getComponent('plugins');
 			$pluginsService->loadPlugins();
 		}
 
@@ -1286,7 +1286,7 @@ class Templates extends Component
 		else
 		{
 			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-			craft()->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
+			Craft::$app->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
 		}
 	}
 
@@ -1431,7 +1431,7 @@ class Templates extends Component
 		}
 		else
 		{
-			$elementType = craft()->elements->getElementType($context['element']->getElementType());
+			$elementType = Craft::$app->elements->getElementType($context['element']->getElementType());
 		}
 
 		if ($elementType->hasStatuses())

@@ -7,6 +7,7 @@
 
 namespace craft\app\cache;
 
+use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -42,7 +43,7 @@ class FileCache extends \CFileCache
 	{
 		if (!$this->cachePath)
 		{
-			$this->cachePath = craft()->path->getCachePath();
+			$this->cachePath = Craft::$app->path->getCachePath();
 		}
 
 		parent::init();
@@ -127,7 +128,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $value, true, false, true) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, craft()->config->get('defaultFilePermissions'));
+				IOHelper::changePermissions($cacheFile, Craft::$app->config->get('defaultFilePermissions'));
 				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
@@ -139,7 +140,7 @@ class FileCache extends \CFileCache
 		{
 			if (IOHelper::writeToFile($cacheFile, $this->embedExpiry ? $expire.$value : $value) !== false)
 			{
-				IOHelper::changePermissions($cacheFile, craft()->config->get('defaultFilePermissions'));
+				IOHelper::changePermissions($cacheFile, Craft::$app->config->get('defaultFilePermissions'));
 				return $this->embedExpiry ? true : IOHelper::touch($cacheFile, $expire);
 			}
 			else

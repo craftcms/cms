@@ -7,6 +7,7 @@
 
 namespace craft\app\base;
 
+use craft\app\Craft;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
@@ -39,7 +40,7 @@ trait FieldLayoutTrait
 		{
 			if (!empty($this->fieldLayoutId))
 			{
-				$this->_fieldLayout = craft()->fields->getLayoutById($this->fieldLayoutId);
+				$this->_fieldLayout = Craft::$app->fields->getLayoutById($this->fieldLayoutId);
 			}
 
 			if (empty($this->_fieldLayout))

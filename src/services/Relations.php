@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Field              as FieldModel;
@@ -15,7 +16,7 @@ use craft\app\web\Application;
 /**
  * Class Relations service.
  *
- * An instance of the Relations service is globally accessible in Craft via [[Application::relations `craft()->relations`]].
+ * An instance of the Relations service is globally accessible in Craft via [[Application::relations `Craft::$app->relations`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -45,7 +46,7 @@ class Relations extends Component
 		// Prevent duplicate target IDs.
 		$targetIds = array_unique($targetIds);
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Delete the existing relations
@@ -58,7 +59,7 @@ class Relations extends Component
 				$oldRelationParams[':sourceLocale'] = $source->locale;
 			}
 
-			craft()->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
+			Craft::$app->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
 
 			// Add the new ones
 			if ($targetIds)
@@ -80,7 +81,7 @@ class Relations extends Component
 				}
 
 				$columns = array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder');
-				craft()->db->createCommand()->insertAll('relations', $columns, $values);
+				Craft::$app->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 
 			if ($transaction !== null)

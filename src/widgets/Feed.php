@@ -47,7 +47,7 @@ class Feed extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/widgets/Feed/settings', array(
+		return Craft::$app->templates->render('_components/widgets/Feed/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -75,10 +75,10 @@ class Feed extends BaseWidget
 
 		$js = "new Craft.FeedWidget({$id}, {$url}, {$limit});";
 
-		craft()->templates->includeJsResource('js/FeedWidget.js');
-		craft()->templates->includeJs($js);
+		Craft::$app->templates->includeJsResource('js/FeedWidget.js');
+		Craft::$app->templates->includeJs($js);
 
-		return craft()->templates->render('_components/widgets/Feed/body', array(
+		return Craft::$app->templates->render('_components/widgets/Feed/body', array(
 			'limit' => $limit
 		));
 	}

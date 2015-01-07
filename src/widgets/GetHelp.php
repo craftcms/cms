@@ -58,19 +58,19 @@ class GetHelpWidget extends BaseWidget
 	public function getBodyHtml()
 	{
 		// Only admins get the Get Help widget.
-		if (!craft()->getUser()->getIsAdmin())
+		if (!Craft::$app->getUser()->getIsAdmin())
 		{
 			return false;
 		}
 
 		$id = $this->model->id;
 		$js = "new Craft.GetHelpWidget({$id});";
-		craft()->templates->includeJs($js);
+		Craft::$app->templates->includeJs($js);
 
-		craft()->templates->includeJsResource('js/GetHelpWidget.js');
-		craft()->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
+		Craft::$app->templates->includeJsResource('js/GetHelpWidget.js');
+		Craft::$app->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
 
-		return craft()->templates->render('_components/widgets/GetHelp/body');
+		return Craft::$app->templates->render('_components/widgets/GetHelp/body');
 	}
 
 	/**
@@ -81,7 +81,7 @@ class GetHelpWidget extends BaseWidget
 	public function isSelectable()
 	{
 		// Only admins get the Get Help widget.
-		if (parent::isSelectable() && craft()->getUser()->getIsAdmin())
+		if (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin())
 		{
 			return true;
 		}

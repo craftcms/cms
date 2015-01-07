@@ -7,6 +7,7 @@
 
 namespace craft\app\cache;
 
+use craft\app\Craft;
 use craft\app\db\DbConnection;
 use craft\app\enums\ConfigFile;
 
@@ -32,7 +33,7 @@ class DbCache extends \CDbCache
 	 */
 	public function getDbConnection()
 	{
-		return craft()->db;
+		return Craft::$app->db;
 	}
 
 	// Protected Methods
@@ -44,7 +45,7 @@ class DbCache extends \CDbCache
 	 */
 	protected function createCacheTable($db, $tableName)
 	{
-		if (!craft()->db->tableExists(craft()->config->get('cacheTableName', ConfigFile::DbCache), true))
+		if (!Craft::$app->db->tableExists(Craft::$app->config->get('cacheTableName', ConfigFile::DbCache), true))
 		{
 			parent::createCacheTable($db, $tableName);
 		}

@@ -14,12 +14,12 @@ use craft\app\records\UserPermission as UserPermissionRecord;
 use craft\app\models\Section         as SectionModel;
 use craft\app\web\Application;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Class UserPermissions service.
  *
- * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `craft()->userPermissions`]].
+ * An instance of the UserPermissions service is globally accessible in Craft via [[Application::userPermissions `Craft::$app->userPermissions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -69,7 +69,7 @@ class UserPermissions extends Component
 			),
 		);
 
-		foreach (craft()->plugins->getPlugins() as $plugin)
+		foreach (Craft::$app->plugins->getPlugins() as $plugin)
 		{
 			if ($plugin->hasCpSection())
 			{
@@ -112,10 +112,10 @@ class UserPermissions extends Component
 		// Locales
 		// ---------------------------------------------------------------------
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
 			$label = Craft::t('Locales');
-			$locales = craft()->i18n->getSiteLocales();
+			$locales = Craft::$app->i18n->getSiteLocales();
 
 			foreach ($locales as $locale)
 			{
@@ -128,7 +128,7 @@ class UserPermissions extends Component
 		// Entries
 		// ---------------------------------------------------------------------
 
-		$sections = craft()->sections->getAllSections();
+		$sections = Craft::$app->sections->getAllSections();
 
 		foreach ($sections as $section)
 		{
@@ -147,7 +147,7 @@ class UserPermissions extends Component
 		// Global sets
 		// ---------------------------------------------------------------------
 
-		$globalSets = craft()->globals->getAllSets();
+		$globalSets = Craft::$app->globals->getAllSets();
 
 		if ($globalSets)
 		{
@@ -157,7 +157,7 @@ class UserPermissions extends Component
 		// Categories
 		// ---------------------------------------------------------------------
 
-		$categoryGroups = craft()->categories->getAllGroups();
+		$categoryGroups = Craft::$app->categories->getAllGroups();
 
 		if ($categoryGroups)
 		{
@@ -167,7 +167,7 @@ class UserPermissions extends Component
 		// Asset sources
 		// ---------------------------------------------------------------------
 
-		$assetSources = craft()->assetSources->getAllSources();
+		$assetSources = Craft::$app->assetSources->getAllSources();
 
 		foreach ($assetSources as $source)
 		{
@@ -178,9 +178,9 @@ class UserPermissions extends Component
 		// Plugins
 		// ---------------------------------------------------------------------
 
-		foreach (craft()->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
+		foreach (Craft::$app->plugins->call('registerUserPermissions') as $pluginHandle => $pluginPermissions)
 		{
-			$plugin = craft()->plugins->getPlugin($pluginHandle);
+			$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
 			$permissions[$plugin->getName()] = $pluginPermissions;
 		}
 
@@ -198,7 +198,7 @@ class UserPermissions extends Component
 	{
 		if (!isset($this->_permissionsByUserId[$groupId]))
 		{
-			$groupPermissions = craft()->db->createCommand()
+			$groupPermissions = Craft::$app->db->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -220,7 +220,7 @@ class UserPermissions extends Component
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('p.name')
 			->from('userpermissions p')
 			->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -256,7 +256,7 @@ class UserPermissions extends Component
 	public function saveGroupPermissions($groupId, $permissions)
 	{
 		// Delete any existing group permissions
-		craft()->db->createCommand()
+		Craft::$app->db->createCommand()
 			->delete('userpermissions_usergroups', array('groupId' => $groupId));
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
@@ -272,7 +272,7 @@ class UserPermissions extends Component
 			}
 
 			// Add the new group permissions
-			craft()->db->createCommand()
+			Craft::$app->db->createCommand()
 				->insertAll('userpermissions_usergroups', array('permissionId', 'groupId'), $groupPermissionVals);
 		}
 
@@ -292,7 +292,7 @@ class UserPermissions extends Component
 		{
 			$groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-			$userPermissions = craft()->db->createCommand()
+			$userPermissions = Craft::$app->db->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_users p_u', 'p_u.permissionId = p.id')
@@ -332,7 +332,7 @@ class UserPermissions extends Component
 	public function saveUserPermissions($userId, $permissions)
 	{
 		// Delete any existing user permissions
-		craft()->db->createCommand()
+		Craft::$app->db->createCommand()
 			->delete('userpermissions_users', array('userId' => $userId));
 
 		// Filter out any orphaned permissions
@@ -350,7 +350,7 @@ class UserPermissions extends Component
 			}
 
 			// Add the new user permissions
-			craft()->db->createCommand()
+			Craft::$app->db->createCommand()
 				->insertAll('userpermissions_users', array('permissionId', 'userId'), $userPermissionVals);
 		}
 

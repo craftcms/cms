@@ -63,7 +63,7 @@ class Field extends BaseComponentModel
 	{
 		if (!isset($this->_fieldType))
 		{
-			$this->_fieldType = craft()->fields->populateFieldType($this);
+			$this->_fieldType = Craft::$app->fields->populateFieldType($this);
 
 			// Might not actually exist
 			if (!$this->_fieldType)
@@ -86,7 +86,7 @@ class Field extends BaseComponentModel
 	 */
 	public function getGroup()
 	{
-		return craft()->fields->getGroupById($this->groupId);
+		return Craft::$app->fields->getGroupById($this->groupId);
 	}
 
 	// Protected Methods

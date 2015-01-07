@@ -18,7 +18,7 @@ use craft\app\web\Application;
 /**
  * Class Components service.
  *
- * An instance of the Components service is globally accessible in Craft via [[Application::components `craft()->components`]].
+ * An instance of the Components service is globally accessible in Craft via [[Application::components `Craft::$app->components`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -96,9 +96,9 @@ class Components extends Component
 					$pluginHandle = $class;
 				}
 
-				$plugin = craft()->plugins->getPlugin($pluginHandle);
+				$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
 
-				if (!$plugin || !craft()->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
+				if (!$plugin || !Craft::$app->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
 				{
 					return null;
 				}
@@ -229,7 +229,7 @@ class Components extends Component
 
 		// Find all of the built-in components
 		$filter = $this->types[$type]['suffix'].'\.php$';
-		$files = IOHelper::getFolderContents(craft()->path->getAppPath().$this->types[$type]['subfolder'], false, $filter);
+		$files = IOHelper::getFolderContents(Craft::$app->path->getAppPath().$this->types[$type]['subfolder'], false, $filter);
 
 		if ($files)
 		{
@@ -242,9 +242,9 @@ class Components extends Component
 		// Now load any plugin-supplied components
 		if ($this->types[$type]['enableForPlugins'])
 		{
-			foreach (craft()->plugins->getPlugins() as $plugin)
+			foreach (Craft::$app->plugins->getPlugins() as $plugin)
 			{
-				$pluginClasses = craft()->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
+				$pluginClasses = Craft::$app->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
 				$componentClasses = array_merge($componentClasses, $pluginClasses);
 			}
 		}

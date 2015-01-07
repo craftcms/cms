@@ -52,7 +52,7 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$rowData[0]);
+			$file = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$rowData[0]);
 
 			// It's a folder
 			if (static::isManifestLineAFolder($file))
@@ -88,7 +88,7 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$fullBackupPath = craft()->path->getDbBackupPath().$backupPath.'.sql';
+		$fullBackupPath = Craft::$app->path->getDbBackupPath().$backupPath.'.sql';
 		$dbBackup->restore($fullBackupPath);
 	}
 
@@ -122,7 +122,7 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators(craft()->path->getAppPath().$tempPath);
+				$destFile = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$tempPath);
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
 
 				switch (trim($rowData[1]))
@@ -267,7 +267,7 @@ class UpdateHelper
 				}
 
 				$manifestData = array_map('trim', $manifestFileData);
-				$updateModel = craft()->updates->getUpdates();
+				$updateModel = Craft::$app->updates->getUpdates();
 
 				// Only use the manifest data starting from the local version
 				for ($counter = 0; $counter < count($manifestData); $counter++)
@@ -293,7 +293,7 @@ class UpdateHelper
 	 */
 	public static function getUnzipFolderFromUID($uid)
 	{
-		return craft()->path->getTempPath().$uid.'/';
+		return Craft::$app->path->getTempPath().$uid.'/';
 	}
 
 	/**
@@ -303,7 +303,7 @@ class UpdateHelper
 	 */
 	public static function getZipFileFromUID($uid)
 	{
-		return craft()->path->getTempPath().$uid.'.zip';
+		return Craft::$app->path->getTempPath().$uid.'.zip';
 	}
 
 	/**

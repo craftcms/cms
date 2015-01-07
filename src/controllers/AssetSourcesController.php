@@ -51,7 +51,7 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionSourceIndex()
 	{
-		$variables['sources'] = craft()->assetSources->getAllSources();
+		$variables['sources'] = Craft::$app->assetSources->getAllSources();
 		$this->renderTemplate('settings/assets/sources/_index', $variables);
 	}
 
@@ -69,28 +69,28 @@ class AssetSourcesController extends BaseController
 		{
 			if (!empty($variables['sourceId']))
 			{
-				$variables['source'] = craft()->assetSources->getSourceById($variables['sourceId']);
+				$variables['source'] = Craft::$app->assetSources->getSourceById($variables['sourceId']);
 				if (!$variables['source'])
 				{
 					throw new HttpException(404);
 				}
-				$variables['sourceType'] = craft()->assetSources->populateSourceType($variables['source']);
+				$variables['sourceType'] = Craft::$app->assetSources->populateSourceType($variables['source']);
 			}
 			else
 			{
 				$variables['source'] = new AssetSourceModel();
-				$variables['sourceType'] = craft()->assetSources->getSourceType('Local');
+				$variables['sourceType'] = Craft::$app->assetSources->getSourceType('Local');
 			}
 		}
 
 		if (empty($variables['sourceType']))
 		{
-			$variables['sourceType'] = craft()->assetSources->populateSourceType($variables['source']);
+			$variables['sourceType'] = Craft::$app->assetSources->populateSourceType($variables['source']);
 		}
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$sourceTypes = craft()->assetSources->getAllSourceTypes();
+			$sourceTypes = Craft::$app->assetSources->getAllSourceTypes();
 			$variables['sourceTypes'] = AssetSourceType::populateVariables($sourceTypes);
 		}
 
@@ -128,26 +128,26 @@ class AssetSourcesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$existingSourceId = craft()->request->getPost('sourceId');
+		$existingSourceId = Craft::$app->request->getPost('sourceId');
 
 		if ($existingSourceId)
 		{
-			$source = craft()->assetSources->getSourceById($existingSourceId);
+			$source = Craft::$app->assetSources->getSourceById($existingSourceId);
 		}
 		else
 		{
 			$source = new AssetSourceModel();
 		}
 
-		$source->name   = craft()->request->getPost('name');
-		$source->handle = craft()->request->getPost('handle');
+		$source->name   = Craft::$app->request->getPost('name');
+		$source->handle = Craft::$app->request->getPost('handle');
 
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$source->type = craft()->request->getPost('type');
+			$source->type = Craft::$app->request->getPost('type');
 		}
 
-		$typeSettings = craft()->request->getPost('types');
+		$typeSettings = Craft::$app->request->getPost('types');
 		if (isset($typeSettings[$source->type]))
 		{
 			if (!$source->settings)
@@ -159,23 +159,23 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Asset;
 		$source->setFieldLayout($fieldLayout);
 
 		// Did it save?
-		if (craft()->assetSources->saveSource($source))
+		if (Craft::$app->assetSources->saveSource($source))
 		{
-			craft()->getSession()->setNotice(Craft::t('Source saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Source saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save source.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save source.'));
 		}
 
 		// Send the source back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'source' => $source
 		));
 	}
@@ -190,8 +190,8 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceIds = JsonHelper::decode(craft()->request->getRequiredPost('ids'));
-		craft()->assetSources->reorderSources($sourceIds);
+		$sourceIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
+		Craft::$app->assetSources->reorderSources($sourceIds);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -206,9 +206,9 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceId = craft()->request->getRequiredPost('id');
+		$sourceId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->assetSources->deleteSourceById($sourceId);
+		Craft::$app->assetSources->deleteSourceById($sourceId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -220,10 +220,10 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionGetS3Buckets()
 	{
-		craft()->requireEdition(Craft::Pro);
+		Craft::$app->requireEdition(Craft::Pro);
 
-		$keyId = craft()->request->getRequiredPost('keyId');
-		$secret = craft()->request->getRequiredPost('secret');
+		$keyId = Craft::$app->request->getRequiredPost('keyId');
+		$secret = Craft::$app->request->getRequiredPost('secret');
 
 		try
 		{
@@ -242,10 +242,10 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionGetRackspaceRegions()
 	{
-		craft()->requireEdition(Craft::Pro);
+		Craft::$app->requireEdition(Craft::Pro);
 
-		$username = craft()->request->getRequiredPost('username');
-		$apiKey = craft()->request->getRequiredPost('apiKey');
+		$username = Craft::$app->request->getRequiredPost('username');
+		$apiKey = Craft::$app->request->getRequiredPost('apiKey');
 
 		try
 		{
@@ -254,7 +254,7 @@ class AssetSourcesController extends BaseController
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
-			$source = craft()->assetSources->populateSourceType($model);
+			$source = Craft::$app->assetSources->populateSourceType($model);
 			$this->returnJson($source->getRegionList());
 		}
 		catch (Exception $exception)
@@ -270,11 +270,11 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionGetRackspaceContainers()
 	{
-		craft()->requireEdition(Craft::Pro);
+		Craft::$app->requireEdition(Craft::Pro);
 
-		$username = craft()->request->getRequiredPost('username');
-		$apiKey = craft()->request->getRequiredPost('apiKey');
-		$region = craft()->request->getRequiredPost('region');
+		$username = Craft::$app->request->getRequiredPost('username');
+		$apiKey = Craft::$app->request->getRequiredPost('apiKey');
+		$region = Craft::$app->request->getRequiredPost('region');
 
 		try
 		{
@@ -283,7 +283,7 @@ class AssetSourcesController extends BaseController
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
-			$source = craft()->assetSources->populateSourceType($model);
+			$source = Craft::$app->assetSources->populateSourceType($model);
 			$this->returnJson($source->getContainerList());
 		}
 		catch (Exception $exception)
@@ -299,10 +299,10 @@ class AssetSourcesController extends BaseController
 	 */
 	public function actionGetGoogleCloudBuckets()
 	{
-		craft()->requireEdition(Craft::Pro);
+		Craft::$app->requireEdition(Craft::Pro);
 
-		$keyId = craft()->request->getRequiredPost('keyId');
-		$secret = craft()->request->getRequiredPost('secret');
+		$keyId = Craft::$app->request->getRequiredPost('keyId');
+		$secret = Craft::$app->request->getRequiredPost('secret');
 
 		try
 		{

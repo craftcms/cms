@@ -19,7 +19,7 @@ use craft\app\web\Application;
 /**
  * Class Globals service.
  *
- * An instance of the Globals service is globally accessible in Craft via [[Application::globals `craft()->globals`]].
+ * An instance of the Globals service is globally accessible in Craft via [[Application::globals `Craft::$app->globals`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -61,7 +61,7 @@ class Globals extends Component
 	{
 		if (!isset($this->_allGlobalSetIds))
 		{
-			$this->_allGlobalSetIds = craft()->db->createCommand()
+			$this->_allGlobalSetIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('globalsets')
 				->queryColumn();
@@ -84,7 +84,7 @@ class Globals extends Component
 
 			foreach ($allGlobalSetIds as $globalSetId)
 			{
-				if (craft()->getUser()->checkPermission('editGlobalSet:'.$globalSetId))
+				if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSetId))
 				{
 					$this->_editableGlobalSetIds[] = $globalSetId;
 				}
@@ -105,7 +105,7 @@ class Globals extends Component
 	{
 		if (!isset($this->_allGlobalSets))
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+			$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
 			$this->_allGlobalSets = $criteria->find();
 
 			// Index them by ID
@@ -195,10 +195,10 @@ class Globals extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
-		if ($localeId == craft()->language)
+		if ($localeId == Craft::$app->language)
 		{
 			if (!isset($this->_allGlobalSets))
 			{
@@ -212,7 +212,7 @@ class Globals extends Component
 		}
 		else
 		{
-			return craft()->elements->getElementById($globalSetId, ElementType::GlobalSet, $localeId);
+			return Craft::$app->elements->getElementById($globalSetId, ElementType::GlobalSet, $localeId);
 		}
 	}
 
@@ -228,10 +228,10 @@ class Globals extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
-		if ($localeId == craft()->language)
+		if ($localeId == Craft::$app->language)
 		{
 			$globalSets = $this->getAllSets();
 
@@ -245,7 +245,7 @@ class Globals extends Component
 		}
 		else
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+			$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
 			$criteria->locale = $localeId;
 			$criteria->handle = $globalSetHandle;
 			return $criteria->first();
@@ -289,10 +289,10 @@ class Globals extends Component
 
 		if (!$globalSet->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 			try
 			{
-				if (craft()->elements->saveElement($globalSet, false))
+				if (Craft::$app->elements->saveElement($globalSet, false))
 				{
 					// Now that we have an element ID, save it on the other stuff
 					if ($isNewSet)
@@ -303,12 +303,12 @@ class Globals extends Component
 					if (!$isNewSet && $oldSet->fieldLayoutId)
 					{
 						// Drop the old field layout
-						craft()->fields->deleteLayoutById($oldSet->fieldLayoutId);
+						Craft::$app->fields->deleteLayoutById($oldSet->fieldLayoutId);
 					}
 
 					// Save the new one
 					$fieldLayout = $globalSet->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout);
+					Craft::$app->fields->saveLayout($fieldLayout);
 
 					// Update the set record/model with the new layout ID
 					$globalSet->fieldLayoutId = $fieldLayout->id;
@@ -353,11 +353,11 @@ class Globals extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
+			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('globalsets')
 				->where(array('id' => $setId))
@@ -365,10 +365,10 @@ class Globals extends Component
 
 			if ($fieldLayoutId)
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				Craft::$app->fields->deleteLayoutById($fieldLayoutId);
 			}
 
-			$affectedRows = craft()->elements->deleteElementById($setId);
+			$affectedRows = Craft::$app->elements->deleteElementById($setId);
 
 			if ($transaction !== null)
 			{
@@ -399,7 +399,7 @@ class Globals extends Component
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -413,7 +413,7 @@ class Globals extends Component
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = craft()->elements->saveElement($globalSet);
+				$success = Craft::$app->elements->saveElement($globalSet);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
 				if (!$success)

@@ -33,7 +33,7 @@ use craft\app\web\Application;
 /**
  * Class Fields service.
  *
- * An instance of the Fields service is globally accessible in Craft via [[Application::fields `craft()->fields`]].
+ * An instance of the Fields service is globally accessible in Craft via [[Application::fields `Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -229,7 +229,7 @@ class Fields extends Component
 			$this->deleteField($field);
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete('fieldgroups', array('id' => $groupId));
+		$affectedRows = Craft::$app->db->createCommand()->delete('fieldgroups', array('id' => $groupId));
 		return (bool) $affectedRows;
 	}
 
@@ -245,7 +245,7 @@ class Fields extends Component
 	 */
 	public function getAllFields($indexBy = null)
 	{
-		$context = craft()->content->fieldContext;
+		$context = Craft::$app->content->fieldContext;
 
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
@@ -289,7 +289,7 @@ class Fields extends Component
 	 */
 	public function getFieldsWithContent()
 	{
-		$context = craft()->content->fieldContext;
+		$context = Craft::$app->content->fieldContext;
 
 		if (!isset($this->_fieldsWithContent[$context]))
 		{
@@ -347,7 +347,7 @@ class Fields extends Component
 	 */
 	public function getFieldByHandle($handle)
 	{
-		$context = craft()->content->fieldContext;
+		$context = Craft::$app->content->fieldContext;
 
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
@@ -416,7 +416,7 @@ class Fields extends Component
 
 		if (!$field->context)
 		{
-			$field->context = craft()->content->fieldContext;
+			$field->context = Craft::$app->content->fieldContext;
 		}
 
 		$fieldRecord->groupId      = $field->groupId;
@@ -466,10 +466,10 @@ class Fields extends Component
 	{
 		if (!$validate || $this->validateField($field))
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 			try
 			{
-				$field->context = craft()->content->fieldContext;
+				$field->context = Craft::$app->content->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
 				$isNewField = $fieldRecord->isNewRecord();
@@ -510,28 +510,28 @@ class Fields extends Component
 				// Create/alter the content table column
 				$columnType = $fieldType->defineContentAttribute();
 
-				$contentTable = craft()->content->contentTable;
+				$contentTable = Craft::$app->content->contentTable;
 				$oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
-				$newColumnName = craft()->content->fieldColumnPrefix.$field->handle;
+				$newColumnName = Craft::$app->content->fieldColumnPrefix.$field->handle;
 
 				if ($columnType)
 				{
 					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
 
 					// Make sure we're working with the latest data in the case of a renamed field.
-					craft()->db->schema->refresh();
+					Craft::$app->db->schema->refresh();
 
-					if (craft()->db->columnExists($contentTable, $oldColumnName))
+					if (Craft::$app->db->columnExists($contentTable, $oldColumnName))
 					{
-						craft()->db->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
+						Craft::$app->db->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
 					}
-					else if (craft()->db->columnExists($contentTable, $newColumnName))
+					else if (Craft::$app->db->columnExists($contentTable, $newColumnName))
 					{
-						craft()->db->createCommand()->alterColumn($contentTable, $newColumnName, $columnType);
+						Craft::$app->db->createCommand()->alterColumn($contentTable, $newColumnName, $columnType);
 					}
 					else
 					{
-						craft()->db->createCommand()->addColumn($contentTable, $newColumnName, $columnType);
+						Craft::$app->db->createCommand()->addColumn($contentTable, $newColumnName, $columnType);
 					}
 				}
 				else
@@ -539,9 +539,9 @@ class Fields extends Component
 					// Did the old field have a column we need to remove?
 					if (!$isNewField)
 					{
-						if ($fieldRecord->getOldHandle() && craft()->db->columnExists($contentTable, $oldColumnName))
+						if ($fieldRecord->getOldHandle() && Craft::$app->db->columnExists($contentTable, $oldColumnName))
 						{
-							craft()->db->createCommand()->dropColumn($contentTable, $oldColumnName);
+							Craft::$app->db->createCommand()->dropColumn($contentTable, $oldColumnName);
 						}
 					}
 				}
@@ -615,7 +615,7 @@ class Fields extends Component
 	 */
 	public function deleteField(FieldModel $field)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			$fieldType = $field->getFieldType();
@@ -626,16 +626,16 @@ class Fields extends Component
 			}
 
 			// De we need to delete the content column?
-			$contentTable = craft()->content->contentTable;
-			$fieldColumnPrefix = craft()->content->fieldColumnPrefix;
+			$contentTable = Craft::$app->content->contentTable;
+			$fieldColumnPrefix = Craft::$app->content->fieldColumnPrefix;
 
-			if (craft()->db->columnExists($contentTable, $fieldColumnPrefix.$field->handle))
+			if (Craft::$app->db->columnExists($contentTable, $fieldColumnPrefix.$field->handle))
 			{
-				craft()->db->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle);
+				Craft::$app->db->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle);
 			}
 
 			// Delete the row in fields
-			$affectedRows = craft()->db->createCommand()->delete('fields', array('id' => $field->id));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fields', array('id' => $field->id));
 
 			if ($affectedRows)
 			{
@@ -772,8 +772,8 @@ class Fields extends Component
 	 */
 	public function assembleLayoutFromPost()
 	{
-		$postedFieldLayout = craft()->request->getPost('fieldLayout', array());
-		$requiredFields = craft()->request->getPost('requiredFields', array());
+		$postedFieldLayout = Craft::$app->request->getPost('fieldLayout', array());
+		$requiredFields = Craft::$app->request->getPost('requiredFields', array());
 
 		return $this->assembleLayout($postedFieldLayout, $requiredFields);
 	}
@@ -885,11 +885,11 @@ class Fields extends Component
 
 		if (is_array($layoutId))
 		{
-			$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('in', 'id', $layoutId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('in', 'id', $layoutId));
 		}
 		else
 		{
-			$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
 		}
 
 		return (bool) $affectedRows;
@@ -904,7 +904,7 @@ class Fields extends Component
 	 */
 	public function deleteLayoutsByType($type)
 	{
-		$affectedRows = craft()->db->createCommand()->delete('fieldlayouts', array('type' => $type));
+		$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('type' => $type));
 		return (bool) $affectedRows;
 	}
 
@@ -918,7 +918,7 @@ class Fields extends Component
 	 */
 	public function getAllFieldTypes()
 	{
-		return craft()->components->getComponentsByType(ComponentType::Field);
+		return Craft::$app->components->getComponentsByType(ComponentType::Field);
 	}
 
 	/**
@@ -930,7 +930,7 @@ class Fields extends Component
 	 */
 	public function getFieldType($class)
 	{
-		return craft()->components->getComponentByTypeAndClass(ComponentType::Field, $class);
+		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::Field, $class);
 	}
 
 	/**
@@ -943,7 +943,7 @@ class Fields extends Component
 	 */
 	public function populateFieldType(FieldModel $field, $element = null)
 	{
-		$fieldType = craft()->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
+		$fieldType = Craft::$app->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
 
 		if ($fieldType)
 		{
@@ -974,7 +974,7 @@ class Fields extends Component
 	 */
 	private function _createGroupQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, name')
 			->from('fieldgroups')
 			->order('name');
@@ -987,7 +987,7 @@ class Fields extends Component
 	 */
 	private function _createFieldQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
 			->from('fields')
 			->order('name');
@@ -1000,7 +1000,7 @@ class Fields extends Component
 	 */
 	private function _createLayoutQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, type')
 			->from('fieldlayouts');
 	}
@@ -1012,7 +1012,7 @@ class Fields extends Component
 	 */
 	private function _createLayoutFieldQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, layoutId, tabId, fieldId, required, sortOrder')
 			->from('fieldlayoutfields')
 			->order('sortOrder');
@@ -1025,7 +1025,7 @@ class Fields extends Component
 	 */
 	private function _createLayoutTabQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, layoutId, name, sortOrder')
 			->from('fieldlayouttabs')
 			->order('sortOrder');

@@ -27,7 +27,7 @@ class m141103_000001_tag_titles extends BaseMigration
 		Craft::log('Making tag titles translatable...', LogLevel::Info, true);
 
 		// Select all of the tag names
-		$tags = craft()->db->createCommand()
+		$tags = Craft::$app->db->createCommand()
 			->select('id, name')
 			->from('tags')
 			->queryAll();

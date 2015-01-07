@@ -19,7 +19,7 @@ use craft\app\web\Application;
 /**
  * Class Routes service.
  *
- * An instance of the Routes service is globally accessible in Craft via [[Application::routes `craft()->routes`]].
+ * An instance of the Routes service is globally accessible in Craft via [[Application::routes `Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -36,7 +36,7 @@ class Routes extends Component
 	 */
 	public function getConfigFileRoutes()
 	{
-		$path = craft()->path->getConfigPath().'routes.php';
+		$path = Craft::$app->path->getConfigPath().'routes.php';
 
 		if (IOHelper::fileExists($path))
 		{
@@ -45,7 +45,7 @@ class Routes extends Component
 			if (is_array($routes))
 			{
 				// Check for any locale-specific routes
-				$locale = craft()->language;
+				$locale = Craft::$app->language;
 
 				if (isset($routes[$locale]) && is_array($routes[$locale]))
 				{
@@ -70,10 +70,10 @@ class Routes extends Component
 	 */
 	public function getDbRoutes()
 	{
-		$results = craft()->db->createCommand()
+		$results = Craft::$app->db->createCommand()
 			->select('urlPattern, template')
 			->from('routes')
-			->where(array('or', 'locale is null', 'locale = :locale'), array(':locale' => craft()->language))
+			->where(array('or', 'locale is null', 'locale = :locale'), array(':locale' => Craft::$app->language))
 			->order('sortOrder')
 			->queryAll();
 
@@ -120,7 +120,7 @@ class Routes extends Component
 			$routeRecord = new RouteRecord();
 
 			// Get the next biggest sort order
-			$maxSortOrder = craft()->db->createCommand()
+			$maxSortOrder = Craft::$app->db->createCommand()
 				->select('max(sortOrder)')
 				->from('routes')
 				->queryScalar();
@@ -173,7 +173,7 @@ class Routes extends Component
 	 */
 	public function deleteRouteById($routeId)
 	{
-		craft()->db->createCommand()->delete('routes', array('id' => $routeId));
+		Craft::$app->db->createCommand()->delete('routes', array('id' => $routeId));
 		return true;
 	}
 
@@ -190,7 +190,7 @@ class Routes extends Component
 		{
 			$data = array('sortOrder' => $order + 1);
 			$condition = array('id' => $routeId);
-			craft()->db->createCommand()->update('routes', $data, $condition);
+			Craft::$app->db->createCommand()->update('routes', $data, $condition);
 		}
 	}
 }

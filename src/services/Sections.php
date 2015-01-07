@@ -27,7 +27,7 @@ use craft\app\web\Application;
 /**
  * Class Sections service.
  *
- * An instance of the Sections service is globally accessible in Craft via [[Application::sections `craft()->sections`]].
+ * An instance of the Sections service is globally accessible in Craft via [[Application::sections `Craft::$app->sections`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -106,7 +106,7 @@ class Sections extends Component
 
 			foreach ($this->getAllSectionIds() as $sectionId)
 			{
-				if (craft()->getUser()->checkPermission('editEntries:'.$sectionId))
+				if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId))
 				{
 					$this->_editableSectionIds[] = $sectionId;
 				}
@@ -142,7 +142,7 @@ class Sections extends Component
 			{
 				$type = $result['type'];
 
-				if (craft()->getEdition() >= Craft::Client || $typeCounts[$type] < $this->typeLimits[$type])
+				if (Craft::$app->getEdition() >= Craft::Client || $typeCounts[$type] < $this->typeLimits[$type])
 				{
 					$section = new SectionModel($result);
 					$this->_sectionsById[$section->id] = $section;
@@ -314,7 +314,7 @@ class Sections extends Component
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
-		$records = craft()->db->createCommand()
+		$records = Craft::$app->db->createCommand()
 			->select('*')
 			->from('sections_i18n sections_i18n')
 			->join('locales locales', 'locales.locale = sections_i18n.locale')
@@ -408,7 +408,7 @@ class Sections extends Component
 				else if ($section)
 				{
 					// Make sure no other elements are using this URI already
-					$query = craft()->db->createCommand()
+					$query = Craft::$app->db->createCommand()
 						->from('elements_i18n elements_i18n')
 						->where(
 							array('and', 'elements_i18n.locale = :locale', 'elements_i18n.uri = :uri'),
@@ -463,7 +463,7 @@ class Sections extends Component
 
 		if (!$section->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 			try
 			{
@@ -483,7 +483,7 @@ class Sections extends Component
 					{
 						if (!$isNewSection && $oldSection->type == SectionType::Structure)
 						{
-							$structure = craft()->structures->getStructureById($oldSection->structureId);
+							$structure = Craft::$app->structures->getStructureById($oldSection->structureId);
 							$isNewStructure = false;
 						}
 
@@ -494,7 +494,7 @@ class Sections extends Component
 						}
 
 						$structure->maxLevels = $section->maxLevels;
-						craft()->structures->saveStructure($structure);
+						Craft::$app->structures->saveStructure($structure);
 
 						$sectionRecord->structureId = $structure->id;
 						$section->structureId = $structure->id;
@@ -504,7 +504,7 @@ class Sections extends Component
 						if (!$isNewSection && $oldSection->structureId)
 						{
 							// Delete the old one
-							craft()->structures->deleteStructureById($oldSection->structureId);
+							Craft::$app->structures->deleteStructureById($oldSection->structureId);
 							$sectionRecord->structureId = null;
 						}
 					}
@@ -544,7 +544,7 @@ class Sections extends Component
 							// Has anything changed?
 							if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 							{
-								craft()->db->createCommand()->update('sections_i18n', array(
+								Craft::$app->db->createCommand()->update('sections_i18n', array(
 									'enabledByDefault' => (int)$locale->enabledByDefault,
 									'urlFormat'        => $locale->urlFormat,
 									'nestedUrlFormat'  => $locale->nestedUrlFormat
@@ -560,7 +560,7 @@ class Sections extends Component
 					}
 
 					// Insert the new locales
-					craft()->db->createCommand()->insertAll('sections_i18n',
+					Craft::$app->db->createCommand()->insertAll('sections_i18n',
 						array('sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'),
 						$newLocaleData
 					);
@@ -574,7 +574,7 @@ class Sections extends Component
 
 						if ($droppedLocaleIds)
 						{
-							craft()->db->createCommand()->delete('sections_i18n',
+							Craft::$app->db->createCommand()->delete('sections_i18n',
 								array('and', 'sectionId = :sectionId', array('in', 'locale', $droppedLocaleIds)),
 								array(':sectionId' => $section->id)
 							);
@@ -587,7 +587,7 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						// Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
-						$entryTypeIds = craft()->db->createCommand()
+						$entryTypeIds = Craft::$app->db->createCommand()
 							->select('id')
 							->from('entrytypes')
 							->where('sectionId = :sectionId', array(':sectionId' => $section->id))
@@ -641,7 +641,7 @@ class Sections extends Component
 							if (!$isNewSection)
 							{
 								// Make sure there's only one entry in this section
-								$entryIds = craft()->db->createCommand()
+								$entryIds = Craft::$app->db->createCommand()
 									->select('id')
 									->from('entries')
 									->where('sectionId = :sectionId', [':sectionId' => $section->id])
@@ -654,19 +654,19 @@ class Sections extends Component
 									// If there are any more, get rid of them
 									if ($entryIds)
 									{
-										craft()->elements->deleteElementById($entryIds);
+										Craft::$app->elements->deleteElementById($entryIds);
 									}
 
 									// Make sure it's enabled and all that.
 
-									craft()->db->createCommand()->update('elements', [
+									Craft::$app->db->createCommand()->update('elements', [
 										'enabled'  => 1,
 										'archived' => 0,
 									], [
 										'id' => $singleEntryId
 									]);
 
-									craft()->db->createCommand()->update('entries', [
+									Craft::$app->db->createCommand()->update('entries', [
 										'typeId'     => $entryTypeId,
 										'authorId'   => null,
 										'postDate'   => DateTimeHelper::currentTimeForDb(),
@@ -687,13 +687,13 @@ class Sections extends Component
 							{
 								// Create it, baby
 
-								craft()->db->createCommand()->insert('elements', array(
+								Craft::$app->db->createCommand()->insert('elements', array(
 									'type' => ElementType::Entry
 								));
 
-								$singleEntryId = craft()->db->getLastInsertID();
+								$singleEntryId = Craft::$app->db->getLastInsertID();
 
-								craft()->db->createCommand()->insert('entries', [
+								Craft::$app->db->createCommand()->insert('entries', [
 									'id'        => $singleEntryId,
 									'sectionId' => $section->id,
 									'typeId'    => $entryTypeId,
@@ -704,7 +704,7 @@ class Sections extends Component
 							// Now make sure we've got all of the i18n rows in place.
 							foreach ($sectionLocales as $localeId => $sectionLocale)
 							{
-								craft()->db->createCommand()->insertOrUpdate('elements_i18n', [
+								Craft::$app->db->createCommand()->insertOrUpdate('elements_i18n', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId,
 								], [
@@ -712,7 +712,7 @@ class Sections extends Component
 									'uri'  => $sectionLocale->urlFormat
 								]);
 
-								craft()->db->createCommand()->insertOrUpdate('content', [
+								Craft::$app->db->createCommand()->insertOrUpdate('content', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId
 								], array(
@@ -728,7 +728,7 @@ class Sections extends Component
 							if (!$isNewSection && $isNewStructure)
 							{
 								// Add all of the entries to the structure
-								$criteria = craft()->elements->getCriteria(ElementType::Entry);
+								$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 								$criteria->locale = array_shift(array_keys($oldSectionLocales));
 								$criteria->sectionId = $section->id;
 								$criteria->status = null;
@@ -742,7 +742,7 @@ class Sections extends Component
 
 									foreach ($batchEntries as $entry)
 									{
-										craft()->structures->appendToRoot($section->structureId, $entry, 'insert');
+										Craft::$app->structures->appendToRoot($section->structureId, $entry, 'insert');
 									}
 
 									$criteria->offset += 25;
@@ -758,14 +758,14 @@ class Sections extends Component
 
 					if (!$isNewSection)
 					{
-						$criteria = craft()->elements->getCriteria(ElementType::Entry);
+						$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 						$criteria->locale = array_shift(array_keys($oldSectionLocales));
 						$criteria->sectionId = $section->id;
 						$criteria->status = null;
 						$criteria->localeEnabled = null;
 						$criteria->limit = null;
 
-						craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', ['section' => $section->name]), [
+						Craft::$app->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', ['section' => $section->name]), [
 							'elementType' => ElementType::Entry,
 							'criteria'    => $criteria->getAttributes()
 						]);
@@ -826,20 +826,20 @@ class Sections extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Grab the entry ids so we can clean the elements table.
-			$entryIds = craft()->db->createCommand()
+			$entryIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('entries')
 				->where(array('sectionId' => $sectionId))
 				->queryColumn();
 
-			craft()->elements->deleteElementById($entryIds);
+			Craft::$app->elements->deleteElementById($entryIds);
 
 			// Delete the structure, if there is one
-			$structureId = craft()->db->createCommand()
+			$structureId = Craft::$app->db->createCommand()
 				->select('structureId')
 				->from('sections')
 				->where(array('id' => $sectionId))
@@ -847,11 +847,11 @@ class Sections extends Component
 
 			if ($structureId)
 			{
-				craft()->structures->deleteStructureById($structureId);
+				Craft::$app->structures->deleteStructureById($structureId);
 			}
 
 			// Delete the section.
-			$affectedRows = craft()->db->createCommand()->delete('sections', array('id' => $sectionId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('sections', array('id' => $sectionId));
 
 			if ($transaction !== null)
 			{
@@ -883,14 +883,14 @@ class Sections extends Component
 		if ($section->hasUrls)
 		{
 			// Set Craft to the site template path
-			$oldTemplatesPath = craft()->path->getTemplatesPath();
-			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+			$oldTemplatesPath = Craft::$app->path->getTemplatesPath();
+			Craft::$app->path->setTemplatesPath(Craft::$app->path->getSiteTemplatesPath());
 
 			// Does the template exist?
-			$templateExists = craft()->templates->doesTemplateExist($section->template);
+			$templateExists = Craft::$app->templates->doesTemplateExist($section->template);
 
 			// Restore the original template path
-			craft()->path->setTemplatesPath($oldTemplatesPath);
+			Craft::$app->path->setTemplatesPath($oldTemplatesPath);
 
 			if ($templateExists)
 			{
@@ -1005,7 +1005,7 @@ class Sections extends Component
 
 		if (!$entryType->hasErrors())
 		{
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 			try
 			{
@@ -1023,12 +1023,12 @@ class Sections extends Component
 					if (!$isNewEntryType && $oldEntryType->fieldLayoutId)
 					{
 						// Drop the old field layout
-						craft()->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
+						Craft::$app->fields->deleteLayoutById($oldEntryType->fieldLayoutId);
 					}
 
 					// Save the new one
 					$fieldLayout = $entryType->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout);
+					Craft::$app->fields->saveLayout($fieldLayout);
 
 					// Update the entry type record/model with the new layout ID
 					$entryType->fieldLayoutId = $fieldLayout->id;
@@ -1095,7 +1095,7 @@ class Sections extends Component
 	 */
 	public function reorderEntryTypes($entryTypeIds)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -1139,11 +1139,11 @@ class Sections extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
-			 $query = craft()->db->createCommand()
+			 $query = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('entrytypes');
 
@@ -1160,11 +1160,11 @@ class Sections extends Component
 
 			if ($fieldLayoutIds)
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutIds);
+				Craft::$app->fields->deleteLayoutById($fieldLayoutIds);
 			}
 
 			// Grab the entry IDs so we can clean the elements table.
-			$query = craft()->db->createCommand()
+			$query = Craft::$app->db->createCommand()
 				->select('id')
 				->from('entries');
 
@@ -1179,16 +1179,16 @@ class Sections extends Component
 
 			$entryIds = $query->queryColumn();
 
-			craft()->elements->deleteElementById($entryIds);
+			Craft::$app->elements->deleteElementById($entryIds);
 
 			// Delete the entry type.
 			if (is_array($entryTypeId))
 			{
-				$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('in', 'id', $entryTypeId));
+				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', array('in', 'id', $entryTypeId));
 			}
 			else
 			{
-				$affectedRows = craft()->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
+				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
 			}
 
 			if ($transaction !== null)
@@ -1222,7 +1222,7 @@ class Sections extends Component
 		$conditions = array('and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri');
 		$params = array(':type' => SectionType::Single, ':homeUri' => '__home__');
 
-		$count = craft()->db->createCommand()
+		$count = Craft::$app->db->createCommand()
 			->from('sections sections')
 			->join('sections_i18n sections_i18n', 'sections_i18n.sectionId = sections.id')
 			->where($conditions, $params)
@@ -1240,7 +1240,7 @@ class Sections extends Component
 	 */
 	public function canHaveMore($type)
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			return true;
 		}
@@ -1248,7 +1248,7 @@ class Sections extends Component
 		{
 			if (isset($this->typeLimits[$type]))
 			{
-				$count = craft()->db->createCommand()
+				$count = Craft::$app->db->createCommand()
 					->from('sections')
 					->where('type = :type', array(':type' => $type))
 					->count('id');
@@ -1323,7 +1323,7 @@ class Sections extends Component
 	 */
 	private function _createSectionQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
 			->from('sections sections')

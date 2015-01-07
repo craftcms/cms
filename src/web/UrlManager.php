@@ -7,6 +7,7 @@
 
 namespace craft\app\web;
 
+use craft\app\Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\BaseElementModel;
 use craft\app\services\HttpRequest;
@@ -83,7 +84,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (craft()->config->usePathInfo())
+		if (Craft::$app->config->usePathInfo())
 		{
 			$this->setUrlFormat(static::PATH_FORMAT);
 		}
@@ -124,11 +125,11 @@ class UrlManager extends \CUrlManager
 		);
 
 		// Is there a token in the URL?
-		$token = craft()->request->getToken();
+		$token = Craft::$app->request->getToken();
 
 		if ($token)
 		{
-			$tokenRoute = craft()->tokens->getTokenRoute($token);
+			$tokenRoute = Craft::$app->tokens->getTokenRoute($token);
 
 			if ($tokenRoute)
 			{
@@ -193,9 +194,9 @@ class UrlManager extends \CUrlManager
 	{
 		if (!isset($this->_matchedElement))
 		{
-			if (craft()->request->isSiteRequest())
+			if (Craft::$app->request->isSiteRequest())
 			{
-				$path = craft()->request->getPath();
+				$path = Craft::$app->request->getPath();
 				$this->_getMatchedElementRoute($path);
 			}
 			else
@@ -279,19 +280,19 @@ class UrlManager extends \CUrlManager
 			$this->_matchedElement = false;
 			$this->_matchedElementRoute = false;
 
-			if (craft()->isInstalled() && craft()->request->isSiteRequest())
+			if (Craft::$app->isInstalled() && Craft::$app->request->isSiteRequest())
 			{
-				$element = craft()->elements->getElementByUri($path, craft()->language, true);
+				$element = Craft::$app->elements->getElementByUri($path, Craft::$app->language, true);
 
 				if ($element)
 				{
 					// Do any plugins want a say in this?
-					$route = craft()->plugins->callFirst('getElementRoute', array($element), true);
+					$route = Craft::$app->plugins->callFirst('getElementRoute', array($element), true);
 
 					if (!$route)
 					{
 						// Give the element type a chance
-						$elementType = craft()->elements->getElementType($element->getElementType());
+						$elementType = Craft::$app->elements->getElementType($element->getElementType());
 						$route = $elementType->routeRequestForMatchedElement($element);
 					}
 
@@ -316,10 +317,10 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _getMatchedUrlRoute($path)
 	{
-		if (craft()->request->isCpRequest())
+		if (Craft::$app->request->isCpRequest())
 		{
 			// Merge in any edition-specific routes
-			for ($i = 1; $i <= craft()->getEdition(); $i++)
+			for ($i = 1; $i <= Craft::$app->getEdition(); $i++)
 			{
 				if (isset($this->cpRoutes['editionRoutes'][$i]))
 				{
@@ -339,14 +340,14 @@ class UrlManager extends \CUrlManager
 		else
 		{
 			// Check the user-defined routes
-			$configFileRoutes = craft()->routes->getConfigFileRoutes();
+			$configFileRoutes = Craft::$app->routes->getConfigFileRoutes();
 
 			if (($route = $this->_matchUrlRoutes($path, $configFileRoutes)) !== false)
 			{
 				return $route;
 			}
 
-			$dbRoutes = craft()->routes->getDbRoutes();
+			$dbRoutes = Craft::$app->routes->getDbRoutes();
 
 			if (($route = $this->_matchUrlRoutes($path, $dbRoutes)) !== false)
 			{
@@ -357,7 +358,7 @@ class UrlManager extends \CUrlManager
 		}
 
 		// Maybe a plugin has a registered route that matches?
-		$allPluginRoutes = craft()->plugins->call($pluginHook);
+		$allPluginRoutes = Craft::$app->plugins->call($pluginHook);
 
 		foreach ($allPluginRoutes as $pluginRoutes)
 		{
@@ -436,7 +437,7 @@ class UrlManager extends \CUrlManager
 			);
 
 			$slugChars = array('.', '_', '-');
-			$slugWordSeparator = craft()->config->get('slugWordSeparator');
+			$slugWordSeparator = Craft::$app->config->get('slugWordSeparator');
 
 			if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars))
 			{
@@ -459,12 +460,12 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _isPublicTemplatePath()
 	{
-		if (!craft()->request->isAjaxRequest())
+		if (!Craft::$app->request->isAjaxRequest())
 		{
-			$trigger = craft()->config->get('privateTemplateTrigger');
+			$trigger = Craft::$app->config->get('privateTemplateTrigger');
 			$length = strlen($trigger);
 
-			foreach (craft()->request->getSegments() as $requestPathSeg)
+			foreach (Craft::$app->request->getSegments() as $requestPathSeg)
 			{
 				if (strncmp($requestPathSeg, $trigger, $length) === 0)
 				{

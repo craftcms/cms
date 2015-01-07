@@ -40,28 +40,28 @@ class GlobalsController extends BaseController
 		$globalSet = new GlobalSetModel();
 
 		// Set the simple stuff
-		$globalSet->id     = craft()->request->getPost('setId');
-		$globalSet->name   = craft()->request->getPost('name');
-		$globalSet->handle = craft()->request->getPost('handle');
+		$globalSet->id     = Craft::$app->request->getPost('setId');
+		$globalSet->name   = Craft::$app->request->getPost('name');
+		$globalSet->handle = Craft::$app->request->getPost('handle');
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::GlobalSet;
 		$globalSet->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (craft()->globals->saveSet($globalSet))
+		if (Craft::$app->globals->saveSet($globalSet))
 		{
-			craft()->getSession()->setNotice(Craft::t('Global set saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Global set saved.'));
 			$this->redirectToPostedUrl($globalSet);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save global set.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save global set.'));
 		}
 
 		// Send the global set back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'globalSet' => $globalSet
 		));
 	}
@@ -77,9 +77,9 @@ class GlobalsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$globalSetId = craft()->request->getRequiredPost('id');
+		$globalSetId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->globals->deleteSetById($globalSetId);
+		Craft::$app->globals->deleteSetById($globalSetId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -100,7 +100,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Get the locales the user is allowed to edit
-		$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
+		$editableLocaleIds = Craft::$app->i18n->getEditableLocaleIds();
 
 		// Editing a specific locale?
 		if (isset($variables['localeId']))
@@ -114,9 +114,9 @@ class GlobalsController extends BaseController
 		else
 		{
 			// Are they allowed to edit the current app locale?
-			if (in_array(craft()->language, $editableLocaleIds))
+			if (in_array(Craft::$app->language, $editableLocaleIds))
 			{
-				$variables['localeId'] = craft()->language;
+				$variables['localeId'] = Craft::$app->language;
 			}
 			else
 			{
@@ -128,13 +128,13 @@ class GlobalsController extends BaseController
 		// Get the global sets the user is allowed to edit, in the requested locale
 		$variables['globalSets'] = array();
 
-		$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
 		$criteria->locale = $variables['localeId'];
 		$globalSets = $criteria->find();
 
 		foreach ($globalSets as $globalSet)
 		{
-			if (craft()->getUser()->checkPermission('editGlobalSet:'.$globalSet->id))
+			if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSet->id))
 			{
 				$variables['globalSets'][$globalSet->handle] = $globalSet;
 			}
@@ -164,18 +164,18 @@ class GlobalsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$globalSetId = craft()->request->getRequiredPost('setId');
-		$localeId = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
+		$globalSetId = Craft::$app->request->getRequiredPost('setId');
+		$localeId = Craft::$app->request->getPost('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
 
 		// Make sure the user is allowed to edit this global set and locale
 		$this->requirePermission('editGlobalSet:'.$globalSetId);
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
 			$this->requirePermission('editLocale:'.$localeId);
 		}
 
-		$globalSet = craft()->globals->getSetById($globalSetId, $localeId);
+		$globalSet = Craft::$app->globals->getSetById($globalSetId, $localeId);
 
 		if (!$globalSet)
 		{
@@ -184,18 +184,18 @@ class GlobalsController extends BaseController
 
 		$globalSet->setContentFromPost('fields');
 
-		if (craft()->globals->saveContent($globalSet))
+		if (Craft::$app->globals->saveContent($globalSet))
 		{
-			craft()->getSession()->setNotice(Craft::t('Globals saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Globals saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save globals.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save globals.'));
 		}
 
 		// Send the global set back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'globalSet' => $globalSet,
 		));
 	}

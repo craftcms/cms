@@ -59,10 +59,10 @@ class Matrix extends BaseFieldType
 		// Get the available field types data
 		$fieldTypeInfo = $this->_getFieldTypeInfoForConfigurator();
 
-		craft()->templates->includeJsResource('js/MatrixConfigurator.js');
-		craft()->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.craft()->templates->getNamespace().'");');
+		Craft::$app->templates->includeJsResource('js/MatrixConfigurator.js');
+		Craft::$app->templates->includeJs('new Craft.MatrixConfigurator('.JsonHelper::encode($fieldTypeInfo).', "'.Craft::$app->templates->getNamespace().'");');
 
-		craft()->templates->includeTranslations(
+		Craft::$app->templates->includeTranslations(
 			'What this block type will be called in the CP.',
 			'How you’ll refer to this block type in the templates.',
 			'Are you sure you want to delete this block type?',
@@ -74,7 +74,7 @@ class Matrix extends BaseFieldType
 
 		$fieldTypeOptions = array();
 
-		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
+		foreach (Craft::$app->fields->getAllFieldTypes() as $fieldType)
 		{
 			// No Matrix-Inception, sorry buddy.
 			if ($fieldType->getClassHandle() != 'Matrix')
@@ -83,7 +83,7 @@ class Matrix extends BaseFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/Matrix/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Matrix/settings', array(
 			'settings'   => $this->getSettings(),
 			'fieldTypes' => $fieldTypeOptions
 		));
@@ -162,7 +162,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function onAfterSave()
 	{
-		craft()->matrix->saveSettings($this->getSettings(), false);
+		Craft::$app->matrix->saveSettings($this->getSettings(), false);
 	}
 
 	/**
@@ -172,7 +172,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function onBeforeDelete()
 	{
-		craft()->matrix->deleteMatrixField($this->model);
+		Craft::$app->matrix->deleteMatrixField($this->model);
 	}
 
 	/**
@@ -184,7 +184,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
 
 		// Existing element?
 		if (!empty($this->element->id))
@@ -244,22 +244,22 @@ class Matrix extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$id = craft()->templates->formatInputId($name);
+		$id = Craft::$app->templates->formatInputId($name);
 		$settings = $this->getSettings();
 
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
-		craft()->templates->includeJsResource('js/MatrixInput.js');
+		Craft::$app->templates->includeJsResource('js/MatrixInput.js');
 
-		craft()->templates->includeJs('new Craft.MatrixInput(' .
-			'"'.craft()->templates->namespaceInputId($id).'", ' .
+		Craft::$app->templates->includeJs('new Craft.MatrixInput(' .
+			'"'.Craft::$app->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo).', ' .
-			'"'.craft()->templates->namespaceInputName($name).'", ' .
+			'"'.Craft::$app->templates->namespaceInputName($name).'", ' .
 			($settings->maxBlocks ? $settings->maxBlocks : 'null') .
 		');');
 
-		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+		Craft::$app->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
 		if ($value instanceof ElementCriteriaModel)
 		{
@@ -268,7 +268,7 @@ class Matrix extends BaseFieldType
 			$value->localeEnabled = null;
 		}
 
-		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
 			'name' => $name,
 			'blockTypes' => $settings->getBlockTypes(),
@@ -287,7 +287,7 @@ class Matrix extends BaseFieldType
 	public function prepValueFromPost($data)
 	{
 		// Get the possible block types for this field
-		$blockTypes = craft()->matrix->getBlockTypesByFieldId($this->model->id, 'handle');
+		$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->model->id, 'handle');
 
 		if (!is_array($data))
 		{
@@ -313,7 +313,7 @@ class Matrix extends BaseFieldType
 
 			if ($ids)
 			{
-				$criteria = craft()->elements->getCriteria(ElementType::MatrixBlock);
+				$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
 				$criteria->fieldId = $this->model->id;
 				$criteria->ownerId = $ownerId;
 				$criteria->id = $ids;
@@ -403,7 +403,7 @@ class Matrix extends BaseFieldType
 
 		foreach ($blocks as $block)
 		{
-			if (!craft()->matrix->validateBlock($block))
+			if (!Craft::$app->matrix->validateBlock($block))
 			{
 				$blocksValidate = false;
 			}
@@ -448,7 +448,7 @@ class Matrix extends BaseFieldType
 	public function getSearchKeywords($value)
 	{
 		$keywords = array();
-		$contentService = craft()->content;
+		$contentService = Craft::$app->content;
 
 		foreach ($value as $block)
 		{
@@ -460,7 +460,7 @@ class Matrix extends BaseFieldType
 			$contentService->fieldColumnPrefix = $block->getFieldColumnPrefix();
 			$contentService->fieldContext      = $block->getFieldContext();
 
-			foreach (craft()->fields->getAllFields() as $field)
+			foreach (Craft::$app->fields->getAllFields() as $field)
 			{
 				$fieldType = $field->getFieldType();
 
@@ -487,7 +487,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function onAfterElementSave()
 	{
-		craft()->matrix->saveField($this);
+		Craft::$app->matrix->saveField($this);
 	}
 
 	/**
@@ -504,7 +504,7 @@ class Matrix extends BaseFieldType
 			$settings = $this->getSettings();
 			$id = StringHelper::randomString();
 
-			return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
+			return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', array(
 				'id' => $id,
 				'name' => $id,
 				'blockTypes' => $settings->getBlockTypes(),
@@ -544,11 +544,11 @@ class Matrix extends BaseFieldType
 		$fieldTypes = array();
 
 		// Set a temporary namespace for these
-		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
-		craft()->templates->setNamespace($namespace);
+		$originalNamespace = Craft::$app->templates->getNamespace();
+		$namespace = Craft::$app->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
+		Craft::$app->templates->setNamespace($namespace);
 
-		foreach (craft()->fields->getAllFieldTypes() as $fieldType)
+		foreach (Craft::$app->fields->getAllFieldTypes() as $fieldType)
 		{
 			$fieldTypeClass = $fieldType->getClassHandle();
 
@@ -558,9 +558,9 @@ class Matrix extends BaseFieldType
 				continue;
 			}
 
-			craft()->templates->startJsBuffer();
-			$settingsBodyHtml = craft()->templates->namespaceInputs($fieldType->getSettingsHtml());
-			$settingsFootHtml = craft()->templates->clearJsBuffer();
+			Craft::$app->templates->startJsBuffer();
+			$settingsBodyHtml = Craft::$app->templates->namespaceInputs($fieldType->getSettingsHtml());
+			$settingsFootHtml = Craft::$app->templates->clearJsBuffer();
 
 			$fieldTypes[] = array(
 				'type'             => $fieldTypeClass,
@@ -570,7 +570,7 @@ class Matrix extends BaseFieldType
 			);
 		}
 
-		craft()->templates->setNamespace($originalNamespace);
+		Craft::$app->templates->setNamespace($originalNamespace);
 
 		return $fieldTypes;
 	}
@@ -587,9 +587,9 @@ class Matrix extends BaseFieldType
 		$blockTypes = array();
 
 		// Set a temporary namespace for these
-		$originalNamespace = craft()->templates->getNamespace();
-		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
-		craft()->templates->setNamespace($namespace);
+		$originalNamespace = Craft::$app->templates->getNamespace();
+		$namespace = Craft::$app->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
+		Craft::$app->templates->setNamespace($namespace);
 
 		foreach ($this->getSettings()->getBlockTypes() as $blockType)
 		{
@@ -610,14 +610,14 @@ class Matrix extends BaseFieldType
 				$fieldType->element = $block;
 			}
 
-			craft()->templates->startJsBuffer();
+			Craft::$app->templates->startJsBuffer();
 
-			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('_includes/fields', array(
+			$bodyHtml = Craft::$app->templates->namespaceInputs(Craft::$app->templates->render('_includes/fields', array(
 				'namespace' => null,
 				'fields'    => $fieldLayoutFields
 			)));
 
-			$footHtml = craft()->templates->clearJsBuffer();
+			$footHtml = Craft::$app->templates->clearJsBuffer();
 
 			$blockTypes[] = array(
 				'handle'   => $blockType->handle,
@@ -627,7 +627,7 @@ class Matrix extends BaseFieldType
 			);
 		}
 
-		craft()->templates->setNamespace($originalNamespace);
+		Craft::$app->templates->setNamespace($originalNamespace);
 
 		return $blockTypes;
 	}

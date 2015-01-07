@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetSource as AssetSourceModel;
@@ -45,7 +46,7 @@ class AssetFolder extends BaseModel
 	 */
 	public function getSource()
 	{
-		return craft()->assetSources->getSourceById($this->sourceId);
+		return Craft::$app->assetSources->getSourceById($this->sourceId);
 	}
 
 	/**
@@ -57,7 +58,7 @@ class AssetFolder extends BaseModel
 	{
 		if (is_null($this->_children))
 		{
-			$this->_children = craft()->assets->findFolders(array('parentId' => $this->id));
+			$this->_children = Craft::$app->assets->findFolders(array('parentId' => $this->id));
 		}
 
 		return $this->_children;
@@ -73,7 +74,7 @@ class AssetFolder extends BaseModel
 			return null;
 		}
 
-		return craft()->assets->getFolderById($this->parentId);
+		return Craft::$app->assets->getFolderById($this->parentId);
 	}
 
 	/**

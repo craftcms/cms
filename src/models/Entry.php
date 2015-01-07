@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
@@ -121,7 +122,7 @@ class Entry extends BaseElementModel
 	{
 		if ($this->sectionId)
 		{
-			return craft()->sections->getSectionById($this->sectionId);
+			return Craft::$app->sections->getSectionById($this->sectionId);
 		}
 	}
 
@@ -162,7 +163,7 @@ class Entry extends BaseElementModel
 	{
 		if ($this->authorId)
 		{
-			return craft()->users->getUserById($this->authorId);
+			return Craft::$app->users->getUserById($this->authorId);
 		}
 	}
 
@@ -206,9 +207,9 @@ class Entry extends BaseElementModel
 	public function isEditable()
 	{
 		return (
-			craft()->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
-				$this->authorId == craft()->getUser()->getIdentity()->id ||
-				craft()->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
+			Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
+				$this->authorId == Craft::$app->getUser()->getIdentity()->id ||
+				Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
 				$this->getSection()->type == SectionType::Single
 			)
 		);
@@ -228,7 +229,7 @@ class Entry extends BaseElementModel
 			// The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
 			$url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-			if (craft()->isLocalized() && $this->locale != craft()->language)
+			if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language)
 			{
 				$url .= '/'.$this->locale;
 			}

@@ -19,7 +19,7 @@ use craft\app\web\Application;
 /**
  * Class Dashboard service.
  *
- * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `craft()->dashboard`]].
+ * An instance of the Dashboard service is globally accessible in Craft via [[Application::dashboard `Craft::$app->dashboard`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -36,7 +36,7 @@ class Dashboard extends Component
 	 */
 	public function getAllWidgetTypes()
 	{
-		return craft()->components->getComponentsByType(ComponentType::Widget);
+		return Craft::$app->components->getComponentsByType(ComponentType::Widget);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class Dashboard extends Component
 	 */
 	public function getWidgetType($class)
 	{
-		return craft()->components->getComponentByTypeAndClass(ComponentType::Widget, $class);
+		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::Widget, $class);
 	}
 
 	/**
@@ -60,7 +60,7 @@ class Dashboard extends Component
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		return craft()->components->populateComponentByTypeAndModel(ComponentType::Widget, $widget);
+		return Craft::$app->components->populateComponentByTypeAndModel(ComponentType::Widget, $widget);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class Dashboard extends Component
 	public function doesUserHaveWidget($type)
 	{
 		$count = WidgetRecord::model()->countByAttributes(array(
-			'userId'  => craft()->getUser()->getIdentity()->id,
+			'userId'  => Craft::$app->getUser()->getIdentity()->id,
 			'type'    => $type,
 			'enabled' => true
 		));
@@ -130,7 +130,7 @@ class Dashboard extends Component
 	{
 		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 			'id' => $id,
-			'userId' => craft()->getUser()->getIdentity()->id
+			'userId' => Craft::$app->getUser()->getIdentity()->id
 		));
 
 		if ($widgetRecord)
@@ -163,10 +163,10 @@ class Dashboard extends Component
 		{
 			if ($widgetRecord->isNewRecord())
 			{
-				$maxSortOrder = craft()->db->createCommand()
+				$maxSortOrder = Craft::$app->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
-					->where(array('userId' => craft()->getUser()->getIdentity()->id))
+					->where(array('userId' => Craft::$app->getUser()->getIdentity()->id))
 					->queryScalar();
 
 				$widgetRecord->sortOrder = $maxSortOrder + 1;
@@ -217,7 +217,7 @@ class Dashboard extends Component
 	 */
 	public function reorderUserWidgets($widgetIds)
 	{
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -256,7 +256,7 @@ class Dashboard extends Component
 	 */
 	private function _addDefaultUserWidgets()
 	{
-		$user = craft()->getUser()->getIdentity();
+		$user = Craft::$app->getUser()->getIdentity();
 
 		// Recent Entries widget
 		$widget = new WidgetModel();
@@ -299,7 +299,7 @@ class Dashboard extends Component
 	 */
 	private function _getUserWidgetRecordById($widgetId = null)
 	{
-		$userId = craft()->getUser()->getIdentity()->id;
+		$userId = Craft::$app->getUser()->getIdentity()->id;
 
 		if ($widgetId)
 		{
@@ -343,7 +343,7 @@ class Dashboard extends Component
 	private function _getUserWidgetRecords()
 	{
 		return WidgetRecord::model()->ordered()->findAllByAttributes([
-			'userId' => craft()->getUser()->getIdentity()->id
+			'userId' => Craft::$app->getUser()->getIdentity()->id
 		]);
 	}
 }

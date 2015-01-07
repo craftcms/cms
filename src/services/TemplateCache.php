@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
@@ -19,7 +20,7 @@ use craft\app\web\Application;
 /**
  * Class TemplateCache service.
  *
- * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `craft()->templateCache`]].
+ * An instance of the TemplateCache service is globally accessible in Craft via [[Application::templateCache `Craft::$app->templateCache`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -120,7 +121,7 @@ class TemplateCache extends Component
 		$params = [
 			':now'    => DateTimeHelper::currentTimeForDb(),
 			':key'    => $key,
-			':locale' => craft()->language
+			':locale' => Craft::$app->language
 		];
 
 		if (!$global)
@@ -129,7 +130,7 @@ class TemplateCache extends Component
 			$params[':path'] = $this->_getPath();
 		}
 
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('body')
 			->from(static::$_templateCachesTable)
 			->where($conditions, $params)
@@ -145,7 +146,7 @@ class TemplateCache extends Component
 	 */
 	public function startTemplateCache($key)
 	{
-		if (craft()->config->get('cacheElementQueries'))
+		if (Craft::$app->config->get('cacheElementQueries'))
 		{
 			$this->_cacheCriteria[$key] = array();
 		}
@@ -210,7 +211,7 @@ class TemplateCache extends Component
 	{
 		// If there are any transform generation URLs in the body, don't cache it.
 		// Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-		if (strpos($body, UrlHelper::getSiteUrl(craft()->config->getResourceTrigger().'/transforms')))
+		if (strpos($body, UrlHelper::getSiteUrl(Craft::$app->config->getResourceTrigger().'/transforms')))
 		{
 			return;
 		}
@@ -223,7 +224,7 @@ class TemplateCache extends Component
 
 		if (!$expiration)
 		{
-			$duration = craft()->config->getCacheDuration();
+			$duration = Craft::$app->config->getCacheDuration();
 
 			if($duration <= 0)
 			{
@@ -236,18 +237,18 @@ class TemplateCache extends Component
 		}
 
 		// Save it
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 		try
 		{
-			craft()->db->createCommand()->insert(static::$_templateCachesTable, array(
+			Craft::$app->db->createCommand()->insert(static::$_templateCachesTable, array(
 				'cacheKey'   => $key,
-				'locale'     => craft()->language,
+				'locale'     => Craft::$app->language,
 				'path'       => ($global ? null : $this->_getPath()),
 				'expiryDate' => DateTimeHelper::formatTimeForDb($expiration),
 				'body'       => $body
 			), false);
 
-			$cacheId = craft()->db->getLastInsertID();
+			$cacheId = Craft::$app->db->getLastInsertID();
 
 			// Tag it with any element criteria that were output within the cache
 			if (!empty($this->_cacheCriteria[$key]))
@@ -261,7 +262,7 @@ class TemplateCache extends Component
 					$values[] = array($cacheId, $criteria->getElementType()->getClassHandle(), JsonHelper::encode($flattenedCriteria));
 				}
 
-				craft()->db->createCommand()->insertAll(static::$_templateCacheCriteriaTable, array('cacheId', 'type', 'criteria'), $values, false);
+				Craft::$app->db->createCommand()->insertAll(static::$_templateCacheCriteriaTable, array('cacheId', 'type', 'criteria'), $values, false);
 
 				unset($this->_cacheCriteria[$key]);
 			}
@@ -276,7 +277,7 @@ class TemplateCache extends Component
 					$values[] = array($cacheId, $elementId);
 				}
 
-				craft()->db->createCommand()->insertAll(static::$_templateCacheElementsTable, array('cacheId', 'elementId'), $values, false);
+				Craft::$app->db->createCommand()->insertAll(static::$_templateCacheElementsTable, array('cacheId', 'elementId'), $values, false);
 
 				unset($this->_cacheElementIds[$key]);
 			}
@@ -322,7 +323,7 @@ class TemplateCache extends Component
 			$params = array(':id' => $cacheId);
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
 	}
 
@@ -342,7 +343,7 @@ class TemplateCache extends Component
 
 		$this->_deletedCachesByElementType[$elementType] = true;
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
 		return (bool) $affectedRows;
 	}
 
@@ -406,10 +407,10 @@ class TemplateCache extends Component
 			return false;
 		}
 
-		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
+		if ($deleteQueryCaches && Craft::$app->config->get('cacheElementQueries'))
 		{
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
-			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
+			$task = Craft::$app->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))
 			{
@@ -434,17 +435,17 @@ class TemplateCache extends Component
 
 				// Set the new settings and save the task
 				$task->settings = $settings;
-				craft()->tasks->saveTask($task, false);
+				Craft::$app->tasks->saveTask($task, false);
 			}
 			else
 			{
-				craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
+				Craft::$app->tasks->createTask('DeleteStaleTemplateCaches', null, array(
 					'elementId' => $elementId
 				));
 			}
 		}
 
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->selectDistinct('cacheId')
 			->from(static::$_templateCacheElementsTable);
 
@@ -502,7 +503,7 @@ class TemplateCache extends Component
 			return false;
 		}
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_templateCachesTable,
 			'expiryDate <= :now',
 			array('now' => DateTimeHelper::currentTimeForDb())
 		);
@@ -525,12 +526,12 @@ class TemplateCache extends Component
 			return false;
 		}
 
-		$lastCleanupDate = craft()->cache->get('lastTemplateCacheCleanupDate');
+		$lastCleanupDate = Craft::$app->cache->get('lastTemplateCacheCleanupDate');
 
 		if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration)
 		{
 			// Don't do it again for a while
-			craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+			Craft::$app->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 
 			return $this->deleteExpiredCaches();
 		}
@@ -555,7 +556,7 @@ class TemplateCache extends Component
 
 		$this->_deletedAllCaches = true;
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}
 
@@ -571,7 +572,7 @@ class TemplateCache extends Component
 	{
 		if (!isset($this->_path))
 		{
-			if (craft()->request->isCpRequest())
+			if (Craft::$app->request->isCpRequest())
 			{
 				$this->_path = 'cp:';
 			}
@@ -580,17 +581,17 @@ class TemplateCache extends Component
 				$this->_path = 'site:';
 			}
 
-			$this->_path .= craft()->request->getPath();
+			$this->_path .= Craft::$app->request->getPath();
 
-			if (($pageNum = craft()->request->getPageNum()) != 1)
+			if (($pageNum = Craft::$app->request->getPageNum()) != 1)
 			{
-				$this->_path .= '/'.craft()->config->get('pageTrigger').$pageNum;
+				$this->_path .= '/'.Craft::$app->config->get('pageTrigger').$pageNum;
 			}
 
-			if ($queryString = craft()->request->getQueryString())
+			if ($queryString = Craft::$app->request->getQueryString())
 			{
 				// Strip the path param
-				$queryString = trim(preg_replace('/'.craft()->urlManager->pathParam.'=[^&]*/', '', $queryString), '&');
+				$queryString = trim(preg_replace('/'.Craft::$app->urlManager->pathParam.'=[^&]*/', '', $queryString), '&');
 
 				if ($queryString)
 				{

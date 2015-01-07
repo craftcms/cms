@@ -36,7 +36,7 @@ use craft\app\web\Application;
 /**
  * Class Assets service.
  *
- * An instance of the Assets service is globally accessible in Craft via [[Application::assets `craft()->assets`]].
+ * An instance of the Assets service is globally accessible in Craft via [[Application::assets `Craft::$app->assets`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -72,7 +72,7 @@ class Assets extends Component
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$files = craft()->db->createCommand()
+		$files = Craft::$app->db->createCommand()
 			->select('fi.*')
 			->from('assetfiles fi')
 			->join('assetfolders fo', 'fo.id = fi.folderId')
@@ -93,7 +93,7 @@ class Assets extends Component
 	 */
 	public function getFileById($fileId, $localeId = null)
 	{
-		return craft()->elements->getElementById($fileId, ElementType::Asset, $localeId);
+		return Craft::$app->elements->getElementById($fileId, ElementType::Asset, $localeId);
 	}
 
 	/**
@@ -107,7 +107,7 @@ class Assets extends Component
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
+			$criteria = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		if (isset($criteria->filename))
@@ -129,7 +129,7 @@ class Assets extends Component
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = craft()->elements->getCriteria(ElementType::Asset, $criteria);
+			$criteria = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
 		}
 
 		return $criteria->total();
@@ -185,7 +185,7 @@ class Assets extends Component
 			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -201,7 +201,7 @@ class Assets extends Component
 			if ($event->performAction)
 			{
 				// Save the element
-				$success = craft()->elements->saveElement($file, false);
+				$success = Craft::$app->elements->saveElement($file, false);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
 				if (!$success)
@@ -308,7 +308,7 @@ class Assets extends Component
 
 		foreach ($tree as $topFolder)
 		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+			$sort[] = Craft::$app->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
@@ -326,7 +326,7 @@ class Assets extends Component
 	 */
 	public function getUserFolder(UserModel $userModel = null)
 	{
-		$sourceTopFolder = craft()->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
+		$sourceTopFolder = Craft::$app->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
 
 		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
@@ -343,7 +343,7 @@ class Assets extends Component
 		else
 		{
 			// A little obfuscation never hurt anyone
-			$folderName = 'user_'.sha1(craft()->getSession()->getSessionID());
+			$folderName = 'user_'.sha1(Craft::$app->getSession()->getSessionID());
 		}
 
 		$folderCriteria = new FolderCriteriaModel(array(
@@ -402,7 +402,7 @@ class Assets extends Component
 				throw new Exception(Craft::t("Can’t find the parent folder!"));
 			}
 
-			$source = craft()->assetSources->getSourceTypeById($parentFolder->sourceId);
+			$source = Craft::$app->assetSources->getSourceTypeById($parentFolder->sourceId);
 			$response = $source->createFolder($parentFolder, $folderName);
 		}
 		catch (Exception $exception)
@@ -434,7 +434,7 @@ class Assets extends Component
 				throw new Exception(Craft::t("Can’t find the folder to rename!"));
 			}
 
-			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName, false));
 		}
 		catch (Exception $exception)
@@ -469,7 +469,7 @@ class Assets extends Component
 			}
 			else
 			{
-				$newSourceType = craft()->assetSources->getSourceTypeById($newParentFolder->sourceId);
+				$newSourceType = Craft::$app->assetSources->getSourceTypeById($newParentFolder->sourceId);
 				$response = $newSourceType->moveFolder($folder, $newParentFolder, !empty($action));
 			}
 		}
@@ -501,7 +501,7 @@ class Assets extends Component
 				throw new Exception(Craft::t("Can’t find the folder!"));
 			}
 
-			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 			$response = $source->deleteFolder($folder);
 
 		}
@@ -558,7 +558,7 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f');
 
@@ -601,7 +601,7 @@ class Assets extends Component
 	 */
 	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
 	{
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
 			->where(array('like', 'path', $parentFolder->path.'%'))
@@ -659,7 +659,7 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('count(id)')
 			->from('assetfolders AS f');
 
@@ -690,7 +690,7 @@ class Assets extends Component
 			}
 
 			$folder = $this->getFolderById($folderId);
-			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+			$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
 			return $source->uploadFile($folder);
 		}
@@ -712,7 +712,7 @@ class Assets extends Component
 	 * $uploadedFile = UploadedFile::getInstanceByName('photo');
 	 * $folderId = 10;
 	 *
-	 * $response = craft()->assets->insertFileByLocalPath(
+	 * $response = Craft::$app->assets->insertFileByLocalPath(
 	 *     $uploadedFile->tempName,
 	 *     $uploadedFile->name,
 	 *     $folderId,
@@ -745,7 +745,7 @@ class Assets extends Component
 		}
 
 		$fileName = AssetsHelper::cleanAssetName($fileName);
-		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
 		$response = $source->insertFileByPath($localPath, $folder, $fileName);
 
@@ -790,7 +790,7 @@ class Assets extends Component
 			foreach ($fileIds as $fileId)
 			{
 				$file = $this->getFileById($fileId);
-				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
+				$source = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
 				// Fire an 'onBeforeDeleteAsset' event
 				$this->onBeforeDeleteAsset(new Event($this, array(
@@ -802,7 +802,7 @@ class Assets extends Component
 					$source->deleteFile($file);
 				}
 
-				craft()->elements->deleteElementById($fileId);
+				Craft::$app->elements->deleteElementById($fileId);
 
 				// Fire an 'onDeleteAsset' event
 				$this->onDeleteAsset(new Event($this, array(
@@ -853,7 +853,7 @@ class Assets extends Component
 		$response = new AssetOperationResponseModel();
 
 		$folder = $this->getFolderById($folderId);
-		$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$newSourceType = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
 		// Does the source folder exist?
 		$parent = $folder->getParent();
@@ -889,7 +889,7 @@ class Assets extends Component
 					$results[] = $response;
 				}
 
-				$originalSourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+				$originalSourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
 				if ($originalSourceType && $newSourceType)
 				{
@@ -953,43 +953,43 @@ class Assets extends Component
 	{
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
-			$sourceType = craft()->assetSources->getSourceTypeById($file->sourceId);
+			$sourceType = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
 			return AssetsHelper::generateUrl($sourceType, $file);
 		}
 
 		// Get the transform index model
-		$index = craft()->assetTransforms->getTransformIndex($file, $transform);
+		$index = Craft::$app->assetTransforms->getTransformIndex($file, $transform);
 
 		// Does the file actually exist?
 		if ($index->fileExists)
 		{
-			return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
+			return Craft::$app->assetTransforms->getUrlForTransformByTransformIndex($index);
 		}
 		else
 		{
-			if (craft()->config->get('generateTransformsBeforePageLoad'))
+			if (Craft::$app->config->get('generateTransformsBeforePageLoad'))
 			{
 				// Mark the transform as in progress
 				$index->inProgress = true;
-				craft()->assetTransforms->storeTransformIndexData($index);
+				Craft::$app->assetTransforms->storeTransformIndexData($index);
 
 				// Generate the transform
-				craft()->assetTransforms->generateTransform($index);
+				Craft::$app->assetTransforms->generateTransform($index);
 
 				// Update the index
 				$index->fileExists = true;
-				craft()->assetTransforms->storeTransformIndexData($index);
+				Craft::$app->assetTransforms->storeTransformIndexData($index);
 
 				// Return the transform URL
-				return craft()->assetTransforms->getUrlForTransformByTransformIndex($index);
+				return Craft::$app->assetTransforms->getUrlForTransformByTransformIndex($index);
 			}
 			else
 			{
 				// Queue up a new Generate Pending Transforms task, if there isn't one already
-				if (!craft()->tasks->areTasksPending('GeneratePendingTransforms'))
+				if (!Craft::$app->tasks->areTasksPending('GeneratePendingTransforms'))
 				{
-					craft()->tasks->createTask('GeneratePendingTransforms');
+					Craft::$app->tasks->createTask('GeneratePendingTransforms');
 				}
 
 				// Return the temporary transform URL
@@ -1045,9 +1045,9 @@ class Assets extends Component
 			}
 
 			if (
-				!craft()->getUser()->checkPermission($permission.':'.$folderModel->sourceId)
+				!Craft::$app->getUser()->checkPermission($permission.':'.$folderModel->sourceId)
 				&&
-				!craft()->getSession()->checkAuthorization($permission.':'.$folderModel->id))
+				!Craft::$app->getSession()->checkAuthorization($permission.':'.$folderModel->id))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
@@ -1079,7 +1079,7 @@ class Assets extends Component
 				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
-			if (!craft()->getUser()->checkPermission($permission.':'.$file->sourceId))
+			if (!Craft::$app->getUser()->checkPermission($permission.':'.$file->sourceId))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
@@ -1183,7 +1183,7 @@ class Assets extends Component
 	 */
 	private function _createFolderQuery()
 	{
-		return craft()->db->createCommand()
+		return Craft::$app->db->createCommand()
 			->select('id, parentId, sourceId, name, path')
 			->from('assetfolders');
 	}
@@ -1218,7 +1218,7 @@ class Assets extends Component
 
 		foreach ($tree as $topFolder)
 		{
-			$sort[] = craft()->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
+			$sort[] = Craft::$app->assetSources->getSourceById($topFolder->sourceId)->sortOrder;
 		}
 
 		array_multisort($sort, $tree);
@@ -1324,7 +1324,7 @@ class Assets extends Component
 
 		$theNewFile = $this->getFileById($theNewFileId);
 		$folder = $theNewFile->getFolder();
-		$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
+		$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
 		$fileId = null;
 
@@ -1401,7 +1401,7 @@ class Assets extends Component
 		if ($response->isSuccess())
 		{
 			// Use the previous data to clean up
-			craft()->assetTransforms->deleteAllTransformData($oldFileModel);
+			Craft::$app->assetTransforms->deleteAllTransformData($oldFileModel);
 			$originatingSource->finalizeTransfer($oldFileModel);
 		}
 

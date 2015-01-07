@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elementtypes\ElementTypeInterface;
 use craft\app\errors\HttpException;
@@ -74,7 +75,7 @@ class ElementIndexController extends BaseElementsController
 
 		$this->_elementType = $this->getElementType();
 		$this->_context     = $this->getContext();
-		$this->_sourceKey   = craft()->request->getParam('source');
+		$this->_sourceKey   = Craft::$app->request->getParam('source');
 		$this->_source      = $this->_getSource();
 		$this->_viewState   = $this->_getViewState();
 		$this->_criteria    = $this->_getCriteria();
@@ -91,7 +92,7 @@ class ElementIndexController extends BaseElementsController
 	 * Other components can fetch this like so:
 	 *
 	 * ```php
-	 * $criteria = craft()->getController()->getElementCriteria();
+	 * $criteria = Craft::$app->getController()->getElementCriteria();
 	 * ```
 	 *
 	 * @return ElementCriteriaModel
@@ -112,8 +113,8 @@ class ElementIndexController extends BaseElementsController
 		if ($this->_context == 'index')
 		{
 			$responseData['actions']  = $this->_getActionData();
-			$responseData['actionsHeadHtml'] = craft()->templates->getHeadHtml();
-			$responseData['actionsFootHtml'] = craft()->templates->getFootHtml();
+			$responseData['actionsHeadHtml'] = Craft::$app->templates->getHeadHtml();
+			$responseData['actionsFootHtml'] = Craft::$app->templates->getFootHtml();
 		}
 
 		$responseData['html'] = $this->_getElementHtml(true);
@@ -144,7 +145,7 @@ class ElementIndexController extends BaseElementsController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$requestService = craft()->request;
+		$requestService = Craft::$app->request;
 
 		$actionHandle = $requestService->getRequiredPost('elementAction');
 		$elementIds = $requestService->getRequiredPost('elementIds');
@@ -249,7 +250,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getViewState()
 	{
-		$viewState = craft()->request->getParam('viewState', array());
+		$viewState = Craft::$app->request->getParam('viewState', array());
 
 		if (empty($viewState['mode']))
 		{
@@ -266,14 +267,14 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getCriteria()
 	{
-		$criteria = craft()->elements->getCriteria(
+		$criteria = Craft::$app->elements->getCriteria(
 			$this->_elementType->getClassHandle(),
-			craft()->request->getPost('criteria')
+			Craft::$app->request->getPost('criteria')
 		);
 
 		$criteria->limit = 50;
-		$criteria->offset = craft()->request->getParam('offset');
-		$criteria->search = craft()->request->getParam('search');
+		$criteria->offset = Craft::$app->request->getParam('offset');
+		$criteria->search = Craft::$app->request->getParam('search');
 
 		// Does the source specify any criteria attributes?
 		if (!empty($this->_source['criteria']))
@@ -284,7 +285,7 @@ class ElementIndexController extends BaseElementsController
 		// Exclude descendants of the collapsed element IDs
 		if (!$criteria->id)
 		{
-			$collapsedElementIds = craft()->request->getParam('collapsedElementIds');
+			$collapsedElementIds = Craft::$app->request->getParam('collapsedElementIds');
 
 			if ($collapsedElementIds)
 			{
@@ -348,7 +349,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getElementHtml($includeContainer)
 	{
-		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
+		$disabledElementIds = Craft::$app->request->getParam('disabledElementIds', array());
 		$showCheckboxes = !empty($this->_actions);
 
 		return $this->_elementType->getIndexHtml(
@@ -369,7 +370,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getAvailableActions()
 	{
-		if (craft()->request->isMobileBrowser())
+		if (Craft::$app->request->isMobileBrowser())
 		{
 			return;
 		}
@@ -382,7 +383,7 @@ class ElementIndexController extends BaseElementsController
 			{
 				if (is_string($action))
 				{
-					$actions[$i] = $action = craft()->elements->getAction($action);
+					$actions[$i] = $action = Craft::$app->elements->getAction($action);
 				}
 
 				if (!($action instanceof ElementActionInterface))
@@ -448,8 +449,8 @@ class ElementIndexController extends BaseElementsController
 			}
 		}
 
-		$responseData['headHtml'] = craft()->templates->getHeadHtml();
-		$responseData['footHtml'] = craft()->templates->getFootHtml();
+		$responseData['headHtml'] = Craft::$app->templates->getHeadHtml();
+		$responseData['footHtml'] = Craft::$app->templates->getFootHtml();
 
 		$this->returnJson($responseData);
 	}

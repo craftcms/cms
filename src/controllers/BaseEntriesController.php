@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\enums\SectionType;
 use craft\app\models\Entry       as EntryModel;
 
@@ -33,10 +34,10 @@ abstract class BaseEntriesController extends BaseController
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)
 	{
-		$userSessionService = craft()->getUser();
+		$userSessionService = Craft::$app->getUser();
 		$permissionSuffix = ':'.$entry->sectionId;
 
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
 			// Make sure they have access to this locale
 			$this->requirePermission('editLocale:'.$entry->locale);

@@ -13,12 +13,12 @@ use craft\app\models\RebrandEmail       as RebrandEmailModel;
 use craft\app\records\EmailMessage      as EmailMessageRecord;
 use craft\app\web\Application;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class EmailMessages service.
  *
- * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `craft()->emailMessages`]].
+ * An instance of the EmailMessages service is globally accessible in Craft via [[Application::emailMessages `Craft::$app->emailMessages`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -48,7 +48,7 @@ class EmailMessages extends Component
 		// Find any custom messages
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
 		$records = EmailMessageRecord::model()->findAllByAttributes(array(
@@ -102,7 +102,7 @@ class EmailMessages extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
 		$message = new RebrandEmailModel();
@@ -183,7 +183,7 @@ class EmailMessages extends Component
 	{
 		if (!isset($this->_messageKeysAndSourceLocales))
 		{
-			$craftSourceLocale = craft()->sourceLanguage;
+			$craftSourceLocale = Craft::$app->sourceLanguage;
 
 			$this->_messageKeysAndSourceLocales = array(
 				'account_activation' => $craftSourceLocale,
@@ -193,9 +193,9 @@ class EmailMessages extends Component
 			);
 
 			// Give plugins a chance to add additional messages
-			foreach (craft()->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
+			foreach (Craft::$app->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
 			{
-				$pluginSourceLocale = craft()->plugins->getPlugin($pluginHandle)->getSourceLanguage();
+				$pluginSourceLocale = Craft::$app->plugins->getPlugin($pluginHandle)->getSourceLanguage();
 
 				foreach ($pluginKeys as $key)
 				{
@@ -246,7 +246,7 @@ class EmailMessages extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = craft()->language;
+			$localeId = Craft::$app->language;
 		}
 
 		$record = EmailMessageRecord::model()->findByAttributes(array(

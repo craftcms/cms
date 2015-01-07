@@ -57,18 +57,18 @@ class QuickPost extends BaseWidget
 		// Find the sections the user has permission to create entries in
 		$sections = array();
 
-		foreach (craft()->sections->getAllSections() as $section)
+		foreach (Craft::$app->sections->getAllSections() as $section)
 		{
 			if ($section->type !== SectionType::Single)
 			{
-				if (craft()->getUser()->checkPermission('createEntries:'.$section->id))
+				if (Craft::$app->getUser()->checkPermission('createEntries:'.$section->id))
 				{
 					$sections[] = $section;
 				}
 			}
 		}
 
-		return craft()->templates->render('_components/widgets/QuickPost/settings', array(
+		return Craft::$app->templates->render('_components/widgets/QuickPost/settings', array(
 			'sections' => $sections,
 			'settings' => $this->getSettings()
 		));
@@ -105,7 +105,7 @@ class QuickPost extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			$section = $this->_getSection();
 
@@ -125,8 +125,8 @@ class QuickPost extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		craft()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
-		craft()->templates->includeJsResource('js/QuickPostWidget.js');
+		Craft::$app->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
+		Craft::$app->templates->includeJsResource('js/QuickPostWidget.js');
 
 		$section = $this->_getSection();
 
@@ -158,17 +158,17 @@ class QuickPost extends BaseWidget
 			'typeId' => $entryTypeId,
 		);
 
-		craft()->templates->startJsBuffer();
+		Craft::$app->templates->startJsBuffer();
 
-		$html = craft()->templates->render('_components/widgets/QuickPost/body', array(
+		$html = Craft::$app->templates->render('_components/widgets/QuickPost/body', array(
 			'section'   => $section,
 			'entryType' => $entryType,
 			'settings'  => $this->getSettings()
 		));
 
-		$fieldJs = craft()->templates->clearJsBuffer(false);
+		$fieldJs = Craft::$app->templates->clearJsBuffer(false);
 
-		craft()->templates->includeJs('new Craft.QuickPostWidget(' .
+		Craft::$app->templates->includeJs('new Craft.QuickPostWidget(' .
 			$this->model->id.', ' .
 			JsonHelper::encode($params).', ' .
 			"function() {\n".$fieldJs .
@@ -212,7 +212,7 @@ class QuickPost extends BaseWidget
 
 			if ($sectionId)
 			{
-				$this->_section = craft()->sections->getSectionById($sectionId);
+				$this->_section = Craft::$app->sections->getSectionById($sectionId);
 			}
 		}
 

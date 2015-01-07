@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria        as ElementCriteriaModel;
 use craft\app\elementtypes\BaseElementType;
@@ -257,7 +258,7 @@ class ElementCriteria extends BaseModel implements \Countable
 
 		if (!isset($this->_matchedElements))
 		{
-			$elements = craft()->elements->findElements($this);
+			$elements = Craft::$app->elements->findElements($this);
 			$this->setMatchedElements($elements);
 		}
 
@@ -341,7 +342,7 @@ class ElementCriteria extends BaseModel implements \Countable
 
 		if (!isset($this->_cachedIds))
 		{
-			$this->_cachedIds = craft()->elements->findElements($this, true);
+			$this->_cachedIds = Craft::$app->elements->findElements($this, true);
 		}
 
 		return $this->_cachedIds;
@@ -362,7 +363,7 @@ class ElementCriteria extends BaseModel implements \Countable
 
 		if (!isset($this->_cachedTotal))
 		{
-			$this->_cachedTotal = craft()->elements->getTotalElements($this);
+			$this->_cachedTotal = Craft::$app->elements->getTotalElements($this);
 		}
 
 		return $this->_cachedTotal;
@@ -465,7 +466,7 @@ class ElementCriteria extends BaseModel implements \Countable
 	 */
 	private function _includeInTemplateCaches()
 	{
-		$cacheService = craft()->getComponent('templateCache', false);
+		$cacheService = Craft::$app->getComponent('templateCache', false);
 
 		if ($cacheService)
 		{

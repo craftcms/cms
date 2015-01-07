@@ -10,7 +10,7 @@ namespace craft\app\variables;
 use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Rebranding functions.
@@ -82,7 +82,7 @@ class Rebrand
 	{
 		if (!isset($this->_logoPath))
 		{
-			$files = IOHelper::getFolderContents(craft()->path->getStoragePath().'logo/', false);
+			$files = IOHelper::getFolderContents(Craft::$app->path->getStoragePath().'logo/', false);
 			if (!empty($files))
 			{
 				$this->_logoPath = $files[0];

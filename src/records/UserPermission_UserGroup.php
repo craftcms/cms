@@ -9,7 +9,7 @@ namespace craft\app\records;
 
 use craft\app\Craft;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * Class UserPermission_UserGroup record.

@@ -47,13 +47,13 @@ class FindAndReplace extends BaseTool
 	 */
 	public function getOptionsHtml()
 	{
-		return craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		return Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'name'        => 'find',
 				'placeholder' => Craft::t('Find'),
 			)
 		)) .
-		craft()->templates->renderMacro('_includes/forms', 'textField', array(
+		Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
 			array(
 				'name'        => 'replace',
 				'placeholder' => Craft::t('Replace'),
@@ -72,7 +72,7 @@ class FindAndReplace extends BaseTool
 	{
 		if (!empty($params['find']) && !empty($params['replace']))
 		{
-			craft()->tasks->createTask('FindAndReplace', null, array(
+			Craft::$app->tasks->createTask('FindAndReplace', null, array(
 				'find'    => $params['find'],
 				'replace' => $params['replace']
 			));

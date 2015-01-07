@@ -108,7 +108,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			}
 		}
 
-		return craft()->templates->render('_components/fieldtypes/elementfieldsettings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/elementfieldsettings', array(
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
 			'sources'              => $sources,
@@ -160,7 +160,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria = Craft::$app->elements->getCriteria($this->elementType);
 		$criteria->locale = $this->getTargetLocale();
 
 		// $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
@@ -225,7 +225,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	public function getInputHtml($name, $criteria)
 	{
 		$variables = $this->getInputTemplateVariables($name, $criteria);
-		return craft()->templates->render($this->inputTemplate, $variables);
+		return Craft::$app->templates->render($this->inputTemplate, $variables);
 	}
 
 	/**
@@ -258,7 +258,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		if ($targetIds !== null)
 		{
-			craft()->relations->saveRelations($this->model, $this->element, $targetIds);
+			Craft::$app->relations->saveRelations($this->model, $this->element, $targetIds);
 		}
 	}
 
@@ -277,7 +277,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 			foreach ($value as $element)
 			{
-				$html .= craft()->templates->render('_elements/element', array(
+				$html .= Craft::$app->templates->render('_elements/element', array(
 					'element' => $element
 				));
 			}
@@ -314,7 +314,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getElementType()
 	{
-		$elementType = craft()->elements->getElementType($this->elementType);
+		$elementType = Craft::$app->elements->getElementType($this->elementType);
 
 		if (!$elementType)
 		{
@@ -338,7 +338,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
+			$criteria = Craft::$app->elements->getCriteria($this->elementType);
 			$criteria->id = false;
 		}
 
@@ -352,7 +352,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		return array(
 			'jsClass'            => $this->inputJsClass,
 			'elementType'        => new ElementType($this->getElementType()),
-			'id'                 => craft()->templates->formatInputId($name),
+			'id'                 => Craft::$app->templates->formatInputId($name),
 			'fieldId'            => $this->model->id,
 			'storageKey'         => 'field.'.$this->model->id,
 			'name'               => $name,
@@ -401,7 +401,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocale()
 	{
-		if (craft()->isLocalized())
+		if (Craft::$app->isLocalized())
 		{
 			$targetLocale = $this->getSettings()->targetLocale;
 
@@ -415,7 +415,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			}
 		}
 
-		return craft()->getLanguage();
+		return Craft::$app->getLanguage();
 	}
 
 	/**
@@ -425,18 +425,18 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocaleFieldHtml()
 	{
-		if (craft()->isLocalized() && $this->getElementType()->isLocalized())
+		if (Craft::$app->isLocalized() && $this->getElementType()->isLocalized())
 		{
 			$localeOptions = array(
 				array('label' => Craft::t('Same as source'), 'value' => null)
 			);
 
-			foreach (craft()->i18n->getSiteLocales() as $locale)
+			foreach (Craft::$app->i18n->getSiteLocales() as $locale)
 			{
 				$localeOptions[] = array('label' => $locale->getName(), 'value' => $locale->getId());
 			}
 
-			return craft()->templates->renderMacro('_includes/forms', 'selectField', array(
+			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', array(
 				array(
 					'label' => Craft::t('Target Locale'),
 					'instructions' => Craft::t('Which locale do you want to select {type} in?', array('type' => StringHelper::toLowerCase($this->getName()))),

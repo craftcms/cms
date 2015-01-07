@@ -47,7 +47,7 @@ class UnsuspendUsers extends BaseElementAction
 
 		foreach ($users as $user)
 		{
-			craft()->users->unsuspendUser($user);
+			Craft::$app->users->unsuspendUser($user);
 		}
 
 		$this->setMessage(Craft::t('Users unsuspended.'));

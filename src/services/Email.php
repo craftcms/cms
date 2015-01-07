@@ -20,7 +20,7 @@ use craft\app\web\Application;
 /**
  * The Email service provides APIs for sending email in Craft.
  *
- * An instance of the Email service is globally accessible in Craft via [[Application::email `craft()->email`]].
+ * An instance of the Email service is globally accessible in Craft via [[Application::email `Craft::$app->email`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -65,7 +65,7 @@ class Email extends Component
 	 * $email->subject = 'Heyyyyy';
 	 * $email->body    = 'How you doin, {{ user.name }}?';
 	 *
-	 * craft()->email->sendEmail($email);
+	 * Craft::$app->email->sendEmail($email);
 	 * ```
 	 *
 	 * @param EmailModel $emailModel The EmailModel object that defines information about the email to be sent.
@@ -76,7 +76,7 @@ class Email extends Component
 	 */
 	public function sendEmail(EmailModel $emailModel, $variables = array())
 	{
-		$user = craft()->users->getUserByEmail($emailModel->toEmail);
+		$user = Craft::$app->users->getUserByEmail($emailModel->toEmail);
 
 		if (!$user)
 		{
@@ -99,7 +99,7 @@ class Email extends Component
 	 * by providing the corresponding language strings.
 	 *
 	 * ```php
-	 * craft()->email->sendEmailByKey($user, 'account_activation', array(
+	 * Craft::$app->email->sendEmailByKey($user, 'account_activation', array(
 	 *     'link' => $activationUrl
 	 * ));
 	 * ```
@@ -115,9 +115,9 @@ class Email extends Component
 	{
 		$emailModel = new EmailModel();
 
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$message = craft()->emailMessages->getMessage($key, $user->preferredLocale);
+			$message = Craft::$app->emailMessages->getMessage($key, $user->preferredLocale);
 
 			$emailModel->subject  = $message->subject;
 			$emailModel->body     = $message->body;
@@ -130,21 +130,21 @@ class Email extends Component
 
 		$tempTemplatesPath = '';
 
-		if (craft()->getEdition() >= Craft::Client)
+		if (Craft::$app->getEdition() >= Craft::Client)
 		{
 			// Is there a custom HTML template set?
 			$settings = $this->getSettings();
 
 			if (!empty($settings['template']))
 			{
-				$tempTemplatesPath = craft()->path->getSiteTemplatesPath();
+				$tempTemplatesPath = Craft::$app->path->getSiteTemplatesPath();
 				$template = $settings['template'];
 			}
 		}
 
 		if (empty($template))
 		{
-			$tempTemplatesPath = craft()->path->getCpTemplatesPath();
+			$tempTemplatesPath = Craft::$app->path->getCpTemplatesPath();
 			$template = '_special/email';
 		}
 
@@ -160,14 +160,14 @@ class Email extends Component
 			"{% endset %}\n";
 
 		// Temporarily swap the templates path
-		$originalTemplatesPath = craft()->path->getTemplatesPath();
-		craft()->path->setTemplatesPath($tempTemplatesPath);
+		$originalTemplatesPath = Craft::$app->path->getTemplatesPath();
+		Craft::$app->path->setTemplatesPath($tempTemplatesPath);
 
 		// Send the email
 		$return = $this->_sendEmail($user, $emailModel, $variables);
 
 		// Return to the original templates path
-		craft()->path->setTemplatesPath($originalTemplatesPath);
+		Craft::$app->path->setTemplatesPath($originalTemplatesPath);
 
 		return $return;
 	}
@@ -181,7 +181,7 @@ class Email extends Component
 	{
 		if (!isset($this->_settings))
 		{
-			$this->_settings = craft()->systemSettings->getSettings('email');
+			$this->_settings = Craft::$app->systemSettings->getSettings('email');
 		}
 
 		return $this->_settings;
@@ -200,7 +200,7 @@ class Email extends Component
 
 		$this->_settings = $settings;
 
-		$user = craft()->getUser()->getIdentity();
+		$user = Craft::$app->getUser()->getIdentity();
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)
@@ -314,7 +314,7 @@ class Email extends Component
 						$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 					}
 
-					$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], craft()->config->get('devMode') ? 1 : 0);
+					$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], Craft::$app->config->get('devMode') ? 1 : 0);
 
 					$this->_setSmtpSettings($email, $emailSettings);
 					break;
@@ -338,7 +338,7 @@ class Email extends Component
 					}
 			}
 
-			$testToEmail = craft()->config->get('testToEmailAddress');
+			$testToEmail = Craft::$app->config->get('testToEmailAddress');
 
 			// If they have the test email config var set to a non-empty string use it instead of the supplied email.
 			if (is_string($testToEmail) && $testToEmail !== '')
@@ -423,21 +423,21 @@ class Email extends Component
 
 			$variables['user'] = $user;
 
-			$email->Subject = craft()->templates->renderString($emailModel->subject, $variables);
+			$email->Subject = Craft::$app->templates->renderString($emailModel->subject, $variables);
 
 			// If they populated an htmlBody, use it.
 			if ($emailModel->htmlBody)
 			{
-				$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
+				$renderedHtmlBody = Craft::$app->templates->renderString($emailModel->htmlBody, $variables);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = Craft::$app->templates->renderString($emailModel->body, $variables);
 			}
 			else
 			{
 				// They didn't provide an htmlBody, so markdown the body.
-				$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
+				$renderedHtmlBody = Craft::$app->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = Craft::$app->templates->renderString($emailModel->body, $variables);
 			}
 
 			if (!$email->Send())

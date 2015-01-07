@@ -58,8 +58,8 @@ class Color extends BaseFieldType
 			$value = '#000000';
 		}
 
-		return craft()->templates->render('_includes/forms/color', array(
-			'id'    => craft()->templates->formatInputId($name),
+		return Craft::$app->templates->render('_includes/forms/color', array(
+			'id'    => Craft::$app->templates->formatInputId($name),
 			'name'  => $name,
 			'value' => $value,
 		));

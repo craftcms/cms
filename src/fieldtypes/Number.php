@@ -40,7 +40,7 @@ class Number extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('_components/fieldtypes/Number/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Number/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -73,9 +73,9 @@ class Number extends BaseFieldType
 			$value = $this->settings->min;
 		}
 
-		return craft()->templates->render('_includes/forms/text', array(
+		return Craft::$app->templates->render('_includes/forms/text', array(
 			'name'  => $name,
-			'value' => craft()->numberFormatter->formatDecimal($value, false),
+			'value' => Craft::$app->numberFormatter->formatDecimal($value, false),
 			'size'  => 5
 		));
 	}

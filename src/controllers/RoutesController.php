@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\errors\HttpException;
 
 /**
@@ -45,17 +46,17 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$urlParts = craft()->request->getRequiredPost('url');
-		$template = craft()->request->getRequiredPost('template');
-		$routeId  = craft()->request->getPost('routeId');
-		$locale   = craft()->request->getPost('locale');
+		$urlParts = Craft::$app->request->getRequiredPost('url');
+		$template = Craft::$app->request->getRequiredPost('template');
+		$routeId  = Craft::$app->request->getPost('routeId');
+		$locale   = Craft::$app->request->getPost('locale');
 
 		if ($locale === '')
 		{
 			$locale = null;
 		}
 
-		$routeRecord = craft()->routes->saveRoute($urlParts, $template, $routeId, $locale);
+		$routeRecord = Craft::$app->routes->saveRoute($urlParts, $template, $routeId, $locale);
 
 		if ($routeRecord->hasErrors())
 		{
@@ -80,8 +81,8 @@ class RoutesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$routeId = craft()->request->getRequiredPost('routeId');
-		craft()->routes->deleteRouteById($routeId);
+		$routeId = Craft::$app->request->getRequiredPost('routeId');
+		Craft::$app->routes->deleteRouteById($routeId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -96,8 +97,8 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$routeIds = craft()->request->getRequiredPost('routeIds');
-		craft()->routes->updateRouteOrder($routeIds);
+		$routeIds = Craft::$app->request->getRequiredPost('routeIds');
+		Craft::$app->routes->updateRouteOrder($routeIds);
 
 		$this->returnJson(array('success' => true));
 	}

@@ -8,6 +8,7 @@
 namespace craft\app\consolecommands;
 
 use craft\app\base\BasePlugin;
+use craft\app\Craft;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -78,7 +79,7 @@ class Migrate extends \MigrateCommand
 			{
 				$plugin = $params[0][1];
 
-				$path = craft()->path->getMigrationsPath($plugin);
+				$path = Craft::$app->path->getMigrationsPath($plugin);
 
 				if (!IOHelper::folderExists($path))
 				{
@@ -97,7 +98,7 @@ class Migrate extends \MigrateCommand
 			}
 		}
 
-		$yiiVersion = craft()->getYiiVersion();
+		$yiiVersion = Craft::$app->getYiiVersion();
 		echo "\n@@@appName@@@ Migration Tool (based on Yii v{$yiiVersion})\n\n";
 
 		return true;
@@ -171,7 +172,7 @@ class Migrate extends \MigrateCommand
 		if (isset($args[1]))
 		{
 			// See if this is a plugin
-			$plugin = craft()->plugins->getPlugin($args[1]);
+			$plugin = Craft::$app->plugins->getPlugin($args[1]);
 			if ($plugin)
 			{
 				$name = $args[0];
@@ -211,7 +212,7 @@ class Migrate extends \MigrateCommand
 			$migrationNameDesc = 'mYYMMDD_HHMMSS_pluginHandle_migrationName';
 
 			// The plugin path should always be the plugin's migration directory.
-			$path = craft()->path->getMigrationsPath($pluginHandle);
+			$path = Craft::$app->path->getMigrationsPath($pluginHandle);
 		}
 		else
 		{
@@ -219,7 +220,7 @@ class Migrate extends \MigrateCommand
 			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/').'/';
 		}
 
-		$content = strtr(craft()->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
+		$content = strtr(Craft::$app->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
 		$file = $path.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
@@ -246,7 +247,7 @@ class Migrate extends \MigrateCommand
 		if (isset($args[0]))
 		{
 			$plugin = $this->_validatePlugin($args[0]);
-			if (craft()->migrations->runToTop($plugin))
+			if (Craft::$app->migrations->runToTop($plugin))
 			{
 				echo "Migrated ".$plugin->getClassHandle()." to top successfully.\n";
 				return 0;
@@ -259,7 +260,7 @@ class Migrate extends \MigrateCommand
 			return 1;
 		}
 
-		if (craft()->migrations->runToTop())
+		if (Craft::$app->migrations->runToTop())
 		{
 			echo "Migrated @@@appName@@@ to top successfully.\n";
 			return 0;
@@ -352,7 +353,7 @@ class Migrate extends \MigrateCommand
 	 */
 	public function getTemplate()
 	{
-		return craft()->migrations->getTemplate();
+		return Craft::$app->migrations->getTemplate();
 	}
 
 	/**
@@ -425,7 +426,7 @@ class Migrate extends \MigrateCommand
 	 */
 	protected function getMigrationHistory($plugin = null)
 	{
-		$migrations = craft()->migrations->getMigrationHistory($plugin);
+		$migrations = Craft::$app->migrations->getMigrationHistory($plugin);
 
 		// Convert the dates to Unix timestamps
 		foreach ($migrations as &$migration)
@@ -448,7 +449,7 @@ class Migrate extends \MigrateCommand
 	 */
 	protected function getNewMigrations($plugin = null)
 	{
-		return craft()->migrations->getNewMigrations($plugin);
+		return Craft::$app->migrations->getNewMigrations($plugin);
 	}
 
 	// Private Methods
@@ -463,7 +464,7 @@ class Migrate extends \MigrateCommand
 	 */
 	private function _validatePlugin($pluginHandle)
 	{
-		$plugin = craft()->plugins->getPlugin($pluginHandle);
+		$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
 
 		if (!$plugin)
 		{

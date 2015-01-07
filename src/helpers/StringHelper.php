@@ -233,7 +233,7 @@ class StringHelper
 				362 => 'uu', 381 => 'zh'
 			);
 
-			foreach (craft()->config->get('customAsciiCharMappings') as $ascii => $char)
+			foreach (Craft::$app->config->get('customAsciiCharMappings') as $ascii => $char)
 			{
 				static::$_asciiCharMap[$ascii] = $char;
 			}
@@ -369,7 +369,7 @@ class StringHelper
 	{
 		if (!class_exists('\Markdown_Parser', false))
 		{
-			require_once craft()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+			require_once Craft::$app->path->getFrameworkPath().'vendors/markdown/markdown.php';
 		}
 
 		$md = new \Markdown_Parser();

@@ -7,6 +7,7 @@
 
 namespace craft\app\controllers;
 
+use craft\app\Craft;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -37,19 +38,19 @@ class TasksController extends BaseController
 		$this->_returnRunningTaskInfo();
 
 		// Apparently not. Is there a pending task?
-		$task = craft()->tasks->getNextPendingTask();
+		$task = Craft::$app->tasks->getNextPendingTask();
 
 		if ($task)
 		{
 			// Return info about the next pending task without stopping PHP execution
 			JsonHelper::sendJsonHeaders();
-			craft()->request->close(JsonHelper::encode($task->getInfo()));
+			Craft::$app->request->close(JsonHelper::encode($task->getInfo()));
 
 			// Start running tasks
-			craft()->tasks->runPendingTasks();
+			Craft::$app->tasks->runPendingTasks();
 		}
 
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**
@@ -65,12 +66,12 @@ class TasksController extends BaseController
 		$this->_returnRunningTaskInfo();
 
 		// No running tasks left? Check for a failed one
-		if (craft()->tasks->haveTasksFailed())
+		if (Craft::$app->tasks->haveTasksFailed())
 		{
 			$this->returnJson(array('status' => 'error'));
 		}
 
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**
@@ -84,22 +85,22 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = craft()->request->getRequiredPost('taskId');
-		$task = craft()->tasks->rerunTaskById($taskId);
+		$taskId = Craft::$app->request->getRequiredPost('taskId');
+		$task = Craft::$app->tasks->rerunTaskById($taskId);
 
-		if (!craft()->tasks->isTaskRunning())
+		if (!Craft::$app->tasks->isTaskRunning())
 		{
 			JsonHelper::sendJsonHeaders();
-			craft()->request->close(JsonHelper::encode($task->getInfo()));
+			Craft::$app->request->close(JsonHelper::encode($task->getInfo()));
 
-			craft()->tasks->runPendingTasks();
+			Craft::$app->tasks->runPendingTasks();
 		}
 		else
 		{
 			$this->returnJson($task->getInfo());
 		}
 
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**
@@ -113,10 +114,10 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = craft()->request->getRequiredPost('taskId');
-		$task = craft()->tasks->deleteTaskById($taskId);
+		$taskId = Craft::$app->request->getRequiredPost('taskId');
+		$task = Craft::$app->tasks->deleteTaskById($taskId);
 
-		craft()->end();
+		Craft::$app->end();
 	}
 
 	/**
@@ -129,7 +130,7 @@ class TasksController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$tasks = craft()->tasks->getAllTasks();
+		$tasks = Craft::$app->tasks->getAllTasks();
 		$taskInfo = array();
 
 		foreach ($tasks as $task)
@@ -150,7 +151,7 @@ class TasksController extends BaseController
 	 */
 	private function _returnRunningTaskInfo()
 	{
-		if ($task = craft()->tasks->getRunningTask())
+		if ($task = Craft::$app->tasks->getRunningTask())
 		{
 			$this->returnJson($task->getInfo());
 		}

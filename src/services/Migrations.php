@@ -22,7 +22,7 @@ use craft\app\web\Application;
 /**
  * Class Migrations service.
  *
- * An instance of the Migrations service is globally accessible in Craft via [[Application::migrations `craft()->migrations`]].
+ * An instance of the Migrations service is globally accessible in Craft via [[Application::migrations `Craft::$app->migrations`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -67,7 +67,7 @@ class Migrations extends Component
 	public function runToTop($plugin = null)
 	{
 		// This might take a while
-		craft()->config->maxPowerCaptain();
+		Craft::$app->config->maxPowerCaptain();
 
 		if (($migrations = $this->getNewMigrations($plugin)) === array())
 		{
@@ -102,7 +102,7 @@ class Migrations extends Component
 		foreach ($migrations as $migration)
 		{
 			// Refresh the DB cache
-			craft()->db->getSchema()->refresh();
+			Craft::$app->db->getSchema()->refresh();
 
 			if ($this->migrateUp($migration, $plugin) === false)
 			{
@@ -116,7 +116,7 @@ class Migrations extends Component
 				}
 
 				// Refresh the DB cache
-				craft()->db->getSchema()->refresh();
+				Craft::$app->db->getSchema()->refresh();
 
 				return false;
 			}
@@ -132,7 +132,7 @@ class Migrations extends Component
 		}
 
 		// Refresh the DB cache
-		craft()->db->getSchema()->refresh();
+		Craft::$app->db->getSchema()->refresh();
 
 		return true;
 	}
@@ -166,9 +166,9 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
+				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
 
-				craft()->db->createCommand()->insert($this->_migrationTable, array(
+				Craft::$app->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginInfo['id']
@@ -176,7 +176,7 @@ class Migrations extends Component
 			}
 			else
 			{
-				craft()->db->createCommand()->insert($this->_migrationTable, array(
+				Craft::$app->db->createCommand()->insert($this->_migrationTable, array(
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb()
 				));
@@ -215,7 +215,7 @@ class Migrations extends Component
 
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
-		$migration->setDbConnection(craft()->db);
+		$migration->setDbConnection(Craft::$app->db);
 
 		return $migration;
 	}
@@ -334,11 +334,11 @@ class Migrations extends Component
 	{
 		if ($plugin)
 		{
-			$path = craft()->path->getMigrationsPath($plugin->getClassHandle());
+			$path = Craft::$app->path->getMigrationsPath($plugin->getClassHandle());
 		}
 		else
 		{
-			$path = craft()->path->getMigrationsPath();
+			$path = Craft::$app->path->getMigrationsPath();
 		}
 
 		return $path;
@@ -364,7 +364,7 @@ class Migrations extends Component
 	 */
 	private function _createMigrationQuery($plugin = null)
 	{
-		$query = craft()->db->createCommand()
+		$query = Craft::$app->db->createCommand()
 			->select('version, applyTime')
 			->from($this->_migrationTable)
 			->order('version desc');
@@ -373,7 +373,7 @@ class Migrations extends Component
 		{
 			if ($plugin != 'all')
 			{
-				$pluginInfo = craft()->plugins->getPluginInfo($plugin);
+				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
 				$query->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']));
 			}
 		}

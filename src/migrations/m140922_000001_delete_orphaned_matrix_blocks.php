@@ -7,6 +7,7 @@
 
 namespace craft\app\migrations;
 
+use craft\app\Craft;
 use craft\app\db\BaseMigration;
 use craft\app\enums\ElementType;
 
@@ -23,7 +24,7 @@ class m140922_000001_delete_orphaned_matrix_blocks extends BaseMigration
 	public function safeUp()
 	{
 		// Get the IDs of any orphaned Matrix block rows in craft_elements
-		$ids = craft()->db->createCommand()
+		$ids = Craft::$app->db->createCommand()
 			->select('e.id')
 			->from('elements e')
 			->leftJoin('matrixblocks m', 'm.id = e.id')

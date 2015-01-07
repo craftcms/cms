@@ -39,7 +39,7 @@ class TagsController extends BaseController
 	{
 		$this->requireAdmin();
 
-		$tagGroups = craft()->tags->getAllTagGroups();
+		$tagGroups = Craft::$app->tags->getAllTagGroups();
 
 		$this->renderTemplate('settings/tags/index', array(
 			'tagGroups' => $tagGroups
@@ -68,7 +68,7 @@ class TagsController extends BaseController
 		{
 			if (empty($variables['tagGroup']))
 			{
-				$variables['tagGroup'] = craft()->tags->getTagGroupById($variables['tagGroupId']);
+				$variables['tagGroup'] = Craft::$app->tags->getTagGroupById($variables['tagGroupId']);
 
 				if (!$variables['tagGroup'])
 				{
@@ -109,28 +109,28 @@ class TagsController extends BaseController
 		$tagGroup = new TagGroupModel();
 
 		// Set the simple stuff
-		$tagGroup->id     = craft()->request->getPost('tagGroupId');
-		$tagGroup->name   = craft()->request->getPost('name');
-		$tagGroup->handle = craft()->request->getPost('handle');
+		$tagGroup->id     = Craft::$app->request->getPost('tagGroupId');
+		$tagGroup->name   = Craft::$app->request->getPost('name');
+		$tagGroup->handle = Craft::$app->request->getPost('handle');
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost();
+		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Tag;
 		$tagGroup->setFieldLayout($fieldLayout);
 
 		// Save it
-		if (craft()->tags->saveTagGroup($tagGroup))
+		if (Craft::$app->tags->saveTagGroup($tagGroup))
 		{
-			craft()->getSession()->setNotice(Craft::t('Tag group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Tag group saved.'));
 			$this->redirectToPostedUrl($tagGroup);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save the tag group.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save the tag group.'));
 		}
 
 		// Send the tag group back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'tagGroup' => $tagGroup
 		));
 	}
@@ -146,9 +146,9 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$sectionId = craft()->request->getRequiredPost('id');
+		$sectionId = Craft::$app->request->getRequiredPost('id');
 
-		craft()->tags->deleteTagGroupById($sectionId);
+		Craft::$app->tags->deleteTagGroupById($sectionId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -162,9 +162,9 @@ class TagsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$search = craft()->request->getPost('search');
-		$tagGroupId = craft()->request->getPost('tagGroupId');
-		$excludeIds = craft()->request->getPost('excludeIds', array());
+		$search = Craft::$app->request->getPost('search');
+		$tagGroupId = Craft::$app->request->getPost('tagGroupId');
+		$excludeIds = Craft::$app->request->getPost('excludeIds', array());
 
 		$notIds = array('and');
 
@@ -173,7 +173,7 @@ class TagsController extends BaseController
 			$notIds[] = 'not '.$id;
 		}
 
-		$criteria = craft()->elements->getCriteria(ElementType::Tag);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Tag);
 		$criteria->groupId = $tagGroupId;
 		$criteria->title   = DbHelper::escapeParam($search).'*';
 		$criteria->id      = $notIds;
@@ -227,10 +227,10 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$tag = new TagModel();
-		$tag->groupId = craft()->request->getRequiredPost('groupId');
-		$tag->getContent()->title = craft()->request->getRequiredPost('title');
+		$tag->groupId = Craft::$app->request->getRequiredPost('groupId');
+		$tag->getContent()->title = Craft::$app->request->getRequiredPost('title');
 
-		if (craft()->tags->saveTag($tag))
+		if (Craft::$app->tags->saveTag($tag))
 		{
 			$this->returnJson(array(
 				'success' => true,

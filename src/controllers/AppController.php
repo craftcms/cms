@@ -39,12 +39,12 @@ class AppController extends BaseController
 	{
 		$this->requirePermission('performUpdates');
 
-		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
-		craft()->updates->getUpdates($forceRefresh);
+		$forceRefresh = (bool) Craft::$app->request->getPost('forceRefresh');
+		Craft::$app->updates->getUpdates($forceRefresh);
 
 		$this->returnJson(array(
-			'total'    => craft()->updates->getTotalAvailableUpdates(),
-			'critical' => craft()->updates->isCriticalUpdateAvailable()
+			'total'    => Craft::$app->updates->getTotalAvailableUpdates(),
+			'critical' => Craft::$app->updates->isCriticalUpdateAvailable()
 		));
 	}
 
@@ -58,7 +58,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$path = craft()->request->getRequiredPost('path');
+		$path = Craft::$app->request->getRequiredPost('path');
 
 		// Fetch 'em and send 'em
 		$alerts = CpHelper::getAlerts($path, true);
@@ -75,13 +75,13 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$message = craft()->request->getRequiredPost('message');
-		$user = craft()->getUser()->getIdentity();
+		$message = Craft::$app->request->getRequiredPost('message');
+		$user = Craft::$app->getUser()->getIdentity();
 
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 		$tomorrow = $currentTime->add(new DateInterval('P1D'));
 
-		if (craft()->users->shunMessageForUser($user->id, $message, $tomorrow))
+		if (Craft::$app->users->shunMessageForUser($user->id, $message, $tomorrow))
 		{
 			$this->returnJson(array(
 				'success' => true
@@ -104,7 +104,7 @@ class AppController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$response = craft()->et->transferLicenseToCurrentDomain();
+		$response = Craft::$app->et->transferLicenseToCurrentDomain();
 
 		if ($response === true)
 		{
@@ -128,7 +128,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$etResponse = craft()->et->fetchEditionInfo();
+		$etResponse = Craft::$app->et->fetchEditionInfo();
 
 		if (!$etResponse)
 		{
@@ -152,12 +152,12 @@ class AppController extends BaseController
 		foreach ($etResponse->data as $edition => $info)
 		{
 			$editions[$edition]['price']          = $info['price'];
-			$editions[$edition]['formattedPrice'] = craft()->numberFormatter->formatCurrency($info['price'], 'USD', true);
+			$editions[$edition]['formattedPrice'] = Craft::$app->numberFormatter->formatCurrency($info['price'], 'USD', true);
 
 			if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
 			{
 				$editions[$edition]['salePrice']          = $info['salePrice'];
-				$editions[$edition]['formattedSalePrice'] = craft()->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
+				$editions[$edition]['formattedSalePrice'] = Craft::$app->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
 			}
 			else
 			{
@@ -165,9 +165,9 @@ class AppController extends BaseController
 			}
 		}
 
-		$canTestEditions = craft()->canTestEditions();
+		$canTestEditions = Craft::$app->canTestEditions();
 
-		$modalHtml = craft()->templates->render('_upgrademodal', array(
+		$modalHtml = Craft::$app->templates->render('_upgrademodal', array(
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions
@@ -194,12 +194,12 @@ class AppController extends BaseController
 		$this->requireAdmin();
 
 		$model = new UpgradePurchaseModel(array(
-			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
-			'edition'       => craft()->request->getRequiredPost('edition'),
-			'expectedPrice' => craft()->request->getRequiredPost('expectedPrice'),
+			'ccTokenId'     => Craft::$app->request->getRequiredPost('ccTokenId'),
+			'edition'       => Craft::$app->request->getRequiredPost('edition'),
+			'expectedPrice' => Craft::$app->request->getRequiredPost('expectedPrice'),
 		));
 
-		if (craft()->et->purchaseUpgrade($model))
+		if (Craft::$app->et->purchaseUpgrade($model))
 		{
 			$this->returnJson(array(
 				'success' => true,
@@ -226,13 +226,13 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		if (!craft()->canTestEditions())
+		if (!Craft::$app->canTestEditions())
 		{
 			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
 		}
 
-		$edition = craft()->request->getRequiredPost('edition');
-		craft()->setEdition($edition);
+		$edition = Craft::$app->request->getRequiredPost('edition');
+		Craft::$app->setEdition($edition);
 
 		$this->returnJson(array(
 			'success' => true
@@ -249,10 +249,10 @@ class AppController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (craft()->hasWrongEdition())
+		if (Craft::$app->hasWrongEdition())
 		{
-			$licensedEdition = craft()->getLicensedEdition();
-			$success = craft()->setEdition($licensedEdition);
+			$licensedEdition = Craft::$app->getLicensedEdition();
+			$success = Craft::$app->setEdition($licensedEdition);
 		}
 		else
 		{

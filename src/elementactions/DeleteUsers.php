@@ -88,7 +88,7 @@ class DeleteUsers extends BaseElementAction
 })();
 EOT;
 
-		craft()->templates->includeJs($js);
+		Craft::$app->templates->includeJs($js);
 	}
 
 	/**
@@ -113,7 +113,7 @@ EOT;
 
 		if ($transferContentToId)
 		{
-			$transferContentTo = craft()->users->getUserById($transferContentToId);
+			$transferContentTo = Craft::$app->users->getUserById($transferContentToId);
 
 			if (!$transferContentTo)
 			{
@@ -130,7 +130,7 @@ EOT;
 		{
 			if (!in_array($user->id, $undeletableIds))
 			{
-				craft()->users->deleteUser($user, $transferContentTo);
+				Craft::$app->users->deleteUser($user, $transferContentTo);
 			}
 		}
 
@@ -164,17 +164,17 @@ EOT;
 	 */
 	private function _getUndeletableUserIds()
 	{
-		if (!craft()->getUser()->getIsAdmin())
+		if (!Craft::$app->getUser()->getIsAdmin())
 		{
 			// Only admins can delete other admins
-			return craft()->elements->getCriteria(ElementType::User, array(
+			return Craft::$app->elements->getCriteria(ElementType::User, array(
 				'admin' => true
 			))->ids();
 		}
 		else
 		{
 			// Can't delete your own account from here
-			return array(craft()->getUser()->getIdentity()->id);
+			return array(Craft::$app->getUser()->getIdentity()->id);
 		}
 	}
 }

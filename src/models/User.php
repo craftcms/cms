@@ -55,7 +55,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public static function findIdentity($id)
 	{
-		$user = craft()->users->getUserById($id);
+		$user = Craft::$app->users->getUserById($id);
 
 		if ($user->status == UserStatus::Active)
 		{
@@ -82,7 +82,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function __toString()
 	{
-		if (craft()->config->get('useEmailAsUsername'))
+		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
 			return $this->email;
 		}
@@ -146,7 +146,7 @@ class User extends BaseElementModel implements IdentityInterface
 
 			case UserStatus::Locked:
 			{
-				if (craft()->config->get('cooldownDuration'))
+				if (Craft::$app->config->get('cooldownDuration'))
 				{
 					$this->authError = AuthError::AccountCooldown;
 				}
@@ -160,9 +160,9 @@ class User extends BaseElementModel implements IdentityInterface
 			case UserStatus::Active:
 			{
 				// Validate the password
-				if (!craft()->getSecurity()->validatePassword($password, $this->password))
+				if (!Craft::$app->getSecurity()->validatePassword($password, $this->password))
 				{
-					craft()->users->handleInvalidLogin($this);
+					Craft::$app->users->handleInvalidLogin($this);
 
 					// Was that one bad password too many?
 					if ($this->status == UserStatus::Locked)
@@ -184,7 +184,7 @@ class User extends BaseElementModel implements IdentityInterface
 					return false;
 				}
 
-				if (craft()->request->isCpRequest())
+				if (Craft::$app->request->isCpRequest())
 				{
 					if (!$this->can('accessCp'))
 					{
@@ -192,7 +192,7 @@ class User extends BaseElementModel implements IdentityInterface
 						return false;
 					}
 
-					if (!craft()->isSystemOn() && !$this->can('accessCpWhenSystemIsOff'))
+					if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff'))
 					{
 						$this->authError = AuthError::NoCpOfflineAccess;
 						return false;
@@ -227,9 +227,9 @@ class User extends BaseElementModel implements IdentityInterface
 	{
 		if (!isset($this->_groups))
 		{
-			if (craft()->getEdition() == Craft::Pro)
+			if (Craft::$app->getEdition() == Craft::Pro)
 			{
-				$this->_groups = craft()->userGroups->getGroupsByUserId($this->id);
+				$this->_groups = Craft::$app->userGroups->getGroupsByUserId($this->id);
 			}
 			else
 			{
@@ -263,7 +263,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function isInGroup($group)
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			if (is_object($group) && $group instanceof UserGroupModel)
 			{
@@ -418,7 +418,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function isEditable()
 	{
-		return craft()->getUser()->checkPermission('editUsers');
+		return Craft::$app->getUser()->checkPermission('editUsers');
 	}
 
 	/**
@@ -430,7 +430,7 @@ class User extends BaseElementModel implements IdentityInterface
 	{
 		if ($this->id)
 		{
-			$currentUser = craft()->getUser()->getIdentity();
+			$currentUser = Craft::$app->getUser()->getIdentity();
 
 			if ($currentUser)
 			{
@@ -450,7 +450,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function can($permission)
 	{
-		if (craft()->getEdition() == Craft::Pro)
+		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			if ($this->admin || $this->client)
 			{
@@ -458,7 +458,7 @@ class User extends BaseElementModel implements IdentityInterface
 			}
 			else if ($this->id)
 			{
-				return craft()->userPermissions->doesUserHavePermission($this->id, $permission);
+				return Craft::$app->userPermissions->doesUserHavePermission($this->id, $permission);
 			}
 			else
 			{
@@ -482,7 +482,7 @@ class User extends BaseElementModel implements IdentityInterface
 	{
 		if ($this->id)
 		{
-			return craft()->users->hasUserShunnedMessage($this->id, $message);
+			return Craft::$app->users->hasUserShunnedMessage($this->id, $message);
 		}
 		else
 		{
@@ -500,7 +500,7 @@ class User extends BaseElementModel implements IdentityInterface
 		if ($this->status == UserStatus::Locked)
 		{
 			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(craft()->config->get('cooldownDuration')));
+			$cooldownEnd->add(new DateInterval(Craft::$app->config->get('cooldownDuration')));
 
 			return $cooldownEnd;
 		}
@@ -536,11 +536,11 @@ class User extends BaseElementModel implements IdentityInterface
 		{
 			return UrlHelper::getCpUrl('myaccount');
 		}
-		else if (craft()->getEdition() == Craft::Client && $this->client)
+		else if (Craft::$app->getEdition() == Craft::Client && $this->client)
 		{
 			return UrlHelper::getCpUrl('clientaccount');
 		}
-		else if (craft()->getEdition() == Craft::Pro)
+		else if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			return UrlHelper::getCpUrl('users/'.$this->id);
 		}
@@ -564,13 +564,13 @@ class User extends BaseElementModel implements IdentityInterface
 		// Is the user in cooldown mode, and are they past their window?
 		if ($user->status == UserStatus::Locked)
 		{
-			$cooldownDuration = craft()->config->get('cooldownDuration');
+			$cooldownDuration = Craft::$app->config->get('cooldownDuration');
 
 			if ($cooldownDuration)
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					craft()->users->activateUser($user);
+					Craft::$app->users->activateUser($user);
 				}
 			}
 		}
@@ -610,7 +610,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	protected function defineAttributes()
 	{
-		$requireUsername = !craft()->config->get('useEmailAsUsername');
+		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
 
 		return array_merge(parent::defineAttributes(), [
 			'authKey'                    => AttributeType::String,

@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\assetsourcetypes\BaseAssetSourceType;
+use craft\app\Craft;
 use craft\app\models\AssetFile                      as AssetFileModel;
 
 /**
@@ -38,7 +39,7 @@ class AssetsHelper
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$fileName = uniqid('assets', true).'.'.$extension;
 
-		return IOHelper::createFile(craft()->path->getTempPath().$fileName)->getRealPath();
+		return IOHelper::createFile(Craft::$app->path->getTempPath().$fileName)->getRealPath();
 	}
 
 	/**
@@ -102,7 +103,7 @@ class AssetsHelper
 		}
 
 
-		$separator = craft()->config->get('filenameWordSeparator');
+		$separator = Craft::$app->config->get('filenameWordSeparator');
 
 		if (!is_string($separator))
 		{

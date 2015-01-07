@@ -29,6 +29,6 @@ class RequireLogin_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write("\Craft\craft()->getController()->requireLogin();\n");
+		    ->write("\Craft\Craft::$app->getController()->requireLogin();\n");
 	}
 }

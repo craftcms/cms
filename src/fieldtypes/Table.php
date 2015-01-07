@@ -96,16 +96,16 @@ class Table extends BaseFieldType
 			),
 		);
 
-		craft()->templates->includeJsResource('js/TableFieldSettings.js');
-		craft()->templates->includeJs('new Craft.TableFieldSettings(' .
-			'"'.craft()->templates->namespaceInputName('columns').'", ' .
-			'"'.craft()->templates->namespaceInputName('defaults').'", ' .
+		Craft::$app->templates->includeJsResource('js/TableFieldSettings.js');
+		Craft::$app->templates->includeJs('new Craft.TableFieldSettings(' .
+			'"'.Craft::$app->templates->namespaceInputName('columns').'", ' .
+			'"'.Craft::$app->templates->namespaceInputName('defaults').'", ' .
 			JsonHelper::encode($columns).', ' .
 			JsonHelper::encode($defaults).', ' .
 			JsonHelper::encode($columnSettings) .
 		');');
 
-		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+		$columnsField = Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
 				'label'        => Craft::t('Table Columns'),
 				'instructions' => Craft::t('Define the columns your table should have.'),
@@ -118,7 +118,7 @@ class Table extends BaseFieldType
 			]
 		]);
 
-		$defaultsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', [
+		$defaultsField = Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
 				'label'        => Craft::t('Default Values'),
 				'instructions' => Craft::t('Define the default values for the field.'),
@@ -263,9 +263,9 @@ class Table extends BaseFieldType
 				}
 			}
 
-			$id = craft()->templates->formatInputId($name);
+			$id = Craft::$app->templates->formatInputId($name);
 
-			return craft()->templates->render('_includes/forms/editableTable', array(
+			return Craft::$app->templates->render('_includes/forms/editableTable', array(
 				'id'     => $id,
 				'name'   => $name,
 				'cols'   => $columns,

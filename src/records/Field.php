@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 
@@ -140,9 +141,10 @@ class Field extends BaseRecord
 	{
 		$attributeConfigs = parent::getAttributeConfigs();
 
+		// TODO: MySQL specific.
 		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column
 		// name limit).
-		$attributeConfigs['handle']['maxLength'] = 64 - strlen(craft()->content->fieldColumnPrefix);
+		$attributeConfigs['handle']['maxLength'] = 64 - strlen(Craft::$app->content->fieldColumnPrefix);
 
 		return $attributeConfigs;
 	}

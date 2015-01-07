@@ -21,7 +21,7 @@ use craft\app\web\Application;
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the Entries service is globally accessible in Craft via [[Application::entries `craft()->entries`]].
+ * An instance of the Entries service is globally accessible in Craft via [[Application::entries `Craft::$app->entries`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -35,18 +35,18 @@ class Entries extends Component
 	 * Returns an entry by its ID.
 	 *
 	 * ```php
-	 * $entry = craft()->entries->getEntryById($entryId);
+	 * $entry = Craft::$app->entries->getEntryById($entryId);
 	 * ```
 	 *
 	 * @param int    $entryId  The entry’s ID.
 	 * @param string $localeId The locale to fetch the entry in.
-	 *                         Defaults to [[Application::getLanguage() `craft()->getLanguage()`]].
+	 *                         Defaults to [[Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 *
 	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
-		return craft()->elements->getElementById($entryId, ElementType::Entry, $localeId);
+		return Craft::$app->elements->getElementById($entryId, ElementType::Entry, $localeId);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Entries extends Component
 	 *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
 	 * ));
 	 *
-	 * $success = craft()->entries->saveEntry($entry);
+	 * $success = Craft::$app->entries->saveEntry($entry);
 	 *
 	 * if (!$success)
 	 * {
@@ -120,7 +120,7 @@ class Entries extends Component
 		}
 
 		// Get the section
-		$section = craft()->sections->getSectionById($entry->sectionId);
+		$section = Craft::$app->sections->getSectionById($entry->sectionId);
 
 		if (!$section)
 		{
@@ -169,10 +169,10 @@ class Entries extends Component
 
 		if (!$entryType->hasTitleField)
 		{
-			$entry->getContent()->title = craft()->templates->renderObjectTemplate($entryType->titleFormat, $entry);
+			$entry->getContent()->title = Craft::$app->templates->renderObjectTemplate($entryType->titleFormat, $entry);
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -188,7 +188,7 @@ class Entries extends Component
 			if ($event->performAction)
 			{
 				// Save the element
-				$success = craft()->elements->saveElement($entry);
+				$success = Craft::$app->elements->saveElement($entry);
 
 				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
 				if (!$success)
@@ -236,22 +236,22 @@ class Entries extends Component
 					{
 						if (!$entry->newParentId)
 						{
-							craft()->structures->appendToRoot($section->structureId, $entry);
+							Craft::$app->structures->appendToRoot($section->structureId, $entry);
 						}
 						else
 						{
-							craft()->structures->append($section->structureId, $entry, $parentEntry);
+							Craft::$app->structures->append($section->structureId, $entry, $parentEntry);
 						}
 					}
 
 					// Update the entry's descendants, who may be using this entry's URI in their own URIs
-					craft()->elements->updateDescendantSlugsAndUris($entry);
+					Craft::$app->elements->updateDescendantSlugsAndUris($entry);
 				}
 
 				// Save a new version
-				if (craft()->getEdition() >= Craft::Client && $section->enableVersioning)
+				if (Craft::$app->getEdition() >= Craft::Client && $section->enableVersioning)
 				{
-					craft()->entryRevisions->saveVersion($entry);
+					Craft::$app->entryRevisions->saveVersion($entry);
 				}
 			}
 			else
@@ -303,7 +303,7 @@ class Entries extends Component
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
 
 		try
 		{
@@ -330,7 +330,7 @@ class Entries extends Component
 
 					foreach ($children as $child)
 					{
-						craft()->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
+						Craft::$app->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
 					}
 				}
 
@@ -338,7 +338,7 @@ class Entries extends Component
 			}
 
 			// Delete 'em
-			$success = craft()->elements->deleteElementById($entryIds);
+			$success = Craft::$app->elements->deleteElementById($entryIds);
 
 			if ($transaction !== null)
 			{
@@ -387,7 +387,7 @@ class Entries extends Component
 			return false;
 		}
 
-		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 		$criteria->id = $entryId;
 		$criteria->limit = null;
 		$criteria->status = null;
@@ -498,7 +498,7 @@ class Entries extends Component
 		}
 
 		// Is the parentId set to a different entry ID than its previous parent?
-		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 		$criteria->ancestorOf = $entry;
 		$criteria->ancestorDist = 1;
 		$criteria->status = null;

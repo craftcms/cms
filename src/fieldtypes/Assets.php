@@ -79,7 +79,7 @@ class Assets extends BaseElementFieldType
 			}
 		}
 
-		foreach (craft()->assetSources->getAllSources() as $source)
+		foreach (Craft::$app->assetSources->getAllSources() as $source)
 		{
 			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
 		}
@@ -91,10 +91,10 @@ class Assets extends BaseElementFieldType
 			$fileKindOptions[] = array('value' => $value, 'label' => $kind['label']);
 		}
 
-		$namespace = craft()->templates->getNamespace();
+		$namespace = Craft::$app->templates->getNamespace();
 		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
-		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Assets/settings', array(
 			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
 			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
@@ -159,7 +159,7 @@ class Assets extends BaseElementFieldType
 					{
 						$tempPath = AssetsHelper::getTempFilePath($file->getName());
 						move_uploaded_file($file->getTempName(), $tempPath);
-						$response = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
+						$response = Craft::$app->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 						$fileIds[] = $response->getDataItem('fileId');
 						IOHelper::deleteFile($tempPath, true);
 					}
@@ -221,7 +221,7 @@ class Assets extends BaseElementFieldType
 					'sourceId' => ':empty:'
 				);
 
-				$filesInTempSource = craft()->elements->getCriteria(ElementType::Asset, $criteria)->find();
+				$filesInTempSource = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria)->find();
 				$filesToMove = array();
 
 				foreach ($filesInTempSource as $file)
@@ -242,7 +242,7 @@ class Assets extends BaseElementFieldType
 			{
 				// Resolve all conflicts by keeping both
 				$actions = array_fill(0, count($filesToMove), AssetConflictResolution::KeepBoth);
-				craft()->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
+				Craft::$app->assets->moveFiles($filesToMove, $targetFolderId, '', $actions);
 			}
 		}
 
@@ -274,7 +274,7 @@ class Assets extends BaseElementFieldType
 
 			foreach ($value as $fileId)
 			{
-				$file = craft()->assets->getFileById($fileId);
+				$file = Craft::$app->assets->getFileById($fileId);
 
 				if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)), $allowedExtensions))
 				{
@@ -353,7 +353,7 @@ class Assets extends BaseElementFieldType
 		if ($settings->useSingleFolder)
 		{
 			$folderId = $this->_determineUploadFolderId($settings);
-			craft()->getSession()->authorize('uploadToAssetSource:'.$folderId);
+			Craft::$app->getSession()->authorize('uploadToAssetSource:'.$folderId);
 			$folderPath = 'folder:'.$folderId.':single';
 
 			return array($folderPath);
@@ -412,7 +412,7 @@ class Assets extends BaseElementFieldType
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
-		$folder = craft()->assets->findFolder(array(
+		$folder = Craft::$app->assets->findFolder(array(
 			'sourceId' => $sourceId,
 			'parentId' => ':empty:'
 		));
@@ -425,7 +425,7 @@ class Assets extends BaseElementFieldType
 
 		// Prepare the path by parsing tokens and normalizing slashes.
 		$subpath = trim($subpath, '/');
-		$subpath = craft()->templates->renderObjectTemplate($subpath, $this->element);
+		$subpath = Craft::$app->templates->renderObjectTemplate($subpath, $this->element);
 		$pathParts = explode('/', $subpath);
 
 		foreach ($pathParts as &$part)
@@ -448,7 +448,7 @@ class Assets extends BaseElementFieldType
 		else
 		{
 			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path.$subpath);
-			$existingFolder = craft()->assets->findFolder($folderCriteria);
+			$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
 		}
 
 
@@ -468,12 +468,12 @@ class Assets extends BaseElementFieldType
 				}
 
 				$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
-				$existingFolder = craft()->assets->findFolder($folderCriteria);
+				$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
 
 				if (!$existingFolder)
 				{
 					$folderId = $this->_createSubFolder($currentFolder, $part);
-					$existingFolder = craft()->assets->getFolderById($folderId);
+					$existingFolder = Craft::$app->assets->getFolderById($folderId);
 				}
 
 				$currentFolder = $existingFolder;
@@ -497,7 +497,7 @@ class Assets extends BaseElementFieldType
 	 */
 	private function _createSubFolder($currentFolder, $folderName)
 	{
-		$response = craft()->assets->createFolder($currentFolder->id, $folderName);
+		$response = Craft::$app->assets->createFolder($currentFolder->id, $folderName);
 
 		if ($response->isError() || $response->isConflict())
 		{
@@ -510,7 +510,7 @@ class Assets extends BaseElementFieldType
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
 				)
 			);
-			$folderId = craft()->assets->storeFolder($newFolder);
+			$folderId = Craft::$app->assets->storeFolder($newFolder);
 
 			return $folderId;
 		}
@@ -577,12 +577,12 @@ class Assets extends BaseElementFieldType
 		else
 		{
 			// New element, so we default to User's upload folder for this field
-			$userModel = craft()->getUser()->getIdentity();
+			$userModel = Craft::$app->getUser()->getIdentity();
 
-			$userFolder = craft()->assets->getUserFolder($userModel);
+			$userFolder = Craft::$app->assets->getUserFolder($userModel);
 
 			$folderName = 'field_'.$this->model->id;
-			$elementFolder = craft()->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+			$elementFolder = Craft::$app->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
 
 			if (!$elementFolder)
 			{
@@ -593,7 +593,7 @@ class Assets extends BaseElementFieldType
 				$folderId = $elementFolder->id;
 			}
 
-			IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+			IOHelper::ensureFolderExists(Craft::$app->path->getAssetsTempSourcePath().$folderName);
 		}
 
 		return $folderId;

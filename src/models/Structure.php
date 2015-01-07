@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
 /**
@@ -27,7 +28,7 @@ class Structure extends BaseModel
 	 */
 	public function isSortable()
 	{
-		return craft()->getSession()->checkAuthorization('editStructure:'.$this->id);
+		return Craft::$app->getSession()->checkAuthorization('editStructure:'.$this->id);
 	}
 
 	// Protected Methods

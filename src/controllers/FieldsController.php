@@ -52,16 +52,16 @@ class FieldsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$group = new FieldGroupModel();
-		$group->id = craft()->request->getPost('id');
-		$group->name = craft()->request->getRequiredPost('name');
+		$group->id = Craft::$app->request->getPost('id');
+		$group->name = Craft::$app->request->getRequiredPost('name');
 
 		$isNewGroup = empty($group->id);
 
-		if (craft()->fields->saveGroup($group))
+		if (Craft::$app->fields->saveGroup($group))
 		{
 			if ($isNewGroup)
 			{
-				craft()->getSession()->setNotice(Craft::t('Group added.'));
+				Craft::$app->getSession()->setNotice(Craft::t('Group added.'));
 			}
 
 			$this->returnJson(array(
@@ -87,10 +87,10 @@ class FieldsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = craft()->request->getRequiredPost('id');
-		$success = craft()->fields->deleteGroupById($groupId);
+		$groupId = Craft::$app->request->getRequiredPost('id');
+		$success = Craft::$app->fields->deleteGroupById($groupId);
 
-		craft()->getSession()->setNotice(Craft::t('Group deleted.'));
+		Craft::$app->getSession()->setNotice(Craft::t('Group deleted.'));
 
 		$this->returnJson(array(
 			'success' => $success,
@@ -111,33 +111,33 @@ class FieldsController extends BaseController
 
 		$field = new FieldModel();
 
-		$field->id           = craft()->request->getPost('fieldId');
-		$field->groupId      = craft()->request->getRequiredPost('group');
-		$field->name         = craft()->request->getPost('name');
-		$field->handle       = craft()->request->getPost('handle');
-		$field->instructions = craft()->request->getPost('instructions');
-		$field->translatable = (bool) craft()->request->getPost('translatable');
+		$field->id           = Craft::$app->request->getPost('fieldId');
+		$field->groupId      = Craft::$app->request->getRequiredPost('group');
+		$field->name         = Craft::$app->request->getPost('name');
+		$field->handle       = Craft::$app->request->getPost('handle');
+		$field->instructions = Craft::$app->request->getPost('instructions');
+		$field->translatable = (bool) Craft::$app->request->getPost('translatable');
 
-		$field->type = craft()->request->getRequiredPost('type');
+		$field->type = Craft::$app->request->getRequiredPost('type');
 
-		$typeSettings = craft()->request->getPost('types');
+		$typeSettings = Craft::$app->request->getPost('types');
 		if (isset($typeSettings[$field->type]))
 		{
 			$field->settings = $typeSettings[$field->type];
 		}
 
-		if (craft()->fields->saveField($field))
+		if (Craft::$app->fields->saveField($field))
 		{
-			craft()->getSession()->setNotice(Craft::t('Field saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('Field saved.'));
 			$this->redirectToPostedUrl($field);
 		}
 		else
 		{
-			craft()->getSession()->setError(Craft::t('Couldn’t save field.'));
+			Craft::$app->getSession()->setError(Craft::t('Couldn’t save field.'));
 		}
 
 		// Send the field back to the template
-		craft()->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables(array(
 			'field' => $field
 		));
 	}
@@ -152,8 +152,8 @@ class FieldsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$fieldId = craft()->request->getRequiredPost('id');
-		$success = craft()->fields->deleteFieldById($fieldId);
+		$fieldId = Craft::$app->request->getRequiredPost('id');
+		$success = Craft::$app->fields->deleteFieldById($fieldId);
 		$this->returnJson(array('success' => $success));
 	}
 }

@@ -68,7 +68,7 @@ class Date extends BaseFieldType
 		$options = array(15, 30, 60);
 		$options = array_combine($options, $options);
 
-		return craft()->templates->render('_components/fieldtypes/Date/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Date/settings', array(
 			'options' => array(
 				array(
 					'label' => Craft::t('Show date'),
@@ -100,7 +100,7 @@ class Date extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 		$variables = array(
-			'id'              => craft()->templates->formatInputId($name),
+			'id'              => Craft::$app->templates->formatInputId($name),
 			'name'            => $name,
 			'value'           => $value,
 			'minuteIncrement' => $this->getSettings()->minuteIncrement
@@ -116,12 +116,12 @@ class Date extends BaseFieldType
 
 		if ($this->getSettings()->showDate)
 		{
-			$input .= craft()->templates->render('_includes/forms/date', $variables);
+			$input .= Craft::$app->templates->render('_includes/forms/date', $variables);
 		}
 
 		if ($this->getSettings()->showTime)
 		{
-			$input .= ' '.craft()->templates->render('_includes/forms/time', $variables);
+			$input .= ' '.Craft::$app->templates->render('_includes/forms/time', $variables);
 		}
 
 		return $input;
@@ -139,7 +139,7 @@ class Date extends BaseFieldType
 		if ($value)
 		{
 			// Set it to the system timezone
-			$timezone = craft()->getTimeZone();
+			$timezone = Craft::$app->getTimeZone();
 			$value->setTimezone(new \DateTimeZone($timezone));
 
 			return $value;
@@ -159,7 +159,7 @@ class Date extends BaseFieldType
 		if ($value !== null)
 		{
 			$handle = $this->model->handle;
-			$query->andWhere(DbHelper::parseDateParam('content.'.craft()->content->fieldColumnPrefix.$handle, $value, $query->params));
+			$query->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->content->fieldColumnPrefix.$handle, $value, $query->params));
 		}
 	}
 

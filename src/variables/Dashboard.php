@@ -27,7 +27,7 @@ class Dashboard
 	 */
 	public function getAllWidgetTypes()
 	{
-		$widgetTypes = craft()->dashboard->getAllWidgetTypes();
+		$widgetTypes = Craft::$app->dashboard->getAllWidgetTypes();
 		return WidgetType::populateVariables($widgetTypes);
 	}
 
@@ -40,7 +40,7 @@ class Dashboard
 	 */
 	public function getWidgetType($class)
 	{
-		$widgetType = craft()->dashboard->getWidgetType($class);
+		$widgetType = Craft::$app->dashboard->getWidgetType($class);
 
 		if ($widgetType)
 		{
@@ -57,7 +57,7 @@ class Dashboard
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		$widgetType = craft()->dashboard->populateWidgetType($widget);
+		$widgetType = Craft::$app->dashboard->populateWidgetType($widget);
 		if ($widgetType)
 		{
 			return new WidgetType($widgetType);
@@ -71,7 +71,7 @@ class Dashboard
 	 */
 	public function getUserWidgets()
 	{
-		return craft()->dashboard->getUserWidgets();
+		return Craft::$app->dashboard->getUserWidgets();
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Dashboard
 	 */
 	public function getUserWidgetById($id)
 	{
-		return craft()->dashboard->getUserWidgetById($id);
+		return Craft::$app->dashboard->getUserWidgetById($id);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Dashboard
 	public function userWidgetIds()
 	{
 		$widgetIds = array();
-		$widgets = craft()->dashboard->getUserWidgets();
+		$widgets = Craft::$app->dashboard->getUserWidgets();
 
 		foreach ($widgets as $widget)
 		{

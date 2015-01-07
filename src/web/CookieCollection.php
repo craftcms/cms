@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\web;
+use craft\app\Craft;
 
 /**
  * CookieCollection implements a collection class to store cookies. You normally access it via
@@ -40,7 +41,7 @@ class CookieCollection extends \CCookieCollection
 		{
 			foreach($_COOKIE as $name => $value)
 			{
-				if (is_string($value) && ($value=craft()->security->validateData($value)) !== false)
+				if (is_string($value) && ($value = Craft::$app->security->validateData($value)) !== false)
 				{
 					$cookies[$name] = new HttpCookie($name, @unserialize($value));
 				}

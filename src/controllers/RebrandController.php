@@ -13,7 +13,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 
-craft()->requireEdition(Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
@@ -47,7 +47,7 @@ class RebrandController extends BaseController
 			// Make sure a file was uploaded
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
-				$folderPath = craft()->path->getTempUploadsPath();
+				$folderPath = Craft::$app->path->getTempUploadsPath();
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath, true);
 
@@ -56,13 +56,13 @@ class RebrandController extends BaseController
 				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!craft()->images->checkMemoryForImage($folderPath.$fileName))
+				if (!Craft::$app->images->checkMemoryForImage($folderPath.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.$fileName);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				craft()->images->cleanImage($folderPath.$fileName);
+				Craft::$app->images->cleanImage($folderPath.$fileName);
 
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.$fileName);
@@ -73,7 +73,7 @@ class RebrandController extends BaseController
 					// Never scale up the images, so make the scaling factor always <= 1
 					$factor = min($constraint / $width, $constraint / $height, 1);
 
-					$html = craft()->templates->render('_components/tools/cropper_modal',
+					$html = Craft::$app->templates->render('_components/tools/cropper_modal',
 						[
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => round($width * $factor),
@@ -107,11 +107,11 @@ class RebrandController extends BaseController
 
 		try
 		{
-			$x1 = craft()->request->getRequiredPost('x1');
-			$x2 = craft()->request->getRequiredPost('x2');
-			$y1 = craft()->request->getRequiredPost('y1');
-			$y2 = craft()->request->getRequiredPost('y2');
-			$source = craft()->request->getRequiredPost('source');
+			$x1 = Craft::$app->request->getRequiredPost('x1');
+			$x2 = Craft::$app->request->getRequiredPost('x2');
+			$y1 = Craft::$app->request->getRequiredPost('y1');
+			$y2 = Craft::$app->request->getRequiredPost('y2');
+			$source = Craft::$app->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
 			if (($qIndex = mb_strpos($source, '?')) !== false)
@@ -119,16 +119,16 @@ class RebrandController extends BaseController
 				$source = mb_substr($source, 0, mb_strpos($source, '?'));
 			}
 
-			$imagePath = craft()->path->getTempUploadsPath().$source;
+			$imagePath = Craft::$app->path->getTempUploadsPath().$source;
 
-			if (IOHelper::fileExists($imagePath) && craft()->images->checkMemoryForImage($imagePath))
+			if (IOHelper::fileExists($imagePath) && Craft::$app->images->checkMemoryForImage($imagePath))
 			{
-				$targetPath = craft()->path->getStoragePath().'logo/';
+				$targetPath = Craft::$app->path->getStoragePath().'logo/';
 
 				IOHelper::ensureFolderExists($targetPath);
 
 					IOHelper::clearFolder($targetPath);
-					craft()->images
+					Craft::$app->images
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
@@ -136,7 +136,7 @@ class RebrandController extends BaseController
 
 				IOHelper::deleteFile($imagePath);
 
-				$html = craft()->templates->render('settings/general/_logo');
+				$html = Craft::$app->templates->render('settings/general/_logo');
 				$this->returnJson(array('html' => $html));
 			}
 			IOHelper::deleteFile($imagePath);
@@ -157,9 +157,9 @@ class RebrandController extends BaseController
 	public function actionDeleteLogo()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(craft()->path->getStoragePath().'logo/');
+		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'logo/');
 
-		$html = craft()->templates->render('settings/general/_logo');
+		$html = Craft::$app->templates->render('settings/general/_logo');
 		$this->returnJson(array('html' => $html));
 
 	}

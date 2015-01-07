@@ -10,7 +10,7 @@ namespace craft\app\models;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 
-craft()->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Pro);
 
 /**
  * UserGroup model class.
@@ -44,7 +44,7 @@ class UserGroup extends BaseModel
 	{
 		if ($this->id)
 		{
-			return craft()->userPermissions->doesGroupHavePermission($this->id, $permission);
+			return Craft::$app->userPermissions->doesGroupHavePermission($this->id, $permission);
 		}
 		else
 		{

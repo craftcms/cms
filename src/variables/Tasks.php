@@ -27,7 +27,7 @@ class Tasks
 	 */
 	public function getRunningTask()
 	{
-		return craft()->tasks->getRunningTask();
+		return Craft::$app->tasks->getRunningTask();
 	}
 
 	/**
@@ -37,7 +37,7 @@ class Tasks
 	 */
 	public function isTaskRunning()
 	{
-		return craft()->tasks->isTaskRunning();
+		return Craft::$app->tasks->isTaskRunning();
 	}
 
 	/**
@@ -47,7 +47,7 @@ class Tasks
 	 */
 	public function areTasksPending()
 	{
-		return craft()->tasks->areTasksPending();
+		return Craft::$app->tasks->areTasksPending();
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Tasks
 	 */
 	public function haveTasksFailed()
 	{
-		return craft()->tasks->haveTasksFailed();
+		return Craft::$app->tasks->haveTasksFailed();
 	}
 
 	/**
@@ -67,6 +67,6 @@ class Tasks
 	 */
 	public function getTotalTasks()
 	{
-		return craft()->tasks->getTotalTasks();
+		return Craft::$app->tasks->getTotalTasks();
 	}
 }

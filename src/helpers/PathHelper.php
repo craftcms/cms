@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\helpers;
+use craft\app\Craft;
 
 /**
  * Class PathHelper
@@ -28,7 +29,7 @@ class PathHelper
 	public static function ensurePathIsContained($path)
 	{
 		// Sanitize
-		$path = craft()->request->decodePathInfo($path);
+		$path = Craft::$app->request->decodePathInfo($path);
 
 		$segs = explode('/', $path);
 		$level = 0;

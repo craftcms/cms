@@ -60,7 +60,7 @@ class AssetSource extends BaseComponentModel
 	{
 		if (!isset($this->_sourceType))
 		{
-			$this->_sourceType = craft()->assetSources->populateSourceType($this);
+			$this->_sourceType = Craft::$app->assetSources->populateSourceType($this);
 
 			// Might not actually exist
 			if (!$this->_sourceType)
