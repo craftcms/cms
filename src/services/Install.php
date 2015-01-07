@@ -8,19 +8,20 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\enums\ColumnType;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\IOHelper;
 use yii\base\Component;
-use craft\app\models\Entry              as EntryModel;
-use craft\app\models\Field              as FieldModel;
-use craft\app\models\FieldGroup         as FieldGroupModel;
-use craft\app\models\Info               as InfoModel;
-use craft\app\models\Section            as SectionModel;
-use craft\app\models\SectionLocale      as SectionLocaleModel;
-use craft\app\models\TagGroup           as TagGroupModel;
-use craft\app\models\User               as UserModel;
+use craft\app\models\Entry         as EntryModel;
+use craft\app\models\Field         as FieldModel;
+use craft\app\models\FieldGroup    as FieldGroupModel;
+use craft\app\models\Info          as InfoModel;
+use craft\app\models\Section       as SectionModel;
+use craft\app\models\SectionLocale as SectionLocaleModel;
+use craft\app\models\TagGroup      as TagGroupModel;
+use craft\app\models\User          as UserModel;
 use craft\app\errors\Exception;
-use craft\app\records\Migration         as MigrationRecord;
+use craft\app\records\Migration    as MigrationRecord;
 use craft\app\web\Application;
 
 /**
@@ -213,11 +214,12 @@ class Install extends Component
 	{
 		Craft::log('Creating the content table.');
 
-		craft()->db->createCommand()->createTable('content', array(
-			'elementId' => array('column' => ColumnType::Int, 'null' => false),
-			'locale'    => array('column' => ColumnType::Locale, 'null' => false),
-			'title'     => array('column' => ColumnType::Varchar),
-		));
+		craft()->db->createCommand()->createTable('content', [
+			'elementId' => ['column' => ColumnType::Int, 'null' => false],
+			'locale'    => ['column' => ColumnType::Locale, 'null' => false],
+			'title'     => ['column' => ColumnType::Varchar],
+		]);
+
 		craft()->db->createCommand()->createIndex('content', 'elementId,locale', true);
 		craft()->db->createCommand()->createIndex('content', 'title');
 		craft()->db->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);

@@ -7,6 +7,8 @@
 
 namespace craft\app\dates;
 
+use craft\app\Craft;
+
 /**
  * Class DateInterval
  *

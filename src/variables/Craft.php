@@ -212,14 +212,6 @@ class Craft
 	}
 
 	/**
-	 * @return LinksVariable
-	 */
-	public function links()
-	{
-		return new LinksVariable();
-	}
-
-	/**
 	 * @return Globals
 	 */
 	public function globals()

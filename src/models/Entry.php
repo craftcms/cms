@@ -245,7 +245,7 @@ class Entry extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'sectionId'  => AttributeType::Number,
 			'typeId'     => AttributeType::Number,
 			'authorId'   => AttributeType::Number,
@@ -255,6 +255,6 @@ class Entry extends BaseElementModel
 			// Just used for saving entries
 			'newParentId'   => AttributeType::Number,
 			'revisionNotes' => AttributeType::String,
-		));
+		]);
 	}
 }

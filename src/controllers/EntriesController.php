@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\HttpException;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\Entry           as EntryModel;
 use craft\app\variables\ElementType  as ElementTypeVariable;
 

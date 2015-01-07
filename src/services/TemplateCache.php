@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
 use yii\base\Component;

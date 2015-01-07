@@ -11,6 +11,7 @@ use craft\app\enums\ElementType;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\models\AssetFile        as AssetFileModel;
+use craft\app\models\AssetSource      as AssetSourceModel;
 use craft\app\models\FieldLayout      as FieldLayoutModel;
 
 /**

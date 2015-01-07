@@ -15,6 +15,7 @@ use craft\app\models\BaseElementModel;
 use craft\app\models\Category            as CategoryModel;
 use craft\app\models\CategoryGroup       as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
+use craft\app\variables\ElementType      as ElementTypeVariable;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
