@@ -7,8 +7,10 @@
 
 namespace craft\app\models;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
+use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;

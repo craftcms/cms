@@ -10,6 +10,7 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
+use craft\app\events\Event;
 use yii\base\Component;
 use craft\app\models\EntryType          as EntryTypeModel;
 use craft\app\models\Section            as SectionModel;

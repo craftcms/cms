@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\errors\EtException;
+use craft\app\errors\Exception;
 use craft\app\helpers\UpdateHelper;
 use craft\app\helpers\UrlHelper;
 

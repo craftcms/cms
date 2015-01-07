@@ -7,6 +7,7 @@
 
 namespace craft\app\helpers;
 
+use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ConfigFile;
 
@@ -536,7 +537,7 @@ class DbHelper
 	/**
 	 * Normalizes “empty” values.
 	 *
-	 * @param stirng &$value The param value.
+	 * @param string &$value The param value.
 	 */
 	private static function _normalizeEmptyValue(&$value)
 	{

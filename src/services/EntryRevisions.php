@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\enums\SectionType;
+use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\JsonHelper;
 use yii\base\Component;
@@ -472,7 +473,7 @@ class EntryRevisions extends Component
 
 			if (!$draftRecord)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draft->draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
 			}
 		}
 		else

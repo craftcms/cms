@@ -10,6 +10,8 @@ namespace craft\app\fieldtypes;
 use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
+use craft\app\models\BaseModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field           as FieldModel;
 use craft\app\models\MatrixBlock     as MatrixBlockModel;

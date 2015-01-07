@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
+use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;

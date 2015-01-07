@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use craft\app\helpers\ModelHelper;
 use yii\base\Component;
 use craft\app\models\BaseModel;
 use craft\app\models\Field              as FieldModel;

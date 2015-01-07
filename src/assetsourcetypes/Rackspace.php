@@ -9,6 +9,7 @@ namespace craft\app\assetsourcetypes;
 
 use craft\app\Craft;
 use craft\app\dates\DateTime;
+use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
@@ -420,14 +421,14 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'username'   => array(AttributeType::String, 'required' => true),
-			'apiKey'     => array(AttributeType::String, 'required' => true),
-			'region'     => array(AttributeType::String, 'required' => true),
-			'container'	 => array(AttributeType::String, 'required' => true),
-			'urlPrefix'  => array(AttributeType::String, 'required' => true),
-			'subfolder'  => array(AttributeType::String, 'default' => ''),
-		);
+		return [
+			'username'   => [AttributeType::String, 'required' => true],
+			'apiKey'     => [AttributeType::String, 'required' => true],
+			'region'     => [AttributeType::String, 'required' => true],
+			'container'	 => [AttributeType::String, 'required' => true],
+			'urlPrefix'  => [AttributeType::String, 'required' => true],
+			'subfolder'  => [AttributeType::String, 'default' => ''],
+		];
 	}
 
 	/**

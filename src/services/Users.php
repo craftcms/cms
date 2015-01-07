@@ -13,8 +13,12 @@ use craft\app\enums\ElementType;
 use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\UrlHelper;
+use craft\app\io\Image;
 use yii\base\Component;
 use craft\app\models\Password         as PasswordModel;
 use craft\app\models\User             as UserModel;
@@ -446,18 +450,18 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/verifyemail', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], craft()->request->isSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = craft()->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], craft()->request->isSecureConnection() ? 'https' : 'http');
 		}
 
-		return craft()->email->sendEmailByKey($user, 'verify_new_email', array(
+		return craft()->email->sendEmailByKey($user, 'verify_new_email', [
 			'link' => TemplateHelper::getRaw($url),
-		));
+		]);
 	}
 
 	/**

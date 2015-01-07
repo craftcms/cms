@@ -8,9 +8,13 @@
 namespace craft\app\elementtypes;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
 use craft\app\events\Event;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria   as ElementCriteriaModel;
 use craft\app\models\Entry             as EntryModel;
@@ -424,7 +428,7 @@ class Entry extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'after'           => AttributeType::Mixed,
 			'authorGroup'     => AttributeType::String,
 			'authorGroupId'   => AttributeType::Number,
@@ -432,13 +436,13 @@ class Entry extends BaseElementType
 			'before'          => AttributeType::Mixed,
 			'editable'        => AttributeType::Bool,
 			'expiryDate'      => AttributeType::Mixed,
-			'order'           => array(AttributeType::String, 'default' => 'lft, postDate desc'),
+			'order'           => [AttributeType::String, 'default' => 'lft, postDate desc'],
 			'postDate'        => AttributeType::Mixed,
 			'section'         => AttributeType::Mixed,
 			'sectionId'       => AttributeType::Number,
-			'status'          => array(AttributeType::String, 'default' => EntryModel::LIVE),
+			'status'          => [AttributeType::String, 'default' => EntryModel::LIVE],
 			'type'            => AttributeType::Mixed,
-		);
+		];
 	}
 
 	/**
@@ -520,10 +524,10 @@ class Entry extends BaseElementType
 					}
 					else
 					{
-						$conditionals[] = array('and',
+						$conditionals[] = ['and',
 							DbHelper::parseParam('sections.handle', $parts[0], $query->params),
 							DbHelper::parseParam('elements_i18n.slug', $parts[1], $query->params)
-						);
+						];
 					}
 				}
 			}

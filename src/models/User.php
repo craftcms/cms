@@ -8,11 +8,16 @@
 namespace craft\app\models;
 
 use craft\app\Craft;
+use craft\app\dates\DateInterval;
+use craft\app\dates\DateTime;
+use craft\app\enums\AttributeType;
 use craft\app\enums\AuthError;
 use craft\app\enums\ElementType;
 use craft\app\enums\UserStatus;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\UserGroup   as UserGroupModel;
+use craft\app\models\UserGroup        as UserGroupModel;
+use craft\app\models\User             as UserModel;
 use yii\web\IdentityInterface;
 use yii\base\NotSupportedException;
 
@@ -607,16 +612,16 @@ class User extends BaseElementModel implements IdentityInterface
 	{
 		$requireUsername = !craft()->config->get('useEmailAsUsername');
 
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'authKey'                    => AttributeType::String,
-			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
+			'username'                   => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
 			'photo'                      => AttributeType::String,
 			'firstName'                  => AttributeType::String,
 			'lastName'                   => AttributeType::String,
-			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
+			'email'                      => [AttributeType::Email, 'required' => !$requireUsername],
 			'password'                   => AttributeType::String,
 			'preferredLocale'            => AttributeType::Locale,
-			'weekStartDay'               => array(AttributeType::Number, 'default' => 0),
+			'weekStartDay'               => [AttributeType::Number, 'default' => 0],
 			'admin'                      => AttributeType::Bool,
 			'client'                     => AttributeType::Bool,
 			'locked'                     => AttributeType::Bool,
@@ -634,6 +639,6 @@ class User extends BaseElementModel implements IdentityInterface
 			'currentPassword'            => AttributeType::String,
 			'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'authError'                  => AttributeType::String,
-		));
+		]);
 	}
 }

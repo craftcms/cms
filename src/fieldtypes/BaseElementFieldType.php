@@ -9,6 +9,7 @@ namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
 use craft\app\elementtypes\BaseElementType;
+use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -468,7 +469,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		if ($this->allowLimit)
 		{
-			$settings['limit'] = array(AttributeType::Number, 'min' => 0);
+			$settings['limit'] = [AttributeType::Number, 'min' => 0];
 		}
 
 		return $settings;

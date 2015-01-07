@@ -7,6 +7,8 @@
 
 namespace craft\app\consolecommands;
 
+use craft\app\base\BasePlugin;
+use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 

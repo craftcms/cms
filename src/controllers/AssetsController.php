@@ -14,6 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\events\Event;
 use craft\app\fieldtypes\Assets;
 use craft\app\helpers\AssetsHelper;
+use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 
@@ -458,10 +459,11 @@ class AssetsController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$transforms = craft()->assetTransforms->getAllTransforms();
-		$output = array();
+		$output = [];
+
 		foreach ($transforms as $transform)
 		{
-			$output[] = (object) array('id' => $transform->id, 'handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name));
+			$output[] = (object) ['id' => $transform->id, 'handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name)];
 		}
 
 		$this->returnJson($output);

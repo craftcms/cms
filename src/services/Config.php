@@ -11,9 +11,11 @@ use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\UrlHelper;
 use yii\base\Component;
 use craft\app\helpers\AppHelper;
 use craft\app\web\Application;
+use craft\app\models\User             as UserModel;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://buildwithcraft.com/docs/config-settings),

@@ -12,6 +12,7 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\Component;

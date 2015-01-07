@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use yii\base\Component;
 use craft\app\models\Category             as CategoryModel;

@@ -6,7 +6,9 @@
  */
 
 namespace craft\app\db;
+use craft\app\enums\ColumnType;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -471,9 +473,9 @@ class DbCommand extends \CDbCommand
 		$table = $this->getConnection()->addTablePrefix($table);
 
 		$columns = array_merge(
-			($addIdColumn ? array('id' => ColumnType::PK) : array()),
+			($addIdColumn ? ['id' => ColumnType::PK] : []),
 			$columns,
-			($addAuditColumns ? DbHelper::getAuditColumnConfig() : array())
+			($addAuditColumns ? DbHelper::getAuditColumnConfig() : [])
 		);
 
 		foreach ($columns as $col => $settings)

@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\errors\HttpException;
+use craft\app\i18n\LocaleData;
 use craft\app\web\Application;
 
 /**

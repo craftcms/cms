@@ -7,8 +7,11 @@
 
 namespace craft\app\web;
 
+use craft\app\Craft;
+use craft\app\enums\LogLevel;
 use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\Password     as PasswordModel;
 use craft\app\models\User         as UserModel;
 use craft\app\models\Username     as UsernameModel;

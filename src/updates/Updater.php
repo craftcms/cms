@@ -9,13 +9,16 @@ namespace craft\app\updates;
 
 use craft\app\base\BasePlugin;
 use craft\app\Craft;
+use craft\app\enums\InstallStatus;
 use craft\app\enums\LogLevel;
 use craft\app\enums\PatchManifestFileAction;
+use craft\app\enums\RequirementResult;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UpdateHelper;
 use craft\app\io\Zip;
+use craft\app\requirements\RequirementsChecker;
 
 /**
  * Class Updater

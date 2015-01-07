@@ -478,9 +478,9 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\services\HttpSession]] (craft()->getSession()).
+	 * Returns the [[\craft\app\web\Session]] (craft()->getSession()).
 	 *
-	 * @return \craft\app\services\HttpSession
+	 * @return \craft\app\web\Session
 	 */
 	public function getSession()
 	{
@@ -488,9 +488,9 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\services\UserSession]] (craft()->getUser()).
+	 * Returns the [[\craft\app\web\User]] (craft()->getUser()).
 	 *
-	 * @return \craft\app\services\UserSession
+	 * @return \craft\app\web\User
 	 */
 	public function getUser()
 	{

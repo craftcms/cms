@@ -8,7 +8,9 @@
 namespace craft\app\io;
 
 use craft\app\Craft;
+use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 
 /**

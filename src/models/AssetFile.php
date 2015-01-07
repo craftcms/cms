@@ -10,6 +10,7 @@ namespace craft\app\models;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;

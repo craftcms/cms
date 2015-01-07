@@ -8,9 +8,13 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\db\DbCommand;
+use craft\app\elements\ElementRelationParamParser;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\DbHelper;
+use craft\app\helpers\StringHelper;
 use yii\base\Component;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria    as ElementCriteriaModel;
