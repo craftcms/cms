@@ -42,12 +42,12 @@ class DashboardController extends BaseController
 		// Did it save?
 		if (craft()->dashboard->saveUserWidget($widget))
 		{
-			craft()->userSession->setNotice(Craft::t('Widget saved.'));
+			craft()->getSession()->setNotice(Craft::t('Widget saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save widget.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save widget.'));
 		}
 
 		// Send the widget back to the template
@@ -144,7 +144,7 @@ class DashboardController extends BaseController
 
 		if ($getHelpModel->validate())
 		{
-			$user = craft()->userSession->getUser();
+			$user = craft()->getUser()->getIdentity();
 
 			// Add some extra info about this install
 			$message = $getHelpModel->message . "\n\n" .

@@ -59,7 +59,7 @@ class StructuresController extends BaseController
 		$localeId    = craft()->request->getRequiredPost('locale');
 
 		// Make sure they have permission to edit this structure
-		craft()->userSession->requireAuthorization('editStructure:'.$structureId);
+		$this->requireAuthorization('editStructure:'.$structureId);
 
 		$this->_structure = craft()->structures->getStructureById($structureId);
 

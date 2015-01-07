@@ -29,7 +29,7 @@ class CpHelper
 	public static function getAlerts($path = null, $fetch = false)
 	{
 		$alerts = array();
-		$user = craft()->userSession->getUser();
+		$user = craft()->getUser()->getIdentity();
 
 		if (!$user)
 		{

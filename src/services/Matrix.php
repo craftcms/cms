@@ -815,11 +815,11 @@ class Matrix extends Component
 		}
 
 		// Tell the browser to forget about these
-		craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+		craft()->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
 		foreach ($blockIds as $blockId)
 		{
-			craft()->userSession->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+			craft()->getSession()->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
 		}
 
 		// Pass this along to the Elements service for the heavy lifting.
@@ -920,11 +920,11 @@ class Matrix extends Component
 		// Tell the browser to collapse any new block IDs
 		if ($collapsedBlockIds)
 		{
-			craft()->userSession->addJsResourceFlash('js/MatrixInput.js');
+			craft()->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
 			foreach ($collapsedBlockIds as $blockId)
 			{
-				craft()->userSession->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+				craft()->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
 			}
 		}
 

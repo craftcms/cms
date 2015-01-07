@@ -33,7 +33,7 @@ class GlobalsController extends BaseController
 	public function actionSaveSet()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$globalSet = new GlobalSetModel();
 
@@ -50,12 +50,12 @@ class GlobalsController extends BaseController
 		// Save it
 		if (craft()->globals->saveSet($globalSet))
 		{
-			craft()->userSession->setNotice(Craft::t('Global set saved.'));
+			craft()->getSession()->setNotice(Craft::t('Global set saved.'));
 			$this->redirectToPostedUrl($globalSet);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save global set.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save global set.'));
 		}
 
 		// Send the global set back to the template
@@ -73,7 +73,7 @@ class GlobalsController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$globalSetId = craft()->request->getRequiredPost('id');
 
@@ -132,7 +132,7 @@ class GlobalsController extends BaseController
 
 		foreach ($globalSets as $globalSet)
 		{
-			if (craft()->userSession->checkPermission('editGlobalSet:'.$globalSet->id))
+			if (craft()->getUser()->checkPermission('editGlobalSet:'.$globalSet->id))
 			{
 				$variables['globalSets'][$globalSet->handle] = $globalSet;
 			}
@@ -166,11 +166,11 @@ class GlobalsController extends BaseController
 		$localeId = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 
 		// Make sure the user is allowed to edit this global set and locale
-		craft()->userSession->requirePermission('editGlobalSet:'.$globalSetId);
+		$this->requirePermission('editGlobalSet:'.$globalSetId);
 
 		if (craft()->isLocalized())
 		{
-			craft()->userSession->requirePermission('editLocale:'.$localeId);
+			$this->requirePermission('editLocale:'.$localeId);
 		}
 
 		$globalSet = craft()->globals->getSetById($globalSetId, $localeId);
@@ -184,12 +184,12 @@ class GlobalsController extends BaseController
 
 		if (craft()->globals->saveContent($globalSet))
 		{
-			craft()->userSession->setNotice(Craft::t('Globals saved.'));
+			craft()->getSession()->setNotice(Craft::t('Globals saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save globals.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save globals.'));
 		}
 
 		// Send the global set back to the template

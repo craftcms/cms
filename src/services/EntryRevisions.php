@@ -108,7 +108,7 @@ class EntryRevisions extends Component
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
 		$editableDrafts = array();
-		$user = craft()->userSession->getUser();
+		$user = craft()->getUser()->getIdentity();
 
 		if ($user)
 		{
@@ -348,7 +348,7 @@ class EntryRevisions extends Component
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = craft()->userSession->getUser() ? craft()->userSession->getUser()->id : $entry->authorId;
+		$versionRecord->creatorId = craft()->getUser()->getIdentity() ? craft()->getUser()->getIdentity()->id : $entry->authorId;
 		$versionRecord->locale = $entry->locale;
 		$versionRecord->num = $totalVersions + 1;
 		$versionRecord->data = $this->_getRevisionData($entry);

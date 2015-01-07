@@ -34,7 +34,7 @@ class UtilsController extends BaseController
 	public function init()
 	{
 		// Only admins.
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**

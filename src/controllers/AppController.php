@@ -32,7 +32,7 @@ class AppController extends BaseController
 	 */
 	public function actionCheckForUpdates()
 	{
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		$forceRefresh = (bool) craft()->request->getPost('forceRefresh');
 		craft()->updates->getUpdates($forceRefresh);
@@ -51,7 +51,7 @@ class AppController extends BaseController
 	public function actionGetCpAlerts()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$path = craft()->request->getRequiredPost('path');
 
@@ -68,10 +68,10 @@ class AppController extends BaseController
 	public function actionShunCpAlert()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$message = craft()->request->getRequiredPost('message');
-		$user = craft()->userSession->getUser();
+		$user = craft()->getUser()->getIdentity();
 
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 		$tomorrow = $currentTime->add(new DateInterval('P1D'));
@@ -97,7 +97,7 @@ class AppController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$response = craft()->et->transferLicenseToCurrentDomain();
 
@@ -121,7 +121,7 @@ class AppController extends BaseController
 	public function actionGetUpgradeModal()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$etResponse = craft()->et->fetchEditionInfo();
 
@@ -186,7 +186,7 @@ class AppController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$model = new UpgradePurchaseModel(array(
 			'ccTokenId'     => craft()->request->getRequiredPost('ccTokenId'),
@@ -219,7 +219,7 @@ class AppController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		if (!craft()->canTestEditions())
 		{

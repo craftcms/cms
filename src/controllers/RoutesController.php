@@ -32,7 +32,7 @@ class RoutesController extends BaseController
 	public function init()
 	{
 		// All route actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**

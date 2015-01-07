@@ -32,23 +32,23 @@ abstract class BaseEntriesController extends BaseController
 	 */
 	protected function enforceEditEntryPermissions(EntryModel $entry)
 	{
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 		$permissionSuffix = ':'.$entry->sectionId;
 
 		if (craft()->isLocalized())
 		{
 			// Make sure they have access to this locale
-			$userSessionService->requirePermission('editLocale:'.$entry->locale);
+			$this->requirePermission('editLocale:'.$entry->locale);
 		}
 
 		// Make sure the user is allowed to edit entries in this section
-		$userSessionService->requirePermission('editEntries'.$permissionSuffix);
+		$this->requirePermission('editEntries'.$permissionSuffix);
 
 		// Is it a new entry?
 		if (!$entry->id)
 		{
 			// Make sure they have permission to create new entries in this section
-			$userSessionService->requirePermission('createEntries'.$permissionSuffix);
+			$this->requirePermission('createEntries'.$permissionSuffix);
 		}
 		else
 		{
@@ -62,7 +62,7 @@ abstract class BaseEntriesController extends BaseController
 						$entry->getSection()->type != SectionType::Single
 					)
 					{
-						$userSessionService->requirePermission('editPeerEntries'.$permissionSuffix);
+						$this->requirePermission('editPeerEntries'.$permissionSuffix);
 					}
 
 					break;
@@ -76,7 +76,7 @@ abstract class BaseEntriesController extends BaseController
 						$entry->creatorId != $userSessionService->getUser()->id
 					)
 					{
-						$userSessionService->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
+						$this->requirePermission('editPeerEntryDrafts'.$permissionSuffix);
 					}
 
 					break;

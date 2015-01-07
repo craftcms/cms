@@ -34,7 +34,7 @@ class AssetSourcesController extends BaseController
 	public function init()
 	{
 		// All asset source actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -159,12 +159,12 @@ class AssetSourcesController extends BaseController
 		// Did it save?
 		if (craft()->assetSources->saveSource($source))
 		{
-			craft()->userSession->setNotice(Craft::t('Source saved.'));
+			craft()->getSession()->setNotice(Craft::t('Source saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save source.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save source.'));
 		}
 
 		// Send the source back to the template

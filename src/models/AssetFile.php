@@ -195,7 +195,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function isEditable()
 	{
-		return craft()->userSession->checkPermission('uploadToAssetSource:'.$this->sourceId);
+		return craft()->getUser()->checkPermission('uploadToAssetSource:'.$this->sourceId);
 	}
 
 	/**

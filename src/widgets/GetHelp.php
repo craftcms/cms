@@ -58,7 +58,7 @@ class GetHelpWidget extends BaseWidget
 	public function getBodyHtml()
 	{
 		// Only admins get the Get Help widget.
-		if (!craft()->userSession->isAdmin())
+		if (!craft()->getUser()->getIsAdmin())
 		{
 			return false;
 		}
@@ -81,7 +81,7 @@ class GetHelpWidget extends BaseWidget
 	public function isSelectable()
 	{
 		// Only admins get the Get Help widget.
-		if (parent::isSelectable() && craft()->userSession->isAdmin())
+		if (parent::isSelectable() && craft()->getUser()->getIsAdmin())
 		{
 			return true;
 		}

@@ -36,7 +36,7 @@ class UserSettingsController extends BaseController
 	public function init()
 	{
 		// All user settings actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -60,12 +60,12 @@ class UserSettingsController extends BaseController
 			$permissions = craft()->request->getPost('permissions', array());
 			craft()->userPermissions->saveGroupPermissions($group->id, $permissions);
 
-			craft()->userSession->setNotice(Craft::t('Group saved.'));
+			craft()->getSession()->setNotice(Craft::t('Group saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save group.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save group.'));
 		}
 
 		// Send the group back to the template
@@ -106,12 +106,12 @@ class UserSettingsController extends BaseController
 
 		if (craft()->systemSettings->saveSettings('users', $settings))
 		{
-			craft()->userSession->setNotice(Craft::t('User settings saved.'));
+			craft()->getSession()->setNotice(Craft::t('User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save user settings.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save user settings.'));
 
 			// Send the settings back to the template
 			craft()->urlManager->setRouteVariables(array(

@@ -195,7 +195,7 @@ class Email extends Component
 
 		$this->_settings = $settings;
 
-		$user = craft()->userSession->getUser();
+		$user = craft()->getUser()->getIdentity();
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)

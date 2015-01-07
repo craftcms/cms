@@ -31,7 +31,7 @@ class TasksController extends BaseController
 	public function actionRunPendingTasks()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		// If there's already a running task, treat this like a getRunningTaskInfo request
 		$this->_returnRunningTaskInfo();
@@ -60,7 +60,7 @@ class TasksController extends BaseController
 	public function actionGetRunningTaskInfo()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$this->_returnRunningTaskInfo();
 
@@ -82,7 +82,7 @@ class TasksController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$taskId = craft()->request->getRequiredPost('taskId');
 		$task = craft()->tasks->rerunTaskById($taskId);
@@ -111,7 +111,7 @@ class TasksController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$this->requirePostRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$taskId = craft()->request->getRequiredPost('taskId');
 		$task = craft()->tasks->deleteTaskById($taskId);
@@ -127,7 +127,7 @@ class TasksController extends BaseController
 	public function actionGetTaskInfo()
 	{
 		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
+		$this->requirePermission('accessCp');
 
 		$tasks = craft()->tasks->getAllTasks();
 		$taskInfo = array();

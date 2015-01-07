@@ -33,7 +33,7 @@ class PluginsController extends BaseController
 	public function init()
 	{
 		// All plugin actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -48,11 +48,11 @@ class PluginsController extends BaseController
 
 		if (craft()->plugins->installPlugin($className))
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin installed.'));
+			craft()->getSession()->setNotice(Craft::t('Plugin installed.'));
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t install plugin.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t install plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -70,11 +70,11 @@ class PluginsController extends BaseController
 
 		if (craft()->plugins->uninstallPlugin($className))
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin uninstalled.'));
+			craft()->getSession()->setNotice(Craft::t('Plugin uninstalled.'));
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t uninstall plugin.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t uninstall plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -92,11 +92,11 @@ class PluginsController extends BaseController
 
 		if (craft()->plugins->enablePlugin($className))
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin enabled.'));
+			craft()->getSession()->setNotice(Craft::t('Plugin enabled.'));
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t enable plugin.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t enable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -114,11 +114,11 @@ class PluginsController extends BaseController
 
 		if (craft()->plugins->disablePlugin($className))
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin disabled.'));
+			craft()->getSession()->setNotice(Craft::t('Plugin disabled.'));
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t disable plugin.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t disable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -144,12 +144,12 @@ class PluginsController extends BaseController
 
 		if (craft()->plugins->savePluginSettings($plugin, $settings))
 		{
-			craft()->userSession->setNotice(Craft::t('Plugin settings saved.'));
+			craft()->getSession()->setNotice(Craft::t('Plugin settings saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 
-		craft()->userSession->setError(Craft::t('Couldn’t save plugin settings.'));
+		craft()->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
 		craft()->urlManager->setRouteVariables(array(

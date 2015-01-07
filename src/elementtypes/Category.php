@@ -103,7 +103,7 @@ class Category extends BaseElementType
 				'data'              => array('handle' => $group->handle),
 				'criteria'          => array('groupId' => $group->id),
 				'structureId'       => $group->structureId,
-				'structureEditable' => craft()->userSession->checkPermission('editCategories:'.$group->id),
+				'structureEditable' => craft()->getUser()->checkPermission('editCategories:'.$group->id),
 			);
 		}
 

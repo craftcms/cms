@@ -126,10 +126,10 @@ class AssetIndex extends BaseTool
 				$batches[] = $batch;
 			}
 
-			craft()->httpSession->add('assetsSourcesBeingIndexed', $sourceIds);
-			craft()->httpSession->add('assetsMissingFolders', $missingFolders);
-			craft()->httpSession->add('assetsTotalSourcesToIndex', count($sourceIds));
-			craft()->httpSession->add('assetsTotalSourcesIndexed', 0);
+			craft()->getSession()->add('assetsSourcesBeingIndexed', $sourceIds);
+			craft()->getSession()->add('assetsMissingFolders', $missingFolders);
+			craft()->getSession()->add('assetsTotalSourcesToIndex', count($sourceIds));
+			craft()->getSession()->add('assetsTotalSourcesIndexed', 0);
 
 			return array(
 				'batches' => $batches,
@@ -151,14 +151,14 @@ class AssetIndex extends BaseTool
 			else
 			{
 				// Increment the amount of sources indexed
-				craft()->httpSession->add('assetsTotalSourcesIndexed', craft()->httpSession->get('assetsTotalSourcesIndexed', 0) + 1);
+				craft()->getSession()->add('assetsTotalSourcesIndexed', craft()->getSession()->get('assetsTotalSourcesIndexed', 0) + 1);
 
 				// Is this the last source to finish up?
-				if (craft()->httpSession->get('assetsTotalSourcesToIndex', 0) <= craft()->httpSession->get('assetsTotalSourcesIndexed', 0))
+				if (craft()->getSession()->get('assetsTotalSourcesToIndex', 0) <= craft()->getSession()->get('assetsTotalSourcesIndexed', 0))
 				{
-					$sourceIds = craft()->httpSession->get('assetsSourcesBeingIndexed', array());
+					$sourceIds = craft()->getSession()->get('assetsSourcesBeingIndexed', array());
 					$missingFiles = craft()->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
-					$missingFolders = craft()->httpSession->get('assetsMissingFolders', array());
+					$missingFolders = craft()->getSession()->get('assetsMissingFolders', array());
 
 					$responseArray = array();
 

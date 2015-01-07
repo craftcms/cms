@@ -33,7 +33,7 @@ class AssetTransformsController extends BaseController
 	public function init()
 	{
 		// All asset transform actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -102,19 +102,19 @@ class AssetTransformsController extends BaseController
 
 		if (empty($transform->width) && empty($transform->height))
 		{
-			craft()->userSession->setError(Craft::t('You must set at least one of the dimensions.'));
+			craft()->getSession()->setError(Craft::t('You must set at least one of the dimensions.'));
 			$errors = true;
 		}
 
 		if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1))
 		{
-			craft()->userSession->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
+			craft()->getSession()->setError(Craft::t('Quality must be a number between 1 and 100 (included).'));
 			$errors = true;
 		}
 
 		if (!empty($transform->format) && !in_array($transform->format, ImageHelper::getWebSafeFormats()))
 		{
-			craft()->userSession->setError(Craft::t('That is not an allowed format.'));
+			craft()->getSession()->setError(Craft::t('That is not an allowed format.'));
 			$errors = true;
 		}
 
@@ -123,12 +123,12 @@ class AssetTransformsController extends BaseController
 			// Did it save?
 			if (craft()->assetTransforms->saveTransform($transform))
 			{
-				craft()->userSession->setNotice(Craft::t('Transform saved.'));
+				craft()->getSession()->setNotice(Craft::t('Transform saved.'));
 				$this->redirectToPostedUrl($transform);
 			}
 			else
 			{
-				craft()->userSession->setError(Craft::t('Couldn’t save source.'));
+				craft()->getSession()->setError(Craft::t('Couldn’t save source.'));
 			}
 		}
 

@@ -167,7 +167,7 @@ class Entry extends BaseElementType
 					if ($type == SectionType::Structure)
 					{
 						$sources[$key]['structureId'] = $section->structureId;
-						$sources[$key]['structureEditable'] = craft()->userSession->checkPermission('publishEntries:'.$section->id);
+						$sources[$key]['structureEditable'] = craft()->getUser()->checkPermission('publishEntries:'.$section->id);
 					}
 				}
 			}
@@ -216,7 +216,7 @@ class Entry extends BaseElementType
 
 		// Now figure out what we can do with these
 		$actions = array();
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 		$canSetStatus = true;
 		$canEdit = false;
 
@@ -607,7 +607,7 @@ class Entry extends BaseElementType
 
 		if ($criteria->editable)
 		{
-			$user = craft()->userSession->getUser();
+			$user = craft()->getUser()->getIdentity();
 
 			if (!$user)
 			{

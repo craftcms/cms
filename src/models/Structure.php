@@ -27,7 +27,7 @@ class Structure extends BaseModel
 	 */
 	public function isSortable()
 	{
-		return craft()->userSession->checkAuthorization('editStructure:'.$this->id);
+		return craft()->getSession()->checkAuthorization('editStructure:'.$this->id);
 	}
 
 	// Protected Methods

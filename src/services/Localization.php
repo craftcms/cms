@@ -204,7 +204,7 @@ class Localization extends Component
 
 			foreach ($locales as $locale)
 			{
-				if (craft()->userSession->checkPermission('editLocale:'.$locale->getId()))
+				if (craft()->getUser()->checkPermission('editLocale:'.$locale->getId()))
 				{
 					$editableLocales[] = $locale;
 				}

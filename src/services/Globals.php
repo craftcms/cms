@@ -80,7 +80,7 @@ class Globals extends Component
 
 			foreach ($allGlobalSetIds as $globalSetId)
 			{
-				if (craft()->userSession->checkPermission('editGlobalSet:'.$globalSetId))
+				if (craft()->getUser()->checkPermission('editGlobalSet:'.$globalSetId))
 				{
 					$this->_editableGlobalSetIds[] = $globalSetId;
 				}

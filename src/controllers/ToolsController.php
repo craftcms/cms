@@ -32,7 +32,7 @@ class ToolsController extends BaseController
 	public function init()
 	{
 		// All tool actions require an admin.
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		// Any actions here require all we can get.
 		craft()->config->maxPowerCaptain();

@@ -34,8 +34,7 @@ class EntriesController extends BaseEntriesController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
-	 * in the individual methods.
+	 * login on a few, it's best to call [[requireLogin()]] in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -59,7 +58,7 @@ class EntriesController extends BaseEntriesController
 		// Make sure they have permission to edit this entry
 		$this->enforceEditEntryPermissions($variables['entry']);
 
-		$currentUser = craft()->userSession->getUser();
+		$currentUser = craft()->getUser()->getIdentity();
 
 		$variables['permissionSuffix'] = ':'.$variables['entry']->sectionId;
 
@@ -413,7 +412,7 @@ class EntriesController extends BaseEntriesController
 
 		// Permission enforcement
 		$this->enforceEditEntryPermissions($entry);
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 		$currentUser = $userSessionService->getUser();
 
 		if ($entry->id)
@@ -427,7 +426,7 @@ class EntriesController extends BaseEntriesController
 				if ($entry->enabled)
 				{
 					// Make sure they have permission to make live changes to those
-					$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
+					$this->requirePermission('publishPeerEntries:'.$entry->sectionId);
 				}
 			}
 		}
@@ -440,7 +439,7 @@ class EntriesController extends BaseEntriesController
 		{
 			if ($entry->id)
 			{
-				$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+				$this->requirePermission('publishEntries:'.$entry->sectionId);
 			}
 			else if (!$currentUser->can('publishEntries:'.$entry->sectionId))
 			{
@@ -517,15 +516,15 @@ class EntriesController extends BaseEntriesController
 			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entryId)));
 		}
 
-		$currentUser = craft()->userSession->getUser();
+		$currentUser = craft()->getUser()->getIdentity();
 
 		if ($entry->authorId == $currentUser->id)
 		{
-			craft()->userSession->requirePermission('deleteEntries:'.$entry->sectionId);
+			$this->requirePermission('deleteEntries:'.$entry->sectionId);
 		}
 		else
 		{
-			craft()->userSession->requirePermission('deletePeerEntries:'.$entry->sectionId);
+			$this->requirePermission('deletePeerEntries:'.$entry->sectionId);
 		}
 
 		if (craft()->entries->deleteEntry($entry))
@@ -536,7 +535,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				craft()->userSession->setNotice(Craft::t('Entry deleted.'));
+				craft()->getSession()->setNotice(Craft::t('Entry deleted.'));
 				$this->redirectToPostedUrl($entry);
 			}
 		}
@@ -548,7 +547,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				craft()->userSession->setError(Craft::t('Couldn’t delete entry.'));
+				craft()->getSession()->setError(Craft::t('Couldn’t delete entry.'));
 
 				// Send the entry back to the template
 				craft()->urlManager->setRouteVariables(array(
@@ -757,7 +756,7 @@ class EntriesController extends BaseEntriesController
 			{
 				$variables['entry'] = new EntryModel();
 				$variables['entry']->sectionId = $variables['section']->id;
-				$variables['entry']->authorId = craft()->userSession->getUser()->id;
+				$variables['entry']->authorId = craft()->getUser()->getIdentity()->id;
 				$variables['entry']->enabled = true;
 
 				if (!empty($variables['localeId']))
@@ -872,7 +871,7 @@ class EntriesController extends BaseEntriesController
 		$entry->setContentFromPost($fieldsLocation);
 
 		// Author
-		$authorId = craft()->request->getPost('author', ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
+		$authorId = craft()->request->getPost('author', ($entry->authorId ? $entry->authorId : craft()->getUser()->getIdentity()->id));
 
 		if (is_array($authorId))
 		{

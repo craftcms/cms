@@ -78,7 +78,7 @@ class Category extends BaseElementModel
 	 */
 	public function isEditable()
 	{
-		return craft()->userSession->checkPermission('editCategories:'.$this->groupId);
+		return craft()->getUser()->checkPermission('editCategories:'.$this->groupId);
 	}
 
 	/**

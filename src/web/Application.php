@@ -156,14 +156,14 @@ class Application extends \yii\web\Application
 		$this->_processResourceRequest();
 
 		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->userSession->shouldExtendSession()))
+		if (!$this->config->get('devMode') || (craft()->isInstalled() && !$this->getUser()->shouldExtendSession()))
 		{
 			$this->log->removeRoute('WebLogRoute');
 			$this->log->removeRoute('ProfileLogRoute');
 		}
 
 		// Additionally, we don't want these in the log files at all.
-		if (craft()->isInstalled() && !$this->userSession->shouldExtendSession())
+		if (craft()->isInstalled() && !$this->getUser()->shouldExtendSession())
 		{
 			$this->log->removeRoute('FileLogRoute');
 		}
@@ -245,9 +245,18 @@ class Application extends \yii\web\Application
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
 		if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
 		{
+			$user = $this->getUser();
+
 			// Make sure the user has access to the CP
-			$this->userSession->requireLogin();
-			$this->userSession->requirePermission('accessCp');
+			if ($user->getIsGuest())
+			{
+				$user->loginRequired();
+			}
+
+			if (!$user->checkPermission('accessCp'))
+			{
+				throw new HttpException(403);
+			}
 
 			// If they're accessing a plugin's section, make sure that they have permission to do so
 			$firstSeg = $this->request->getSegment(1);
@@ -258,7 +267,10 @@ class Application extends \yii\web\Application
 
 				if ($plugin)
 				{
-					$this->userSession->requirePermission('accessPlugin-'.$plugin->getClassHandle());
+					if (!$user->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+					{
+						throw new HttpException(403);
+					}
 				}
 			}
 		}
@@ -459,7 +471,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\services\HttpSession]] (craft()->httpSession).
+	 * Returns the [[\craft\app\services\HttpSession]] (craft()->getSession()).
 	 *
 	 * @return \craft\app\services\HttpSession
 	 */
@@ -469,7 +481,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\services\UserSession]] (craft()->userSession).
+	 * Returns the [[\craft\app\services\UserSession]] (craft()->getUser()).
 	 *
 	 * @return \craft\app\services\UserSession
 	 */
@@ -858,7 +870,7 @@ class Application extends \yii\web\Application
 					{
 						if ($this->request->getPathInfo() !== '')
 						{
-							$this->userSession->setReturnUrl($this->request->getPath());
+							$this->getUser()->setReturnUrl($this->request->getPath());
 						}
 					}
 
@@ -897,7 +909,7 @@ class Application extends \yii\web\Application
 		{
 			$error = null;
 
-			if ($this->userSession->isLoggedIn())
+			if ($this->getUser()->isLoggedIn())
 			{
 				if ($this->request->isCpRequest())
 				{
@@ -915,7 +927,7 @@ class Application extends \yii\web\Application
 				// If this is a CP request, redirect to the Login page
 				if ($this->request->isCpRequest())
 				{
-					$this->userSession->requireLogin();
+					$this->getUser()->requireLogin();
 				}
 			}
 
@@ -942,7 +954,7 @@ class Application extends \yii\web\Application
 			$this->request->getPath() === craft()->config->get('actionTrigger').'/users/verifyemail'
 		)
 		{
-			if ($this->userSession->checkPermission('accessCpWhenSystemIsOff'))
+			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))
 			{
 				return true;
 			}
@@ -969,7 +981,7 @@ class Application extends \yii\web\Application
 		}
 		else
 		{
-			if ($this->userSession->checkPermission('accessSiteWhenSystemIsOff'))
+			if ($this->getUser()->checkPermission('accessSiteWhenSystemIsOff'))
 			{
 				return true;
 			}

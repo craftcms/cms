@@ -198,6 +198,19 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the element's ID.
+	 *
+	 * @return int|null
+	 *
+	 * @internal This methed is required by IdentityInterface, but might as well
+	 * go here rather than only in the User model.
+	 */
+	public function getId()
+	{
+		return $this->getAttribute('id');
+	}
+
+	/**
 	 * Returns the type of element this is.
 	 *
 	 * @return string

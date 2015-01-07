@@ -262,14 +262,15 @@ $components['log']['routes'] = array(
 	),
 );
 
-$components['httpSession']['autoStart']   = true;
-$components['httpSession']['cookieMode']  = 'only';
-$components['httpSession']['class']       = '\craft\app\services\HttpSession';
-$components['httpSession']['sessionName'] = 'CraftSessionId';
+$components['session']['class'] = '\craft\app\services\Session';
 
-$components['userSession']['class'] = '\craft\app\services\UserSession';
-$components['userSession']['allowAutoLogin']  = true;
-$components['userSession']['autoRenewCookie'] = true;
+$components['user'] = [
+	'class'                    => '\craft\app\web\User',
+	'identityClass'            => '\craft\app\models\User',
+	'enableAutoLogin'          => true,
+	'enableSession'            => true,
+	'autoRenewCookie'          => true,
+];
 
 $configArray['components'] = array_merge($configArray['components'], $components);
 

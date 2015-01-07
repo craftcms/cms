@@ -578,7 +578,7 @@ class Install extends Component
 	{
 		Craft::log('Logging in user.');
 
-		if (craft()->userSession->login($inputs['username'], $inputs['password']))
+		if (craft()->getUser()->login($inputs['username'], $inputs['password']))
 		{
 			Craft::log('User logged in successfully.');
 		}

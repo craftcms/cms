@@ -109,7 +109,7 @@ class Dashboard extends Component
 	public function doesUserHaveWidget($type)
 	{
 		$count = WidgetRecord::model()->countByAttributes(array(
-			'userId'  => craft()->userSession->getUser()->id,
+			'userId'  => craft()->getUser()->getIdentity()->id,
 			'type'    => $type,
 			'enabled' => true
 		));
@@ -128,7 +128,7 @@ class Dashboard extends Component
 	{
 		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 			'id' => $id,
-			'userId' => craft()->userSession->getUser()->id
+			'userId' => craft()->getUser()->getIdentity()->id
 		));
 
 		if ($widgetRecord)
@@ -164,7 +164,7 @@ class Dashboard extends Component
 				$maxSortOrder = craft()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
-					->where(array('userId' => craft()->userSession->getUser()->id))
+					->where(array('userId' => craft()->getUser()->getIdentity()->id))
 					->queryScalar();
 
 				$widgetRecord->sortOrder = $maxSortOrder + 1;
@@ -254,7 +254,7 @@ class Dashboard extends Component
 	 */
 	private function _addDefaultUserWidgets()
 	{
-		$user = craft()->userSession->getUser();
+		$user = craft()->getUser()->getIdentity();
 
 		// Recent Entries widget
 		$widget = new WidgetModel();
@@ -297,7 +297,7 @@ class Dashboard extends Component
 	 */
 	private function _getUserWidgetRecordById($widgetId = null)
 	{
-		$userId = craft()->userSession->getUser()->id;
+		$userId = craft()->getUser()->getIdentity()->id;
 
 		if ($widgetId)
 		{
@@ -341,7 +341,7 @@ class Dashboard extends Component
 	private function _getUserWidgetRecords()
 	{
 		return WidgetRecord::model()->ordered()->findAllByAttributes(array(
-			'userId' => craft()->userSession->getUser()->id
+			'userId' => craft()->getUser()->getIdentity()->id
 		));
 	}
 }

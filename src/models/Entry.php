@@ -199,9 +199,9 @@ class Entry extends BaseElementModel
 	public function isEditable()
 	{
 		return (
-			craft()->userSession->checkPermission('publishEntries:'.$this->sectionId) && (
-				$this->authorId == craft()->userSession->getUser()->id ||
-				craft()->userSession->checkPermission('publishPeerEntries:'.$this->sectionId) ||
+			craft()->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
+				$this->authorId == craft()->getUser()->getIdentity()->id ||
+				craft()->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
 				$this->getSection()->type == SectionType::Single
 			)
 		);

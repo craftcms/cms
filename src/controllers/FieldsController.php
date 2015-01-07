@@ -34,7 +34,7 @@ class FieldsController extends BaseController
 	public function init()
 	{
 		// All field actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	// Groups
@@ -60,7 +60,7 @@ class FieldsController extends BaseController
 		{
 			if ($isNewGroup)
 			{
-				craft()->userSession->setNotice(Craft::t('Group added.'));
+				craft()->getSession()->setNotice(Craft::t('Group added.'));
 			}
 
 			$this->returnJson(array(
@@ -89,7 +89,7 @@ class FieldsController extends BaseController
 		$groupId = craft()->request->getRequiredPost('id');
 		$success = craft()->fields->deleteGroupById($groupId);
 
-		craft()->userSession->setNotice(Craft::t('Group deleted.'));
+		craft()->getSession()->setNotice(Craft::t('Group deleted.'));
 
 		$this->returnJson(array(
 			'success' => $success,
@@ -127,12 +127,12 @@ class FieldsController extends BaseController
 
 		if (craft()->fields->saveField($field))
 		{
-			craft()->userSession->setNotice(Craft::t('Field saved.'));
+			craft()->getSession()->setNotice(Craft::t('Field saved.'));
 			$this->redirectToPostedUrl($field);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save field.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save field.'));
 		}
 
 		// Send the field back to the template

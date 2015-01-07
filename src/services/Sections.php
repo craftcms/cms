@@ -99,7 +99,7 @@ class Sections extends Component
 
 			foreach ($this->getAllSectionIds() as $sectionId)
 			{
-				if (craft()->userSession->checkPermission('editEntries:'.$sectionId))
+				if (craft()->getUser()->checkPermission('editEntries:'.$sectionId))
 				{
 					$this->_editableSectionIds[] = $sectionId;
 				}

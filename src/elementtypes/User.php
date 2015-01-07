@@ -120,7 +120,7 @@ class User extends BaseElementType
 		));
 		$actions[] = $editAction;
 
-		if (craft()->userSession->checkPermission('administrateUsers'))
+		if (craft()->getUser()->checkPermission('administrateUsers'))
 		{
 			// Suspend
 			$actions[] = 'SuspendUsers';
@@ -129,7 +129,7 @@ class User extends BaseElementType
 			$actions[] = 'UnsuspendUsers';
 		}
 
-		if (craft()->userSession->checkPermission('deleteUsers'))
+		if (craft()->getUser()->checkPermission('deleteUsers'))
 		{
 			// Delete
 			$actions[] = 'DeleteUsers';

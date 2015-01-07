@@ -37,7 +37,7 @@ class CategoriesController extends BaseController
 	 */
 	public function actionGroupIndex()
 	{
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$groups = craft()->categories->getAllGroups();
 
@@ -56,7 +56,7 @@ class CategoriesController extends BaseController
 	 */
 	public function actionEditCategoryGroup(array $variables = array())
 	{
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		// Breadcrumbs
 		$variables['crumbs'] = array(
@@ -107,7 +107,7 @@ class CategoriesController extends BaseController
 	public function actionSaveGroup()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$group = new CategoryGroupModel();
 
@@ -141,12 +141,12 @@ class CategoriesController extends BaseController
 		// Save it
 		if (craft()->categories->saveGroup($group))
 		{
-			craft()->userSession->setNotice(Craft::t('Category group saved.'));
+			craft()->getSession()->setNotice(Craft::t('Category group saved.'));
 			$this->redirectToPostedUrl($group);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save the category group.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save the category group.'));
 		}
 
 		// Send the category group back to the template
@@ -164,7 +164,7 @@ class CategoriesController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$groupId = craft()->request->getRequiredPost('id');
 
@@ -373,7 +373,7 @@ class CategoriesController extends BaseController
 
 		// Permission enforcement
 		$this->_enforceEditCategoryPermissions($category);
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 
 		// Populate the category with post data
 		$this->_populateCategoryModel($category);
@@ -442,7 +442,7 @@ class CategoriesController extends BaseController
 		}
 
 		// Make sure they have permission to do this
-		craft()->userSession->requirePermission('editCategories:'.$category->groupId);
+		$this->requirePermission('editCategories:'.$category->groupId);
 
 		// Delete it
 		if (craft()->categories->deleteCategory($category))
@@ -453,7 +453,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				craft()->userSession->setNotice(Craft::t('Category deleted.'));
+				craft()->getSession()->setNotice(Craft::t('Category deleted.'));
 				$this->redirectToPostedUrl($category);
 			}
 		}
@@ -465,7 +465,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				craft()->userSession->setError(Craft::t('Couldn’t delete category.'));
+				craft()->getSession()->setError(Craft::t('Couldn’t delete category.'));
 
 				// Send the category back to the template
 				craft()->urlManager->setRouteVariables(array(
@@ -693,16 +693,16 @@ class CategoriesController extends BaseController
 	 */
 	private function _enforceEditCategoryPermissions(CategoryModel $category)
 	{
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 
 		if (craft()->isLocalized())
 		{
 			// Make sure they have access to this locale
-			$userSessionService->requirePermission('editLocale:'.$category->locale);
+			$this->requirePermission('editLocale:'.$category->locale);
 		}
 
 		// Make sure the user is allowed to edit categories in this group
-		$userSessionService->requirePermission('editCategories:'.$category->groupId);
+		$this->requirePermission('editCategories:'.$category->groupId);
 	}
 
 	/**

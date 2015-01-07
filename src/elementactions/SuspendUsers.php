@@ -39,7 +39,7 @@ class SuspendUsers extends BaseElementAction
 	 */
 	public function getTriggerHtml()
 	{
-		$userId = JsonHelper::encode(craft()->userSession->getUser()->id);
+		$userId = JsonHelper::encode(craft()->getUser()->getIdentity()->id);
 
 		$js = <<<EOT
 (function()

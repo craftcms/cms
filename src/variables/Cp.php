@@ -51,7 +51,7 @@ class Cp
 			$nav['assets'] = array('name' => Craft::t('Assets'));
 		}
 
-		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('editUsers'))
+		if (craft()->getEdition() == Craft::Pro && craft()->getUser()->checkPermission('editUsers'))
 		{
 			$nav['users'] = array('name' => Craft::t('Users'));
 		}
@@ -63,7 +63,7 @@ class Cp
 		{
 			if ($plugin->hasCpSection())
 			{
-				if (craft()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
+				if (craft()->getUser()->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
 					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
 					$nav[$lcHandle] = array('name' => $plugin->getName());

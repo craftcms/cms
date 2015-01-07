@@ -35,7 +35,7 @@ class LocalizationController extends BaseController
 	public function init()
 	{
 		// All localization related actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**

@@ -32,8 +32,7 @@ class UpdateController extends BaseController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
-	 * in the individual methods.
+	 * login on a few, it's best to call [[requireLogin()]] in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -52,7 +51,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		try
 		{
@@ -83,7 +82,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdates()
 	{
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		$this->requireAjaxRequest();
 
@@ -172,7 +171,7 @@ class UpdateController extends BaseController
 		if (!$this->_isManualUpdate($data))
 		{
 			// If it's not a manual update, make sure they have auto-update permissions.
-			craft()->userSession->requirePermission('performUpdates');
+			$this->requirePermission('performUpdates');
 
 			if (!craft()->config->get('allowAutoUpdates'))
 			{
@@ -211,7 +210,7 @@ class UpdateController extends BaseController
 	public function actionProcessDownload()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -242,7 +241,7 @@ class UpdateController extends BaseController
 	public function actionBackupFiles()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -271,7 +270,7 @@ class UpdateController extends BaseController
 	public function actionUpdateFiles()
 	{
 		// This method should never be called in a manual update.
-		craft()->userSession->requirePermission('performUpdates');
+		$this->requirePermission('performUpdates');
 
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();

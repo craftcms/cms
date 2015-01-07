@@ -345,7 +345,7 @@ class Assets extends BaseElementFieldType
 		if ($settings->useSingleFolder)
 		{
 			$folderId = $this->_determineUploadFolderId($settings);
-			craft()->userSession->authorize('uploadToAssetSource:'.$folderId);
+			craft()->getSession()->authorize('uploadToAssetSource:'.$folderId);
 			$folderPath = 'folder:'.$folderId.':single';
 
 			return array($folderPath);
@@ -569,7 +569,7 @@ class Assets extends BaseElementFieldType
 		else
 		{
 			// New element, so we default to User's upload folder for this field
-			$userModel = craft()->userSession->getUser();
+			$userModel = craft()->getUser()->getIdentity();
 
 			$userFolder = craft()->assets->getUserFolder($userModel);
 

@@ -48,7 +48,7 @@ class Updates extends BaseWidget
 	public function isSelectable()
 	{
 		// Gotta have update permission to get this widget
-		if (parent::isSelectable() && craft()->userSession->checkPermission('performUpdates'))
+		if (parent::isSelectable() && craft()->getUser()->checkPermission('performUpdates'))
 		{
 			return true;
 		}
@@ -64,7 +64,7 @@ class Updates extends BaseWidget
 	public function getBodyHtml()
 	{
 		// Make sure the user actually has permission to perform updates
-		if (!craft()->userSession->checkPermission('performUpdates'))
+		if (!craft()->getUser()->checkPermission('performUpdates'))
 		{
 			return false;
 		}

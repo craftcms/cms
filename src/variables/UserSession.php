@@ -27,7 +27,7 @@ class UserSession
 	 */
 	public function isLoggedIn()
 	{
-		return craft()->userSession->isLoggedIn();
+		return !craft()->getUser()->getIsGuest();
 	}
 
 	/**
@@ -37,7 +37,7 @@ class UserSession
 	 */
 	public function getUser()
 	{
-		return craft()->userSession->getUser();
+		return craft()->getUser()->getIdentity();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class UserSession
 	{
 		if (craft()->isInstalled())
 		{
-			return craft()->userSession->getAuthTimeout();
+			return craft()->getUser()->getAuthTimeout();
 		}
 		else
 		{
@@ -64,20 +64,19 @@ class UserSession
 	 */
 	public function getRememberedUsername()
 	{
-		return craft()->userSession->getRememberedUsername();
+		return craft()->getUser()->getRememberedUsername();
 	}
 
 	/**
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
 	 * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
-	 * @param bool   $delete     Whether the stored return URL should be deleted after it was fetched.
 	 *
 	 * @return string The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = null, $delete = false)
+	public function getReturnUrl($defaultUrl = null)
 	{
-		return craft()->userSession->getReturnUrl($defaultUrl, $delete);
+		return craft()->getUser()->getReturnUrl($defaultUrl);
 	}
 
 	/**
@@ -89,7 +88,7 @@ class UserSession
 	 */
 	public function getFlashes($delete = true)
 	{
-		return craft()->userSession->getFlashes($delete);
+		return craft()->getSession()->getAllFlashes($delete);
 	}
 
 	/**
@@ -103,7 +102,7 @@ class UserSession
 	 */
 	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
-		return craft()->userSession->getFlash($key, $defaultValue, $delete);
+		return craft()->getUser()->getFlash($key, $defaultValue, $delete);
 	}
 
 	/**
@@ -115,6 +114,6 @@ class UserSession
 	 */
 	public function hasFlash($key)
 	{
-		return craft()->userSession->hasFlash($key);
+		return craft()->getUser()->hasFlash($key);
 	}
 }

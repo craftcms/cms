@@ -329,7 +329,7 @@ class Assets extends Component
 		else
 		{
 			// A little obfuscation never hurt anyone
-			$folderName = 'user_'.sha1(craft()->httpSession->getSessionID());
+			$folderName = 'user_'.sha1(craft()->getSession()->getSessionID());
 		}
 
 		$folderCriteria = new FolderCriteriaModel(array(
@@ -1031,9 +1031,9 @@ class Assets extends Component
 			}
 
 			if (
-				!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId)
+				!craft()->getUser()->checkPermission($permission.':'.$folderModel->sourceId)
 				&&
-				!craft()->userSession->checkAuthorization($permission.':'.$folderModel->id))
+				!craft()->getSession()->checkAuthorization($permission.':'.$folderModel->id))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
@@ -1065,7 +1065,7 @@ class Assets extends Component
 				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
-			if (!craft()->userSession->checkPermission($permission.':'.$file->sourceId))
+			if (!craft()->getUser()->checkPermission($permission.':'.$file->sourceId))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}

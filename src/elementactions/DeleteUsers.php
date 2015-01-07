@@ -161,7 +161,7 @@ EOT;
 	 */
 	private function _getUndeletableUserIds()
 	{
-		if (!craft()->userSession->isAdmin())
+		if (!craft()->getUser()->getIsAdmin())
 		{
 			// Only admins can delete other admins
 			return craft()->elements->getCriteria(ElementType::User, array(
@@ -171,7 +171,7 @@ EOT;
 		else
 		{
 			// Can't delete your own account from here
-			return array(craft()->userSession->getUser()->id);
+			return array(craft()->getUser()->getIdentity()->id);
 		}
 	}
 }

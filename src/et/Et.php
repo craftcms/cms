@@ -77,7 +77,7 @@ class Et
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'localEdition'      => craft()->getEdition(),
-			'userEmail'         => craft()->userSession->getUser()->email,
+			'userEmail'         => craft()->getUser()->getIdentity()->email,
 			'track'             => CRAFT_TRACK,
 		));
 

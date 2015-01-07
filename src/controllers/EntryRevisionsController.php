@@ -53,7 +53,7 @@ class EntryRevisionsController extends BaseEntriesController
 			$draft = new EntryDraftModel();
 			$draft->id        = craft()->request->getPost('entryId');
 			$draft->sectionId = craft()->request->getRequiredPost('sectionId');
-			$draft->creatorId = craft()->userSession->getUser()->id;
+			$draft->creatorId = craft()->getUser()->getIdentity()->id;
 			$draft->locale    = craft()->request->getPost('locale', craft()->i18n->getPrimarySiteLocaleId());
 		}
 
@@ -91,12 +91,12 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if ($draft->id && craft()->entryRevisions->saveDraft($draft))
 		{
-			craft()->userSession->setNotice(Craft::t('Draft saved.'));
+			craft()->getSession()->setNotice(Craft::t('Draft saved.'));
 			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save draft.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save draft.'));
 
 			// Send the draft back to the template
 			craft()->urlManager->setRouteVariables(array(
@@ -126,10 +126,10 @@ class EntryRevisionsController extends BaseEntriesController
 			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 		}
 
-		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		if ($draft->creatorId != craft()->getUser()->getIdentity()->id)
 		{
 			// Make sure they have permission to be doing this
-			craft()->userSession->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
+			$this->requirePermission('editPeerEntryDrafts:'.$draft->sectionId);
 		}
 
 		$draft->name = $name;
@@ -163,9 +163,9 @@ class EntryRevisionsController extends BaseEntriesController
 			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
 		}
 
-		if ($draft->creatorId != craft()->userSession->getUser()->id)
+		if ($draft->creatorId != craft()->getUser()->getIdentity()->id)
 		{
-			craft()->userSession->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
+			$this->requirePermission('deletePeerEntryDrafts:'.$draft->sectionId);
 		}
 
 		craft()->entryRevisions->deleteDraft($draft);
@@ -185,7 +185,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		$draftId = craft()->request->getPost('draftId');
 		$draft = craft()->entryRevisions->getDraftById($draftId);
-		$userId = craft()->userSession->getUser()->id;
+		$userId = craft()->getUser()->getIdentity()->id;
 
 		if (!$draft)
 		{
@@ -201,7 +201,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		$this->enforceEditEntryPermissions($entry);
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
@@ -212,14 +212,14 @@ class EntryRevisionsController extends BaseEntriesController
 			if ($entry->enabled)
 			{
 				// Make sure they have permission to make live changes to those
-				$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
+				$this->requirePermission('publishPeerEntries:'.$entry->sectionId);
 			}
 		}
 
 		// Is this another user's draft?
 		if ($draft->creatorId != $userId)
 		{
-			craft()->userSession->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
+			$this->requirePermission('publishPeerEntryDrafts:'.$entry->sectionId);
 		}
 
 		// Populate the main draft attributes
@@ -228,7 +228,7 @@ class EntryRevisionsController extends BaseEntriesController
 		// Even more permission enforcement
 		if ($draft->enabled)
 		{
-			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			$this->requirePermission('publishEntries:'.$entry->sectionId);
 		}
 
 		// Populate the field content
@@ -238,12 +238,12 @@ class EntryRevisionsController extends BaseEntriesController
 		// Publish the draft (finally!)
 		if (craft()->entryRevisions->publishDraft($draft))
 		{
-			craft()->userSession->setNotice(Craft::t('Draft published.'));
+			craft()->getSession()->setNotice(Craft::t('Draft published.'));
 			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t publish draft.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t publish draft.'));
 
 			// Send the draft back to the template
 			craft()->urlManager->setRouteVariables(array(
@@ -279,7 +279,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		$this->enforceEditEntryPermissions($entry);
-		$userSessionService = craft()->userSession;
+		$userSessionService = craft()->getUser();
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
@@ -290,24 +290,24 @@ class EntryRevisionsController extends BaseEntriesController
 			if ($entry->enabled)
 			{
 				// Make sure they have permission to make live changes to those
-				$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
+				$this->requirePermission('publishPeerEntries:'.$entry->sectionId);
 			}
 		}
 
 		if ($entry->enabled)
 		{
-			$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			$this->requirePermission('publishEntries:'.$entry->sectionId);
 		}
 
 		// Revert to the version
 		if (craft()->entryRevisions->revertEntryToVersion($version))
 		{
-			craft()->userSession->setNotice(Craft::t('Entry reverted to past version.'));
+			craft()->getSession()->setNotice(Craft::t('Entry reverted to past version.'));
 			$this->redirectToPostedUrl($version);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t revert entry to past version.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
 			craft()->urlManager->setRouteVariables(array(
@@ -336,7 +336,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->getContent()->title = craft()->request->getPost('title');
 
 		// Author
-		$authorId = craft()->request->getPost('author', ($draft->authorId ? $draft->authorId : craft()->userSession->getUser()->id));
+		$authorId = craft()->request->getPost('author', ($draft->authorId ? $draft->authorId : craft()->getUser()->getIdentity()->id));
 
 		if (is_array($authorId))
 		{

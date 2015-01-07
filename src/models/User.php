@@ -9,6 +9,8 @@ namespace craft\app\models;
 
 use craft\app\enums\ElementType;
 use craft\app\models\UserGroup   as UserGroupModel;
+use yii\web\IdentityInterface;
+use yii\base\NotSupportedException;
 
 /**
  * User model class.
@@ -16,7 +18,7 @@ use craft\app\models\UserGroup   as UserGroupModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class User extends BaseElementModel
+class User extends BaseElementModel implements IdentityInterface
 {
 	// Properties
 	// =========================================================================
@@ -37,6 +39,34 @@ class User extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @inheritDoc IdentityInterface::findIdentity()
+	 *
+	 * @param string|int $id
+	 * @return IdentityInterface|null
+	 */
+	public static function findIdentity($id)
+	{
+		$user = craft()->users->getUserById($id);
+
+		if ($user->status == UserStatus::Active)
+		{
+			return $user;
+		}
+	}
+
+	/**
+	 * @inheritDoc IdentityInterface::findIdentityByAccessToken()
+	 *
+	 * @param mixed $token
+	 * @param mixed $type
+	 * @return IdentityInterface|null
+	 */
+	public static function findIdentityByAccessToken($token, $type = null)
+	{
+		throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+	}
+
+	/**
 	 * Use the full name or username as the string representation.
 	 *
 	 * @return string
@@ -51,6 +81,120 @@ class User extends BaseElementModel
 		{
 			return $this->username;
 		}
+	}
+
+	/**
+	 * @inheritDoc IdentityInterface::getAuthKey()
+	 *
+	 * @return string|null
+	 * @see validateAuthKey()
+	 */
+	public function getAuthKey()
+	{
+		return $this->getAttribute('authKey');
+	}
+
+	/**
+	 * @inheritDoc IdentityInterface::validateAuthKey()
+	 *
+	 * @param string $authKey
+	 * @return boolean
+	 * @see getAuthKey()
+	 */
+	public function validateAuthKey($authKey)
+	{
+		return ($this->getAuthKey() === $authKey);
+	}
+
+	/**
+	 * Determines whether the user is allowed to be logged in with a given password.
+	 *
+	 * @param string $password The user's plain text passwerd.
+	 *
+	 * @return bool
+	 */
+	public function authenticate($password)
+	{
+		switch ($this->status)
+		{
+			case UserStatus::Archived:
+			{
+				$this->authError = AuthError::InvalidCredentials;
+				return false;
+			}
+
+			case UserStatus::Pending:
+			{
+				$this->authError = AuthError::PendingVerification;
+				return false;
+			}
+
+			case UserStatus::Suspended:
+			{
+				$this->errorCode = AuthError::AccountSuspended;
+				return false;
+			}
+
+			case UserStatus::Locked:
+			{
+				if (craft()->config->get('cooldownDuration'))
+				{
+					$this->authError = AuthError::AccountCooldown;
+				}
+				else
+				{
+					$this->authError = AuthError::AccountLocked;
+				}
+				return false;
+			}
+
+			case UserStatus::Active:
+			{
+				// Validate the password
+				if (!craft()->getSecurity()->validatePassword($password, $this->password))
+				{
+					craft()->users->handleInvalidLogin($this);
+
+					// Was that one bad password too many?
+					if ($this->status == UserStatus::Locked)
+					{
+						// Will set the authError to either AccountCooldown or AccountLocked
+						return $this->authenticate($password);
+					}
+					else
+					{
+						$this->authError = AuthError::InvalidCredentials;
+						return false;
+					}
+				}
+
+				// Is a password reset required?
+				if ($this->passwordResetRequired)
+				{
+					$this->authError = AuthError::PasswordResetRequired;
+					return false;
+				}
+
+				if (craft()->request->isCpRequest())
+				{
+					if (!$this->can('accessCp'))
+					{
+						$this->authError = AuthError::NoCpAccess;
+						return false;
+					}
+
+					if (!craft()->isSystemOn() && !$this->can('accessCpWhenSystemIsOff'))
+					{
+						$this->authError = AuthError::NoCpOfflineAccess;
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -265,7 +409,7 @@ class User extends BaseElementModel
 	 */
 	public function isEditable()
 	{
-		return craft()->userSession->checkPermission('editUsers');
+		return craft()->getUser()->checkPermission('editUsers');
 	}
 
 	/**
@@ -277,7 +421,7 @@ class User extends BaseElementModel
 	{
 		if ($this->id)
 		{
-			$currentUser = craft()->userSession->getUser();
+			$currentUser = craft()->getUser()->getIdentity();
 
 			if ($currentUser)
 			{
@@ -460,6 +604,7 @@ class User extends BaseElementModel
 		$requireUsername = !craft()->config->get('useEmailAsUsername');
 
 		return array_merge(parent::defineAttributes(), array(
+			'authKey'                    => AttributeType::String,
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
 			'photo'                      => AttributeType::String,
 			'firstName'                  => AttributeType::String,
@@ -484,6 +629,7 @@ class User extends BaseElementModel
 			'newPassword'                => AttributeType::String,
 			'currentPassword'            => AttributeType::String,
 			'verificationCodeIssuedDate' => AttributeType::DateTime,
+			'authError'                  => AttributeType::String,
 		));
 	}
 }

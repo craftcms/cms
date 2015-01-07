@@ -152,7 +152,7 @@ class AssetSources extends Component
 
 			foreach ($this->getAllSourceIds() as $sourceId)
 			{
-				if (craft()->userSession->checkPermission('viewAssetSource:'.$sourceId))
+				if (craft()->getUser()->checkPermission('viewAssetSource:'.$sourceId))
 				{
 					$this->_viewableSourceIds[] = $sourceId;
 				}
@@ -177,7 +177,7 @@ class AssetSources extends Component
 
 			foreach ($this->getAllSources() as $source)
 			{
-				if (craft()->userSession->checkPermission('viewAssetSource:'.$source->id))
+				if (craft()->getUser()->checkPermission('viewAssetSource:'.$source->id))
 				{
 					$this->_viewableSources[] = $source;
 				}

@@ -36,7 +36,7 @@ class EmailMessagesController extends BaseController
 	public function init()
 	{
 		// All email message actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**

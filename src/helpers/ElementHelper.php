@@ -214,7 +214,7 @@ class ElementHelper
 						$localeId = $localeInfo;
 					}
 
-					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					if (craft()->getUser()->checkPermission('editLocale:'.$localeId))
 					{
 						return true;
 					}
@@ -251,7 +251,7 @@ class ElementHelper
 						$localeId = $localeInfo;
 					}
 
-					if (craft()->userSession->checkPermission('editLocale:'.$localeId))
+					if (craft()->getUser()->checkPermission('editLocale:'.$localeId))
 					{
 						$localeIds[] = $localeId;
 					}

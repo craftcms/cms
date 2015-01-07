@@ -605,12 +605,12 @@ class Templates extends Component
 		if (craft()->isInstalled() && craft()->request->isCpRequest())
 		{
 			// Include any JS/resource flashes
-			foreach (craft()->userSession->getJsResourceFlashes() as $path)
+			foreach (craft()->getSession()->getJsResourceFlashes() as $path)
 			{
 				$this->includeJsResource($path);
 			}
 
-			foreach (craft()->userSession->getJsFlashes() as $js)
+			foreach (craft()->getSession()->getJsFlashes() as $js)
 			{
 				$this->includeJs($js, true);
 			}

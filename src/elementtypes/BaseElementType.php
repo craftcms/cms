@@ -190,7 +190,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 					$variables['structureEditable'] = true;
 
 					// Let StructuresController know that this user can make changes to the structure
-					craft()->userSession->authorize('editStructure:'.$variables['structure']->id);
+					craft()->getSession()->authorize('editStructure:'.$variables['structure']->id);
 				}
 			}
 			else

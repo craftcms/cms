@@ -34,7 +34,7 @@ class TagsController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$tagGroups = craft()->tags->getAllTagGroups();
 
@@ -53,7 +53,7 @@ class TagsController extends BaseController
 	 */
 	public function actionEditTagGroup(array $variables = array())
 	{
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		// Breadcrumbs
 		$variables['crumbs'] = array(
@@ -101,7 +101,7 @@ class TagsController extends BaseController
 	public function actionSaveTagGroup()
 	{
 		$this->requirePostRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$tagGroup = new TagGroupModel();
 
@@ -118,12 +118,12 @@ class TagsController extends BaseController
 		// Save it
 		if (craft()->tags->saveTagGroup($tagGroup))
 		{
-			craft()->userSession->setNotice(Craft::t('Tag group saved.'));
+			craft()->getSession()->setNotice(Craft::t('Tag group saved.'));
 			$this->redirectToPostedUrl($tagGroup);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save the tag group.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save the tag group.'));
 		}
 
 		// Send the tag group back to the template
@@ -141,7 +141,7 @@ class TagsController extends BaseController
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 
 		$sectionId = craft()->request->getRequiredPost('id');
 

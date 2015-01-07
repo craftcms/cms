@@ -36,7 +36,7 @@ class SectionsController extends BaseController
 	public function init()
 	{
 		// All section actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -214,12 +214,12 @@ class SectionsController extends BaseController
 		// Save it
 		if (craft()->sections->saveSection($section))
 		{
-			craft()->userSession->setNotice(Craft::t('Section saved.'));
+			craft()->getSession()->setNotice(Craft::t('Section saved.'));
 			$this->redirectToPostedUrl($section);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save section.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save section.'));
 		}
 
 		// Send the section back to the template
@@ -380,12 +380,12 @@ class SectionsController extends BaseController
 		// Save it
 		if (craft()->sections->saveEntryType($entryType))
 		{
-			craft()->userSession->setNotice(Craft::t('Entry type saved.'));
+			craft()->getSession()->setNotice(Craft::t('Entry type saved.'));
 			$this->redirectToPostedUrl($entryType);
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save entry type.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save entry type.'));
 		}
 
 		// Send the entry type back to the template

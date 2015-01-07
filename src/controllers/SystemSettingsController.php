@@ -36,7 +36,7 @@ class SystemSettingsController extends BaseController
 	public function init()
 	{
 		// All system setting actions require an admin
-		craft()->userSession->requireAdmin();
+		$this->requireAdmin();
 	}
 
 	/**
@@ -137,12 +137,12 @@ class SystemSettingsController extends BaseController
 
 		if (craft()->saveInfo($info))
 		{
-			craft()->userSession->setNotice(Craft::t('General settings saved.'));
+			craft()->getSession()->setNotice(Craft::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			craft()->userSession->setError(Craft::t('Couldn’t save general settings.'));
+			craft()->getSession()->setError(Craft::t('Couldn’t save general settings.'));
 
 			// Send the info back to the template
 			craft()->urlManager->setRouteVariables(array(
@@ -167,12 +167,12 @@ class SystemSettingsController extends BaseController
 		{
 			if (craft()->systemSettings->saveSettings('email', $settings))
 			{
-				craft()->userSession->setNotice(Craft::t('Email settings saved.'));
+				craft()->getSession()->setNotice(Craft::t('Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
 		}
 
-		craft()->userSession->setError(Craft::t('Couldn’t save email settings.'));
+		craft()->getSession()->setError(Craft::t('Couldn’t save email settings.'));
 
 		// Send the settings back to the template
 		craft()->urlManager->setRouteVariables(array(

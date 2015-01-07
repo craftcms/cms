@@ -29,8 +29,7 @@ abstract class BaseController extends \CController
 	 * the array list.
 	 *
 	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
-	 * login on a few, it's best to use [[\craft\app\services\UserSession::requireLogin() craft()->userSession->requireLogin()]]
-	 * in the individual methods.
+	 * login on a few, it's best to call [[requireLogin()]] in the individual methods.
 	 *
 	 * @var bool
 	 */
@@ -160,9 +159,11 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (craft()->userSession->isGuest())
+		$user = craft()->getUser();
+
+		if ($user->getIsGuest())
 		{
-			craft()->userSession->requireLogin();
+			$user->loginRequired();
 		}
 	}
 
@@ -174,9 +175,45 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAdmin()
 	{
-		if (!craft()->userSession->isAdmin())
+		// First make sure someone's actually logged in
+		$this->requireLogin();
+
+		// Make sure they're an admin
+		if (!craft()->getUser()->getIsAdmin())
 		{
 			throw new HttpException(403, Craft::t('This action may only be performed by admins.'));
+		}
+	}
+
+	/**
+	 * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
+	 *
+	 * @param string $permissionName The name of the permission.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function requirePermission($permissionName)
+	{
+		if (!craft()->getUser()->checkPermission($permissionName))
+		{
+			throw new HttpException(403);
+		}
+	}
+
+	/**
+	 * Checks whether the current user can perform a given action, and ends the request with a 403 error if they don’t.
+	 *
+	 * @param string $action The name of the action to check.
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function requireAuthorization($action)
+	{
+		if (!craft()->getSession()->checkAuthorization($action))
+		{
+			throw new HttpException(403);
 		}
 	}
 
@@ -311,25 +348,18 @@ abstract class BaseController extends \CController
 	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access
 	 * to or as a bool that applies to all actions.
 	 *
-	 * @param \CAction $action
+	 * @param \yii\base\Action $action The action to be executed.
 	 *
-	 * @return bool
+	 * @return bool Whether the action should continue to run.
 	 */
 	public function beforeAction($action)
 	{
-		if (is_array($this->allowAnonymous))
+		if (
+			(is_array($this->allowAnonymous) && (!preg_grep("/{$action->id}/i", $this->allowAnonymous))) ||
+			$this->allowAnonymous === false
+		)
 		{
-			if (!preg_grep("/{$this->getAction()->id}/i", $this->allowAnonymous))
-			{
-				craft()->userSession->requireLogin();
-			}
-		}
-		elseif (is_bool($this->allowAnonymous))
-		{
-			if ($this->allowAnonymous == false)
-			{
-				craft()->userSession->requireLogin();
-			}
+			$this->requireLogin();
 		}
 
 		return true;

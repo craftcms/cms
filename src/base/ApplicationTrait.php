@@ -288,7 +288,7 @@ trait ApplicationTrait
 	public function canUpgradeEdition()
 	{
 		// Only admins can upgrade Craft
-		if (craft()->userSession->isAdmin())
+		if (craft()->getUser()->getIsAdmin())
 		{
 			// If they're running on a testable domain, go for it
 			if ($this->canTestEditions())
@@ -806,7 +806,7 @@ trait ApplicationTrait
 					try
 					{
 						// If the user is logged in *and* has a primary language set, use that
-						$user = craft()->userSession->getUser();
+						$user = craft()->getUser()->getIdentity();
 
 						if ($user && $user->preferredLocale)
 						{
