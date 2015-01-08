@@ -54,7 +54,7 @@ class TableFieldType extends BaseFieldType
 			$this->getSettings()->columns = $columns;
 		}
 
-		if (!$defaults)
+		if ($defaults === null)
 		{
 			$defaults = array('row1' => array());
 		}
@@ -217,6 +217,23 @@ class TableFieldType extends BaseFieldType
 			'columns' => AttributeType::Mixed,
 			'defaults' => AttributeType::Mixed,
 		);
+	}
+
+	/**
+	 * @inheritDoc ISavableComponentType::prepSettings()
+	 *
+	 * @param array $settings
+	 *
+	 * @return array
+	 */
+	public function prepSettings($settings)
+	{
+		if (!isset($settings['defaults']))
+		{
+			$settings['defaults'] = array();
+		}
+
+		return $settings;
 	}
 
 	// Private Methods
