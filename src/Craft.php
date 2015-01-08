@@ -15,8 +15,6 @@ use craft\app\models\Info     as InfoModel;
  *
  * It encapsulates [[\Yii]] and ultimately [[\YiiBase]], which provides the actual implementation.
  *
- * A singleton instance of the class can be accessed via `Craft::$app`.
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
