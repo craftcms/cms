@@ -39,7 +39,7 @@ class DateTime extends \DateTime
 	}
 
 	/**
-	 * Creates a new \Craft\DateTime object (rather than \DateTime)
+	 * Creates a new [[DateTime]] object (rather than \DateTime)
 	 *
 	 * @param string $format
 	 * @param string $time

@@ -7,6 +7,8 @@
 
 namespace craft\app\templating\twigextensions;
 
+use craft\app\Craft;
+
 /**
  * Class CraftTwigExtension
  *
@@ -57,15 +59,15 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getFilters()
 	{
-		$translateFilter = new \Twig_Filter_Function('\Craft\Craft::t');
-		$namespaceFilter = new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputs');
+		$translateFilter = new \Twig_Filter_Function('\craft\app\Craft::t');
+		$namespaceFilter = new \Twig_Filter_Function('\craft\app\Craft::$app->templates->namespaceInputs');
 		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return array(
-			'currency'           => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatCurrency'),
+			'currency'           => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', array('needs_environment' => true)),
-			'datetime'           => new \Twig_Filter_Function('\Craft\Craft::$app->dateFormatter->formatDateTime'),
-			'filesize'           => new \Twig_Filter_Function('\Craft\Craft::$app->formatter->formatSize'),
+			'datetime'           => new \Twig_Filter_Function('\craft\app\Craft::$app->dateFormatter->formatDateTime'),
+			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
@@ -76,11 +78,11 @@ class CraftTwigExtension extends \Twig_Extension
 			'md'                 => $markdownFilter,
 			'namespace'          => $namespaceFilter,
 			'ns'                 => $namespaceFilter,
-			'namespaceInputName' => new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputName'),
-			'namespaceInputId'   => new \Twig_Filter_Function('\Craft\Craft::$app->templates->namespaceInputId'),
-			'number'             => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatDecimal'),
+			'namespaceInputName' => new \Twig_Filter_Function('\craft\app\Craft::$app->templates->namespaceInputName'),
+			'namespaceInputId'   => new \Twig_Filter_Function('\craft\app\Craft::$app->templates->namespaceInputId'),
+			'number'             => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatDecimal'),
 			'parseRefs'          => new \Twig_Filter_Method($this, 'parseRefsFilter'),
-			'percentage'         => new \Twig_Filter_Function('\Craft\Craft::$app->numberFormatter->formatPercentage'),
+			'percentage'         => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatPercentage'),
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
@@ -323,10 +325,10 @@ class CraftTwigExtension extends \Twig_Extension
 			'getCsrfInput'         => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
 			'getHeadHtml'          => new \Twig_Function_Method($this, 'getHeadHtmlFunction'),
 			'getFootHtml'          => new \Twig_Function_Method($this, 'getFootHtmlFunction'),
-			'getTranslations'      => new \Twig_Function_Function('\Craft\Craft::$app->templates->getTranslations'),
+			'getTranslations'      => new \Twig_Function_Function('\craft\app\Craft::$app->templates->getTranslations'),
 			'max'                  => new \Twig_Function_Function('max'),
 			'min'                  => new \Twig_Function_Function('min'),
-			'renderObjectTemplate' => new \Twig_Function_Function('\Craft\Craft::$app->templates->renderObjectTemplate'),
+			'renderObjectTemplate' => new \Twig_Function_Function('\craft\app\Craft::$app->templates->renderObjectTemplate'),
 			'round'                => new \Twig_Function_Function('round'),
 			'resourceUrl'          => new \Twig_Function_Function('\Craft\UrlHelper::getResourceUrl'),
 			'shuffle'              => new \Twig_Function_Method($this, 'shuffleFunction'),

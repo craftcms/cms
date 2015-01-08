@@ -32,13 +32,13 @@ class Exit_Node extends \Twig_Node
 		if ($status = $this->getNode('status'))
 		{
 			$compiler
-				->write('throw new \Craft\HttpException(')
+				->write('throw new \craft\app\errors\HttpException(')
 				->subcompile($status)
 				->raw(");\n");
 		}
 		else
 		{
-			$compiler->write("\Craft\Craft::$app->end();\n");
+			$compiler->write("\craft\app\Craft::$app->end();\n");
 		}
 	}
 }

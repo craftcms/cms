@@ -33,7 +33,7 @@ class Paginate_Node extends \Twig_Node
 			//->write("\$context['_parent'] = (array) \$context;\n")
 			->write("list(\$context['paginate'], ")
 			->subcompile($this->getNode('elementsTarget'))
-			->raw(') = \Craft\TemplateHelper::paginateCriteria(')
+			->raw(') = \craft\app\helpers\TemplateHelper::paginateCriteria(')
 			->subcompile($this->getNode('criteria'))
 			->raw(");\n")
 			->subcompile($this->getNode('body'), false)

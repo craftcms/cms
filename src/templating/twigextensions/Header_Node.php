@@ -28,7 +28,7 @@ class Header_Node extends \Twig_Node
 	public function compile(\Twig_Compiler $compiler)
 	{
 		$compiler
-			->write('\Craft\HeaderHelper::setHeader(')
+			->write('\craft\app\helpers\HeaderHelper::setHeader(')
 			->subcompile($this->getNode('header'))
 			->raw(");\n");
 	}

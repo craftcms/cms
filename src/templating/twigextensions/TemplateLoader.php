@@ -7,6 +7,8 @@
 
 namespace craft\app\templating\twigextensions;
 
+use craft\app\Craft;
+
 /**
  * Loads Craft templates into Twig.
  *

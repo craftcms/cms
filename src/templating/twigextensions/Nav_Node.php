@@ -37,7 +37,7 @@ class Nav_Node extends \Twig_Node_For
 	 * @param null                             $lineno
 	 * @param null                             $tag
 	 *
-	 * @return \Craft\Nav_Node
+	 * @return \craft\app\templating\twigextensions\Nav_Node
 	 */
 	public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_NodeInterface $upperBody, \Twig_NodeInterface $lowerBody = null, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, $lineno, $tag = null)
 	{
