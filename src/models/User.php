@@ -123,7 +123,7 @@ class User extends BaseElementModel implements IdentityInterface
 
 		// The auth key is a combination of the hashed token, its row's UID, and the user agent string
 		return json_encode([
-			$hashedToken,
+			$token,
 			$tokenUid,
 			$userAgent,
 		], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
