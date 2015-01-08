@@ -8,10 +8,5 @@ return \craft\app\helpers\ArrayHelper::merge(
 		'basePath'    => CRAFT_APP_PATH,
 		'runtimePath' => CRAFT_STORAGE_PATH.'runtime/',
 		'name'        => 'Craft',
-
-		// autoloading model and component classes
-		'import' => [
-			'application.lib.*',
-		],
 	]
 );
