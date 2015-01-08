@@ -179,7 +179,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(\'key\', ConfigFile::Db) instead.');
 
-		if ($value = craft()->config->get($item, Config::Db))
+		if ($value = craft()->config->get($item, ConfigFile::Db))
 		{
 			return $value;
 		}
