@@ -8,9 +8,8 @@
 namespace craft\app\services;
 
 use craft\app\dates\DateTime;
-use yii\base\Component;
 use craft\app\records\SystemSettings as SystemSettingsRecord;
-use craft\app\web\Application;
+use yii\base\Component;
 
 /**
  * Class SystemSettings service.

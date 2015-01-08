@@ -12,10 +12,9 @@ use craft\app\enums\EmailerType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\StringHelper;
+use craft\app\models\Email as EmailModel;
+use craft\app\models\User as UserModel;
 use yii\base\Component;
-use craft\app\models\Email          as EmailModel;
-use craft\app\models\User           as UserModel;
-use craft\app\web\Application;
 
 /**
  * The Email service provides APIs for sending email in Craft.

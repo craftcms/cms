@@ -9,8 +9,8 @@ namespace craft\app\controllers;
 
 use craft\app\Craft;
 use craft\app\enums\SectionType;
-use craft\app\models\EntryDraft  as EntryDraftModel;
 use craft\app\errors\Exception;
+use craft\app\models\EntryDraft as EntryDraftModel;
 
 Craft::$app->requireEdition(Craft::Client);
 

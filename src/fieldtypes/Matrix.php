@@ -13,10 +13,10 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\BaseModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\Field           as FieldModel;
-use craft\app\models\MatrixBlock     as MatrixBlockModel;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\MatrixBlock as MatrixBlockModel;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
-use craft\app\models\MatrixSettings  as MatrixSettingsModel;
+use craft\app\models\MatrixSettings as MatrixSettingsModel;
 
 /**
  * Matrix fieldtype

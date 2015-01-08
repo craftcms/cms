@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\events\Event;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Set Status Element Action

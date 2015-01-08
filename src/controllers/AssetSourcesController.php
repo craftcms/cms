@@ -12,10 +12,10 @@ use craft\app\assetsourcetypes\S3;
 use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
+use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetSource         as AssetSourceModel;
-use craft\app\errors\HttpException;
+use craft\app\models\AssetSource as AssetSourceModel;
 use craft\app\variables\AssetSourceType;
 
 /**

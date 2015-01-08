@@ -8,7 +8,7 @@
 namespace craft\app\helpers;
 
 use craft\app\Craft;
-use craft\app\models\ElementCriteria      as ElementCriteriaModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\variables\Paginate;
 
 /**

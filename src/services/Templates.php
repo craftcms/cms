@@ -21,7 +21,6 @@ use craft\app\helpers\UrlHelper;
 use craft\app\templating\StringTemplate;
 use craft\app\templating\twigextensions\CraftTwigExtension;
 use yii\base\Component;
-use craft\app\web\Application;
 
 /**
  * The Templates service provides APIs for rendering templates, as well as interacting with other areas of Craft’s

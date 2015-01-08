@@ -14,7 +14,6 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\i18n\LocaleData;
-use craft\app\web\Application;
 use craft\app\web\CookieCollection;
 use craft\app\web\HttpCookie;
 

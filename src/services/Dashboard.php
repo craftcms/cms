@@ -8,13 +8,12 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
-use craft\app\errors\Exception;
-use yii\base\Component;
 use craft\app\enums\ComponentType;
-use craft\app\models\Widget             as WidgetModel;
+use craft\app\errors\Exception;
+use craft\app\models\Widget as WidgetModel;
+use craft\app\records\Widget as WidgetRecord;
 use craft\app\widgets\BaseWidget;
-use craft\app\records\Widget            as WidgetRecord;
-use craft\app\web\Application;
+use yii\base\Component;
 
 /**
  * Class Dashboard service.

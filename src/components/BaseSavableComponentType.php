@@ -8,7 +8,7 @@
 namespace craft\app\components;
 
 use craft\app\models\BaseModel;
-use craft\app\models\Params     as ParamsModel;
+use craft\app\models\Params as ParamsModel;
 
 /**
  * Base savable component class.

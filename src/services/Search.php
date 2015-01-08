@@ -11,12 +11,11 @@ use craft\app\Craft;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\models\BaseElementModel;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;
 use craft\app\search\SearchQueryTermGroup;
 use yii\base\Component;
-use craft\app\models\BaseElementModel;
-use craft\app\web\Application;
 
 /**
  * Handles search operations.

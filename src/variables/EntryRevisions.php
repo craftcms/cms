@@ -8,7 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\Craft;
-use craft\app\models\EntryDraft   as EntryDraftModel;
+use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
 
 Craft::$app->requireEdition(Craft::Client);

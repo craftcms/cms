@@ -12,8 +12,8 @@ use craft\app\db\DbCommand;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Category          as CategoryModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use craft\app\models\Category as CategoryModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * The Category class is responsible for implementing and defining categories as a native element type in

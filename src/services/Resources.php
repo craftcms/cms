@@ -19,7 +19,6 @@ use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use yii\base\Component;
-use craft\app\web\Application;
 
 /**
  * Class Resources service.

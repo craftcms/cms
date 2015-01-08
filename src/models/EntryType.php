@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Section       as SectionModel;
+use craft\app\models\Section as SectionModel;
 
 /**
  * EntryType model class.

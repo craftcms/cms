@@ -19,7 +19,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\User           as UserModel;
+use craft\app\models\User as UserModel;
 use craft\app\web\UploadedFile;
 
 /**

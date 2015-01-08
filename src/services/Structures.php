@@ -10,12 +10,11 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
-use yii\base\Component;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Structure          as StructureModel;
-use craft\app\records\StructureElement  as StructureElementRecord;
-use craft\app\records\Structure         as StructureRecord;
-use craft\app\web\Application;
+use craft\app\models\Structure as StructureModel;
+use craft\app\records\Structure as StructureRecord;
+use craft\app\records\StructureElement as StructureElementRecord;
+use yii\base\Component;
 
 /**
  * Class Structures service.

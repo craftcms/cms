@@ -10,16 +10,10 @@ namespace craft\app\web;
 use craft\app\Craft;
 use craft\app\dates\DateInterval;
 use craft\app\enums\LogLevel;
-use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Password     as PasswordModel;
-use craft\app\models\User         as UserModel;
-use craft\app\models\Username     as UsernameModel;
-use craft\app\users\UserIdentity;
-use craft\app\web\Application;
-use craft\app\web\HttpCookie;
+use craft\app\models\User as UserModel;
 use yii\web\Cookie;
+use yii\web\IdentityInterface;
 
 /**
  * The User service provides APIs for managing the user authentication status.
@@ -340,7 +334,7 @@ class User extends \yii\web\User
 		{
 			$identityData = json_decode($cookieValue, true);
 
-			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]);)
+			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]);
 			{
 				$authData = UserModel::getAuthData($identityData[1]);
 

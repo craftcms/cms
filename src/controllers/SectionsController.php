@@ -11,12 +11,12 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
+use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\EntryType      as EntryTypeModel;
-use craft\app\models\Section        as SectionModel;
-use craft\app\models\SectionLocale  as SectionLocaleModel;
-use craft\app\errors\HttpException;
+use craft\app\models\EntryType as EntryTypeModel;
+use craft\app\models\Section as SectionModel;
+use craft\app\models\SectionLocale as SectionLocaleModel;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as

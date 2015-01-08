@@ -11,12 +11,11 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\models\Tag as TagModel;
+use craft\app\models\TagGroup as TagGroupModel;
+use craft\app\records\Tag as TagRecord;
+use craft\app\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
-use craft\app\models\Tag        as TagModel;
-use craft\app\models\TagGroup   as TagGroupModel;
-use craft\app\records\TagGroup  as TagGroupRecord;
-use craft\app\records\Tag       as TagRecord;
-use craft\app\web\Application;
 
 /**
  * Class Tags service.

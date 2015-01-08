@@ -11,10 +11,9 @@ use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
-use craft\app\models\GlobalSet    as GlobalSetModel;
-use craft\app\records\GlobalSet   as GlobalSetRecord;
-use craft\app\web\Application;
 
 /**
  * Class Globals service.

@@ -14,12 +14,11 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
-use yii\base\Component;
-use craft\app\models\AssetFile           as AssetFileModel;
-use craft\app\models\AssetTransform      as AssetTransformModel;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
-use craft\app\records\AssetTransform     as AssetTransformRecord;
-use craft\app\web\Application;
+use craft\app\records\AssetTransform as AssetTransformRecord;
+use yii\base\Component;
 
 /**
  * Class AssetTransforms service.

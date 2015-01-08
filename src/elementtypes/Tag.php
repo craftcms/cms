@@ -12,8 +12,8 @@ use craft\app\db\DbCommand;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
-use craft\app\models\Tag               as TagModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Tag as TagModel;
 
 /**
  * The Tag class is responsible for implementing and defining tags as a native element type in Craft.

@@ -10,8 +10,7 @@ namespace craft\app\models;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
-use craft\app\models\FieldLayout;
-use craft\app\models\TagGroup      as TagGroupModel;
+use craft\app\models\TagGroup as TagGroupModel;
 
 /**
  * Tag model class.

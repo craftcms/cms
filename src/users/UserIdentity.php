@@ -10,7 +10,7 @@ namespace craft\app\users;
 use craft\app\Craft;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
-use craft\app\models\User       as UserModel;
+use craft\app\models\User as UserModel;
 
 /**
  * UserIdentity represents the data needed to identify a user. It contains the authentication method that checks if the

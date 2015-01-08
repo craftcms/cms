@@ -7,18 +7,17 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\JsonHelper;
-use yii\base\Component;
-use craft\app\Craft;
-use craft\app\models\Entry         as EntryModel;
-use craft\app\models\EntryDraft    as EntryDraftModel;
-use craft\app\models\EntryVersion  as EntryVersionModel;
-use craft\app\records\EntryDraft   as EntryDraftRecord;
+use craft\app\models\Entry as EntryModel;
+use craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\models\EntryVersion as EntryVersionModel;
+use craft\app\records\EntryDraft as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
-use craft\app\web\Application;
+use yii\base\Component;
 
 Craft::$app->requireEdition(Craft::Client);
 

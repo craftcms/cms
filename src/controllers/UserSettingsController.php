@@ -8,8 +8,8 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
-use craft\app\models\UserGroup      as UserGroupModel;
 use craft\app\errors\HttpException;
+use craft\app\models\UserGroup as UserGroupModel;
 
 Craft::$app->requireEdition(Craft::Pro);
 

@@ -16,11 +16,11 @@ use craft\app\enums\ElementType;
 use craft\app\enums\UserStatus;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\UserGroup        as UserGroupModel;
-use craft\app\models\User             as UserModel;
-use craft\app\records\Session         as SessionRecord;
-use yii\web\IdentityInterface;
+use craft\app\models\User as UserModel;
+use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\records\Session as SessionRecord;
 use yii\base\NotSupportedException;
+use yii\web\IdentityInterface;
 
 /**
  * User model class.
@@ -52,6 +52,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 * @inheritDoc IdentityInterface::findIdentity()
 	 *
 	 * @param string|int $id
+	 *
 	 * @return IdentityInterface|null
 	 */
 	public static function findIdentity($id)
@@ -69,6 +70,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 *
 	 * @param mixed $token
 	 * @param mixed $type
+	 *
 	 * @return IdentityInterface|null
 	 */
 	public static function findIdentityByAccessToken($token, $type = null)
@@ -80,7 +82,8 @@ class User extends BaseElementModel implements IdentityInterface
 	 * Returns the authentication data from a given auth key.
 	 *
 	 * @param string $authKey
-	 * @return arary|null The authentication data, or `null` if it was invalid.
+	 *
+	 * @return array|null The authentication data, or `null` if it was invalid.
 	 */
 	public static function getAuthData($authKey)
 	{
@@ -112,8 +115,8 @@ class User extends BaseElementModel implements IdentityInterface
 	/**
 	 * @inheritDoc IdentityInterface::getAuthKey()
 	 *
-	 * @return string|null
 	 * @see validateAuthKey()
+	 * @return string|null
 	 */
 	public function getAuthKey()
 	{
@@ -133,8 +136,9 @@ class User extends BaseElementModel implements IdentityInterface
 	 * @inheritDoc IdentityInterface::validateAuthKey()
 	 *
 	 * @param string $authKey
-	 * @return boolean
+	 *
 	 * @see getAuthKey()
+	 * @return boolean
 	 */
 	public function validateAuthKey($authKey)
 	{
@@ -407,6 +411,8 @@ class User extends BaseElementModel implements IdentityInterface
 
 	/**
 	 * Sets a user's status to active.
+	 *
+	 * @return null
 	 */
 	public function setActive()
 	{
@@ -686,6 +692,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 * Saves a new session record for the user.
 	 *
 	 * @param string $sessionToken
+	 *
 	 * @return string The new session row's UID.
 	 */
 	private function _storeSessionToken(UserModel $user, $sessionToken)
@@ -701,6 +708,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 * Finds a session token by its row's UID.
 	 *
 	 * @param string $uid
+	 *
 	 * @return string|null The session token, or `null` if it could not be found.
 	 */
 	private function _findSessionTokenByUid($uid)
@@ -717,6 +725,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 * if the 'requireMatchingUserAgentForSession' config setting is enabled.
 	 *
 	 * @param string $userAgent
+	 *
 	 * @return boolean
 	 */
 	private function _validateUserAgent($userAgent)

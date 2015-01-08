@@ -8,6 +8,9 @@
 namespace craft\app\templating\twigextensions;
 
 use craft\app\Craft;
+use craft\app\errors\Exception;
+use craft\app\errors\TemplateLoaderException;
+use craft\app\helpers\IOHelper;
 
 /**
  * Loads Craft templates into Twig.

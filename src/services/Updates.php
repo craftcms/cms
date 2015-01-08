@@ -16,12 +16,11 @@ use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UpdateHelper;
+use craft\app\models\AppUpdate as AppUpdateModel;
+use craft\app\models\PluginUpdate as PluginUpdateModel;
+use craft\app\models\Update as UpdateModel;
 use craft\app\updates\Updater;
 use yii\base\Component;
-use craft\app\models\AppUpdate                 as AppUpdateModel;
-use craft\app\models\PluginUpdate              as PluginUpdateModel;
-use craft\app\models\Update                    as UpdateModel;
-use craft\app\web\Application;
 
 /**
  * Class Updates service.

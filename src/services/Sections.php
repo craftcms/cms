@@ -14,15 +14,14 @@ use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\models\EntryType as EntryTypeModel;
+use craft\app\models\Section as SectionModel;
+use craft\app\models\SectionLocale as SectionLocaleModel;
+use craft\app\models\Structure as StructureModel;
+use craft\app\records\EntryType as EntryTypeRecord;
+use craft\app\records\Section as SectionRecord;
+use craft\app\records\SectionLocale as SectionLocaleRecord;
 use yii\base\Component;
-use craft\app\models\EntryType          as EntryTypeModel;
-use craft\app\models\Section            as SectionModel;
-use craft\app\models\SectionLocale      as SectionLocaleModel;
-use craft\app\models\Structure          as StructureModel;
-use craft\app\records\EntryType         as EntryTypeRecord;
-use craft\app\records\SectionLocale     as SectionLocaleRecord;
-use craft\app\records\Section           as SectionRecord;
-use craft\app\web\Application;
 
 /**
  * Class Sections service.
