@@ -1458,8 +1458,8 @@ class UsersController extends BaseController
 			Craft::$app->getSession()->setError($message);
 
 			Craft::$app->urlManager->setRouteVariables([
-				'loginName'    => $loginName,
-				'rememberMe'   => $rememberMe,
+				'loginName'    => Craft::$app->request->getPost('loginName'),
+				'rememberMe'   => (bool) Craft::$app->request->getPost('rememberMe'),
 				'errorCode'    => $authError,
 				'errorMessage' => $message,
 			]);

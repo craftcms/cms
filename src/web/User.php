@@ -271,8 +271,8 @@ class User extends \yii\web\User
 				$authKey = $data[1];
 
 				Craft::$app->db->createCommand()->delete('sessions', ['and', 'userId=:userId', 'uid=:uid'], [
-					'userId' => $user->id,
-					'token' => $authKey
+					'userId' => $identity->id,
+					'token'  => $authKey
 				]);
 			}
 		}
@@ -346,7 +346,7 @@ class User extends \yii\web\User
 					Craft::$app->db->createCommand()->update('sessions',
 						[],
 						['and', 'userId=:userId', 'uid=:uid'],
-						[':userId' => $this->getId(), ':uid' => $uid]
+						[':userId' => $this->getId(), ':uid' => $tokenUid]
 					);
 				}
 			}
