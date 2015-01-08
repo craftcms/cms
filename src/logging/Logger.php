@@ -62,7 +62,7 @@ class Logger extends \yii\log\Logger
 			$plugin = 'craft';
 		}
 
-		$this->_logs[] = array($message, $level, $category, microtime(true), $force, $plugin);
+		$this->_logs[] = [$message, $level, $category, microtime(true), $force, $plugin];
 		$this->_logCount++;
 
 		if ($this->autoFlush > 0 && $this->_logCount >= $this->autoFlush && !$this->_processing)
@@ -93,14 +93,14 @@ class Logger extends \yii\log\Logger
 	 *
 	 * @return array The list of messages. Each array element represents one message with the following structure:
 	 *
-	 *     array(
+	 *     [
 	 *        [0] => message (string)
 	 *        [1] => level (string)
 	 *        [2] => category (string)
 	 *        [3] => timestamp (float, obtained by microtime(true)
-	 *     );
+	 *     ];
 	 */
-	public function getLogs($levels = '', $categories = array(), $except = array())
+	public function getLogs($levels = '', $categories = [], $except = [])
 	{
 		$this->_levels = preg_split('/[\s,]+/', StringHelper::toLowerCase($levels), -1, PREG_SPLIT_NO_EMPTY);
 
@@ -110,7 +110,7 @@ class Logger extends \yii\log\Logger
 		}
 		else
 		{
-			$this->_categories = array_filter(array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $categories));
+			$this->_categories = array_filter(array_map(['\craft\app\helpers\StringHelper', 'toLowerCase'], $categories));
 		}
 
 		if (is_string($except))
@@ -119,19 +119,19 @@ class Logger extends \yii\log\Logger
 		}
 		else
 		{
-			$this->_except = array_filter(array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $except));
+			$this->_except = array_filter(array_map(['\craft\app\helpers\StringHelper', 'toLowerCase'], $except));
 		}
 
 		$ret = $this->_logs;
 
 		if (!empty($levels))
 		{
-			$ret = array_values(array_filter($ret, array($this, 'filterByLevel')));
+			$ret = array_values(array_filter($ret, [$this, 'filterByLevel']));
 		}
 
 		if (!empty($this->_categories) || !empty($this->_except))
 		{
-			$ret = array_values(array_filter($ret, array($this, 'filterByCategory')));
+			$ret = array_values(array_filter($ret, [$this, 'filterByCategory']));
 		}
 
 		return $ret;

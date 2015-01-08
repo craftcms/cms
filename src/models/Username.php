@@ -55,8 +55,8 @@ class Username extends BaseModel
 	{
 		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
 
-		return array(
-			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-		);
+		return [
+			'username' => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
+		];
 	}
 }

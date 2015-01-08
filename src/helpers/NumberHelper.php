@@ -29,7 +29,7 @@ class NumberHelper
 	 */
 	public static function word($num)
 	{
-		$numberWordMap = array(
+		$numberWordMap = [
 				1 => Craft::t('one'),
 				2 => Craft::t('two'),
 				3 => Craft::t('three'),
@@ -39,7 +39,7 @@ class NumberHelper
 				7 => Craft::t('seven'),
 				8 => Craft::t('eight'),
 				9 => Craft::t('nine')
-			);
+		];
 
 		if (isset($numberWordMap[$num]))
 		{
@@ -97,7 +97,7 @@ class NumberHelper
 	{
 		$roman = '';
 
-		$map = array(
+		$map = [
 			'M'  => 1000,
 			'CM' => 900,
 			'D'  => 500,
@@ -111,7 +111,7 @@ class NumberHelper
 			'V'  => 5,
 			'IV' => 4,
 			'I'  => 1
-		);
+		];
 
 		foreach ($map as $k => $v)
 		{

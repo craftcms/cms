@@ -60,7 +60,7 @@ class Routes extends Component
 			}
 		}
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -73,13 +73,13 @@ class Routes extends Component
 		$results = Craft::$app->db->createCommand()
 			->select('urlPattern, template')
 			->from('routes')
-			->where(array('or', 'locale is null', 'locale = :locale'), array(':locale' => Craft::$app->language))
+			->where(['or', 'locale is null', 'locale = :locale'], [':locale' => Craft::$app->language])
 			->order('sortOrder')
 			->queryAll();
 
 		if ($results)
 		{
-			$routes = array();
+			$routes = [];
 
 			foreach ($results as $result)
 			{
@@ -89,7 +89,7 @@ class Routes extends Component
 			return $routes;
 		}
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -112,7 +112,7 @@ class Routes extends Component
 
 			if (!$routeRecord)
 			{
-				throw new Exception(Craft::t('No route exists with the ID “{id}”.', array('id' => $routeId)));
+				throw new Exception(Craft::t('No route exists with the ID “{id}”.', ['id' => $routeId]));
 			}
 		}
 		else
@@ -173,7 +173,7 @@ class Routes extends Component
 	 */
 	public function deleteRouteById($routeId)
 	{
-		Craft::$app->db->createCommand()->delete('routes', array('id' => $routeId));
+		Craft::$app->db->createCommand()->delete('routes', ['id' => $routeId]);
 		return true;
 	}
 
@@ -188,8 +188,9 @@ class Routes extends Component
 	{
 		foreach ($routeIds as $order => $routeId)
 		{
-			$data = array('sortOrder' => $order + 1);
-			$condition = array('id' => $routeId);
+			$data = ['sortOrder' => $order + 1];
+			$condition = ['id' => $routeId];
+
 			Craft::$app->db->createCommand()->update('routes', $data, $condition);
 		}
 	}

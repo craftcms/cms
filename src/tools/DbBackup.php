@@ -49,11 +49,11 @@ class DbBackup extends BaseTool
 	 */
 	public function getOptionsHtml()
 	{
-		return Craft::$app->templates->render('_includes/forms/checkbox', array(
+		return Craft::$app->templates->render('_includes/forms/checkbox', [
 			'name'    => 'downloadBackup',
 			'label'   => Craft::t('Download backup?'),
 			'checked' => true,
-		));
+		]);
 	}
 
 	/**
@@ -63,11 +63,11 @@ class DbBackup extends BaseTool
 	 *
 	 * @return array
 	 */
-	public function performAction($params = array())
+	public function performAction($params = [])
 	{
 		// In addition to the default tables we want to ignore data in, we also don't care about data in the session
 		// table in this tools' case.
-		$file = Craft::$app->db->backup(array('sessions'));
+		$file = Craft::$app->db->backup(['sessions']);
 
 		if (IOHelper::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup'])
 		{
@@ -82,7 +82,7 @@ class DbBackup extends BaseTool
 
 			if (Zip::add($destZip, $file, Craft::$app->path->getDbBackupPath()))
 			{
-				return array('backupFile' => IOHelper::getFileName($destZip, false));
+				return ['backupFile' => IOHelper::getFileName($destZip, false)];
 			}
 		}
 	}

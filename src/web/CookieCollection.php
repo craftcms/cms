@@ -35,7 +35,7 @@ class CookieCollection extends \CCookieCollection
 	 */
 	protected function getCookies()
 	{
-		$cookies = array();
+		$cookies = [];
 
 		if ($this->getRequest()->enableCookieValidation)
 		{

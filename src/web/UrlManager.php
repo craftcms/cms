@@ -93,7 +93,7 @@ class UrlManager extends \CUrlManager
 			$this->setUrlFormat(static::GET_FORMAT);
 		}
 
-		$this->_routeVariables = array();
+		$this->_routeVariables = [];
 	}
 
 	/**
@@ -120,9 +120,9 @@ class UrlManager extends \CUrlManager
 	public function parseUrl($request)
 	{
 		$this->_routeAction = null;
-		$this->_routeParams = array(
-			'variables' => array()
-		);
+		$this->_routeParams = [
+			'variables' => []
+		];
 
 		// Is there a token in the URL?
 		$token = Craft::$app->request->getToken();
@@ -250,11 +250,11 @@ class UrlManager extends \CUrlManager
 			// Strings are template paths
 			if (is_string($route))
 			{
-				$route = array(
-					'params' => array(
+				$route = [
+					'params' => [
 						'template' => $route
-					)
-				);
+					]
+				];
 			}
 
 			if (!isset($route['action']))
@@ -287,7 +287,7 @@ class UrlManager extends \CUrlManager
 				if ($element)
 				{
 					// Do any plugins want a say in this?
-					$route = Craft::$app->plugins->callFirst('getElementRoute', array($element), true);
+					$route = Craft::$app->plugins->callFirst('getElementRoute', [$element], true);
 
 					if (!$route)
 					{
@@ -397,9 +397,9 @@ class UrlManager extends \CUrlManager
 				$route = $this->_normalizeRoute($route);
 
 				// Save the matched components as route variables
-				$routeVariables = array(
+				$routeVariables = [
 					'matches' => $match
-				);
+				];
 
 				// Add any named subpatterns too
 				foreach ($match as $key => $value)
@@ -431,12 +431,12 @@ class UrlManager extends \CUrlManager
 	{
 		if (!isset($this->_regexTokens))
 		{
-			$this->_regexTokens = array(
+			$this->_regexTokens = [
 				'{handle}',
 				'{slug}',
-			);
+			];
 
-			$slugChars = array('.', '_', '-');
+			$slugChars = ['.', '_', '-'];
 			$slugWordSeparator = Craft::$app->config->get('slugWordSeparator');
 
 			if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars))
@@ -444,10 +444,10 @@ class UrlManager extends \CUrlManager
 				$slugChars[] = $slugWordSeparator;
 			}
 
-			$this->_regexTokenPatterns = array(
+			$this->_regexTokenPatterns = [
 				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
 				'(?:[\p{L}\p{N}'.preg_quote(implode($slugChars), '/').']+)',
-			);
+			];
 		}
 
 		return str_replace($this->_regexTokens, $this->_regexTokenPatterns, $pattern);

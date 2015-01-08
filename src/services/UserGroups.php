@@ -70,9 +70,9 @@ class UserGroups extends Component
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		$groupRecord = UserGroupRecord::model()->findByAttributes(array(
+		$groupRecord = UserGroupRecord::model()->findByAttributes([
 			'handle' => $groupHandle
-		));
+		]);
 
 		if ($groupRecord)
 		{
@@ -94,7 +94,7 @@ class UserGroups extends Component
 			->select('g.*')
 			->from('usergroups g')
 			->join('usergroups_users gu', 'gu.groupId = g.id')
-			->where(array('gu.userId' => $userId))
+			->where(['gu.userId' => $userId])
 			->queryAll();
 
 		return UserGroupModel::populateModels($query, $indexBy);
@@ -142,21 +142,21 @@ class UserGroups extends Component
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
 		Craft::$app->db->createCommand()
-			->delete('usergroups_users', array('userId' => $userId));
+			->delete('usergroups_users', ['userId' => $userId]);
 
 		if ($groupIds)
 		{
 			if (!is_array($groupIds))
 			{
-				$groupIds = array($groupIds);
+				$groupIds = [$groupIds];
 			}
 
 			foreach ($groupIds as $groupId)
 			{
-				$values[] = array($groupId, $userId);
+				$values[] = [$groupId, $userId];
 			}
 
-			Craft::$app->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+			Craft::$app->db->createCommand()->insertAll('usergroups_users', ['groupId', 'userId'], $values);
 		}
 
 		return true;
@@ -178,25 +178,25 @@ class UserGroups extends Component
 		if ($defaultGroupId)
 		{
 			// Fire an 'onBeforeAssignUserToDefaultGroup' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'           => $user,
 				'defaultGroupId' => $defaultGroupId
-			));
+			]);
 
 			$this->onBeforeAssignUserToDefaultGroup($event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
 			{
-				$success = $this->assignUserToGroups($user->id, array($defaultGroupId));
+				$success = $this->assignUserToGroups($user->id, [$defaultGroupId]);
 
 				if ($success)
 				{
 					// Fire an 'onAssignUserToDefaultGroup' event
-					$this->onAssignUserToDefaultGroup(new Event($this, array(
+					$this->onAssignUserToDefaultGroup(new Event($this, [
 						'user'           => $user,
 						'defaultGroupId' => $defaultGroupId
-					)));
+					]));
 
 					return true;
 				}
@@ -215,7 +215,7 @@ class UserGroups extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		Craft::$app->db->createCommand()->delete('usergroups', array('id' => $groupId));
+		Craft::$app->db->createCommand()->delete('usergroups', ['id' => $groupId]);
 		return true;
 	}
 
@@ -285,6 +285,6 @@ class UserGroups extends Component
 	 */
 	private function _noGroupExists($groupId)
 	{
-		throw new Exception(Craft::t('No group exists with the ID “{id}”.', array('id' => $groupId)));
+		throw new Exception(Craft::t('No group exists with the ID “{id}”.', ['id' => $groupId]));
 	}
 }

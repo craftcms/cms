@@ -42,7 +42,7 @@ class Nav_Node extends \Twig_Node_For
 	public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_NodeInterface $upperBody, \Twig_NodeInterface $lowerBody = null, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, $lineno, $tag = null)
 	{
 		$this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
-		$body = new \Twig_Node(array($this->navItemNode, $upperBody));
+		$body = new \Twig_Node([$this->navItemNode, $upperBody]);
 
 		parent::__construct($keyTarget, $valueTarget, $seq, null, $body, null, $lineno, $tag);
 	}

@@ -34,7 +34,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 			!Craft::$app->request->isResourceRequest() &&
 			!Craft::$app->request->isAjaxRequest() &&
 			Craft::$app->config->get('devMode') &&
-			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
 		)
 		{
 			$viewFile = Craft::$app->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';

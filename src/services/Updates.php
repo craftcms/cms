@@ -219,11 +219,11 @@ class Updates extends Component
 	 */
 	public function setNewPluginInfo(BasePlugin $plugin)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->update('plugins', array(
+		$affectedRows = Craft::$app->db->createCommand()->update('plugins', [
 			'version' => $plugin->getVersion()
-		), array(
+		], [
 			'class' => $plugin->getClassHandle()
-		));
+		]);
 
 		return (bool) $affectedRows;
 	}
@@ -242,7 +242,7 @@ class Updates extends Component
 
 		$plugins = Craft::$app->plugins->getPlugins();
 
-		$pluginUpdateModels = array();
+		$pluginUpdateModels = [];
 
 		foreach ($plugins as $plugin)
 		{
@@ -267,10 +267,10 @@ class Updates extends Component
 	 */
 	public function getUnwritableFolders()
 	{
-		$checkPaths = array(
+		$checkPaths = [
 			Craft::$app->path->getAppPath(),
 			Craft::$app->path->getPluginsPath(),
-		);
+		];
 
 		$errorPath = null;
 
@@ -298,9 +298,9 @@ class Updates extends Component
 		try
 		{
 			// Fire an 'onBeginUpdate' event and pass in the type
-			$this->onBeginUpdate(new Event($this, array(
+			$this->onBeginUpdate(new Event($this, [
 				'type' => $manual ? 'manual' : 'auto'
-			)));
+			]));
 
 			$updater = new Updater();
 
@@ -323,7 +323,7 @@ class Updates extends Component
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -347,7 +347,7 @@ class Updates extends Component
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -366,11 +366,11 @@ class Updates extends Component
 			$updater->backupFiles($uid);
 
 			Craft::log('Finished backing up files.', LogLevel::Info, true);
-			return array('success' => true);
+			return ['success' => true];
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -389,11 +389,11 @@ class Updates extends Component
 			$updater->updateFiles($uid);
 
 			Craft::log('Finished updating files.', LogLevel::Info, true);
-			return array('success' => true);
+			return ['success' => true];
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -412,17 +412,17 @@ class Updates extends Component
 			if (!$result)
 			{
 				Craft::log('Did not backup database because there were no migrations to run.', LogLevel::Info, true);
-				return array('success' => true);
+				return ['success' => true];
 			}
 			else
 			{
 				Craft::log('Finished backing up database.', LogLevel::Info, true);
-				return array('success' => true, 'dbBackupPath' => $result);
+				return ['success' => true, 'dbBackupPath' => $result];
 			}
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -458,15 +458,15 @@ class Updates extends Component
 				else
 				{
 					Craft::log('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', LogLevel::Error);
-					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle {handle}.', array('handle' => $handle)));
+					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
 				}
 			}
 
-			return array('success' => true);
+			return ['success' => true];
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -488,18 +488,18 @@ class Updates extends Component
 			Craft::log('Finished cleaning up after the update.', LogLevel::Info, true);
 
 			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
-			$this->onEndUpdate(new Event($this, array(
+			$this->onEndUpdate(new Event($this, [
 				'success' => true
-			)));
+			]));
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage());
 
 			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
-			$this->onEndUpdate(new Event($this, array(
+			$this->onEndUpdate(new Event($this, [
 				'success' => true
-			)));
+			]));
 		}
 	}
 
@@ -514,9 +514,9 @@ class Updates extends Component
 		try
 		{
 			// Fire an 'onEndUpdate' event and pass in that the update failed.
-			$this->onEndUpdate(new Event($this, array(
+			$this->onEndUpdate(new Event($this, [
 				'success' => false
-			)));
+			]));
 
 			Craft::$app->config->maxPowerCaptain();
 
@@ -546,11 +546,11 @@ class Updates extends Component
 			Craft::log('Taking the site out of maintenance mode.', LogLevel::Info, true);
 			Craft::$app->disableMaintenanceMode();
 
-			return array('success' => true);
+			return ['success' => true];
 		}
 		catch (\Exception $e)
 		{
-			return array('success' => false, 'message' => $e->getMessage());
+			return ['success' => false, 'message' => $e->getMessage()];
 		}
 	}
 
@@ -639,7 +639,7 @@ class Updates extends Component
 	 */
 	public function getPluginsThatNeedDbUpdate()
 	{
-		$pluginsThatNeedDbUpdate = array();
+		$pluginsThatNeedDbUpdate = [];
 
 		$plugins = Craft::$app->plugins->getPlugins();
 

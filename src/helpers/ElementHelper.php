@@ -38,7 +38,7 @@ class ElementHelper
 			// Create a slug for them, based on the element's title.
 			// Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
 			// to mimic the default JavaScript-based slug generation.
-			$slug = str_replace(array('.', '_', '-'), ' ', $element->title);
+			$slug = str_replace(['.', '_', '-'], ' ', $element->title);
 		}
 
 		$element->slug = static::createSlug($slug);
@@ -98,14 +98,14 @@ class ElementHelper
 			return;
 		}
 
-		$uniqueUriConditions = array('and',
+		$uniqueUriConditions = ['and',
 			'locale = :locale',
 			'uri = :uri'
-		);
+		];
 
-		$uniqueUriParams = array(
+		$uniqueUriParams = [
 			':locale' => $element->locale
-		);
+		];
 
 		if ($element->id)
 		{
@@ -190,7 +190,7 @@ class ElementHelper
 	 */
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
-		$element = (object) array('slug' => StringHelper::randomString());
+		$element = (object) ['slug' => StringHelper::randomString()];
 		$uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
 
 		return (strpos($uri, $element->slug) !== false);
@@ -240,7 +240,7 @@ class ElementHelper
 	 */
 	public static function getEditableLocaleIdsForElement(BaseElementModel $element)
 	{
-		$localeIds = array();
+		$localeIds = [];
 
 		if ($element->isEditable())
 		{

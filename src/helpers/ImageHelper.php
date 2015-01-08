@@ -48,7 +48,7 @@ class ImageHelper
 			$targetWidth = round($targetHeight * $factor);
 		}
 
-		return array($targetWidth, $targetHeight);
+		return [$targetWidth, $targetHeight];
 	}
 
 	/**
@@ -60,7 +60,7 @@ class ImageHelper
 	 */
 	public static function isImageManipulatable($extension)
 	{
-		return in_array(mb_strtolower($extension), array('jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm'));
+		return in_array(mb_strtolower($extension), ['jpg', 'jpeg', 'gif', 'png', 'wbmp', 'xbm']);
 
 	}
 
@@ -71,7 +71,7 @@ class ImageHelper
 	 */
 	public static function getWebSafeFormats()
 	{
-		return array('jpg', 'jpeg', 'gif', 'png');
+		return ['jpg', 'jpeg', 'gif', 'png'];
 	}
 
 	/**
@@ -127,13 +127,13 @@ class ImageHelper
 
 		$color = $info['color'];
 
-		$type = array(
+		$type = [
 			0 => 'Greyscale',
 			2 => 'Truecolour',
 			3 => 'Indexed-colour',
 			4 => 'Greyscale with alpha',
 			6 => 'Truecolor with alpha'
-		);
+		];
 
 		if (empty($type[$color]))
 		{
@@ -159,6 +159,6 @@ class ImageHelper
 	{
 		$extension = IOHelper::getExtension($filePath);
 
-		return in_array(StringHelper::toLowerCase($extension), array('jpg', 'jpeg', 'tiff'));
+		return in_array(StringHelper::toLowerCase($extension), ['jpg', 'jpeg', 'tiff']);
 	}
 }

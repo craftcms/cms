@@ -40,9 +40,9 @@ class PlainText extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/PlainText/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PlainText/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -63,7 +63,7 @@ class PlainText extends BaseFieldType
 			$columnType = DbHelper::getTextualColumnTypeByContentLength($maxLength);
 		}
 
-		return array(AttributeType::String, 'column' => $columnType, 'maxLength' => $maxLength);
+		return [AttributeType::String, 'column' => $columnType, 'maxLength' => $maxLength];
 	}
 
 	/**
@@ -76,11 +76,11 @@ class PlainText extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/PlainText/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PlainText/input', [
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	// Protected Methods
@@ -93,11 +93,11 @@ class PlainText extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'placeholder'   => array(AttributeType::String),
-			'multiline'     => array(AttributeType::Bool),
-			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
-			'maxLength'     => array(AttributeType::Number, 'min' => 0),
-		);
+		return [
+			'placeholder'   => [AttributeType::String],
+			'multiline'     => [AttributeType::Bool],
+			'initialRows'   => [AttributeType::Number, 'min' => 1, 'default' => 4],
+			'maxLength'     => [AttributeType::Number, 'min' => 0],
+		];
 	}
 }

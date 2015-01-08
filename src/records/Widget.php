@@ -37,9 +37,9 @@ class Widget extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'user' => array(static::BELONGS_TO, 'User', 'userId', 'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'user' => [static::BELONGS_TO, 'User', 'userId', 'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	// Protected Methods
@@ -52,11 +52,11 @@ class Widget extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'type'      => array(AttributeType::ClassName, 'required' => true),
+		return [
+			'type'      => [AttributeType::ClassName, 'required' => true],
 			'sortOrder' => AttributeType::SortOrder,
 			'settings'  => AttributeType::Mixed,
-			'enabled'   => array(AttributeType::Bool, 'default' => true),
-		);
+			'enabled'   => [AttributeType::Bool, 'default' => true],
+		];
 	}
 }

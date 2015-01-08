@@ -37,10 +37,10 @@ class StructureElement extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'structure' => array(static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE),
-			'element'   => array(static::BELONGS_TO, 'Element', 'onDelete' => static::CASCADE),
-		);
+		return [
+			'structure' => [static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE],
+			'element'   => [static::BELONGS_TO, 'Element', 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,13 +50,13 @@ class StructureElement extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('structureId', 'elementId'), 'unique' => true),
-			array('columns' => array('root')),
-			array('columns' => array('lft')),
-			array('columns' => array('rgt')),
-			array('columns' => array('level')),
-		);
+		return [
+			['columns' => ['structureId', 'elementId'], 'unique' => true],
+			['columns' => ['root']],
+			['columns' => ['lft']],
+			['columns' => ['rgt']],
+			['columns' => ['level']],
+		];
 	}
 
 	/**
@@ -66,9 +66,9 @@ class StructureElement extends BaseRecord
 	 */
 	public function behaviors()
 	{
-		return array(
+		return [
 			'nestedSet' => 'app.extensions.NestedSetBehavior',
-		);
+		];
 	}
 
 	// Protected Methods

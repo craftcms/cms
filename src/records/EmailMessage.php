@@ -41,9 +41,9 @@ class EmailMessage extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'locale'  => array(static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -53,9 +53,9 @@ class EmailMessage extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('key', 'locale'), 'unique' => true),
-		);
+		return [
+			['columns' => ['key', 'locale'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods

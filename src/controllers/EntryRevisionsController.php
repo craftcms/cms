@@ -46,7 +46,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 			if (!$draft)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
+				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
 			}
 		}
 		else
@@ -68,7 +68,7 @@ class EntryRevisionsController extends BaseEntriesController
 			// Attempt to create a new entry
 
 			// Manually validate 'title' since the Elements service will just give it a title automatically.
-			$fields = array('title');
+			$fields = ['title'];
 			$content = $draft->getContent();
 			$content->setRequiredFields($fields);
 
@@ -100,9 +100,9 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables([
 				'entry' => $draft
-			));
+			]);
 		}
 	}
 
@@ -124,7 +124,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id)
@@ -138,7 +138,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (Craft::$app->entryRevisions->saveDraft($draft, false))
 		{
-			$this->returnJson(array('success' => true));
+			$this->returnJson(['success' => true]);
 		}
 		else
 		{
@@ -161,7 +161,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id)
@@ -190,7 +190,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', array('id' => $draftId)));
+			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		// Permission enforcement
@@ -198,7 +198,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $draft->id)));
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $draft->id]));
 		}
 
 		$this->enforceEditEntryPermissions($entry);
@@ -247,9 +247,9 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t publish draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables([
 				'entry' => $draft
-			));
+			]);
 		}
 	}
 
@@ -268,7 +268,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$version)
 		{
-			throw new Exception(Craft::t('No version exists with the ID “{id}”.', array('id' => $versionId)));
+			throw new Exception(Craft::t('No version exists with the ID “{id}”.', ['id' => $versionId]));
 		}
 
 		// Permission enforcement
@@ -276,7 +276,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $version->id)));
+			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $version->id]));
 		}
 
 		$this->enforceEditEntryPermissions($entry);
@@ -311,9 +311,9 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
-			Craft::$app->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables([
 				'entry' => $version
-			));
+			]);
 		}
 	}
 

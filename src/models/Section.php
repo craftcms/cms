@@ -70,7 +70,7 @@ class Section extends BaseModel
 			}
 			else
 			{
-				$this->_locales = array();
+				$this->_locales = [];
 			}
 		}
 
@@ -126,7 +126,7 @@ class Section extends BaseModel
 			}
 			else
 			{
-				$this->_entryTypes = array();
+				$this->_entryTypes = [];
 			}
 		}
 
@@ -136,7 +136,7 @@ class Section extends BaseModel
 		}
 		else
 		{
-			$entryTypes = array();
+			$entryTypes = [];
 
 			foreach ($this->_entryTypes as $entryType)
 			{

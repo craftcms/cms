@@ -29,7 +29,7 @@ class AssetOperationResponse extends BaseModel
 	/**
 	 * @var array
 	 */
-	private $_data = array();
+	private $_data = [];
 
 	// Public Methods
 	// =========================================================================
@@ -155,12 +155,12 @@ class AssetOperationResponse extends BaseModel
 		{
 			case static::StatusError:
 			{
-				return array_merge($this->_data, array(static::StatusError => $this->getAttribute('errorMessage')));
+				return array_merge($this->_data, [static::StatusError => $this->getAttribute('errorMessage')]);
 			}
 
 			case static::StatusSuccess:
 			{
-				return array_merge($this->_data, array(static::StatusSuccess => true));
+				return array_merge($this->_data, [static::StatusSuccess => true]);
 			}
 
 			case static::StatusConflict:
@@ -170,7 +170,7 @@ class AssetOperationResponse extends BaseModel
 
 		}
 
-		return array();
+		return [];
 	}
 
 	// Protected Methods

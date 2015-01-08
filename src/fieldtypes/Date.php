@@ -65,28 +65,28 @@ class Date extends BaseFieldType
 			$dateTimeValue = 'showTime';
 		}
 
-		$options = array(15, 30, 60);
+		$options = [15, 30, 60];
 		$options = array_combine($options, $options);
 
-		return Craft::$app->templates->render('_components/fieldtypes/Date/settings', array(
-			'options' => array(
-				array(
+		return Craft::$app->templates->render('_components/fieldtypes/Date/settings', [
+			'options' => [
+				[
 					'label' => Craft::t('Show date'),
 					'value' => 'showDate',
-				),
-				array(
+				],
+				[
 					'label' => Craft::t('Show time'),
 					'value' => 'showTime',
-				),
-				array(
+				],
+				[
 					'label' => Craft::t('Show date and time'),
 					'value' => 'showBoth',
-				)
-			),
+				]
+			],
 			'value' => $dateTimeValue,
 			'incrementOptions' => $options,
 			'settings' => $this->getSettings(),
-		));
+		]);
 	}
 
 	/**
@@ -99,12 +99,12 @@ class Date extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$variables = array(
+		$variables = [
 			'id'              => Craft::$app->templates->formatInputId($name),
 			'name'            => $name,
 			'value'           => $value,
 			'minuteIncrement' => $this->getSettings()->minuteIncrement
-		);
+		];
 
 		$input = '';
 
@@ -216,10 +216,10 @@ class Date extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'showDate'        => array(AttributeType::Bool, 'default' => true),
+		return [
+			'showDate'        => [AttributeType::Bool, 'default' => true],
 			'showTime'        => AttributeType::Bool,
-			'minuteIncrement' => array(AttributeType::Number, 'default' => 30, 'min' => 1, 'max' => 60),
-		);
+			'minuteIncrement' => [AttributeType::Number, 'default' => 30, 'min' => 1, 'max' => 60],
+		];
 	}
 }

@@ -89,14 +89,14 @@ class DeleteStaleTemplateCaches extends BaseTask
 		}
 		else
 		{
-			$this->_elementIds = array($elementId);
+			$this->_elementIds = [$elementId];
 		}
 
 		// Figure out how many rows we're dealing with
 		$totalRows = $this->_getQuery()->count('id');
 		$this->_batch = 0;
 		$this->_noMoreRows = false;
-		$this->_deletedCacheIds = array();
+		$this->_deletedCacheIds = [];
 
 		return $totalRows;
 	}
@@ -146,7 +146,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 			$criteria->status = null;
 
 			$criteriaElementIds = $criteria->ids();
-			$cacheIdsToDelete = array();
+			$cacheIdsToDelete = [];
 
 			foreach ($this->_elementIds as $elementId)
 			{
@@ -177,9 +177,9 @@ class DeleteStaleTemplateCaches extends BaseTask
 	 */
 	protected function defineSettings()
 	{
-		return array(
+		return [
 			'elementId' => AttributeType::Mixed,
-		);
+		];
 	}
 
 	// Private Methods
@@ -197,11 +197,11 @@ class DeleteStaleTemplateCaches extends BaseTask
 
 		if (is_array($this->_elementType))
 		{
-			$query->where(array('in', 'type', $this->_elementType));
+			$query->where(['in', 'type', $this->_elementType]);
 		}
 		else
 		{
-			$query->where('type = :type', array(':type' => $this->_elementType));
+			$query->where('type = :type', [':type' => $this->_elementType]);
 		}
 
 		return $query;

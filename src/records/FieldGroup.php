@@ -37,9 +37,9 @@ class FieldGroup extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'fields' => array(static::HAS_MANY, 'Field', 'groupId'),
-		);
+		return [
+			'fields' => [static::HAS_MANY, 'Field', 'groupId'],
+		];
 	}
 
 	/**
@@ -49,9 +49,9 @@ class FieldGroup extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -61,9 +61,9 @@ class FieldGroup extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

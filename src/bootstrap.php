@@ -117,7 +117,7 @@ if (file_exists($generalConfigPath))
 		// Normalize it to a multi-environment config
 		if (!array_key_exists('*', $generalConfig))
 		{
-			$generalConfig = array('*' => $generalConfig);
+			$generalConfig = ['*' => $generalConfig];
 		}
 
 		// Loop through all of the environment configs, figuring out what the final word is on Dev Mode

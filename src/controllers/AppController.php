@@ -42,10 +42,10 @@ class AppController extends BaseController
 		$forceRefresh = (bool) Craft::$app->request->getPost('forceRefresh');
 		Craft::$app->updates->getUpdates($forceRefresh);
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'total'    => Craft::$app->updates->getTotalAvailableUpdates(),
 			'critical' => Craft::$app->updates->isCriticalUpdateAvailable()
-		));
+		]);
 	}
 
 	/**
@@ -83,9 +83,9 @@ class AppController extends BaseController
 
 		if (Craft::$app->users->shunMessageForUser($user->id, $message, $tomorrow))
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => true
-			));
+			]);
 		}
 		else
 		{
@@ -108,9 +108,9 @@ class AppController extends BaseController
 
 		if ($response === true)
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => true
-			));
+			]);
 		}
 		else
 		{
@@ -147,7 +147,7 @@ class AppController extends BaseController
 			$this->returnErrorJson(Craft::t('Your license has an invalid Craft edition associated with it.'));
 		}
 
-		$editions = array();
+		$editions = [];
 
 		foreach ($etResponse->data as $edition => $info)
 		{
@@ -167,19 +167,19 @@ class AppController extends BaseController
 
 		$canTestEditions = Craft::$app->canTestEditions();
 
-		$modalHtml = Craft::$app->templates->render('_upgrademodal', array(
+		$modalHtml = Craft::$app->templates->render('_upgrademodal', [
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions
-		));
+		]);
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'success'         => true,
 			'editions'        => $editions,
 			'licensedEdition' => $etResponse->licensedEdition,
 			'canTestEditions' => $canTestEditions,
 			'modalHtml'       => $modalHtml
-		));
+		]);
 	}
 
 	/**
@@ -193,24 +193,24 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$model = new UpgradePurchaseModel(array(
+		$model = new UpgradePurchaseModel([
 			'ccTokenId'     => Craft::$app->request->getRequiredPost('ccTokenId'),
 			'edition'       => Craft::$app->request->getRequiredPost('edition'),
 			'expectedPrice' => Craft::$app->request->getRequiredPost('expectedPrice'),
-		));
+		]);
 
 		if (Craft::$app->et->purchaseUpgrade($model))
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => true,
 				'edition' => $model->edition
-			));
+			]);
 		}
 		else
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'errors' => $model->getErrors()
-			));
+			]);
 		}
 	}
 
@@ -234,9 +234,9 @@ class AppController extends BaseController
 		$edition = Craft::$app->request->getRequiredPost('edition');
 		Craft::$app->setEdition($edition);
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'success' => true
-		));
+		]);
 	}
 
 	/**
@@ -260,6 +260,6 @@ class AppController extends BaseController
 			$success = true;
 		}
 
-		$this->returnJson(array('success' => $success));
+		$this->returnJson(['success' => $success]);
 	}
 }

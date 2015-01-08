@@ -50,7 +50,7 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		$types = array();
+		$types = [];
 
 		foreach ($logs as $log)
 		{

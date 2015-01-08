@@ -82,10 +82,10 @@ class ElementRelationParamParser
 
 		if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement']))
 		{
-			$relatedTo = array($relatedTo);
+			$relatedTo = [$relatedTo];
 		}
 
-		$conditions = array();
+		$conditions = [];
 
 		if ($relatedTo[0] == 'and' || $relatedTo[0] == 'or')
 		{
@@ -99,7 +99,7 @@ class ElementRelationParamParser
 		if ($glue == 'or')
 		{
 			// Group all of the unspecified elements, so we avoid adding massive JOINs to the query
-			$unspecifiedElements = array();
+			$unspecifiedElements = [];
 
 			foreach ($relatedTo as $i => $relCriteria)
 			{
@@ -112,7 +112,7 @@ class ElementRelationParamParser
 
 			if ($unspecifiedElements)
 			{
-				$relatedTo[] = array('element' => $unspecifiedElements);
+				$relatedTo[] = ['element' => $unspecifiedElements];
 			}
 		}
 
@@ -182,13 +182,13 @@ class ElementRelationParamParser
 	{
 		if (!is_array($relCriteria))
 		{
-			$relCriteria = array('element' => $relCriteria);
+			$relCriteria = ['element' => $relCriteria];
 		}
 
 		// Get the element IDs, wherever they are
-		$relElementIds = array();
+		$relElementIds = [];
 
-		foreach (array('element', 'sourceElement', 'targetElement') as $elementParam)
+		foreach (['element', 'sourceElement', 'targetElement'] as $elementParam)
 		{
 			if (isset($relCriteria[$elementParam]))
 			{
@@ -227,14 +227,14 @@ class ElementRelationParamParser
 				$relCriteria['field'] = null;
 			}
 
-			return $this->parseRelationParam(array('or',
-				array('sourceElement' => $relElementIds, 'field' => $relCriteria['field']),
-				array('targetElement' => $relElementIds, 'field' => $relCriteria['field'])
-			), $query);
+			return $this->parseRelationParam(['or',
+				['sourceElement' => $relElementIds, 'field' => $relCriteria['field']],
+				['targetElement' => $relElementIds, 'field' => $relCriteria['field']]
+			], $query);
 		}
 
-		$conditions = array();
-		$normalFieldIds = array();
+		$conditions     = [];
+		$normalFieldIds = [];
 
 		if (!empty($relCriteria['field']))
 		{
@@ -265,7 +265,7 @@ class ElementRelationParamParser
 				// Is this a Matrix field?
 				if ($fieldModel->type == 'Matrix')
 				{
-					$blockTypeFieldIds = array();
+					$blockTypeFieldIds = [];
 
 					// Searching by a specific block type field?
 					if (isset($fieldHandleParts[1]))
@@ -300,8 +300,8 @@ class ElementRelationParamParser
 						$sourcesAlias            = 'sources'.$this->_joinSourcesCount;
 						$targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
 
-						$relationsJoinConditions = array('and', $sourcesAlias.'.targetId = elements.id');
-						$relationsJoinParams = array();
+						$relationsJoinConditions = ['and', $sourcesAlias.'.targetId = elements.id'];
+						$relationsJoinParams = [];
 
 						if (!empty($relCriteria['sourceLocale']))
 						{
@@ -339,17 +339,17 @@ class ElementRelationParamParser
 							$this->_sourceLocaleParamCount++;
 							$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
 
-							$relationsJoinConditions[] = array('or', $matrixBlockTargetsAlias.'.sourceLocale is null', $matrixBlockTargetsAlias.'.sourceLocale = '.$sourceLocaleParam);
+							$relationsJoinConditions[] = ['or', $matrixBlockTargetsAlias.'.sourceLocale is null', $matrixBlockTargetsAlias.'.sourceLocale = '.$sourceLocaleParam];
 							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 						}
 
 						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
 						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
 
-						$condition = array('and',
+						$condition = ['and',
 							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
 							$sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
-						);
+						];
 
 						if ($blockTypeFieldIds)
 						{
@@ -385,15 +385,15 @@ class ElementRelationParamParser
 				$relElementColumn = 'sourceId';
 			}
 
-			$relationsJoinConditions = array('and', $relTableAlias.'.'.$relElementColumn.' = elements.id');
-			$relationsJoinParams = array();
+			$relationsJoinConditions = ['and', $relTableAlias.'.'.$relElementColumn.' = elements.id'];
+			$relationsJoinParams = [];
 
 			if (!empty($relCriteria['sourceLocale']))
 			{
 				$this->_sourceLocaleParamCount++;
 				$sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
 
-				$relationsJoinConditions[] = array('or', $relTableAlias.'.sourceLocale is null', $relTableAlias.'.sourceLocale = '.$sourceLocaleParam);
+				$relationsJoinConditions[] = ['or', $relTableAlias.'.sourceLocale is null', $relTableAlias.'.sourceLocale = '.$sourceLocaleParam];
 				$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 			}
 
@@ -402,7 +402,7 @@ class ElementRelationParamParser
 
 			if ($normalFieldIds)
 			{
-				$condition = array('and', $condition, DbHelper::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params));
+				$condition = ['and', $condition, DbHelper::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)];
 			}
 
 			$conditions[] = $condition;

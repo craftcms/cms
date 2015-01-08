@@ -48,11 +48,11 @@ class AssetTransform extends BaseModel
 	 */
 	public static function getTransformModes()
 	{
-		return array(
+		return [
 			'crop'    => Craft::t('Scale and crop'),
 			'fit'     => Craft::t('Scale to fit'),
 			'stretch' => Craft::t('Stretch to fit')
-		);
+		];
 	}
 
 	// Protected Methods
@@ -65,7 +65,7 @@ class AssetTransform extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'                  => AttributeType::Number,
 			'name'                => AttributeType::String,
 			'handle'              => AttributeType::Handle,
@@ -73,9 +73,9 @@ class AssetTransform extends BaseModel
 			'height'              => AttributeType::Number,
 			'format'              => AttributeType::String,
 			'dimensionChangeTime' => AttributeType::DateTime,
-			'mode'                => array(AttributeType::String, 'default' => 'crop'),
-			'position'            => array(AttributeType::String, 'default' => 'center-center'),
-			'quality'             => array(AttributeType::Number),
-		);
+			'mode'                => [AttributeType::String, 'default' => 'crop'],
+			'position'            => [AttributeType::String, 'default' => 'center-center'],
+			'quality'             => [AttributeType::Number],
+		];
 	}
 }

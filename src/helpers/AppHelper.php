@@ -57,7 +57,7 @@ class AppHelper
 	 */
 	public static function getEditions()
 	{
-		return array(Craft::Personal, Craft::Client, Craft::Pro);
+		return [Craft::Personal, Craft::Client, Craft::Pro];
 	}
 
 	/**

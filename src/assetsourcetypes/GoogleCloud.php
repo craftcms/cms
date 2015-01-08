@@ -65,17 +65,17 @@ class GoogleCloud extends BaseAssetSourceType
 			throw new Exception(Craft::t("Credentials rejected by target host."));
 		}
 
-		$bucketList = array();
+		$bucketList = [];
 
 		foreach ($buckets as $bucket)
 		{
 			$location = $googleCloud->getBucketLocation($bucket);
 
-			$bucketList[] = array(
+			$bucketList[] = [
 				'bucket' => $bucket,
 				'location' => $location,
 				'url_prefix' => 'http://'.static::$_endpoint.'/'.$bucket.'/'
-			);
+			];
 
 		}
 
@@ -137,7 +137,7 @@ class GoogleCloud extends BaseAssetSourceType
 			return true;
 		});
 
-		$bucketFolders = array();
+		$bucketFolders = [];
 
 		foreach ($fileList as $file)
 		{
@@ -173,13 +173,13 @@ class GoogleCloud extends BaseAssetSourceType
 				}
 				else
 				{
-					$indexEntry = array(
+					$indexEntry = [
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
 						'offset' => $offset++,
 						'uri' => $file['name'],
 						'size' => $file['size']
-					);
+					];
 
 					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
@@ -187,7 +187,7 @@ class GoogleCloud extends BaseAssetSourceType
 			}
 		}
 
-		$indexedFolderIds = array();
+		$indexedFolderIds = [];
 		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
@@ -199,7 +199,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
-		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
+		return ['sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders];
 	}
 
 	/**
@@ -278,10 +278,10 @@ class GoogleCloud extends BaseAssetSourceType
 		$settings = $this->getSettings();
 		$settings->expires = $this->extractExpiryInformation($settings->expires);
 
-		return Craft::$app->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/GoogleCloud/settings', [
 			'settings' => $settings,
-			'periods' => array_merge(array('' => ''), $this->getPeriodList())
-		));
+			'periods' => array_merge(['' => ''], $this->getPeriodList())
+		]);
 	}
 
 	/**
@@ -498,10 +498,10 @@ class GoogleCloud extends BaseAssetSourceType
 
 		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
-		$conflictingRecord = Craft::$app->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
-		));
+		]);
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();
@@ -668,8 +668,8 @@ class GoogleCloud extends BaseAssetSourceType
 	 */
 	protected function putObject($filePath, $bucket, $uriPath, $permissions)
 	{
-		$object = empty($filePath) ? '' : array('file' => $filePath);
-		$headers = array();
+		$object  = empty($filePath) ? '' : ['file' => $filePath];
+		$headers = [];
 
 		if (!empty($object) && !empty($this->getSettings()->expires) && DateTimeHelper::isValidIntervalString($this->getSettings()->expires))
 		{
@@ -680,7 +680,7 @@ class GoogleCloud extends BaseAssetSourceType
 			$headers['Cache-Control'] = 'max-age='.$diff.', must-revalidate';
 		}
 
-		return $this->_googleCloud->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
+		return $this->_googleCloud->putObject($object, $bucket, $uriPath, $permissions, [], $headers);
 	}
 
 	/**

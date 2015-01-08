@@ -41,9 +41,9 @@ class TagsController extends BaseController
 
 		$tagGroups = Craft::$app->tags->getAllTagGroups();
 
-		$this->renderTemplate('settings/tags/index', array(
+		$this->renderTemplate('settings/tags/index', [
 			'tagGroups' => $tagGroups
-		));
+		]);
 	}
 
 	/**
@@ -54,15 +54,15 @@ class TagsController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditTagGroup(array $variables = array())
+	public function actionEditTagGroup(array $variables = [])
 	{
 		$this->requireAdmin();
 
 		// Breadcrumbs
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Tags'),  'url' => UrlHelper::getUrl('settings/tags'))
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Tags'),  'url' => UrlHelper::getUrl('settings/tags')]
+		];
 
 		if (!empty($variables['tagGroupId']))
 		{
@@ -88,10 +88,10 @@ class TagsController extends BaseController
 			$variables['title'] = Craft::t('Create a new tag group');
 		}
 
-		$variables['tabs'] = array(
-			'settings'    => array('label' => Craft::t('Settings'), 'url' => '#taggroup-settings'),
-			'fieldLayout' => array('label' => Craft::t('Field Layout'), 'url' => '#taggroup-fieldlayout')
-		);
+		$variables['tabs'] = [
+			'settings'    => ['label' => Craft::t('Settings'), 'url' => '#taggroup-settings'],
+			'fieldLayout' => ['label' => Craft::t('Field Layout'), 'url' => '#taggroup-fieldlayout']
+		];
 
 		$this->renderTemplate('settings/tags/_edit', $variables);
 	}
@@ -130,9 +130,9 @@ class TagsController extends BaseController
 		}
 
 		// Send the tag group back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'tagGroup' => $tagGroup
-		));
+		]);
 	}
 
 	/**
@@ -149,7 +149,7 @@ class TagsController extends BaseController
 		$sectionId = Craft::$app->request->getRequiredPost('id');
 
 		Craft::$app->tags->deleteTagGroupById($sectionId);
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -164,9 +164,9 @@ class TagsController extends BaseController
 
 		$search = Craft::$app->request->getPost('search');
 		$tagGroupId = Craft::$app->request->getPost('tagGroupId');
-		$excludeIds = Craft::$app->request->getPost('excludeIds', array());
+		$excludeIds = Craft::$app->request->getPost('excludeIds', []);
 
-		$notIds = array('and');
+		$notIds = ['and'];
 
 		foreach ($excludeIds as $id)
 		{
@@ -179,19 +179,19 @@ class TagsController extends BaseController
 		$criteria->id      = $notIds;
 		$tags = $criteria->find();
 
-		$return = array();
-		$exactMatches = array();
-		$tagTitleLengths = array();
-		$exactMatch = false;
+		$return          = [];
+		$exactMatches    = [];
+		$tagTitleLengths = [];
+		$exactMatch      = false;
 
 		$normalizedSearch = StringHelper::normalizeKeywords($search);
 
 		foreach ($tags as $tag)
 		{
-			$return[] = array(
+			$return[] = [
 				'id'    => $tag->id,
 				'title' => $tag->getContent()->title
-			);
+			];
 
 			$tagTitleLengths[] = mb_strlen($tag->getContent()->title);
 
@@ -210,10 +210,10 @@ class TagsController extends BaseController
 
 		array_multisort($exactMatches, SORT_DESC, $tagTitleLengths, $return);
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'tags'       => $return,
 			'exactMatch' => $exactMatch
-		));
+		]);
 	}
 
 	/**
@@ -232,16 +232,16 @@ class TagsController extends BaseController
 
 		if (Craft::$app->tags->saveTag($tag))
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => true,
 				'id'      => $tag->id
-			));
+			]);
 		}
 		else
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => false
-			));
+			]);
 		}
 	}
 }

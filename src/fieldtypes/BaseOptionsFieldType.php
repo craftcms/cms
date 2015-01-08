@@ -169,7 +169,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			}
 			else
 			{
-				$value = array();
+				$value = [];
 			}
 
 			$value = new MultiOptionsFieldData($value);
@@ -181,7 +181,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 			$value = new SingleOptionFieldData($label, $value, true);
 		}
 
-		$options = array();
+		$options = [];
 
 		foreach ($this->getOptions() as $option)
 		{
@@ -211,9 +211,9 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'options' => array(AttributeType::Mixed, 'default' => array())
-		);
+		return [
+			'options' => [AttributeType::Mixed, 'default' => []]
+		];
 	}
 
 	/**
@@ -225,7 +225,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	{
 		if (!isset($this->_options))
 		{
-			$this->_options = array();
+			$this->_options = [];
 
 			$options = $this->getSettings()->options;
 
@@ -236,7 +236,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 					// Old school?
 					if (!is_array($option))
 					{
-						$this->_options[] = array('label' => $option, 'value' => $key, 'default' => '');
+						$this->_options[] = ['label' => $option, 'value' => $key, 'default' => ''];
 					}
 					else
 					{
@@ -295,7 +295,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	{
 		if ($this->multi)
 		{
-			$defaultValues = array();
+			$defaultValues = [];
 		}
 
 		foreach ($this->getOptions() as $option)

@@ -37,11 +37,11 @@ class Element extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('type')),
-			array('columns' => array('enabled')),
-			array('columns' => array('archived, dateCreated')),
-		);
+		return [
+			['columns' => ['type']],
+			['columns' => ['enabled']],
+			['columns' => ['archived, dateCreated']],
+		];
 	}
 
 	// Protected Methods
@@ -54,10 +54,10 @@ class Element extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'type'     => array(AttributeType::ClassName, 'required' => true),
-			'enabled'  => array(AttributeType::Bool, 'default' => true),
-			'archived' => array(AttributeType::Bool, 'default' => false),
-		);
+		return [
+			'type'     => [AttributeType::ClassName, 'required' => true],
+			'enabled'  => [AttributeType::Bool, 'default' => true],
+			'archived' => [AttributeType::Bool, 'default' => false],
+		];
 	}
 }

@@ -37,10 +37,10 @@ class SectionLocale extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'section' => array(static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale'  => array(static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
+			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class SectionLocale extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('sectionId', 'locale'), 'unique' => true),
-		);
+		return [
+			['columns' => ['sectionId', 'locale'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods

@@ -51,9 +51,9 @@ class UtilsController extends BaseController
 		$reqCheck = new RequirementsChecker();
 		$reqCheck->run();
 
-		$this->renderTemplate('utils/serverinfo', array(
+		$this->renderTemplate('utils/serverinfo', [
 			'requirements' => $reqCheck->getRequirements(),
-		));
+		]);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class UtilsController extends BaseController
 		$phpInfo = ob_get_clean();
 
 		$phpInfo = preg_replace(
-			array(
+			[
 				'#^.*<body>(.*)</body>.*$#ms',
 				'#<h2>PHP License</h2>.*$#ms',
 				'#<h1>Configuration</h1>#',
@@ -88,8 +88,8 @@ class UtilsController extends BaseController
 				"# +#",
 				'#<tr>#',
 				'#</tr>#'
-			),
-			array(
+			],
+			[
 				'$1',
 				'',
 				'',
@@ -107,14 +107,14 @@ class UtilsController extends BaseController
 				' ',
 				'%S%',
 				'%E%'
-			),
+			],
 			$phpInfo
 		);
 
 		$sections = explode('<h2>', strip_tags($phpInfo, '<h2><th><td>'));
 		unset($sections[0]);
 
-		$phpInfo = array();
+		$phpInfo = [];
 		foreach($sections as $section)
 		{
 			$heading = substr($section, 0, strpos($section, '</h2>'));
@@ -145,9 +145,9 @@ class UtilsController extends BaseController
 			}
 		}
 
-		$this->renderTemplate('utils/phpinfo', array(
+		$this->renderTemplate('utils/phpinfo', [
 			'phpInfo' => $phpInfo
-		));
+		]);
 	}
 
 	/**
@@ -157,7 +157,7 @@ class UtilsController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionLogs(array $variables = array())
+	public function actionLogs(array $variables = [])
 	{
 		Craft::$app->config->maxPowerCaptain();
 
@@ -165,7 +165,7 @@ class UtilsController extends BaseController
 		{
 			$dateTimePattern = '/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/';
 
-			$logFileNames = array();
+			$logFileNames = [];
 
 			// Grab it all.
 			$logFolderContents = IOHelper::getFolderContents(Craft::$app->path->getLogPath());
@@ -179,7 +179,7 @@ class UtilsController extends BaseController
 				}
 			}
 
-			$logEntriesByRequest = array();
+			$logEntriesByRequest = [];
 			$currentLogFileName = isset($variables['currentLogFileName']) ? $variables['currentLogFileName'] : 'craft.log';
 
 			$currentFullPath = Craft::$app->path->getLogPath().$currentLogFileName;
@@ -196,7 +196,7 @@ class UtilsController extends BaseController
 
 					foreach ($requests as $request)
 					{
-						$logEntries = array();
+						$logEntries = [];
 
 						$logChunks = preg_split('/^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) \[(.*?)\] \[(.*?)\] /m', $request, null, PREG_SPLIT_DELIM_CAPTURE);
 
@@ -304,8 +304,8 @@ class UtilsController extends BaseController
 								// We can't just grab the profile info, we need to do some extra processing on it.
 								$tempProfile = array_slice($rowContents, $profileStart);
 
-								$profile = array();
-								$profileArr = array();
+								$profile    = [];
+								$profileArr = [];
 								foreach ($tempProfile as $tempProfileRow)
 								{
 									if (preg_match($dateTimePattern, $tempProfileRow))
@@ -313,7 +313,7 @@ class UtilsController extends BaseController
 										if (!empty($profileArr))
 										{
 											$profile[] = $profileArr;
-											$profileArr = array();
+											$profileArr = [];
 										}
 									}
 
@@ -350,15 +350,15 @@ class UtilsController extends BaseController
 					$contents = str_replace("\n", "<br />", $contents);
 					$logEntry->message = $contents;
 
-					$logEntriesByRequest[] = array($logEntry);
+					$logEntriesByRequest[] = [$logEntry];
 				}
 			}
 
-			$this->renderTemplate('utils/logs', array(
+			$this->renderTemplate('utils/logs', [
 				'logEntriesByRequest' => $logEntriesByRequest,
 				'logFileNames'        => $logFileNames,
 				'currentLogFileName'  => $currentLogFileName
-			));
+			]);
 		}
 	}
 
@@ -372,9 +372,9 @@ class UtilsController extends BaseController
 		Craft::$app->templates->includeCssResource('css/deprecator.css');
 		Craft::$app->templates->includeJsResource('js/deprecator.js');
 
-		$this->renderTemplate('utils/deprecationerrors', array(
+		$this->renderTemplate('utils/deprecationerrors', [
 			'logs' => Craft::$app->deprecator->getLogs()
-		));
+		]);
 	}
 
 	/**
@@ -390,7 +390,7 @@ class UtilsController extends BaseController
 		$log = Craft::$app->deprecator->getLogById($logId);
 
 		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
-			array('log' => $log)
+			['log' => $log]
 		);
 	}
 
@@ -435,7 +435,7 @@ class UtilsController extends BaseController
 	private function _cleanUpArray($arrayToClean)
 	{
 		$arrayToClean = implode(' ', $arrayToClean);
-		$arrayToClean = '$arrayToClean = array('.str_replace('REDACTED', '"REDACTED"', $arrayToClean).');';
+		$arrayToClean = '$arrayToClean = ['.str_replace('REDACTED', '"REDACTED"', $arrayToClean).'];';
 		eval($arrayToClean);
 
 		foreach ($arrayToClean as $key => $item)
@@ -453,7 +453,7 @@ class UtilsController extends BaseController
 	 */
 	private function _formatStackTrace($backTrace)
 	{
-		$return = array();
+		$return = [];
 
 		foreach ($backTrace as $step => $call)
 		{
@@ -474,7 +474,7 @@ class UtilsController extends BaseController
 					}
 					else
 					{
-						$call['args'] = array('array()');
+						$call['args'] = ['array()'];
 					}
 				}
 			}
@@ -499,7 +499,7 @@ class UtilsController extends BaseController
 		if (is_object($arg) || is_array($arg))
 		{
 			$arr = (array)$arg;
-			$args = array();
+			$args = [];
 
 			foreach ($arr as $key => $value)
 			{

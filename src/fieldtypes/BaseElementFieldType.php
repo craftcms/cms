@@ -98,24 +98,24 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$sources = array();
+		$sources = [];
 
 		foreach ($this->getElementType()->getSources() as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{
-				$sources[] = array('label' => $source['label'], 'value' => $key);
+				$sources[] = ['label' => $source['label'], 'value' => $key];
 			}
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/elementfieldsettings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/elementfieldsettings', [
 			'allowMultipleSources' => $this->allowMultipleSources,
 			'allowLimit'           => $this->allowLimit,
 			'sources'              => $sources,
 			'targetLocaleField'    => $this->getTargetLocaleFieldHtml(),
 			'settings'             => $this->getSettings(),
 			'type'                 => $this->getName()
-		));
+		]);
 	}
 
 	/**
@@ -127,7 +127,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function validate($value)
 	{
-		$errors = array();
+		$errors = [];
 
 		if ($this->allowLimit && ($limit = $this->getSettings()->limit) && is_array($value) && count($value) > $limit)
 		{
@@ -137,7 +137,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			}
 			else
 			{
-				$errors[] = Craft::t('There can’t be more than {limit} selections.', array('limit' => $limit));
+				$errors[] = Craft::t('There can’t be more than {limit} selections.', ['limit' => $limit]);
 			}
 		}
 
@@ -175,11 +175,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else if (isset($this->element) && $this->element->id)
 		{
-			$criteria->relatedTo = array(
+			$criteria->relatedTo = [
 				'sourceElement' => $this->element->id,
 				'sourceLocale'  => $this->element->locale,
 				'field'         => $this->model->id
-			);
+			];
 
 			if ($this->sortable)
 			{
@@ -237,7 +237,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function getSearchKeywords($criteria)
 	{
-		$titles = array();
+		$titles = [];
 
 		foreach ($criteria->find() as $element)
 		{
@@ -277,9 +277,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 			foreach ($value as $element)
 			{
-				$html .= Craft::$app->templates->render('_elements/element', array(
+				$html .= Craft::$app->templates->render('_elements/element', [
 					'element' => $element
-				));
+				]);
 			}
 
 			$html .= '</div></div>';
@@ -318,7 +318,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists with the class “{class}”', array('class' => $this->elementType)));
+			throw new Exception(Craft::t('No element type exists with the class “{class}”', ['class' => $this->elementType]));
 		}
 
 		return $elementType;
@@ -349,7 +349,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		$selectionCriteria['localeEnabled'] = null;
 		$selectionCriteria['locale'] = $this->getTargetLocale();
 
-		return array(
+		return [
 			'jsClass'            => $this->inputJsClass,
 			'elementType'        => new ElementType($this->getElementType()),
 			'id'                 => Craft::$app->templates->formatInputId($name),
@@ -362,7 +362,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
 			'limit'              => ($this->allowLimit ? $settings->limit : null),
 			'addButtonLabel'     => $this->getAddButtonLabel(),
-		);
+		];
 	}
 
 	/**
@@ -378,7 +378,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else
 		{
-			$sources = array($this->getSettings()->source);
+			$sources = [$this->getSettings()->source];
 		}
 
 		return $sources;
@@ -391,7 +391,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getInputSelectionCriteria()
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -427,25 +427,25 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		if (Craft::$app->isLocalized() && $this->getElementType()->isLocalized())
 		{
-			$localeOptions = array(
-				array('label' => Craft::t('Same as source'), 'value' => null)
-			);
+			$localeOptions = [
+				['label' => Craft::t('Same as source'), 'value' => null]
+			];
 
 			foreach (Craft::$app->i18n->getSiteLocales() as $locale)
 			{
-				$localeOptions[] = array('label' => $locale->getName(), 'value' => $locale->getId());
+				$localeOptions[] = ['label' => $locale->getName(), 'value' => $locale->getId()];
 			}
 
-			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', array(
-				array(
+			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', [
+				[
 					'label' => Craft::t('Target Locale'),
-					'instructions' => Craft::t('Which locale do you want to select {type} in?', array('type' => StringHelper::toLowerCase($this->getName()))),
+					'instructions' => Craft::t('Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase($this->getName())]),
 					'id' => 'targetLocale',
 					'name' => 'targetLocale',
 					'options' => $localeOptions,
 					'value' => $this->getSettings()->targetLocale
-				)
-			));
+				]
+			]);
 		}
 	}
 

@@ -38,9 +38,9 @@ class Migration extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'plugin' => array(static::BELONGS_TO, 'Plugin', 'onDelete' => static::CASCADE),
-		);
+		return [
+			'plugin' => [static::BELONGS_TO, 'Plugin', 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class Migration extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('version'), 'unique' => true),
-		);
+		return [
+			['columns' => ['version'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -65,9 +65,9 @@ class Migration extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'version' => array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'required' => true),
-			'applyTime' => array(AttributeType::DateTime, 'required' => true),
-		);
+		return [
+			'version' => [AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 255, 'required' => true],
+			'applyTime' => [AttributeType::DateTime, 'required' => true],
+		];
 	}
 }

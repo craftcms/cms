@@ -52,30 +52,30 @@ class UserPermissions extends Component
 		// General
 		// ---------------------------------------------------------------------
 
-		$general = array(
-			'accessSiteWhenSystemIsOff' => array(
+		$general = [
+			'accessSiteWhenSystemIsOff' => [
 				'label' => Craft::t('Access the site when the system is off')
-			),
-			'accessCp' => array(
+			],
+			'accessCp' => [
 				'label' => Craft::t('Access the CP'),
-				'nested' => array(
-					'accessCpWhenSystemIsOff' => array(
+				'nested' => [
+					'accessCpWhenSystemIsOff' => [
 						'label' => Craft::t('Access the CP when the system is off')
-					),
-					'performUpdates' => array(
+					],
+					'performUpdates' => [
 						'label' => Craft::t('Perform @@@appName@@@ and plugin updates')
-					),
-				)
-			),
-		);
+					],
+				]
+			],
+		];
 
 		foreach (Craft::$app->plugins->getPlugins() as $plugin)
 		{
 			if ($plugin->hasCpSection())
 			{
-				$general['accessCp']['nested']['accessPlugin-'.$plugin->getClassHandle()] = array(
-					'label' => Craft::t('Access {plugin}', array('plugin' => $plugin->getName()))
-				);
+				$general['accessCp']['nested']['accessPlugin-'.$plugin->getClassHandle()] = [
+					'label' => Craft::t('Access {plugin}', ['plugin' => $plugin->getName()])
+				];
 			}
 		}
 
@@ -84,30 +84,30 @@ class UserPermissions extends Component
 		// Users
 		// ---------------------------------------------------------------------
 
-		$permissions[Craft::t('Users')] = array(
-			'editUsers' => array(
+		$permissions[Craft::t('Users')] = [
+			'editUsers' => [
 				'label' => Craft::t('Edit users'),
-				'nested' => array(
-					'registerUsers' => array(
+				'nested' => [
+					'registerUsers' => [
 						'label' => Craft::t('Register users')
-					),
-					'assignUserPermissions' => array(
+					],
+					'assignUserPermissions' => [
 						'label' => Craft::t('Assign user groups and permissions')
-					),
-					'administrateUsers' => array(
+					],
+					'administrateUsers' => [
 						'label' => Craft::t('Administrate users'),
-						'nested' => array(
-							'changeUserEmails' => array(
+						'nested' => [
+							'changeUserEmails' => [
 								'label' => Craft::t('Change users’ emails')
-							)
-						)
-					)
-				),
-			),
-			'deleteUsers' => array(
+							]
+						]
+					]
+				],
+			],
+			'deleteUsers' => [
 				'label' => Craft::t('Delete users')
-			),
-		);
+			],
+		];
 
 		// Locales
 		// ---------------------------------------------------------------------
@@ -119,9 +119,9 @@ class UserPermissions extends Component
 
 			foreach ($locales as $locale)
 			{
-				$permissions[$label]['editLocale:'.$locale->getId()] = array(
+				$permissions[$label]['editLocale:'.$locale->getId()] = [
 					'label' => $locale->getName()
-				);
+				];
 			}
 		}
 
@@ -132,7 +132,7 @@ class UserPermissions extends Component
 
 		foreach ($sections as $section)
 		{
-			$label = Craft::t('Section - {section}', array('section' => Craft::t($section->name)));
+			$label = Craft::t('Section - {section}', ['section' => Craft::t($section->name)]);
 
 			if ($section->type == SectionType::Single)
 			{
@@ -171,7 +171,7 @@ class UserPermissions extends Component
 
 		foreach ($assetSources as $source)
 		{
-			$label = Craft::t('Asset Source - {source}', array('source' => Craft::t($source->name)));
+			$label = Craft::t('Asset Source - {source}', ['source' => Craft::t($source->name)]);
 			$permissions[$label] = $this->_getAssetSourcePermissions($source->id);
 		}
 
@@ -202,7 +202,7 @@ class UserPermissions extends Component
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
-				->where(array('p_g.groupId' => $groupId))
+				->where(['p_g.groupId' => $groupId])
 				->queryColumn();
 
 			$this->_permissionsByGroupId[$groupId] = $groupPermissions;
@@ -225,7 +225,7 @@ class UserPermissions extends Component
 			->from('userpermissions p')
 			->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
 			->join('usergroups_users g_u', 'g_u.groupId = p_g.groupId')
-			->where(array('g_u.userId' => $userId))
+			->where(['g_u.userId' => $userId])
 			->queryColumn();
 	}
 
@@ -257,23 +257,23 @@ class UserPermissions extends Component
 	{
 		// Delete any existing group permissions
 		Craft::$app->db->createCommand()
-			->delete('userpermissions_usergroups', array('groupId' => $groupId));
+			->delete('userpermissions_usergroups', ['groupId' => $groupId]);
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
 
 		if ($permissions)
 		{
-			$groupPermissionVals = array();
+			$groupPermissionVals = [];
 
 			foreach ($permissions as $permissionName)
 			{
 				$permissionRecord = $this->_getPermissionRecordByName($permissionName);
-				$groupPermissionVals[] = array($permissionRecord->id, $groupId);
+				$groupPermissionVals[] = [$permissionRecord->id, $groupId];
 			}
 
 			// Add the new group permissions
 			Craft::$app->db->createCommand()
-				->insertAll('userpermissions_usergroups', array('permissionId', 'groupId'), $groupPermissionVals);
+				->insertAll('userpermissions_usergroups', ['permissionId', 'groupId'], $groupPermissionVals);
 		}
 
 		return true;
@@ -296,7 +296,7 @@ class UserPermissions extends Component
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_users p_u', 'p_u.permissionId = p.id')
-				->where(array('p_u.userId' => $userId))
+				->where(['p_u.userId' => $userId])
 				->queryColumn();
 
 			$this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $userPermissions));
@@ -333,7 +333,7 @@ class UserPermissions extends Component
 	{
 		// Delete any existing user permissions
 		Craft::$app->db->createCommand()
-			->delete('userpermissions_users', array('userId' => $userId));
+			->delete('userpermissions_users', ['userId' => $userId]);
 
 		// Filter out any orphaned permissions
 		$groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -341,17 +341,17 @@ class UserPermissions extends Component
 
 		if ($permissions)
 		{
-			$userPermissionVals = array();
+			$userPermissionVals = [];
 
 			foreach ($permissions as $permissionName)
 			{
 				$permissionRecord = $this->_getPermissionRecordByName($permissionName);
-				$userPermissionVals[] = array($permissionRecord->id, $userId);
+				$userPermissionVals[] = [$permissionRecord->id, $userId];
 			}
 
 			// Add the new user permissions
 			Craft::$app->db->createCommand()
-				->insertAll('userpermissions_users', array('permissionId', 'userId'), $userPermissionVals);
+				->insertAll('userpermissions_users', ['permissionId', 'userId'], $userPermissionVals);
 		}
 
 		return true;
@@ -371,27 +371,27 @@ class UserPermissions extends Component
 	{
 		$suffix = ':'.$section->id;
 
-		return array(
-			"editEntries{$suffix}" => array(
-				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($section->name))),
-				'nested' => array(
-					"publishEntries{$suffix}" => array(
+		return [
+			"editEntries{$suffix}" => [
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($section->name)]),
+				'nested' => [
+					"publishEntries{$suffix}" => [
 						'label' => Craft::t('Publish live changes')
-					),
-					"editPeerEntryDrafts{$suffix}" => array(
+					],
+					"editPeerEntryDrafts{$suffix}" => [
 						'label' => Craft::t('Edit other authors’ drafts'),
-						'nested' => array(
-							"publishPeerEntryDrafts{$suffix}" => array(
+						'nested' => [
+							"publishPeerEntryDrafts{$suffix}" => [
 								'label' => Craft::t('Publish other authors’ drafts')
-							),
-							"deletePeerEntryDrafts{$suffix}" => array(
+							],
+							"deletePeerEntryDrafts{$suffix}" => [
 								'label' => Craft::t('Delete other authors’ drafts')
-							),
-						)
-					),
-				)
-			)
-		);
+							],
+						]
+					],
+				]
+			]
+		];
 	}
 
 	/**
@@ -405,44 +405,44 @@ class UserPermissions extends Component
 	{
 		$suffix = ':'.$section->id;
 
-		return array(
-			"editEntries{$suffix}" => array(
+		return [
+			"editEntries{$suffix}" => [
 				'label' => Craft::t('Edit entries'),
-				'nested' => array(
-					"createEntries{$suffix}" => array(
+				'nested' => [
+					"createEntries{$suffix}" => [
 						'label' => Craft::t('Create entries'),
-					),
-					"publishEntries{$suffix}" => array(
+					],
+					"publishEntries{$suffix}" => [
 						'label' => Craft::t('Publish live changes')
-					),
-					"deleteEntries{$suffix}" => array(
+					],
+					"deleteEntries{$suffix}" => [
 						'label' => Craft::t('Delete entries')
-					),
-					"editPeerEntries{$suffix}" => array(
+					],
+					"editPeerEntries{$suffix}" => [
 						'label' => Craft::t('Edit other authors’ entries'),
-						'nested' => array(
-							"publishPeerEntries{$suffix}" => array(
+						'nested' => [
+							"publishPeerEntries{$suffix}" => [
 								'label' => Craft::t('Publish live changes for other authors’ entries')
-							),
-							"deletePeerEntries{$suffix}" => array(
+							],
+							"deletePeerEntries{$suffix}" => [
 								'label' => Craft::t('Delete other authors’ entries')
-							),
-						)
-					),
-					"editPeerEntryDrafts{$suffix}" => array(
+							],
+						]
+					],
+					"editPeerEntryDrafts{$suffix}" => [
 						'label' => Craft::t('Edit other authors’ drafts'),
-						'nested' => array(
-							"publishPeerEntryDrafts{$suffix}" => array(
+						'nested' => [
+							"publishPeerEntryDrafts{$suffix}" => [
 								'label' => Craft::t('Publish other authors’ drafts')
-							),
-							"deletePeerEntryDrafts{$suffix}" => array(
+							],
+							"deletePeerEntryDrafts{$suffix}" => [
 								'label' => Craft::t('Delete other authors’ drafts')
-							),
-						)
-					),
-				)
-			)
-		);
+							],
+						]
+					],
+				]
+			]
+		];
 	}
 
 	/**
@@ -454,13 +454,13 @@ class UserPermissions extends Component
 	 */
 	private function _getGlobalSetPermissions($globalSets)
 	{
-		$permissions = array();
+		$permissions = [];
 
 		foreach ($globalSets as $globalSet)
 		{
-			$permissions['editGlobalSet:'.$globalSet->id] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($globalSet->name)))
-			);
+			$permissions['editGlobalSet:'.$globalSet->id] = [
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($globalSet->name)])
+			];
 		}
 
 		return $permissions;
@@ -475,13 +475,13 @@ class UserPermissions extends Component
 	 */
 	private function _getCategoryGroupPermissions($groups)
 	{
-		$permissions = array();
+		$permissions = [];
 
 		foreach ($groups as $group)
 		{
-			$permissions['editCategories:'.$group->id] = array(
-				'label' => Craft::t('Edit “{title}”', array('title' => Craft::t($group->name)))
-			);
+			$permissions['editCategories:'.$group->id] = [
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($group->name)])
+			];
 		}
 
 		return $permissions;
@@ -498,22 +498,22 @@ class UserPermissions extends Component
 	{
 		$suffix = ':'.$sourceId;
 
-		return array(
-			"viewAssetSource{$suffix}" => array(
+		return [
+			"viewAssetSource{$suffix}" => [
 				'label' => Craft::t('View source'),
-				'nested' => array(
-					"uploadToAssetSource{$suffix}" => array(
+				'nested' => [
+					"uploadToAssetSource{$suffix}" => [
 						'label' => Craft::t('Upload files'),
-					),
-					"createSubfoldersInAssetSource{$suffix}" => array(
+					],
+					"createSubfoldersInAssetSource{$suffix}" => [
 						'label' => Craft::t('Create subfolders'),
-					),
-					"removeFromAssetSource{$suffix}" => array(
+					],
+					"removeFromAssetSource{$suffix}" => [
 						'label' => Craft::t('Remove files'),
-					)
-				)
-			)
-		);
+					]
+				]
+			]
+		];
 	}
 
 	/**
@@ -525,9 +525,9 @@ class UserPermissions extends Component
 	 *
 	 * @return array $filteredPermissions The permissions we'll actually let them save.
 	 */
-	private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = array())
+	private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
 	{
-		$filteredPermissions = array();
+		$filteredPermissions = [];
 
 		if ($postedPermissions)
 		{
@@ -583,9 +583,9 @@ class UserPermissions extends Component
 		// Permission names are always stored in lowercase
 		$permissionName = strtolower($permissionName);
 
-		$permissionRecord = UserPermissionRecord::model()->findByAttributes(array(
+		$permissionRecord = UserPermissionRecord::model()->findByAttributes([
 			'name' => $permissionName
-		));
+		]);
 
 		if (!$permissionRecord)
 		{

@@ -77,7 +77,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			return array(Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local'));
+			return [Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local')];
 		}
 	}
 
@@ -155,7 +155,7 @@ class AssetSources extends Component
 	{
 		if (!isset($this->_viewableSourceIds))
 		{
-			$this->_viewableSourceIds = array();
+			$this->_viewableSourceIds = [];
 
 			foreach ($this->getAllSourceIds() as $sourceId)
 			{
@@ -180,7 +180,7 @@ class AssetSources extends Component
 	{
 		if (!isset($this->_viewableSources))
 		{
-			$this->_viewableSources = array();
+			$this->_viewableSources = [];
 
 			foreach ($this->getAllSources() as $source)
 			{
@@ -197,7 +197,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			$sources = array();
+			$sources = [];
 
 			foreach ($this->_viewableSources as $source)
 			{
@@ -239,7 +239,7 @@ class AssetSources extends Component
 	{
 		if (!$this->_fetchedAllSources)
 		{
-			$this->_sourcesById = array();
+			$this->_sourcesById = [];
 
 			$results = $this->_createSourceQuery()->queryAll();
 
@@ -262,7 +262,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			$sources = array();
+			$sources = [];
 
 			foreach ($this->_sourcesById as $source)
 			{
@@ -301,7 +301,7 @@ class AssetSources extends Component
 			)
 			{
 				$result = $this->_createSourceQuery()
-					->where('id = :id', array(':id' => $sourceId))
+					->where('id = :id', [':id' => $sourceId])
 					->queryRow();
 
 				if ($result)
@@ -398,7 +398,7 @@ class AssetSources extends Component
 				else
 				{
 					// Update the top folder's name with the source's new name
-					$topFolder = Craft::$app->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
+					$topFolder = Craft::$app->assets->findFolder(['sourceId' => $source->id, 'parentId' => ':empty:']);
 
 					if ($topFolder->name != $source->name)
 					{
@@ -497,13 +497,13 @@ class AssetSources extends Component
 			$assetFileIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('assetfiles')
-				->where(array('sourceId' => $sourceId))
+				->where(['sourceId' => $sourceId])
 				->queryColumn();
 
 			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = Craft::$app->db->createCommand()->delete('assetsources', array('id' => $sourceId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('assetsources', ['id' => $sourceId]);
 
 			if ($transaction !== null)
 			{
@@ -572,7 +572,7 @@ class AssetSources extends Component
 
 			if (!$sourceRecord)
 			{
-				throw new Exception(Craft::t('No source exists with the ID “{id}”.', array('id' => $sourceId)));
+				throw new Exception(Craft::t('No source exists with the ID “{id}”.', ['id' => $sourceId]));
 			}
 		}
 		else

@@ -35,9 +35,9 @@ class Tag extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'element' => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'group'   => array(static::BELONGS_TO, 'TagGroup', 'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'group'   => [static::BELONGS_TO, 'TagGroup', 'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 }

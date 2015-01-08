@@ -86,7 +86,7 @@ class Category extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		$sources = array();
+		$sources = [];
 
 		if ($context == 'index')
 		{
@@ -101,13 +101,13 @@ class Category extends BaseElementType
 		{
 			$key = 'group:'.$group->id;
 
-			$sources[$key] = array(
+			$sources[$key] = [
 				'label'             => Craft::t($group->name),
-				'data'              => array('handle' => $group->handle),
-				'criteria'          => array('groupId' => $group->id),
+				'data'              => ['handle' => $group->handle],
+				'criteria'          => ['groupId' => $group->id],
 				'structureId'       => $group->structureId,
 				'structureEditable' => Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
-			);
+			];
 		}
 
 		return $sources;
@@ -132,7 +132,7 @@ class Category extends BaseElementType
 			return;
 		}
 
-		$actions = array();
+		$actions = [];
 
 		// Set Status
 		$actions[] = 'SetStatus';
@@ -141,17 +141,17 @@ class Category extends BaseElementType
 		{
 			// View
 			$viewAction = Craft::$app->elements->getAction('View');
-			$viewAction->setParams(array(
+			$viewAction->setParams([
 				'label' => Craft::t('View category'),
-			));
+			]);
 			$actions[] = $viewAction;
 		}
 
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams(array(
+		$editAction->setParams([
 			'label' => Craft::t('Edit category'),
-		));
+		]);
 		$actions[] = $editAction;
 
 		// New Child
@@ -160,24 +160,24 @@ class Category extends BaseElementType
 		if ($structure)
 		{
 			$newChildAction = Craft::$app->elements->getAction('NewChild');
-			$newChildAction->setParams(array(
+			$newChildAction->setParams([
 				'label'       => Craft::t('Create a new child category'),
 				'maxLevels'   => $structure->maxLevels,
 				'newChildUrl' => 'categories/'.$group->handle.'/new',
-			));
+			]);
 			$actions[] = $newChildAction;
 		}
 
 		// Delete
 		$deleteAction = Craft::$app->elements->getAction('Delete');
-		$deleteAction->setParams(array(
+		$deleteAction->setParams([
 			'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
 			'successMessage'      => Craft::t('Categories deleted.'),
-		));
+		]);
 		$actions[] = $deleteAction;
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addCategoryActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addCategoryActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -194,13 +194,13 @@ class Category extends BaseElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		$attributes = array(
+		$attributes = [
 			'title' => Craft::t('Title'),
 			'uri'   => Craft::t('URI'),
-		);
+		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyCategorySortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyCategorySortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -214,13 +214,13 @@ class Category extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		$attributes = array(
+		$attributes = [
 			'title' => Craft::t('Title'),
 			'uri'   => Craft::t('URI'),
-		);
+		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyCategoryTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyCategoryTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -236,7 +236,7 @@ class Category extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -275,7 +275,7 @@ class Category extends BaseElementType
 			->join('categories categories', 'categories.id = elements.id')
 			->join('categorygroups categorygroups', 'categorygroups.id = categories.groupId')
 			->leftJoin('structures structures', 'structures.id = categorygroups.structureId')
-			->leftJoin('structureelements structureelements', array('and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id'));
+			->leftJoin('structureelements structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id']);
 
 		if ($criteria->groupId)
 		{
@@ -309,8 +309,8 @@ class Category extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+			[
 				'label' => Craft::t('Title'),
 				'locale' => $element->locale,
 				'id' => 'title',
@@ -320,11 +320,11 @@ class Category extends BaseElementType
 				'first' => true,
 				'autofocus' => true,
 				'required' => true
-			)
-		));
+			]
+		]);
 
-		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
+		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+			[
 				'label' => Craft::t('Slug'),
 				'locale' => $element->locale,
 				'id' => 'slug',
@@ -332,8 +332,8 @@ class Category extends BaseElementType
 				'value' => $element->slug,
 				'errors' => $element->getErrors('slug'),
 				'required' => true
-			)
-		));
+			]
+		]);
 
 		$html .= parent::getEditorHtml($element);
 
@@ -373,15 +373,15 @@ class Category extends BaseElementType
 		// Make sure the group is set to have URLs
 		if ($group->hasUrls)
 		{
-			return array(
+			return [
 				'action' => 'templates/render',
-				'params' => array(
+				'params' => [
 					'template' => $group->template,
-					'variables' => array(
+					'variables' => [
 						'category' => $element
-					)
-				)
-			);
+					]
+				]
+			];
 		}
 
 		return false;
@@ -404,14 +404,14 @@ class Category extends BaseElementType
 			Craft::$app->elements->updateElementSlugAndUri($element);
 
 			// Make sure that each of the category's ancestors are related wherever the category is related
-			$newRelationValues = array();
+			$newRelationValues = [];
 
 			$ancestorIds = $element->getAncestors()->ids();
 
 			$sources = Craft::$app->db->createCommand()
 				->select('fieldId, sourceId, sourceLocale')
 				->from('relations')
-				->where('targetId = :categoryId', array(':categoryId' => $element->id))
+				->where('targetId = :categoryId', [':categoryId' => $element->id])
 				->queryAll();
 
 			foreach ($sources as $source)
@@ -419,24 +419,24 @@ class Category extends BaseElementType
 				$existingAncestorRelations = Craft::$app->db->createCommand()
 					->select('targetId')
 					->from('relations')
-					->where(array('and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', array('in', 'targetId', $ancestorIds)), array(
+					->where(['and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', ['in', 'targetId', $ancestorIds]], [
 						':fieldId'      => $source['fieldId'],
 						':sourceId'     => $source['sourceId'],
 						':sourceLocale' => $source['sourceLocale']
-					))
+					])
 					->queryColumn();
 
 				$missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
 
 				foreach ($missingAncestorRelations as $categoryId)
 				{
-					$newRelationValues[] = array($source['fieldId'], $source['sourceId'], $source['sourceLocale'], $categoryId);
+					$newRelationValues[] = [$source['fieldId'], $source['sourceId'], $source['sourceLocale'], $categoryId];
 				}
 			}
 
 			if ($newRelationValues)
 			{
-				Craft::$app->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId'), $newRelationValues);
+				Craft::$app->db->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues);
 			}
 		}
 	}

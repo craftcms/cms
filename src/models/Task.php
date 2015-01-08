@@ -109,13 +109,13 @@ class Task extends BaseComponentModel
 	 */
 	public function getInfo()
 	{
-		return array(
+		return [
 			'id'          => $this->id,
 			'level'       => $this->level,
 			'description' => $this->getDescription(),
 			'status'      => $this->status,
 			'progress'    => $this->getProgress(),
-		);
+		];
 	}
 
 	// Protected Methods

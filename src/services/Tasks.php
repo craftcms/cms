@@ -62,7 +62,7 @@ class Tasks extends Component
 	 * @throws \Exception
 	 * @return TaskModel
 	 */
-	public function createTask($type, $description = null, $settings = array(), $parentId = null)
+	public function createTask($type, $description = null, $settings = [], $parentId = null)
 	{
 		$task = new TaskModel();
 		$task->type = $type;
@@ -74,7 +74,7 @@ class Tasks extends Component
 		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
 		{
 			// Turn this request into a runner once everything else is done
-			Craft::$app->attachEventHandler('onEndRequest', array($this, 'closeAndRun'));
+			Craft::$app->attachEventHandler('onEndRequest', [$this, 'closeAndRun']);
 			$this->_listeningForRequestEnd = true;
 		}
 
@@ -147,7 +147,7 @@ class Tasks extends Component
 	public function closeAndRun()
 	{
 		// Make sure a future call to Craft::$app->end() dosen't trigger this a second time
-		Craft::$app->detachEventHandler('onEndRequest', array($this, 'closeAndRun'));
+		Craft::$app->detachEventHandler('onEndRequest', [$this, 'closeAndRun']);
 
 		// Make sure nothing has been output to the browser yet
 		if (!headers_sent())
@@ -348,7 +348,7 @@ class Tasks extends Component
 		$result = Craft::$app->db->createCommand()
 			->select('*')
 			->from('tasks')
-			->where('id = :id', array(':id' => $taskId))
+			->where('id = :id', [':id' => $taskId])
 			->queryRow();
 
 		if ($result)
@@ -386,8 +386,8 @@ class Tasks extends Component
 				->select('*')
 				->from('tasks')
 				->where(
-					array('and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/),
-					array(':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/)
+					['and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
+					[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 				)
 				->queryRow();
 
@@ -418,8 +418,8 @@ class Tasks extends Component
 		return (bool) Craft::$app->db->createCommand()
 			->from('tasks')
 			->where(
-				array('and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/),
-				array(':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/)
+				['and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
+				[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 			)
 			->count('id');
 	}
@@ -433,8 +433,8 @@ class Tasks extends Component
 	 */
 	public function areTasksPending($type = null)
 	{
-		$conditions = array('and', 'lft = 1', 'status = :status');
-		$params = array(':status' => TaskStatus::Pending);
+		$conditions = ['and', 'lft = 1', 'status = :status'];
+		$params     = [':status' => TaskStatus::Pending];
 
 		if ($type)
 		{
@@ -458,8 +458,8 @@ class Tasks extends Component
 	 */
 	public function getPendingTasks($type = null, $limit = null)
 	{
-		$conditions = array('and', 'lft = 1', 'status = :status');
-		$params = array(':status' => TaskStatus::Pending);
+		$conditions = ['and', 'lft = 1', 'status = :status'];
+		$params     = [':status' => TaskStatus::Pending];
 
 		if ($type)
 		{
@@ -489,7 +489,7 @@ class Tasks extends Component
 	{
 		return (bool) Craft::$app->db->createCommand()
 			->from('tasks')
-			->where(array('and', 'level = 0', 'status = :status'), array(':status' => TaskStatus::Error))
+			->where(['and', 'level = 0', 'status = :status'], [':status' => TaskStatus::Error])
 			->count('id');
 	}
 
@@ -503,8 +503,8 @@ class Tasks extends Component
 		return Craft::$app->db->createCommand()
 			->from('tasks')
 			->where(
-				array('and', 'lft = 1', 'status != :status'),
-				array(':status' => TaskStatus::Error)
+				['and', 'lft = 1', 'status != :status'],
+				[':status' => TaskStatus::Error]
 			)
 			->count('id');
 	}
@@ -532,9 +532,9 @@ class Tasks extends Component
 		{
 			if (!isset($this->_nextPendingTask))
 			{
-				$taskRecord = TaskRecord::model()->roots()->ordered()->findByAttributes(array(
+				$taskRecord = TaskRecord::model()->roots()->ordered()->findByAttributes([
 					'status' => TaskStatus::Pending
-				));
+				]);
 
 				if ($taskRecord)
 				{

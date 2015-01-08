@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" er ikke tillatt for dette feltet.',
 	'$_SERVER Variable' => '$_SERVER variabel',
 	'$_SERVER does not have {messages}.' => '$_SERVER har ikke {messages}.',
@@ -1250,4 +1250,4 @@ Om du ikke har bedt om denne e-posten, vennligst se bort fra den.',
 	'“{plugin}” is already installed.' => '“{plugin}” er allerede installert.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” er allerede avinstallert.',
 	'…Or use one of your field groups as a starting point:' => '...eller bruk en av feltgruppene dine som et utgangspunkt:',
-);
+];

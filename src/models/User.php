@@ -233,7 +233,7 @@ class User extends BaseElementModel implements IdentityInterface
 			}
 			else
 			{
-				$this->_groups = array();
+				$this->_groups = [];
 			}
 		}
 
@@ -243,7 +243,7 @@ class User extends BaseElementModel implements IdentityInterface
 		}
 		else
 		{
-			$groups = array();
+			$groups = [];
 
 			foreach ($this->_groups as $group)
 			{

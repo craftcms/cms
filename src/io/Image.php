@@ -126,7 +126,7 @@ class Image
 	{
 		if (!IOHelper::fileExists($path))
 		{
-			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
+			throw new Exception(Craft::t('No file exists at the path “{path}”', ['path' => $path]));
 		}
 
 		if (!Craft::$app->images->checkMemoryForImage($path))
@@ -138,7 +138,7 @@ class Image
 
 		if (!is_array($imageInfo))
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', ['path' => $path]));
 		}
 
 		$this->_image = $this->_instance->open($path);
@@ -440,7 +440,7 @@ class Image
 		{
 			Craft::log($exception->getMessage(), LogLevel::Error);
 
-			return array();
+			return [];
 		}
 	}
 
@@ -551,12 +551,12 @@ class Image
 			case 'jpeg':
 			case 'jpg':
 			{
-				return array('jpeg_quality' => $quality, 'flatten' => true);
+				return ['jpeg_quality' => $quality, 'flatten' => true];
 			}
 
 			case 'gif':
 			{
-				$options = array('animated' => $this->_isAnimatedGif);
+				$options = ['animated' => $this->_isAnimatedGif];
 
 				if ($this->_isAnimatedGif)
 				{
@@ -585,7 +585,7 @@ class Image
 					$normalizedQuality = 9;
 				}
 
-				$options = array('png_compression_level' => $normalizedQuality, 'flatten' => false);
+				$options = ['png_compression_level' => $normalizedQuality, 'flatten' => false];
 				$pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
 
 				// Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
@@ -608,7 +608,7 @@ class Image
 
 			default:
 			{
-				return array();
+				return [];
 			}
 		}
 	}

@@ -83,7 +83,7 @@ class RebrandController extends BaseController
 						]
 					);
 
-					$this->returnJson(array('html' => $html));
+					$this->returnJson(['html' => $html]);
 				}
 			}
 		}
@@ -145,7 +145,7 @@ class RebrandController extends BaseController
 				IOHelper::deleteFile($imagePath);
 
 				$html = Craft::$app->templates->render('settings/general/_logo');
-				$this->returnJson(array('html' => $html));
+				$this->returnJson(['html' => $html]);
 			}
 			IOHelper::deleteFile($imagePath);
 		}
@@ -168,7 +168,7 @@ class RebrandController extends BaseController
 		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'logo/');
 
 		$html = Craft::$app->templates->render('settings/general/_logo');
-		$this->returnJson(array('html' => $html));
+		$this->returnJson(['html' => $html]);
 
 	}
 }

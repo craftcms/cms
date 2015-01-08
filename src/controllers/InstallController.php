@@ -164,7 +164,7 @@ class InstallController extends BaseController
 
 		Craft::$app->install->run($inputs);
 
-		$return = array('success' => true);
+		$return = ['success' => true];
 		$this->returnJson($return);
 	}
 }

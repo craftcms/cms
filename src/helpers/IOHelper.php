@@ -788,7 +788,7 @@ class IOHelper
 				if (($useFileLock = Craft::$app->cache->get('useWriteFileLock')) === false && !$noFileLock)
 				{
 					// For file systems that don't support file locking... LOOKING AT YOU NFS!!!
-					set_error_handler(array(new IOHelper(), 'handleError'));
+					set_error_handler([new IOHelper(), 'handleError']);
 
 					try
 					{
@@ -1435,26 +1435,26 @@ class IOHelper
 	 */
 	public static function getFileKinds()
 	{
-		return array(
-			'access'      => array('label' => Craft::t('Access'),      'extensions' => array('adp','accdb','mdb','accde','accdt','accdr')),
-			'archive'     => array('label' => Craft::t('Archive'),     'extensions' => array('bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx')),
-			'audio'       => array('label' => Craft::t('Audio'),       'extensions' => array('3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv')),
-			'excel'       => array('label' => Craft::t('Excel'),       'extensions' => array('xls', 'xlsx','xlsm','xltx','xltm')),
-			'flash'       => array('label' => Craft::t('Flash'),       'extensions' => array('fla','flv','swf','swt','swc')),
-			'html'        => array('label' => Craft::t('HTML'),        'extensions' => array('html','htm')),
-			'illustrator' => array('label' => Craft::t('Illustrator'), 'extensions' => array('ai')),
-			'image'       => array('label' => Craft::t('Image'),       'extensions' => array('jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg')),
-			'javascript'  => array('label' => Craft::t('Javascript'),  'extensions' => array('js')),
-			'json'        => array('label' => Craft::t('JSON'),        'extensions' => array('json')),
-			'pdf'         => array('label' => Craft::t('PDF'),         'extensions' => array('pdf')),
-			'photoshop'   => array('label' => Craft::t('Photoshop'),   'extensions' => array('psd','psb')),
-			'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
-			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('ppt','pptx','pps','pptm','potx')),
-			'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
-			'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
-			'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
-			'xml'         => array('label' => Craft::t('XML'),         'extensions' => array('xml')),
-		);
+		return [
+			'access'      => ['label' => Craft::t('Access'),      'extensions' => ['adp','accdb','mdb','accde','accdt','accdr']],
+			'archive'     => ['label' => Craft::t('Archive'),     'extensions' => ['bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx']],
+			'audio'       => ['label' => Craft::t('Audio'),       'extensions' => ['3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv']],
+			'excel'       => ['label' => Craft::t('Excel'),       'extensions' => ['xls', 'xlsx','xlsm','xltx','xltm']],
+			'flash'       => ['label' => Craft::t('Flash'),       'extensions' => ['fla','flv','swf','swt','swc']],
+			'html'        => ['label' => Craft::t('HTML'),        'extensions' => ['html','htm']],
+			'illustrator' => ['label' => Craft::t('Illustrator'), 'extensions' => ['ai']],
+			'image'       => ['label' => Craft::t('Image'),       'extensions' => ['jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg']],
+			'javascript'  => ['label' => Craft::t('Javascript'),  'extensions' => ['js']],
+			'json'        => ['label' => Craft::t('JSON'),        'extensions' => ['json']],
+			'pdf'         => ['label' => Craft::t('PDF'),         'extensions' => ['pdf']],
+			'photoshop'   => ['label' => Craft::t('Photoshop'),   'extensions' => ['psd','psb']],
+			'php'         => ['label' => Craft::t('PHP'),         'extensions' => ['php']],
+			'powerpoint'  => ['label' => Craft::t('PowerPoint'),  'extensions' => ['ppt','pptx','pps','pptm','potx']],
+			'text'        => ['label' => Craft::t('Text'),        'extensions' => ['txt','text']],
+			'video'       => ['label' => Craft::t('Video'),       'extensions' => ['avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm']],
+			'word'        => ['label' => Craft::t('Word'),        'extensions' => ['doc','docx','dot','docm','dotm']],
+			'xml'         => ['label' => Craft::t('XML'),         'extensions' => ['xml']],
+		];
 	}
 
 	/**
@@ -1507,7 +1507,7 @@ class IOHelper
 	 */
 	public static function cleanFilename($fileName, $onlyAlphaNumeric = false, $separator = '-')
 	{
-		$disallowedChars = array('â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}');
+		$disallowedChars = ['â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}'];
 
 		// Replace any control characters in the name with a space.
 		$fileName = preg_replace( "#\x{00a0}#siu", ' ', $fileName );
@@ -1567,7 +1567,7 @@ class IOHelper
 	 */
 	public static function getLastModifiedFiles($folder, $number = null, $suppressErrors = false)
 	{
-		$fileResults = array();
+		$fileResults = [];
 
 		$files = static::getFiles($folder, $suppressErrors);
 
@@ -1708,7 +1708,7 @@ class IOHelper
 	 */
 	private static function _folderContents($path, $recursive = false, $filter = null, $includeHiddenFiles = false, $suppressErrors = false)
 	{
-		$descendants = array();
+		$descendants = [];
 
 		$path = static::normalizePathSeparators(static::getRealPath($path, $suppressErrors));
 
@@ -1716,7 +1716,7 @@ class IOHelper
 		{
 			if (is_string($filter))
 			{
-				$filter = array($filter);
+				$filter = [$filter];
 			}
 		}
 
@@ -1761,7 +1761,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log(Craft::t('Unable to get folder contents for “{path}”.', array('path' => $path), LogLevel::Error));
+			Craft::log(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path], LogLevel::Error));
 		}
 
 		return $descendants;

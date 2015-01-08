@@ -51,10 +51,10 @@ class FindAndReplace extends BaseTask
 	{
 		$settings = $this->getSettings();
 
-		return Craft::t('Replacing “{find}” with “{replace}”', array(
+		return Craft::t('Replacing “{find}” with “{replace}”', [
 			'find'    => $settings->find,
 			'replace' => $settings->replace
-		));
+		]);
 	}
 
 	/**
@@ -64,8 +64,8 @@ class FindAndReplace extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_textColumns = array();
-		$this->_matrixFieldIds = array();
+		$this->_textColumns = [];
+		$this->_matrixFieldIds = [];
 
 		// Is this for a Matrix field?
 		$matrixFieldId = $this->getSettings()->matrixFieldId;
@@ -136,11 +136,11 @@ class FindAndReplace extends BaseTask
 
 					if ($field)
 					{
-						return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', array('field' => $field->name)), array(
+						return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', ['field' => $field->name]), [
 							'find'          => $settings->find,
 							'replace'       => $settings->replace,
 							'matrixFieldId' => $field->id
-						));
+						]);
 					}
 					else
 					{
@@ -171,11 +171,11 @@ class FindAndReplace extends BaseTask
 	 */
 	protected function defineSettings()
 	{
-		return array(
+		return [
 			'find'          => AttributeType::String,
 			'replace'       => AttributeType::String,
 			'matrixFieldId' => AttributeType::String,
-		);
+		];
 	}
 
 	// Private Methods

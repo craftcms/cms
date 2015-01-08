@@ -48,20 +48,20 @@ class AssetIndex extends BaseTool
 	public function getOptionsHtml()
 	{
 		$sources = Craft::$app->assetSources->getAllSources();
-		$sourceOptions = array();
+		$sourceOptions = [];
 
 		foreach ($sources as $source)
 		{
-			$sourceOptions[] = array(
+			$sourceOptions[] = [
 				'label' => $source->name,
 				'value' => $source->id
-			);
+			];
 		}
 
-		return Craft::$app->templates->render('_includes/forms/checkboxSelect', array(
+		return Craft::$app->templates->render('_includes/forms/checkboxSelect', [
 			'name'    => 'sources',
 			'options' => $sourceOptions
-		));
+		]);
 	}
 
 	/**
@@ -71,12 +71,12 @@ class AssetIndex extends BaseTool
 	 *
 	 * @return array|null
 	 */
-	public function performAction($params = array())
+	public function performAction($params = [])
 	{
 		// Initial request
 		if (!empty($params['start']))
 		{
-			$batches = array();
+			$batches = [];
 			$sessionId = Craft::$app->assetIndexing->getIndexingSessionId();
 
 			// Selection of sources or all sources?
@@ -89,7 +89,7 @@ class AssetIndex extends BaseTool
 				$sourceIds = Craft::$app->assetSources->getViewableSourceIds();
 			}
 
-			$missingFolders = array();
+			$missingFolders = [];
 
 			$grandTotal = 0;
 
@@ -108,19 +108,19 @@ class AssetIndex extends BaseTool
 					$missingFolders += $indexList['missingFolders'];
 				}
 
-				$batch = array();
+				$batch = [];
 
 				for ($i = 0; $i < $indexList['total']; $i++)
 				{
-					$batch[] = array(
-									'params' => array(
+					$batch[] = [
+									'params' => [
 										'sessionId' => $sessionId,
 										'sourceId' => $sourceId,
 										'total' => $indexList['total'],
 										'offset' => $i,
 										'process' => 1
-									)
-								);
+									]
+					];
 				}
 
 				$batches[] = $batch;
@@ -131,10 +131,10 @@ class AssetIndex extends BaseTool
 			Craft::$app->getSession()->add('assetsTotalSourcesToIndex', count($sourceIds));
 			Craft::$app->getSession()->add('assetsTotalSourcesIndexed', 0);
 
-			return array(
+			return [
 				'batches' => $batches,
 				'total'   => $grandTotal
-			);
+			];
 		}
 		else if (!empty($params['process']))
 		{
@@ -144,9 +144,9 @@ class AssetIndex extends BaseTool
 			// More files to index.
 			if (++$params['offset'] < $params['total'])
 			{
-				return array(
+				return [
 					'success' => true
-				);
+				];
 			}
 			else
 			{
@@ -156,16 +156,16 @@ class AssetIndex extends BaseTool
 				// Is this the last source to finish up?
 				if (Craft::$app->getSession()->get('assetsTotalSourcesToIndex', 0) <= Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0))
 				{
-					$sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', array());
+					$sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
 					$missingFiles = Craft::$app->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
-					$missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', array());
+					$missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
 
-					$responseArray = array();
+					$responseArray = [];
 
 					if (!empty($missingFiles) || !empty($missingFolders))
 					{
-						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', array('missingFiles' => $missingFiles, 'missingFolders' => $missingFolders));
-						$responseArray['params'] = array('finish' => 1);
+						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders]);
+						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)
 					$sessionsInProgress = Craft::$app->db->createCommand()
@@ -181,18 +181,18 @@ class AssetIndex extends BaseTool
 					}
 					else
 					{
-						Craft::$app->db->createCommand()->delete('assetindexdata', array('not in', 'sessionId', $sessionsInProgress));
+						Craft::$app->db->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress]);
 					}
 
 
 					// Generate the HTML for missing files and folders
-					return array(
-						'batches' => array(
-							array(
+					return [
+						'batches' => [
+							[
 								$responseArray
-							)
-						)
-					);
+							]
+						]
+					];
 				}
 			}
 		}
@@ -208,11 +208,11 @@ class AssetIndex extends BaseTool
 				Craft::$app->assetIndexing->removeObsoleteFolderRecords($params['deleteFolder']);
 			}
 
-			return array(
+			return [
 				'finished' => 1
-			);
+			];
 		}
 
-		return array();
+		return [];
 	}
 }

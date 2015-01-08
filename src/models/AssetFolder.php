@@ -58,7 +58,7 @@ class AssetFolder extends BaseModel
 	{
 		if (is_null($this->_children))
 		{
-			$this->_children = Craft::$app->assets->findFolders(array('parentId' => $this->id));
+			$this->_children = Craft::$app->assets->findFolders(['parentId' => $this->id]);
 		}
 
 		return $this->_children;
@@ -88,7 +88,7 @@ class AssetFolder extends BaseModel
 	{
 		if (is_null($this->_children))
 		{
-			$this->_children = array();
+			$this->_children = [];
 		}
 
 		$this->_children[] = $folder;

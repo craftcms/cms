@@ -48,5 +48,5 @@ interface ToolInterface extends ComponentTypeInterface
 	 *
 	 * @return array
 	 */
-	public function performAction($params = array());
+	public function performAction($params = []);
 }

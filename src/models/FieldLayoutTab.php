@@ -82,7 +82,7 @@ class FieldLayoutTab extends BaseModel
 	{
 		if (!isset($this->_fields))
 		{
-			$this->_fields = array();
+			$this->_fields = [];
 
 			$layout = $this->getLayout();
 
@@ -112,7 +112,7 @@ class FieldLayoutTab extends BaseModel
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = array();
+		$this->_fields = [];
 
 		foreach ($fields as $field)
 		{

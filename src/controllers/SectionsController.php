@@ -51,7 +51,7 @@ class SectionsController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionIndex(array $variables = array())
+	public function actionIndex(array $variables = [])
 	{
 		$variables['sections'] = Craft::$app->sections->getAllSections();
 
@@ -77,7 +77,7 @@ class SectionsController extends BaseController
 	 * @throws HttpException|Exception
 	 * @return null
 	 */
-	public function actionEditSection(array $variables = array())
+	public function actionEditSection(array $variables = [])
 	{
 		$variables['brandNewSection'] = false;
 
@@ -177,16 +177,16 @@ class SectionsController extends BaseController
 		$section->maxLevels  = Craft::$app->request->getPost('types.'.$section->type.'.maxLevels');
 
 		// Locale-specific attributes
-		$locales = array();
+		$locales = [];
 
 		if (Craft::$app->isLocalized())
 		{
-			$localeIds = Craft::$app->request->getPost('locales', array());
+			$localeIds = Craft::$app->request->getPost('locales', []);
 		}
 		else
 		{
 			$primaryLocaleId = Craft::$app->i18n->getPrimarySiteLocaleId();
-			$localeIds = array($primaryLocaleId);
+			$localeIds = [$primaryLocaleId];
 		}
 
 		$isHomepage = ($section->type == SectionType::Single && Craft::$app->request->getPost('types.'.$section->type.'.homepage'));
@@ -204,12 +204,12 @@ class SectionsController extends BaseController
 				$nestedUrlFormat = Craft::$app->request->getPost('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
 			}
 
-			$locales[$localeId] = new SectionLocaleModel(array(
+			$locales[$localeId] = new SectionLocaleModel([
 				'locale'           => $localeId,
 				'enabledByDefault' => (bool) Craft::$app->request->getPost('defaultLocaleStatuses.'.$localeId),
 				'urlFormat'        => $urlFormat,
 				'nestedUrlFormat'  => $nestedUrlFormat,
-			));
+			]);
 		}
 
 		$section->setLocales($locales);
@@ -228,9 +228,9 @@ class SectionsController extends BaseController
 		}
 
 		// Send the section back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'section' => $section
-		));
+		]);
 	}
 
 	/**
@@ -246,7 +246,7 @@ class SectionsController extends BaseController
 		$sectionId = Craft::$app->request->getRequiredPost('id');
 
 		Craft::$app->sections->deleteSectionById($sectionId);
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	// Entry Types
@@ -259,7 +259,7 @@ class SectionsController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEntryTypesIndex(array $variables = array())
+	public function actionEntryTypesIndex(array $variables = [])
 	{
 		if (empty($variables['sectionId']))
 		{
@@ -273,13 +273,13 @@ class SectionsController extends BaseController
 			throw new HttpException(404);
 		}
 
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
-			array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)),
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
+		];
 
-		$variables['title'] = Craft::t('{section} Entry Types', array('section' => $variables['section']->name));
+		$variables['title'] = Craft::t('{section} Entry Types', ['section' => $variables['section']->name]);
 
 		$this->renderTemplate('settings/sections/_entrytypes/index', $variables);
 	}
@@ -292,7 +292,7 @@ class SectionsController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditEntryType(array $variables = array())
+	public function actionEditEntryType(array $variables = [])
 	{
 		if (empty($variables['sectionId']))
 		{
@@ -328,15 +328,15 @@ class SectionsController extends BaseController
 				$variables['entryType']->sectionId = $variables['section']->id;
 			}
 
-			$variables['title'] = Craft::t('Create a new {section} entry type', array('section' => $variables['section']->name));
+			$variables['title'] = Craft::t('Create a new {section} entry type', ['section' => $variables['section']->name]);
 		}
 
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')),
-			array('label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)),
-			array('label' => Craft::t('Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')),
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
+			['label' => Craft::t('Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')],
+		];
 
 		$this->renderTemplate('settings/sections/_entrytypes/edit', $variables);
 	}
@@ -361,7 +361,7 @@ class SectionsController extends BaseController
 
 			if (!$entryType)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', array('id' => $entryTypeId)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
 			}
 		}
 		else
@@ -394,9 +394,9 @@ class SectionsController extends BaseController
 		}
 
 		// Send the entry type back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'entryType' => $entryType
-		));
+		]);
 	}
 
 	/**
@@ -412,7 +412,7 @@ class SectionsController extends BaseController
 		$entryTypeIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
 		Craft::$app->sections->reorderEntryTypes($entryTypeIds);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -428,6 +428,6 @@ class SectionsController extends BaseController
 		$entryTypeId = Craft::$app->request->getRequiredPost('id');
 
 		Craft::$app->sections->deleteEntryTypeById($entryTypeId);
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 }

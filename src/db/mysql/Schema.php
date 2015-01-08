@@ -140,7 +140,7 @@ class Schema extends \CMysqlSchema
 	 */
 	public function insertAll($table, $columns, $rows)
 	{
-		$params = array();
+		$params = [];
 
 		// Quote the column names
 		foreach ($columns as $colIndex => $column)
@@ -184,7 +184,7 @@ class Schema extends \CMysqlSchema
 		// Generate the SQL
 		$sql = 'INSERT INTO '.$this->quoteTableName($table).' ('.implode(', ', $columns).') VALUES '.$valuesSql;
 
-		return array('query' => $sql, 'params' => $params);
+		return ['query' => $sql, 'params' => $params];
 	}
 
 	/**
@@ -197,7 +197,7 @@ class Schema extends \CMysqlSchema
 	 */
 	public function createTable($table, $columns, $options = null, $engine = 'InnoDb')
 	{
-		$cols = array();
+		$cols = [];
 		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.Craft::$app->config->get('charset', ConfigFile::Db).' COLLATE='.Craft::$app->config->get('collation', ConfigFile::Db).($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
@@ -264,9 +264,9 @@ class Schema extends \CMysqlSchema
 	public function replace($table, $column, $find, $replace)
 	{
 		$sql = 'UPDATE '.$this->quoteTableName($table).' SET '.$this->quoteColumnName($column).' = REPLACE('.$this->quoteColumnName($column).',  :find, :replace)';
-		$params = array(':find' => (string) $find, ':replace' => (string) $replace);
+		$params = [':find' => (string) $find, ':replace' => (string) $replace];
 
-		return array('query' => $sql, 'params' => $params);
+		return ['query' => $sql, 'params' => $params];
 	}
 
 	/**

@@ -44,7 +44,7 @@ class Rackspace extends BaseAssetSourceType
 	 *
 	 * @var array
 	 */
-	private static $_accessStore = array();
+	private static $_accessStore = [];
 
 	// Public Methods
 	// =========================================================================
@@ -66,9 +66,9 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/assetsourcetypes/Rackspace/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/Rackspace/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 
@@ -85,13 +85,13 @@ class Rackspace extends BaseAssetSourceType
 		$extractedResponse = static::_extractRequestResponse($response);
 		$data = json_decode($extractedResponse);
 
-		$returnData = array();
+		$returnData = [];
 
 		if (is_array($data))
 		{
 			foreach ($data as $container)
 			{
-				$returnData[] = (object) array('container' => $container->name, 'urlPrefix' => rtrim($container->cdn_uri, '/').'/');
+				$returnData[] = (object) ['container' => $container->name, 'urlPrefix' => rtrim($container->cdn_uri, '/').'/'];
 			}
 		}
 		else
@@ -110,7 +110,7 @@ class Rackspace extends BaseAssetSourceType
 	public function getRegionList()
 	{
 		$this->_refreshConnectionInformation();
-		$regions = array();
+		$regions = [];
 
 		foreach (static::$_accessStore as $key => $information)
 		{
@@ -142,7 +142,7 @@ class Rackspace extends BaseAssetSourceType
 		}
 		catch (Exception $exception)
 		{
-			return array('error' => $exception->getMessage());
+			return ['error' => $exception->getMessage()];
 		}
 
 		$fileList = array_filter($fileList, function($value)
@@ -164,7 +164,7 @@ class Rackspace extends BaseAssetSourceType
 			return true;
 		});
 
-		$containerFolders = array();
+		$containerFolders = [];
 
 		foreach ($fileList as $file)
 		{
@@ -204,13 +204,13 @@ class Rackspace extends BaseAssetSourceType
 				}
 				else
 				{
-					$indexEntry = array(
+					$indexEntry = [
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
 						'offset' => $offset++,
 						'uri' => $file->name,
 						'size' => $file->bytes
-					);
+					];
 
 					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
@@ -218,7 +218,7 @@ class Rackspace extends BaseAssetSourceType
 			}
 		}
 
-		$indexedFolderIds = array();
+		$indexedFolderIds = [];
 		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
@@ -230,7 +230,7 @@ class Rackspace extends BaseAssetSourceType
 
 		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
-		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
+		return ['sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders];
 	}
 
 	/**
@@ -388,7 +388,7 @@ class Rackspace extends BaseAssetSourceType
 	{
 		$prefix = $this->_getPathPrefix().$folder->path;
 		$files = $this->_getFileList($prefix);
-		$fileList = array();
+		$fileList = [];
 
 		foreach ($files as $file)
 		{
@@ -511,10 +511,10 @@ class Rackspace extends BaseAssetSourceType
 
 		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
-		$conflictingRecord = Craft::$app->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
-		));
+		]);
 
 
 		$fileInfo = $this->_getObjectInfo($newServerPath);
@@ -596,10 +596,10 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	protected function createSourceFolder(AssetFolderModel $parentFolder, $folderName)
 	{
-		$headers = array(
+		$headers = [
 			'Content-type: application/directory',
 			'Content-length: 0'
-		);
+		];
 
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $this->_getPathPrefix().$parentFolder->path.$folderName);
 
@@ -621,7 +621,7 @@ class Rackspace extends BaseAssetSourceType
 		$newFullPath = $this->_getPathPrefix().IOHelper::getParentFolderPath($folder->path).$newName.'/';
 
 		$objectList = $this->_getFileList($this->_getPathPrefix().$folder->path);
-		$filesToMove = array();
+		$filesToMove = [];
 
 		foreach ($objectList as $object)
 		{
@@ -746,10 +746,10 @@ class Rackspace extends BaseAssetSourceType
 
 		foreach ($rows as $row)
 		{
-			static::$_accessStore[$row['connectionKey']] = array(
+			static::$_accessStore[$row['connectionKey']] = [
 					'token' => $row['token'],
 					'storageUrl' => $row['storageUrl'],
-					'cdnUrl' => $row['cdnUrl']);
+					'cdnUrl' => $row['cdnUrl']];
 		}
 	}
 
@@ -765,13 +765,13 @@ class Rackspace extends BaseAssetSourceType
 	{
 		$recordExists = Craft::$app->db->createCommand()
 			->select('id')
-			->where('connectionKey = :connectionKey', array(':connectionKey' => $connectionKey))
+			->where('connectionKey = :connectionKey', [':connectionKey' => $connectionKey])
 			->from('rackspaceaccess')
 			->queryScalar();
 
 		if ($recordExists)
 		{
-			Craft::$app->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', array(':id' => $recordExists));
+			Craft::$app->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', [':id' => $recordExists]);
 		}
 		else
 		{
@@ -830,7 +830,7 @@ class Rackspace extends BaseAssetSourceType
 	 *
 	 * @return string
 	 */
-	private static function _doRequest($url, $method = 'GET', $headers = array(), $curlOptions = array(), $payload = '')
+	private static function _doRequest($url, $method = 'GET', $headers = [], $curlOptions = [], $payload = '')
 	{
 		$ch = curl_init($url);
 
@@ -880,16 +880,16 @@ class Rackspace extends BaseAssetSourceType
 		$fileSize = IOHelper::getFileSize($sourceFile);
 		$fp = fopen($sourceFile, "r");
 
-		$headers = array(
+		$headers = [
 			'Content-type: '.IOHelper::getMimeType($sourceFile),
 			'Content-length: '.$fileSize
-		);
+		];
 
-		$curlOptions = array(
+		$curlOptions = [
 			CURLOPT_UPLOAD => true,
 			CURLOPT_INFILE => $fp,
 			CURLOPT_INFILESIZE => $fileSize
-		);
+		];
 
 		$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $targetUri);
 		$this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $targetUri, 'PUT', $headers, $curlOptions);
@@ -932,23 +932,23 @@ class Rackspace extends BaseAssetSourceType
 		$username = $settings->username;
 		$apiKey = $settings->apiKey;
 
-		$headers = array(
+		$headers = [
 			'Content-Type: application/json',
 			'Accept: application/json',
 
-		);
+		];
 
-		$payload = json_encode(array(
-			'auth' => array(
-				'RAX-KSKEY:apiKeyCredentials' => array(
+		$payload = json_encode([
+			'auth' => [
+				'RAX-KSKEY:apiKeyCredentials' => [
 					'username' => $username,
 					'apiKey' => $apiKey
-				)
-			)
-		));
+				]
+			]
+		]);
 
 		$targetUrl = static::_makeAuthorizationRequestUrl();
-		$response = static::_doRequest($targetUrl, 'POST', $headers, array(), $payload);
+		$response = static::_doRequest($targetUrl, 'POST', $headers, [], $payload);
 		$body = json_decode(substr($response, strpos($response, '{')));
 
 		if (empty($body->access))
@@ -964,7 +964,7 @@ class Rackspace extends BaseAssetSourceType
 			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
 		}
 
-		$regions = array();
+		$regions = [];
 
 		// Fetch region information
 		foreach ($services as $service)
@@ -975,7 +975,7 @@ class Rackspace extends BaseAssetSourceType
 				{
 					if (empty($regions[$endpoint->region]))
 					{
-						$regions[$endpoint->region] = array();
+						$regions[$endpoint->region] = [];
 					}
 
 					if ($service->name == 'cloudFilesCDN')
@@ -994,7 +994,7 @@ class Rackspace extends BaseAssetSourceType
 		foreach ($regions as $region => $data)
 		{
 			$connection_key = $this->_getConnectionKey($username, $apiKey, $region);
-			$data = array('token' => $token, 'storageUrl' => $data['storageUrl'], 'cdnUrl' => $data['cdnUrl']);
+			$data = ['token' => $token, 'storageUrl' => $data['storageUrl'], 'cdnUrl' => $data['cdnUrl']];
 
 			// Store this in the access store
 			static::$_accessStore[$connection_key] = $data;
@@ -1039,7 +1039,7 @@ class Rackspace extends BaseAssetSourceType
 			}
 		}
 
-		return (object) array('lastModified' => $lastModified, 'size' => $size);
+		return (object) ['lastModified' => $lastModified, 'size' => $size];
 	}
 
 	/**
@@ -1054,7 +1054,7 @@ class Rackspace extends BaseAssetSourceType
 	 * @throws Exception
 	 * @return string The full response including headers.
 	 */
-	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = array(), $curlOptions = array())
+	private function _doAuthenticatedRequest($operationType, $target = '', $method = 'GET', $headers = [], $curlOptions = [])
 	{
 		$settings = $this->getSettings();
 
@@ -1130,7 +1130,7 @@ class Rackspace extends BaseAssetSourceType
 						$this->_refreshConnectionInformation();
 
 						// Remove token header.
-						$newHeaders = array();
+						$newHeaders = [];
 
 						foreach ($headers as $header)
 						{
@@ -1194,7 +1194,7 @@ class Rackspace extends BaseAssetSourceType
 		if (!is_array($fileList))
 		{
 			static::_logUnexpectedResponse($response);
-			throw new Exception(Craft::t('Remote server for “{source}” returned an unexpected response.', array('source' => $this->model->name)));
+			throw new Exception(Craft::t('Remote server for “{source}” returned an unexpected response.', ['source' => $this->model->name]));
 		}
 
 		return $fileList;
@@ -1235,7 +1235,7 @@ class Rackspace extends BaseAssetSourceType
 	private function _copyFile($sourceUri, $targetUri)
 	{
 		$targetUri = '/'.ltrim($targetUri, '/');
-		$this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $sourceUri, 'COPY', array('Destination: '.$targetUri));
+		$this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $sourceUri, 'COPY', ['Destination: '.$targetUri]);
 	}
 
 	/**
@@ -1262,7 +1262,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private function _getConnectionKey($username, $apiKey, $region)
 	{
-		return implode('#', array($username, $apiKey, $region));
+		return implode('#', [$username, $apiKey, $region]);
 	}
 
 	/**

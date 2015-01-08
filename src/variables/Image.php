@@ -53,7 +53,7 @@ class Image
 		if (!isset($this->size))
 		{
 			$size = getimagesize($this->path);
-			$this->size = array($size[0], $size[1]);
+			$this->size = [$size[0], $size[1]];
 		}
 
 		return $this->size;

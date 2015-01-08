@@ -54,7 +54,7 @@ class Switch_TokenParser extends \Twig_TokenParser
 
 		$stream->expect(\Twig_Token::BLOCK_START_TYPE);
 
-		$cases = array();
+		$cases = [];
 		$default = null;
 		$end = false;
 
@@ -68,17 +68,17 @@ class Switch_TokenParser extends \Twig_TokenParser
 				{
 					$expr = $this->parser->getExpressionParser()->parseExpression();
 					$stream->expect(\Twig_Token::BLOCK_END_TYPE);
-					$body = $this->parser->subparse(array($this, 'decideIfFork'));
-					$cases[] = array(
+					$body = $this->parser->subparse([$this, 'decideIfFork']);
+					$cases[] = [
 						'expr' => $expr,
 						'body' => $body
-					);
+					];
 					break;
 				}
 				case 'default':
 				{
 					$stream->expect(\Twig_Token::BLOCK_END_TYPE);
-					$default = $this->parser->subparse(array($this, 'decideIfEnd'));
+					$default = $this->parser->subparse([$this, 'decideIfEnd']);
 					break;
 				}
 				case 'endswitch':
@@ -105,7 +105,7 @@ class Switch_TokenParser extends \Twig_TokenParser
 	 */
 	public function decideIfFork($token)
 	{
-		return $token->test(array('case', 'default', 'endswitch'));
+		return $token->test(['case', 'default', 'endswitch']);
 	}
 
 	/**
@@ -115,6 +115,6 @@ class Switch_TokenParser extends \Twig_TokenParser
 	 */
 	public function decideIfEnd($token)
 	{
-		return $token->test(array('endswitch'));
+		return $token->test(['endswitch']);
 	}
 }

@@ -65,7 +65,7 @@ class CategoryGroup extends BaseModel
 			}
 			else
 			{
-				$this->_locales = array();
+				$this->_locales = [];
 			}
 		}
 

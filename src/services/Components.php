@@ -225,7 +225,7 @@ class Components extends Component
 			$this->_noComponentTypeExists($type);
 		}
 
-		$componentClasses = array();
+		$componentClasses = [];
 
 		// Find all of the built-in components
 		$filter = $this->types[$type]['suffix'].'\.php$';
@@ -250,8 +250,8 @@ class Components extends Component
 		}
 
 		// Initialize, verify, and save them
-		$components = array();
-		$names = array();
+		$components = [];
+		$names      = [];
 
 		foreach ($componentClasses as $class)
 		{
@@ -286,6 +286,6 @@ class Components extends Component
 	 */
 	private function _noComponentTypeExists($type)
 	{
-		throw new Exception(Craft::t('No component type exists by the name “{type}”', array('type' => $type)));
+		throw new Exception(Craft::t('No component type exists by the name “{type}”', ['type' => $type]));
 	}
 }

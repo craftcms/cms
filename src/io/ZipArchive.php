@@ -132,7 +132,7 @@ class ZipArchive implements ZipInterface
 
 		if (IOHelper::fileExists($pathToAdd))
 		{
-			$folderContents = array($pathToAdd);
+			$folderContents = [$pathToAdd];
 		}
 		else
 		{

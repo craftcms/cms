@@ -30,7 +30,7 @@ class RequireLogin_TokenParser extends \Twig_TokenParser
 		$lineno = $token->getLine();
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new RequireLogin_Node(array(), array(), $lineno, $this->getTag());
+		return new RequireLogin_Node([], [], $lineno, $this->getTag());
 	}
 
 	/**

@@ -41,12 +41,12 @@ class EntryVersion extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'entry'   => array(static::BELONGS_TO, 'Entry', 'required' => true, 'onDelete' => static::CASCADE),
-			'section' => array(static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE),
-			'creator' => array(static::BELONGS_TO, 'User', 'required' => false, 'onDelete' => static::SET_NULL),
-			'locale' => array(static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'entry'   => [static::BELONGS_TO, 'Entry', 'required' => true, 'onDelete' => static::CASCADE],
+			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
+			'creator' => [static::BELONGS_TO, 'User', 'required' => false, 'onDelete' => static::SET_NULL],
+			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -56,9 +56,9 @@ class EntryVersion extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('entryId', 'locale')),
-		);
+		return [
+			['columns' => ['entryId', 'locale']],
+		];
 	}
 
 	// Protected Methods

@@ -43,7 +43,7 @@ class SearchQuery
 	public function __construct($query)
 	{
 		$this->_query = $query;
-		$this->_tokens = array();
+		$this->_tokens = [];
 		$this->_parse();
 	}
 
@@ -99,7 +99,7 @@ class SearchQuery
 
 					if (!($previousToken instanceof SearchQueryTermGroup))
 					{
-						$previousToken = new SearchQueryTermGroup(array($previousToken));
+						$previousToken = new SearchQueryTermGroup([$previousToken]);
 						$this->_tokens[$totalTokens-1] = $previousToken;
 					}
 

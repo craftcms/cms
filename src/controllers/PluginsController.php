@@ -140,7 +140,7 @@ class PluginsController extends BaseController
 		$plugin = Craft::$app->plugins->getPlugin($pluginClass);
 		if (!$plugin)
 		{
-			throw new Exception(Craft::t('No plugin exists with the class “{class}”', array('class' => $pluginClass)));
+			throw new Exception(Craft::t('No plugin exists with the class “{class}”', ['class' => $pluginClass]));
 		}
 
 		if (Craft::$app->plugins->savePluginSettings($plugin, $settings))
@@ -153,8 +153,8 @@ class PluginsController extends BaseController
 		Craft::$app->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'plugin' => $plugin
-		));
+		]);
 	}
 }

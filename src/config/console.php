@@ -2,17 +2,17 @@
 
 $common = require(CRAFT_APP_PATH.'etc/config/common.php');
 
-return CMap::mergeArray($common, array(
+return CMap::mergeArray($common, [
 
 	'basePath' => dirname(__FILE__).'/../../',
 
 	// autoloading model and component classes
-	'import' => array(
+	'import' => [
 		'application.*',
 		'application.migrations.*',
-	),
+	],
 
-	'componentAliases' => array(
+	'componentAliases' => [
 		'app.*',
 		'app.enums.*',
 		'app.etc.components.*',
@@ -28,18 +28,18 @@ return CMap::mergeArray($common, array(
 		'app.migrations.*',
 		'app.services.*',
 		'app.validators.*',
-	),
+	],
 
-	'components' => array(
-		'db' => array(
+	'components' => [
+		'db' => [
 			'emulatePrepare'    => true,
-			'driverMap'         => array('mysql' => 'Craft\MysqlSchema'),
+			'driverMap'         => ['mysql' => 'Craft\MysqlSchema'],
 			'class'             => 'Craft\DbConnection',
-		),
-		'migrations' => array(
+		],
+		'migrations' => [
 			'class'             => 'Craft\MigrationsService',
-		),
-	),
+		],
+	],
 
 	'commandPath' => craft\app\Craft::getPathOfAlias('system.cli.commands.*'),
-));
+]);

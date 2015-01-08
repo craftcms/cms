@@ -68,7 +68,7 @@ class Application extends \yii\console\Application
 		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
-		$this->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
+		$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath(Craft::$app->path->getRuntimePath());

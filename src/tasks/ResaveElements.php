@@ -49,9 +49,9 @@ class ResaveElements extends BaseTask
 	{
 		$elementType = Craft::$app->elements->getElementType($this->getSettings()->elementType);
 
-		return Craft::t('Resaving {type}', array(
+		return Craft::t('Resaving {type}', [
 			'type' => StringHelper::toLowerCase($elementType->getName())
-		));
+		]);
 	}
 
 	/**

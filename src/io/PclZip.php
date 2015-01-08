@@ -90,7 +90,7 @@ class PclZip implements ZipInterface
 		}
 
 		$tempDestFolders = array_unique($tempDestFolders);
-		$finalDestFolders = array();
+		$finalDestFolders = [];
 
 		foreach ($tempDestFolders as $tempDestFolder)
 		{
@@ -168,14 +168,14 @@ class PclZip implements ZipInterface
 
 		if (IOHelper::fileExists($pathToAdd))
 		{
-			$folderContents = array($pathToAdd);
+			$folderContents = [$pathToAdd];
 		}
 		else
 		{
 			$folderContents = IOHelper::getFolderContents($pathToAdd, true);
 		}
 
-		$filesToAdd = array();
+		$filesToAdd = [];
 
 		foreach ($folderContents as $itemToZip)
 		{

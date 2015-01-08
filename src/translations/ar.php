@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" غير مسموح به في هذا الحقل.',
 	'$_SERVER Variable' => 'متغير $_SERVER',
 	'$_SERVER does not have {messages}.' => 'لا يحتوي $_SERVER على {messages}.',
@@ -1250,4 +1250,4 @@ return array(
 	'“{plugin}” is already installed.' => 'تم تثبيت ”{plugin}“ بالفعل.',
 	'“{plugin}” is already uninstalled.' => 'تم إلغاء تثبيت ”{plugin}“ بالفعل.',
 	'…Or use one of your field groups as a starting point:' => '…أو استخدم إحدى مجموعات الحقول كنقطة بداية:',
-);
+];

@@ -98,7 +98,7 @@ class Dashboard extends Component
 			return WidgetModel::populateModels($widgetRecords, $indexBy);
 		}
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -110,11 +110,11 @@ class Dashboard extends Component
 	 */
 	public function doesUserHaveWidget($type)
 	{
-		$count = WidgetRecord::model()->countByAttributes(array(
+		$count = WidgetRecord::model()->countByAttributes([
 			'userId'  => Craft::$app->getUser()->getIdentity()->id,
 			'type'    => $type,
 			'enabled' => true
-		));
+		]);
 
 		return (bool)$count;
 	}
@@ -128,10 +128,10 @@ class Dashboard extends Component
 	 */
 	public function getUserWidgetById($id)
 	{
-		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
+		$widgetRecord = WidgetRecord::model()->findByAttributes([
 			'id' => $id,
 			'userId' => Craft::$app->getUser()->getIdentity()->id
-		));
+		]);
 
 		if ($widgetRecord)
 		{
@@ -166,7 +166,7 @@ class Dashboard extends Component
 				$maxSortOrder = Craft::$app->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
-					->where(array('userId' => Craft::$app->getUser()->getIdentity()->id))
+					->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
 					->queryScalar();
 
 				$widgetRecord->sortOrder = $maxSortOrder + 1;
@@ -282,10 +282,10 @@ class Dashboard extends Component
 		// Blog & Tonic feed widget
 		$widget = new WidgetModel();
 		$widget->type = 'Feed';
-		$widget->settings = array(
+		$widget->settings = [
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
-		);
+		];
 
 		$this->saveUserWidget($widget);
 	}
@@ -303,10 +303,10 @@ class Dashboard extends Component
 
 		if ($widgetId)
 		{
-			$widgetRecord = WidgetRecord::model()->findByAttributes(array(
+			$widgetRecord = WidgetRecord::model()->findByAttributes([
 				'id'     => $widgetId,
 				'userId' => $userId
-			));
+			]);
 
 			if (!$widgetRecord)
 			{

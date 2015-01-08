@@ -81,7 +81,7 @@ class HeaderHelper
 
 		$mimeType = $mimeTypes[$extension];
 
-		if (static::setHeader(array('Content-Type' => $mimeType.'; charset=utf-8')))
+		if (static::setHeader(['Content-Type' => $mimeType.'; charset=utf-8']))
 		{
 			// Save the MIME type for getMimeType()
 			static::$_mimeType = $mimeType;
@@ -103,10 +103,10 @@ class HeaderHelper
 	{
 		static::setExpires(-604800);
 		static::setHeader(
-			array(
+			[
 				'Pragma' => 'no-cache',
 				'Cache-Control' => 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0',
-			)
+			]
 		);
 	}
 
@@ -120,10 +120,10 @@ class HeaderHelper
 	public static function setExpires($seconds = 300)
 	{
 		static::setHeader(
-			array(
+			[
 				'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds).' GMT',
 				'Cache-Control' => "max-age={$seconds}, public, s-maxage={$seconds}",
-			)
+			]
 		);
 	}
 
@@ -136,10 +136,10 @@ class HeaderHelper
 	public static function setPrivate()
 	{
 		static::setHeader(
-			array(
+			[
 				'Pragma' => 'private',
 				'Cache-control' => 'private, must-revalidate',
-			)
+			]
 		);
 	}
 
@@ -152,9 +152,9 @@ class HeaderHelper
 	public static function setPublic()
 	{
 		static::setHeader(
-			array(
+			[
 				'Pragma' => 'public',
-			)
+			]
 		);
 	}
 
@@ -170,10 +170,10 @@ class HeaderHelper
 	public static function setDownload($fileName, $fileSize = null)
 	{
 		static::setHeader(
-			array(
+			[
 				'Content-Description' => 'File Transfer',
 				'Content-disposition' => 'attachment; filename="'.addslashes($fileName).'"',
-			)
+			]
 		);
 
 		// Add file size if provided
@@ -197,7 +197,7 @@ class HeaderHelper
 	 */
 	public static function setLength($sizeInBytes)
 	{
-		static::setHeader(array('Content-Length' => (int)$sizeInBytes));
+		static::setHeader(['Content-Length' => (int)$sizeInBytes]);
 	}
 
 	/**
@@ -270,7 +270,7 @@ class HeaderHelper
 
 		if (is_string($header))
 		{
-			$header = array($header);
+			$header = [$header];
 		}
 
 		foreach ($header as $key => $value)

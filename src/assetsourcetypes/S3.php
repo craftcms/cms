@@ -37,10 +37,10 @@ class S3 extends BaseAssetSourceType
 	 *
 	 * @var array
 	 */
-	private static $_predefinedEndpoints = array(
+	private static $_predefinedEndpoints = [
 		'US' => 's3.amazonaws.com',
 		'EU' => 's3-eu-west-1.amazonaws.com'
-	);
+	];
 
 	/**
 	 * @var \S3
@@ -69,17 +69,17 @@ class S3 extends BaseAssetSourceType
 			throw new Exception(Craft::t("Credentials rejected by target host."));
 		}
 
-		$bucketList = array();
+		$bucketList = [];
 
 		foreach ($buckets as $bucket)
 		{
 			$location = $s3->getBucketLocation($bucket);
 
-			$bucketList[] = array(
+			$bucketList[] = [
 				'bucket' => $bucket,
 				'location' => $location,
 				'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
-			);
+			];
 
 		}
 
@@ -124,10 +124,10 @@ class S3 extends BaseAssetSourceType
 
 		$settings->expires = $this->extractExpiryInformation($settings->expires);
 
-		return Craft::$app->templates->render('_components/assetsourcetypes/S3/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/S3/settings', [
 			'settings' => $settings,
-			'periods' => array_merge(array('' => ''), $this->getPeriodList())
-		));
+			'periods' => array_merge(['' => ''], $this->getPeriodList())
+		]);
 	}
 
 	/**
@@ -167,7 +167,7 @@ class S3 extends BaseAssetSourceType
 			return true;
 		});
 
-		$bucketFolders = array();
+		$bucketFolders = [];
 
 		foreach ($fileList as $file)
 		{
@@ -203,13 +203,13 @@ class S3 extends BaseAssetSourceType
 				}
 				else
 				{
-					$indexEntry = array(
+					$indexEntry = [
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
 						'offset' => $offset++,
 						'uri' => $file['name'],
 						'size' => $file['size']
-					);
+					];
 
 					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
@@ -217,7 +217,7 @@ class S3 extends BaseAssetSourceType
 			}
 		}
 
-		$indexedFolderIds = array();
+		$indexedFolderIds = [];
 		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
 		// Ensure folders are in the DB
@@ -229,7 +229,7 @@ class S3 extends BaseAssetSourceType
 
 		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
-		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
+		return ['sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders];
 	}
 
 	/**
@@ -515,10 +515,10 @@ class S3 extends BaseAssetSourceType
 
 		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
 
-		$conflictingRecord = Craft::$app->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
-		));
+		]);
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();
@@ -693,8 +693,8 @@ class S3 extends BaseAssetSourceType
 	 */
 	protected function putObject($filePath, $bucket, $uriPath, $permissions)
 	{
-		$object = empty($filePath) ? '' : array('file' => $filePath);
-		$headers = array();
+		$object  = empty($filePath) ? '' : ['file' => $filePath];
+		$headers = [];
 
 		if (!empty($object) && !empty($this->getSettings()->expires) && DateTimeHelper::isValidIntervalString($this->getSettings()->expires))
 		{
@@ -705,7 +705,7 @@ class S3 extends BaseAssetSourceType
 			$headers['Cache-Control'] = 'max-age='.$diff.', must-revalidate';
 		}
 
-		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, array(), $headers);
+		return $this->_s3->putObject($object, $bucket, $uriPath, $permissions, [], $headers);
 	}
 
 	/**

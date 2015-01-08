@@ -40,22 +40,23 @@ class Relations extends Component
 	{
 		if (!is_array($targetIds))
 		{
-			$targetIds = array();
+			$targetIds = [];
 		}
 
 		// Prevent duplicate target IDs.
 		$targetIds = array_unique($targetIds);
 
 		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+
 		try
 		{
 			// Delete the existing relations
-			$oldRelationConditions = array('and', 'fieldId = :fieldId', 'sourceId = :sourceId');
-			$oldRelationParams = array(':fieldId' => $field->id, ':sourceId' => $source->id);
+			$oldRelationConditions = ['and', 'fieldId = :fieldId', 'sourceId = :sourceId'];
+			$oldRelationParams = [':fieldId' => $field->id, ':sourceId' => $source->id];
 
 			if ($field->translatable)
 			{
-				$oldRelationConditions[] = array('or', 'sourceLocale is null', 'sourceLocale = :sourceLocale');
+				$oldRelationConditions[] = ['or', 'sourceLocale is null', 'sourceLocale = :sourceLocale'];
 				$oldRelationParams[':sourceLocale'] = $source->locale;
 			}
 
@@ -64,7 +65,7 @@ class Relations extends Component
 			// Add the new ones
 			if ($targetIds)
 			{
-				$values = array();
+				$values = [];
 
 				if ($field->translatable)
 				{
@@ -77,10 +78,10 @@ class Relations extends Component
 
 				foreach ($targetIds as $sortOrder => $targetId)
 				{
-					$values[] = array($field->id, $source->id, $sourceLocale, $targetId, $sortOrder+1);
+					$values[] = [$field->id, $source->id, $sourceLocale, $targetId, $sortOrder+1];
 				}
 
-				$columns = array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder');
+				$columns = ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'];
 				Craft::$app->db->createCommand()->insertAll('relations', $columns, $values);
 			}
 

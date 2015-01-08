@@ -35,7 +35,7 @@ class SearchQueryTermGroup
 	 *
 	 * @return SearchQueryTermGroup
 	 */
-	public function __construct($terms = array())
+	public function __construct($terms = [])
 	{
 		$this->terms = $terms;
 	}

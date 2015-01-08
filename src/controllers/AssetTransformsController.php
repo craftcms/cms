@@ -56,7 +56,7 @@ class AssetTransformsController extends BaseController
 	 *
 	 * @throws HttpException
 	 */
-	public function actionEditTransform(array $variables = array())
+	public function actionEditTransform(array $variables = [])
 	{
 		if (empty($variables['transform']))
 		{
@@ -135,9 +135,9 @@ class AssetTransformsController extends BaseController
 		}
 
 		// Send the transform back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'transform' => $transform
-		));
+		]);
 	}
 
 	/**
@@ -152,6 +152,6 @@ class AssetTransformsController extends BaseController
 
 		Craft::$app->assetTransforms->deleteTransform($transformId);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 }

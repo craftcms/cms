@@ -64,16 +64,16 @@ class FieldsController extends BaseController
 				Craft::$app->getSession()->setNotice(Craft::t('Group added.'));
 			}
 
-			$this->returnJson(array(
+			$this->returnJson([
 				'success' => true,
 				'group'   => $group->getAttributes(),
-			));
+			]);
 		}
 		else
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'errors' => $group->getErrors(),
-			));
+			]);
 		}
 	}
 
@@ -92,9 +92,9 @@ class FieldsController extends BaseController
 
 		Craft::$app->getSession()->setNotice(Craft::t('Group deleted.'));
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'success' => $success,
-		));
+		]);
 	}
 
 	// Fields
@@ -137,9 +137,9 @@ class FieldsController extends BaseController
 		}
 
 		// Send the field back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'field' => $field
-		));
+		]);
 	}
 
 	/**
@@ -154,6 +154,6 @@ class FieldsController extends BaseController
 
 		$fieldId = Craft::$app->request->getRequiredPost('id');
 		$success = Craft::$app->fields->deleteFieldById($fieldId);
-		$this->returnJson(array('success' => $success));
+		$this->returnJson(['success' => $success]);
 	}
 }

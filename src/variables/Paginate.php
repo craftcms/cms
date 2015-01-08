@@ -177,7 +177,7 @@ class Paginate
 			$end = $this->totalPages;
 		}
 
-		$urls = array();
+		$urls = [];
 
 		for ($page = $start; $page <= $end; $page++)
 		{

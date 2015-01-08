@@ -36,7 +36,7 @@ class BaseEntryRevisionModel extends EntryModel
 	public function setContentFromRevision($content)
 	{
 		// Swap the field IDs with handles
-		$contentByFieldHandles = array();
+		$contentByFieldHandles = [];
 
 		foreach ($content as $fieldId => $value)
 		{

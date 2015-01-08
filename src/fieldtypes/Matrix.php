@@ -72,21 +72,21 @@ class Matrix extends BaseFieldType
 			'Are you sure you want to delete this field?'
 		);
 
-		$fieldTypeOptions = array();
+		$fieldTypeOptions = [];
 
 		foreach (Craft::$app->fields->getAllFieldTypes() as $fieldType)
 		{
 			// No Matrix-Inception, sorry buddy.
 			if ($fieldType->getClassHandle() != 'Matrix')
 			{
-				$fieldTypeOptions[] = array('label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle());
+				$fieldTypeOptions[] = ['label' => $fieldType->getName(), 'value' => $fieldType->getClassHandle()];
 			}
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/Matrix/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Matrix/settings', [
 			'settings'   => $this->getSettings(),
 			'fieldTypes' => $fieldTypeOptions
-		));
+		]);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Matrix extends BaseFieldType
 		}
 
 		$matrixSettings = new MatrixSettingsModel($this->model);
-		$blockTypes = array();
+		$blockTypes = [];
 
 		if (!empty($settings['blockTypes']))
 		{
@@ -116,7 +116,7 @@ class Matrix extends BaseFieldType
 				$blockType->name    = $blockTypeSettings['name'];
 				$blockType->handle  = $blockTypeSettings['handle'];
 
-				$fields = array();
+				$fields = [];
 
 				if (!empty($blockTypeSettings['fields']))
 				{
@@ -227,7 +227,7 @@ class Matrix extends BaseFieldType
 			else if ($value === '')
 			{
 				// Means there were no blocks
-				$criteria->setMatchedElements(array());
+				$criteria->setMatchedElements([]);
 			}
 		}
 
@@ -268,13 +268,13 @@ class Matrix extends BaseFieldType
 			$value->localeEnabled = null;
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
 			'id' => $id,
 			'name' => $name,
 			'blockTypes' => $settings->getBlockTypes(),
 			'blocks' => $value,
 			'static' => false
-		));
+		]);
 	}
 
 	/**
@@ -291,17 +291,17 @@ class Matrix extends BaseFieldType
 
 		if (!is_array($data))
 		{
-			return array();
+			return [];
 		}
 
-		$oldBlocksById = array();
+		$oldBlocksById = [];
 
 		// Get the old blocks that are still around
 		if (!empty($this->element->id))
 		{
 			$ownerId = $this->element->id;
 
-			$ids = array();
+			$ids = [];
 
 			foreach (array_keys($data) as $blockId)
 			{
@@ -335,7 +335,7 @@ class Matrix extends BaseFieldType
 			$ownerId = null;
 		}
 
-		$blocks = array();
+		$blocks = [];
 		$sortOrder = 0;
 
 		foreach ($data as $blockId => $blockData)
@@ -398,7 +398,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function validate($blocks)
 	{
-		$errors = array();
+		$errors = [];
 		$blocksValidate = true;
 
 		foreach ($blocks as $block)
@@ -424,7 +424,7 @@ class Matrix extends BaseFieldType
 			}
 			else
 			{
-				$errors[] = Craft::t('There can’t be more than {max} blocks.', array('max' => $maxBlocks));
+				$errors[] = Craft::t('There can’t be more than {max} blocks.', ['max' => $maxBlocks]);
 			}
 		}
 
@@ -447,7 +447,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function getSearchKeywords($value)
 	{
-		$keywords = array();
+		$keywords = [];
 		$contentService = Craft::$app->content;
 
 		foreach ($value as $block)
@@ -504,13 +504,13 @@ class Matrix extends BaseFieldType
 			$settings = $this->getSettings();
 			$id = StringHelper::randomString();
 
-			return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', array(
+			return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
 				'id' => $id,
 				'name' => $id,
 				'blockTypes' => $settings->getBlockTypes(),
 				'blocks' => $value,
 				'static' => true
-			));
+			]);
 		}
 		else
 		{
@@ -541,7 +541,7 @@ class Matrix extends BaseFieldType
 	 */
 	private function _getFieldTypeInfoForConfigurator()
 	{
-		$fieldTypes = array();
+		$fieldTypes = [];
 
 		// Set a temporary namespace for these
 		$originalNamespace = Craft::$app->templates->getNamespace();
@@ -562,12 +562,12 @@ class Matrix extends BaseFieldType
 			$settingsBodyHtml = Craft::$app->templates->namespaceInputs($fieldType->getSettingsHtml());
 			$settingsFootHtml = Craft::$app->templates->clearJsBuffer();
 
-			$fieldTypes[] = array(
+			$fieldTypes[] = [
 				'type'             => $fieldTypeClass,
 				'name'             => $fieldType->getName(),
 				'settingsBodyHtml' => $settingsBodyHtml,
 				'settingsFootHtml' => $settingsFootHtml,
-			);
+			];
 		}
 
 		Craft::$app->templates->setNamespace($originalNamespace);
@@ -584,7 +584,7 @@ class Matrix extends BaseFieldType
 	 */
 	private function _getBlockTypeInfoForInput($name)
 	{
-		$blockTypes = array();
+		$blockTypes = [];
 
 		// Set a temporary namespace for these
 		$originalNamespace = Craft::$app->templates->getNamespace();
@@ -618,10 +618,10 @@ class Matrix extends BaseFieldType
 
 			Craft::$app->templates->startJsBuffer();
 
-			$bodyHtml = Craft::$app->templates->namespaceInputs(Craft::$app->templates->render('_includes/fields', array(
+			$bodyHtml = Craft::$app->templates->namespaceInputs(Craft::$app->templates->render('_includes/fields', [
 				'namespace' => null,
 				'fields'    => $fieldLayoutFields
-			)));
+			]));
 
 			// Reset $_isFresh's
 			foreach ($fieldLayoutFields as $fieldLayoutField)
@@ -636,12 +636,12 @@ class Matrix extends BaseFieldType
 
 			$footHtml = Craft::$app->templates->clearJsBuffer();
 
-			$blockTypes[] = array(
+			$blockTypes[] = [
 				'handle'   => $blockType->handle,
 				'name'     => Craft::t($blockType->name),
 				'bodyHtml' => $bodyHtml,
 				'footHtml' => $footHtml,
-			);
+			];
 		}
 
 		Craft::$app->templates->setNamespace($originalNamespace);

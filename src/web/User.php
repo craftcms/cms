@@ -86,7 +86,7 @@ class User extends \yii\web\User
 		// Strip out any tags that may have gotten in there by accident
 		// i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
 		// so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
-		$url = str_replace(array('{', '}'), array('', ''), $url);
+		$url = str_replace(['{', '}'], ['', ''], $url);
 
 		return $url;
 	}
@@ -564,14 +564,14 @@ class User extends \yii\web\User
 								$this->_cleanStaleSessions();
 
 								// Save updated info back to identity cookie.
-								$data = array(
+								$data = [
 									$this->getName(),
 									$newSessionToken,
 									$uid,
 									($rememberMe ? 1 : 0),
 									$currentUserAgent,
 									$states,
-								);
+								];
 
 								$this->_identityCookie = $this->saveCookie('', $data, $this->authTimeout);
 								$this->_sessionRestoredFromCookie = true;
@@ -624,9 +624,9 @@ class User extends \yii\web\User
 	protected function beforeLogout()
 	{
 		// Fire an 'onBeforeLogout' event
-		$event = new Event($this, array(
+		$event = new Event($this, [
 			'user'      => $this->getIdentity(),
-		));
+		]);
 
 		$this->onBeforeLogout($event);
 
@@ -649,7 +649,7 @@ class User extends \yii\web\User
 
 					if ($user)
 					{
-						Craft::$app->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', array('userId' => $user->id, 'uid' => $uid));
+						Craft::$app->db->createCommand()->delete('sessions', 'userId=:userId AND uid=:uid', ['userId' => $user->id, 'uid' => $uid]);
 					}
 				}
 				else
@@ -698,7 +698,7 @@ class User extends \yii\web\User
 			->select('s.token, s.userId')
 			->from('sessions s')
 			->join('users u', 's.userId = u.id')
-			->where('(u.username=:username OR u.email=:email) AND s.uid=:uid', array(':username' => $loginName, ':email' => $loginName, 'uid' => $uid))
+			->where('(u.username=:username OR u.email=:email) AND s.uid=:uid', [':username' => $loginName, ':email' => $loginName, 'uid' => $uid])
 			->queryRow();
 
 		if (is_array($result) && count($result) > 0)
@@ -720,7 +720,7 @@ class User extends \yii\web\User
 	{
 		$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
 
-		Craft::$app->db->createCommand()->update('sessions', array('token' => $newToken), 'token=:currentToken AND userId=:userId', array('currentToken' => $currentToken, 'userId' => $user->id));
+		Craft::$app->db->createCommand()->update('sessions', ['token' => $newToken], 'token=:currentToken AND userId=:userId', ['currentToken' => $currentToken, 'userId' => $user->id]);
 	}
 
 	/**
@@ -733,7 +733,7 @@ class User extends \yii\web\User
 		$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 		$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-		Craft::$app->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', array('pastTime' => $pastTime));
+		Craft::$app->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', ['pastTime' => $pastTime]);
 	}
 
 	/**
@@ -750,7 +750,7 @@ class User extends \yii\web\User
 				$userRow = Craft::$app->db->createCommand()
 					->select('*')
 					->from('users')
-					->where('id=:id', array(':id' => $id))
+					->where('id=:id', [':id' => $id])
 					->queryRow();
 
 				if ($userRow)

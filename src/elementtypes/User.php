@@ -82,12 +82,12 @@ class User extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		$sources = array(
-			'*' => array(
+		$sources = [
+			'*' => [
 				'label' => Craft::t('All users'),
 				'hasThumbs' => true
-			)
-		);
+			]
+		];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
@@ -95,11 +95,11 @@ class User extends BaseElementType
 			{
 				$key = 'group:'.$group->id;
 
-				$sources[$key] = array(
+				$sources[$key] = [
 					'label'     => Craft::t($group->name),
-					'criteria'  => array('groupId' => $group->id),
+					'criteria'  => ['groupId' => $group->id],
 					'hasThumbs' => true
-				);
+				];
 			}
 		}
 
@@ -115,13 +115,13 @@ class User extends BaseElementType
 	 */
 	public function getAvailableActions($source = null)
 	{
-		$actions = array();
+		$actions = [];
 
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams(array(
+		$editAction->setParams([
 			'label' => Craft::t('Edit user'),
-		));
+		]);
 		$actions[] = $editAction;
 
 		if (Craft::$app->getUser()->checkPermission('administrateUsers'))
@@ -140,7 +140,7 @@ class User extends BaseElementType
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addUserActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addUserActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -157,7 +157,7 @@ class User extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('username', 'firstName', 'lastName', 'fullName', 'email');
+		return ['username', 'firstName', 'lastName', 'fullName', 'email'];
 	}
 
 	/**
@@ -169,28 +169,28 @@ class User extends BaseElementType
 	{
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
-			$attributes = array(
+			$attributes = [
 				'email'         => Craft::t('Email'),
 				'firstName'     => Craft::t('First Name'),
 				'lastName'      => Craft::t('Last Name'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
-			);
+			];
 		}
 		else
 		{
-			$attributes = array(
+			$attributes = [
 				'username'      => Craft::t('Username'),
 				'firstName'     => Craft::t('First Name'),
 				'lastName'      => Craft::t('Last Name'),
 				'email'         => Craft::t('Email'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
-			);
+			];
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserSortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyUserSortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -206,28 +206,28 @@ class User extends BaseElementType
 	{
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
-			$attributes = array(
+			$attributes = [
 				'email'         => Craft::t('Email'),
 				'firstName'     => Craft::t('First Name'),
 				'lastName'      => Craft::t('Last Name'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
-			);
+			];
 		}
 		else
 		{
-			$attributes = array(
+			$attributes = [
 				'username'      => Craft::t('Username'),
 				'firstName'     => Craft::t('First Name'),
 				'lastName'      => Craft::t('Last Name'),
 				'email'         => Craft::t('Email'),
 				'dateCreated'   => Craft::t('Join Date'),
 				'lastLoginDate' => Craft::t('Last Login'),
-			);
+			];
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyUserTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -243,7 +243,7 @@ class User extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -372,12 +372,12 @@ class User extends BaseElementType
 				$permissionId = Craft::$app->db->createCommand()
 					->select('id')
 					->from('userpermissions')
-					->where('name = :name', array(':name' => strtolower($criteria->can)))
+					->where('name = :name', [':name' => strtolower($criteria->can)])
 					->queryScalar();
 			}
 
 			// Find the users that have that permission, either directly or through a group
-			$permittedUserIds = array();
+			$permittedUserIds = [];
 
 			// If the permission hasn't been assigned to any groups/users before, it won't have an ID. Don't bail
 			// though, since we still want to look for admins.
@@ -387,7 +387,7 @@ class User extends BaseElementType
 				$permittedGroupIds = Craft::$app->db->createCommand()
 					->select('groupId')
 					->from('userpermissions_usergroups')
-					->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
+					->where('permissionId = :permissionId', [':permissionId' => $permissionId])
 					->queryColumn();
 
 				if ($permittedGroupIds)
@@ -401,14 +401,14 @@ class User extends BaseElementType
 					Craft::$app->db->createCommand()
 						->select('userId')
 						->from('userpermissions_users')
-						->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
+						->where('permissionId = :permissionId', [':permissionId' => $permissionId])
 						->queryColumn()
 				);
 			}
 
 			if ($permittedUserIds)
 			{
-				$permissionConditions = array('or', 'users.admin = 1', array('in', 'elements.id', $permittedUserIds));
+				$permissionConditions = ['or', 'users.admin = 1', ['in', 'elements.id', $permittedUserIds]];
 			}
 			else
 			{
@@ -427,7 +427,7 @@ class User extends BaseElementType
 				return false;
 			}
 
-			$query->andWhere(array('in', 'elements.id', $userIds));
+			$query->andWhere(['in', 'elements.id', $userIds]);
 		}
 
 		if ($criteria->group)
@@ -454,7 +454,7 @@ class User extends BaseElementType
 				return false;
 			}
 
-			$query->andWhere(array('in', 'elements.id', $userIds));
+			$query->andWhere(['in', 'elements.id', $userIds]);
 		}
 
 		if ($criteria->username)
@@ -509,10 +509,10 @@ class User extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = Craft::$app->templates->render('users/_accountfields', array(
+		$html = Craft::$app->templates->render('users/_accountfields', [
 			'account'      => $element,
 			'isNewAccount' => false,
-		));
+		]);
 
 		$html .= parent::getEditorHtml($element);
 

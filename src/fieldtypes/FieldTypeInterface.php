@@ -68,10 +68,10 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
 	 *
 	 * ```php
-	 * return Craft::$app->templates->render('myplugin/_fieldinput', array(
+	 * return Craft::$app->templates->render('myplugin/_fieldinput', [
 	 *     'name'  => $name,
 	 *     'value' => $value
-	 * ));
+	 * ]);
 	 * ```
 	 *
 	 * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
@@ -123,12 +123,12 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 *     $namespacedId = Craft::$app->templates->namespaceInputId($id);
 	 *
 	 *     // Render and return the input template
-	 *     return Craft::$app->templates->render('myplugin/_fieldinput', array(
+	 *     return Craft::$app->templates->render('myplugin/_fieldinput', [
 	 *         'name'         => $name,
 	 *         'id'           => $id,
 	 *         'namespacedId' => $namespacedId,
 	 *         'value'        => $value
-	 *     ));
+	 *     ]);
 	 * }
 	 * ```
 	 *

@@ -191,7 +191,7 @@ class ErrorHandler extends \CErrorHandler
 			$file = $templateFile;
 		}
 
-		$this->_error = $data = array(
+		$this->_error = $data = [
 			'code'      => 500,
 			'type'      => Craft::t('Template Error'),
 			'errorCode' => $exception->getCode(),
@@ -200,7 +200,7 @@ class ErrorHandler extends \CErrorHandler
 			'line'      => $exception->getTemplateLine(),
 			'trace'     => '',
 			'traces'    => null,
-		);
+		];
 
 		if (!headers_sent())
 		{
@@ -233,7 +233,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleDbConnectionError(DbConnectException $exception)
 	{
-		$this->_error = $data = array(
+		$this->_error = $data = [
 			'code'      => 'error',
 			'type'      => get_class($exception),
 			'errorCode' => null,
@@ -242,7 +242,7 @@ class ErrorHandler extends \CErrorHandler
 			'line'      => null,
 			'trace'     => '',
 			'traces'    => null,
-		);
+		];
 
 		if (!headers_sent())
 		{

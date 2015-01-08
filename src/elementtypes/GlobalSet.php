@@ -63,10 +63,10 @@ class GlobalSet extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'handle' => AttributeType::Mixed,
-			'order' => array(AttributeType::String, 'default' => 'name'),
-		);
+			'order' => [AttributeType::String, 'default' => 'name'],
+		];
 	}
 
 	/**

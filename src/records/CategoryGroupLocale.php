@@ -37,10 +37,10 @@ class CategoryGroupLocale extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'group'  => array(static::BELONGS_TO, 'CategoryGroup', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale' => array(static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'group'  => [static::BELONGS_TO, 'CategoryGroup', 'required' => true, 'onDelete' => static::CASCADE],
+			'locale' => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class CategoryGroupLocale extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('groupId', 'locale'), 'unique' => true),
-		);
+		return [
+			['columns' => ['groupId', 'locale'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods

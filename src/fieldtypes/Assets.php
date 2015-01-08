@@ -54,7 +54,7 @@ class Assets extends BaseElementFieldType
 	 *
 	 * @var array
 	 */
-	private $_failedFiles = array();
+	private $_failedFiles = [];
 
 	// Public Methods
 	// =========================================================================
@@ -68,33 +68,33 @@ class Assets extends BaseElementFieldType
 	{
 		// Create a list of folder options for the main Source setting, and source options for the upload location
 		// settings.
-		$folderOptions = array();
-		$sourceOptions = array();
+		$folderOptions = [];
+		$sourceOptions = [];
 
 		foreach ($this->getElementType()->getSources() as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{
-				$folderOptions[] = array('label' => $source['label'], 'value' => $key);
+				$folderOptions[] = ['label' => $source['label'], 'value' => $key];
 			}
 		}
 
 		foreach (Craft::$app->assetSources->getAllSources() as $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			$sourceOptions[] = ['label' => $source->name, 'value' => $source->id];
 		}
 
-		$fileKindOptions = array();
+		$fileKindOptions = [];
 
 		foreach (IOHelper::getFileKinds() as $value => $kind)
 		{
-			$fileKindOptions[] = array('value' => $value, 'label' => $kind['label']);
+			$fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
 		}
 
 		$namespace = Craft::$app->templates->getNamespace();
 		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
-		return Craft::$app->templates->render('_components/fieldtypes/Assets/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Assets/settings', [
 			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
 			'targetLocaleField' => $this->getTargetLocaleFieldHtml(),
@@ -102,7 +102,7 @@ class Assets extends BaseElementFieldType
 			'type'              => $this->getName(),
 			'fileKindOptions'   => $fileKindOptions,
 			'isMatrix'          => $isMatrix,
-		));
+		]);
 	}
 
 	/**
@@ -129,7 +129,7 @@ class Assets extends BaseElementFieldType
 				if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
 				{
 					$allowedExtensions = static::_getAllowedExtensions($settings->allowedKinds);
-					$failedFiles = array();
+					$failedFiles = [];
 
 					foreach ($uploadedFiles as $uploadedFile)
 					{
@@ -150,7 +150,7 @@ class Assets extends BaseElementFieldType
 				}
 
 				// If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-				$fileIds = array();
+				$fileIds = [];
 				$targetFolderId = $this->_determineUploadFolderId($settings);
 
 				if (!empty($targetFolderId))
@@ -195,7 +195,7 @@ class Assets extends BaseElementFieldType
 		if (is_array($elementFiles) && count($elementFiles))
 		{
 
-			$fileIds = array();
+			$fileIds = [];
 
 			foreach ($elementFiles as $elementFile)
 			{
@@ -216,13 +216,13 @@ class Assets extends BaseElementFieldType
 			else
 			{
 				// Find the files with temp sources and just move those.
-				$criteria =array(
-					'id' => array_merge(array('in'), $fileIds),
+				$criteria = [
+					'id' => array_merge(['in'], $fileIds),
 					'sourceId' => ':empty:'
-				);
+				];
 
 				$filesInTempSource = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria)->find();
-				$filesToMove = array();
+				$filesToMove = [];
 
 				foreach ($filesInTempSource as $file)
 				{
@@ -262,7 +262,7 @@ class Assets extends BaseElementFieldType
 
 		if (!is_array($errors))
 		{
-			$errors = array();
+			$errors = [];
 		}
 
 		$settings = $this->getSettings();
@@ -278,14 +278,14 @@ class Assets extends BaseElementFieldType
 
 				if ($file && !in_array(mb_strtolower(IOHelper::getExtension($file->filename)), $allowedExtensions))
 				{
-					$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->filename));
+					$errors[] = Craft::t('"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
 				}
 			}
 		}
 
 		foreach ($this->_failedFiles as $file)
 		{
-			$errors[] = Craft::t('"{filename}" is not allowed in this field.', array('filename' => $file->getName()));
+			$errors[] = Craft::t('"{filename}" is not allowed in this field.', ['filename' => $file->getName()]);
 		}
 
 		if ($errors)
@@ -356,10 +356,10 @@ class Assets extends BaseElementFieldType
 			Craft::$app->getSession()->authorize('uploadToAssetSource:'.$folderId);
 			$folderPath = 'folder:'.$folderId.':single';
 
-			return array($folderPath);
+			return [$folderPath];
 		}
 
-		$sources = array();
+		$sources = [];
 
 		// If it's a list of source IDs, we need to convert them to their folder counterparts
 		if (is_array($settings->sources))
@@ -388,14 +388,14 @@ class Assets extends BaseElementFieldType
 	protected function getInputSelectionCriteria()
 	{
 		$settings = $this->getSettings();
-		$allowedKinds = array();
+		$allowedKinds = [];
 
 		if (isset($settings->restrictFiles) && !empty($settings->restrictFiles) && !empty($settings->allowedKinds))
 		{
 			$allowedKinds = $settings->allowedKinds;
 		}
 
-		return array('kind' => $allowedKinds);
+		return ['kind' => $allowedKinds];
 	}
 
 	// Private Methods
@@ -412,10 +412,10 @@ class Assets extends BaseElementFieldType
 	 */
 	private function _resolveSourcePathToFolderId($sourceId, $subpath)
 	{
-		$folder = Craft::$app->assets->findFolder(array(
+		$folder = Craft::$app->assets->findFolder([
 			'sourceId' => $sourceId,
 			'parentId' => ':empty:'
-		));
+		]);
 
 		// Do we have the folder?
 		if (empty($folder))
@@ -447,7 +447,7 @@ class Assets extends BaseElementFieldType
 		}
 		else
 		{
-			$folderCriteria = array('sourceId' => $sourceId, 'path' => $folder->path.$subpath);
+			$folderCriteria = ['sourceId' => $sourceId, 'path' => $folder->path.$subpath];
 			$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
 		}
 
@@ -467,7 +467,7 @@ class Assets extends BaseElementFieldType
 					continue;
 				}
 
-				$folderCriteria = array('parentId' => $currentFolder->id, 'name' => $part);
+				$folderCriteria = ['parentId' => $currentFolder->id, 'name' => $part];
 				$existingFolder = Craft::$app->assets->findFolder($folderCriteria);
 
 				if (!$existingFolder)
@@ -503,12 +503,12 @@ class Assets extends BaseElementFieldType
 		{
 			// If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
 			$newFolder = new AssetFolderModel(
-				array(
+				[
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
 					'sourceId' => $currentFolder->sourceId,
 					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
-				)
+				]
 			);
 			$folderId = Craft::$app->assets->storeFolder($newFolder);
 
@@ -533,11 +533,11 @@ class Assets extends BaseElementFieldType
 	{
 		if (!is_array($allowedKinds))
 		{
-			return array();
+			return [];
 		}
 
-		$extensions = array();
-		$allKinds = IOHelper::getFileKinds();
+		$extensions = [];
+		$allKinds   = IOHelper::getFileKinds();
 
 		foreach ($allowedKinds as $allowedKind)
 		{
@@ -582,7 +582,7 @@ class Assets extends BaseElementFieldType
 			$userFolder = Craft::$app->assets->getUserFolder($userModel);
 
 			$folderName = 'field_'.$this->model->id;
-			$elementFolder = Craft::$app->assets->findFolder(array('parentId' => $userFolder->id, 'name' => $folderName));
+			$elementFolder = Craft::$app->assets->findFolder(['parentId' => $userFolder->id, 'name' => $folderName]);
 
 			if (!$elementFolder)
 			{

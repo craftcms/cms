@@ -79,12 +79,12 @@ class EntryRevisions extends Component
 			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
 		}
 
-		$drafts = array();
+		$drafts = [];
 
 		$results = Craft::$app->db->createCommand()
 			->select('*')
 			->from('entrydrafts')
-			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
+			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
 			->order('name asc')
 			->queryAll();
 
@@ -111,7 +111,7 @@ class EntryRevisions extends Component
 	 */
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
-		$editableDrafts = array();
+		$editableDrafts = [];
 		$user = Craft::$app->getUser()->getIdentity();
 
 		if ($user)
@@ -147,12 +147,12 @@ class EntryRevisions extends Component
 			$totalDrafts = Craft::$app->db->createCommand()
 				->from('entrydrafts')
 				->where(
-					array('and', 'entryId = :entryId', 'locale = :locale'),
-					array(':entryId' => $draft->id, ':locale' => $draft->locale)
+					['and', 'entryId = :entryId', 'locale = :locale'],
+					[':entryId' => $draft->id, ':locale' => $draft->locale]
 				)
 				->count('id');
 
-			$draft->name = Craft::t('Draft {num}', array('num' => $totalDrafts + 1));
+			$draft->name = Craft::t('Draft {num}', ['num' => $totalDrafts + 1]);
 		}
 
 		$draftRecord->name = $draft->name;
@@ -166,10 +166,10 @@ class EntryRevisions extends Component
 			$draft->draftId = $draftRecord->id;
 
 			// Fire an 'onSaveDraft' event
-			$this->onSaveDraft(new Event($this, array(
+			$this->onSaveDraft(new Event($this, [
 				'draft'      => $draft,
 				'isNewDraft' => $isNewDraft
-			)));
+			]));
 
 			return true;
 		}
@@ -197,15 +197,15 @@ class EntryRevisions extends Component
 		// Set the version notes
 		if (!$draft->revisionNotes)
 		{
-			$draft->revisionNotes = Craft::t('Published draft “{name}”.', array('name' => $draft->name));
+			$draft->revisionNotes = Craft::t('Published draft “{name}”.', ['name' => $draft->name]);
 		}
 
 		if (Craft::$app->entries->saveEntry($draft))
 		{
 			// Fire an 'onPublishDraft' event
-			$this->onPublishDraft(new Event($this, array(
+			$this->onPublishDraft(new Event($this, [
 				'draft'      => $draft,
-			)));
+			]));
 
 			$this->deleteDraft($draft);
 			return true;
@@ -227,9 +227,9 @@ class EntryRevisions extends Component
 		try
 		{
 			// Fire an 'onBeforeDeleteDraft' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'draft' => $draft,
-			));
+			]);
 
 			$this->onBeforeDeleteDraft($event);
 
@@ -266,9 +266,9 @@ class EntryRevisions extends Component
 		if ($success)
 		{
 			// Fire an 'onDeleteDraft' event
-			$this->onDeleteDraft(new Event($this, array(
+			$this->onDeleteDraft(new Event($this, [
 				'draft' => $draft,
-			)));
+			]));
 		}
 
 		return $success;
@@ -307,12 +307,12 @@ class EntryRevisions extends Component
 			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
 		}
 
-		$versions = array();
+		$versions = [];
 
 		$results = Craft::$app->db->createCommand()
 			->select('*')
 			->from('entryversions')
-			->where(array('and', 'entryId = :entryId', 'locale = :locale'), array(':entryId' => $entryId, ':locale' => $localeId))
+			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
 			->order('dateCreated desc')
 			->offset(1)
 			->limit($limit)
@@ -344,8 +344,8 @@ class EntryRevisions extends Component
 		$totalVersions = Craft::$app->db->createCommand()
 			->from('entryversions')
 			->where(
-				array('and', 'entryId = :entryId', 'locale = :locale'),
-				array(':entryId' => $entry->id, ':locale' => $entry->locale)
+				['and', 'entryId = :entryId', 'locale = :locale'],
+				[':entryId' => $entry->id, ':locale' => $entry->locale]
 			)
 			->count('id');
 
@@ -377,14 +377,14 @@ class EntryRevisions extends Component
 		}
 
 		// Set the version notes
-		$version->revisionNotes = Craft::t('Reverted version {num}.', array('num' => $version->num));
+		$version->revisionNotes = Craft::t('Reverted version {num}.', ['num' => $version->num]);
 
 		if (Craft::$app->entries->saveEntry($version))
 		{
 			// Fire an 'onRevertEntryToVersion' event
-			$this->onRevertEntryToVersion(new Event($this, array(
+			$this->onRevertEntryToVersion(new Event($this, [
 				'version' => $version,
-			)));
+			]));
 
 			return true;
 		}
@@ -497,7 +497,7 @@ class EntryRevisions extends Component
 	 */
 	private function _getRevisionData($revision)
 	{
-		$revisionData = array(
+		$revisionData = [
 			'typeId'     => $revision->typeId,
 			'authorId'   => $revision->authorId,
 			'title'      => $revision->title,
@@ -505,8 +505,8 @@ class EntryRevisions extends Component
 			'postDate'   => ($revision->postDate   ? $revision->postDate->getTimestamp()   : null),
 			'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
 			'enabled'    => $revision->enabled,
-			'fields'     => array(),
-		);
+			'fields'     => [],
+		];
 
 		$content = $revision->getContentFromPost();
 

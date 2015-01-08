@@ -45,7 +45,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 		$seq = $this->parser->getExpressionParser()->parseExpression();
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		$upperBody = $this->parser->subparse(array($this, 'decideNavFork'));
+		$upperBody = $this->parser->subparse([$this, 'decideNavFork']);
 	    $lowerBody = new \Twig_Node();
 	    $indent = new \Twig_Node();
 	    $outdent = new \Twig_Node();
@@ -58,29 +58,29 @@ class Nav_TokenParser extends \Twig_TokenParser
 
 			if ($nextValue == 'ifchildren')
 			{
-			    $indent = $this->parser->subparse(array($this, 'decideChildrenFork'), true);
+			    $indent = $this->parser->subparse([$this, 'decideChildrenFork'], true);
 			    $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-			    $outdent = $this->parser->subparse(array($this, 'decideChildrenEnd'), true);
+			    $outdent = $this->parser->subparse([$this, 'decideChildrenEnd'], true);
 			    $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 			}
 
-			$lowerBody = $this->parser->subparse(array($this, 'decideNavEnd'), true);
+			$lowerBody = $this->parser->subparse([$this, 'decideNavEnd'], true);
 		}
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
 		if (count($targets) > 1)
 		{
-		    $keyTarget = $targets->getNode(0);
-		    $keyTarget = new \Twig_Node_Expression_AssignName($keyTarget->getAttribute('name'), $keyTarget->getLine());
-		    $valueTarget = $targets->getNode(1);
-		    $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
+			$keyTarget = $targets->getNode(0);
+			$keyTarget = new \Twig_Node_Expression_AssignName($keyTarget->getAttribute('name'), $keyTarget->getLine());
+			$valueTarget = $targets->getNode(1);
+			$valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
 		}
 		else
 		{
-		    $keyTarget = new \Twig_Node_Expression_AssignName('_key', $lineno);
-		    $valueTarget = $targets->getNode(0);
-		    $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
+			$keyTarget = new \Twig_Node_Expression_AssignName('_key', $lineno);
+			$valueTarget = $targets->getNode(0);
+			$valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
 		}
 
 		return new Nav_Node($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno, $this->getTag());
@@ -93,7 +93,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 	 */
 	public function decideNavFork(\Twig_Token $token)
 	{
-		return $token->test(array('ifchildren', 'children', 'endnav'));
+		return $token->test(['ifchildren', 'children', 'endnav']);
 	}
 
 	/**

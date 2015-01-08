@@ -51,9 +51,9 @@ class FieldGroup extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'   => AttributeType::Number,
 			'name' => AttributeType::Name,
-		);
+		];
 	}
 }

@@ -38,19 +38,19 @@ class Cache_TokenParser extends \Twig_TokenParser
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
 
-		$nodes = array(
+		$nodes = [
 			'expiration' => null,
 			'conditions' => null,
 			'ignoreConditions' => null,
 			'key' => null,
 			'body' => null,
-		);
+		];
 
-		$attributes = array(
+		$attributes = [
 			'global' => false,
 			'durationNum' => null,
 			'durationUnit' => null,
-		);
+		];
 
 		if ($stream->test(\Twig_Token::NAME_TYPE, 'globally'))
 		{
@@ -69,7 +69,7 @@ class Cache_TokenParser extends \Twig_TokenParser
 		{
 			$stream->next();
 			$attributes['durationNum'] = $stream->expect(\Twig_Token::NUMBER_TYPE)->getValue();
-			$attributes['durationUnit'] = $stream->expect(\Twig_Token::NAME_TYPE, array('sec','secs','second','seconds','min','mins','minute','minutes','hour','hours','day','days','fortnight','fortnights','forthnight','forthnights','month','months','year','years','week','weeks'))->getValue();
+			$attributes['durationUnit'] = $stream->expect(\Twig_Token::NAME_TYPE, ['sec','secs','second','seconds','min','mins','minute','minutes','hour','hours','day','days','fortnight','fortnights','forthnight','forthnights','month','months','year','years','week','weeks'])->getValue();
 		}
 		else if ($stream->test(\Twig_Token::NAME_TYPE, 'until'))
 		{
@@ -89,7 +89,7 @@ class Cache_TokenParser extends \Twig_TokenParser
 		}
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
-		$nodes['body'] = $this->parser->subparse(array($this, 'decideCacheEnd'), true);
+		$nodes['body'] = $this->parser->subparse([$this, 'decideCacheEnd'], true);
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
 		return new Cache_Node($nodes, $attributes, $lineno, $this->getTag());

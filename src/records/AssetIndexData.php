@@ -38,9 +38,9 @@ class AssetIndexData extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'source' => array(static::BELONGS_TO, 'AssetSource', 'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'source' => [static::BELONGS_TO, 'AssetSource', 'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class AssetIndexData extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('sessionId', 'sourceId', 'offset'), 'unique' => true),
-		);
+		return [
+			['columns' => ['sessionId', 'sourceId', 'offset'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -65,14 +65,13 @@ class AssetIndexData extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'sessionId' 	=> array(ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''),
-			'sourceId' 		=> array(AttributeType::Number, 'required' => true),
-			'offset'  		=> array(AttributeType::Number, 'required' => true),
-			'uri'  			=> array(ColumnType::Varchar, 'maxLength' => 255),
-			'size' 			=> array(AttributeType::Number),
-			'recordId'		=> array(AttributeType::Number),
-
-		);
+		return [
+			'sessionId' 	=> [ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''],
+			'sourceId' 		=> [AttributeType::Number, 'required' => true],
+			'offset'  		=> [AttributeType::Number, 'required' => true],
+			'uri'  			=> [ColumnType::Varchar, 'maxLength' => 255],
+			'size' 			=> [AttributeType::Number],
+			'recordId'		=> [AttributeType::Number],
+		];
 	}
 }

@@ -188,7 +188,7 @@ class UserIdentity extends \CUserIdentity
 
 			default:
 			{
-				throw new Exception(Craft::t('User has unknown status “{status}”', array($user->status)));
+				throw new Exception(Craft::t('User has unknown status “{status}”', [$user->status]));
 			}
 		}
 

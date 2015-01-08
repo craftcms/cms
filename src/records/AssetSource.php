@@ -37,9 +37,9 @@ class AssetSource extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-		);
+		return [
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+		];
 	}
 
 	/**
@@ -49,10 +49,10 @@ class AssetSource extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -65,13 +65,13 @@ class AssetSource extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'                => array(AttributeType::Name, 'required' => true),
-			'handle'              => array(AttributeType::Handle, 'required' => true),
-			'type'                => array(AttributeType::ClassName, 'required' => true),
+		return [
+			'name'                => [AttributeType::Name, 'required' => true],
+			'handle'              => [AttributeType::Handle, 'required' => true],
+			'type'                => [AttributeType::ClassName, 'required' => true],
 			'settings'            => AttributeType::Mixed,
 			'sortOrder'           => AttributeType::SortOrder,
 			'fieldLayoutId'       => AttributeType::Number,
-		);
+		];
 	}
 }

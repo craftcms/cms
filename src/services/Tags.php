@@ -103,7 +103,7 @@ class Tags extends Component
 		}
 		else
 		{
-			$tagGroups = array();
+			$tagGroups = [];
 
 			foreach ($this->_tagGroupsById as $group)
 			{
@@ -159,9 +159,9 @@ class Tags extends Component
 	 */
 	public function getTagGroupByHandle($groupHandle)
 	{
-		$groupRecord = TagGroupRecord::model()->findByAttributes(array(
+		$groupRecord = TagGroupRecord::model()->findByAttributes([
 			'handle' => $groupHandle
-		));
+		]);
 
 		if ($groupRecord)
 		{
@@ -186,7 +186,7 @@ class Tags extends Component
 
 			if (!$tagGroupRecord)
 			{
-				throw new Exception(Craft::t('No tag group exists with the ID “{id}”.', array('id' => $tagGroup->id)));
+				throw new Exception(Craft::t('No tag group exists with the ID “{id}”.', ['id' => $tagGroup->id]));
 			}
 
 			$oldTagGroup = TagGroupModel::populateModel($tagGroupRecord);
@@ -280,7 +280,7 @@ class Tags extends Component
 			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('taggroups')
-				->where(array('id' => $tagGroupId))
+				->where(['id' => $tagGroupId])
 				->queryScalar();
 
 			if ($fieldLayoutId)
@@ -292,12 +292,12 @@ class Tags extends Component
 			$tagIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('tags')
-				->where(array('groupId' => $tagGroupId))
+				->where(['groupId' => $tagGroupId])
 				->queryColumn();
 
 			Craft::$app->elements->deleteElementById($tagIds);
 
-			$affectedRows = Craft::$app->db->createCommand()->delete('taggroups', array('id' => $tagGroupId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('taggroups', ['id' => $tagGroupId]);
 
 			if ($transaction !== null)
 			{
@@ -352,7 +352,7 @@ class Tags extends Component
 
 			if (!$tagRecord)
 			{
-				throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tag->id)));
+				throw new Exception(Craft::t('No tag exists with the ID “{id}”.', ['id' => $tag->id]));
 			}
 		}
 		else
@@ -375,10 +375,10 @@ class Tags extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveTag' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'tag'      => $tag,
 				'isNewTag' => $isNewTag
-			));
+			]);
 
 			$this->onBeforeSaveTag($event);
 
@@ -431,10 +431,10 @@ class Tags extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveTag' event
-			$this->onSaveTag(new Event($this, array(
+			$this->onSaveTag(new Event($this, [
 				'tag'      => $tag,
 				'isNewTag' => $isNewTag
-			)));
+			]));
 		}
 
 		return $success;

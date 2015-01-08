@@ -76,7 +76,7 @@ class Et
 		$this->_timeout = $timeout;
 		$this->_connectTimeout = $connectTimeout;
 
-		$this->_model = new EtModel(array(
+		$this->_model = new EtModel([
 			'licenseKey'        => $this->_getLicenseKey(),
 			'requestUrl'        => Craft::$app->request->getHostInfo().Craft::$app->request->getUrl(),
 			'requestIp'         => Craft::$app->request->getIpAddress(),
@@ -87,7 +87,7 @@ class Et
 			'localEdition'      => Craft::$app->getEdition(),
 			'userEmail'         => Craft::$app->getUser()->getIdentity()->email,
 			'track'             => CRAFT_TRACK,
-		));
+		]);
 
 		$this->_userAgent = 'Craft/'.Craft::$app->getVersion().'.'.Craft::$app->getBuild();
 	}
@@ -186,11 +186,11 @@ class Et
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
-				$options = array(
+				$options = [
 					'timeout'         => $this->getTimeout(),
 					'connect_timeout' => $this->getConnectTimeout(),
 					'allow_redirects' => $this->getAllowRedirects(),
-				);
+				];
 
 				$request = $client->post($this->_endpoint, $options);
 

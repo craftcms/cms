@@ -40,7 +40,7 @@ class TemplateHelper
 
 		if ($totalPages == 0)
 		{
-			return array($paginateVariable, array());
+			return [$paginateVariable, []];
 		}
 
 		if ($currentPage > $totalPages)
@@ -74,7 +74,7 @@ class TemplateHelper
 		$criteria->offset = $offset;
 		$elements = $criteria->find();
 
-		return array($paginateVariable, $elements);
+		return [$paginateVariable, $elements];
 	}
 
 	/**

@@ -60,8 +60,8 @@ class SetStatus extends BaseElementAction
 		// Update their statuses
 		Craft::$app->db->createCommand()->update(
 			'elements',
-			array('enabled' => $sqlNewStatus),
-			array('in', 'id', $elementIds)
+			['enabled' => $sqlNewStatus],
+			['in', 'id', $elementIds]
 		);
 
 		if ($status == BaseElementModel::ENABLED)
@@ -69,9 +69,9 @@ class SetStatus extends BaseElementAction
 			// Enable their locale as well
 			Craft::$app->db->createCommand()->update(
 				'elements_i18n',
-				array('enabled' => $sqlNewStatus),
-				array('and', array('in', 'elementId', $elementIds), 'locale = :locale'),
-				array(':locale' => $criteria->locale)
+				['enabled' => $sqlNewStatus],
+				['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
+				[':locale' => $criteria->locale]
 			);
 		}
 
@@ -79,11 +79,11 @@ class SetStatus extends BaseElementAction
 		Craft::$app->templateCache->deleteCacheById($elementIds);
 
 		// Fire an 'onSetStatus' event
-		$this->onSetStatus(new Event($this, array(
+		$this->onSetStatus(new Event($this, [
 			'criteria'   => $criteria,
 			'elementIds' => $elementIds,
 			'status'     => $status,
-		)));
+		]));
 
 		$this->setMessage(Craft::t('Statuses updated.'));
 
@@ -115,8 +115,8 @@ class SetStatus extends BaseElementAction
 	 */
 	protected function defineParams()
 	{
-		return array(
-			'status' => array(AttributeType::Enum, 'values' => array(BaseElementModel::ENABLED, BaseElementModel::DISABLED), 'required' => true)
-		);
+		return [
+			'status' => [AttributeType::Enum, 'values' => [BaseElementModel::ENABLED, BaseElementModel::DISABLED], 'required' => true]
+		];
 	}
 }

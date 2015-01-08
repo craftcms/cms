@@ -74,7 +74,7 @@ class Feeds extends Component
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
 	{
-		$items = array();
+		$items = [];
 
 		if (!extension_loaded('dom'))
 		{
@@ -101,7 +101,7 @@ class Feeds extends Component
 		if ($feed->error())
 		{
 			Craft::log('There was a problem parsing the feed: '.$feed->error(), LogLevel::Warning);
-			return array();
+			return [];
 		}
 
 		foreach ($feed->get_items($offset, $limit) as $item)
@@ -136,13 +136,13 @@ class Feeds extends Component
 	 */
 	private function _getEnclosures($objects)
 	{
-		$enclosures = array();
+		$enclosures = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$enclosures[] = array(
+				$enclosures[] = [
 					'bitrate'      => $object->get_bitrate(),
 					'captions'     => $this->_getCaptions($object->get_captions()),
 					'categories'   => $this->_getCategories($object->get_categories()),
@@ -171,7 +171,7 @@ class Feeds extends Component
 					'title'        => $object->get_title(),
 					'type'         => $object->get_type(),
 					'width'        => $object->get_width(),
-				);
+				];
 			}
 		}
 
@@ -185,16 +185,16 @@ class Feeds extends Component
 	 */
 	private function _getRatings($objects)
 	{
-		$ratings = array();
+		$ratings = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$ratings[] = array(
+				$ratings[] = [
 					'scheme'   => $object->get_scheme(),
 					'value'  => $object->get_value(),
-				);
+				];
 			}
 		}
 
@@ -208,17 +208,17 @@ class Feeds extends Component
 	 */
 	private function _getRestrictions($objects)
 	{
-		$restrictions = array();
+		$restrictions = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$restrictions[] = array(
+				$restrictions[] = [
 					'relationship' => $object->get_relationship(),
 					'type'         => $object->get_type(),
 					'value'        => $object->get_value(),
-				);
+				];
 			}
 		}
 
@@ -232,19 +232,19 @@ class Feeds extends Component
 	 */
 	private function _getCaptions($objects)
 	{
-		$captions = array();
+		$captions = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$captions[] = array(
+				$captions[] = [
 					'endtime'   => $object->get_endtime(),
 					'language'  => $object->get_language(),
 					'starttime' => $object->get_starttime(),
 					'text'      => $object->get_text(),
 					'type'      => $object->get_type(),
-				);
+				];
 			}
 		}
 
@@ -258,17 +258,17 @@ class Feeds extends Component
 	 */
 	private function _getCredits($objects)
 	{
-		$credits = array();
+		$credits = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$credits[] = array(
+				$credits[] = [
 					'role'   => $object->get_role(),
 					'scheme' => $object->get_scheme(),
 					'name'   => $object->get_name(),
-				);
+				];
 			}
 		}
 
@@ -282,17 +282,17 @@ class Feeds extends Component
 	 */
 	private function _getCategories($objects)
 	{
-		$categories = array();
+		$categories = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$categories[] = array(
+				$categories[] = [
 					'term'   => $object->get_term(),
 					'scheme'  => $object->get_scheme(),
 					'label' => $object->get_label(),
-				);
+				];
 			}
 		}
 
@@ -308,17 +308,17 @@ class Feeds extends Component
 	 */
 	private function _getItemAuthors($objects)
 	{
-		$authors = array();
+		$authors = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$authors[] = array(
+				$authors[] = [
 					'name'  => $object->get_name(),
 					'url'   => $object->get_link(),
 					'email' => $object->get_email(),
-				);
+				];
 			}
 		}
 
@@ -334,17 +334,17 @@ class Feeds extends Component
 	 */
 	private function _getItemCategories($objects)
 	{
-		$categories = array();
+		$categories = [];
 
 		if ($objects)
 		{
 			foreach ($objects as $object)
 			{
-				$categories[] = array(
+				$categories[] = [
 					'term'   => $object->get_term(),
 					'scheme' => $object->get_scheme(),
 					'label'  => $object->get_label(),
-				);
+				];
 			}
 		}
 

@@ -74,7 +74,7 @@ class Email extends Component
 	 *
 	 * @return bool Whether the email was successfully sent.
 	 */
-	public function sendEmail(EmailModel $emailModel, $variables = array())
+	public function sendEmail(EmailModel $emailModel, $variables = [])
 	{
 		$user = Craft::$app->users->getUserByEmail($emailModel->toEmail);
 
@@ -99,9 +99,9 @@ class Email extends Component
 	 * by providing the corresponding language strings.
 	 *
 	 * ```php
-	 * Craft::$app->email->sendEmailByKey($user, 'account_activation', array(
+	 * Craft::$app->email->sendEmailByKey($user, 'account_activation', [
 	 *     'link' => $activationUrl
-	 * ));
+	 * ]);
 	 * ```
 	 *
 	 * @param UserModel $user      The user that should receive the email.
@@ -111,7 +111,7 @@ class Email extends Component
 	 * @throws Exception
 	 * @return bool Whether the email was successfully sent.
 	 */
-	public function sendEmailByKey(UserModel $user, $key, $variables = array())
+	public function sendEmailByKey(UserModel $user, $key, $variables = [])
 	{
 		$emailModel = new EmailModel();
 
@@ -201,7 +201,7 @@ class Email extends Component
 		$this->_settings = $settings;
 
 		$user = Craft::$app->getUser()->getIdentity();
-		$newSettings = array();
+		$newSettings = [];
 
 		foreach ($settings as $key => $value)
 		{
@@ -213,7 +213,7 @@ class Email extends Component
 			$newSettings[$key] = $value;
 		}
 
-		$success = $this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
+		$success = $this->sendEmailByKey($user, 'test_email', ['settings' => $newSettings]);
 
 		$this->_settings = $originalSettings;
 
@@ -251,7 +251,7 @@ class Email extends Component
 	 * @throws Exception
 	 * @return bool
 	 */
-	private function _sendEmail(UserModel $user, EmailModel $emailModel, $variables = array())
+	private function _sendEmail(UserModel $user, EmailModel $emailModel, $variables = [])
 	{
 		// Get the saved email settings.
 		$emailSettings = $this->getSettings();
@@ -263,11 +263,11 @@ class Email extends Component
 
 
 		// Fire an 'onBeforeSendEmail' event
-		$event = new Event($this, array(
+		$event = new Event($this, [
 			'user' => $user,
 			'emailModel' => $emailModel,
 			'variables'	 => $variables
-		));
+		]);
 
 		$this->onBeforeSendEmail($event);
 
@@ -442,7 +442,7 @@ class Email extends Component
 
 			if (!$email->Send())
 			{
-				throw new Exception(Craft::t('Email error: {error}', array('error' => $email->ErrorInfo)));
+				throw new Exception(Craft::t('Email error: {error}', ['error' => $email->ErrorInfo]));
 			}
 
 			$success = true;
@@ -455,11 +455,11 @@ class Email extends Component
 		if ($success)
 		{
 			// Fire an 'onSendEmail' event
-			$this->onSendEmail(new Event($this, array(
+			$this->onSendEmail(new Event($this, [
 				'user' => $user,
 				'emailModel' => $emailModel,
 				'variables'	 => $variables
-			)));
+			]));
 		}
 
 		return $success;

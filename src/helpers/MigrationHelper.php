@@ -34,7 +34,7 @@ class MigrationHelper
 	/**
 	 * @var array
 	 */
-	private static $_idColumnType = array('column' => ColumnType::Int, 'required' => true);
+	private static $_idColumnType = ['column' => ColumnType::Int, 'required' => true];
 
 	/**
 	 * @var string
@@ -158,15 +158,15 @@ class MigrationHelper
 		$allOtherTableFks = static::findForeignKeysTo($tableName);
 
 		// Temporarily drop any FKs and indexes that include this column
-		$columnFks = array();
-		$columnIndexes = array();
-		$otherTableFks = array();
+		$columnFks = [];
+		$columnIndexes = [];
+		$otherTableFks = [];
 
 		// Drop all the FKs because any one of them might be relying on an index we're about to drop
 		foreach ($table->fks as $fk)
 		{
 			$key = array_search($oldName, $fk->columns);
-			$columnFks[] = array($fk, $key);
+			$columnFks[] = [$fk, $key];
 			static::dropForeignKey($fk);
 		}
 
@@ -175,7 +175,7 @@ class MigrationHelper
 			$key = array_search($oldName, $index->columns);
 			if ($key !== false)
 			{
-				$columnIndexes[] = array($index, $key);
+				$columnIndexes[] = [$index, $key];
 				static::dropIndex($index);
 			}
 		}
@@ -185,7 +185,7 @@ class MigrationHelper
 			$key = array_search($oldName, $fkData->fk->refColumns);
 			if ($key !== false)
 			{
-				$otherTableFks[] = array($fkData->fk, $key);
+				$otherTableFks[] = [$fkData->fk, $key];
 				static::dropForeignKey($fkData->fk);
 			}
 		}
@@ -273,55 +273,55 @@ class MigrationHelper
 			}
 			else
 			{
-				$locales = array(Craft::$app->i18n->getPrimarySiteLocaleId());
+				$locales = [Craft::$app->i18n->getPrimarySiteLocaleId()];
 			}
 		}
 
-		$i18nValues = array();
-		$contentValues = array();
+		$i18nValues    = [];
+		$contentValues = [];
 
 		foreach ($oldRows as $row)
 		{
 			// Create a new row in elements
-			Craft::$app->db->createCommand()->insert('elements', array(
+			Craft::$app->db->createCommand()->insert('elements', [
 				'type'     => $elementType,
 				'enabled'  => 1,
 				'archived' => 0
-			));
+			]);
 
 			// Get the new element ID
 			$elementId = Craft::$app->db->getLastInsertID();
 
 			// Update this table with the new element ID
-			Craft::$app->db->createCommand()->update($table, array('id' => $elementId), array('id_old' => $row['id_old']));
+			Craft::$app->db->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']]);
 
 			// Update the other tables' new FK columns
 			foreach ($fks as $fk)
 			{
-				Craft::$app->db->createCommand()->update($fk->table->name, array($fk->column => $elementId), array($fk->column.'_old' => $row['id_old']));
+				Craft::$app->db->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']]);
 			}
 
 			// Queue up the elements_i18n and content values
 			foreach ($locales as $locale)
 			{
-				$i18nValues[] = array($elementId, $locale, 1);
+				$i18nValues[] = [$elementId, $locale, 1];
 			}
 
 			if ($hasContent)
 			{
 				foreach ($locales as $locale)
 				{
-					$contentValues[] = array($elementId, $locale);
+					$contentValues[] = [$elementId, $locale];
 				}
 			}
 		}
 
 		// Save the new elements_i18n and content rows
-		Craft::$app->db->createCommand()->insertAll('elements_i18n', array('elementId', 'locale', 'enabled'), $i18nValues);
+		Craft::$app->db->createCommand()->insertAll('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues);
 
 		if ($hasContent)
 		{
-			Craft::$app->db->createCommand()->insertAll('content', array('elementId', 'locale'), $contentValues);
+			Craft::$app->db->createCommand()->insertAll('content', ['elementId', 'locale'], $contentValues);
 		}
 
 		// Drop the old id column
@@ -387,7 +387,7 @@ class MigrationHelper
 	 */
 	public static function findForeignKeysTo($table, $column = 'id')
 	{
-		$fks = array();
+		$fks = [];
 
 		foreach (static::getTables() as $otherTable)
 		{
@@ -404,14 +404,14 @@ class MigrationHelper
 
 						// Get its column type
 						$fkColumnRequired = (mb_strpos($otherTable->columns[$fkColumnName]->type, 'NOT NULL') !== false);
-						$fkColumnType = array_merge(static::$_idColumnType, array('required' => $fkColumnRequired));
+						$fkColumnType = array_merge(static::$_idColumnType, ['required' => $fkColumnRequired]);
 
-						$fks[] = (object) array(
+						$fks[] = (object) [
 							'fk'         => $fk,
 							'table'      => $otherTable,
 							'column'     => $fkColumnName,
 							'columnType' => $fkColumnType
-						);
+						];
 					}
 				}
 			}
@@ -597,7 +597,7 @@ class MigrationHelper
 	 */
 	private static function _analyzeTables()
 	{
-		static::$_tables = array();
+		static::$_tables = [];
 
 		$tables = Craft::$app->db->getSchema()->getTableNames();
 
@@ -617,12 +617,12 @@ class MigrationHelper
 	 */
 	private static function _analyzeTable($table)
 	{
-		static::$_tables[$table] = (object) array(
+		static::$_tables[$table] = (object) [
 			'name'    => $table,
-			'columns' => array(),
-			'fks'     => array(),
-			'indexes' => array(),
-		);
+			'columns' => [],
+			'fks'     => [],
+			'indexes' => [],
+		];
 
 		// Get the CREATE TABLE sql
 		$query = Craft::$app->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
@@ -638,10 +638,10 @@ class MigrationHelper
 				foreach ($matches as $match)
 				{
 					$name = $match[1];
-					static::$_tables[$table]->columns[$name] = (object)array(
+					static::$_tables[$table]->columns[$name] = (object)[
 						'name' => $name,
 						'type' => $match[2]
-					);
+					];
 				}
 			}
 
@@ -651,7 +651,7 @@ class MigrationHelper
 				foreach ($matches as $match)
 				{
 					$name = $match[1];
-					static::$_tables[$table]->fks[] = (object)array(
+					static::$_tables[$table]->fks[] = (object)[
 						'name'       => $name,
 						'columns'    => explode('`,`', $match[2]),
 						'refTable'   => mb_substr($match[3], static::_getTablePrefixLength()),
@@ -659,7 +659,7 @@ class MigrationHelper
 						'onDelete'   => (!empty($match[6]) ? $match[6] : null),
 						'onUpdate'   => (!empty($match[8]) ? $match[8] : null),
 						'table'      => static::$_tables[$table],
-					);
+					];
 				}
 			}
 
@@ -669,12 +669,12 @@ class MigrationHelper
 				foreach ($matches as $match)
 				{
 					$name = $match[2];
-					static::$_tables[$table]->indexes[] = (object)array(
+					static::$_tables[$table]->indexes[] = (object)[
 						'name'    => $name,
 						'columns' => explode('`,`', $match[3]),
 						'unique'  => !empty($match[1]),
 						'table'   => static::$_tables[$table],
-					);
+					];
 				}
 			}
 		}

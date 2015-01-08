@@ -28,7 +28,7 @@ class Requirements
 	{
 		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
 
-		return array(
+		return [
 			new PhpVersionRequirement(),
 			new Requirement(
 				Craft::t('$_SERVER Variable'),
@@ -98,7 +98,7 @@ class Requirements
 				version_compare(Craft::$app->db->getServerVersion(), $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', array('version' => $requiredMysqlVersion))
+				Craft::t('MySQL {version} or higher is required to run @@@appName@@@.', ['version' => $requiredMysqlVersion])
 			),
 			new Requirement(
 				Craft::t('MySQL InnoDB support'),
@@ -143,7 +143,7 @@ class Requirements
 				Craft::t('@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
 			new IconvRequirement(),
-		);
+		];
 	}
 
 	// Private Methods
@@ -154,8 +154,8 @@ class Requirements
 	 */
 	private static function _checkServerVar()
 	{
-		$vars = array('HTTP_HOST', 'SERVER_NAME', 'SERVER_PORT', 'SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF', 'HTTP_ACCEPT', 'HTTP_USER_AGENT');
-		$missing = array();
+		$vars    = ['HTTP_HOST', 'SERVER_NAME', 'SERVER_PORT', 'SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF', 'HTTP_ACCEPT', 'HTTP_USER_AGENT'];
+		$missing = [];
 
 		foreach($vars as $var)
 		{
@@ -167,7 +167,7 @@ class Requirements
 
 		if (!empty($missing))
 		{
-			return Craft::t('$_SERVER does not have {messages}.', array('messages' => implode(', ', $missing)));
+			return Craft::t('$_SERVER does not have {messages}.', ['messages' => implode(', ', $missing)]);
 		}
 
 		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
@@ -372,16 +372,16 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_isBadPhpVersion())
 		{
-			return Craft::t('PHP {version} has a known <a href="{url}">security vulnerability</a>. You should probably upgrade.', array(
+			return Craft::t('PHP {version} has a known <a href="{url}">security vulnerability</a>. You should probably upgrade.', [
 				'version' => PHP_VERSION,
 				'url'     => 'http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on'
-			));
+			]);
 		}
 		else
 		{
-			return Craft::t('PHP {version} or higher is required.', array(
+			return Craft::t('PHP {version} or higher is required.', [
 				'version' => static::REQUIRED_PHP_VERSION,
-			));
+			]);
 		}
 	}
 
@@ -468,16 +468,16 @@ class IconvRequirement extends Requirement
 	{
 		if ($this->getResult() == RequirementResult::Warning)
 		{
-			return Craft::t('You have a buggy version of iconv installed. (See {url1} and {url2}.)', array(
+			return Craft::t('You have a buggy version of iconv installed. (See {url1} and {url2}.)', [
 				'url1' => '<a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a>',
 				'url2' => '<a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>',
-			));
+			]);
 		}
 		else
 		{
-			return Craft::t('{url} is recommended.', array(
+			return Craft::t('{url} is recommended.', [
 				'url' => '<a href="http://php.net/manual/en/book.iconv.php">iconv</a>',
-			));
+			]);
 		}
 	}
 

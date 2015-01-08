@@ -49,9 +49,9 @@ class RecentEntries extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/widgets/RecentEntries/settings', array(
+		return Craft::$app->templates->render('_components/widgets/RecentEntries/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -71,9 +71,9 @@ class RecentEntries extends BaseWidget
 
 				if ($section)
 				{
-					$title = Craft::t('Recent {section} Entries', array(
+					$title = Craft::t('Recent {section} Entries', [
 						'section' => Craft::t($section->name)
-					));
+					]);
 				}
 			}
 		}
@@ -90,10 +90,10 @@ class RecentEntries extends BaseWidget
 		{
 			$locale = Craft::$app->i18n->getLocaleById($targetLocale);
 
-			$title = Craft::t('{title} ({locale})', array(
+			$title = Craft::t('{title} ({locale})', [
 				'title'  => $title,
 				'locale' => $locale->getName()
-			));
+			]);
 		}
 
 		return $title;
@@ -106,7 +106,7 @@ class RecentEntries extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		$params = array();
+		$params = [];
 
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
@@ -126,9 +126,9 @@ class RecentEntries extends BaseWidget
 
 		$entries = $this->_getEntries();
 
-		return Craft::$app->templates->render('_components/widgets/RecentEntries/body', array(
+		return Craft::$app->templates->render('_components/widgets/RecentEntries/body', [
 			'entries' => $entries
-		));
+		]);
 	}
 
 	// Protected Methods
@@ -163,7 +163,7 @@ class RecentEntries extends BaseWidget
 		if (!$targetLocale)
 		{
 			// Hopeless
-			return array();
+			return [];
 		}
 
 		// Normalize the target section ID value.
@@ -177,7 +177,7 @@ class RecentEntries extends BaseWidget
 
 		if (!$targetSectionId)
 		{
-			return array();
+			return [];
 		}
 
 		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
@@ -199,7 +199,7 @@ class RecentEntries extends BaseWidget
 	 */
 	private function _getEditableSectionIds()
 	{
-		$sectionIds = array();
+		$sectionIds = [];
 
 		foreach (Craft::$app->sections->getEditableSections() as $section)
 		{

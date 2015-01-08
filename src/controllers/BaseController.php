@@ -77,7 +77,7 @@ abstract class BaseController extends \CController
 	 * @throws HttpException
 	 * @return mixed The rendered template if $return is set to `true`.
 	 */
-	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
+	public function renderTemplate($template, $variables = [], $return = false, $processOutput = false)
 	{
 		if (($output = Craft::$app->templates->render($template, $variables)) !== false)
 		{
@@ -111,10 +111,10 @@ abstract class BaseController extends \CController
 				}
 
 				// Set the charset header
-				HeaderHelper::setHeader(array('charset' => 'utf-8'));
+				HeaderHelper::setHeader(['charset' => 'utf-8']);
 
 				// Are we serving HTML or XHTML?
-				if (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml')))
+				if (in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml']))
 				{
 					// Are there any head/foot nodes left in the queue?
 					$headHtml = Craft::$app->templates->getHeadHtml();
@@ -348,7 +348,7 @@ abstract class BaseController extends \CController
 	 */
 	public function returnErrorJson($error)
 	{
-		$this->returnJson(array('error' => $error));
+		$this->returnJson(['error' => $error]);
 	}
 
 	/**

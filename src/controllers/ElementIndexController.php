@@ -129,9 +129,9 @@ class ElementIndexController extends BaseElementsController
 	 */
 	public function actionGetMoreElements()
 	{
-		$this->_respond(array(
+		$this->_respond([
 			'html' => $this->_getElementHtml(false),
-		), true);
+		], true);
 	}
 
 	/**
@@ -199,10 +199,10 @@ class ElementIndexController extends BaseElementsController
 		$success = $action->performAction($actionCriteria);
 
 		// Respond
-		$response = array(
+		$response = [
 			'success' => $success,
 			'message' => $action->getMessage(),
-		);
+		];
 
 		if ($success)
 		{
@@ -250,7 +250,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getViewState()
 	{
-		$viewState = Craft::$app->request->getParam('viewState', array());
+		$viewState = Craft::$app->request->getParam('viewState', []);
 
 		if (empty($viewState['mode']))
 		{
@@ -301,7 +301,7 @@ class ElementIndexController extends BaseElementsController
 
 				if ($collapsedElements)
 				{
-					$descendantIds = array();
+					$descendantIds = [];
 
 					$descendantCriteria = $criteria->copy();
 					$descendantCriteria->offset = 0;
@@ -324,7 +324,7 @@ class ElementIndexController extends BaseElementsController
 
 					if ($descendantIds)
 					{
-						$idsParam = array('and');
+						$idsParam = ['and'];
 
 						foreach ($descendantIds as $id)
 						{
@@ -349,7 +349,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getElementHtml($includeContainer)
 	{
-		$disabledElementIds = Craft::$app->request->getParam('disabledElementIds', array());
+		$disabledElementIds = Craft::$app->request->getParam('disabledElementIds', []);
 		$showCheckboxes = !empty($this->_actions);
 
 		return $this->_elementType->getIndexHtml(
@@ -405,17 +405,17 @@ class ElementIndexController extends BaseElementsController
 	{
 		if ($this->_actions)
 		{
-			$actionData = array();
+			$actionData = [];
 
 			foreach ($this->_actions as $action)
 			{
-				$actionData[] = array(
+				$actionData[] = [
 					'handle'      => $action->getClassHandle(),
 					'name'        => $action->getName(),
 					'destructive' => $action->isDestructive(),
 					'trigger'     => $action->getTriggerHtml(),
 					'confirm'     => $action->getConfirmationMessage(),
-				);
+				];
 			}
 
 			return $actionData;

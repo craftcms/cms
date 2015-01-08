@@ -8,7 +8,7 @@
  * If you want to change any of these settings, copy it into craft/config/filecache.php, and make your change there.
  */
 
-return array(
+return [
 	/**
 	 * The file system path to use for caching. If empty, Craft will default to craft/app/storage/runtime/cache.
 	 */
@@ -19,4 +19,4 @@ return array(
 	 * in the cache. Defaults to 100, meaning 0.01% chance.
 	 */
 	'gcProbability' => 100,
-);
+];

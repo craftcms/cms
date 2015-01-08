@@ -69,7 +69,7 @@ class Migrations extends Component
 		// This might take a while
 		Craft::$app->config->maxPowerCaptain();
 
-		if (($migrations = $this->getNewMigrations($plugin)) === array())
+		if (($migrations = $this->getNewMigrations($plugin)) === [])
 		{
 			if ($plugin)
 			{
@@ -168,18 +168,18 @@ class Migrations extends Component
 			{
 				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
 
-				Craft::$app->db->createCommand()->insert($this->_migrationTable, array(
+				Craft::$app->db->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginInfo['id']
-				));
+				]);
 			}
 			else
 			{
-				Craft::$app->db->createCommand()->insert($this->_migrationTable, array(
+				Craft::$app->db->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb()
-				));
+				]);
 			}
 
 			$time = microtime(true) - $start;
@@ -258,7 +258,7 @@ class Migrations extends Component
 	public function hasRun($version, $plugin = null)
 	{
 		return (bool) $this->_createMigrationQuery($plugin)
-			->andWhere('version = :version', array(':version' => $version))
+			->andWhere('version = :version', [':version' => $version])
 			->count('id');
 	}
 
@@ -271,12 +271,12 @@ class Migrations extends Component
 	 */
 	public function getNewMigrations($plugin = null)
 	{
-		$migrations = array();
+		$migrations = [];
 		$migrationPath = $this->getMigrationPath($plugin);
 
 		if (IOHelper::folderExists($migrationPath) && IOHelper::isReadable($migrationPath))
 		{
-			$applied = array();
+			$applied = [];
 
 			foreach ($this->getMigrationHistory($plugin) as $migration)
 			{
@@ -374,7 +374,7 @@ class Migrations extends Component
 			if ($plugin != 'all')
 			{
 				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
-				$query->where('pluginId = :pluginId', array(':pluginId' => $pluginInfo['id']));
+				$query->where('pluginId = :pluginId', [':pluginId' => $pluginInfo['id']]);
 			}
 		}
 		else

@@ -28,7 +28,7 @@ class EmailSettings extends BaseModel
 	 */
 	public function rules()
 	{
-		$rules[] = array('protocol, emailAddress, senderName', 'required');
+		$rules[] = ['protocol, emailAddress, senderName', 'required'];
 
 		switch ($this->protocol)
 		{
@@ -36,23 +36,23 @@ class EmailSettings extends BaseModel
 			{
 				if ($this->smtpAuth)
 				{
-					$rules[] = array('username, password', 'required');
+					$rules[] = ['username, password', 'required'];
 				}
 
-				$rules[] = array('port, host, timeout', 'required');
+				$rules[] = ['port, host, timeout', 'required'];
 				break;
 			}
 
 			case EmailerType::Gmail:
 			{
-				$rules[] = array('username, password, timeout', 'required');
-				$rules[] = array('username', 'email');
+				$rules[] = ['username, password, timeout', 'required'];
+				$rules[] = ['username', 'email'];
 				break;
 			}
 
 			case EmailerType::Pop:
 			{
-				$rules[] = array('port, host, username, password, timeout', 'required');
+				$rules[] = ['port, host, username, password, timeout', 'required'];
 				break;
 			}
 

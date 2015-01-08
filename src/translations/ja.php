@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" はこのフィールドでは許可されていません。',
 	'$_SERVER Variable' => '$_SERVER変数',
 	'$_SERVER does not have {messages}.' => '$_SERVERに{messages}がありません。',
@@ -1253,4 +1253,4 @@ return array(
 	'“{plugin}” is already installed.' => '「{plugin}」はすでにインストールしました。',
 	'“{plugin}” is already uninstalled.' => '「{plugin}」はすでにアンインストールしました。',
 	'…Or use one of your field groups as a starting point:' => 'または、まず特定のフィールドグループを利用する：',
-);
+];

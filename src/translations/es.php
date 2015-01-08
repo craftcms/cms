@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" no es permitido en este espacio.',
 	'$_SERVER Variable' => 'Variable $_SERVER',
 	'$_SERVER does not have {messages}.' => '$_SERVER no tiene {messages}.',
@@ -1250,4 +1250,4 @@ Si no estabas esperando este correo electrónico, ignóralo.',
 	'“{plugin}” is already installed.' => '“{plugin}” ya está instalado.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” ya está desinstalado.',
 	'…Or use one of your field groups as a starting point:' => '…O utiliza uno de los grupos de campos como punto de partida:',
-);
+];

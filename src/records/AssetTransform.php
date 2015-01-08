@@ -37,10 +37,10 @@ class AssetTransform extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class AssetTransform extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods
@@ -65,16 +65,16 @@ class AssetTransform extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'                => array(AttributeType::String, 'required' => true),
-			'handle'              => array(AttributeType::Handle, 'required' => true),
-			'mode'                => array(AttributeType::Enum, 'required' => true, 'values' => array('stretch', 'fit', 'crop'), 'default' => 'crop'),
-			'position'            => array(AttributeType::Enum, 'values' => array('top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'), 'required' => true, 'default' => 'center-center'),
+		return [
+			'name'                => [AttributeType::String, 'required' => true],
+			'handle'              => [AttributeType::Handle, 'required' => true],
+			'mode'                => [AttributeType::Enum, 'required' => true, 'values' => ['stretch', 'fit', 'crop'], 'default' => 'crop'],
+			'position'            => [AttributeType::Enum, 'values' => ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'], 'required' => true, 'default' => 'center-center'],
 			'height'              => AttributeType::Number,
 			'width'               => AttributeType::Number,
 			'format'              => AttributeType::String,
-			'quality'             => array(AttributeType::Number, 'required' => false),
+			'quality'             => [AttributeType::Number, 'required' => false],
 			'dimensionChangeTime' => AttributeType::DateTime
-		);
+		];
 	}
 }

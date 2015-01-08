@@ -140,7 +140,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getAvailableActions($source = null)
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -150,7 +150,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array();
+		return [];
 	}
 
 	// Element index methods
@@ -171,14 +171,14 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
-		$variables = array(
+		$variables = [
 			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
 			'elementType'         => new ElementType($this),
 			'disabledElementIds'  => $disabledElementIds,
 			'collapsedElementIds' => Craft::$app->request->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,
-		);
+		];
 
 		// Special case for sorting by structure
 		if (isset($viewState['order']) && $viewState['order'] == 'structure')
@@ -215,7 +215,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			if ($sortableAttributes)
 			{
 				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
-				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], array('asc', 'desc'))) ? $viewState['sort'] : 'asc';
+				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
 
 				// Combine them, accounting for the possibility that $order could contain multiple values,
 				// and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -265,7 +265,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -295,8 +295,8 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 					else
 					{
 						// Add some <wbr> tags in there so it doesn't all have to be on one line
-						$find = array('/');
-						$replace = array('/<wbr>');
+						$find = ['/'];
+						$replace = ['/<wbr>'];
 
 						$wordSeparator = Craft::$app->config->get('slugWordSeparator');
 
@@ -338,7 +338,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array();
+		return [];
 	}
 
 	// Methods for customizing the content table
@@ -437,11 +437,11 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 
 			foreach ($fieldLayout->getFields() as $fieldLayoutField)
 			{
-				$fieldHtml = Craft::$app->templates->render('_includes/field', array(
+				$fieldHtml = Craft::$app->templates->render('_includes/field', [
 					'element'  => $element,
 					'field'    => $fieldLayoutField->getField(),
 					'required' => $fieldLayoutField->required
-				));
+				]);
 
 				$html .= Craft::$app->templates->namespaceInputs($fieldHtml, 'fields');
 			}

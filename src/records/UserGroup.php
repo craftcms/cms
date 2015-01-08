@@ -40,9 +40,9 @@ class UserGroup extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'users' => array(static::MANY_MANY, 'User', 'usergroups_users(groupId, userId)'),
-		);
+		return [
+			'users' => [static::MANY_MANY, 'User', 'usergroups_users(groupId, userId)'],
+		];
 	}
 
 	/**
@@ -52,9 +52,9 @@ class UserGroup extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

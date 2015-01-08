@@ -40,7 +40,7 @@ class AssetIndexData extends BaseComponentModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'		=> AttributeType::Number,
 			'sourceId'	=> AttributeType::Number,
 			'sessionId' => AttributeType::String,
@@ -48,6 +48,6 @@ class AssetIndexData extends BaseComponentModel
 			'uri'     	=> AttributeType::String,
 			'size' 		=> AttributeType::Number,
 			'recordId'	=> AttributeType::Number
-		);
+		];
 	}
 }

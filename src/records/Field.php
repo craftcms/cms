@@ -25,7 +25,7 @@ class Field extends BaseRecord
 	/**
 	 * @var array
 	 */
-	protected $reservedHandleWords = array(
+	protected $reservedHandleWords = [
 		'archived',
 		'children',
 		'dateCreated',
@@ -42,7 +42,7 @@ class Field extends BaseRecord
 		'ref',
 		'status',
 		'title',
-	);
+	];
 
 	/**
 	 * @var
@@ -62,7 +62,7 @@ class Field extends BaseRecord
 		parent::init();
 
 		// Store the old handle in case it's ever requested.
-		$this->attachEventHandler('onAfterFind', array($this, 'storeOldHandle'));
+		$this->attachEventHandler('onAfterFind', [$this, 'storeOldHandle']);
 	}
 
 	/**
@@ -102,9 +102,9 @@ class Field extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'group' => array(static::BELONGS_TO, 'FieldGroup', 'onDelete' => static::CASCADE),
-		);
+		return [
+			'group' => [static::BELONGS_TO, 'FieldGroup', 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -114,10 +114,10 @@ class Field extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('handle', 'context'), 'unique' => true),
-			array('columns' => array('context')),
-		);
+		return [
+			['columns' => ['handle', 'context'], 'unique' => true],
+			['columns' => ['context']],
+		];
 	}
 
 	/**
@@ -127,9 +127,9 @@ class Field extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	/**

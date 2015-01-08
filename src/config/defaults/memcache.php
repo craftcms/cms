@@ -8,12 +8,12 @@
  * If you want to change any of these settings, copy it into craft/config/memcache.php, and make your change there.
  */
 
-return array(
+return [
 	/**
 	 * An array of memcache servers to use.
 	 */
-	'servers' => array(
-		array(
+	'servers' => [
+		[
 			/**
 			 * A memcache server hostname or IP address.
 			 */
@@ -48,8 +48,8 @@ return array(
 			 * Probability of using this server among all servers.
 			 */
 			'weight' => 1,
-		),
-	),
+		],
+	],
 
 	/**
 	 * Whether to use memcached or memcache as the underlying caching extension.
@@ -61,4 +61,4 @@ return array(
 	 * Defaults to false.
 	 */
 	'useMemcached' => false,
-);
+];

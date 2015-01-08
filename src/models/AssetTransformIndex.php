@@ -40,7 +40,7 @@ class AssetTransformIndex extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'             => AttributeType::Number,
 			'fileId'         => AttributeType::Number,
 			'filename'       => AttributeType::Number,
@@ -58,6 +58,6 @@ class AssetTransformIndex extends BaseModel
 
 			// The AssetTransformModel that defines the transformation to make
 			'transform'      => AttributeType::Mixed
-		);
+		];
 	}
 }

@@ -35,7 +35,7 @@ class Deprecator extends Component
 	/**
 	 * @var array
 	 */
-	private $_fingerprints = array();
+	private $_fingerprints = [];
 
 	/**
 	 * @var
@@ -137,7 +137,7 @@ class Deprecator extends Component
 		$log = Craft::$app->db->createCommand()
 			->select('*')
 			->from(static::$_tableName)
-			->where('id = :logId', array(':logId' => $logId))
+			->where('id = :logId', [':logId' => $logId])
 			->queryRow();
 
 		if ($log)
@@ -155,7 +155,7 @@ class Deprecator extends Component
 	 */
 	public function deleteLogById($id)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName, array('id' => $id));
+		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName, ['id' => $id]);
 		return (bool) $affectedRows;
 	}
 
@@ -212,18 +212,18 @@ class Deprecator extends Component
 			$log->fingerprint = $log->class.($log->class && $log->line ? ':'.$log->line : '');
 		}
 
-		$logTraces = array();
+		$logTraces = [];
 
 		foreach ($traces as $trace)
 		{
-			$logTrace = array(
+			$logTrace = [
 				'objectClass' => (!empty($trace['object']) ? get_class($trace['object']) : null),
 				'file'        => (!empty($trace['file'])     ? $trace['file'] : null),
 				'line'        => (!empty($trace['line'])     ? $trace['line'] : null),
 				'class'       => (!empty($trace['class'])    ? $trace['class'] : null),
 				'method'      => (!empty($trace['function']) ? $trace['function'] : null),
 				'args'        => (!empty($trace['args'])     ? $this->_argsToString($trace['args']) : null),
-			);
+			];
 
 			// Is this a template?
 			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && strpos($trace['file'], 'compiled_templates') !== false)
@@ -309,7 +309,7 @@ class Deprecator extends Component
 	 */
 	private function _argsToString($args)
 	{
-		$strArgs = array();
+		$strArgs = [];
 		$isAssoc = ($args !== array_values($args));
 
 		$count = 0;

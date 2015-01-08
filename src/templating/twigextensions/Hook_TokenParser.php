@@ -41,6 +41,6 @@ class Hook_TokenParser extends \Twig_TokenParser
 		$hook = $this->parser->getExpressionParser()->parseExpression();
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new Hook_Node(array('hook' => $hook), array(), $lineno, $this->getTag());
+		return new Hook_Node(['hook' => $hook], [], $lineno, $this->getTag());
 	}
 }

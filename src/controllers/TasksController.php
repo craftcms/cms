@@ -68,7 +68,7 @@ class TasksController extends BaseController
 		// No running tasks left? Check for a failed one
 		if (Craft::$app->tasks->haveTasksFailed())
 		{
-			$this->returnJson(array('status' => 'error'));
+			$this->returnJson(['status' => 'error']);
 		}
 
 		Craft::$app->end();
@@ -131,7 +131,7 @@ class TasksController extends BaseController
 		$this->requirePermission('accessCp');
 
 		$tasks = Craft::$app->tasks->getAllTasks();
-		$taskInfo = array();
+		$taskInfo = [];
 
 		foreach ($tasks as $task)
 		{

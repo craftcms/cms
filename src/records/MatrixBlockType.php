@@ -46,10 +46,10 @@ class MatrixBlockType extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'field'       => array(static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE),
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-		);
+		return [
+			'field'       => [static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE],
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+		];
 	}
 
 	/**
@@ -59,10 +59,10 @@ class MatrixBlockType extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name', 'fieldId'), 'unique' => true),
-			array('columns' => array('handle', 'fieldId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name', 'fieldId'], 'unique' => true],
+			['columns' => ['handle', 'fieldId'], 'unique' => true],
+		];
 	}
 
 	/**

@@ -94,7 +94,7 @@ class Categories extends Component
 	{
 		if (!isset($this->_editableGroupIds))
 		{
-			$this->_editableGroupIds = array();
+			$this->_editableGroupIds = [];
 
 			foreach ($this->getAllGroupIds() as $groupId)
 			{
@@ -123,7 +123,7 @@ class Categories extends Component
 
 			if (!isset($this->_categoryGroupsById))
 			{
-				$this->_categoryGroupsById = array();
+				$this->_categoryGroupsById = [];
 			}
 
 			foreach ($groupRecords as $groupRecord)
@@ -144,7 +144,7 @@ class Categories extends Component
 		}
 		else
 		{
-			$groups = array();
+			$groups = [];
 
 			foreach ($this->_categoryGroupsById as $group)
 			{
@@ -165,7 +165,7 @@ class Categories extends Component
 	public function getEditableGroups($indexBy = null)
 	{
 		$editableGroupIds = $this->getEditableGroupIds();
-		$editableGroups = array();
+		$editableGroups = [];
 
 		foreach ($this->getAllGroups() as $group)
 		{
@@ -230,14 +230,15 @@ class Categories extends Component
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		$groupRecord = CategoryGroupRecord::model()->findByAttributes(array(
+		$groupRecord = CategoryGroupRecord::model()->findByAttributes([
 			'handle' => $groupHandle
-		));
+		]);
 
 		if ($groupRecord)
 		{
 			$group = $this->_populateCategoryGroupFromRecord($groupRecord);
 			$this->_categoryGroupsById[$group->id] = $group;
+
 			return $group;
 		}
 	}
@@ -252,9 +253,9 @@ class Categories extends Component
 	 */
 	public function getGroupLocales($groupId, $indexBy = null)
 	{
-		$records = CategoryGroupLocaleRecord::model()->findAllByAttributes(array(
+		$records = CategoryGroupLocaleRecord::model()->findAllByAttributes([
 			'groupId' => $groupId
-		));
+		]);
 
 		return CategoryGroupLocaleModel::populateModels($records, $indexBy);
 	}
@@ -276,7 +277,7 @@ class Categories extends Component
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No category group exists with the ID “{id}”.', array('id' => $group->id)));
+				throw new Exception(Craft::t('No category group exists with the ID “{id}”.', ['id' => $group->id]));
 			}
 
 			$oldCategoryGroup = CategoryGroupModel::populateModel($groupRecord);
@@ -308,7 +309,7 @@ class Categories extends Component
 		{
 			if ($group->hasUrls)
 			{
-				$urlFormatAttributes = array('urlFormat');
+				$urlFormatAttributes = ['urlFormat'];
 				$groupLocale->urlFormatIsRequired = true;
 
 				if ($group->maxLevels == 1)
@@ -323,7 +324,7 @@ class Categories extends Component
 
 				foreach ($urlFormatAttributes as $attribute)
 				{
-					if (!$groupLocale->validate(array($attribute)))
+					if (!$groupLocale->validate([$attribute]))
 					{
 						$group->addError($attribute.'-'.$localeId, $groupLocale->getError($attribute));
 					}
@@ -386,17 +387,17 @@ class Categories extends Component
 				$this->_categoryGroupsById[$group->id] = $group;
 
 				// Update the categorygroups_i18n table
-				$newLocaleData = array();
+				$newLocaleData = [];
 
 				if (!$isNewCategoryGroup)
 				{
 					// Get the old category group locales
-					$oldLocaleRecords = CategoryGroupLocaleRecord::model()->findAllByAttributes(array(
+					$oldLocaleRecords = CategoryGroupLocaleRecord::model()->findAllByAttributes([
 						'groupId' => $group->id
-					));
+					]);
 					$oldLocales = CategoryGroupLocaleModel::populateModels($oldLocaleRecords, 'locale');
 
-					$changedLocaleIds = array();
+					$changedLocaleIds = [];
 				}
 
 				foreach ($groupLocales as $localeId => $locale)
@@ -409,25 +410,25 @@ class Categories extends Component
 						// Has the URL format changed?
 						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
-							Craft::$app->db->createCommand()->update('categorygroups_i18n', array(
+							Craft::$app->db->createCommand()->update('categorygroups_i18n', [
 								'urlFormat'       => $locale->urlFormat,
 								'nestedUrlFormat' => $locale->nestedUrlFormat
-							), array(
+							], [
 								'id' => $oldLocale->id
-							));
+							]);
 
 							$changedLocaleIds[] = $localeId;
 						}
 					}
 					else
 					{
-						$newLocaleData[] = array($group->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat);
+						$newLocaleData[] = [$group->id, $localeId, $locale->urlFormat, $locale->nestedUrlFormat];
 					}
 				}
 
 				// Insert the new locales
 				Craft::$app->db->createCommand()->insertAll('categorygroups_i18n',
-					array('groupId', 'locale', 'urlFormat', 'nestedUrlFormat'),
+					['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
 					$newLocaleData
 				);
 
@@ -440,7 +441,7 @@ class Categories extends Component
 
 					if ($droppedLocaleIds)
 					{
-						Craft::$app->db->createCommand()->delete('categorygroups_i18n', array('in', 'locale', $droppedLocaleIds));
+						Craft::$app->db->createCommand()->delete('categorygroups_i18n', ['in', 'locale', $droppedLocaleIds]);
 					}
 				}
 
@@ -458,8 +459,8 @@ class Categories extends Component
 					// Should we be deleting
 					if ($categoryIds && $droppedLocaleIds)
 					{
-						Craft::$app->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
-						Craft::$app->db->createCommand()->delete('content', array('and', array('in', 'elementId', $categoryIds), array('in', 'locale', $droppedLocaleIds)));
+						Craft::$app->db->createCommand()->delete('elements_i18n', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]]);
+						Craft::$app->db->createCommand()->delete('content', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]]);
 					}
 
 					// Are there any locales left?
@@ -469,8 +470,8 @@ class Categories extends Component
 						if (!$group->hasUrls && $oldCategoryGroup->hasUrls)
 						{
 							Craft::$app->db->createCommand()->update('elements_i18n',
-								array('uri' => null),
-								array('in', 'elementId', $categoryIds)
+								['uri' => null],
+								['in', 'elementId', $categoryIds]
 							);
 						}
 						else if ($changedLocaleIds)
@@ -544,7 +545,7 @@ class Categories extends Component
 			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('categorygroups')
-				->where(array('id' => $groupId))
+				->where(['id' => $groupId])
 				->queryScalar();
 
 			if ($fieldLayoutId)
@@ -556,12 +557,12 @@ class Categories extends Component
 			$categoryIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('categories')
-				->where(array('groupId' => $groupId))
+				->where(['groupId' => $groupId])
 				->queryColumn();
 
 			Craft::$app->elements->deleteElementById($categoryIds);
 
-			$affectedRows = Craft::$app->db->createCommand()->delete('categorygroups', array('id' => $groupId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('categorygroups', ['id' => $groupId]);
 
 			if ($transaction !== null)
 			{
@@ -649,7 +650,7 @@ class Categories extends Component
 
 				if (!$parentCategory)
 				{
-					throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $category->newParentId)));
+					throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
 				}
 			}
 			else
@@ -667,7 +668,7 @@ class Categories extends Component
 
 			if (!$categoryRecord)
 			{
-				throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $category->id)));
+				throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $category->id]));
 			}
 		}
 		else
@@ -690,10 +691,10 @@ class Categories extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveCategory' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'category'      => $category,
 				'isNewCategory' => $isNewCategory
-			));
+			]);
 
 			$this->onBeforeSaveCategory($event);
 
@@ -762,10 +763,10 @@ class Categories extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveCategory' event
-			$this->onSaveCategory(new Event($this, array(
+			$this->onSaveCategory(new Event($this, [
 				'category'      => $category,
 				'isNewCategory' => $isNewCategory
-			)));
+			]));
 		}
 
 		return $success;
@@ -791,7 +792,7 @@ class Categories extends Component
 		{
 			if (!is_array($categories))
 			{
-				$categories = array($categories);
+				$categories = [$categories];
 			}
 
 			$success = $this->_deleteCategories($categories, true);
@@ -816,9 +817,9 @@ class Categories extends Component
 			foreach ($categories as $category)
 			{
 				// Fire an 'onDeleteCategory' event
-				$this->onDeleteCategory(new Event($this, array(
+				$this->onDeleteCategory(new Event($this, [
 					'category' => $category
-				)));
+				]));
 			}
 
 			return true;
@@ -869,7 +870,7 @@ class Categories extends Component
 	 */
 	public function fillGapsInCategoryIds($ids)
 	{
-		$completeIds = array();
+		$completeIds = [];
 
 		if ($ids)
 		{
@@ -1044,7 +1045,7 @@ class Categories extends Component
 	 */
 	private function _deleteCategories($categories, $deleteDescendants = true)
 	{
-		$categoryIds = array();
+		$categoryIds = [];
 
 		foreach ($categories as $category)
 		{
@@ -1056,9 +1057,9 @@ class Categories extends Component
 			}
 
 			// Fire an 'onBeforeDeleteCategory' event
-			$this->onBeforeDeleteCategory(new Event($this, array(
+			$this->onBeforeDeleteCategory(new Event($this, [
 				'category' => $category
-			)));
+			]));
 
 			$categoryIds[] = $category->id;
 		}

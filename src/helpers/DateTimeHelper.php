@@ -116,7 +116,7 @@ class DateTimeHelper
 			$seconds = 0;
 		}
 
-		$timeComponents = array();
+		$timeComponents = [];
 
 		if ($weeks)
 		{
@@ -391,7 +391,7 @@ class DateTimeHelper
 	 *
 	 * @return string The relative time string.
 	 */
-	public static function timeAgoInWords($dateTime, $options = array())
+	public static function timeAgoInWords($dateTime, $options = [])
 	{
 		$now = time();
 

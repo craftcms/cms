@@ -42,7 +42,7 @@ class Switch_Node extends \Twig_Node
 	{
 		$this->_cases = $cases;
 
-		parent::__construct(array('value' => $value, 'default' => $default), array(), $lineno, $tag);
+		parent::__construct(['value' => $value, 'default' => $default], [], $lineno, $tag);
 	}
 
 	/**

@@ -67,14 +67,14 @@ class DateInterval extends \DateInterval
 	 *
 	 * @var array
 	 */
-	private static $_date = array('y' => 'Y', 'm' => 'M', 'd' => 'D');
+	private static $_date = ['y' => 'Y', 'm' => 'M', 'd' => 'D'];
 
 	/**
 	 * The time properties.
 	 *
 	 * @var array
 	 */
-	private static $_time = array('h' => 'H', 'i' => 'M', 's' => 'S');
+	private static $_time = ['h' => 'H', 'i' => 'M', 's' => 'S'];
 
 	// Public Methods
 	// =========================================================================
@@ -101,7 +101,7 @@ class DateInterval extends \DateInterval
 		$interval = new static('PT0S');
 		$seconds = (int)$seconds;
 
-		foreach (array('y' => self::SECONDS_YEAR, 'm' => self::SECONDS_MONTH, 'd' => self::SECONDS_DAY, 'h' => self::SECONDS_HOUR, 'i' => self::SECONDS_MINUTE) as $property => $increment)
+		foreach (['y' => self::SECONDS_YEAR, 'm' => self::SECONDS_MONTH, 'd' => self::SECONDS_DAY, 'h' => self::SECONDS_HOUR, 'i' => self::SECONDS_MINUTE] as $property => $increment)
 		{
 			$increment = (int)$increment;
 
@@ -211,7 +211,7 @@ class DateInterval extends \DateInterval
 	 */
 	public function humanDuration($showSeconds = true)
 	{
-		$timeComponents = array();
+		$timeComponents = [];
 
 		if ($this->y)
 		{

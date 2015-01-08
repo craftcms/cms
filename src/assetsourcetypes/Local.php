@@ -54,9 +54,9 @@ class Local extends BaseAssetSourceType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/assetsourcetypes/Local/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/Local/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -84,7 +84,7 @@ class Local extends BaseAssetSourceType
 	 */
 	public function startIndex($sessionId)
 	{
-		$indexedFolderIds = array();
+		$indexedFolderIds = [];
 
 		$indexedFolderIds[Craft::$app->assetIndexing->ensureTopFolder($this->model)] = true;
 
@@ -92,7 +92,7 @@ class Local extends BaseAssetSourceType
 
 		if ($localPath == '/' || !IOHelper::folderExists($localPath) || $localPath === false)
 		{
-			return array('sourceId' => $this->model->id, 'error' => Craft::t('The path of your source “{source}” appears to be invalid.', array('source' => $this->model->name)));
+			return ['sourceId' => $this->model->id, 'error' => Craft::t('The path of your source “{source}” appears to be invalid.', ['source' => $this->model->name])];
 		}
 
 		$fileList = IOHelper::getFolderContents($localPath, true);
@@ -134,13 +134,13 @@ class Local extends BaseAssetSourceType
 				}
 				else
 				{
-					$indexEntry = array(
+					$indexEntry = [
 						'sourceId' => $this->model->id,
 						'sessionId' => $sessionId,
 						'offset' => $offset++,
 						'uri' => $file,
 						'size' => is_dir($file) ? 0 : filesize($file)
-					);
+					];
 
 					Craft::$app->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
@@ -150,7 +150,7 @@ class Local extends BaseAssetSourceType
 
 		$missingFolders = $this->getMissingFolders($indexedFolderIds);
 
-		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
+		return ['sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders];
 	}
 
 	/**
@@ -364,7 +364,7 @@ class Local extends BaseAssetSourceType
 	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
-		$existingFiles = array();
+		$existingFiles = [];
 
 		foreach ($fileList as $file)
 		{
@@ -451,10 +451,10 @@ class Local extends BaseAssetSourceType
 
 		$newServerPath = $this->getSourceFileSystemPath().$targetFolder->path.$fileName;
 
-		$conflictingRecord = Craft::$app->assets->findFile(array(
+		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
 			'filename' => $fileName
-		));
+		]);
 
 		$conflict = !$overwrite && (IOHelper::fileExists($newServerPath) || (!Craft::$app->assets->isMergeInProgress() && is_object($conflictingRecord)));
 
@@ -467,7 +467,7 @@ class Local extends BaseAssetSourceType
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t('Could not move the file “{filename}”.', array('filename' => $fileName)));
+			return $response->setError(Craft::t('Could not move the file “{filename}”.', ['filename' => $fileName]));
 		}
 
 		if ($file->kind == 'image')

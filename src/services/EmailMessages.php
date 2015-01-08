@@ -51,19 +51,19 @@ class EmailMessages extends Component
 			$localeId = Craft::$app->language;
 		}
 
-		$records = EmailMessageRecord::model()->findAllByAttributes(array(
+		$records = EmailMessageRecord::model()->findAllByAttributes([
 			'locale' => $localeId
-		));
+		]);
 
 		// Index the records by their keys
-		$recordsByKey = array();
+		$recordsByKey = [];
 		foreach ($records as $record)
 		{
 			$recordsByKey[$record->key] = $record;
 		}
 
 		// Now assemble the whole list of messages
-		$messages = array();
+		$messages = [];
 
 		foreach ($this->_getAllMessageKeys() as $key)
 		{
@@ -185,12 +185,12 @@ class EmailMessages extends Component
 		{
 			$craftSourceLocale = Craft::$app->sourceLanguage;
 
-			$this->_messageKeysAndSourceLocales = array(
+			$this->_messageKeysAndSourceLocales = [
 				'account_activation' => $craftSourceLocale,
 				'verify_new_email'   => $craftSourceLocale,
 				'forgot_password'    => $craftSourceLocale,
 				'test_email'         => $craftSourceLocale,
-			);
+			];
 
 			// Give plugins a chance to add additional messages
 			foreach (Craft::$app->plugins->call('registerEmailMessages') as $pluginHandle => $pluginKeys)
@@ -249,10 +249,10 @@ class EmailMessages extends Component
 			$localeId = Craft::$app->language;
 		}
 
-		$record = EmailMessageRecord::model()->findByAttributes(array(
+		$record = EmailMessageRecord::model()->findByAttributes([
 			'key'    => $key,
 			'locale' => $localeId,
-		));
+		]);
 
 		if (!$record)
 		{

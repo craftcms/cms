@@ -49,7 +49,7 @@ class Update extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		$attributes['app']      = array(AttributeType::Mixed, 'model' => '\craft\app\models\AppUpdate');
+		$attributes['app']      = [AttributeType::Mixed, 'model' => '\craft\app\models\AppUpdate'];
 		$attributes['plugins']  = AttributeType::Mixed;
 		$attributes['errors']   = AttributeType::Mixed;
 

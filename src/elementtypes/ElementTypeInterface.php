@@ -141,7 +141,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
 	 *
 	 * ```php
-	 * return array('color');
+	 * return ['color'];
 	 * ```
 	 *
 	 * Not only will the “color” attribute’s values start getting indexed, but users will also be able to search
@@ -178,20 +178,20 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * and where the values define the user-facing labels.
 	 *
 	 * ```php
-	 * return array(
+	 * return [
 	 *     'columnName1' => Craft::t('Attribute Label 1'),
 	 *     'columnName2' => Craft::t('Attribute Label 2'),
-	 * );
+	 * ];
 	 * ```
 	 *
 	 * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
 	 * separated by commas.
 	 *
 	 * ```php
-	 * return array(
+	 * return [
 	 *     'columnName1, columnName2 asc' => Craft::t('Attribute Label 1'),
 	 *     'columnName3'                  => Craft::t('Attribute Label 2'),
-	 * );
+	 * ];
 	 * ```
 	 *
 	 * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
@@ -276,10 +276,10 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * If this method were to return the following:
 	 *
 	 * ```php
-	 * return array(
+	 * return [
 	 *     'foo' => AttributeType::String,
 	 *     'bar' => AttributeType::String,
-	 * );
+	 * ];
 	 * ```
 	 *
 	 * then when someone creates a new ElementCriteriaModel instance targeting this elmeent type, they will be able to

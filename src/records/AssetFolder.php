@@ -37,10 +37,10 @@ class AssetFolder extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'parent' => array(static::BELONGS_TO, 'AssetFolder', 'onDelete' => static::CASCADE),
-			'source' => array(static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'parent' => [static::BELONGS_TO, 'AssetFolder', 'onDelete' => static::CASCADE],
+			'source' => [static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class AssetFolder extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name', 'parentId', 'sourceId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name', 'parentId', 'sourceId'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -65,9 +65,9 @@ class AssetFolder extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name'     => array(AttributeType::String, 'required' => true),
-			'path'     => array(AttributeType::String),
-		);
+		return [
+			'name'     => [AttributeType::String, 'required' => true],
+			'path'     => [AttributeType::String],
+		];
 	}
 }

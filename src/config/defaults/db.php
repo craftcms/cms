@@ -8,7 +8,7 @@
  * If you want to change any of these settings, copy it into craft/config/db.php, and make your change there.
  */
 
-return array(
+return [
 
 	/**
 	 * The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
@@ -56,4 +56,4 @@ return array(
 	 * specified, then 'server' and 'port' settings are ignored.
 	 */
 	'unixSocket' => '',
-);
+];

@@ -29,7 +29,7 @@ class CpHelper
 	 */
 	public static function getAlerts($path = null, $fetch = false)
 	{
-		$alerts = array();
+		$alerts = [];
 		$user = Craft::$app->getUser()->getIdentity();
 
 		if (!$user)
@@ -64,10 +64,10 @@ class CpHelper
 				$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
 
-				$message = Craft::t('The license located at {file} belongs to {domain}.', array(
+				$message = Craft::t('The license located at {file} belongs to {domain}.', [
 					'file'   => $licenseKeyFile,
 					'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
-				));
+				]);
 
 				// Can they actually do something about it?
 				if ($user->admin)

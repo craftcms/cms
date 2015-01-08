@@ -30,33 +30,33 @@ class Cp
 	 */
 	public function nav()
 	{
-		$nav['dashboard'] = array('name' => Craft::t('Dashboard'));
+		$nav['dashboard'] = ['name' => Craft::t('Dashboard')];
 
 		if (Craft::$app->sections->getTotalEditableSections())
 		{
-			$nav['entries'] = array('name' => Craft::t('Entries'));
+			$nav['entries'] = ['name' => Craft::t('Entries')];
 		}
 
 		$globals = Craft::$app->globals->getEditableSets();
 
 		if ($globals)
 		{
-			$nav['globals'] = array('name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
+			$nav['globals'] = ['name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle];
 		}
 
 		if (Craft::$app->categories->getEditableGroupIds())
 		{
-			$nav['categories'] = array('name' => Craft::t('Categories'));
+			$nav['categories'] = ['name' => Craft::t('Categories')];
 		}
 
 		if (Craft::$app->assetSources->getTotalViewableSources())
 		{
-			$nav['assets'] = array('name' => Craft::t('Assets'));
+			$nav['assets'] = ['name' => Craft::t('Assets')];
 		}
 
 		if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers'))
 		{
-			$nav['users'] = array('name' => Craft::t('Users'));
+			$nav['users'] = ['name' => Craft::t('Users')];
 		}
 
 		// Add any Plugin nav items
@@ -69,7 +69,7 @@ class Cp
 				if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
 					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
-					$nav[$lcHandle] = array('name' => $plugin->getName());
+					$nav[$lcHandle] = ['name' => $plugin->getName()];
 				}
 			}
 		}
@@ -107,29 +107,29 @@ class Cp
 	{
 		$label = Craft::t('System');
 
-		$settings[$label]['general'] = array('icon' => 'general', 'label' => Craft::t('General'));
-		$settings[$label]['routes'] = array('icon' => 'routes', 'label' => Craft::t('Routes'));
+		$settings[$label]['general'] = ['icon' => 'general', 'label' => Craft::t('General')];
+		$settings[$label]['routes'] = ['icon' => 'routes', 'label' => Craft::t('Routes')];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$settings[$label]['users'] = array('icon' => 'users', 'label' => Craft::t('Users'));
+			$settings[$label]['users'] = ['icon' => 'users', 'label' => Craft::t('Users')];
 		}
 
-		$settings[$label]['email'] = array('icon' => 'mail', 'label' => Craft::t('Email'));
-		$settings[$label]['plugins'] = array('icon' => 'plugin', 'label' => Craft::t('Plugins'));
+		$settings[$label]['email'] = ['icon' => 'mail', 'label' => Craft::t('Email')];
+		$settings[$label]['plugins'] = ['icon' => 'plugin', 'label' => Craft::t('Plugins')];
 
 		$label = Craft::t('Content');
 
-		$settings[$label]['fields'] = array('icon' => 'field', 'label' => Craft::t('Fields'));
-		$settings[$label]['sections'] = array('icon' => 'section', 'label' => Craft::t('Sections'));
-		$settings[$label]['assets'] = array('icon' => 'assets', 'label' => Craft::t('Assets'));
-		$settings[$label]['globals'] = array('icon' => 'globe', 'label' => Craft::t('Globals'));
-		$settings[$label]['categories'] = array('icon' => 'categories', 'label' => Craft::t('Categories'));
-		$settings[$label]['tags'] = array('icon' => 'tags', 'label' => Craft::t('Tags'));
+		$settings[$label]['fields'] = ['icon' => 'field', 'label' => Craft::t('Fields')];
+		$settings[$label]['sections'] = ['icon' => 'section', 'label' => Craft::t('Sections')];
+		$settings[$label]['assets'] = ['icon' => 'assets', 'label' => Craft::t('Assets')];
+		$settings[$label]['globals'] = ['icon' => 'globe', 'label' => Craft::t('Globals')];
+		$settings[$label]['categories'] = ['icon' => 'categories', 'label' => Craft::t('Categories')];
+		$settings[$label]['tags'] = ['icon' => 'tags', 'label' => Craft::t('Tags')];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$settings[$label]['locales'] = array('icon' => 'language', 'label' => Craft::t('Locales'));
+			$settings[$label]['locales'] = ['icon' => 'language', 'label' => Craft::t('Locales')];
 		}
 
 		return $settings;

@@ -40,11 +40,11 @@ class AssetFile extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'element' => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'source'  => array(static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE),
-			'folder'  => array(static::BELONGS_TO, 'AssetFolder', 'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'source'  => [static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE],
+			'folder'  => [static::BELONGS_TO, 'AssetFolder', 'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -54,9 +54,9 @@ class AssetFile extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('filename', 'folderId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['filename', 'folderId'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods

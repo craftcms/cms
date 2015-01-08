@@ -129,20 +129,20 @@ class Asset extends BaseElementType
 
 		$folderId = $matches[1];
 
-		$actions = array();
+		$actions = [];
 
 		// View
 		$viewAction = Craft::$app->elements->getAction('View');
-		$viewAction->setParams(array(
+		$viewAction->setParams([
 			'label' => Craft::t('View asset'),
-		));
+		]);
 		$actions[] = $viewAction;
 
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams(array(
+		$editAction->setParams([
 			'label' => Craft::t('Edit asset'),
-		));
+		]);
 		$actions[] = $editAction;
 
 		// Rename File
@@ -162,9 +162,9 @@ class Asset extends BaseElementType
 
 		// Copy Reference Tag
 		$copyRefTagAction = Craft::$app->elements->getAction('CopyReferenceTag');
-		$copyRefTagAction->setParams(array(
+		$copyRefTagAction->setParams([
 			'elementType' => 'asset',
-		));
+		]);
 		$actions[] = $copyRefTagAction;
 
 		// Delete
@@ -174,7 +174,7 @@ class Asset extends BaseElementType
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addAssetActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addAssetActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -191,7 +191,7 @@ class Asset extends BaseElementType
 	 */
 	public function defineSearchableAttributes()
 	{
-		return array('filename', 'extension', 'kind');
+		return ['filename', 'extension', 'kind'];
 	}
 
 	/**
@@ -201,15 +201,15 @@ class Asset extends BaseElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		$attributes = array(
+		$attributes = [
 			'title'        => Craft::t('Title'),
 			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('Size'),
 			'dateModified' => Craft::t('Date Modified'),
-		);
+		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyAssetSortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyAssetSortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -223,15 +223,15 @@ class Asset extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		$attributes = array(
+		$attributes = [
 			'title'        => Craft::t('Title'),
 			'filename'     => Craft::t('Filename'),
 			'size'         => Craft::t('Size'),
 			'dateModified' => Craft::t('Date Modified'),
-		);
+		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyAssetTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyAssetTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -247,7 +247,7 @@ class Asset extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -343,7 +343,7 @@ class Asset extends BaseElementType
 		{
 			if (is_array($criteria->kind))
 			{
-				$query->andWhere(DbHelper::parseParam('assetfiles.kind', array_merge(array('or'), $criteria->kind), $query->params));
+				$query->andWhere(DbHelper::parseParam('assetfiles.kind', array_merge(['or'], $criteria->kind), $query->params));
 			}
 			else
 			{
@@ -389,8 +389,8 @@ class Asset extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+			[
 				'label'     => Craft::t('Filename'),
 				'id'        => 'filename',
 				'name'      => 'filename',
@@ -398,11 +398,11 @@ class Asset extends BaseElementType
 				'errors'    => $element->getErrors('filename'),
 				'first'     => true,
 				'required'  => true
-			)
-		));
+			]
+		]);
 
-		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
+		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+			[
 				'label'     => Craft::t('Title'),
 				'locale'    => $element->locale,
 				'id'        => 'title',
@@ -410,8 +410,8 @@ class Asset extends BaseElementType
 				'value'     => $element->title,
 				'errors'    => $element->getErrors('title'),
 				'required'  => true
-			)
-		));
+			]
+		]);
 
 		$html .= parent::getEditorHtml($element);
 
@@ -485,7 +485,7 @@ class Asset extends BaseElementType
 	 */
 	private function _assembleSourceList($folders, $includeNestedFolders = true)
 	{
-		$sources = array();
+		$sources = [];
 
 		foreach ($folders as $folder)
 		{
@@ -505,12 +505,12 @@ class Asset extends BaseElementType
 	 */
 	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
 	{
-		$source = array(
+		$source = [
 			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),
 			'hasThumbs' => true,
-			'criteria'  => array('folderId' => $folder->id),
-			'data'      => array('upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource'))
-		);
+			'criteria'  => ['folderId' => $folder->id],
+			'data'      => ['upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
+		];
 
 		if ($includeNestedFolders)
 		{

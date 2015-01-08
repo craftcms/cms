@@ -42,7 +42,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function __construct(\CDbConnection $connection, $query = null)
 	{
-		$this->_joinedTables = array();
+		$this->_joinedTables = [];
 		parent::__construct($connection, $query);
 	}
 
@@ -135,7 +135,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function where($conditions, $params = array())
+	public function where($conditions, $params = [])
 	{
 		if (!$conditions)
 		{
@@ -155,7 +155,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function andWhere($conditions, $params = array())
+	public function andWhere($conditions, $params = [])
 	{
 		if (!$conditions)
 		{
@@ -175,7 +175,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function orWhere($conditions, $params = array())
+	public function orWhere($conditions, $params = [])
 	{
 		if (!$conditions)
 		{
@@ -194,7 +194,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function join($table, $conditions, $params = array())
+	public function join($table, $conditions, $params = [])
 	{
 		$this->_addJoinedTable($table);
 		$table = $this->getConnection()->addTablePrefix($table);
@@ -210,7 +210,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function leftJoin($table, $conditions, $params = array())
+	public function leftJoin($table, $conditions, $params = [])
 	{
 		$this->_addJoinedTable($table);
 		$table = $this->getConnection()->addTablePrefix($table);
@@ -226,7 +226,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function rightJoin($table, $conditions, $params = array())
+	public function rightJoin($table, $conditions, $params = [])
 	{
 		$this->_addJoinedTable($table);
 		$table = $this->getConnection()->addTablePrefix($table);
@@ -267,7 +267,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return DbCommand
 	 */
-	public function having($conditions, $params = array())
+	public function having($conditions, $params = [])
 	{
 		$conditions = $this->_normalizeConditions($conditions, $params);
 
@@ -285,7 +285,7 @@ class DbCommand extends \CDbCommand
 
 		if ($oldOrder)
 		{
-			return $this->order(array($oldOrder, $columns));
+			return $this->order([$oldOrder, $columns]);
 		}
 		else
 		{
@@ -370,7 +370,7 @@ class DbCommand extends \CDbCommand
 		// TODO: This is all MySQL specific
 
 		$allColumns = array_merge($keyColumns, $updateColumns);
-		$params = array();
+		$params = [];
 
 		$table = $this->getConnection()->addTablePrefix($table);
 		$sql = 'INSERT INTO '.$this->getConnection()->quoteTableName($table).' (';
@@ -412,7 +412,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return int
 	 */
-	public function update($table, $columns, $conditions = '', $params = array(), $includeAuditColumns = true)
+	public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
 	{
 		$table = $this->getConnection()->addTablePrefix($table);
 		$conditions = $this->_normalizeConditions($conditions, $params);
@@ -448,7 +448,7 @@ class DbCommand extends \CDbCommand
 	 *
 	 * @return int
 	 */
-	public function delete($table, $conditions = '', $params = array())
+	public function delete($table, $conditions = '', $params = [])
 	{
 		$table = $this->getConnection()->addTablePrefix($table);
 		$conditions = $this->_normalizeConditions($conditions, $params);
@@ -765,26 +765,26 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds support for array('column' => 'value') conditional syntax. Supports nested conditionals, e.g.
-	 * array('or', array('column' => 'value'), array('column2' => 'value2'))
+	 * Adds support for ['column' => 'value'] conditional syntax. Supports nested conditionals, e.g.
+	 * ['or', ['column' => 'value'], ['column2' => 'value2']]
 	 *
 	 * @param mixed $conditions
 	 * @param array &$params
 	 *
 	 * @return mixed
 	 */
-	private function _normalizeConditions($conditions, &$params = array())
+	private function _normalizeConditions($conditions, &$params = [])
 	{
 		if (!is_array($conditions))
 		{
 			return $conditions;
 		}
-		else if ($conditions === array())
+		else if ($conditions === [])
 		{
 			return '';
 		}
 
-		$normalizedConditions = array();
+		$normalizedConditions = [];
 
 		// Find any key/value pairs and convert them to the CDbCommand's conditional syntax
 		foreach ($conditions as $key => $value)

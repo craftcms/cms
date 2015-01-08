@@ -50,7 +50,7 @@ class ToolsController extends BaseController
 		$this->requirePostRequest();
 
 		$class = Craft::$app->request->getRequiredPost('tool');
-		$params = Craft::$app->request->getPost('params', array());
+		$params = Craft::$app->request->getPost('params', []);
 
 		$tool = Craft::$app->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
 
@@ -69,7 +69,7 @@ class ToolsController extends BaseController
 
 		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().$fileName.'.zip')) == true)
 		{
-			Craft::$app->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), array('forceDownload' => true));
+			Craft::$app->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
 		}
 	}
 }

@@ -70,7 +70,7 @@ abstract class BaseModel extends \CModel
 	{
 		if (!$this->strictAttributes)
 		{
-			$this->_extraAttributeNames = array();
+			$this->_extraAttributeNames = [];
 		}
 
 		ModelHelper::populateAttributeDefaults($this);
@@ -193,7 +193,7 @@ abstract class BaseModel extends \CModel
 	 */
 	public static function populateModels($data, $indexBy = null)
 	{
-		$models = array();
+		$models = [];
 
 		if (is_array($data))
 		{
@@ -269,7 +269,7 @@ abstract class BaseModel extends \CModel
 	{
 		if (!isset($this->_attributeConfigs))
 		{
-			$this->_attributeConfigs = array();
+			$this->_attributeConfigs = [];
 
 			foreach ($this->defineAttributes() as $name => $config)
 			{
@@ -318,7 +318,7 @@ abstract class BaseModel extends \CModel
 	 */
 	public function getAttributes($names = null, $flattenValues = false)
 	{
-		$values = array();
+		$values = [];
 
 		foreach ($this->attributeNames() as $name)
 		{
@@ -531,7 +531,7 @@ abstract class BaseModel extends \CModel
 	 */
 	public function getAllErrors()
 	{
-		$errors = array();
+		$errors = [];
 
 		foreach ($this->getErrors() as $attributeErrors)
 		{
@@ -562,6 +562,6 @@ abstract class BaseModel extends \CModel
 	 */
 	protected function defineAttributes()
 	{
-		return array();
+		return [];
 	}
 }

@@ -55,7 +55,7 @@ class SystemSettings extends Component
 		}
 		else
 		{
-			$settings = array();
+			$settings = [];
 		}
 
 		if (isset($this->defaults[$category]))
@@ -163,9 +163,9 @@ class SystemSettings extends Component
 	{
 		if (!isset($this->_settingsRecords[$category]))
 		{
-			$record = SystemSettingsRecord::model()->findByAttributes(array(
+			$record = SystemSettingsRecord::model()->findByAttributes([
 				'category' => $category
-			));
+			]);
 
 			if ($record)
 			{

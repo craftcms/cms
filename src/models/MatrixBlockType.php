@@ -73,7 +73,7 @@ class MatrixBlockType extends BaseModel
 	{
 		if (!isset($this->_fields))
 		{
-			$this->_fields = array();
+			$this->_fields = [];
 
 			$fieldLayoutFields = $this->getFieldLayout()->getFields();
 

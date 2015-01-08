@@ -135,8 +135,8 @@ class Search extends Component
 
 		// Get tokens for query
 		$this->_tokens  = $query->getTokens();
-		$this->_terms   = array();
-		$this->_groups  = array();
+		$this->_terms   = [];
+		$this->_groups  = [];
 
 		// Set Terms and Groups based on tokens
 		foreach ($this->_tokens as $obj)
@@ -156,7 +156,7 @@ class Search extends Component
 
 		if (!$where)
 		{
-			return array();
+			return [];
 		}
 
 		// Begin creating SQL
@@ -180,7 +180,7 @@ class Search extends Component
 		// Are we scoring the results?
 		if ($scoreResults)
 		{
-			$scoresByElementId = array();
+			$scoresByElementId = [];
 
 			// Loop through results and calculate score per element
 			foreach ($results as $row)
@@ -207,7 +207,7 @@ class Search extends Component
 		else
 		{
 			// Don't apply score, just return the IDs
-			$elementIds = array();
+			$elementIds = [];
 
 			foreach ($results as $row)
 			{
@@ -287,12 +287,12 @@ class Search extends Component
 		$cleanKeywords = StringHelper::normalizeKeywords($dirtyKeywords);
 
 		// Save 'em
-		$keyColumns = array(
+		$keyColumns = [
 			'elementId' => $elementId,
 			'attribute' => $attribute,
 			'fieldId'   => $fieldId,
 			'locale'    => $localeId
-		);
+		];
 
 		if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '')
 		{
@@ -326,9 +326,9 @@ class Search extends Component
 		}
 
 		// Insert/update the row in searchindex
-		Craft::$app->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
+		Craft::$app->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, [
 			'keywords' => $cleanKeywords
-		), false);
+		], false);
 	}
 
 	/**
@@ -441,7 +441,7 @@ class Search extends Component
 	 */
 	private function _getWhereClause()
 	{
-		$where  = array();
+		$where  = [];
 
 		// Add the regular terms to the WHERE clause
 		if ($this->_terms)
@@ -481,11 +481,11 @@ class Search extends Component
 	 *
 	 * @return string|false
 	 */
-	private function _processTokens($tokens = array(), $inclusive = true)
+	private function _processTokens($tokens = [], $inclusive = true)
 	{
 		$andor = $inclusive ? ' AND ' : ' OR ';
-		$where = array();
-		$words = array();
+		$where = [];
+		$words = [];
 
 		foreach ($tokens as $obj)
 		{
@@ -553,14 +553,14 @@ class Search extends Component
 	private function _getSqlFromTerm(SearchQueryTerm $term)
 	{
 		// Initiate return value
-		$sql = null;
+		$sql      = null;
 		$keywords = null;
 
 		// Check for locale first
 		if ($term->attribute == 'locale')
 		{
 			$oper = $term->exclude ? '!=' : '=';
-			return array($this->_sqlWhere($term->attribute, $oper, $term->term), $keywords);
+			return [$this->_sqlWhere($term->attribute, $oper, $term->term), $keywords];
 		}
 
 		// Check for other attributes
@@ -662,7 +662,7 @@ class Search extends Component
 			$keywords = null;
 		}
 
-		return array($sql, $keywords);
+		return [$sql, $keywords];
 	}
 
 	/**
@@ -674,7 +674,7 @@ class Search extends Component
 	 */
 	private function _normalizeTerm($term)
 	{
-		static $terms = array();
+		static $terms = [];
 
 		if (!array_key_exists($term, $terms))
 		{

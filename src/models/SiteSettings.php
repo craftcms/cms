@@ -27,9 +27,9 @@ class SiteSettings extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'siteName' => array(AttributeType::Name, 'required' => true),
-			'siteUrl'  => array(AttributeType::Url, 'required' => true)
-		);
+		return [
+			'siteName' => [AttributeType::Name, 'required' => true],
+			'siteUrl'  => [AttributeType::Url, 'required' => true]
+		];
 	}
 }

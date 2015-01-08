@@ -36,7 +36,7 @@ class Feeds
 		$items = Craft::$app->feeds->getFeedItems($url, $limit, $offset, $cacheDuration);
 
 		// Prevent everyone from having to use the |raw filter when outputting the title and content
-		$rawProperties = array('title', 'content', 'summary');
+		$rawProperties = ['title', 'content', 'summary'];
 
 		foreach ($items as &$item)
 		{

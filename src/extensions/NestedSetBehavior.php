@@ -34,11 +34,11 @@ class NestedSetBehavior extends CActiveRecordBehavior
 		$criteria=$owner->getDbCriteria();
 		$alias=$db->quoteColumnName($owner->getTableAlias());
 
-		$criteria->mergeWith(array(
+		$criteria->mergeWith([
 			'condition'=>$alias.'.'.$db->quoteColumnName($this->leftAttribute).'>'.$owner->{$this->leftAttribute}.
 				' AND '.$alias.'.'.$db->quoteColumnName($this->rightAttribute).'<'.$owner->{$this->rightAttribute},
 			'order'=>$alias.'.'.$db->quoteColumnName($this->leftAttribute),
-		));
+		]);
 
 		if($level!==null)
 			$criteria->addCondition($alias.'.'.$db->quoteColumnName($this->levelAttribute).'<='.($owner->{$this->levelAttribute}+$level));
@@ -73,11 +73,11 @@ class NestedSetBehavior extends CActiveRecordBehavior
 		$criteria=$owner->getDbCriteria();
 		$alias=$db->quoteColumnName($owner->getTableAlias());
 
-		$criteria->mergeWith(array(
+		$criteria->mergeWith([
 			'condition'=>$alias.'.'.$db->quoteColumnName($this->leftAttribute).'<'.$owner->{$this->leftAttribute}.
 				' AND '.$alias.'.'.$db->quoteColumnName($this->rightAttribute).'>'.$owner->{$this->rightAttribute},
 			'order'=>$alias.'.'.$db->quoteColumnName($this->leftAttribute),
-		));
+		]);
 
 		if($level!==null)
 			$criteria->addCondition($alias.'.'.$db->quoteColumnName($this->levelAttribute).'>='.($owner->{$this->levelAttribute}-$level));
@@ -115,11 +115,11 @@ class NestedSetBehavior extends CActiveRecordBehavior
 		$criteria=$owner->getDbCriteria();
 		$alias=$db->quoteColumnName($owner->getTableAlias());
 
-		$criteria->mergeWith(array(
+		$criteria->mergeWith([
 			'condition'=>$alias.'.'.$db->quoteColumnName($this->leftAttribute).'<'.$owner->{$this->leftAttribute}.
 				' AND '.$alias.'.'.$db->quoteColumnName($this->rightAttribute).'>'.$owner->{$this->rightAttribute},
 			'order'=>$alias.'.'.$db->quoteColumnName($this->rightAttribute),
-		));
+		]);
 
 		if($this->hasManyRoots)
 		{
@@ -239,7 +239,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 				$condition=$db->quoteColumnName($this->leftAttribute).'>='.$owner->{$this->leftAttribute}.' AND '.
 					$db->quoteColumnName($this->rightAttribute).'<='.$owner->{$this->rightAttribute};
 
-				$params=array();
+				$params = [];
 
 				if($this->hasManyRoots)
 				{
@@ -434,16 +434,16 @@ class NestedSetBehavior extends CActiveRecordBehavior
 			$delta=1-$left;
 
 			$owner->updateAll(
-				array(
+				[
 					$this->leftAttribute=>new CDbExpression($db->quoteColumnName($this->leftAttribute).sprintf('%+d',$delta)),
 					$this->rightAttribute=>new CDbExpression($db->quoteColumnName($this->rightAttribute).sprintf('%+d',$delta)),
 					$this->levelAttribute=>new CDbExpression($db->quoteColumnName($this->levelAttribute).sprintf('%+d',$levelDelta)),
 					$this->rootAttribute=>$owner->getPrimaryKey(),
-				),
+				],
 				$db->quoteColumnName($this->leftAttribute).'>='.$left.' AND '.
 				$db->quoteColumnName($this->rightAttribute).'<='.$right.' AND '.
 				$db->quoteColumnName($this->rootAttribute).'='.CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount,
-				array(CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$owner->{$this->rootAttribute}));
+				[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$owner->{$this->rootAttribute}]);
 
 			$this->shiftLeftRight($right+1,$left-$right-1);
 
@@ -573,10 +573,10 @@ class NestedSetBehavior extends CActiveRecordBehavior
 		$owner=$this->getOwner();
 		$db=$owner->getDbConnection();
 
-		foreach(array($this->leftAttribute,$this->rightAttribute) as $attribute)
+		foreach ([$this->leftAttribute,$this->rightAttribute] as $attribute)
 		{
 			$condition=$db->quoteColumnName($attribute).'>='.$key;
-			$params=array();
+			$params= [];
 
 			if($this->hasManyRoots)
 			{
@@ -584,7 +584,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 				$params[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++]=$owner->{$this->rootAttribute};
 			}
 
-			$owner->updateAll(array($attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$delta))),$condition,$params);
+			$owner->updateAll([$attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$delta))],$condition,$params);
 		}
 	}
 
@@ -713,7 +713,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 				}
 
 				$pk=$owner->{$this->rootAttribute}=$owner->getPrimaryKey();
-				$owner->updateByPk($pk,array($this->rootAttribute=>$pk));
+				$owner->updateByPk($pk, [$this->rootAttribute=>$pk]);
 
 				if($extTransFlag===null)
 					$transaction->commit();
@@ -784,26 +784,26 @@ class NestedSetBehavior extends CActiveRecordBehavior
 
 			if($this->hasManyRoots && $owner->{$this->rootAttribute}!==$target->{$this->rootAttribute})
 			{
-				foreach(array($this->leftAttribute,$this->rightAttribute) as $attribute)
+				foreach([$this->leftAttribute,$this->rightAttribute] as $attribute)
 				{
-					$owner->updateAll(array($attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$right-$left+1))),
+					$owner->updateAll([$attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$right-$left+1))],
 						$db->quoteColumnName($attribute).'>='.$key.' AND '.$db->quoteColumnName($this->rootAttribute).'='.CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount,
-						array(CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$target->{$this->rootAttribute}));
+						[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$target->{$this->rootAttribute}]);
 				}
 
 				$delta=$key-$left;
 
 				$owner->updateAll(
-					array(
+					[
 						$this->leftAttribute=>new CDbExpression($db->quoteColumnName($this->leftAttribute).sprintf('%+d',$delta)),
 						$this->rightAttribute=>new CDbExpression($db->quoteColumnName($this->rightAttribute).sprintf('%+d',$delta)),
 						$this->levelAttribute=>new CDbExpression($db->quoteColumnName($this->levelAttribute).sprintf('%+d',$levelDelta)),
 						$this->rootAttribute=>$target->{$this->rootAttribute},
-					),
+					],
 					$db->quoteColumnName($this->leftAttribute).'>='.$left.' AND '.
 					$db->quoteColumnName($this->rightAttribute).'<='.$right.' AND '.
 					$db->quoteColumnName($this->rootAttribute).'='.CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount,
-					array(CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$owner->{$this->rootAttribute}));
+					[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++=>$owner->{$this->rootAttribute}]);
 
 				$this->shiftLeftRight($right+1,$left-$right-1);
 
@@ -824,7 +824,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 				}
 
 				$condition=$db->quoteColumnName($this->leftAttribute).'>='.$left.' AND '.$db->quoteColumnName($this->rightAttribute).'<='.$right;
-				$params=array();
+				$params= [];
 
 				if($this->hasManyRoots)
 				{
@@ -832,12 +832,12 @@ class NestedSetBehavior extends CActiveRecordBehavior
 					$params[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++]=$owner->{$this->rootAttribute};
 				}
 
-				$owner->updateAll(array($this->levelAttribute=>new CDbExpression($db->quoteColumnName($this->levelAttribute).sprintf('%+d',$levelDelta))),$condition,$params);
+				$owner->updateAll([$this->levelAttribute=>new CDbExpression($db->quoteColumnName($this->levelAttribute).sprintf('%+d',$levelDelta))],$condition,$params);
 
-				foreach(array($this->leftAttribute,$this->rightAttribute) as $attribute)
+				foreach([$this->leftAttribute,$this->rightAttribute] as $attribute)
 				{
 					$condition=$db->quoteColumnName($attribute).'>='.$left.' AND '.$db->quoteColumnName($attribute).'<='.$right;
-					$params=array();
+					$params= [];
 
 					if($this->hasManyRoots)
 					{
@@ -845,7 +845,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 						$params[CDbCriteria::PARAM_PREFIX.CDbCriteria::$paramCount++]=$owner->{$this->rootAttribute};
 					}
 
-					$owner->updateAll(array($attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$key-$left))),$condition,$params);
+					$owner->updateAll([$attribute=>new CDbExpression($db->quoteColumnName($attribute).sprintf('%+d',$key-$left))],$condition,$params);
 				}
 
 				$this->shiftLeftRight($right+1,-$delta);

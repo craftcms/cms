@@ -281,9 +281,9 @@ trait ApplicationTrait
 
 			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
 			{
-				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', array(
+				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', [
 					'edition' => AppHelper::getEditionName($edition)
-				)));
+				]));
 			}
 		}
 	}
@@ -560,7 +560,7 @@ trait ApplicationTrait
 	{
 		if ($this->_isDbConfigValid === null)
 		{
-			$messages = array();
+			$messages = [];
 
 			$databaseServerName = Craft::$app->config->get('server', ConfigFile::Db);
 			$databaseAuthName = Craft::$app->config->get('user', ConfigFile::Db);
@@ -602,7 +602,7 @@ trait ApplicationTrait
 			if (!empty($messages))
 			{
 				$this->_isDbConfigValid = false;
-				throw new DbConnectException(Craft::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+				throw new DbConnectException(Craft::t('Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
 			}
 
 			$this->_isDbConfigValid = true;
@@ -652,7 +652,7 @@ trait ApplicationTrait
 			$dbConnection->password         = Craft::$app->config->get('password', ConfigFile::Db);
 			$dbConnection->charset          = Craft::$app->config->get('charset', ConfigFile::Db);
 			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
-			$dbConnection->driverMap        = array('mysql' => 'Craft\MysqlSchema');
+			$dbConnection->driverMap        = ['mysql' => 'Craft\MysqlSchema'];
 
 			$dbConnection->init();
 		}

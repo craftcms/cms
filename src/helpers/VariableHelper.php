@@ -28,7 +28,7 @@ class VariableHelper
 	 */
 	public static function populateVariables($instances, $class)
 	{
-		$variables = array();
+		$variables = [];
 
 		if (is_array($instances))
 		{

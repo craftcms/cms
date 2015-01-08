@@ -8,7 +8,7 @@
  * If you want to change any of these settings, copy it into craft/config/general.php, and make your change there.
  */
 
-return array(
+return [
 
 	/**
 	 * The URI segment Craft should look for when determining if the current request should first be routed to a
@@ -135,7 +135,7 @@ return array(
 	 *
 	 * This array is merged into the default one in StringHelper::getAsciiCharMap().
 	 */
-	'customAsciiCharMappings' => array(),
+	'customAsciiCharMappings' => [],
 
 	/**
 	 * Used to set a custom domain on any cookies that Craft creates. Defaults to an empty string, which leaves it
@@ -163,7 +163,7 @@ return array(
 	/**
 	 * The template file extensions Craft will look for when matching a template path to a file on the front end.
 	 */
-	'defaultTemplateExtensions' => array('html', 'twig'),
+	'defaultTemplateExtensions' => ['html', 'twig'],
 
 	/**
 	 * The default amount of time tokens can be used before expiring.
@@ -190,7 +190,7 @@ return array(
 	 * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
 	 * of this setting.
 	 */
-	'environmentVariables' => array(),
+	'environmentVariables' => [],
 
 	/**
 	 * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s
@@ -225,7 +225,7 @@ return array(
 	 * The template filenames Craft will look for within a directory to represent the directory’s “index” template when
 	 * matching a template path to a file on the front end.
 	 */
-	'indexTemplateFilenames' => array('index'),
+	'indexTemplateFilenames' => ['index'],
 
 	/**
 	 * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
@@ -423,7 +423,7 @@ return array(
 	 * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
 	 * keyword index.
 	 */
-	'searchIgnoreWords' => array('the', 'and'),
+	'searchIgnoreWords' => ['the', 'and'],
 
 	/**
 	 * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
@@ -544,4 +544,4 @@ return array(
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
 	'verificationCodeDuration' => 'P1D',
-);
+];

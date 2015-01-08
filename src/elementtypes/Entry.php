@@ -90,12 +90,12 @@ class Entry extends BaseElementType
 	 */
 	public function getStatuses()
 	{
-		return array(
+		return [
 			EntryModel::LIVE => Craft::t('Live'),
 			EntryModel::PENDING => Craft::t('Pending'),
 			EntryModel::EXPIRED => Craft::t('Expired'),
 			BaseElementModel::DISABLED => Craft::t('Disabled')
-		);
+		];
 	}
 
 	/**
@@ -118,9 +118,9 @@ class Entry extends BaseElementType
 			$editable = false;
 		}
 
-		$sectionIds = array();
-		$singleSectionIds = array();
-		$sectionsByType = array();
+		$sectionIds       = [];
+		$singleSectionIds = [];
+		$sectionsByType   = [];
 
 		foreach ($sections as $section)
 		{
@@ -136,41 +136,41 @@ class Entry extends BaseElementType
 			}
 		}
 
-		$sources = array(
-			'*' => array(
+		$sources = [
+			'*' => [
 				'label'    => Craft::t('All entries'),
-				'criteria' => array('sectionId' => $sectionIds, 'editable' => $editable)
-			)
-		);
+				'criteria' => ['sectionId' => $sectionIds, 'editable' => $editable]
+			]
+		];
 
 		if ($singleSectionIds)
 		{
-			$sources['singles'] = array(
+			$sources['singles'] = [
 				'label'    => Craft::t('Singles'),
-				'criteria' => array('sectionId' => $singleSectionIds, 'editable' => $editable)
-			);
+				'criteria' => ['sectionId' => $singleSectionIds, 'editable' => $editable]
+			];
 		}
 
-		$sectionTypes = array(
+		$sectionTypes = [
 			SectionType::Channel => Craft::t('Channels'),
 			SectionType::Structure => Craft::t('Structures')
-		);
+		];
 
 		foreach ($sectionTypes as $type => $heading)
 		{
 			if (!empty($sectionsByType[$type]))
 			{
-				$sources[] = array('heading' => $heading);
+				$sources[] = ['heading' => $heading];
 
 				foreach ($sectionsByType[$type] as $section)
 				{
 					$key = 'section:'.$section->id;
 
-					$sources[$key] = array(
+					$sources[$key] = [
 						'label'    => Craft::t($section->name),
-						'data'     => array('type' => $type, 'handle' => $section->handle),
-						'criteria' => array('sectionId' => $section->id, 'editable' => $editable)
-					);
+						'data'     => ['type' => $type, 'handle' => $section->handle],
+						'criteria' => ['sectionId' => $section->id, 'editable' => $editable]
+					];
 
 					if ($type == SectionType::Structure)
 					{
@@ -218,12 +218,12 @@ class Entry extends BaseElementType
 					return;
 				}
 
-				$sections = array($section);
+				$sections = [$section];
 			}
 		}
 
 		// Now figure out what we can do with these
-		$actions = array();
+		$actions = [];
 		$userSessionService = Craft::$app->getUser();
 		$canSetStatus = true;
 		$canEdit = false;
@@ -272,9 +272,9 @@ class Entry extends BaseElementType
 		if ($canEdit)
 		{
 			$editAction = Craft::$app->elements->getAction('Edit');
-			$editAction->setParams(array(
+			$editAction->setParams([
 				'label' => Craft::t('Edit entry'),
-			));
+			]);
 			$actions[] = $editAction;
 		}
 
@@ -282,9 +282,9 @@ class Entry extends BaseElementType
 		{
 			// View
 			$viewAction = Craft::$app->elements->getAction('View');
-			$viewAction->setParams(array(
+			$viewAction->setParams([
 				'label' => Craft::t('View entry'),
-			));
+			]);
 			$actions[] = $viewAction;
 		}
 
@@ -304,11 +304,11 @@ class Entry extends BaseElementType
 				if ($structure)
 				{
 					$newChildAction = Craft::$app->elements->getAction('NewChild');
-					$newChildAction->setParams(array(
+					$newChildAction->setParams([
 						'label'       => Craft::t('Create a new child entry'),
 						'maxLevels'   => $structure->maxLevels,
 						'newChildUrl' => 'entries/'.$section->handle.'/new',
-					));
+					]);
 					$actions[] = $newChildAction;
 				}
 			}
@@ -320,16 +320,16 @@ class Entry extends BaseElementType
 			)
 			{
 				$deleteAction = Craft::$app->elements->getAction('Delete');
-				$deleteAction->setParams(array(
+				$deleteAction->setParams([
 					'confirmationMessage' => Craft::t('Are you sure you want to delete the selected entries?'),
 					'successMessage'      => Craft::t('Entries deleted.'),
-				));
+				]);
 				$actions[] = $deleteAction;
 			}
 		}
 
 		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addEntryActions', array($source), true);
+		$allPluginActions = Craft::$app->plugins->call('addEntryActions', [$source], true);
 
 		foreach ($allPluginActions as $pluginActions)
 		{
@@ -346,15 +346,15 @@ class Entry extends BaseElementType
 	 */
 	public function defineSortableAttributes()
 	{
-		$attributes = array(
+		$attributes = [
 			'title'      => Craft::t('Title'),
 			'uri'        => Craft::t('URI'),
 			'postDate'   => Craft::t('Post Date'),
 			'expiryDate' => Craft::t('Expiry Date'),
-		);
+		];
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyEntrySortableAttributes', array(&$attributes));
+		Craft::$app->plugins->call('modifyEntrySortableAttributes', [&$attributes]);
 
 		return $attributes;
 	}
@@ -368,10 +368,10 @@ class Entry extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		$attributes = array(
+		$attributes = [
 			'title' => Craft::t('Title'),
 			'uri'   => Craft::t('URI'),
-		);
+		];
 
 		if ($source == '*')
 		{
@@ -385,7 +385,7 @@ class Entry extends BaseElementType
 		}
 
 		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyEntryTableAttributes', array(&$attributes, $source));
+		Craft::$app->plugins->call('modifyEntryTableAttributes', [&$attributes, $source]);
 
 		return $attributes;
 	}
@@ -401,7 +401,7 @@ class Entry extends BaseElementType
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', array($element, $attribute), true);
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', [$element, $attribute], true);
 
 		if ($pluginAttributeHtml !== null)
 		{
@@ -462,31 +462,31 @@ class Entry extends BaseElementType
 		{
 			case EntryModel::LIVE:
 			{
-				return array('and',
+				return ['and',
 					'elements.enabled = 1',
 					'elements_i18n.enabled = 1',
 					"entries.postDate <= '{$currentTimeDb}'",
-					array('or', 'entries.expiryDate is null', "entries.expiryDate > '{$currentTimeDb}'")
-				);
+					['or', 'entries.expiryDate is null', "entries.expiryDate > '{$currentTimeDb}'"]
+				];
 			}
 
 			case EntryModel::PENDING:
 			{
-				return array('and',
+				return ['and',
 					'elements.enabled = 1',
 					'elements_i18n.enabled = 1',
 					"entries.postDate > '{$currentTimeDb}'"
-				);
+				];
 			}
 
 			case EntryModel::EXPIRED:
 			{
-				return array('and',
+				return ['and',
 					'elements.enabled = 1',
 					'elements_i18n.enabled = 1',
 					'entries.expiryDate is not null',
 					"entries.expiryDate <= '{$currentTimeDb}'"
-				);
+				];
 			}
 		}
 	}
@@ -506,12 +506,12 @@ class Entry extends BaseElementType
 			->join('entries entries', 'entries.id = elements.id')
 			->join('sections sections', 'sections.id = entries.sectionId')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
-			->leftJoin('structureelements structureelements', array('and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id'));
+			->leftJoin('structureelements structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id']);
 
 		if ($criteria->ref)
 		{
 			$refs = ArrayHelper::stringToArray($criteria->ref);
-			$conditionals = array();
+			$conditionals = [];
 
 			foreach ($refs as $ref)
 			{
@@ -549,11 +549,11 @@ class Entry extends BaseElementType
 
 		if ($criteria->type)
 		{
-			$typeIds = array();
+			$typeIds = [];
 
 			if (!is_array($criteria->type))
 			{
-				$criteria->type = array($criteria->type);
+				$criteria->type = [$criteria->type];
 			}
 
 			foreach ($criteria->type as $type)
@@ -624,10 +624,10 @@ class Entry extends BaseElementType
 
 			// Limit the query to only the sections the user has permission to edit
 			$editableSectionIds = Craft::$app->sections->getEditableSectionIds();
-			$query->andWhere(array('in', 'entries.sectionId', $editableSectionIds));
+			$query->andWhere(['in', 'entries.sectionId', $editableSectionIds]);
 
 			// Enforce the editPeerEntries permissions for non-Single sections
-			$noPeerConditions = array();
+			$noPeerConditions = [];
 
 			foreach (Craft::$app->sections->getEditableSections() as $section)
 			{
@@ -636,7 +636,7 @@ class Entry extends BaseElementType
 					!$user->can('editPeerEntries:'.$section->id)
 				)
 				{
-					$noPeerConditions[] = array('or', 'entries.sectionId != '.$section->id, 'entries.authorId = '.$user->id);
+					$noPeerConditions[] = ['or', 'entries.sectionId != '.$section->id, 'entries.authorId = '.$user->id];
 				}
 			}
 
@@ -713,9 +713,9 @@ class Entry extends BaseElementType
 	{
 		if ($element->getType()->hasTitleField)
 		{
-			$html = Craft::$app->templates->render('entries/_titlefield', array(
+			$html = Craft::$app->templates->render('entries/_titlefield', [
 				'entry' => $element
-			));
+			]);
 		}
 		else
 		{
@@ -755,15 +755,15 @@ class Entry extends BaseElementType
 			// Make sure the section is set to have URLs and is enabled for this locale
 			if ($section->hasUrls && array_key_exists(Craft::$app->language, $section->getLocales()))
 			{
-				return array(
+				return [
 					'action' => 'templates/render',
-					'params' => array(
+					'params' => [
 						'template' => $section->template,
-						'variables' => array(
+						'variables' => [
 							'entry' => $element
-						)
-					)
-				);
+						]
+					]
+				];
 			}
 		}
 

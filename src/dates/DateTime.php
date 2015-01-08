@@ -140,7 +140,7 @@ class DateTime extends \DateTime
 			{
 				// Replace the localized "AM" and "PM"
 				$localeData = Craft::$app->i18n->getLocaleData();
-				$dt['time'] = str_replace(array($localeData->getAMName(), $localeData->getPMName()), array('AM', 'PM'), $dt['time']);
+				$dt['time'] = str_replace([$localeData->getAMName(), $localeData->getPMName()], ['AM', 'PM'], $dt['time']);
 
 				$date .= ' '.$dt['time'];
 				$format .= ' '.$dateFormatter->getTimepickerPhpFormat();
@@ -367,8 +367,8 @@ class DateTime extends \DateTime
 		if ($amName != 'AM' || $pmName != 'PM')
 		{
 			$time = str_replace(
-				array('am', 'AM', 'pm', 'PM'),
-				array($amName, $amName, $pmName, $pmName),
+				['am', 'AM', 'pm', 'PM'],
+				[$amName, $amName, $pmName, $pmName],
 				$time
 			);
 		}

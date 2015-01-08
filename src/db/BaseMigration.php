@@ -350,7 +350,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @return null
 	 */
-	public function execute($sql, $params=array())
+	public function execute($sql, $params = [])
 	{
 		Craft::log('Executing SQL: '.$sql.'...');
 
@@ -394,7 +394,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @return null
 	 */
-	public function update($table, $columns, $conditions = '', $params = array(), $includeAuditColumns = true)
+	public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
 	{
 		Craft::log('Updating '.$table.'...');
 		$time = microtime(true);
@@ -432,7 +432,7 @@ abstract class BaseMigration extends \CDbMigration
 	 *
 	 * @return null
 	 */
-	public function delete($table, $conditions = '', $params = array())
+	public function delete($table, $conditions = '', $params = [])
 	{
 		Craft::log('Deleting from '.$table.'...');
 		$time = microtime(true);

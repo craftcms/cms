@@ -55,7 +55,7 @@ class Table extends BaseFieldType
 
 		if (!$columns)
 		{
-			$columns = array('col1' => array('heading' => '', 'handle' => '', 'type' => 'singleline'));
+			$columns = ['col1' => ['heading' => '', 'handle' => '', 'type' => 'singleline']];
 
 			// Update the actual settings model for getInputHtml()
 			$this->getSettings()->columns = $columns;
@@ -63,38 +63,38 @@ class Table extends BaseFieldType
 
 		if (!$defaults)
 		{
-			$defaults = array('row1' => array());
+			$defaults = ['row1' => []];
 		}
 
-		$columnSettings = array(
-			'heading' => array(
+		$columnSettings = [
+			'heading' => [
 				'heading' => Craft::t('Column Heading'),
 				'type' => 'singleline',
 				'autopopulate' => 'handle'
-			),
-			'handle' => array(
+			],
+			'handle' => [
 				'heading' => Craft::t('Handle'),
 				'class' => 'code',
 				'type' => 'singleline'
-			),
-			'width' => array(
+			],
+			'width' => [
 				'heading' => Craft::t('Width'),
 				'class' => 'code',
 				'type' => 'singleline',
 				'width' => 50
-			),
-			'type' => array(
+			],
+			'type' => [
 				'heading' => Craft::t('Type'),
 				'class' => 'thin',
 				'type' => 'select',
-				'options' => array(
+				'options' => [
 					'singleline' => Craft::t('Single-line Text'),
 					'multiline' => Craft::t('Multi-line text'),
 					'number' => Craft::t('Number'),
 					'checkbox' => Craft::t('Checkbox'),
-				)
-			),
-		);
+				]
+			],
+		];
 
 		Craft::$app->templates->includeJsResource('js/TableFieldSettings.js');
 		Craft::$app->templates->includeJs('new Craft.TableFieldSettings(' .
@@ -220,10 +220,10 @@ class Table extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
+		return [
 			'columns' => AttributeType::Mixed,
 			'defaults' => AttributeType::Mixed,
-		);
+		];
 	}
 
 	// Private Methods
@@ -265,13 +265,13 @@ class Table extends BaseFieldType
 
 			$id = Craft::$app->templates->formatInputId($name);
 
-			return Craft::$app->templates->render('_includes/forms/editableTable', array(
+			return Craft::$app->templates->render('_includes/forms/editableTable', [
 				'id'     => $id,
 				'name'   => $name,
 				'cols'   => $columns,
 				'rows'   => $value,
 				'static' => $static
-			));
+			]);
 		}
 	}
 }

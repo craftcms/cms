@@ -52,7 +52,7 @@ class FieldLayout extends BaseModel
 			}
 			else
 			{
-				$this->_tabs = array();
+				$this->_tabs = [];
 			}
 		}
 
@@ -74,7 +74,7 @@ class FieldLayout extends BaseModel
 			}
 			else
 			{
-				$this->_fields = array();
+				$this->_fields = [];
 			}
 		}
 
@@ -88,7 +88,7 @@ class FieldLayout extends BaseModel
 	 */
 	public function getFieldIds()
 	{
-		$ids = array();
+		$ids = [];
 
 		foreach ($this->getFields() as $field)
 		{
@@ -108,7 +108,7 @@ class FieldLayout extends BaseModel
 	 */
 	public function setTabs($tabs)
 	{
-		$this->_tabs = array();
+		$this->_tabs = [];
 
 		foreach ($tabs as $tab)
 		{
@@ -133,7 +133,7 @@ class FieldLayout extends BaseModel
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = array();
+		$this->_fields = [];
 
 		foreach ($fields as $field)
 		{

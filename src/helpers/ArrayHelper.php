@@ -28,7 +28,7 @@ class ArrayHelper
 	 */
 	public static function flattenArray($arr, $prefix = null)
 	{
-		$flattened = array();
+		$flattened = [];
 
 		foreach ($arr as $key => $value)
 		{
@@ -59,7 +59,7 @@ class ArrayHelper
 	 */
 	public static function expandArray($arr)
 	{
-		$expanded = array();
+		$expanded = [];
 
 		foreach ($arr as $key => $value)
 		{
@@ -85,7 +85,7 @@ class ArrayHelper
 	 */
 	public static function expandSettingsArray($settings)
 	{
-		$arr = array();
+		$arr = [];
 
 		foreach ($settings as $setting)
 		{
@@ -98,7 +98,7 @@ class ArrayHelper
 	/**
 	 * Converts a comma-delimited string into a trimmed array, ex:
 	 *
-	 *     ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
+	 *     ArrayHelper::stringToArray('one, two, three') => ['one', 'two', 'three']
 	 *
 	 * @param mixed $str The string to convert to an array
 	 *
@@ -116,7 +116,7 @@ class ArrayHelper
 		}
 		else if (empty($str))
 		{
-			return array();
+			return [];
 		}
 		else if (is_string($str))
 		{
@@ -142,7 +142,7 @@ class ArrayHelper
 		}
 		else
 		{
-			return array($str);
+			return [$str];
 		}
 	}
 
@@ -175,7 +175,7 @@ class ArrayHelper
 	 */
 	public static function filterEmptyStringsFromArray($arr)
 	{
-		return array_filter($arr, array('\craft\app\helpers\ArrayHelper', '_isNotAnEmptyString'));
+		return array_filter($arr, ['\craft\app\helpers\ArrayHelper', '_isNotAnEmptyString']);
 	}
 
 	/**

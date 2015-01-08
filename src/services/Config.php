@@ -50,7 +50,7 @@ class Config extends Component
 	/**
 	 * @var array
 	 */
-	private $_loadedConfigFiles = array();
+	private $_loadedConfigFiles = [];
 
 	// Public Methods
 	// =========================================================================
@@ -315,7 +315,7 @@ class Config extends Component
 							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
 							$client = new \Guzzle\Http\Client();
-							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
+							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
@@ -408,7 +408,7 @@ class Config extends Component
 						{
 							$url = Craft::$app->request->getHostInfo().Craft::$app->request->getScriptUrl().'/testPathInfo';
 							$client = new \Guzzle\Http\Client();
-							$response = $client->get($url, array(), array('connect_timeout' => 2, 'timeout' => 4))->send();
+							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')
 							{
@@ -548,14 +548,14 @@ class Config extends Component
 
 		if (Craft::$app->request->isSecureConnection())
 		{
-			$url = UrlHelper::getUrl($url, array(
+			$url = UrlHelper::getUrl($url, [
 				'code' => $code, 'id' => $uid
-			), 'https');
+			], 'https');
 		}
 
-		$url = UrlHelper::getUrl($url, array(
+		$url = UrlHelper::getUrl($url, [
 			'code' => $code, 'id' => $uid
-		));
+		]);
 
 		// Special case because we don't want the CP trigger showing in the email.
 		return str_replace($this->get('cpTrigger').'/', '', $url);
@@ -590,15 +590,15 @@ class Config extends Component
 			{
 				if (Craft::$app->request->isSecureConnection())
 				{
-					$url = UrlHelper::getCpUrl($url, array(
+					$url = UrlHelper::getCpUrl($url, [
 						'code' => $code, 'id' => $uid
-					), 'https');
+					], 'https');
 				}
 				else
 				{
-					$url = UrlHelper::getCpUrl($url, array(
+					$url = UrlHelper::getCpUrl($url, [
 						'code' => $code, 'id' => $uid
-					));
+					]);
 				}
 			}
 		}
@@ -610,15 +610,15 @@ class Config extends Component
 			{
 				if (Craft::$app->request->isSecureConnection())
 				{
-					$url = UrlHelper::getUrl($url, array(
+					$url = UrlHelper::getUrl($url, [
 						'code' => $code, 'id' => $uid
-					), 'https');
+					], 'https');
 				}
 				else
 				{
-					$url = UrlHelper::getUrl($url, array(
+					$url = UrlHelper::getUrl($url, [
 						'code' => $code, 'id' => $uid
-					));
+					]);
 				}
 			}
 		}
@@ -722,7 +722,7 @@ class Config extends Component
 
 		if (!isset($defaultsConfig) || !is_array($defaultsConfig))
 		{
-			$defaultsConfig = array();
+			$defaultsConfig = [];
 		}
 
 		// Little extra logic for the general config file.
@@ -787,7 +787,7 @@ class Config extends Component
 		// Is this a multi-environment config?
 		if (array_key_exists('*', $customConfig))
 		{
-			$mergedCustomConfig = array();
+			$mergedCustomConfig = [];
 
 			foreach ($customConfig as $env => $envConfig)
 			{

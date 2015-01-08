@@ -30,12 +30,12 @@ class RebrandEmail extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'key'      => AttributeType::String,
 			'locale'   => AttributeType::Locale,
 			'subject'  => AttributeType::String,
 			'body'     => AttributeType::String,
 			'htmlBody' => AttributeType::String,
-		);
+		];
 	}
 }

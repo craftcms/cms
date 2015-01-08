@@ -62,7 +62,7 @@ class Email extends BaseModel
 	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
 	{
 		$existingAttachments = $this->stringAttachments;
-		$existingAttachments[] = array('string' => $string, 'fileName' => $fileName, 'encoding' => $encoding, 'type' => $type);
+		$existingAttachments[] = ['string' => $string, 'fileName' => $fileName, 'encoding' => $encoding, 'type' => $type];
 		$this->stringAttachments = $existingAttachments;
 	}
 
@@ -80,7 +80,7 @@ class Email extends BaseModel
 	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
 	{
 		$existingAttachments = $this->attachments;
-		$existingAttachments[] = array('path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type);
+		$existingAttachments[] = ['path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type];
 		$this->attachments = $existingAttachments;
 	}
 

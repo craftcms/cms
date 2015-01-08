@@ -72,7 +72,7 @@ class MatrixSettings extends BaseModel
 			}
 			else
 			{
-				$this->_blockTypes = array();
+				$this->_blockTypes = [];
 			}
 		}
 

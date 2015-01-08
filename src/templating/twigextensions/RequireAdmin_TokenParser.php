@@ -30,7 +30,7 @@ class RequireAdmin_TokenParser extends \Twig_TokenParser
 		$lineno = $token->getLine();
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new RequireAdmin_Node(array(), array(), $lineno, $this->getTag());
+		return new RequireAdmin_Node([], [], $lineno, $this->getTag());
 	}
 
 	/**

@@ -26,7 +26,7 @@ class HttpCookie extends \CHttpCookie
 	 *
 	 * @return HttpCookie
 	 */
-	public function __construct($name, $value, $options = array())
+	public function __construct($name, $value, $options = [])
 	{
 		// Set the default cookie domain. A user can always override it, if they want.
 		if (($defaultCookieDomain = Craft::$app->config->get('defaultCookieDomain')) !== '')

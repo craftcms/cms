@@ -48,7 +48,7 @@ class Et extends BaseModel
 		$attributes['licenseKeyStatus']  = AttributeType::String;
 
 		// The edition that Craft is licensed to use
-		$attributes['licensedEdition'] = array(AttributeType::Enum, 'values' => array(Craft::Personal, Craft::Client, Craft::Pro));
+		$attributes['licensedEdition'] = [AttributeType::Enum, 'values' => [Craft::Personal, Craft::Client, Craft::Pro]];
 
 		// The domain that the license is associated with
 		$attributes['licensedDomain'] = AttributeType::String;
@@ -60,31 +60,31 @@ class Et extends BaseModel
 		$attributes['data'] = AttributeType::Mixed;
 
 		// The url making the request.
-		$attributes['requestUrl'] = array(AttributeType::String, 'default' => '');
+		$attributes['requestUrl'] = [AttributeType::String, 'default' => ''];
 
 		// The IP address making the request.
-		$attributes['requestIp'] = array(AttributeType::String, 'default' => '1.1.1.1');
+		$attributes['requestIp'] = [AttributeType::String, 'default' => '1.1.1.1'];
 
 		// The time the request was made.
-		$attributes['requestTime'] = array(AttributeType::DateTime, 'default' => DateTimeHelper::currentTimeForDb());
+		$attributes['requestTime'] = [AttributeType::DateTime, 'default' => DateTimeHelper::currentTimeForDb()];
 
 		// The port number the request comes from.
 		$attributes['requestPort'] = AttributeType::String;
 
 		// The local version number.
-		$attributes['localVersion'] = array(AttributeType::String, 'required' => true);
+		$attributes['localVersion'] = [AttributeType::String, 'required' => true];
 
 		// The local build number.
-		$attributes['localBuild'] = array(AttributeType::Number, 'required' => true);
+		$attributes['localBuild'] = [AttributeType::Number, 'required' => true];
 
 		// The local edition.
-		$attributes['localEdition'] = array(AttributeType::String, 'required' => true);
+		$attributes['localEdition'] = [AttributeType::String, 'required' => true];
 
 		// The currently logged in user's email address.
 		$attributes['userEmail'] = AttributeType::String;
 
 		// The track this install is on.  Not required for backwards compatibility.
-		$attributes['track'] = array(AttributeType::String);
+		$attributes['track'] = [AttributeType::String];
 
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;

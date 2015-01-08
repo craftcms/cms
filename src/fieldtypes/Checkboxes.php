@@ -56,11 +56,11 @@ class Checkboxes extends BaseOptionsFieldType
 			$values = $this->getDefaultValue();
 		}
 
-		return Craft::$app->templates->render('_includes/forms/checkboxGroup', array(
+		return Craft::$app->templates->render('_includes/forms/checkboxGroup', [
 			'name'    => $name,
 			'options' => $options,
 			'values'  => $values
-		));
+		]);
 	}
 
 	// Protected Methods

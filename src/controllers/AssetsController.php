@@ -46,7 +46,7 @@ class AssetsController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionGenerateTransform');
+	protected $allowAnonymous = ['actionGenerateTransform'];
 
 	// Public Methods
 	// =========================================================================
@@ -141,10 +141,10 @@ class AssetsController extends BaseController
 
 		// Render and return
 		$element = Craft::$app->elements->getElementById($fileId);
-		$html = Craft::$app->templates->render('_elements/element', array('element' => $element));
+		$html = Craft::$app->templates->render('_elements/element', ['element' => $element]);
 		$headHtml = Craft::$app->templates->getHeadHtml();
 
-		$this->returnJson(array('html' => $html, 'headHtml' => $headHtml));
+		$this->returnJson(['html' => $html, 'headHtml' => $headHtml]);
 	}
 
 	/**
@@ -184,9 +184,9 @@ class AssetsController extends BaseController
 			}
 
 			// Fire an 'onBeforeReplaceFile' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'asset' => $existingFile
-			));
+			]);
 
 			Craft::$app->assets->onBeforeReplaceFile($event);
 
@@ -240,11 +240,11 @@ class AssetsController extends BaseController
 		}
 
 		// Fire an 'onReplaceFile' event
-		Craft::$app->assets->onReplaceFile(new Event($this, array(
+		Craft::$app->assets->onReplaceFile(new Event($this, [
 			'asset' => $existingFile
-		)));
+		]));
 
-		$this->returnJson(array('success' => true, 'fileId' => $fileId));
+		$this->returnJson(['success' => true, 'fileId' => $fileId]);
 	}
 
 	/**
@@ -443,7 +443,7 @@ class AssetsController extends BaseController
 
 		if ($returnUrl)
 		{
-			$this->returnJson(array('url' => $url));
+			$this->returnJson(['url' => $url]);
 		}
 
 		$this->redirect($url, true, 302);

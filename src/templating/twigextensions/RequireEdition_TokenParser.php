@@ -31,7 +31,7 @@ class RequireEdition_TokenParser extends \Twig_TokenParser
 		$editionName = $this->parser->getExpressionParser()->parseExpression();
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new RequireEdition_Node(array('editionName' => $editionName), array(), $lineno, $this->getTag());
+		return new RequireEdition_Node(['editionName' => $editionName], [], $lineno, $this->getTag());
 	}
 
 	/**

@@ -55,10 +55,10 @@ class AccountSettings extends BaseModel
 	{
 		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
 
-		return array(
-			'username' => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'email'    => array(AttributeType::Email, 'required' => true),
-			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)
-		);
+		return [
+			'username' => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
+			'email'    => [AttributeType::Email, 'required' => true],
+			'password' => [AttributeType::String, 'minLength' => 6, 'required' => true]
+		];
 	}
 }

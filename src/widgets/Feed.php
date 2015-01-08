@@ -47,9 +47,9 @@ class Feed extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/widgets/Feed/settings', array(
+		return Craft::$app->templates->render('_components/widgets/Feed/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -78,9 +78,9 @@ class Feed extends BaseWidget
 		Craft::$app->templates->includeJsResource('js/FeedWidget.js');
 		Craft::$app->templates->includeJs($js);
 
-		return Craft::$app->templates->render('_components/widgets/Feed/body', array(
+		return Craft::$app->templates->render('_components/widgets/Feed/body', [
 			'limit' => $limit
-		));
+		]);
 	}
 
 	// Protected Methods

@@ -27,11 +27,11 @@ class UpgradePurchase extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'ccTokenId'     => array(AttributeType::String, 'required' => true),
-			'edition'       => array(AttributeType::Number, 'required' => true),
-			'expectedPrice' => array(AttributeType::Number, 'required' => true),
+		return [
+			'ccTokenId'     => [AttributeType::String, 'required' => true],
+			'edition'       => [AttributeType::Number, 'required' => true],
+			'expectedPrice' => [AttributeType::Number, 'required' => true],
 			'success'       => AttributeType::Bool,
-		);
+		];
 	}
 }

@@ -39,7 +39,7 @@ class Color extends BaseFieldType
 	 */
 	public function defineContentAttribute()
 	{
-		return array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 7);
+		return [AttributeType::String, 'column' => ColumnType::Char, 'length' => 7];
 	}
 
 	/**
@@ -58,11 +58,11 @@ class Color extends BaseFieldType
 			$value = '#000000';
 		}
 
-		return Craft::$app->templates->render('_includes/forms/color', array(
+		return Craft::$app->templates->render('_includes/forms/color', [
 			'id'    => Craft::$app->templates->formatInputId($name),
 			'name'  => $name,
 			'value' => $value,
-		));
+		]);
 	}
 
 	/**

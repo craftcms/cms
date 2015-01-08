@@ -37,9 +37,9 @@ class Route extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'locale'  => array(static::BELONGS_TO, 'Locale', 'locale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -49,10 +49,10 @@ class Route extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('locale')),
-			array('columns' => array('urlPattern'), 'unique' => true),
-		);
+		return [
+			['columns' => ['locale']],
+			['columns' => ['urlPattern'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -65,12 +65,12 @@ class Route extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'locale'     => AttributeType::Locale,
-			'urlParts'   => array(AttributeType::String, 'required' => true),
-			'urlPattern' => array(AttributeType::String, 'required' => true),
-			'template'   => array(AttributeType::String, 'required' => true),
+			'urlParts'   => [AttributeType::String, 'required' => true],
+			'urlPattern' => [AttributeType::String, 'required' => true],
+			'template'   => [AttributeType::String, 'required' => true],
 			'sortOrder'  => AttributeType::SortOrder,
-		);
+		];
 	}
 }

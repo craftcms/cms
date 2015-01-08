@@ -35,7 +35,7 @@ class WebLogRoute extends \CWebLogRoute
 			!Craft::$app->request->isResourceRequest() &&
 			!Craft::$app->request->isAjaxRequest() &&
 			Craft::$app->config->get('devMode') &&
-			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
 		)
 		{
 			if (($userAgent = Craft::$app->request->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))

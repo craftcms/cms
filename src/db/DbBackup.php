@@ -52,7 +52,7 @@ class DbBackup
 	 *
 	 * @var array
 	 */
-	private $_ignoreDataTables = array('assetindexdata', 'templatecaches', 'templatecachecriteria', 'templatecacheelements');
+	private $_ignoreDataTables = ['assetindexdata', 'templatecaches', 'templatecachecriteria', 'templatecacheelements'];
 
 	// Public Methods
 	// =========================================================================
@@ -74,7 +74,7 @@ class DbBackup
 		}
 		else if ($tables === false)
 		{
-			$this->_ignoreDataTables = array();
+			$this->_ignoreDataTables = [];
 		}
 	}
 
@@ -124,14 +124,14 @@ class DbBackup
 	{
 		if (!IOHelper::fileExists($filePath))
 		{
-			throw new Exception(Craft::t('Could not find the SQL file to restore: {filePath}', array('filePath' => $filePath)));
+			throw new Exception(Craft::t('Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
 		}
 
 		$this->_nukeDb();
 
 		$sql = IOHelper::getFileContents($filePath, true);
 
-		array_walk($sql, array($this, 'trimValue'));
+		array_walk($sql, [$this, 'trimValue']);
 		$sql = array_filter($sql);
 
 		$statements = $this->_buildSQLStatements($sql);
@@ -167,7 +167,7 @@ class DbBackup
 	 */
 	private function _buildSQLStatements($sql)
 	{
-		$statementArray = array();
+		$statementArray = [];
 		$runningStatement = '';
 
 		foreach ($sql as $statement)
@@ -404,7 +404,7 @@ class DbBackup
 
 					if (!empty($rows))
 					{
-						$attrs = array_map(array(Craft::$app->db, 'quoteColumnName'), array_keys($rows[0]));
+						$attrs = array_map([Craft::$app->db, 'quoteColumnName'], array_keys($rows[0]));
 
 						foreach ($rows as $row)
 						{

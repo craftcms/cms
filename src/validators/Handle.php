@@ -29,12 +29,12 @@ class Handle extends \CValidator
 	/**
 	 * @var array
 	 */
-	public $reservedWords = array();
+	public $reservedWords = [];
 
 	/**
 	 * @var array
 	 */
-	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent', 'section');
+	protected static $baseReservedWords = ['id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'handle', 'name', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'fields', 'content', 'rawContent', 'section'];
 
 	// Protected Methods
 	// =========================================================================
@@ -53,19 +53,19 @@ class Handle extends \CValidator
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-			$reservedWords = array_map(array('\craft\app\helpers\StringHelper', 'toLowerCase'), $reservedWords);
+			$reservedWords = array_map(['\craft\app\helpers\StringHelper', 'toLowerCase'], $reservedWords);
 			$lcHandle = StringHelper::toLowerCase($handle);
 
 			if (in_array($lcHandle, $reservedWords))
 			{
-				$message = Craft::t('“{handle}” is a reserved word.', array('handle' => $handle));
+				$message = Craft::t('“{handle}” is a reserved word.', ['handle' => $handle]);
 				$this->addError($object, $attribute, $message);
 			}
 			else
 			{
 				if (!preg_match('/^'.static::$handlePattern.'$/', $handle))
 				{
-					$altMessage = Craft::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
+					$altMessage = Craft::t('“{handle}” isn’t a valid handle.', ['handle' => $handle]);
 					$message = $this->message !== null ? $this->message : $altMessage;
 					$this->addError($object, $attribute, $message);
 				}

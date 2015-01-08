@@ -252,7 +252,7 @@ abstract class BaseElementModel extends BaseModel
 		}
 		else
 		{
-			return array(Craft::$app->i18n->getPrimarySiteLocaleId());
+			return [Craft::$app->i18n->getPrimarySiteLocaleId()];
 		}
 	}
 
@@ -851,12 +851,12 @@ abstract class BaseElementModel extends BaseModel
 			// look in $_FILES
 			$this->setContentPostLocation($content);
 
-			$content = Craft::$app->request->getPost($content, array());
+			$content = Craft::$app->request->getPost($content, []);
 		}
 
 		if (!isset($this->_rawPostContent))
 		{
-			$this->_rawPostContent = array();
+			$this->_rawPostContent = [];
 		}
 
 		$fieldLayout = $this->getFieldLayout();
@@ -919,7 +919,7 @@ abstract class BaseElementModel extends BaseModel
 		}
 		else
 		{
-			return array();
+			return [];
 		}
 	}
 

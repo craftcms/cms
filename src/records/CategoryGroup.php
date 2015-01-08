@@ -36,12 +36,12 @@ class CategoryGroup extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'structure'   => array(static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE),
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-			'locales'     => array(static::HAS_MANY, 'CategoryGroupLocale', 'groupId'),
-			'categories'  => array(static::HAS_MANY, 'Category', 'groupId'),
-		);
+		return [
+			'structure'   => [static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE],
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+			'locales'     => [static::HAS_MANY, 'CategoryGroupLocale', 'groupId'],
+			'categories'  => [static::HAS_MANY, 'Category', 'groupId'],
+		];
 	}
 
 	/**
@@ -51,10 +51,10 @@ class CategoryGroup extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -64,9 +64,9 @@ class CategoryGroup extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

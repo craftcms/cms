@@ -43,7 +43,7 @@ class Redirect_TokenParser extends \Twig_TokenParser
 
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new Redirect_Node(array('path' => $path, 'httpStatusCode' => $httpStatusCode), array(), $lineno, $this->getTag());
+		return new Redirect_Node(['path' => $path, 'httpStatusCode' => $httpStatusCode], [], $lineno, $this->getTag());
 	}
 
 	/**

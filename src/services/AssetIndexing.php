@@ -63,7 +63,7 @@ class AssetIndexing extends Component
 	 */
 	public function processIndexForSource($sessionId, $offset, $sourceId)
 	{
-		return array('result' => Craft::$app->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset));
+		return ['result' => Craft::$app->assetSources->getSourceTypeById($sourceId)->processIndex($sessionId, $offset)];
 	}
 
 	/**
@@ -76,10 +76,10 @@ class AssetIndexing extends Component
 	public function ensureTopFolder(AssetSourceModel $model)
 	{
 		$folder = AssetFolderRecord::model()->findByAttributes(
-			array(
+			[
 				'name' => $model->name,
 				'sourceId' => $model->id
-			)
+			]
 		);
 
 		if (empty($folder))
@@ -124,11 +124,11 @@ class AssetIndexing extends Component
 	public function getIndexEntry($sourceId, $sessionId, $offset)
 	{
 		$record = AssetIndexDataRecord::model()->findByAttributes(
-			array(
+			[
 				'sourceId' => $sourceId,
 				'sessionId' => $sessionId,
 				'offset' => $offset
-			)
+			]
 		);
 
 		if ($record)
@@ -147,7 +147,7 @@ class AssetIndexing extends Component
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
-		Craft::$app->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
+		Craft::$app->db->createCommand()->update('assetindexdata', ['recordId' => $recordId], ['id' => $entryId]);
 	}
 
 
@@ -161,13 +161,13 @@ class AssetIndexing extends Component
 	 */
 	public function getMissingFiles($sources, $sessionId)
 	{
-		$output = array();
+		$output = [];
 
 		// Load the record IDs of the files that were indexed.
 		$processedFiles = Craft::$app->db->createCommand()
 			->select('recordId')
 			->from('assetindexdata')
-			->where('sessionId = :sessionId AND recordId IS NOT NULL', array(':sessionId' => $sessionId))
+			->where('sessionId = :sessionId AND recordId IS NOT NULL', [':sessionId' => $sessionId])
 			->queryColumn();
 
 		$processedFiles = array_flip($processedFiles);
@@ -177,7 +177,7 @@ class AssetIndexing extends Component
 			->from('assetfiles AS fi')
 			->join('assetfolders AS fo', 'fi.folderId = fo.id')
 			->join('assetsources AS s', 's.id = fi.sourceId')
-			->where(array('in', 'fi.sourceId', $sources))
+			->where(['in', 'fi.sourceId', $sources])
 			->queryAll();
 
 		foreach ($fileEntries as $fileEntry)
@@ -200,8 +200,8 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
-		Craft::$app->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $fileIds));
-		Craft::$app->db->createCommand()->delete('assetfiles', array('in', 'id', $fileIds));
+		Craft::$app->db->createCommand()->delete('assettransformindex', ['in', 'fileId', $fileIds]);
+		Craft::$app->db->createCommand()->delete('assetfiles', ['in', 'id', $fileIds]);
 
 		foreach ($fileIds as $fileId)
 		{
@@ -218,7 +218,7 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{
-		Craft::$app->db->createCommand()->delete('assetfolders', array('in', 'id', $folderIds));
+		Craft::$app->db->createCommand()->delete('assetfolders', ['in', 'id', $folderIds]);
 	}
 
 }

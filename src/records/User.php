@@ -39,17 +39,17 @@ class User extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		$relations = array(
-			'element'         => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'preferredLocale' => array(static::BELONGS_TO, 'Locale', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
-		);
+		$relations = [
+			'element'         => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'preferredLocale' => [static::BELONGS_TO, 'Locale', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE],
+		];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$relations['groups']  = array(static::MANY_MANY, 'UserGroup', 'usergroups_users(userId, groupId)');
+			$relations['groups'] = [static::MANY_MANY, 'UserGroup', 'usergroups_users(userId, groupId)'];
 		}
 
-		$relations['sessions']              = array(static::HAS_MANY, 'Session', 'userId');
+		$relations['sessions'] = [static::HAS_MANY, 'Session', 'userId'];
 
 		return $relations;
 	}
@@ -61,12 +61,12 @@ class User extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('username'), 'unique' => true),
-			array('columns' => array('email'), 'unique' => true),
-			array('columns' => array('verificationCode')),
-			array('columns' => array('uid')),
-		);
+		return [
+			['columns' => ['username'], 'unique' => true],
+			['columns' => ['email'], 'unique' => true],
+			['columns' => ['verificationCode']],
+			['columns' => ['uid']],
+		];
 	}
 
 	/**

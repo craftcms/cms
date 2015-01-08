@@ -27,15 +27,15 @@ class FolderCriteria extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'       => AttributeType::Number,
-			'parentId' => array(AttributeType::Number, 'default' => false),
+			'parentId' => [AttributeType::Number, 'default' => false],
 			'sourceId' => AttributeType::Number,
 			'name'     => AttributeType::String,
 			'path'     => AttributeType::String,
-			'order'    => array(AttributeType::String, 'default' => 'name asc'),
+			'order'    => [AttributeType::String, 'default' => 'name asc'],
 			'offset'   => AttributeType::Number,
 			'limit'    => AttributeType::Number,
-		);
+		];
 	}
 }

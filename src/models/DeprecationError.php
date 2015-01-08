@@ -60,7 +60,7 @@ class DeprecationError extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'             => AttributeType::Number,
 			'key'            => AttributeType::String,
 			'fingerprint'    => AttributeType::String,
@@ -73,6 +73,6 @@ class DeprecationError extends BaseModel
 			'templateLine'   => AttributeType::Number,
 			'message'        => AttributeType::String,
 			'traces'         => AttributeType::Mixed,
-		);
+		];
 	}
 }

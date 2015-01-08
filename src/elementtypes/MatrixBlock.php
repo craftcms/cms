@@ -64,13 +64,13 @@ class MatrixBlock extends BaseElementType
 	 */
 	public function defineCriteriaAttributes()
 	{
-		return array(
+		return [
 			'fieldId'     => AttributeType::Number,
-			'order'       => array(AttributeType::String, 'default' => 'matrixblocks.sortOrder'),
+			'order'       => [AttributeType::String, 'default' => 'matrixblocks.sortOrder'],
 			'ownerId'     => AttributeType::Number,
 			'ownerLocale' => AttributeType::Locale,
 			'type'        => AttributeType::Mixed,
-		);
+		];
 	}
 
 	/**
@@ -87,7 +87,7 @@ class MatrixBlock extends BaseElementType
 			$criteria->fieldId = Craft::$app->db->createCommand()
 				->select('fieldId')
 				->from('matrixblocks')
-				->where('id = :id', array(':id' => $criteria->id))
+				->where('id = :id', [':id' => $criteria->id])
 				->queryScalar();
 		}
 
@@ -111,7 +111,7 @@ class MatrixBlock extends BaseElementType
 	 */
 	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$fields = array();
+		$fields = [];
 
 		foreach (Craft::$app->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
 		{

@@ -59,14 +59,14 @@ class Plugins extends Component
 	 *
 	 * @var array
 	 */
-	private $_plugins = array();
+	private $_plugins = [];
 
 	/**
 	 * Stores all plugins, whether installed or not.
 	 *
 	 * @var array
 	 */
-	private $_enabledPlugins = array();
+	private $_enabledPlugins = [];
 
 	/**
 	 * Stores all plugins in the system, regardless of whether they're installed/enabled or not.
@@ -80,7 +80,7 @@ class Plugins extends Component
 	 *
 	 * @var array
 	 */
-	private $_enabledPluginInfo = array();
+	private $_enabledPluginInfo = [];
 
 	// Public Methods
 	// =========================================================================
@@ -116,7 +116,7 @@ class Plugins extends Component
 					->where('enabled=1')
 					->queryAll();
 
-				$names = array();
+				$names = [];
 
 				foreach ($rows as $row)
 				{
@@ -201,7 +201,7 @@ class Plugins extends Component
 					$plugin->isInstalled = (bool) Craft::$app->db->createCommand()
 						->select('count(id)')
 						->from('plugins')
-						->where(array('class' => $plugin->getClassHandle()))
+						->where(['class' => $plugin->getClassHandle()])
 						->queryScalar();
 				}
 
@@ -229,7 +229,7 @@ class Plugins extends Component
 		{
 			if (!isset($this->_allPlugins))
 			{
-				$this->_allPlugins = array();
+				$this->_allPlugins = [];
 
 				// Find all of the plugins in the plugins folder
 				$pluginsPath = Craft::$app->path->getPluginsPath();
@@ -301,7 +301,7 @@ class Plugins extends Component
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” can’t be enabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
 		}
 
 		if ($plugin->isEnabled)
@@ -313,8 +313,8 @@ class Plugins extends Component
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		Craft::$app->db->createCommand()->update('plugins',
-			array('enabled' => 1),
-			array('class' => $plugin->getClassHandle())
+			['enabled' => 1],
+			['class' => $plugin->getClassHandle()]
 		);
 
 		$plugin->isEnabled = true;
@@ -342,7 +342,7 @@ class Plugins extends Component
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
+			throw new Exception(Craft::t('“{plugin}” can’t be disabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
 		}
 
 		if (!$plugin->isEnabled)
@@ -354,8 +354,8 @@ class Plugins extends Component
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 		Craft::$app->db->createCommand()->update('plugins',
-			array('enabled' => 0),
-			array('class' => $plugin->getClassHandle())
+			['enabled' => 0],
+			['class' => $plugin->getClassHandle()]
 		);
 
 		$plugin->isEnabled = false;
@@ -465,7 +465,7 @@ class Plugins extends Component
 			$pluginRow = Craft::$app->db->createCommand()
 				->select('id')
 				->from('plugins')
-				->where('class=:class', array('class' => $plugin->getClassHandle()))
+				->where('class=:class', ['class' => $plugin->getClassHandle()])
 				->queryRow();
 
 			$pluginId = $pluginRow['id'];
@@ -498,10 +498,10 @@ class Plugins extends Component
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			Craft::$app->db->createCommand()->delete('plugins', array('class' => $handle));
+			Craft::$app->db->createCommand()->delete('plugins', ['class' => $handle]);
 
 			// Remove any migrations.
-			Craft::$app->db->createCommand()->delete('migrations', array('pluginId' => $pluginId));
+			Craft::$app->db->createCommand()->delete('migrations', ['pluginId' => $pluginId]);
 
 			if ($transaction !== null)
 			{
@@ -550,11 +550,11 @@ class Plugins extends Component
 			// JSON-encode them and save the plugin row
 			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes());
 
-			$affectedRows = Craft::$app->db->createCommand()->update('plugins', array(
+			$affectedRows = Craft::$app->db->createCommand()->update('plugins', [
 				'settings' => $settings
-			), array(
+			], [
 				'class' => $plugin->getClassHandle()
-			));
+			]);
 
 			return (bool) $affectedRows;
 		}
@@ -569,15 +569,15 @@ class Plugins extends Component
 	 *
 	 * @return array An array of the plugins’ responses.
 	 */
-	public function call($method, $args = array(), $ignoreNull = false)
+	public function call($method, $args = [], $ignoreNull = false)
 	{
-		$allResults = array();
+		$allResults = [];
 
 		foreach ($this->getPlugins() as $plugin)
 		{
 			if (method_exists($plugin, $method))
 			{
-				$result = call_user_func_array(array($plugin, $method), $args);
+				$result = call_user_func_array([$plugin, $method], $args);
 
 				if (!$ignoreNull || $result !== null)
 				{
@@ -599,13 +599,13 @@ class Plugins extends Component
 	 *
 	 * @return mixed The plugin’s response, or null.
 	 */
-	public function callFirst($method, $args = array(), $ignoreNull = false)
+	public function callFirst($method, $args = [], $ignoreNull = false)
 	{
 		foreach ($this->getPlugins() as $plugin)
 		{
 			if (method_exists($plugin, $method))
 			{
-				$result = call_user_func_array(array($plugin, $method), $args);
+				$result = call_user_func_array([$plugin, $method], $args);
 
 				if (!$ignoreNull || $result !== null)
 				{
@@ -664,7 +664,7 @@ class Plugins extends Component
 	 */
 	public function getPluginClasses(BasePlugin $plugin, $classSubfolder, $classSuffix, $autoload = true)
 	{
-		$classes = array();
+		$classes = [];
 
 		$pluginHandle = $plugin->getClassHandle();
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
@@ -761,7 +761,7 @@ class Plugins extends Component
 	 */
 	private function _noPluginExists($handle)
 	{
-		throw new Exception(Craft::t('No plugin exists with the class “{class}”', array('class' => $handle)));
+		throw new Exception(Craft::t('No plugin exists with the class “{class}”', ['class' => $handle]));
 	}
 
 	/**
@@ -800,7 +800,7 @@ class Plugins extends Component
 
 		if (IOHelper::folderExists($migrationsFolder))
 		{
-			$migrations = array();
+			$migrations = [];
 			$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
 
 			if ($migrationFiles)
@@ -839,7 +839,7 @@ class Plugins extends Component
 	 */
 	private function _registerPluginServices($classes)
 	{
-		$services = array();
+		$services = [];
 
 		foreach ($classes as $class)
 		{
@@ -857,11 +857,11 @@ class Plugins extends Component
 			{
 				// Register the component with the handle as (className or className_*) minus the "Service" suffix
 				$nsClass = __NAMESPACE__.'\\'.$class;
-				$services[$serviceName] = array('class' => $nsClass);
+				$services[$serviceName] = ['class' => $nsClass];
 			}
 			else
 			{
-				throw new Exception(Craft::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', array('handle' => $handle, 'service' => $serviceName)));
+				throw new Exception(Craft::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', ['handle' => $handle, 'service' => $serviceName]));
 			}
 		}
 

@@ -220,7 +220,7 @@ class Migrate extends \MigrateCommand
 			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/').'/';
 		}
 
-		$content = strtr(Craft::$app->migrations->getTemplate(), array('{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc));
+		$content = strtr(Craft::$app->migrations->getTemplate(), ['{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc]);
 		$file = $path.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
@@ -304,7 +304,7 @@ class Migrate extends \MigrateCommand
 
 		$migrations = $this->getMigrationHistory($plugin);
 
-		if ($migrations === array())
+		if ($migrations === [])
 		{
 			if ($plugin === 'all')
 			{
@@ -379,7 +379,7 @@ class Migrate extends \MigrateCommand
 
 		$migrations = $this->getNewMigrations($plugin);
 
-		if ($migrations === array())
+		if ($migrations === [])
 		{
 			if ($plugin)
 			{

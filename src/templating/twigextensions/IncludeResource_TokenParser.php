@@ -60,10 +60,10 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		$attributes = array(
+		$attributes = [
 			'function' => $this->_tag,
 			'first'    => $first,
-		);
+		];
 
 		return new IncludeResource_Node($nodes, $attributes, $lineno, $this->getTag());
 	}

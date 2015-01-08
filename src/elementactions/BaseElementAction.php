@@ -152,7 +152,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	 */
 	protected function defineParams()
 	{
-		return array();
+		return [];
 	}
 
 	/**

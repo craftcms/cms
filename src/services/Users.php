@@ -93,10 +93,10 @@ class Users extends Component
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
-		$userRecord = UserRecord::model()->find(array(
+		$userRecord = UserRecord::model()->find([
 			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
-			'params' => array(':usernameOrEmail' => $usernameOrEmail),
-		));
+			'params' => [':usernameOrEmail' => $usernameOrEmail],
+		]);
 
 		if ($userRecord)
 		{
@@ -119,10 +119,10 @@ class Users extends Component
 	 */
 	public function getUserByEmail($email)
 	{
-		$userRecord = UserRecord::model()->find(array(
+		$userRecord = UserRecord::model()->find([
 			'condition' => 'email=:email',
-			'params' => array(':email' => $email),
-		));
+			'params' => [':email' => $email],
+		]);
 
 		if ($userRecord)
 		{
@@ -145,9 +145,9 @@ class Users extends Component
 	 */
 	public function getUserByUid($uid)
 	{
-		$userRecord = UserRecord::model()->findByAttributes(array(
+		$userRecord = UserRecord::model()->findByAttributes([
 			'uid' => $uid
-		));
+		]);
 
 		if ($userRecord)
 		{
@@ -272,7 +272,7 @@ class Users extends Component
 
 			if (!$userRecord)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $user->id)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $user->id]));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -331,10 +331,10 @@ class Users extends Component
 			}
 
 			// Fire an 'onBeforeSaveUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'      => $user,
 				'isNewUser' => $isNewUser
-			));
+			]);
 
 			$this->onBeforeSaveUser($event);
 
@@ -409,10 +409,10 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveUser' event
-			$this->onSaveUser(new Event($this, array(
+			$this->onSaveUser(new Event($this, [
 				'user'      => $user,
 				'isNewUser' => $isNewUser
-			)));
+			]));
 		}
 
 		return $success;
@@ -439,9 +439,9 @@ class Users extends Component
 			$url = $this->getEmailVerifyUrl($user);
 		}
 
-		return Craft::$app->email->sendEmailByKey($user, 'account_activation', array(
+		return Craft::$app->email->sendEmailByKey($user, 'account_activation', [
 			'link' => TemplateHelper::getRaw($url),
-		));
+		]);
 	}
 
 	/**
@@ -475,9 +475,9 @@ class Users extends Component
 	{
 		$url = $this->getPasswordResetUrl($user);
 
-		return Craft::$app->email->sendEmailByKey($user, 'forgot_password', array(
+		return Craft::$app->email->sendEmailByKey($user, 'forgot_password', [
 			'link' => TemplateHelper::getRaw($url),
-		));
+		]);
 	}
 
 	/**
@@ -522,13 +522,13 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = Craft::$app->config->get('actionTrigger').'/users/setpassword';
-			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
 		}
 
 		return $url;
@@ -702,9 +702,9 @@ class Users extends Component
 		try
 		{
 			// Fire an 'onBeforeActivateUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user' => $user,
-			));
+			]);
 
 			$this->onBeforeActivateUser($event);
 
@@ -749,9 +749,9 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onActivateUser' event
-			$this->onActivateUser(new Event($this, array(
+			$this->onActivateUser(new Event($this, [
 				'user' => $user
-			)));
+			]));
 		}
 
 		return $success;
@@ -804,9 +804,9 @@ class Users extends Component
 		try
 		{
 			// Fire an 'onBeforeUnlockUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'      => $user,
-			));
+			]);
 
 			$this->onBeforeUnlockUser($event);
 
@@ -849,9 +849,9 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onUnlockUser' event
-			$this->onUnlockUser(new Event($this, array(
+			$this->onUnlockUser(new Event($this, [
 				'user' => $user
-			)));
+			]));
 		}
 
 		return $success;
@@ -873,9 +873,9 @@ class Users extends Component
 		try
 		{
 			// Fire an 'onBeforeSuspendUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'      => $user,
-			));
+			]);
 
 			$this->onBeforeSuspendUser($event);
 
@@ -915,9 +915,9 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onSuspendUser' event
-			$this->onSuspendUser(new Event($this, array(
+			$this->onSuspendUser(new Event($this, [
 				'user' => $user
-			)));
+			]));
 		}
 
 		return $success;
@@ -939,9 +939,9 @@ class Users extends Component
 		try
 		{
 			// Fire an 'onBeforeUnsuspendUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'      => $user,
-			));
+			]);
 
 			$this->onBeforeUnsuspendUser($event);
 
@@ -981,9 +981,9 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onUnsuspendUser' event
-			$this->onUnsuspendUser(new Event($this, array(
+			$this->onUnsuspendUser(new Event($this, [
 				'user' => $user
-			)));
+			]));
 		}
 
 		return $success;
@@ -1010,10 +1010,10 @@ class Users extends Component
 		try
 		{
 			// Fire an 'onBeforeDeleteUser' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'user'              => $user,
 				'transferContentTo' => $transferContentTo
-			));
+			]);
 
 			$this->onBeforeDeleteUser($event);
 
@@ -1024,7 +1024,7 @@ class Users extends Component
 				$entryIds = Craft::$app->db->createCommand()
 					->select('id')
 					->from('entries')
-					->where(array('authorId' => $user->id))
+					->where(['authorId' => $user->id])
 					->queryColumn();
 
 				// Should we transfer the content to a new user?
@@ -1034,19 +1034,19 @@ class Users extends Component
 					Craft::$app->templateCache->deleteCachesByElementId($entryIds);
 
 					// Update the entry/version/draft tables to point to the new user
-					$userRefs = array(
+					$userRefs = [
 						'entries' => 'authorId',
 						'entrydrafts' => 'creatorId',
 						'entryversions' => 'creatorId',
-					);
+					];
 
 					foreach ($userRefs as $table => $column)
 					{
-						Craft::$app->db->createCommand()->update($table, array(
+						Craft::$app->db->createCommand()->update($table, [
 							$column => $transferContentTo->id
-						), array(
+						], [
 							$column => $user->id
-						));
+						]);
 					}
 				}
 				else
@@ -1094,10 +1094,10 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onDeleteUser' event
-			$this->onDeleteUser(new Event($this, array(
+			$this->onDeleteUser(new Event($this, [
 				'user'              => $user,
 				'transferContentTo' => $transferContentTo
-			)));
+			]));
 		}
 
 		return $success;
@@ -1123,12 +1123,12 @@ class Users extends Component
 			$expiryDate = null;
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->insertOrUpdate('shunnedmessages', array(
+		$affectedRows = Craft::$app->db->createCommand()->insertOrUpdate('shunnedmessages', [
 			'userId'  => $userId,
 			'message' => $message
-		), array(
+		], [
 			'expiryDate' => $expiryDate
-		));
+		]);
 
 		return (bool) $affectedRows;
 	}
@@ -1143,10 +1143,10 @@ class Users extends Component
 	 */
 	public function unshunMessageForUser($userId, $message)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete('shunnedmessages', array(
+		$affectedRows = Craft::$app->db->createCommand()->delete('shunnedmessages', [
 			'userId'  => $userId,
 			'message' => $message
-		));
+		]);
 
 		return (bool) $affectedRows;
 	}
@@ -1164,15 +1164,15 @@ class Users extends Component
 		$row = Craft::$app->db->createCommand()
 			->select('id')
 			->from('shunnedmessages')
-			->where(array('and',
+			->where(['and',
 				'userId = :userId',
 				'message = :message',
-				array('or', 'expiryDate IS NULL', 'expiryDate > :now')
-			), array(
+				['or', 'expiryDate IS NULL', 'expiryDate > :now']
+			], [
 				':userId'  => $userId,
 				':message' => $message,
 				':now'     => DateTimeHelper::formatTimeForDb()
-			))
+			])
 			->queryRow(false);
 
 		return (bool) $row;
@@ -1215,10 +1215,10 @@ class Users extends Component
 
 			$ids = Craft::$app->db->createCommand()->select('id')
 				->from('users')
-				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array('pastTime' => $pastTime))
+				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', ['pastTime' => $pastTime])
 				->queryColumn();
 
-			$affectedRows = Craft::$app->db->createCommand()->delete('elements', array('in', 'id', $ids));
+			$affectedRows = Craft::$app->db->createCommand()->delete('elements', ['in', 'id', $ids]);
 
 			if ($affectedRows > 0)
 			{
@@ -1439,7 +1439,7 @@ class Users extends Component
 
 		if (!$userRecord)
 		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $userId]));
 		}
 
 		return $userRecord;
@@ -1521,9 +1521,9 @@ class Users extends Component
 				// See if the passwords are the same.
 				if (Craft::$app->getSecurity()->validatePassword($user->newPassword, $userRecord->password))
 				{
-					$user->addErrors(array(
+					$user->addErrors([
 						$passwordErrorField => Craft::t('That password is the same as your old password. Please choose a new one.'),
-					));
+					]);
 				}
 				else
 				{
@@ -1538,10 +1538,10 @@ class Users extends Component
 			if ($validates)
 			{
 				// Fire an 'onBeforeSetPassword' event
-				$event = new Event($this, array(
+				$event = new Event($this, [
 					'password' => $user->newPassword,
 					'user'     => $user
-				));
+				]);
 
 				$this->onBeforeSetPassword($event);
 
@@ -1574,9 +1574,9 @@ class Users extends Component
 		}
 		else
 		{
-			$user->addErrors(array(
+			$user->addErrors([
 				$passwordErrorField => $passwordModel->getErrors('password')
-			));
+			]);
 
 			$success = false;
 		}
@@ -1584,9 +1584,9 @@ class Users extends Component
 		if ($success)
 		{
 			// Fire an 'onSetPassword' event
-			$this->onSetPassword(new Event($this, array(
+			$this->onSetPassword(new Event($this, [
 				'user' => $user
-			)));
+			]));
 
 		}
 

@@ -25,7 +25,7 @@ class Elements
 	 */
 	public function getAllElementTypes()
 	{
-		$elementTypes = array();
+		$elementTypes = [];
 
 		foreach (Craft::$app->elements->getAllElementTypes() as $classHandle => $elementType)
 		{

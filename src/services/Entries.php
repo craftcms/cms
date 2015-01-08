@@ -93,7 +93,7 @@ class Entries extends Component
 
 				if (!$parentEntry)
 				{
-					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->newParentId)));
+					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
 				}
 			}
 			else
@@ -111,7 +111,7 @@ class Entries extends Component
 
 			if (!$entryRecord)
 			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
+				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entry->id]));
 			}
 		}
 		else
@@ -124,7 +124,7 @@ class Entries extends Component
 
 		if (!$section)
 		{
-			throw new Exception(Craft::t('No section exists with the ID “{id}”.', array('id' => $entry->sectionId)));
+			throw new Exception(Craft::t('No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
 		}
 
 		// Verify that the section is available in this locale
@@ -132,7 +132,7 @@ class Entries extends Component
 
 		if (!isset($sectionLocales[$entry->locale]))
 		{
-			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', array('section' => $section->name, 'locale' => $entry->locale)));
+			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
 		}
 
 		// Set the entry data
@@ -177,10 +177,10 @@ class Entries extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveEntry' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'entry'      => $entry,
 				'isNewEntry' => $isNewEntry
-			));
+			]);
 
 			$this->onBeforeSaveEntry($event);
 
@@ -279,10 +279,10 @@ class Entries extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveEntry' event
-			$this->onSaveEntry(new Event($this, array(
+			$this->onSaveEntry(new Event($this, [
 				'entry'      => $entry,
 				'isNewEntry' => $isNewEntry
-			)));
+			]));
 		}
 
 		return $success;
@@ -309,17 +309,17 @@ class Entries extends Component
 		{
 			if (!is_array($entries))
 			{
-				$entries = array($entries);
+				$entries = [$entries];
 			}
 
-			$entryIds = array();
+			$entryIds = [];
 
 			foreach ($entries as $entry)
 			{
 				// Fire an 'onBeforeDeleteEntry' event
-				$this->onBeforeDeleteEntry(new Event($this, array(
+				$this->onBeforeDeleteEntry(new Event($this, [
 					'entry' => $entry
-				)));
+				]));
 
 				$section = $entry->getSection();
 
@@ -360,9 +360,9 @@ class Entries extends Component
 			foreach ($entries as $entry)
 			{
 				// Fire an 'onDeleteEntry' event
-				$this->onDeleteEntry(new Event($this, array(
+				$this->onDeleteEntry(new Event($this, [
 					'entry' => $entry
-				)));
+				]));
 			}
 
 			return true;

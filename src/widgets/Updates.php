@@ -87,9 +87,9 @@ class Updates extends BaseWidget
 
 		if ($cached)
 		{
-			return Craft::$app->templates->render('_components/widgets/Updates/body', array(
+			return Craft::$app->templates->render('_components/widgets/Updates/body', [
 				'total' => Craft::$app->updates->getTotalAvailableUpdates()
-			));
+			]);
 		}
 		else
 		{

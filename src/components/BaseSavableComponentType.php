@@ -115,6 +115,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	 */
 	protected function defineSettings()
 	{
-		return array();
+		return [];
 	}
 }

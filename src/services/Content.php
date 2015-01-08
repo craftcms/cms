@@ -73,10 +73,10 @@ class Content extends Component
 
 		$row = Craft::$app->db->createCommand()
 			->from($this->contentTable)
-			->where(array(
+			->where([
 				'elementId' => $element->id,
 				'locale'    => $element->locale
-			))
+			])
 			->queryRow();
 
 		if ($row)
@@ -198,8 +198,8 @@ class Content extends Component
 		$content     = $element->getContent();
 
 		// Set the required fields from the layout
-		$attributesToValidate = array('id', 'elementId', 'locale');
-		$requiredFields = array();
+		$attributesToValidate = ['id', 'elementId', 'locale'];
+		$requiredFields = [];
 
 		if ($elementType->hasTitles())
 		{
@@ -257,11 +257,11 @@ class Content extends Component
 	 */
 	private function _saveContentRow(ContentModel $content)
 	{
-		$values = array(
+		$values = [
 			'id'        => $content->id,
 			'elementId' => $content->elementId,
 			'locale'    => $content->locale,
-		);
+		];
 
 		$excludeColumns = array_keys($values);
 		$excludeColumns = array_merge($excludeColumns, array_keys(DbHelper::getAuditColumnConfig()));
@@ -295,7 +295,7 @@ class Content extends Component
 
 		if (!$isNewContent)
 		{
-			$affectedRows = Craft::$app->db->createCommand()->update($this->contentTable, $values, array('id' => $content->id));
+			$affectedRows = Craft::$app->db->createCommand()->update($this->contentTable, $values, ['id' => $content->id]);
 		}
 		else
 		{
@@ -311,10 +311,10 @@ class Content extends Component
 			}
 
 			// Fire an 'onSaveContent' event
-			$this->onSaveContent(new Event($this, array(
+			$this->onSaveContent(new Event($this, [
 				'content'      => $content,
 				'isNewContent' => $isNewContent
-			)));
+			]));
 
 			return true;
 		}
@@ -339,7 +339,7 @@ class Content extends Component
 	private function _duplicateNonTranslatableFieldValues(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
 	{
 		// Get all of the non-translatable fields
-		$nonTranslatableFields = array();
+		$nonTranslatableFields = [];
 
 		foreach ($fieldLayout->getFields() as $fieldLayoutField)
 		{
@@ -360,8 +360,8 @@ class Content extends Component
 			$rows = Craft::$app->db->createCommand()
 				->from($this->contentTable)
 				->where(
-					array('and', 'elementId = :elementId', 'locale != :locale'),
-					array(':elementId' => $element->id, ':locale' => $content->locale))
+					['and', 'elementId = :elementId', 'locale != :locale'],
+					[':elementId' => $element->id, ':locale' => $content->locale])
 				->queryAll();
 
 			// Remove the column prefixes
@@ -398,7 +398,7 @@ class Content extends Component
 	 */
 	private function _updateSearchIndexes(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
 	{
-		$searchKeywordsByLocale = array();
+		$searchKeywordsByLocale = [];
 
 		foreach ($fieldLayout->getFields() as $fieldLayoutField)
 		{

@@ -82,7 +82,7 @@ class Sections extends Component
 	{
 		if (!isset($this->_allSectionIds))
 		{
-			$this->_allSectionIds = array();
+			$this->_allSectionIds = [];
 
 			foreach ($this->getAllSections() as $section)
 			{
@@ -102,7 +102,7 @@ class Sections extends Component
 	{
 		if (!isset($this->_editableSectionIds))
 		{
-			$this->_editableSectionIds = array();
+			$this->_editableSectionIds = [];
 
 			foreach ($this->getAllSectionIds() as $sectionId)
 			{
@@ -163,7 +163,8 @@ class Sections extends Component
 		}
 		else
 		{
-			$sections = array();
+			$sections = [];
+
 			foreach ($this->_sectionsById as $section)
 			{
 				$sections[$section->$indexBy] = $section;
@@ -183,7 +184,7 @@ class Sections extends Component
 	public function getEditableSections($indexBy = null)
 	{
 		$editableSectionIds = $this->getEditableSectionIds();
-		$editableSections = array();
+		$editableSections = [];
 
 		foreach ($this->getAllSections() as $section)
 		{
@@ -213,7 +214,7 @@ class Sections extends Component
 	 */
 	public function getSectionsByType($type)
 	{
-		$sections = array();
+		$sections = [];
 
 		foreach ($this->getAllSections() as $section)
 		{
@@ -261,7 +262,7 @@ class Sections extends Component
 		)
 		{
 			$result = $this->_createSectionQuery()
-				->where('sections.id = :sectionId', array(':sectionId' => $sectionId))
+				->where('sections.id = :sectionId', [':sectionId' => $sectionId])
 				->queryRow();
 
 			if ($result)
@@ -292,7 +293,7 @@ class Sections extends Component
 	public function getSectionByHandle($sectionHandle)
 	{
 		$result = $this->_createSectionQuery()
-			->where('sections.handle = :sectionHandle', array(':sectionHandle' => $sectionHandle))
+			->where('sections.handle = :sectionHandle', [':sectionHandle' => $sectionHandle])
 			->queryRow();
 
 		if ($result)
@@ -318,7 +319,7 @@ class Sections extends Component
 			->select('*')
 			->from('sections_i18n sections_i18n')
 			->join('locales locales', 'locales.locale = sections_i18n.locale')
-			->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
+			->where('sections_i18n.sectionId = :sectionId', [':sectionId' => $sectionId])
 			->order('locales.sortOrder')
 			->queryAll();
 
@@ -342,7 +343,7 @@ class Sections extends Component
 
 			if (!$sectionRecord)
 			{
-				throw new Exception(Craft::t('No section exists with the ID “{id}”.', array('id' => $section->id)));
+				throw new Exception(Craft::t('No section exists with the ID “{id}”.', ['id' => $section->id]));
 			}
 
 			$oldSection = SectionModel::populateModel($sectionRecord);
@@ -362,7 +363,7 @@ class Sections extends Component
 
 		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
 		{
-			$section->addError('type', Craft::t('You can’t add any more {type} sections.', array('type' => Craft::t(ucfirst($section->type)))));
+			$section->addError('type', Craft::t('You can’t add any more {type} sections.', ['type' => Craft::t(ucfirst($section->type))]));
 		}
 
 		// Type-specific attributes
@@ -411,14 +412,14 @@ class Sections extends Component
 					$query = Craft::$app->db->createCommand()
 						->from('elements_i18n elements_i18n')
 						->where(
-							array('and', 'elements_i18n.locale = :locale', 'elements_i18n.uri = :uri'),
-							array(':locale' => $localeId, ':uri' => $sectionLocale->urlFormat)
+							['and', 'elements_i18n.locale = :locale', 'elements_i18n.uri = :uri'],
+							[':locale' => $localeId, ':uri' => $sectionLocale->urlFormat]
 						);
 
 					if ($section->id)
 					{
 						$query->join('entries entries', 'entries.id = elements_i18n.elementId')
-							->andWhere('entries.sectionId != :sectionId', array(':sectionId' => $section->id));
+							->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
 					}
 
 					$count = $query->count('elements_i18n.id');
@@ -433,7 +434,7 @@ class Sections extends Component
 			}
 			else if ($section->hasUrls)
 			{
-				$urlFormatAttributes = array('urlFormat');
+				$urlFormatAttributes = ['urlFormat'];
 				$sectionLocale->urlFormatIsRequired = true;
 
 				if ($section->type == SectionType::Structure && $section->maxLevels != 1)
@@ -448,7 +449,7 @@ class Sections extends Component
 
 				foreach ($urlFormatAttributes as $attribute)
 				{
-					if (!$sectionLocale->validate(array($attribute)))
+					if (!$sectionLocale->validate([$attribute]))
 					{
 						$section->addError($attribute.'-'.$localeId, $sectionLocale->getError($attribute));
 					}
@@ -468,10 +469,10 @@ class Sections extends Component
 			try
 			{
 				// Fire an 'onBeforeSaveSection' event
-				$event = new Event($this, array(
+				$event = new Event($this, [
 					'section'      => $section,
 					'isNewSection' => $isNewSection,
-				));
+				]);
 
 				$this->onBeforeSaveSection($event);
 
@@ -522,14 +523,14 @@ class Sections extends Component
 					$this->_sectionsById[$section->id] = $section;
 
 					// Update the sections_i18n table
-					$newLocaleData = array();
+					$newLocaleData = [];
 
 					if (!$isNewSection)
 					{
 						// Get the old section locales
-						$oldSectionLocaleRecords = SectionLocaleRecord::model()->findAllByAttributes(array(
+						$oldSectionLocaleRecords = SectionLocaleRecord::model()->findAllByAttributes([
 							'sectionId' => $section->id
-						));
+						]);
 
 						$oldSectionLocales = SectionLocaleModel::populateModels($oldSectionLocaleRecords, 'locale');
 					}
@@ -544,24 +545,24 @@ class Sections extends Component
 							// Has anything changed?
 							if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 							{
-								Craft::$app->db->createCommand()->update('sections_i18n', array(
+								Craft::$app->db->createCommand()->update('sections_i18n', [
 									'enabledByDefault' => (int)$locale->enabledByDefault,
 									'urlFormat'        => $locale->urlFormat,
 									'nestedUrlFormat'  => $locale->nestedUrlFormat
-								), array(
+								], [
 									'id' => $oldLocale->id
-								));
+								]);
 							}
 						}
 						else
 						{
-							$newLocaleData[] = array($section->id, $localeId, (int)$locale->enabledByDefault, $locale->urlFormat, $locale->nestedUrlFormat);
+							$newLocaleData[] = [$section->id, $localeId, (int)$locale->enabledByDefault, $locale->urlFormat, $locale->nestedUrlFormat];
 						}
 					}
 
 					// Insert the new locales
 					Craft::$app->db->createCommand()->insertAll('sections_i18n',
-						array('sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'),
+						['sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'],
 						$newLocaleData
 					);
 
@@ -575,8 +576,8 @@ class Sections extends Component
 						if ($droppedLocaleIds)
 						{
 							Craft::$app->db->createCommand()->delete('sections_i18n',
-								array('and', 'sectionId = :sectionId', array('in', 'locale', $droppedLocaleIds)),
-								array(':sectionId' => $section->id)
+								['and', 'sectionId = :sectionId', ['in', 'locale', $droppedLocaleIds]],
+								[':sectionId' => $section->id]
 							);
 						}
 					}
@@ -590,7 +591,7 @@ class Sections extends Component
 						$entryTypeIds = Craft::$app->db->createCommand()
 							->select('id')
 							->from('entrytypes')
-							->where('sectionId = :sectionId', array(':sectionId' => $section->id))
+							->where('sectionId = :sectionId', [':sectionId' => $section->id])
 							->queryColumn();
 
 						if ($entryTypeIds)
@@ -687,9 +688,9 @@ class Sections extends Component
 							{
 								// Create it, baby
 
-								Craft::$app->db->createCommand()->insert('elements', array(
+								Craft::$app->db->createCommand()->insert('elements', [
 									'type' => ElementType::Entry
-								));
+								]);
 
 								$singleEntryId = Craft::$app->db->getLastInsertID();
 
@@ -715,9 +716,9 @@ class Sections extends Component
 								Craft::$app->db->createCommand()->insertOrUpdate('content', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId
-								], array(
+								], [
 									'title' => $section->name
-								));
+								]);
 							}
 
 							break;
@@ -802,10 +803,10 @@ class Sections extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveSection' event
-			$this->onSaveSection(new Event($this, array(
+			$this->onSaveSection(new Event($this, [
 				'section'      => $section,
 				'isNewSection' => $isNewSection,
-			)));
+			]));
 		}
 
 		return $success;
@@ -833,7 +834,7 @@ class Sections extends Component
 			$entryIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('entries')
-				->where(array('sectionId' => $sectionId))
+				->where(['sectionId' => $sectionId])
 				->queryColumn();
 
 			Craft::$app->elements->deleteElementById($entryIds);
@@ -842,7 +843,7 @@ class Sections extends Component
 			$structureId = Craft::$app->db->createCommand()
 				->select('structureId')
 				->from('sections')
-				->where(array('id' => $sectionId))
+				->where(['id' => $sectionId])
 				->queryScalar();
 
 			if ($structureId)
@@ -851,7 +852,7 @@ class Sections extends Component
 			}
 
 			// Delete the section.
-			$affectedRows = Craft::$app->db->createCommand()->delete('sections', array('id' => $sectionId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('sections', ['id' => $sectionId]);
 
 			if ($transaction !== null)
 			{
@@ -914,9 +915,9 @@ class Sections extends Component
 	 */
 	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
 	{
-		$records = EntryTypeRecord::model()->ordered()->findAllByAttributes(array(
+		$records = EntryTypeRecord::model()->ordered()->findAllByAttributes([
 			'sectionId' => $sectionId
-		));
+		]);
 
 		return EntryTypeModel::populateModels($records, $indexBy);
 	}
@@ -956,9 +957,9 @@ class Sections extends Component
 	 */
 	public function getEntryTypesByHandle($entryTypeHandle)
 	{
-		$entryTypeRecords = EntryTypeRecord::model()->findAllByAttributes(array(
+		$entryTypeRecords = EntryTypeRecord::model()->findAllByAttributes([
 			'handle' => $entryTypeHandle
-		));
+		]);
 
 		return EntryTypeModel::populateModels($entryTypeRecords);
 	}
@@ -981,7 +982,7 @@ class Sections extends Component
 
 			if (!$entryTypeRecord)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', array('id' => $entryType->id)));
+				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
 			}
 
 			$isNewEntryType = false;
@@ -1010,10 +1011,10 @@ class Sections extends Component
 			try
 			{
 				// Fire an 'onBeforeSaveEntryType' event
-				$event = new Event($this, array(
+				$event = new Event($this, [
 					'entryType'      => $entryType,
 					'isNewEntryType' => $isNewEntryType
-				));
+				]);
 
 				$this->onBeforeSaveEntryType($event);
 
@@ -1076,10 +1077,10 @@ class Sections extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveEntryType' event
-			$this->onSaveEntryType(new Event($this, array(
+			$this->onSaveEntryType(new Event($this, [
 				'entryType'      => $entryType,
 				'isNewEntryType' => $isNewEntryType
-			)));
+			]));
 		}
 
 		return $success;
@@ -1149,11 +1150,11 @@ class Sections extends Component
 
 			if (is_array($entryTypeId))
 			{
-				$query->where(array('in', 'id', $entryTypeId));
+				$query->where(['in', 'id', $entryTypeId]);
 			}
 			else
 			{
-				$query->where(array('id' => $entryTypeId));
+				$query->where(['id' => $entryTypeId]);
 			}
 
 			$fieldLayoutIds = $query->queryColumn();
@@ -1170,11 +1171,11 @@ class Sections extends Component
 
 			if (is_array($entryTypeId))
 			{
-				$query->where(array('in', 'typeId', $entryTypeId));
+				$query->where(['in', 'typeId', $entryTypeId]);
 			}
 			else
 			{
-				$query->where(array('typeId' => $entryTypeId));
+				$query->where(['typeId' => $entryTypeId]);
 			}
 
 			$entryIds = $query->queryColumn();
@@ -1184,11 +1185,11 @@ class Sections extends Component
 			// Delete the entry type.
 			if (is_array($entryTypeId))
 			{
-				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', array('in', 'id', $entryTypeId));
+				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', ['in', 'id', $entryTypeId]);
 			}
 			else
 			{
-				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', array('id' => $entryTypeId));
+				$affectedRows = Craft::$app->db->createCommand()->delete('entrytypes', ['id' => $entryTypeId]);
 			}
 
 			if ($transaction !== null)
@@ -1219,8 +1220,8 @@ class Sections extends Component
 	 */
 	public function doesHomepageExist()
 	{
-		$conditions = array('and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri');
-		$params = array(':type' => SectionType::Single, ':homeUri' => '__home__');
+		$conditions = ['and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri'];
+		$params     = [':type' => SectionType::Single, ':homeUri' => '__home__'];
 
 		$count = Craft::$app->db->createCommand()
 			->from('sections sections')
@@ -1250,7 +1251,7 @@ class Sections extends Component
 			{
 				$count = Craft::$app->db->createCommand()
 					->from('sections')
-					->where('type = :type', array(':type' => $type))
+					->where('type = :type', [':type' => $type])
 					->count('id');
 
 				return $count < $this->typeLimits[$type];

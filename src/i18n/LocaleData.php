@@ -37,7 +37,7 @@ class LocaleData extends \CLocale
 	 */
 	public static function getInstance($id)
 	{
-		static $locales = array();
+		static $locales = [];
 
 		if (isset($locales[$id]))
 		{

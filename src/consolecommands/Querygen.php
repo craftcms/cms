@@ -53,7 +53,7 @@ class Querygen extends BaseCommand
 		$table = $record->getTableName();
 		$indexes = $record->defineIndexes();
 		$attributes = $record->getAttributeConfigs();
-		$columns = array();
+		$columns = [];
 
 		// Add any Foreign Key columns
 		foreach ($record->getBelongsToRelations() as $name => $config)
@@ -67,18 +67,18 @@ class Querygen extends BaseCommand
 			}
 
 			$required = !empty($config['required']);
-			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
+			$columns[$columnName] = ['column' => ColumnType::Int, 'required' => $required];
 
 			// Add unique index for this column? (foreign keys already get indexed, so we're only concerned with whether
 			// it should be unique)
 			if (!empty($config['unique']))
 			{
-				$indexes[] = array('columns' => array($columnName), 'unique' => true);
+				$indexes[] = ['columns' => [$columnName], 'unique' => true];
 			}
 		}
 
 		// Add all other columns
-		$dbConfigSettings = array('column', 'maxLength', 'length', 'decimals', 'values', 'unsigned', 'zerofill', 'required', 'null', 'default', 'primaryKey');
+		$dbConfigSettings = ['column', 'maxLength', 'length', 'decimals', 'values', 'unsigned', 'zerofill', 'required', 'null', 'default', 'primaryKey'];
 
 		foreach ($attributes as $name => $config)
 		{
@@ -88,7 +88,7 @@ class Querygen extends BaseCommand
 
 			if ($unique || $indexed)
 			{
-				$indexes[] = array('columns' => array($name), 'unique' => $unique);
+				$indexes[] = ['columns' => [$name], 'unique' => $unique];
 			}
 
 			// Filter out any settings that don't influence the table SQL
@@ -121,7 +121,7 @@ class Querygen extends BaseCommand
 		echo "\n// Create the craft_{$table} table\n";
 
 		echo 'Craft::$app->db->createCommand()->createTable(' .
-			$this->_varExport($table).", array(\n";
+			$this->_varExport($table).", [\n";
 
 		$colNameLength = max(array_map('strlen', array_keys($columns))) + 2;
 
@@ -130,7 +130,7 @@ class Querygen extends BaseCommand
 			echo "\t".str_pad("'{$name}'", $colNameLength).' => '.$this->_varExport($config).",\n";
 		}
 
-		echo '), null, '.$this->_varExport($addIdColumn).");\n";
+		echo '], null, '.$this->_varExport($addIdColumn).");\n";
 
 		// Create the indexes
 		if ($indexes)

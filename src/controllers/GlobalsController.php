@@ -61,9 +61,9 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'globalSet' => $globalSet
-		));
+		]);
 	}
 
 	/**
@@ -80,7 +80,7 @@ class GlobalsController extends BaseController
 		$globalSetId = Craft::$app->request->getRequiredPost('id');
 
 		Craft::$app->globals->deleteSetById($globalSetId);
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -91,12 +91,12 @@ class GlobalsController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditContent(array $variables = array())
+	public function actionEditContent(array $variables = [])
 	{
 		// Make sure a specific global set was requested
 		if (empty($variables['globalSetHandle']))
 		{
-			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', array('name' => 'globalSetHandle')));
+			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', ['name' => 'globalSetHandle']));
 		}
 
 		// Get the locales the user is allowed to edit
@@ -126,7 +126,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Get the global sets the user is allowed to edit, in the requested locale
-		$variables['globalSets'] = array();
+		$variables['globalSets'] = [];
 
 		$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
 		$criteria->locale = $variables['localeId'];
@@ -179,7 +179,7 @@ class GlobalsController extends BaseController
 
 		if (!$globalSet)
 		{
-			throw new Exception(Craft::t('No global set exists with the ID “{id}”.', array('id' => $globalSetId)));
+			throw new Exception(Craft::t('No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
 		}
 
 		$globalSet->setContentFromPost('fields');
@@ -195,8 +195,8 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'globalSet' => $globalSet,
-		));
+		]);
 	}
 }

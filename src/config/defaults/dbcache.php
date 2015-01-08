@@ -8,7 +8,7 @@
  * If you want to change any of these settings, copy it into craft/config/dbcache.php, and make your change there.
  */
 
-return array(
+return [
 	/**
 	 * The probability (parts per million) that garbage collection (GC) should be performed when storing a piece of data
 	 *in the cache. Defaults to 100, meaning 0.01% chance.
@@ -20,4 +20,4 @@ return array(
 	 * craft/config/db.php file.
 	 */
 	'cacheTableName' => 'cache',
-);
+];

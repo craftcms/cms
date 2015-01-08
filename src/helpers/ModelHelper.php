@@ -30,34 +30,34 @@ class ModelHelper
 	 *
 	 * @var array
 	 */
-	public static $attributeTypeDefaults = array(
-		AttributeType::Mixed      => array('model' => null, 'column' => ColumnType::Text),
-		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
-		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Varchar),
-		AttributeType::DateTime   => array('column' => ColumnType::DateTime),
-		AttributeType::Email      => array('minLength' => 5, 'column' => ColumnType::Varchar),
-		AttributeType::Enum       => array('values' => array(), 'column' => ColumnType::Enum),
-		AttributeType::Handle     => array('maxLength' => 255, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Varchar),
-		AttributeType::Locale     => array('column' => ColumnType::Locale),
-		AttributeType::Name       => array('maxLength' => 255, 'column' => ColumnType::Varchar),
-		AttributeType::Number     => array('min' => null, 'max' => null, 'decimals' => 0),
-		AttributeType::SortOrder  => array('column' => ColumnType::TinyInt),
-		AttributeType::Template   => array('maxLength' => 500, 'column' => ColumnType::Varchar),
-		AttributeType::Url        => array('maxLength' => 255, 'column' => ColumnType::Varchar),
-	);
+	public static $attributeTypeDefaults = [
+		AttributeType::Mixed      => ['model' => null, 'column' => ColumnType::Text],
+		AttributeType::Bool       => ['maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true],
+		AttributeType::ClassName  => ['maxLength' => 150, 'column' => ColumnType::Varchar],
+		AttributeType::DateTime   => ['column' => ColumnType::DateTime],
+		AttributeType::Email      => ['minLength' => 5, 'column' => ColumnType::Varchar],
+		AttributeType::Enum       => ['values' => [], 'column' => ColumnType::Enum],
+		AttributeType::Handle     => ['maxLength' => 255, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Varchar],
+		AttributeType::Locale     => ['column' => ColumnType::Locale],
+		AttributeType::Name       => ['maxLength' => 255, 'column' => ColumnType::Varchar],
+		AttributeType::Number     => ['min' => null, 'max' => null, 'decimals' => 0],
+		AttributeType::SortOrder  => ['column' => ColumnType::TinyInt],
+		AttributeType::Template   => ['maxLength' => 500, 'column' => ColumnType::Varchar],
+		AttributeType::Url        => ['maxLength' => 255, 'column' => ColumnType::Varchar],
+	];
 
 	/**
 	 * Integer column sizes.
 	 *
 	 * @var array
 	 */
-	private static $_intColumnSizes = array(
+	private static $_intColumnSizes = [
 		ColumnType::TinyInt   => 128,
 		ColumnType::SmallInt  => 32768,
 		ColumnType::MediumInt => 8388608,
 		ColumnType::Int       => 2147483648,
 		ColumnType::BigInt    => 9223372036854775808
-	);
+	];
 
 	// Public Methods
 	// =========================================================================
@@ -68,8 +68,8 @@ class ModelHelper
 	 * Attributes can be defined in 3 ways:
 	 *
 	 * 1. AttributeType::TypeName
-	 * 2. array(AttributeType::TypeName [, 'other' => 'settings' ... ] )
-	 * 3. array('type' => AttributeType::TypeName [, 'other' => 'settings' ... ] )
+	 * 2. [AttributeType::TypeName [, 'other' => 'settings' ... ] ]
+	 * 3. ['type' => AttributeType::TypeName [, 'other' => 'settings' ... ] ]
 	 *
 	 * This function normalizes on the 3rd, and merges in the default config settings for the attribute type, merges in
 	 * the default column settings if 'column' is set, and sets the 'unsigned', 'min', and 'max' values for integers.
@@ -82,7 +82,7 @@ class ModelHelper
 	{
 		if (is_string($config))
 		{
-			$config = array('type' => $config);
+			$config = ['type' => $config];
 		}
 		else if (!isset($config['type']))
 		{
@@ -156,7 +156,7 @@ class ModelHelper
 	 */
 	public static function getNumberAttributeConfig($min = null, $max = null, $decimals = null)
 	{
-		$config = array();
+		$config = [];
 
 		// Normalize the arguments
 		$config['type'] = AttributeType::Number;
@@ -230,18 +230,17 @@ class ModelHelper
 	 */
 	public static function getRules(\CModel $model)
 	{
-		$rules = array();
-
-		$uniqueAttributes = array();
-		$uniqueRequiredAttributes = array();
-		$requiredAttributes = array();
-		$emailAttributes = array();
-		$urlAttributes = array();
-		$urlFormatAttributes = array();
-		$uriAttributes = array();
-		$strictLengthAttributes = array();
-		$minLengthAttributes = array();
-		$maxLengthAttributes = array();
+		$rules                    = [];
+		$uniqueAttributes         = [];
+		$uniqueRequiredAttributes = [];
+		$requiredAttributes       = [];
+		$emailAttributes          = [];
+		$urlAttributes            = [];
+		$urlFormatAttributes      = [];
+		$uriAttributes            = [];
+		$strictLengthAttributes   = [];
+		$minLengthAttributes      = [];
+		$maxLengthAttributes      = [];
 
 		$attributes = $model->getAttributeConfigs();
 
@@ -251,7 +250,7 @@ class ModelHelper
 			{
 				case AttributeType::DateTime:
 				{
-					$rules[] = array($name, 'Craft\DateTimeValidator');
+					$rules[] = [$name, 'Craft\DateTimeValidator'];
 					break;
 				}
 
@@ -263,25 +262,25 @@ class ModelHelper
 
 				case AttributeType::Enum:
 				{
-					$rules[] = array($name, 'in', 'range' => ArrayHelper::stringToArray($config['values']));
+					$rules[] = [$name, 'in', 'range' => ArrayHelper::stringToArray($config['values'])];
 					break;
 				}
 
 				case AttributeType::Handle:
 				{
-					$rules[] = array($name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::stringToArray($config['reservedWords']));
+					$rules[] = [$name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::stringToArray($config['reservedWords'])];
 					break;
 				}
 
 				case AttributeType::Locale:
 				{
-					$rules[] = array($name, 'Craft\LocaleValidator');
+					$rules[] = [$name, 'Craft\LocaleValidator'];
 					break;
 				}
 
 				case AttributeType::Number:
 				{
-					$rule = array($name, 'numerical');
+					$rule = [$name, 'numerical'];
 
 					if ($config['min'] !== null)
 					{
@@ -370,7 +369,7 @@ class ModelHelper
 				{
 					if (preg_match('/^(==|=|!=|>=|>|<=|<)\s*\b(.*)$/', $comparison, $match))
 					{
-						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1], 'allowEmpty' => true);
+						$rules[] = [$name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1], 'allowEmpty' => true];
 					}
 				}
 			}
@@ -378,7 +377,7 @@ class ModelHelper
 			// Regex pattern matching
 			if (!empty($config['matchPattern']))
 			{
-				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
+				$rules[] = [$name, 'match', 'pattern' => $config['matchPattern']];
 			}
 		}
 
@@ -411,7 +410,7 @@ class ModelHelper
 						else
 						{
 							$initialColumn = array_shift($columns);
-							$rules[] = array($initialColumn, 'Craft\CompositeUniqueValidator', 'with' => implode(',', $columns));
+							$rules[] = [$initialColumn, 'Craft\CompositeUniqueValidator', 'with' => implode(',', $columns)];
 						}
 					}
 
@@ -425,44 +424,44 @@ class ModelHelper
 
 		if ($uniqueAttributes)
 		{
-			$rules[] = array(implode(',', $uniqueAttributes), 'unique');
+			$rules[] = [implode(',', $uniqueAttributes), 'unique'];
 		}
 
 		if ($uniqueRequiredAttributes)
 		{
-			$rules[] = array(implode(',', $uniqueRequiredAttributes), 'unique', 'allowEmpty' => false);
+			$rules[] = [implode(',', $uniqueRequiredAttributes), 'unique', 'allowEmpty' => false];
 		}
 
 		if ($requiredAttributes)
 		{
-			$rules[] = array(implode(',', $requiredAttributes), 'required');
+			$rules[] = [implode(',', $requiredAttributes), 'required'];
 		}
 
 		if ($emailAttributes)
 		{
-			$rules[] = array(implode(',', $emailAttributes), 'email');
+			$rules[] = [implode(',', $emailAttributes), 'email'];
 		}
 
 		if ($urlAttributes)
 		{
-			$rules[] = array(implode(',', $urlAttributes), 'Craft\UrlValidator', 'defaultScheme' => 'http');
+			$rules[] = [implode(',', $urlAttributes), 'Craft\UrlValidator', 'defaultScheme' => 'http'];
 		}
 
 		if ($urlFormatAttributes)
 		{
-			$rules[] = array(implode(',', $urlFormatAttributes), 'Craft\UrlFormatValidator');
+			$rules[] = [implode(',', $urlFormatAttributes), 'Craft\UrlFormatValidator'];
 		}
 
 		if ($uriAttributes)
 		{
-			$rules[] = array(implode(',', $uriAttributes), 'Craft\UriValidator');
+			$rules[] = [implode(',', $uriAttributes), 'Craft\UriValidator'];
 		}
 
 		if ($strictLengthAttributes)
 		{
 			foreach ($strictLengthAttributes as $strictLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'is' => (int)$strictLength);
+				$rules[] = [implode(',', $attributeNames), 'length', 'is' => (int)$strictLength];
 			}
 		}
 
@@ -470,7 +469,7 @@ class ModelHelper
 		{
 			foreach ($minLengthAttributes as $minLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'min' => (int)$minLength);
+				$rules[] = [implode(',', $attributeNames), 'length', 'min' => (int)$minLength];
 			}
 		}
 
@@ -478,11 +477,11 @@ class ModelHelper
 		{
 			foreach ($maxLengthAttributes as $maxLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'max' => (int)$maxLength);
+				$rules[] = [implode(',', $attributeNames), 'length', 'max' => (int)$maxLength];
 			}
 		}
 
-		$rules[] = array(implode(',', array_keys($attributes)), 'safe', 'on' => 'search');
+		$rules[] = [implode(',', array_keys($attributes)), 'safe', 'on' => 'search'];
 
 		return $rules;
 	}
@@ -496,7 +495,7 @@ class ModelHelper
 	 */
 	public static function getAttributeLabels(\CModel $model)
 	{
-		$labels = array();
+		$labels = [];
 
 		foreach ($model->getAttributeConfigs() as $name => $config)
 		{

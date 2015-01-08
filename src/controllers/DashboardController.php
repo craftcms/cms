@@ -57,9 +57,9 @@ class DashboardController extends BaseController
 		}
 
 		// Send the widget back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'widget' => $widget
-		));
+		]);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class DashboardController extends BaseController
 		$widgetId = JsonHelper::decode(Craft::$app->request->getRequiredPost('id'));
 		Craft::$app->dashboard->deleteUserWidgetById($widgetId);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -91,7 +91,7 @@ class DashboardController extends BaseController
 		$widgetIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
 		Craft::$app->dashboard->reorderUserWidgets($widgetIds);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -120,7 +120,7 @@ class DashboardController extends BaseController
 			}
 		}
 
-		$this->returnJson(array('items' => $items));
+		$this->returnJson(['items' => $items]);
 	}
 
 	/**
@@ -135,7 +135,7 @@ class DashboardController extends BaseController
 		Craft::$app->config->maxPowerCaptain();
 
 		$success = false;
-		$errors = array();
+		$errors = [];
 		$zipFile = null;
 		$tempFolder = null;
 		$widgetId = Craft::$app->request->getPost('widgetId');
@@ -161,7 +161,7 @@ class DashboardController extends BaseController
 
 			if ($plugins)
 			{
-				$pluginNames = array();
+				$pluginNames = [];
 
 				foreach ($plugins as $plugin)
 				{
@@ -171,18 +171,18 @@ class DashboardController extends BaseController
 				$message .= "\nPlugins: ".implode(', ', $pluginNames);
 			}
 
-			$requestParamDefaults = array(
+			$requestParamDefaults = [
 				'sFirstName' => $user->getFriendlyName(),
 				'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
 				'sEmail' => $getHelpModel->fromEmail,
 				'tNote' => $message,
-			);
+			];
 
 			$requestParams = $requestParamDefaults;
 
-			$hsParams = array(
+			$hsParams = [
 				'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
-			);
+			];
 
 			try
 			{
@@ -212,7 +212,7 @@ class DashboardController extends BaseController
 					{
 						// Make a fresh database backup of the current schema/data. We want all data from all tables
 						// for debugging.
-						Craft::$app->db->backup(array());
+						Craft::$app->db->backup([]);
 
 						$backups = IOHelper::getLastModifiedFiles(Craft::$app->path->getDbBackupPath(), 3);
 
@@ -322,7 +322,7 @@ class DashboardController extends BaseController
 			else
 			{
 				$hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/", $hsapi->errors));
-				$errors = array('Support' => $hsErrors);
+				$errors = ['Support' => $hsErrors];
 			}
 		}
 		else
@@ -331,11 +331,11 @@ class DashboardController extends BaseController
 		}
 
 		$this->renderTemplate('_components/widgets/GetHelp/response',
-			array(
+			[
 				'success' => $success,
 				'errors' => JsonHelper::encode($errors),
 				'widgetId' => $widgetId
-			)
+			]
 		);
 	}
 

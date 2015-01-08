@@ -37,11 +37,11 @@ class FieldLayoutField extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'layout' => array(static::BELONGS_TO, 'FieldLayout', 'required' => true, 'onDelete' => static::CASCADE),
-			'tab'    => array(static::BELONGS_TO, 'FieldLayoutTab', 'required' => true, 'onDelete' => static::CASCADE),
-			'field'  => array(static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'layout' => [static::BELONGS_TO, 'FieldLayout', 'required' => true, 'onDelete' => static::CASCADE],
+			'tab'    => [static::BELONGS_TO, 'FieldLayoutTab', 'required' => true, 'onDelete' => static::CASCADE],
+			'field'  => [static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -51,10 +51,10 @@ class FieldLayoutField extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('layoutId', 'fieldId'), 'unique' => true),
-			array('columns' => array('sortOrder')),
-		);
+		return [
+			['columns' => ['layoutId', 'fieldId'], 'unique' => true],
+			['columns' => ['sortOrder']],
+		];
 	}
 
 	// Protected Methods

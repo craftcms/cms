@@ -92,10 +92,10 @@ class Matrix extends Component
 	{
 		if (empty($this->_fetchedAllBlockTypesForFieldId[$fieldId]))
 		{
-			$this->_blockTypesByFieldId[$fieldId] = array();
+			$this->_blockTypesByFieldId[$fieldId] = [];
 
 			$results = $this->_createBlockTypeQuery()
-				->where('fieldId = :fieldId', array(':fieldId' => $fieldId))
+				->where('fieldId = :fieldId', [':fieldId' => $fieldId])
 				->queryAll();
 
 			foreach ($results as $result)
@@ -114,7 +114,7 @@ class Matrix extends Component
 		}
 		else
 		{
-			$blockTypes = array();
+			$blockTypes = [];
 
 			foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType)
 			{
@@ -137,7 +137,7 @@ class Matrix extends Component
 		if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId, $this->_blockTypesById))
 		{
 			$result = $this->_createBlockTypeQuery()
-				->where('id = :id', array(':id' => $blockTypeId))
+				->where('id = :id', [':id' => $blockTypeId])
 				->queryRow();
 
 			if ($result)
@@ -217,10 +217,10 @@ class Matrix extends Component
 					// This error *might* not be entirely accurate, but it's such an edge case that it's probably better
 					// for the error to be worded for the common problem (two duplicate handles within the same block
 					// type).
-					$error = Craft::t('{attribute} "{value}" has already been taken.', array(
+					$error = Craft::t('{attribute} "{value}" has already been taken.', [
 						'attribute' => Craft::t('Handle'),
 						'value' => $field->handle
-					));
+					]);
 
 					$field->addError('handle', $error);
 				}
@@ -282,7 +282,7 @@ class Matrix extends Component
 					$contentService->fieldColumnPrefix   = 'field_'.$oldBlockType->handle.'_';
 					$fieldsService->oldFieldColumnPrefix = 'field_'.$oldBlockType->handle.'_';
 
-					$oldFieldsById = array();
+					$oldFieldsById = [];
 
 					foreach ($oldBlockType->getFields() as $field)
 					{
@@ -326,7 +326,7 @@ class Matrix extends Component
 				// Save the fields and field layout
 				// -------------------------------------------------------------
 
-				$fieldLayoutFields = array();
+				$fieldLayoutFields = [];
 				$sortOrder = 0;
 
 				// Resetting the fieldContext here might be redundant if this isn't a new blocktype but whatever
@@ -365,7 +365,7 @@ class Matrix extends Component
 
 				$fieldLayout = new FieldLayoutModel();
 				$fieldLayout->type = ElementType::MatrixBlock;
-				$fieldLayout->setTabs(array($fieldLayoutTab));
+				$fieldLayout->setTabs([$fieldLayoutTab]);
 				$fieldLayout->setFields($fieldLayoutFields);
 
 				$fieldsService->saveLayout($fieldLayout);
@@ -424,7 +424,7 @@ class Matrix extends Component
 			$blockIds = Craft::$app->db->createCommand()
 				->select('id')
 				->from('matrixblocks')
-				->where(array('typeId' => $blockType->id))
+				->where(['typeId' => $blockType->id])
 				->queryColumn();
 
 			$this->deleteBlockById($blockIds);
@@ -444,7 +444,7 @@ class Matrix extends Component
 			Craft::$app->fields->deleteLayoutById($blockType->fieldLayoutId);
 
 			// Finally delete the actual block type
-			$affectedRows = Craft::$app->db->createCommand()->delete('matrixblocktypes', array('id' => $blockType->id));
+			$affectedRows = Craft::$app->db->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id]);
 
 			if ($transaction !== null)
 			{
@@ -477,10 +477,10 @@ class Matrix extends Component
 	{
 		$validates = true;
 
-		$this->_uniqueBlockTypeAndFieldHandles = array();
+		$this->_uniqueBlockTypeAndFieldHandles = [];
 
-		$uniqueAttributes = array('name', 'handle');
-		$uniqueAttributeValues = array();
+		$uniqueAttributes      = ['name', 'handle'];
+		$uniqueAttributeValues = [];
 
 		foreach ($settings->getBlockTypes() as $blockType)
 		{
@@ -503,10 +503,10 @@ class Matrix extends Component
 				}
 				else
 				{
-					$blockType->addError($attribute, Craft::t('{attribute} "{value}" has already been taken.', array(
+					$blockType->addError($attribute, Craft::t('{attribute} "{value}" has already been taken.', [
 						'attribute' => $blockType->getAttributeLabel($attribute),
 						'value'     => HtmlHelper::encode($value)
-					)));
+					]));
 
 					$validates = false;
 				}
@@ -553,7 +553,7 @@ class Matrix extends Component
 
 				// Delete the old block types first, in case there's a handle conflict with one of the new ones
 				$oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
-				$oldBlockTypesById = array();
+				$oldBlockTypesById = [];
 
 				foreach ($oldBlockTypes as $blockType)
 				{
@@ -822,7 +822,7 @@ class Matrix extends Component
 
 		if (!is_array($blockIds))
 		{
-			$blockIds = array($blockIds);
+			$blockIds = [$blockIds];
 		}
 
 		// Tell the browser to forget about these
@@ -858,7 +858,7 @@ class Matrix extends Component
 
 		if (!is_array($blocks))
 		{
-			$blocks = array();
+			$blocks = [];
 		}
 
 		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
@@ -868,8 +868,8 @@ class Matrix extends Component
 			// setting
 			$this->_applyFieldTranslationSetting($owner, $field, $blocks);
 
-			$blockIds = array();
-			$collapsedBlockIds = array();
+			$blockIds          = [];
+			$collapsedBlockIds = [];
 
 			foreach ($blocks as $block)
 			{
@@ -888,16 +888,16 @@ class Matrix extends Component
 			}
 
 			// Get the IDs of blocks that are row deleted
-			$deletedBlockConditions = array('and',
+			$deletedBlockConditions = ['and',
 				'ownerId = :ownerId',
 				'fieldId = :fieldId',
-				array('not in', 'id', $blockIds)
-			);
+				['not in', 'id', $blockIds]
+			];
 
-			$deletedBlockParams = array(
+			$deletedBlockParams = [
 				':ownerId' => $owner->id,
 				':fieldId' => $field->id
-			);
+			];
 
 			if ($field->translatable)
 			{
@@ -959,7 +959,7 @@ class Matrix extends Component
 				->from('fields fields')
 				->join('matrixblocktypes blocktypes', 'blocktypes.fieldId = fields.id')
 				->join('fieldlayoutfields fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
-				->where('fieldlayoutfields.fieldId = :matrixFieldId', array(':matrixFieldId' => $matrixField->id))
+				->where('fieldlayoutfields.fieldId = :matrixFieldId', [':matrixFieldId' => $matrixField->id])
 				->queryScalar();
 
 			if ($parentMatrixFieldId)
@@ -1011,7 +1011,7 @@ class Matrix extends Component
 
 				if (!$this->_blockTypeRecordsById[$blockTypeId])
 				{
-					throw new Exception(Craft::t('No block type exists with the ID “{id}”.', array('id' => $blockTypeId)));
+					throw new Exception(Craft::t('No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
 				}
 			}
 
@@ -1043,7 +1043,7 @@ class Matrix extends Component
 
 				if (!$this->_blockRecordsById[$blockId])
 				{
-					throw new Exception(Craft::t('No block exists with the ID “{id}”.', array('id' => $blockId)));
+					throw new Exception(Craft::t('No block exists with the ID “{id}”.', ['id' => $blockId]));
 				}
 			}
 
@@ -1104,7 +1104,7 @@ class Matrix extends Component
 		{
 			// Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
 			// incorrectly
-			$blocksInOtherLocales = array();
+			$blocksInOtherLocales = [];
 
 			$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
 			$criteria->fieldId = $field->id;
@@ -1144,7 +1144,7 @@ class Matrix extends Component
 			{
 				if ($field->translatable)
 				{
-					$newBlockIds = array();
+					$newBlockIds = [];
 
 					// Duplicate the other-locale blocks so each locale has their own unique set of blocks
 					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
@@ -1167,13 +1167,13 @@ class Matrix extends Component
 					$relations = Craft::$app->db->createCommand()
 						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 						->from('relations')
-						->where(array('in', 'sourceId', array_keys($newBlockIds)))
+						->where(['in', 'sourceId', array_keys($newBlockIds)])
 						->queryAll();
 
 					if ($relations)
 					{
 						// Now duplicate each one for the other locales' new blocks
-						$rows = array();
+						$rows = [];
 
 						foreach ($relations as $relation)
 						{
@@ -1184,18 +1184,18 @@ class Matrix extends Component
 							{
 								foreach ($newBlockIds[$originalBlockId] as $localeId => $newBlockId)
 								{
-									$rows[] = array($relation['fieldId'], $newBlockId, $relation['sourceLocale'], $relation['targetId'], $relation['sortOrder']);
+									$rows[] = [$relation['fieldId'], $newBlockId, $relation['sourceLocale'], $relation['targetId'], $relation['sortOrder']];
 								}
 							}
 						}
 
-						Craft::$app->db->createCommand()->insertAll('relations', array('fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'), $rows);
+						Craft::$app->db->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'], $rows);
 					}
 				}
 				else
 				{
 					// Delete all of these blocks
-					$blockIdsToDelete = array();
+					$blockIdsToDelete = [];
 
 					foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale)
 					{

@@ -53,10 +53,10 @@ class ClearCaches extends BaseTool
 		$caches['assetIndexingData'] = Craft::t('Asset indexing data');
 		$caches['templateCaches'] = Craft::t('Template caches');
 
-		return Craft::$app->templates->render('_includes/forms/checkboxSelect', array(
+		return Craft::$app->templates->render('_includes/forms/checkboxSelect', [
 			'name'    => 'caches',
 			'options' => $caches
-		));
+		]);
 	}
 
 	/**
@@ -76,7 +76,7 @@ class ClearCaches extends BaseTool
 	 *
 	 * @return null
 	 */
-	public function performAction($params = array())
+	public function performAction($params = [])
 	{
 		if (!isset($params['caches']))
 		{
@@ -91,7 +91,7 @@ class ClearCaches extends BaseTool
 		}
 		else
 		{
-			$folders = array();
+			$folders = [];
 
 			foreach ($params['caches'] as $cacheKey)
 			{
@@ -154,13 +154,13 @@ class ClearCaches extends BaseTool
 	{
 		$runtimePath = Craft::$app->path->getRuntimePath();
 
-		$folders = array(
+		$folders = [
 			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data caches'),
 			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS caches'),
 			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset caches'),
 			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
 			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
-		);
+		];
 
 		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');
 

@@ -44,12 +44,12 @@ class CategoryGroupLocale extends BaseModel
 
 		if ($this->urlFormatIsRequired)
 		{
-			$rules[] = array('urlFormat', 'required');
+			$rules[] = ['urlFormat', 'required'];
 		}
 
 		if ($this->nestedUrlFormatIsRequired)
 		{
-			$rules[] = array('nestedUrlFormat', 'required');
+			$rules[] = ['nestedUrlFormat', 'required'];
 		}
 
 		return $rules;
@@ -65,12 +65,12 @@ class CategoryGroupLocale extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'              => AttributeType::Number,
 			'groupId'         => AttributeType::Number,
 			'locale'          => AttributeType::Locale,
-			'urlFormat'       => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-			'nestedUrlFormat' => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-		);
+			'urlFormat'       => [AttributeType::UrlFormat, 'label' => 'URL Format'],
+			'nestedUrlFormat' => [AttributeType::UrlFormat, 'label' => 'URL Format'],
+		];
 	}
 }

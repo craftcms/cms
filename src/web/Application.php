@@ -138,7 +138,7 @@ class Application extends \yii\web\Application
 		$this->getComponent('log');
 
 		// So we can try to translate Yii framework strings
-		$this->coreMessages->attachEventHandler('onMissingTranslation', array('Craft\LocalizationHelper', 'findMissingTranslation'));
+		$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath($this->path->getRuntimePath());
@@ -180,7 +180,7 @@ class Application extends \yii\web\Application
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
 		if ($this->request->isCpRequest())
 		{
-			HeaderHelper::setHeader(array('X-Robots-Tag' => 'none'));
+			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
 		}
 
 		// Validate some basics on the database configuration file.
@@ -207,9 +207,9 @@ class Application extends \yii\web\Application
 				$build = $this->getBuild();
 				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', array(
+				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', [
 					'url' => '['.$build.']('.$url.')',
-				)));
+				]));
 			}
 			else
 			{
@@ -225,8 +225,8 @@ class Application extends \yii\web\Application
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
 			($this->isInMaintenanceMode() && $this->request->isCpRequest()) ||
-			$this->request->getActionSegments() == array('update', 'cleanUp') ||
-			$this->request->getActionSegments() == array('update', 'rollback')
+			$this->request->getActionSegments() == ['update', 'cleanUp'] ||
+			$this->request->getActionSegments() == ['update', 'rollback']
 		)
 		{
 			$this->_processUpdateLogic();
@@ -369,10 +369,10 @@ class Application extends \yii\web\Application
 		// Did we find a valid controller?
 		if (isset($action))
 		{
-			return array(
+			return [
 				Craft::createComponent($class, $controllerId),
 				$this->parseActionParams($action),
-			);
+			];
 		}
 	}
 
@@ -451,16 +451,16 @@ class Application extends \yii\web\Application
 				$outputTrace .= "{$t['function']}()\n";
 			}
 
-			$errorArr = array(
+			$errorArr = [
 				'error' => $code.' : '.$message,
 				'trace' => $outputTrace,
 				'file'  => $file,
 				'line'  => $line,
-			);
+			];
 		}
 		else
 		{
-			$errorArr = array('error' => $message);
+			$errorArr = ['error' => $message];
 		}
 
 		JsonHelper::sendJsonHeaders();
@@ -545,7 +545,7 @@ class Application extends \yii\web\Application
 	{
 		if (
 			!$evenDuringUpdates &&
-			$this->request->getActionSegments() == array('update', 'updateDatabase')
+			$this->request->getActionSegments() == ['update', 'updateDatabase']
 		)
 		{
 			return;
@@ -791,13 +791,13 @@ class Application extends \yii\web\Application
 		$segments = $this->request->getActionSegments();
 
 		if (
-			$segments == array('users', 'login') ||
-			$segments == array('users', 'logout') ||
-			$segments == array('users', 'setpassword') ||
-			$segments == array('users', 'forgotpassword') ||
-			$segments == array('users', 'sendPasswordResetEmail') ||
-			$segments == array('users', 'saveUser') ||
-			$segments == array('users', 'getAuthTimeout')
+			$segments == ['users', 'login'] ||
+			$segments == ['users', 'logout'] ||
+			$segments == ['users', 'setpassword'] ||
+			$segments == ['users', 'forgotpassword'] ||
+			$segments == ['users', 'sendPasswordResetEmail'] ||
+			$segments == ['users', 'saveUser'] ||
+			$segments == ['users', 'getAuthTimeout']
 		)
 		{
 			return true;
@@ -853,7 +853,7 @@ class Application extends \yii\web\Application
 		// Let all non-action CP requests through.
 		if (
 			$this->request->isCpRequest() &&
-			(!$this->request->isActionRequest() || $this->request->getActionSegments() == array('users', 'login'))
+			(!$this->request->isActionRequest() || $this->request->getActionSegments() == ['users', 'login'])
 		)
 		{
 			// If this is a request to actually manually update Craft, do it
@@ -866,11 +866,11 @@ class Application extends \yii\web\Application
 			{
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
-					throw new HttpException(200, Craft::t('You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', array(
+					throw new HttpException(200, Craft::t('You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', [
 						'url'           => '<a href="'.CRAFT_MIN_BUILD_URL.'">build '.CRAFT_MIN_BUILD_REQUIRED.'</a>',
 						'targetVersion' => CRAFT_VERSION,
 						'targetBuild'   => CRAFT_BUILD
-					)));
+					]));
 				}
 				else
 				{
@@ -975,12 +975,12 @@ class Application extends \yii\web\Application
 			$actionSegs = $this->request->getActionSegments();
 
 			if ($actionSegs && (
-				$actionSegs == array('users', 'login') ||
-				$actionSegs == array('users', 'logout') ||
-				$actionSegs == array('users', 'forgotpassword') ||
-				$actionSegs == array('users', 'sendPasswordResetEmail') ||
-				$actionSegs == array('users', 'setpassword') ||
-				$actionSegs == array('users', 'verifyemail') ||
+				$actionSegs == ['users', 'login'] ||
+				$actionSegs == ['users', 'logout'] ||
+				$actionSegs == ['users', 'forgotpassword'] ||
+				$actionSegs == ['users', 'sendPasswordResetEmail'] ||
+				$actionSegs == ['users', 'setpassword'] ||
+				$actionSegs == ['users', 'verifyemail'] ||
 				$actionSegs[0] == 'update'
 			))
 			{

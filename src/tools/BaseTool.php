@@ -68,8 +68,8 @@ abstract class BaseTool extends BaseComponentType implements ToolInterface
 	 *
 	 * @return array
 	 */
-	public function performAction($params = array())
+	public function performAction($params = [])
 	{
-		return array('complete' => true);
+		return ['complete' => true];
 	}
 }

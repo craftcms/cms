@@ -478,7 +478,7 @@ class HttpRequest extends \CHttpRequest
 		}
 		else
 		{
-			throw new HttpException(400, Craft::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('POST param “{name}” doesn’t exist.', ['name' => $name]));
 		}
 	}
 
@@ -555,7 +555,7 @@ class HttpRequest extends \CHttpRequest
 		}
 		else
 		{
-			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', array('name' => $name)));
+			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', ['name' => $name]));
 		}
 	}
 
@@ -609,11 +609,11 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_browserLanguages))
 		{
-			$this->_browserLanguages = array();
+			$this->_browserLanguages = [];
 
 			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && preg_match_all('/([\w\-_]+)\s*(?:;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches, PREG_SET_ORDER))
 			{
-				$weights = array();
+				$weights = [];
 
 				foreach ($matches as $match)
 				{
@@ -672,7 +672,7 @@ class HttpRequest extends \CHttpRequest
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function sendFile($path, $content, $options = array(), $terminate = true)
+	public function sendFile($path, $content, $options = [], $terminate = true)
 	{
 		$fileName = IOHelper::getFileName($path, true);
 
@@ -702,7 +702,7 @@ class HttpRequest extends \CHttpRequest
 			}
 		}
 
-		HeaderHelper::setHeader(array('Content-Type' => $options['mimeType'].'; charset=utf-8'));
+		HeaderHelper::setHeader(['Content-Type' => $options['mimeType'].'; charset=utf-8']);
 
 		$fileSize = mb_strlen($content, '8bit');
 		$contentStart = 0;
@@ -710,12 +710,12 @@ class HttpRequest extends \CHttpRequest
 
 		if (isset($_SERVER['HTTP_RANGE']))
 		{
-			HeaderHelper::setHeader(array('Accept-Ranges' => 'bytes'));
+			HeaderHelper::setHeader(['Accept-Ranges' => 'bytes']);
 
 			// Client sent us a multibyte range, can not hold this one for now
 			if (mb_strpos($_SERVER['HTTP_RANGE'], ',') !== false)
 			{
-				HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
+				HeaderHelper::setHeader(['Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize]);
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
@@ -749,12 +749,12 @@ class HttpRequest extends \CHttpRequest
 
 			if ($wrongContentStart)
 			{
-				HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
+				HeaderHelper::setHeader(['Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize]);
 				throw new HttpException(416, 'Requested Range Not Satisfiable');
 			}
 
 			HeaderHelper::setHeader('HTTP/1.1 206 Partial Content');
-			HeaderHelper::setHeader(array('Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize));
+			HeaderHelper::setHeader(['Content-Range' => 'bytes '.$contentStart - $contentEnd / $fileSize]);
 		}
 		else
 		{
@@ -767,11 +767,11 @@ class HttpRequest extends \CHttpRequest
 		if (!empty($options['cache']))
 		{
 			$cacheTime = 31536000; // 1 year
-			HeaderHelper::setHeader(array('Expires' => gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT'));
-			HeaderHelper::setHeader(array('Pragma' => 'cache'));
-			HeaderHelper::setHeader(array('Cache-Control' => 'max-age='.$cacheTime));
+			HeaderHelper::setHeader(['Expires' => gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT']);
+			HeaderHelper::setHeader(['Pragma' => 'cache']);
+			HeaderHelper::setHeader(['Cache-Control' => 'max-age='.$cacheTime]);
 			$modifiedTime = IOHelper::getLastTimeModified($path);
-			HeaderHelper::setHeader(array('Last-Modified' => gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT'));
+			HeaderHelper::setHeader(['Last-Modified' => gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT']);
 		}
 		else
 		{
@@ -783,16 +783,16 @@ class HttpRequest extends \CHttpRequest
 			{
 				// Fixes a bug in IE 6, 7 and 8 when trying to force download a file over SSL:
 				// https://stackoverflow.com/questions/1218925/php-script-to-download-file-not-working-in-ie
-				HeaderHelper::setHeader(array(
+				HeaderHelper::setHeader([
 					'Pragma' => '',
 					'Cache-Control' => ''
-				));
+				]);
 			}
 		}
 
 		if ($options['mimeType'] == 'application/x-javascript' || $options['mimeType'] == 'text/css')
 		{
-			HeaderHelper::setHeader(array('Vary' => 'Accept-Encoding'));
+			HeaderHelper::setHeader(['Vary' => 'Accept-Encoding']);
 		}
 
 		if (!ob_get_length())
@@ -1175,10 +1175,10 @@ class HttpRequest extends \CHttpRequest
 		$size = ob_get_length();
 
 		// Tell the browser to close the connection
-		HeaderHelper::setHeader(array(
+		HeaderHelper::setHeader([
 			'Connection'     => 'close',
 			'Content-Length' => $size
-		));
+		]);
 
 		// Output the content, flush it to the browser, and close out the session
 		ob_end_flush();
@@ -1275,7 +1275,7 @@ class HttpRequest extends \CHttpRequest
 				if (
 					($triggerMatch = ($firstSegment == Craft::$app->config->get('actionTrigger') && count($this->_segments) > 1)) ||
 					($actionParam = $this->getParam('action')) !== null ||
-					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath)))
+					($specialPath = in_array($this->_path, [$loginPath, $logoutPath, $setPasswordPath, $verifyEmailPath]))
 				)
 				{
 					$this->_isActionRequest = true;
@@ -1293,19 +1293,19 @@ class HttpRequest extends \CHttpRequest
 					{
 						if ($this->_path == $loginPath)
 						{
-							$this->_actionSegments = array('users', 'login');
+							$this->_actionSegments = ['users', 'login'];
 						}
 						else if ($this->_path == $logoutPath)
 						{
-							$this->_actionSegments = array('users', 'logout');
+							$this->_actionSegments = ['users', 'logout'];
 						}
 						else if ($this->_path == $verifyEmailPath)
 						{
-							$this->_actionSegments = array('users', 'verifyemail');
+							$this->_actionSegments = ['users', 'verifyemail'];
 						}
 						else
 						{
-							$this->_actionSegments = array('users', 'setpassword');
+							$this->_actionSegments = ['users', 'setpassword'];
 						}
 					}
 				}

@@ -37,10 +37,10 @@ class ElementLocale extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'element' => array(static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE),
-			'locale'  => array(static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-		);
+		return [
+			'element' => [static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE],
+			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -50,12 +50,12 @@ class ElementLocale extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('elementId', 'locale'), 'unique' => true),
-			array('columns' => array('slug', 'locale')),
-			array('columns' => array('uri', 'locale'), 'unique' => true),
-			array('columns' => array('enabled')),
-		);
+		return [
+			['columns' => ['elementId', 'locale'], 'unique' => true],
+			['columns' => ['slug', 'locale']],
+			['columns' => ['uri', 'locale'], 'unique' => true],
+			['columns' => ['enabled']],
+		];
 	}
 
 	// Protected Methods

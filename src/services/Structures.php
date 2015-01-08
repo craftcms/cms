@@ -74,7 +74,7 @@ class Structures extends Component
 
 			if (!$structureRecord)
 			{
-				throw new Exception(Craft::t('No structure exists with the ID “{id}”.', array('id' => $structure->id)));
+				throw new Exception(Craft::t('No structure exists with the ID “{id}”.', ['id' => $structure->id]));
 			}
 		}
 		else
@@ -112,9 +112,9 @@ class Structures extends Component
 			return false;
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->delete('structures', array(
+		$affectedRows = Craft::$app->db->createCommand()->delete('structures', [
 			'id' => $structureId
-		));
+		]);
 
 		return (bool) $affectedRows;
 	}
@@ -289,10 +289,10 @@ class Structures extends Component
 
 		if ($elementId)
 		{
-			return StructureElementRecord::model()->findByAttributes(array(
+			return StructureElementRecord::model()->findByAttributes([
 				'structureId' => $structureId,
 				'elementId'   => $elementId
-			));
+			]);
 		}
 	}
 
@@ -307,9 +307,9 @@ class Structures extends Component
 	{
 		if (!isset($this->_rootElementRecordsByStructureId[$structureId]))
 		{
-			$elementRecord = StructureElementRecord::model()->roots()->findByAttributes(array(
+			$elementRecord = StructureElementRecord::model()->roots()->findByAttributes([
 				'structureId' => $structureId
-			));
+			]);
 
 			if (!$elementRecord)
 			{
@@ -369,10 +369,10 @@ class Structures extends Component
 			if ($mode == 'update')
 			{
 				// Fire an 'onBeforeMoveElement' event
-				$event = new Event($this, array(
+				$event = new Event($this, [
 					'structureId'  => $structureId,
 					'element'      => $element,
-				));
+				]);
 
 				$this->onBeforeMoveElement($event);
 			}
@@ -428,10 +428,10 @@ class Structures extends Component
 		if ($success && $mode == 'update')
 		{
 			// Fire an 'onMoveElement' event
-			$this->onMoveElement(new Event($this, array(
+			$this->onMoveElement(new Event($this, [
 				'structureId'  => $structureId,
 				'element'      => $element,
-			)));
+			]));
 		}
 
 		return $success;

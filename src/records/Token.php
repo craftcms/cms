@@ -38,10 +38,10 @@ class Token extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('token'), 'unique' => true),
-			array('columns' => array('expiryDate')),
-		);
+		return [
+			['columns' => ['token'], 'unique' => true],
+			['columns' => ['expiryDate']],
+		];
 	}
 
 	// Protected Methods
@@ -54,12 +54,12 @@ class Token extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'token'      => array(AttributeType::String, 'column' => ColumnType::Char, 'length' => 32, 'required' => true),
-			'route'      => array(AttributeType::Mixed),
-			'usageLimit' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
-			'usageCount' => array(AttributeType::Number, 'min' => 0, 'max' => 255),
-			'expiryDate' => array(AttributeType::DateTime, 'required' => true),
-		);
+		return [
+			'token'      => [AttributeType::String, 'column' => ColumnType::Char, 'length' => 32, 'required' => true],
+			'route'      => [AttributeType::Mixed],
+			'usageLimit' => [AttributeType::Number, 'min' => 0, 'max' => 255],
+			'usageCount' => [AttributeType::Number, 'min' => 0, 'max' => 255],
+			'expiryDate' => [AttributeType::DateTime, 'required' => true],
+		];
 	}
 }

@@ -53,7 +53,7 @@ class RichText extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$configOptions = array('' => Craft::t('Default'));
+		$configOptions = ['' => Craft::t('Default')];
 		$configPath = Craft::$app->path->getConfigPath().'redactor/';
 
 		if (IOHelper::folderExists($configPath))
@@ -69,17 +69,17 @@ class RichText extends BaseFieldType
 			}
 		}
 
-		$columns = array(
+		$columns = [
 			'text'       => Craft::t('Text (stores about 64K)'),
 			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
-		);
+		];
 
-		return Craft::$app->templates->render('_components/fieldtypes/RichText/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/RichText/settings', [
 			'settings' => $this->getSettings(),
 			'configOptions' => $configOptions,
 			'columns' => $columns,
 			'existing' => !empty($this->model->id),
-		));
+		]);
 	}
 
 	/**
@@ -191,10 +191,10 @@ class RichText extends BaseFieldType
 			if ($this->getSettings()->purifyHtml)
 			{
 				$purifier = new \CHtmlPurifier();
-				$purifier->setOptions(array(
-					'Attr.AllowedFrameTargets' => array('_blank'),
-					'HTML.AllowedComments' => array('pagebreak'),
-				));
+				$purifier->setOptions([
+					'Attr.AllowedFrameTargets' => ['_blank'],
+					'HTML.AllowedComments' => ['pagebreak'],
+				]);
 
 				$value = $purifier->purify($value);
 			}
@@ -249,7 +249,7 @@ class RichText extends BaseFieldType
 
 			if ($postContentSize > $maxDbColumnSize)
 			{
-				return Craft::t('{attribute} is too long.', array('attribute' => Craft::t($this->model->name)));
+				return Craft::t('{attribute} is too long.', ['attribute' => Craft::t($this->model->name)]);
 			}
 		}
 
@@ -278,12 +278,12 @@ class RichText extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
+		return [
 			'configFile'  => AttributeType::String,
-			'cleanupHtml' => array(AttributeType::Bool, 'default' => true),
-			'purifyHtml'  => array(AttributeType::Bool, 'default' => false),
-			'columnType'  => array(AttributeType::String),
-		);
+			'cleanupHtml' => [AttributeType::Bool, 'default' => true],
+			'purifyHtml'  => [AttributeType::Bool, 'default' => false],
+			'columnType'  => [AttributeType::String],
+		];
 	}
 
 	// Private Methods
@@ -296,7 +296,7 @@ class RichText extends BaseFieldType
 	 */
 	private function _getSectionSources()
 	{
-		$sources = array();
+		$sources = [];
 		$sections = Craft::$app->sections->getAllSections();
 		$showSingles = false;
 

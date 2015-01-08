@@ -27,8 +27,8 @@ class Password extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'password' => array(AttributeType::String, 'minLength' => 6, 'maxLength' => 160, 'required' => true)
-		);
+		return [
+			'password' => [AttributeType::String, 'minLength' => 6, 'maxLength' => 160, 'required' => true]
+		];
 	}
 }

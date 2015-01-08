@@ -37,9 +37,9 @@ class SystemSettings extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => 'category', 'unique' => true),
-		);
+		return [
+			['columns' => 'category', 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -52,9 +52,9 @@ class SystemSettings extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'category' => array(AttributeType::String, 'maxLength' => 15, 'required' => true),
+		return [
+			'category' => [AttributeType::String, 'maxLength' => 15, 'required' => true],
 			'settings' => AttributeType::Mixed,
-		);
+		];
 	}
 }

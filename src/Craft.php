@@ -146,10 +146,10 @@ class Craft extends \Yii
 	 *
 	 * @return string|null The translated message, or null if the source key could not be found.
 	 */
-	public static function t($message, $variables = array(), $source = null, $language = null, $category = 'craft')
+	public static function t($message, $variables = [], $source = null, $language = null, $category = 'craft')
 	{
 		// Normalize the param keys
-		$normalizedVariables = array();
+		$normalizedVariables = [];
 		if (is_array($variables))
 		{
 			foreach ($variables as $key => $value)

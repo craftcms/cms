@@ -38,7 +38,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	/**
 	 * @var array
 	 */
-	private $_messages = array();
+	private $_messages = [];
 
 	// Public Methods
 	// ------------------------------------------------------------------------
@@ -80,7 +80,7 @@ class PhpMessageSource extends \CPhpMessageSource
 
 		if (!isset($this->_translations[$language]))
 		{
-			$this->_translations[$language] = array();
+			$this->_translations[$language] = [];
 
 			// Plugin translations get added first so they always lose out for conflicts
 			if (Craft::$app->isInstalled() && !Craft::$app->isInMaintenanceMode())
@@ -107,7 +107,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			$paths[] = Craft::$app->path->getSiteTranslationsPath();
 
 			// Look for translation file from least to most specific. For example, nl.php gets loaded before nl_nl.php.
-			$translationFiles = array();
+			$translationFiles = [];
 			$parts = explode('_', $language);
 			$totalParts = count($parts);
 
@@ -159,12 +159,12 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	private function _processFrameworkData($localeId)
 	{
-		$wideMonthKeys = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
-		$abbreviatedMonthKeys = array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
-		$wideWeekdayNameKeys = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
-		$abbreviatedWeekdayNameKeys = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+		$wideMonthKeys = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		$abbreviatedMonthKeys = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		$wideWeekdayNameKeys = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		$abbreviatedWeekdayNameKeys = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-		$formattedFrameworkData = array();
+		$formattedFrameworkData = [];
 		$locale = \CLocale::getInstance($localeId);
 
 		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideMonthKeys, $locale->getMonthNames()));

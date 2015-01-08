@@ -110,7 +110,7 @@ class Fields extends Component
 	{
 		if (!$this->_fetchedAllGroups)
 		{
-			$this->_groupsById = array();
+			$this->_groupsById = [];
 
 			$results = $this->_createGroupQuery()->queryAll();
 
@@ -133,7 +133,7 @@ class Fields extends Component
 		}
 		else
 		{
-			$groups = array();
+			$groups = [];
 
 			foreach ($this->_groupsById as $group)
 			{
@@ -156,7 +156,7 @@ class Fields extends Component
 		if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById))
 		{
 			$result = $this->_createGroupQuery()
-				->where('id = :id', array(':id' => $groupId))
+				->where('id = :id', [':id' => $groupId])
 				->queryRow();
 
 			if ($result)
@@ -229,7 +229,7 @@ class Fields extends Component
 			$this->deleteField($field);
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->delete('fieldgroups', array('id' => $groupId));
+		$affectedRows = Craft::$app->db->createCommand()->delete('fieldgroups', ['id' => $groupId]);
 		return (bool) $affectedRows;
 	}
 
@@ -250,10 +250,10 @@ class Fields extends Component
 		if (!isset($this->_allFieldsInContext[$context]))
 		{
 			$results = $this->_createFieldQuery()
-				->where('context = :context', array(':context' => $context))
+				->where('context = :context', [':context' => $context])
 				->queryAll();
 
-			$this->_allFieldsInContext[$context] = array();
+			$this->_allFieldsInContext[$context] = [];
 
 			foreach ($results as $result)
 			{
@@ -271,7 +271,7 @@ class Fields extends Component
 		}
 		else
 		{
-			$fields = array();
+			$fields = [];
 
 			foreach ($this->_allFieldsInContext[$context] as $field)
 			{
@@ -293,7 +293,7 @@ class Fields extends Component
 
 		if (!isset($this->_fieldsWithContent[$context]))
 		{
-			$this->_fieldsWithContent[$context] = array();
+			$this->_fieldsWithContent[$context] = [];
 
 			foreach ($this->getAllFields() as $field)
 			{
@@ -319,7 +319,7 @@ class Fields extends Component
 		if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById))
 		{
 			$result = $this->_createFieldQuery()
-				->where('id = :id', array(':id' => $fieldId))
+				->where('id = :id', [':id' => $fieldId])
 				->queryRow();
 
 			if ($result)
@@ -352,7 +352,7 @@ class Fields extends Component
 		if (!isset($this->_fieldsByContextAndHandle[$context]) || !array_key_exists($handle, $this->_fieldsByContextAndHandle[$context]))
 		{
 			$result = $this->_createFieldQuery()
-				->where(array('and', 'handle = :handle', 'context = :context'), array(':handle' => $handle, ':context' => $context))
+				->where(['and', 'handle = :handle', 'context = :context'], [':handle' => $handle, ':context' => $context])
 				->queryRow();
 
 			if ($result)
@@ -381,10 +381,10 @@ class Fields extends Component
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
 		$results = $this->_createFieldQuery()
-			->where('groupId = :groupId', array(':groupId' => $groupId))
+			->where('groupId = :groupId', [':groupId' => $groupId])
 			->queryAll();
 
-		$fields = array();
+		$fields = [];
 
 		foreach ($results as $result)
 		{
@@ -635,7 +635,7 @@ class Fields extends Component
 			}
 
 			// Delete the row in fields
-			$affectedRows = Craft::$app->db->createCommand()->delete('fields', array('id' => $field->id));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fields', ['id' => $field->id]);
 
 			if ($affectedRows)
 			{
@@ -678,7 +678,7 @@ class Fields extends Component
 		if (!isset($this->_layoutsById) || !array_key_exists($layoutId, $this->_layoutsById))
 		{
 			$result = $this->_createLayoutQuery()
-				->where('id = :id', array(':id' => $layoutId))
+				->where('id = :id', [':id' => $layoutId])
 				->queryRow();
 
 			if ($result)
@@ -708,7 +708,7 @@ class Fields extends Component
 		if (!isset($this->_layoutsByType) || !array_key_exists($type, $this->_layoutsByType))
 		{
 			$result = $this->_createLayoutQuery()
-				->where('type = :type', array(':type' => $type))
+				->where('type = :type', [':type' => $type])
 				->queryRow();
 
 			if ($result)
@@ -743,7 +743,7 @@ class Fields extends Component
 	public function getLayoutTabsById($layoutId)
 	{
 		$results = $this->_createLayoutTabQuery()
-			->where('layoutId = :layoutId', array(':layoutId' => $layoutId))
+			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
 			->queryAll();
 
 		return FieldLayoutTabModel::populateModels($results);
@@ -759,7 +759,7 @@ class Fields extends Component
 	public function getLayoutFieldsById($layoutId)
 	{
 		$results = $this->_createLayoutFieldQuery()
-			->where('layoutId = :layoutId', array(':layoutId' => $layoutId))
+			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
 			->queryAll();
 
 		return FieldLayoutFieldModel::populateModels($results);
@@ -772,8 +772,8 @@ class Fields extends Component
 	 */
 	public function assembleLayoutFromPost()
 	{
-		$postedFieldLayout = Craft::$app->request->getPost('fieldLayout', array());
-		$requiredFields = Craft::$app->request->getPost('requiredFields', array());
+		$postedFieldLayout = Craft::$app->request->getPost('fieldLayout', []);
+		$requiredFields = Craft::$app->request->getPost('requiredFields', []);
 
 		return $this->assembleLayout($postedFieldLayout, $requiredFields);
 	}
@@ -788,14 +788,14 @@ class Fields extends Component
 	 */
 	public function assembleLayout($postedFieldLayout, $requiredFields)
 	{
-		$tabs = array();
-		$fields = array();
+		$tabs   = [];
+		$fields = [];
 
 		$tabSortOrder = 0;
 
 		foreach ($postedFieldLayout as $tabName => $fieldIds)
 		{
-			$tabFields = array();
+			$tabFields = [];
 			$tabSortOrder++;
 
 			foreach ($fieldIds as $fieldSortOrder => $fieldId)
@@ -862,9 +862,9 @@ class Fields extends Component
 		}
 
 		// Fire an 'onSaveFieldLayout' event
-		$this->onSaveFieldLayout(new Event($this, array(
+		$this->onSaveFieldLayout(new Event($this, [
 			'layout' => $layout,
-		)));
+		]));
 
 		return true;
 	}
@@ -885,11 +885,11 @@ class Fields extends Component
 
 		if (is_array($layoutId))
 		{
-			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('in', 'id', $layoutId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', ['in', 'id', $layoutId]);
 		}
 		else
 		{
-			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('id' => $layoutId));
+			$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', ['id' => $layoutId]);
 		}
 
 		return (bool) $affectedRows;
@@ -904,7 +904,7 @@ class Fields extends Component
 	 */
 	public function deleteLayoutsByType($type)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', array('type' => $type));
+		$affectedRows = Craft::$app->db->createCommand()->delete('fieldlayouts', ['type' => $type]);
 		return (bool) $affectedRows;
 	}
 
@@ -1064,7 +1064,7 @@ class Fields extends Component
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No field group exists with the ID “{id}”.', array('id' => $group->id)));
+				throw new Exception(Craft::t('No field group exists with the ID “{id}”.', ['id' => $group->id]));
 			}
 		}
 		else
@@ -1095,7 +1095,7 @@ class Fields extends Component
 
 				if (!$this->_fieldRecordsById[$fieldId])
 				{
-					throw new Exception(Craft::t('No field exists with the ID “{id}”.', array('id' => $fieldId)));
+					throw new Exception(Craft::t('No field exists with the ID “{id}”.', ['id' => $fieldId]));
 				}
 			}
 

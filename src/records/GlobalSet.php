@@ -37,10 +37,10 @@ class GlobalSet extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'element'     => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-		);
+		return [
+			'element'     => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+		];
 	}
 
 	/**
@@ -50,10 +50,10 @@ class GlobalSet extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -63,9 +63,9 @@ class GlobalSet extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

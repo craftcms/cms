@@ -71,9 +71,9 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		ModelHelper::populateAttributeDefaults($this);
 
-		$this->attachEventHandler('onAfterFind', array($this, 'prepAttributesForUse'));
-		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
-		$this->attachEventHandler('onAfterSave', array($this, 'prepAttributesForUse'));
+		$this->attachEventHandler('onAfterFind', [$this, 'prepAttributesForUse']);
+		$this->attachEventHandler('onBeforeSave', [$this, 'prepAttributesForSave']);
+		$this->attachEventHandler('onAfterSave', [$this, 'prepAttributesForUse']);
 	}
 
 	/**
@@ -114,7 +114,7 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		if (!isset($this->_attributeConfigs))
 		{
-			$this->_attributeConfigs = array();
+			$this->_attributeConfigs = [];
 
 			foreach ($this->defineAttributes() as $name => $config)
 			{
@@ -132,7 +132,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function defineRelations()
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -142,7 +142,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function defineIndexes()
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -191,8 +191,8 @@ abstract class BaseRecord extends \CActiveRecord
 	public function prepAttributesForUse()
 	{
 		$attributes = $this->getAttributeConfigs();
-		$attributes['dateUpdated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
-		$attributes['dateCreated'] = array('type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true);
+		$attributes['dateUpdated'] = ['type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true];
+		$attributes['dateCreated'] = ['type' => AttributeType::DateTime, 'column' => ColumnType::DateTime, 'required' => true];
 
 		foreach ($attributes as $name => $config)
 		{
@@ -230,14 +230,14 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function scopes()
 	{
-		$scopes = array();
+		$scopes = [];
 
 		// Add ordered() scope if this model has a sortOrder attribute
 		$attributes = $this->getAttributeConfigs();
 
 		if (isset($attributes['sortOrder']))
 		{
-			$scopes['ordered'] = array('order' => 'sortOrder');
+			$scopes['ordered'] = ['order' => 'sortOrder'];
 		}
 
 		return $scopes;
@@ -253,7 +253,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$table = $this->getTableName();
 		$indexes = $this->defineIndexes();
 		$attributes = $this->getAttributeConfigs();
-		$columns = array();
+		$columns = [];
 
 		// Add any Foreign Key columns
 		foreach ($this->getBelongsToRelations() as $name => $config)
@@ -267,13 +267,13 @@ abstract class BaseRecord extends \CActiveRecord
 			}
 
 			$required = !empty($config['required']);
-			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
+			$columns[$columnName] = ['column' => ColumnType::Int, 'required' => $required];
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
 			if (!empty($config['unique']))
 			{
-				$indexes[] = array('columns' => array($columnName), 'unique' => true);
+				$indexes[] = ['columns' => [$columnName], 'unique' => true];
 			}
 		}
 
@@ -286,7 +286,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 			if ($unique || $indexed)
 			{
-				$indexes[] = array('columns' => array($name), 'unique' => $unique);
+				$indexes[] = ['columns' => [$name], 'unique' => $unique];
 			}
 
 			$columns[$name] = $config;
@@ -323,7 +323,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function getBelongsToRelations()
 	{
-		$belongsTo = array();
+		$belongsTo = [];
 
 		foreach ($this->defineRelations() as $name => $config)
 		{
@@ -333,6 +333,7 @@ abstract class BaseRecord extends \CActiveRecord
 				$belongsTo[$name] = $config;
 			}
 		}
+
 		return $belongsTo;
 	}
 
@@ -438,7 +439,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return BaseRecord
 	 */
-	public function findById($id, $condition = '', $params = array())
+	public function findById($id, $condition = '', $params = [])
 	{
 		return $this->findByPk($id, $condition, $params);
 	}
@@ -450,7 +451,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return BaseRecord[]
 	 */
-	public function findAllById($id, $condition = '', $params = array())
+	public function findAllById($id, $condition = '', $params = [])
 	{
 		return $this->findAllByPk($id, $condition, $params);
 	}
@@ -548,9 +549,9 @@ abstract class BaseRecord extends \CActiveRecord
 			$criteria->compare($name, $this->$name);
 		}
 
-		return new \CActiveDataProvider($this, array(
+		return new \CActiveDataProvider($this, [
 			'criteria' => $criteria
-		));
+		]);
 	}
 
 	// Protected Methods
@@ -563,7 +564,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array();
+		return [];
 	}
 
 	// Private Methods

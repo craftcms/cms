@@ -37,13 +37,13 @@ class MatrixBlock extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'element'     => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'owner'       => array(static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE),
-			'ownerLocale' => array(static::BELONGS_TO, 'Locale', 'ownerLocale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE),
-			'field'       => array(static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE),
-			'type'        => array(static::BELONGS_TO, 'MatrixBlockType', 'onDelete' => static::CASCADE),
-		);
+		return [
+			'element'     => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'owner'       => [static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE],
+			'ownerLocale' => [static::BELONGS_TO, 'Locale', 'ownerLocale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
+			'field'       => [static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE],
+			'type'        => [static::BELONGS_TO, 'MatrixBlockType', 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -53,12 +53,12 @@ class MatrixBlock extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('ownerId')),
-			array('columns' => array('fieldId')),
-			array('columns' => array('typeId')),
-			array('columns' => array('sortOrder')),
-		);
+		return [
+			['columns' => ['ownerId']],
+			['columns' => ['fieldId']],
+			['columns' => ['typeId']],
+			['columns' => ['sortOrder']],
+		];
 	}
 
 	// Protected Methods

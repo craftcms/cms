@@ -28,36 +28,36 @@ class DbHelper
 	 *
 	 * @var array
 	 */
-	public static $columnTypeDefaults = array(
-		ColumnType::Char         => array('maxLength' => 255),
-		ColumnType::Varchar      => array('maxLength' => 255),
-		ColumnType::TinyInt      => array('maxLength' => 4),
-		ColumnType::SmallInt     => array('maxLength' => 6),
-		ColumnType::MediumInt    => array('maxLength' => 9),
-		ColumnType::Int          => array('maxLength' => 11),
-		ColumnType::BigInt       => array('maxLength' => 20),
-		ColumnType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
-		ColumnType::Enum         => array('values' => array()),
-	);
+	public static $columnTypeDefaults = [
+		ColumnType::Char         => ['maxLength' => 255],
+		ColumnType::Varchar      => ['maxLength' => 255],
+		ColumnType::TinyInt      => ['maxLength' => 4],
+		ColumnType::SmallInt     => ['maxLength' => 6],
+		ColumnType::MediumInt    => ['maxLength' => 9],
+		ColumnType::Int          => ['maxLength' => 11],
+		ColumnType::BigInt       => ['maxLength' => 20],
+		ColumnType::Decimal      => ['maxLength' => 10, 'decimals' => 2],
+		ColumnType::Enum         => ['values' => []],
+	];
 
 	/**
 	 * Numeric column types.
 	 *
 	 * @var array
 	 */
-	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
+	private static $_numericColumnTypes = [ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal];
 
 	/**
 	 * Textual column types.
 	 *
 	 * @var array
 	 */
-	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
+	private static $_textualColumnTypes = [ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText];
 
 	/**
 	 * @var array
 	 */
-	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+	private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
 	// Public Methods
 	// =========================================================================
@@ -68,8 +68,8 @@ class DbHelper
 	 * Columns can be defined in 3 ways:
 	 *
 	 * 1. ColumnType::TypeName
-	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
-	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
+	 * 2. [ColumnType::TypeName [, 'other' => 'settings' ... ] ]
+	 * 3. ['column' => ColumnType::TypeName [, 'other' => 'settings' ... ] ]
 	 *
 	 * This function normalizes on the 3rd, merges in the default config settings for the column type, and renames 'maxLength' to 'length'.
 	 *
@@ -81,7 +81,7 @@ class DbHelper
 	{
 		if (is_string($config))
 		{
-			$config = array('column' => $config);
+			$config = ['column' => $config];
 		}
 		else if (!isset($config['column']))
 		{
@@ -261,11 +261,11 @@ class DbHelper
 	 */
 	public static function getAuditColumnConfig()
 	{
-		return array(
-			'dateCreated' => array('column' => ColumnType::DateTime, 'required' => true),
-			'dateUpdated' => array('column' => ColumnType::DateTime, 'required' => true),
-			'uid'         => array('column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
-		);
+		return [
+			'dateCreated' => ['column' => ColumnType::DateTime, 'required' => true],
+			'dateUpdated' => ['column' => ColumnType::DateTime, 'required' => true],
+			'uid'         => ['column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0]
+		];
 	}
 
 	/**
@@ -351,7 +351,7 @@ class DbHelper
 	 */
 	public static function escapeParam($value)
 	{
-		return str_replace(array(',', '*'), array('\,', '\*'), $value);
+		return str_replace([',', '*'], ['\,', '\*'], $value);
 	}
 
 	/**
@@ -384,7 +384,7 @@ class DbHelper
 			return '';
 		}
 
-		$conditions = array();
+		$conditions = [];
 
 		$value = ArrayHelper::stringToArray($value);
 
@@ -413,11 +413,11 @@ class DbHelper
 			{
 				if ($operator == '=')
 				{
-					$conditions[] = array('or', $column.' is null', $column.' = ""');
+					$conditions[] = ['or', $column.' is null', $column.' = ""'];
 				}
 				else
 				{
-					$conditions[] = array('and', $column.' is not null', $column.' != ""');
+					$conditions[] = ['and', $column.' is not null', $column.' != ""'];
 				}
 			}
 			else
@@ -441,7 +441,7 @@ class DbHelper
 
 				if ($like)
 				{
-					$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
+					$conditions[] = [($operator == '=' ? 'like' : 'not like'), $column, $val];
 				}
 				else
 				{
@@ -484,7 +484,7 @@ class DbHelper
 	 */
 	public static function parseDateParam($column, $value, &$params)
 	{
-		$normalizedValues = array();
+		$normalizedValues = [];
 
 		$value = ArrayHelper::stringToArray($value);
 

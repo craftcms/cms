@@ -48,14 +48,14 @@ class Lightswitch extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->renderMacro('_includes/forms', 'lightswitchField', array(
-			array(
+		return Craft::$app->templates->renderMacro('_includes/forms', 'lightswitchField', [
+			[
 				'label' => Craft::t('Default Value'),
 				'id'    => 'default',
 				'name'  => 'default',
 				'on'    => $this->getSettings()->default,
-			)
-		));
+			]
+		]);
 	}
 
 	/**
@@ -74,10 +74,10 @@ class Lightswitch extends BaseFieldType
 			$value = $this->getSettings()->default;
 		}
 
-		return Craft::$app->templates->render('_includes/forms/lightswitch', array(
+		return Craft::$app->templates->render('_includes/forms/lightswitch', [
 			'name'  => $name,
 			'on'    => (bool) $value,
-		));
+		]);
 	}
 
 	/**
@@ -115,8 +115,8 @@ class Lightswitch extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'default' => array(AttributeType::Bool, 'default' => false),
-		);
+		return [
+			'default' => [AttributeType::Bool, 'default' => false],
+		];
 	}
 }

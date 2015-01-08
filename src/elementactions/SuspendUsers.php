@@ -77,11 +77,11 @@ EOT;
 	public function performAction(ElementCriteriaModel $criteria)
 	{
 		// Get the users that aren't already suspended
-		$criteria->status = array(
+		$criteria->status = [
 			UserStatus::Active,
 			UserStatus::Locked,
 			UserStatus::Pending,
-		);
+		];
 		$users = $criteria->find();
 
 		foreach ($users as $user)

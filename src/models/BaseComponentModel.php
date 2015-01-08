@@ -23,7 +23,7 @@ abstract class BaseComponentModel extends BaseModel
 	/**
 	 * @var array
 	 */
-	private $_settingErrors = array();
+	private $_settingErrors = [];
 
 	// Public Methods
 	// =========================================================================
@@ -49,7 +49,7 @@ abstract class BaseComponentModel extends BaseModel
 	{
 		if ($attribute === null)
 		{
-			return $this->_settingErrors !== array();
+			return $this->_settingErrors !== [];
 		}
 		else
 		{
@@ -72,7 +72,7 @@ abstract class BaseComponentModel extends BaseModel
 		}
 		else
 		{
-			return isset($this->_settingErrors[$attribute]) ? $this->_settingErrors[$attribute] : array();
+			return isset($this->_settingErrors[$attribute]) ? $this->_settingErrors[$attribute] : [];
 		}
 	}
 

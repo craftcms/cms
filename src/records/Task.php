@@ -38,12 +38,12 @@ class Task extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('root')),
-			array('columns' => array('lft')),
-			array('columns' => array('rgt')),
-			array('columns' => array('level')),
-		);
+		return [
+			['columns' => ['root']],
+			['columns' => ['lft']],
+			['columns' => ['rgt']],
+			['columns' => ['level']],
+		];
 	}
 
 	/**
@@ -53,9 +53,9 @@ class Task extends BaseRecord
 	 */
 	public function behaviors()
 	{
-		return array(
+		return [
 			'nestedSet' => 'app.extensions.NestedSetBehavior',
-		);
+		];
 	}
 
 	/**
@@ -65,9 +65,9 @@ class Task extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'dateCreated'),
-		);
+		return [
+			'ordered' => ['order' => 'dateCreated'],
+		];
 	}
 
 	// Protected Methods

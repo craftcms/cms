@@ -76,7 +76,7 @@ class Assets extends Component
 			->select('fi.*')
 			->from('assetfiles fi')
 			->join('assetfolders fo', 'fo.id = fi.folderId')
-			->where('fo.sourceId = :sourceId', array(':sourceId' => $sourceId))
+			->where('fo.sourceId = :sourceId', [':sourceId' => $sourceId])
 			->order('fi.filename')
 			->queryAll();
 
@@ -154,7 +154,7 @@ class Assets extends Component
 
 			if (!$fileRecord)
 			{
-				throw new Exception(Craft::t("No asset exists with the ID “{id}”.", array('id' => $file->id)));
+				throw new Exception(Craft::t("No asset exists with the ID “{id}”.", ['id' => $file->id]));
 			}
 		}
 		else
@@ -190,10 +190,10 @@ class Assets extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveAsset' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'asset'      => $file,
 				'isNewAsset' => $isNewFile
-			));
+			]);
 
 			$this->onBeforeSaveAsset($event);
 
@@ -248,10 +248,10 @@ class Assets extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveAsset' event
-			$this->onSaveAsset(new Event($this, array(
+			$this->onSaveAsset(new Event($this, [
 				'asset'      => $file,
 				'isNewAsset' => $isNewFile
-			)));
+			]));
 		}
 
 		return $success;
@@ -298,13 +298,13 @@ class Assets extends Component
 	{
 		if (empty($allowedSourceIds))
 		{
-			return array();
+			return [];
 		}
 
-		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
+		$folders = $this->findFolders(['sourceId' => $allowedSourceIds, 'order' => 'path']);
 		$tree = $this->_getFolderTreeByFolders($folders);
 
-		$sort = array();
+		$sort = [];
 
 		foreach ($tree as $topFolder)
 		{
@@ -326,7 +326,7 @@ class Assets extends Component
 	 */
 	public function getUserFolder(UserModel $userModel = null)
 	{
-		$sourceTopFolder = Craft::$app->assets->findFolder(array('sourceId' => ':empty:', 'parentId' => ':empty:'));
+		$sourceTopFolder = Craft::$app->assets->findFolder(['sourceId' => ':empty:', 'parentId' => ':empty:']);
 
 		// Super unlikely, but would be very awkward if this happened without any contingency plans in place.
 		if (!$sourceTopFolder)
@@ -346,10 +346,10 @@ class Assets extends Component
 			$folderName = 'user_'.sha1(Craft::$app->getSession()->getSessionID());
 		}
 
-		$folderCriteria = new FolderCriteriaModel(array(
+		$folderCriteria = new FolderCriteriaModel([
 			'name' => $folderName,
 			'parentId' => $sourceTopFolder->id
-		));
+		]);
 
 		$folder = $this->findFolder($folderCriteria);
 
@@ -377,10 +377,10 @@ class Assets extends Component
 
 		if (is_null($folder))
 		{
-			return array();
+			return [];
 		}
 
-		return $this->_getFolderTreeByFolders(array($folder));
+		return $this->_getFolderTreeByFolders([$folder]);
 	}
 
 	/**
@@ -526,7 +526,7 @@ class Assets extends Component
 		if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById))
 		{
 			$result = $this->_createFolderQuery()
-				->where('id = :id', array(':id' => $folderId))
+				->where('id = :id', [':id' => $folderId])
 				->queryRow();
 
 			if ($result)
@@ -580,7 +580,7 @@ class Assets extends Component
 		}
 
 		$results = $query->queryAll();
-		$folders = array();
+		$folders = [];
 
 		foreach ($results as $result)
 		{
@@ -604,11 +604,11 @@ class Assets extends Component
 		$query = Craft::$app->db->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
-			->where(array('like', 'path', $parentFolder->path.'%'))
-			->andWhere('sourceId = :sourceId', array(':sourceId' => $parentFolder->sourceId));
+			->where(['like', 'path', $parentFolder->path.'%'])
+			->andWhere('sourceId = :sourceId', [':sourceId' => $parentFolder->sourceId]);
 
 		$results = $query->queryAll();
-		$descendantFolders = array();
+		$descendantFolders = [];
 
 		foreach ($results as $result)
 		{
@@ -697,7 +697,7 @@ class Assets extends Component
 		catch (Exception $exception)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+			$response->setError(Craft::t('Error uploading the file: {error}', ['error' => $exception->getMessage()]));
 
 			return $response;
 		}
@@ -780,7 +780,7 @@ class Assets extends Component
 	{
 		if (!is_array($fileIds))
 		{
-			$fileIds = array($fileIds);
+			$fileIds = [$fileIds];
 		}
 
 		$response = new AssetOperationResponseModel();
@@ -793,9 +793,9 @@ class Assets extends Component
 				$source = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
 				// Fire an 'onBeforeDeleteAsset' event
-				$this->onBeforeDeleteAsset(new Event($this, array(
+				$this->onBeforeDeleteAsset(new Event($this, [
 					'asset' => $file
-				)));
+				]));
 
 				if ($deleteFile)
 				{
@@ -805,9 +805,9 @@ class Assets extends Component
 				Craft::$app->elements->deleteElementById($fileId);
 
 				// Fire an 'onDeleteAsset' event
-				$this->onDeleteAsset(new Event($this, array(
+				$this->onDeleteAsset(new Event($this, [
 					'asset' => $file
-				)));
+				]));
 			}
 
 			$response->setSuccess();
@@ -831,7 +831,7 @@ class Assets extends Component
 	 * @throws Exception
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFiles($fileIds, $folderId, $filename = '', $actions = array())
+	public function moveFiles($fileIds, $folderId, $filename = '', $actions = [])
 	{
 		if ($filename && is_array($fileIds) && count($fileIds) > 1)
 		{
@@ -840,15 +840,15 @@ class Assets extends Component
 
 		if (!is_array($fileIds))
 		{
-			$fileIds = array($fileIds);
+			$fileIds = [$fileIds];
 		}
 
 		if (!is_array($actions))
 		{
-			$actions = array($actions);
+			$actions = [$actions];
 		}
 
-		$results = array();
+		$results = [];
 
 		$response = new AssetOperationResponseModel();
 
@@ -900,7 +900,7 @@ class Assets extends Component
 				}
 				else
 				{
-					$response->setError(Craft::t("There was an error moving the file {file}.", array('file' => $file->filename)));
+					$response->setError(Craft::t("There was an error moving the file {file}.", ['file' => $file->filename]));
 				}
 			}
 		}
@@ -918,7 +918,7 @@ class Assets extends Component
 	 */
 	public function renameFile(AssetFileModel $file, $filename, $action = '')
 	{
-		$response = $this->moveFiles(array($file->id), $file->folderId, $filename, $action);
+		$response = $this->moveFiles([$file->id], $file->folderId, $filename, $action);
 
 		// Set the new filename, if rename was successful
 		if ($response->isSuccess())
@@ -938,7 +938,7 @@ class Assets extends Component
 	 */
 	public function deleteFolderRecord($folderId)
 	{
-		return (bool) AssetFolderRecord::model()->deleteAll('id = :folderId', array(':folderId' => $folderId));
+		return (bool) AssetFolderRecord::model()->deleteAll('id = :folderId', [':folderId' => $folderId]);
 	}
 
 	/**
@@ -1032,7 +1032,7 @@ class Assets extends Component
 	{
 		if (!is_array($folderIds))
 		{
-			$folderIds = array($folderIds);
+			$folderIds = [$folderIds];
 		}
 
 		foreach ($folderIds as $folderId)
@@ -1067,7 +1067,7 @@ class Assets extends Component
 	{
 		if (!is_array($fileIds))
 		{
-			$fileIds = array($fileIds);
+			$fileIds = [$fileIds];
 		}
 
 		foreach ($fileIds as $fileId)
@@ -1197,8 +1197,8 @@ class Assets extends Component
 	 */
 	private function _getFolderTreeByFolders($folders)
 	{
-		$tree = array();
-		$referenceStore = array();
+		$tree = [];
+		$referenceStore = [];
 
 		foreach ($folders as $folder)
 		{
@@ -1214,7 +1214,7 @@ class Assets extends Component
 			$referenceStore[$folder->id] = $folder;
 		}
 
-		$sort = array();
+		$sort = [];
 
 		foreach ($tree as $topFolder)
 		{
@@ -1236,8 +1236,8 @@ class Assets extends Component
 	 */
 	private function _applyFolderConditions($query, FolderCriteriaModel $criteria)
 	{
-		$whereConditions = array();
-		$whereParams = array();
+		$whereConditions = [];
+		$whereParams     = [];
 
 		if ($criteria->id)
 		{
@@ -1333,10 +1333,10 @@ class Assets extends Component
 			case AssetConflictResolution::Replace:
 			{
 				// Replace the actual file
-				$targetFile = $this->findFile(array(
+				$targetFile = $this->findFile([
 					'folderId' => $folder->id,
 					'filename' => $fileName
-				));
+				]);
 
 				// If the file doesn't exist in the index, but just in the source,
 				// quick-index it, so we have a File Model to work with.

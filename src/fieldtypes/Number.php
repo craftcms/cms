@@ -40,9 +40,9 @@ class Number extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/Number/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/Number/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -73,11 +73,11 @@ class Number extends BaseFieldType
 			$value = $this->settings->min;
 		}
 
-		return Craft::$app->templates->render('_includes/forms/text', array(
+		return Craft::$app->templates->render('_includes/forms/text', [
 			'name'  => $name,
 			'value' => Craft::$app->numberFormatter->formatDecimal($value, false),
 			'size'  => 5
-		));
+		]);
 	}
 
 	/**

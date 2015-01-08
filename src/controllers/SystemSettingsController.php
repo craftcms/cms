@@ -73,7 +73,7 @@ class SystemSettingsController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionGeneralSettings(array $variables = array())
+	public function actionGeneralSettings(array $variables = [])
 	{
 		if (empty($variables['info']))
 		{
@@ -81,12 +81,12 @@ class SystemSettingsController extends BaseController
 		}
 
 		// Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
-		$variables['timezoneOptions'] = array();
+		$variables['timezoneOptions'] = [];
 
 		$utc = new DateTime();
-		$offsets = array();
-		$timezoneIds = array();
-		$includedAbbrs = array();
+		$offsets = [];
+		$timezoneIds = [];
+		$includedAbbrs = [];
 
 		foreach (\DateTimeZone::listIdentifiers() as $timezoneId)
 		{
@@ -150,9 +150,9 @@ class SystemSettingsController extends BaseController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save general settings.'));
 
 			// Send the info back to the template
-			Craft::$app->urlManager->setRouteVariables(array(
+			Craft::$app->urlManager->setRouteVariables([
 				'info' => $info
-			));
+			]);
 		}
 	}
 
@@ -180,9 +180,9 @@ class SystemSettingsController extends BaseController
 		Craft::$app->getSession()->setError(Craft::t('Couldn’t save email settings.'));
 
 		// Send the settings back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'settings' => $settings
-		));
+		]);
 	}
 
 	/**
@@ -204,7 +204,7 @@ class SystemSettingsController extends BaseController
 			{
 				if (Craft::$app->email->sendTestEmail($settings))
 				{
-					$this->returnJson(array('success' => true));
+					$this->returnJson(['success' => true]);
 				}
 			}
 			catch (\Exception $e)

@@ -74,7 +74,7 @@ class Elements extends Component
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists by the type “{type}”.', array('type' => $type)));
+			throw new Exception(Craft::t('No element type exists by the type “{type}”.', ['type' => $type]));
 		}
 
 		return new ElementCriteriaModel($attributes, $elementType);
@@ -144,15 +144,15 @@ class Elements extends Component
 
 		// First get the element ID and type
 
-		$conditions = array('and',
+		$conditions = ['and',
 			'elements_i18n.uri = :uri',
 			'elements_i18n.locale = :locale'
-		);
+		];
 
-		$params = array(
+		$params = [
 			':uri'    => $uri,
 			':locale' => $localeId
-		);
+		];
 
 		if ($enabledOnly)
 		{
@@ -194,7 +194,7 @@ class Elements extends Component
 			return Craft::$app->db->createCommand()
 				->selectDistinct('type')
 				->from('elements')
-				->where(array('in', 'id', $elementId))
+				->where(['in', 'id', $elementId])
 				->queryColumn();
 		}
 		else
@@ -202,7 +202,7 @@ class Elements extends Component
 			return Craft::$app->db->createCommand()
 				->select('type')
 				->from('elements')
-				->where(array('id' => $elementId))
+				->where(['id' => $elementId])
 				->queryScalar();
 		}
 	}
@@ -219,7 +219,7 @@ class Elements extends Component
 	 */
 	public function findElements($criteria = null, $justIds = false)
 	{
-		$elements = array();
+		$elements = [];
 		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns);
 
 		if ($query)
@@ -235,7 +235,7 @@ class Elements extends Component
 
 				if (!$ids)
 				{
-					return array();
+					return [];
 				}
 
 				$query->order(Craft::$app->db->getSchema()->orderByColumnValues('elements.id', $ids));
@@ -301,12 +301,12 @@ class Elements extends Component
 							if ($contentTable)
 							{
 								// Separate the content values from the main element attributes
-								$content = array(
+								$content = [
 									'id'        => (isset($result['contentId']) ? $result['contentId'] : null),
 									'elementId' => $result['id'],
 									'locale'    => $locale,
 									'title'     => (isset($result['title']) ? $result['title'] : null)
-								);
+								];
 
 								unset($result['title']);
 
@@ -346,10 +346,10 @@ class Elements extends Component
 							}
 
 							// Fire an 'onPopulateElement' event
-							$this->onPopulateElement(new Event($this, array(
+							$this->onPopulateElement(new Event($this, [
 								'element' => $element,
 								'result'  => $originalResult
-							)));
+							]));
 						}
 
 						if ($indexBy)
@@ -454,7 +454,7 @@ class Elements extends Component
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
-			->where('elements_i18n.locale = :locale', array(':locale' => $criteria->locale))
+			->where('elements_i18n.locale = :locale', [':locale' => $criteria->locale])
 			->group('elements.id');
 
 		if ($elementType->hasContent())
@@ -511,7 +511,7 @@ class Elements extends Component
 
 			if ($criteria->status)
 			{
-				$statusConditions = array();
+				$statusConditions = [];
 				$statuses = ArrayHelper::stringToArray($criteria->status);
 
 				foreach ($statuses as $status)
@@ -605,16 +605,16 @@ class Elements extends Component
 		// TODO: Remove this code in Craft 4
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
-			$relatedTo = array('and');
+			$relatedTo = ['and'];
 
 			if ($criteria->childOf)
 			{
-				$relatedTo[] = array('sourceElement' => $criteria->childOf, 'field' => $criteria->childField);
+				$relatedTo[] = ['sourceElement' => $criteria->childOf, 'field' => $criteria->childField];
 			}
 
 			if ($criteria->parentOf)
 			{
-				$relatedTo[] = array('targetElement' => $criteria->parentOf, 'field' => $criteria->parentField);
+				$relatedTo[] = ['targetElement' => $criteria->parentOf, 'field' => $criteria->parentField];
 			}
 
 			$criteria->relatedTo = $relatedTo;
@@ -717,22 +717,22 @@ class Elements extends Component
 				if ($criteria->ancestorOf)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.lft < :ancestorOf_lft',
 							'structureelements.rgt > :ancestorOf_rgt',
 							'structureelements.root = :ancestorOf_root'
-						),
-						array(
+						],
+						[
 							':ancestorOf_lft'  => $criteria->ancestorOf->lft,
 							':ancestorOf_rgt'  => $criteria->ancestorOf->rgt,
 							':ancestorOf_root' => $criteria->ancestorOf->root
-						)
+						]
 					);
 
 					if ($criteria->ancestorDist)
 					{
 						$query->andWhere('structureelements.level >= :ancestorOf_level',
-							array(':ancestorOf_level' => $criteria->ancestorOf->level - $criteria->ancestorDist)
+							[':ancestorOf_level' => $criteria->ancestorOf->level - $criteria->ancestorDist]
 						);
 					}
 				}
@@ -753,22 +753,22 @@ class Elements extends Component
 				if ($criteria->descendantOf)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.lft > :descendantOf_lft',
 							'structureelements.rgt < :descendantOf_rgt',
 							'structureelements.root = :descendantOf_root'
-						),
-						array(
+						],
+						[
 							':descendantOf_lft'  => $criteria->descendantOf->lft,
 							':descendantOf_rgt'  => $criteria->descendantOf->rgt,
 							':descendantOf_root' => $criteria->descendantOf->root
-						)
+						]
 					);
 
 					if ($criteria->descendantDist)
 					{
 						$query->andWhere('structureelements.level <= :descendantOf_level',
-							array(':descendantOf_level' => $criteria->descendantOf->level + $criteria->descendantDist)
+							[':descendantOf_level' => $criteria->descendantOf->level + $criteria->descendantDist]
 						);
 					}
 				}
@@ -789,16 +789,16 @@ class Elements extends Component
 				if ($criteria->siblingOf)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.level = :siblingOf_level',
 							'structureelements.root = :siblingOf_root',
 							'structureelements.elementId != :siblingOf_elementId'
-						),
-						array(
+						],
+						[
 							':siblingOf_level'     => $criteria->siblingOf->level,
 							':siblingOf_root'      => $criteria->siblingOf->root,
 							':siblingOf_elementId' => $criteria->siblingOf->id
-						)
+						]
 					);
 
 					if ($criteria->siblingOf->level != 1)
@@ -808,14 +808,14 @@ class Elements extends Component
 						if ($parent)
 						{
 							$query->andWhere(
-								array('and',
+								['and',
 									'structureelements.lft > :siblingOf_lft',
 									'structureelements.rgt < :siblingOf_rgt'
-								),
-								array(
+								],
+								[
 									':siblingOf_lft'  => $parent->lft,
 									':siblingOf_rgt'  => $parent->rgt
-								)
+								]
 							);
 						}
 						else
@@ -841,16 +841,16 @@ class Elements extends Component
 				if ($criteria->prevSiblingOf)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.level = :prevSiblingOf_level',
 							'structureelements.rgt = :prevSiblingOf_rgt',
 							'structureelements.root = :prevSiblingOf_root'
-						),
-						array(
+						],
+						[
 							':prevSiblingOf_level' => $criteria->prevSiblingOf->level,
 							':prevSiblingOf_rgt'   => $criteria->prevSiblingOf->lft - 1,
 							':prevSiblingOf_root'  => $criteria->prevSiblingOf->root
-						)
+						]
 					);
 				}
 			}
@@ -870,16 +870,16 @@ class Elements extends Component
 				if ($criteria->nextSiblingOf)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.level = :nextSiblingOf_level',
 							'structureelements.lft = :nextSiblingOf_lft',
 							'structureelements.root = :nextSiblingOf_root'
-						),
-						array(
+						],
+						[
 							':nextSiblingOf_level' => $criteria->nextSiblingOf->level,
 							':nextSiblingOf_lft'   => $criteria->nextSiblingOf->rgt + 1,
 							':nextSiblingOf_root'  => $criteria->nextSiblingOf->root
-						)
+						]
 					);
 				}
 			}
@@ -899,14 +899,14 @@ class Elements extends Component
 				if ($criteria->positionedBefore)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.rgt < :positionedBefore_rgt',
 							'structureelements.root = :positionedBefore_root'
-						),
-						array(
+						],
+						[
 							':positionedBefore_rgt'   => $criteria->positionedBefore->lft,
 							':positionedBefore_root'  => $criteria->positionedBefore->root
-						)
+						]
 					);
 				}
 			}
@@ -926,14 +926,14 @@ class Elements extends Component
 				if ($criteria->positionedAfter)
 				{
 					$query->andWhere(
-						array('and',
+						['and',
 							'structureelements.lft > :positionedAfter_lft',
 							'structureelements.root = :positionedAfter_root'
-						),
-						array(
+						],
+						[
 							':positionedAfter_lft'   => $criteria->positionedAfter->rgt,
 							':positionedAfter_root'  => $criteria->positionedAfter->root
-						)
+						]
 					);
 				}
 			}
@@ -964,10 +964,10 @@ class Elements extends Component
 			// No results?
 			if (!$filteredElementIds)
 			{
-				return array();
+				return [];
 			}
 
-			$query->andWhere(array('in', 'elements.id', $filteredElementIds));
+			$query->andWhere(['in', 'elements.id', $filteredElementIds]);
 
 			if ($scoredSearchResults)
 			{
@@ -992,7 +992,7 @@ class Elements extends Component
 		return Craft::$app->db->createCommand()
 			->select('uri')
 			->from('elements_i18n')
-			->where(array('elementId' => $elementId, 'locale' => $localeId))
+			->where(['elementId' => $elementId, 'locale' => $localeId])
 			->queryScalar();
 	}
 
@@ -1009,7 +1009,7 @@ class Elements extends Component
 		return Craft::$app->db->createCommand()
 			->select('locale')
 			->from('elements_i18n')
-			->where(array('elementId' => $elementId, 'enabled' => 1))
+			->where(['elementId' => $elementId, 'enabled' => 1])
 			->queryColumn();
 	}
 
@@ -1070,7 +1070,7 @@ class Elements extends Component
 				// Make sure there's a title
 				if ($elementType->hasTitles())
 				{
-					$fields = array('title');
+					$fields = ['title'];
 					$content = $element->getContent();
 					$content->setRequiredFields($fields);
 
@@ -1093,14 +1093,14 @@ class Elements extends Component
 		// Get the element record
 		if (!$isNewElement)
 		{
-			$elementRecord = ElementRecord::model()->findByAttributes(array(
+			$elementRecord = ElementRecord::model()->findByAttributes([
 				'id'   => $element->id,
 				'type' => $element->getElementType()
-			));
+			]);
 
 			if (!$elementRecord)
 			{
-				throw new Exception(Craft::t('No element exists with the ID “{id}”.', array('id' => $element->id)));
+				throw new Exception(Craft::t('No element exists with the ID “{id}”.', ['id' => $element->id]));
 			}
 		}
 		else
@@ -1118,10 +1118,10 @@ class Elements extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveElement' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'element'      => $element,
 				'isNewElement' => $isNewElement
-			));
+			]);
 
 			$this->onBeforeSaveElement($event);
 
@@ -1158,13 +1158,13 @@ class Elements extends Component
 					// We're saving all of the element's locales here to ensure that they all exist and to update the URI in
 					// the event that the URL format includes some value that just changed
 
-					$localeRecords = array();
+					$localeRecords = [];
 
 					if (!$isNewElement)
 					{
-						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes(array(
+						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes([
 							'elementId' => $element->id
-						));
+						]);
 
 						foreach ($existingLocaleRecords as $record)
 						{
@@ -1175,7 +1175,7 @@ class Elements extends Component
 					$mainLocaleId = $element->locale;
 
 					$locales = $element->getLocales();
-					$localeIds = array();
+					$localeIds = [];
 
 					if (!$locales)
 					{
@@ -1187,7 +1187,7 @@ class Elements extends Component
 						if (is_numeric($localeId) && is_string($localeInfo))
 						{
 							$localeId = $localeInfo;
-							$localeInfo = array();
+							$localeInfo = [];
 						}
 
 						$localeIds[] = $localeId;
@@ -1274,7 +1274,7 @@ class Elements extends Component
 						if ($originalSlug && !$localizedElement->slug)
 						{
 							$localizedElement->slug = $originalSlug;
-							$element->addError('slug', Craft::t('{attribute} is invalid.', array('attribute' => Craft::t('Slug'))));
+							$element->addError('slug', Craft::t('{attribute} is invalid.', ['attribute' => Craft::t('Slug')]));
 
 							// Don't bother with any of the other locales
 							$success = false;
@@ -1309,21 +1309,21 @@ class Elements extends Component
 						{
 							// Delete the rows that don't need to be there anymore
 
-							Craft::$app->db->createCommand()->delete('elements_i18n', array('and',
+							Craft::$app->db->createCommand()->delete('elements_i18n', ['and',
 								'elementId = :elementId',
-								array('not in', 'locale', $localeIds)
-							), array(
+								['not in', 'locale', $localeIds]
+							], [
 								':elementId' => $element->id
-							));
+							]);
 
 							if ($elementType->hasContent())
 							{
-								Craft::$app->db->createCommand()->delete($element->getContentTable(), array('and',
+								Craft::$app->db->createCommand()->delete($element->getContentTable(), ['and',
 									'elementId = :elementId',
-									array('not in', 'locale', $localeIds)
-								), array(
+									['not in', 'locale', $localeIds]
+								], [
 									':elementId' => $element->id
-								));
+								]);
 							}
 						}
 
@@ -1380,10 +1380,10 @@ class Elements extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveElement' event
-			$this->onSaveElement(new Event($this, array(
+			$this->onSaveElement(new Event($this, [
 				'element'      => $element,
 				'isNewElement' => $isNewElement
-			)));
+			]));
 		}
 		else
 		{
@@ -1415,13 +1415,13 @@ class Elements extends Component
 	{
 		ElementHelper::setUniqueUri($element);
 
-		Craft::$app->db->createCommand()->update('elements_i18n', array(
+		Craft::$app->db->createCommand()->update('elements_i18n', [
 			'slug' => $element->slug,
 			'uri'  => $element->uri
-		), array(
+		], [
 			'elementId' => $element->id,
 			'locale'    => $element->locale
-		));
+		]);
 
 		// Delete any caches involving this element
 		Craft::$app->templateCache->deleteCachesByElement($element);
@@ -1508,7 +1508,7 @@ class Elements extends Component
 			$relations = Craft::$app->db->createCommand()
 				->select('id, fieldId, sourceId, sourceLocale')
 				->from('relations')
-				->where(array('targetId' => $mergedElementId))
+				->where(['targetId' => $mergedElementId])
 				->queryAll();
 
 			foreach ($relations as $relation)
@@ -1516,21 +1516,21 @@ class Elements extends Component
 				// Make sure the persisting element isn't already selected in the same field
 				$persistingElementIsRelatedToo = (bool) Craft::$app->db->createCommand()
 					->from('relations')
-					->where(array(
+					->where([
 						'fieldId'      => $relation['fieldId'],
 						'sourceId'     => $relation['sourceId'],
 						'sourceLocale' => $relation['sourceLocale'],
 						'targetId'     => $prevailingElementId
-					))
+					])
 					->count('id');
 
 				if (!$persistingElementIsRelatedToo)
 				{
-					Craft::$app->db->createCommand()->update('relations', array(
+					Craft::$app->db->createCommand()->update('relations', [
 						'targetId' => $prevailingElementId
-					), array(
+					], [
 						'id' => $relation['id']
-					));
+					]);
 				}
 			}
 
@@ -1538,7 +1538,7 @@ class Elements extends Component
 			$structureElements = Craft::$app->db->createCommand()
 				->select('id, structureId')
 				->from('structureelements')
-				->where(array('elementId' => $mergedElementId))
+				->where(['elementId' => $mergedElementId])
 				->queryAll();
 
 			foreach ($structureElements as $structureElement)
@@ -1546,19 +1546,19 @@ class Elements extends Component
 				// Make sure the persisting element isn't already a part of that structure
 				$persistingElementIsInStructureToo = (bool) Craft::$app->db->createCommand()
 					->from('structureElements')
-					->where(array(
+					->where([
 						'structureId' => $structureElement['structureId'],
 						'elementId' => $prevailingElementId
-					))
+					])
 					->count('id');
 
 				if (!$persistingElementIsInStructureToo)
 				{
-					Craft::$app->db->createCommand()->update('relations', array(
+					Craft::$app->db->createCommand()->update('relations', [
 						'elementId' => $prevailingElementId
-					), array(
+					], [
 						'id' => $structureElement['id']
-					));
+					]);
 				}
 			}
 
@@ -1569,22 +1569,22 @@ class Elements extends Component
 			{
 				$refTagPrefix = '{'.lcfirst($elementType).':';
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.':',
 					'replace' => $refTagPrefix.$prevailingElementId.':',
-				));
+				]);
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), array(
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.'}',
 					'replace' => $refTagPrefix.$prevailingElementId.'}',
-				));
+				]);
 			}
 
 			// Fire an 'onMergeElements' event
-			$this->onMergeElements(new Event($this, array(
+			$this->onMergeElements(new Event($this, [
 				'mergedElementId'     => $mergedElementId,
 				'prevailingElementId' => $prevailingElementId
-			)));
+			]));
 
 			// Now delete the merged element
 			$success = $this->deleteElementById($mergedElementId);
@@ -1624,7 +1624,7 @@ class Elements extends Component
 
 		if (!is_array($elementIds))
 		{
-			$elementIds = array($elementIds);
+			$elementIds = [$elementIds];
 		}
 
 		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
@@ -1632,17 +1632,17 @@ class Elements extends Component
 		try
 		{
 			// Fire an 'onBeforeDeleteElements' event
-			$this->onBeforeDeleteElements(new Event($this, array(
+			$this->onBeforeDeleteElements(new Event($this, [
 				'elementIds' => $elementIds
-			)));
+			]));
 
 			// First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
 			// go one-by-one in case one of theme deletes the record of another in the process.
 			foreach ($elementIds as $elementId)
 			{
-				$records = StructureElementRecord::model()->findAllByAttributes(array(
+				$records = StructureElementRecord::model()->findAllByAttributes([
 					'elementId' => $elementId
-				));
+				]);
 
 				foreach ($records as $record)
 				{
@@ -1666,15 +1666,15 @@ class Elements extends Component
 			// Now delete the rows in the elements table
 			if (count($elementIds) == 1)
 			{
-				$condition = array('id' => $elementIds[0]);
-				$matrixBlockCondition = array('ownerId' => $elementIds[0]);
-				$searchIndexCondition = array('elementId' => $elementIds[0]);
+				$condition = ['id' => $elementIds[0]];
+				$matrixBlockCondition = ['ownerId' => $elementIds[0]];
+				$searchIndexCondition = ['elementId' => $elementIds[0]];
 			}
 			else
 			{
-				$condition = array('in', 'id', $elementIds);
-				$matrixBlockCondition = array('in', 'ownerId', $elementIds);
-				$searchIndexCondition = array('in', 'elementId', $elementIds);
+				$condition = ['in', 'id', $elementIds];
+				$matrixBlockCondition = ['in', 'ownerId', $elementIds];
+				$searchIndexCondition = ['in', 'elementId', $elementIds];
 			}
 
 			// First delete any Matrix blocks that belong to this element(s)
@@ -1726,7 +1726,7 @@ class Elements extends Component
 		$elementIds = Craft::$app->db->createCommand()
 			->select('id')
 			->from('elements')
-			->where('type = :type', array(':type' => $type))
+			->where('type = :type', [':type' => $type])
 			->queryColumn();
 
 		if ($elementIds)
@@ -1803,7 +1803,7 @@ class Elements extends Component
 		if (strpos($str, '{') !== false)
 		{
 			global $refTagsByElementType;
-			$refTagsByElementType = array();
+			$refTagsByElementType = [];
 
 			$str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches)
 			{
@@ -1812,17 +1812,17 @@ class Elements extends Component
 				$elementTypeHandle = ucfirst($matches[1]);
 				$token = '{'.StringHelper::randomString(9).'}';
 
-				$refTagsByElementType[$elementTypeHandle][] = array('token' => $token, 'matches' => $matches);
+				$refTagsByElementType[$elementTypeHandle][] = ['token' => $token, 'matches' => $matches];
 
 				return $token;
 			}, $str);
 
 			if ($refTagsByElementType)
 			{
-				$search = array();
-				$replace = array();
+				$search = [];
+				$replace = [];
 
-				$things = array('id', 'ref');
+				$things = ['id', 'ref'];
 
 				foreach ($refTagsByElementType as $elementTypeHandle => $refTags)
 				{
@@ -1839,8 +1839,8 @@ class Elements extends Component
 					}
 					else
 					{
-						$refTagsById = array();
-						$refTagsByRef = array();
+						$refTagsById  = [];
+						$refTagsByRef = [];
 
 						foreach ($refTags as $refTag)
 						{
@@ -1867,7 +1867,7 @@ class Elements extends Component
 								$criteria->$thing = array_keys($refTagsByThing);
 								$elements = $criteria->find();
 
-								$elementsByThing = array();
+								$elementsByThing = [];
 
 								foreach ($elements as $element)
 								{

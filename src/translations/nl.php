@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
 	'$_SERVER Variable' => '$_SERVER Variabele',
 	'$_SERVER does not have {messages}.' => '$_SERVER heeft geen {messages}.',
@@ -1252,4 +1252,4 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
 	'“{plugin}” is already installed.' => '“{plugin}” is reeds geïnstalleerd.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” is reeds geïnstalleerd.',
 	'…Or use one of your field groups as a starting point:' => '...of gebruik één van je veldgroepen als startpunt:',
-);
+];

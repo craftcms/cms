@@ -45,9 +45,9 @@ class Locale extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('sortOrder')),
-		);
+		return [
+			['columns' => ['sortOrder']],
+		];
 	}
 
 	// Protected Methods
@@ -60,9 +60,9 @@ class Locale extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'locale'    => array(AttributeType::Locale, 'required' => true, 'primaryKey' => true),
+		return [
+			'locale'    => [AttributeType::Locale, 'required' => true, 'primaryKey' => true],
 			'sortOrder' => AttributeType::SortOrder,
-		);
+		];
 	}
 }

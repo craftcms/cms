@@ -41,7 +41,7 @@ class ElementsController extends BaseElementsController
 
 		if (is_array($sourceKeys))
 		{
-			$sources = array();
+			$sources = [];
 
 			foreach ($sourceKeys as $key)
 			{
@@ -58,12 +58,12 @@ class ElementsController extends BaseElementsController
 			$sources = $elementType->getSources($context);
 		}
 
-		$this->renderTemplate('_elements/modalbody', array(
+		$this->renderTemplate('_elements/modalbody', [
 			'context'     => $context,
 			'elementType' => $elementType,
 			'sources'     => $sources,
 			'showSidebar' => (count($sources) > 1 || ($sources && !empty($sources[array_shift(array_keys($sources))]['nested'])))
-		));
+		]);
 	}
 
 	/**
@@ -131,11 +131,11 @@ class ElementsController extends BaseElementsController
 
 		if ($elementType->saveElement($element, $params))
 		{
-			$this->returnJson(array(
+			$this->returnJson([
 				'success'   => true,
 				'newTitle'  => (string) $element,
 				'cpEditUrl' => $element->getCpEditUrl(),
-			));
+			]);
 		}
 		else
 		{
@@ -150,7 +150,7 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionGetCategoriesInputHtml()
 	{
-		$categoryIds = Craft::$app->request->getParam('categoryIds', array());
+		$categoryIds = Craft::$app->request->getParam('categoryIds', []);
 
 		// Fill in the gaps
 		$categoryIds = Craft::$app->categories->fillGapsInCategoryIds($categoryIds);
@@ -167,18 +167,18 @@ class ElementsController extends BaseElementsController
 		}
 		else
 		{
-			$categories = array();
+			$categories = [];
 		}
 
-		$html = Craft::$app->templates->render('_components/fieldtypes/Categories/input', array(
+		$html = Craft::$app->templates->render('_components/fieldtypes/Categories/input', [
 			'elements' => $categories,
 			'id'       => Craft::$app->request->getParam('id'),
 			'name'     => Craft::$app->request->getParam('name'),
-		));
+		]);
 
-		$this->returnJson(array(
+		$this->returnJson([
 			'html' => $html,
-		));
+		]);
 	}
 
 	// Private Methods
@@ -206,16 +206,16 @@ class ElementsController extends BaseElementsController
 		{
 			if (count($localeIds) > 1)
 			{
-				$response['locales'] = array();
+				$response['locales'] = [];
 
 				foreach ($localeIds as $localeId)
 				{
 					$locale = Craft::$app->i18n->getLocaleById($localeId);
 
-					$response['locales'][] = array(
+					$response['locales'][] = [
 						'id'   => $localeId,
 						'name' => $locale->getName()
-					);
+					];
 				}
 			}
 			else

@@ -8,7 +8,7 @@
  * If you want to change any of these settings, copy it into craft/config/rediscache.php, and make your change there.
  */
 
-return array(
+return [
 	/**
 	 * Hostname to use for connecting to the redis server. Defaults to 'localhost'.
 	 */
@@ -34,4 +34,4 @@ return array(
 	 * ini_get("default_socket_timeout")
 	 */
 	'timeout' => null,
-);
+];

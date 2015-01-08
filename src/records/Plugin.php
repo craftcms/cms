@@ -38,9 +38,9 @@ class Plugin extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'migrations' => array(static::HAS_MANY, 'Migration', 'pluginId'),
-		);
+		return [
+			'migrations' => [static::HAS_MANY, 'Migration', 'pluginId'],
+		];
 	}
 
 	// Protected Methods
@@ -53,12 +53,12 @@ class Plugin extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'class'       => array(AttributeType::ClassName, 'required' => true),
-			'version'     => array('maxLength' => 15, 'column' => ColumnType::Char, 'required' => true),
+		return [
+			'class'       => [AttributeType::ClassName, 'required' => true],
+			'version'     => ['maxLength' => 15, 'column' => ColumnType::Char, 'required' => true],
 			'enabled'     => AttributeType::Bool,
 			'settings'    => AttributeType::Mixed,
-			'installDate' => array(AttributeType::DateTime, 'required' => true),
-		);
+			'installDate' => [AttributeType::DateTime, 'required' => true],
+		];
 	}
 }

@@ -56,11 +56,11 @@ class MultiSelect extends BaseOptionsFieldType
 			$values = $this->getDefaultValue();
 		}
 
-		return Craft::$app->templates->render('_includes/forms/multiselect', array(
+		return Craft::$app->templates->render('_includes/forms/multiselect', [
 			'name'    => $name,
 			'values'  => $values,
 			'options' => $options
-		));
+		]);
 	}
 
 	// Protected Methods

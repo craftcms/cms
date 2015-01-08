@@ -79,7 +79,7 @@ class Globals extends Component
 	{
 		if (!isset($this->_editableGlobalSetIds))
 		{
-			$this->_editableGlobalSetIds = array();
+			$this->_editableGlobalSetIds = [];
 			$allGlobalSetIds = $this->getAllSetIds();
 
 			foreach ($allGlobalSetIds as $globalSetId)
@@ -121,7 +121,7 @@ class Globals extends Component
 		}
 		else
 		{
-			$globalSets = array();
+			$globalSets = [];
 
 			foreach ($this->_allGlobalSets as $globalSet)
 			{
@@ -143,7 +143,7 @@ class Globals extends Component
 	{
 		$globalSets = $this->getAllSets();
 		$editableGlobalSetIds = $this->getEditableSetIds();
-		$editableGlobalSets = array();
+		$editableGlobalSets = [];
 
 		foreach ($globalSets as $globalSet)
 		{
@@ -271,7 +271,7 @@ class Globals extends Component
 
 			if (!$globalSetRecord)
 			{
-				throw new Exception(Craft::t('No global set exists with the ID “{id}”.', array('id' => $globalSet->id)));
+				throw new Exception(Craft::t('No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
 			}
 
 			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
@@ -360,7 +360,7 @@ class Globals extends Component
 			$fieldLayoutId = Craft::$app->db->createCommand()
 				->select('fieldLayoutId')
 				->from('globalsets')
-				->where(array('id' => $setId))
+				->where(['id' => $setId])
 				->queryScalar();
 
 			if ($fieldLayoutId)
@@ -404,9 +404,9 @@ class Globals extends Component
 		try
 		{
 			// Fire an 'onBeforeSaveGlobalContent' event
-			$event = new Event($this, array(
+			$event = new Event($this, [
 				'globalSet' => $globalSet
-			));
+			]);
 
 			$this->onBeforeSaveGlobalContent($event);
 
@@ -451,9 +451,9 @@ class Globals extends Component
 		if ($success)
 		{
 			// Fire an 'onSaveGlobalContent' event
-			$this->onSaveGlobalContent(new Event($this, array(
+			$this->onSaveGlobalContent(new Event($this, [
 				'globalSet' => $globalSet
-			)));
+			]));
 		}
 
 		return $success;

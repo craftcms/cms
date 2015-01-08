@@ -55,11 +55,11 @@ class TagGroup extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'            => AttributeType::Number,
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
 			'fieldLayoutId' => AttributeType::Number,
-		);
+		];
 	}
 }

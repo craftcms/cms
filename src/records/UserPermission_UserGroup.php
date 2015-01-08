@@ -39,10 +39,10 @@ class UserPermission_UserGroup extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'permission' => array(static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE),
-			'group'      => array(static::BELONGS_TO, 'UserGroup',      'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'permission' => [static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE],
+			'group'      => [static::BELONGS_TO, 'UserGroup',      'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -52,8 +52,8 @@ class UserPermission_UserGroup extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('permissionId', 'groupId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['permissionId', 'groupId'], 'unique' => true],
+		];
 	}
 }

@@ -69,7 +69,7 @@ class RichTextData extends \Twig_Markup
 	{
 		if (!isset($this->_pages))
 		{
-			$this->_pages = array();
+			$this->_pages = [];
 			$pages = explode('<!--pagebreak-->', $this->content);
 
 			foreach ($pages as $page)

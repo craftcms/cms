@@ -116,9 +116,9 @@ class UrlHelper
 	 */
 	public static function getUrlWithToken($url, $token)
 	{
-		return static::getUrlWithParams($url, array(
+		return static::getUrlWithParams($url, [
 			Craft::$app->config->get('tokenParam') => $token
-		));
+		]);
 	}
 
 	/**
@@ -260,7 +260,7 @@ class UrlHelper
 				{
 					if (!is_array($params))
 					{
-						$params = array($params);
+						$params = [$params];
 					}
 
 					$timeModified = IOHelper::getLastTimeModified($realPath);

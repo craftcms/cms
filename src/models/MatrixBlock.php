@@ -65,7 +65,7 @@ class MatrixBlock extends BaseElementModel
 
 		if ($this->ownerLocale)
 		{
-			return array($this->ownerLocale);
+			return [$this->ownerLocale];
 		}
 		else
 		{
@@ -74,7 +74,7 @@ class MatrixBlock extends BaseElementModel
 			if ($owner)
 			{
 				// Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-				$localeIds = array();
+				$localeIds = [];
 
 				foreach ($owner->getLocales() as $localeId => $localeInfo)
 				{
@@ -92,7 +92,7 @@ class MatrixBlock extends BaseElementModel
 			}
 			else
 			{
-				return array(Craft::$app->i18n->getPrimarySiteLocaleId());
+				return [Craft::$app->i18n->getPrimarySiteLocaleId()];
 			}
 		}
 	}
@@ -183,7 +183,7 @@ class MatrixBlock extends BaseElementModel
 	 */
 	protected function defineAttributes()
 	{
-		return array_merge(parent::defineAttributes(), array(
+		return array_merge(parent::defineAttributes(), [
 			'fieldId'     => AttributeType::Number,
 			'ownerId'     => AttributeType::Number,
 			'ownerLocale' => AttributeType::Locale,
@@ -191,7 +191,7 @@ class MatrixBlock extends BaseElementModel
 			'sortOrder'   => AttributeType::Number,
 
 			'collapsed'   => AttributeType::Bool,
-		));
+		]);
 	}
 
 	// Private Methods

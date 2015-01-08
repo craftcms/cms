@@ -31,7 +31,7 @@ class Header_TokenParser extends \Twig_TokenParser
 		$header = $this->parser->getExpressionParser()->parseExpression();
 		$this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new Header_Node(array('header' => $header), array(), $lineno, $this->getTag());
+		return new Header_Node(['header' => $header], [], $lineno, $this->getTag());
 	}
 
 	/**

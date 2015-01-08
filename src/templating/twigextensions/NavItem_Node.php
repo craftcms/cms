@@ -28,7 +28,7 @@ class NavItem_Node extends \Twig_Node
 	 */
 	public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, \Twig_NodeInterface $lowerBody = null, $lineno, $tag = null)
 	{
-		parent::__construct(array('value_target' => $valueTarget, 'indent' => $indent, 'outdent' => $outdent, 'lower_body' => $lowerBody), array(), $lineno, $tag);
+		parent::__construct(['value_target' => $valueTarget, 'indent' => $indent, 'outdent' => $outdent, 'lower_body' => $lowerBody], [], $lineno, $tag);
 	}
 
 	/**
@@ -44,7 +44,7 @@ class NavItem_Node extends \Twig_Node
 			// Get this item's level
 			->write('$_thisItemLevel = (int)$this->getAttribute(')
 			->subcompile($this->getNode('value_target'))
-			->raw(", 'level', array(), Twig_TemplateInterface::ANY_CALL, false, true);\n")
+			->raw(", 'level', [], Twig_TemplateInterface::ANY_CALL, false, true);\n")
 			// Was there a previous item?
 			->write("if (isset(\$_contextsByLevel)) {\n")
 			->indent()
@@ -95,7 +95,7 @@ class NavItem_Node extends \Twig_Node
 			->outdent()
 			->write("}\n")
 			// Create the nav array for this item
-			->write("\$context['nav'] = array('level' => \$_thisItemLevel);\n")
+			->write("\$context['nav'] = ['level' => \$_thisItemLevel];\n")
 			->write("if (isset(\$_contextsByLevel[\$_thisItemLevel-1])) {\n")
 			->indent()
 				->write("\$context['nav']['parent'] = \$_contextsByLevel[\$_thisItemLevel-1];\n")

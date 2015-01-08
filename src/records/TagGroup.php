@@ -37,10 +37,10 @@ class TagGroup extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-			'tags'        => array(static::HAS_MANY, 'Tag', 'tagId'),
-		);
+		return [
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+			'tags'        => [static::HAS_MANY, 'Tag', 'tagId'],
+		];
 	}
 
 	/**
@@ -50,10 +50,10 @@ class TagGroup extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -63,9 +63,9 @@ class TagGroup extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

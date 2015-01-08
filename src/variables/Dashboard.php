@@ -93,7 +93,7 @@ class Dashboard
 	 */
 	public function userWidgetIds()
 	{
-		$widgetIds = array();
+		$widgetIds = [];
 		$widgets = Craft::$app->dashboard->getUserWidgets();
 
 		foreach ($widgets as $widget)

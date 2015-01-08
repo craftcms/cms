@@ -27,7 +27,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getTokenParsers()
 	{
-		return array(
+		return [
 			new Cache_TokenParser(),
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
@@ -49,7 +49,7 @@ class CraftTwigExtension extends \Twig_Extension
 			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new Switch_TokenParser(),
-		);
+		];
 	}
 
 	/**
@@ -61,11 +61,11 @@ class CraftTwigExtension extends \Twig_Extension
 	{
 		$translateFilter = new \Twig_Filter_Function('\craft\app\Craft::t');
 		$namespaceFilter = new \Twig_Filter_Function('\craft\app\Craft::$app->templates->namespaceInputs');
-		$markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
+		$markdownFilter  = new \Twig_Filter_Method($this, 'markdownFilter');
 
-		return array(
+		return [
 			'currency'           => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatCurrency'),
-			'date'               => new \Twig_Filter_Method($this, 'dateFilter', array('needs_environment' => true)),
+			'date'               => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
 			'datetime'           => new \Twig_Filter_Function('\craft\app\Craft::$app->dateFormatter->formatDateTime'),
 			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->formatter->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
@@ -89,7 +89,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
-		);
+		];
 	}
 
 	/**
@@ -126,11 +126,11 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function withoutFilter($arr, $exclude)
 	{
-		$filteredArray = array();
+		$filteredArray = [];
 
 		if (!is_array($exclude))
 		{
-			$exclude = array($exclude);
+			$exclude = [$exclude];
 		}
 
 		foreach ($arr as $key => $value)
@@ -229,7 +229,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function groupFilter($arr, $item)
 	{
-		$groups = array();
+		$groups = [];
 
 		$template = '{'.$item.'}';
 
@@ -317,7 +317,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function getFunctions()
 	{
-		return array(
+		return [
 			'actionUrl'            => new \Twig_Function_Function('\Craft\UrlHelper::getActionUrl'),
 			'cpUrl'                => new \Twig_Function_Function('\Craft\UrlHelper::getCpUrl'),
 			'ceil'                 => new \Twig_Function_Function('ceil'),
@@ -334,7 +334,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'shuffle'              => new \Twig_Function_Method($this, 'shuffleFunction'),
 			'siteUrl'              => new \Twig_Function_Function('\Craft\UrlHelper::getSiteUrl'),
 			'url'                  => new \Twig_Function_Function('\Craft\UrlHelper::getUrl'),
-		);
+		];
 	}
 
 	/**

@@ -48,11 +48,11 @@ class RadioButtons extends BaseOptionsFieldType
 			$value = $this->getDefaultValue();
 		}
 
-		return Craft::$app->templates->render('_includes/forms/radioGroup', array(
+		return Craft::$app->templates->render('_includes/forms/radioGroup', [
 			'name'    => $name,
 			'value'   => $value,
 			'options' => $options
-		));
+		]);
 	}
 
 	// Protected Methods

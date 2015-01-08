@@ -124,7 +124,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function getSourceErrors()
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -185,11 +185,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
 	{
 		// Fire an 'onBeforeUploadAsset' event
-		$event = new Event($this, array(
+		$event = new Event($this, [
 			'path'     => $localFilePath,
 			'folder'   => $folder,
 			'filename' => $fileName
-		));
+		]);
 
 		Craft::$app->assets->onBeforeUploadAsset($event);
 
@@ -285,7 +285,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				case AssetConflictResolution::Replace:
 				{
-					$fileToReplace = Craft::$app->assets->findFile(array('folderId' => $folder->id, 'filename' => $filename));
+					$fileToReplace = Craft::$app->assets->findFile(['folderId' => $folder->id, 'filename' => $filename]);
 
 					if ($fileToReplace)
 					{
@@ -359,7 +359,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				case AssetConflictResolution::Replace:
 				{
-					$fileToReplace = Craft::$app->assets->findFile(array('folderId' => $targetFolder->id, 'filename' => $filename));
+					$fileToReplace = Craft::$app->assets->findFile(['folderId' => $targetFolder->id, 'filename' => $filename]);
 
 					if ($fileToReplace)
 					{
@@ -564,7 +564,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$folderName = AssetsHelper::cleanAssetName($folderName, false);
 
 		// If folder exists in DB or physically, bail out
-		if (Craft::$app->assets->findFolder(array('parentId' => $parentFolder->id, 'name' => $folderName))
+		if (Craft::$app->assets->findFolder(['parentId' => $parentFolder->id, 'name' => $folderName])
 			|| $this->folderExists($parentFolder, $folderName))
 		{
 			throw new Exception(Craft::t('A folder already exists with that name!'));
@@ -606,19 +606,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		if (!$parentFolder)
 		{
-			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', array('folder' => $folder->name)));
+			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
 		}
 
 		// Allow this for changing the case
 		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->folderExists($parentFolder, $newName))
 		{
-			throw new Exception(Craft::t('Folder “{folder}” already exists there.', array('folder' => $newName)));
+			throw new Exception(Craft::t('Folder “{folder}” already exists there.', ['folder' => $newName]));
 		}
 
 		// Try to rename the folder in the source
 		if (!$this->renameSourceFolder($folder, $newName))
 		{
-			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', array('folder' => $folder->name)));
+			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
 		}
 
 		$oldFullPath = $folder->path;
@@ -668,7 +668,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		{
 			if ($overwriteTarget)
 			{
-				$existingFolder = Craft::$app->assets->findFolder(array('parentId' => $newParentFolder->id, 'name' => $folder->name));
+				$existingFolder = Craft::$app->assets->findFolder(['parentId' => $newParentFolder->id, 'name' => $folder->name]);
 
 				if ($existingFolder)
 				{
@@ -686,9 +686,9 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
-		$response->setSuccess()->setDataItem('deleteList', array($folder->id))->setDataItem('removeFromTree', $removeFromTree);
+		$response->setSuccess()->setDataItem('deleteList', [$folder->id])->setDataItem('removeFromTree', $removeFromTree);
 
-		$mirroringData = array('changedFolderIds' => array());
+		$mirroringData = ['changedFolderIds' => []];
 		$this->_mirrorStructure($newParentFolder, $folder, $mirroringData);
 
 		$response->setDataItem('changedFolderIds', $mirroringData['changedFolderIds']);
@@ -697,15 +697,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$criteria->folderId = array_keys(Craft::$app->assets->getAllDescendantFolders($folder));
 		$files = $criteria->find();
 
-		$transferList = array();
+		$transferList = [];
 
 		foreach ($files as $file)
 		{
-			$transferList[] = array(
+			$transferList[] = [
 				'fileId' => $file->id,
 				'folderId' => $mirroringData['changedFolderIds'][$file->folderId]['newId'],
 				'fileName' => $file->filename
-			);
+			];
 		}
 
 		return $response->setDataItem('transferList', $transferList);
@@ -731,7 +731,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 
 		// Delete children folders
-		$childFolders = Craft::$app->assets->findFolders(array('parentId' => $folder->id));
+		$childFolders = Craft::$app->assets->findFolders(['parentId' => $folder->id]);
 
 		foreach ($childFolders as $childFolder)
 		{
@@ -899,14 +899,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	protected function getUserPromptOptions($fileName)
 	{
-		return (object) array(
-			'message' => Craft::t('File “{file}” already exists at target location.', array('file' => $fileName)),
-			'choices' => array(
-				array('value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('Keep both')),
-				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace it')),
-				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel'))
-			)
-		);
+		return (object) [
+			'message' => Craft::t('File “{file}” already exists at target location.', ['file' => $fileName]),
+			'choices' => [
+				['value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('Keep both')],
+				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace it')],
+				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel')]
+			]
+		];
 	}
 
 	/**
@@ -919,14 +919,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	protected function getUserFolderPromptOptions($folderName, $folderId)
 	{
-		return array(
-			'message' => Craft::t('Folder “{folder}” already exists at target location', array('folder' => $folderName)),
+		return [
+			'message' => Craft::t('Folder “{folder}” already exists at target location', ['folder' => $folderName]),
 			'file_name' => $folderId,
-			'choices' => array(
-				array('value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace the existing folder')),
-				array('value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel the folder move.'))
-			)
-		);
+			'choices' => [
+				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace the existing folder')],
+				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel the folder move.')]
+			]
+		];
 	}
 
 	/**
@@ -938,10 +938,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	protected function ensureFolderByFullPath($fullPath)
 	{
-		$parameters = new FolderCriteriaModel(array(
+		$parameters = new FolderCriteriaModel([
 			'path' => $fullPath,
 			'sourceId' => $this->model->id
-		));
+		]);
 
 		$folderModel = Craft::$app->assets->findFolder($parameters);
 
@@ -998,11 +998,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function getMissingFolders(array $folderList)
 	{
 		// Figure out the obsolete records for folders
-		$missingFolders = array();
+		$missingFolders = [];
 
-		$allFolders = Craft::$app->assets->findFolders(array(
+		$allFolders = Craft::$app->assets->findFolders([
 			'sourceId' => $this->model->id
-		));
+		]);
 
 		foreach ($allFolders as $folderModel)
 		{
@@ -1042,11 +1042,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$parentId = false;
 			}
 
-			$parentFolder = Craft::$app->assets->findFolder(array(
+			$parentFolder = Craft::$app->assets->findFolder([
 				'sourceId' => $this->model->id,
 				'path' => $searchFullPath,
 				'parentId' => $parentId
-			));
+			]);
 
 			if (empty($parentFolder))
 			{
@@ -1055,10 +1055,10 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$folderId = $parentFolder->id;
 
-			$fileModel = Craft::$app->assets->findFile(array(
+			$fileModel = Craft::$app->assets->findFile([
 				'folderId' => $folderId,
 				'filename' => $fileName
-			));
+			]);
 
 			if (is_null($fileModel))
 			{
@@ -1120,11 +1120,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		if (preg_match('/([0-9]+)([a-z]+)/i', $value, $matches))
 		{
-			return array('amount' => $matches[1], 'period' => $matches[2]);
+			return ['amount' => $matches[1], 'period' => $matches[2]];
 		}
 		else
 		{
-			return array('amount' => '', 'period' => '');
+			return ['amount' => '', 'period' => ''];
 		}
 	}
 
@@ -1151,14 +1151,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$newId = $response->getDataItem('folderId');
 			$parentId = $response->getDataItem('parentId');
 
-			$changedData['changedFolderIds'][$sourceFolder->id] = array(
+			$changedData['changedFolderIds'][$sourceFolder->id] = [
 				'newId' => $newId,
 				'newParentId' => $parentId
-			);
+			];
 
 			$newTargetRow = Craft::$app->assets->getFolderById($newId);
 
-			$children = Craft::$app->assets->findFolders(array('parentId' => $sourceFolder->id));
+			$children = Craft::$app->assets->findFolders(['parentId' => $sourceFolder->id]);
 
 			foreach ($children as $child)
 			{

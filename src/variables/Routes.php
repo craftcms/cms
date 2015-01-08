@@ -27,7 +27,7 @@ class Routes
 	 */
 	public function getDbRoutes()
 	{
-		$routes = array();
+		$routes = [];
 
 		$results = Craft::$app->db->createCommand()
 			->select('id, locale, urlParts, template')
@@ -52,12 +52,12 @@ class Routes
 				}
 			}
 
-			$routes[] = array(
+			$routes[] = [
 				'id'             => $result['id'],
 				'locale'         => $result['locale'],
 				'urlDisplayHtml' => $urlDisplayHtml,
 				'template'       => $result['template']
-			);
+			];
 		}
 
 		return $routes;

@@ -38,16 +38,16 @@ class Entry extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		$relations = array(
-			'element' => array(static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'section' => array(static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE),
-			'type'    => array(static::BELONGS_TO, 'EntryType', 'onDelete' => static::CASCADE),
-			'author'  => array(static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE),
-		);
+		$relations = [
+			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
+			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
+			'type'    => [static::BELONGS_TO, 'EntryType', 'onDelete' => static::CASCADE],
+			'author'  => [static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE],
+		];
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$relations['versions'] = array(static::HAS_MANY, 'EntryVersion', 'elementId');
+			$relations['versions'] = [static::HAS_MANY, 'EntryVersion', 'elementId'];
 		}
 
 		return $relations;
@@ -60,12 +60,12 @@ class Entry extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('sectionId')),
-			array('columns' => array('typeId')),
-			array('columns' => array('postDate')),
-			array('columns' => array('expiryDate')),
-		);
+		return [
+			['columns' => ['sectionId']],
+			['columns' => ['typeId']],
+			['columns' => ['postDate']],
+			['columns' => ['expiryDate']],
+		];
 	}
 
 	/**
@@ -75,9 +75,9 @@ class Entry extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'postDate'),
-		);
+		return [
+			'ordered' => ['order' => 'postDate'],
+		];
 	}
 
 	// Protected Methods

@@ -97,11 +97,11 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 */
 	public function addCommands($path)
 	{
-		if (($commands=$this->findCommands($path))!==array())
+		if (($commands = $this->findCommands($path)) !== [])
 		{
-			foreach($commands as $name=>$file)
+			foreach($commands as $name => $file)
 			{
-				$this->commands[$name]=$file;
+				$this->commands[$name] = $file;
 			}
 		}
 	}

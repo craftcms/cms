@@ -75,42 +75,42 @@ class Templates extends Component
 	/**
 	 * @var array
 	 */
-	private $_headHtml = array();
+	private $_headHtml = [];
 
 	/**
 	 * @var array
 	 */
-	private $_footHtml = array();
+	private $_footHtml = [];
 
 	/**
 	 * @var array
 	 */
-	private $_cssFiles = array();
+	private $_cssFiles = [];
 
 	/**
 	 * @var array
 	 */
-	private $_jsFiles = array();
+	private $_jsFiles = [];
 
 	/**
 	 * @var array
 	 */
-	private $_css = array();
+	private $_css = [];
 
 	/**
 	 * @var array
 	 */
-	private $_hiResCss = array();
+	private $_hiResCss = [];
 
 	/**
 	 * @var array
 	 */
-	private $_jsBuffers = array(array());
+	private $_jsBuffers = [[]];
 
 	/**
 	 * @var array
 	 */
-	private $_translations = array();
+	private $_translations = [];
 
 	/**
 	 * @var
@@ -137,7 +137,7 @@ class Templates extends Component
 	 */
 	public function init()
 	{
-		$this->hook('cp.elements.element', array($this, '_getCpElementHtml'));
+		$this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
 	}
 
 	/**
@@ -229,7 +229,7 @@ class Templates extends Component
 	 *
 	 * @return string The rendered template.
 	 */
-	public function render($template, $variables = array())
+	public function render($template, $variables = [])
 	{
 		$twig = $this->getTwig();
 
@@ -249,14 +249,14 @@ class Templates extends Component
 	 *
 	 * @return string The rendered macro output.
 	 */
-	public function renderMacro($template, $macro, $args = array())
+	public function renderMacro($template, $macro, $args = [])
 	{
 		$twig = $this->getTwig();
 		$twigTemplate = $twig->loadTemplate($template);
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
-		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
+		$result = call_user_func_array([$twigTemplate, 'get'.$macro], $args);
 		$this->_renderingTemplate = $lastRenderingTemplate;
 
 		return $result;
@@ -270,7 +270,7 @@ class Templates extends Component
 	 *
 	 * @return string The rendered template.
 	 */
-	public function renderString($template, $variables = array())
+	public function renderString($template, $variables = [])
 	{
 		$stringTemplate = new StringTemplate(md5($template), $template);
 
@@ -278,6 +278,7 @@ class Templates extends Component
 		$this->_renderingTemplate = 'string:'.$template;
 		$result = $this->render($stringTemplate, $variables);
 		$this->_renderingTemplate = $lastRenderingTemplate;
+
 		return $result;
 	}
 
@@ -323,9 +324,9 @@ class Templates extends Component
 		// Render it!
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
-		$result = $this->_objectTemplates[$template]->render(array(
+		$result = $this->_objectTemplates[$template]->render([
 			'object' => $object
-		));
+		]);
 
 		$this->_renderingTemplate = $lastRenderingTemplate;
 
@@ -506,7 +507,7 @@ class Templates extends Component
 	 */
 	public function startJsBuffer()
 	{
-		$this->_jsBuffers[] = array();
+		$this->_jsBuffers[] = [];
 	}
 
 	/**
@@ -564,7 +565,7 @@ class Templates extends Component
 				$this->includeHeadHtml($node);
 			}
 
-			$this->_cssFiles = array();
+			$this->_cssFiles = [];
 		}
 
 		// Is there any hi-res CSS to include?
@@ -578,7 +579,7 @@ class Templates extends Component
 				implode("\n\n", $this->_hiResCss)."\n" .
 			'}');
 
-			$this->_hiResCss = array();
+			$this->_hiResCss = [];
 		}
 
 		// Is there any CSS to include?
@@ -588,13 +589,13 @@ class Templates extends Component
 			$node = "<style type=\"text/css\">\n".$css."\n</style>";
 			$this->includeHeadHtml($node);
 
-			$this->_css = array();
+			$this->_css = [];
 		}
 
 		if (!empty($this->_headHtml))
 		{
 			$headNodes = implode("\n", $this->_headHtml);
-			$this->_headHtml = array();
+			$this->_headHtml = [];
 			return $headNodes;
 		}
 	}
@@ -638,7 +639,7 @@ class Templates extends Component
 				$this->includeFootHtml($node);
 			}
 
-			$this->_jsFiles = array();
+			$this->_jsFiles = [];
 		}
 
 		// Is there any JS to include?
@@ -650,12 +651,12 @@ class Templates extends Component
 			}
 		}
 
-		$this->_jsBuffers = array(array());
+		$this->_jsBuffers = [[]];
 
 		if (!empty($this->_footHtml))
 		{
 			$footNodes = implode("\n", $this->_footHtml);
-			$this->_footHtml = array();
+			$this->_footHtml = [];
 			return $footNodes;
 		}
 	}
@@ -714,7 +715,7 @@ class Templates extends Component
 	public function getTranslations()
 	{
 		$translations = JsonHelper::encode(array_filter($this->_translations));
-		$this->_translations = array();
+		$this->_translations = [];
 		return $translations;
 	}
 
@@ -759,8 +760,8 @@ class Templates extends Component
 	 * For example if you set the following in config/general.php:
 	 *
 	 * ```php
-	 * 'defaultTemplateExtensions' => array('htm'),
-	 * 'indexTemplateFilenames' => array('default'),
+	 * 'defaultTemplateExtensions' => ['htm'],
+	 * 'indexTemplateFilenames' => ['default'],
 	 * ```
 	 *
 	 * then the following files would be searched for instead:
@@ -835,7 +836,7 @@ class Templates extends Component
 		$this->_validateTemplateName($name);
 
 		// Look for the template in the main templates folder
-		$basePaths = array();
+		$basePaths = [];
 
 		// Should we be looking for a localized version of the template?
 		if (Craft::$app->request->isSiteRequest() && IOHelper::folderExists($templatesPath.Craft::$app->language))
@@ -963,8 +964,8 @@ class Templates extends Component
 		if ($namespace)
 		{
 			// Protect the textarea content
-			$this->_textareaMarkers = array();
-			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', array($this, '_createTextareaMarker'), $html);
+			$this->_textareaMarkers = [];
+			$html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', [$this, '_createTextareaMarker'], $html);
 
 			// name= attributes
 			$html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
@@ -1110,7 +1111,7 @@ class Templates extends Component
 		{
 			foreach ($this->_hooks[$hook] as $method)
 			{
-				$return .= call_user_func_array($method, array(&$context));
+				$return .= call_user_func_array($method, [&$context]);
 			}
 		}
 
@@ -1144,11 +1145,11 @@ class Templates extends Component
 	{
 		if (!isset($this->_twigOptions))
 		{
-			$this->_twigOptions = array(
+			$this->_twigOptions = [
 				'base_template_class' => 'Craft\BaseTemplate',
 				'cache'               => Craft::$app->path->getCompiledTemplatesPath(),
 				'auto_reload'         => true,
-			);
+			];
 
 			if (Craft::$app->config->get('devMode'))
 			{
@@ -1177,7 +1178,7 @@ class Templates extends Component
 
 		if (PathHelper::ensurePathIsContained($name) === false)
 		{
-			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
+			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
 		}
 	}
 
@@ -1200,8 +1201,8 @@ class Templates extends Component
 		{
 			if (Craft::$app->request->isCpRequest())
 			{
-				$this->_defaultTemplateExtensions = array('html', 'twig');
-				$this->_indexTemplateFilenames = array('index');
+				$this->_defaultTemplateExtensions = ['html', 'twig'];
+				$this->_indexTemplateFilenames = ['index'];
 			}
 			else
 			{
@@ -1286,7 +1287,7 @@ class Templates extends Component
 		else
 		{
 			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-			Craft::$app->on('plugins.loadPlugins', array($this, 'onPluginsLoaded'));
+			Craft::$app->on('plugins.loadPlugins', [$this, 'onPluginsLoaded']);
 		}
 	}
 

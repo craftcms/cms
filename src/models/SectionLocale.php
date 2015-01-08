@@ -44,12 +44,12 @@ class SectionLocale extends BaseModel
 
 		if ($this->urlFormatIsRequired)
 		{
-			$rules[] = array('urlFormat', 'required');
+			$rules[] = ['urlFormat', 'required'];
 		}
 
 		if ($this->nestedUrlFormatIsRequired)
 		{
-			$rules[] = array('nestedUrlFormat', 'required');
+			$rules[] = ['nestedUrlFormat', 'required'];
 		}
 
 		return $rules;
@@ -65,13 +65,13 @@ class SectionLocale extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'               => AttributeType::Number,
 			'sectionId'        => AttributeType::Number,
 			'locale'           => AttributeType::Locale,
-			'enabledByDefault' => array(AttributeType::Bool, 'default' => true),
-			'urlFormat'        => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-			'nestedUrlFormat'  => array(AttributeType::UrlFormat, 'label' => 'URL Format'),
-		);
+			'enabledByDefault' => [AttributeType::Bool, 'default' => true],
+			'urlFormat'        => [AttributeType::UrlFormat, 'label' => 'URL Format'],
+			'nestedUrlFormat'  => [AttributeType::UrlFormat, 'label' => 'URL Format'],
+		];
 	}
 }

@@ -56,7 +56,7 @@ class TemplatesController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionRender($template, array $variables = array())
+	public function actionRender($template, array $variables = [])
 	{
 		// Does that template exist?
 		if (Craft::$app->templates->doesTemplateExist($template))
@@ -104,9 +104,9 @@ class TemplatesController extends BaseController
 	 */
 	public function actionManualUpdate()
 	{
-		$this->renderTemplate('updates/_go', array(
+		$this->renderTemplate('updates/_go', [
 			'handle' => Craft::$app->request->getSegment(2)
-		));
+		]);
 	}
 
 	/**
@@ -134,11 +134,11 @@ class TemplatesController extends BaseController
 					}
 				}
 
-				throw new Exception(Craft::t('The update can’t be installed :( {message}', array('message' => $message)));
+				throw new Exception(Craft::t('The update can’t be installed :( {message}', ['message' => $message]));
 			}
 			else
 			{
-				$this->renderTemplate('_special/cantrun', array('reqCheck' => $reqCheck));
+				$this->renderTemplate('_special/cantrun', ['reqCheck' => $reqCheck]);
 				Craft::$app->end();
 			}
 

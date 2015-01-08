@@ -75,16 +75,16 @@ class Tag extends BaseElementType
 	 */
 	public function getSources($context = null)
 	{
-		$sources = array();
+		$sources = [];
 
 		foreach (Craft::$app->tags->getAllTagGroups() as $tagGroup)
 		{
 			$key = 'taggroup:'.$tagGroup->id;
 
-			$sources[$key] = array(
+			$sources[$key] = [
 				'label'    => Craft::t($tagGroup->name),
-				'criteria' => array('groupId' => $tagGroup->id)
-			);
+				'criteria' => ['groupId' => $tagGroup->id]
+			];
 		}
 
 		return $sources;
@@ -99,9 +99,9 @@ class Tag extends BaseElementType
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array(
+		return [
 			'title' => Craft::t('Title'),
-		);
+		];
 	}
 
 	/**
@@ -187,8 +187,8 @@ class Tag extends BaseElementType
 	 */
 	public function getEditorHtml(BaseElementModel $element)
 	{
-		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', array(
-			array(
+		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
+			[
 				'label'     => Craft::t('Title'),
 				'locale'    => $element->locale,
 				'id'        => 'title',
@@ -198,8 +198,8 @@ class Tag extends BaseElementType
 				'first'     => true,
 				'autofocus' => true,
 				'required'  => true
-			)
-		));
+			]
+		]);
 
 		$html .= parent::getEditorHtml($element);
 

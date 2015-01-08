@@ -63,7 +63,7 @@ class AssetSourcesController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditSource(array $variables = array())
+	public function actionEditSource(array $variables = [])
 	{
 		if (empty($variables['source']))
 		{
@@ -152,7 +152,7 @@ class AssetSourcesController extends BaseController
 		{
 			if (!$source->settings)
 			{
-				$source->settings = array();
+				$source->settings = [];
 			}
 
 			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
@@ -175,9 +175,9 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Send the source back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'source' => $source
-		));
+		]);
 	}
 
 	/**
@@ -193,7 +193,7 @@ class AssetSourcesController extends BaseController
 		$sourceIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
 		Craft::$app->assetSources->reorderSources($sourceIds);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -210,7 +210,7 @@ class AssetSourcesController extends BaseController
 
 		Craft::$app->assetSources->deleteSourceById($sourceId);
 
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	/**
@@ -251,7 +251,7 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
+			$model = new AssetSourceModel(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey]]);
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = Craft::$app->assetSources->populateSourceType($model);
@@ -280,7 +280,7 @@ class AssetSourcesController extends BaseController
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
+			$model = new AssetSourceModel(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey, 'region' => $region]]);
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = Craft::$app->assetSources->populateSourceType($model);

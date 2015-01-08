@@ -29,7 +29,7 @@ class IncludeTranslations_TokenParser extends \Twig_TokenParser
 	{
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
-		$messages = array();
+		$messages = [];
 
 		while (true)
 		{
@@ -45,7 +45,7 @@ class IncludeTranslations_TokenParser extends \Twig_TokenParser
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new IncludeTranslations_Node($messages, array(), $lineno, $this->getTag());
+		return new IncludeTranslations_Node($messages, [], $lineno, $this->getTag());
 	}
 
 	/**

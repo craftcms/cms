@@ -36,10 +36,10 @@ class EntryType extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'section'     => array(static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE),
-			'fieldLayout' => array(static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL),
-		);
+		return [
+			'section'     => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
+			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
+		];
 	}
 
 	/**
@@ -49,10 +49,10 @@ class EntryType extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name', 'sectionId'), 'unique' => true),
-			array('columns' => array('handle', 'sectionId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name', 'sectionId'], 'unique' => true],
+			['columns' => ['handle', 'sectionId'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -66,7 +66,7 @@ class EntryType extends BaseRecord
 
 		if (!$this->hasTitleField)
 		{
-			$rules[] = array('titleFormat', 'required');
+			$rules[] = ['titleFormat', 'required'];
 		}
 
 		return $rules;

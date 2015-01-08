@@ -38,9 +38,9 @@ class Structure extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'elements' => array(static::HAS_MANY, 'StructureElement', 'structureId'),
-		);
+		return [
+			'elements' => [static::HAS_MANY, 'StructureElement', 'structureId'],
+		];
 	}
 
 	// Protected Methods
@@ -53,8 +53,8 @@ class Structure extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'maxLevels' => array(AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt),
-		);
+		return [
+			'maxLevels' => [AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt],
+		];
 	}
 }

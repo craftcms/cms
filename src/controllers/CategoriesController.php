@@ -48,9 +48,9 @@ class CategoriesController extends BaseController
 
 		$groups = Craft::$app->categories->getAllGroups();
 
-		$this->renderTemplate('settings/categories/index', array(
+		$this->renderTemplate('settings/categories/index', [
 			'categoryGroups' => $groups
-		));
+		]);
 	}
 
 	/**
@@ -61,15 +61,15 @@ class CategoriesController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditCategoryGroup(array $variables = array())
+	public function actionEditCategoryGroup(array $variables = [])
 	{
 		$this->requireAdmin();
 
 		// Breadcrumbs
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')),
-			array('label' => Craft::t('Categories'),  'url' => UrlHelper::getUrl('settings/categories'))
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('Categories'),  'url' => UrlHelper::getUrl('settings/categories')]
+		];
 
 		$variables['brandNewGroup'] = false;
 
@@ -98,10 +98,10 @@ class CategoriesController extends BaseController
 			$variables['title'] = Craft::t('Create a new category group');
 		}
 
-		$variables['tabs'] = array(
-			'settings'    => array('label' => Craft::t('Settings'), 'url' => '#categorygroup-settings'),
-			'fieldLayout' => array('label' => Craft::t('Field Layout'), 'url' => '#categorygroup-fieldlayout')
-		);
+		$variables['tabs'] = [
+			'settings'    => ['label' => Craft::t('Settings'), 'url' => '#categorygroup-settings'],
+			'fieldLayout' => ['label' => Craft::t('Field Layout'), 'url' => '#categorygroup-fieldlayout']
+		];
 
 		$this->renderTemplate('settings/categories/_edit', $variables);
 	}
@@ -127,15 +127,15 @@ class CategoriesController extends BaseController
 		$group->maxLevels = Craft::$app->request->getPost('maxLevels');
 
 		// Locale-specific URL formats
-		$locales = array();
+		$locales = [];
 
 		foreach (Craft::$app->i18n->getSiteLocaleIds() as $localeId)
 		{
-			$locales[$localeId] = new CategoryGroupLocaleModel(array(
+			$locales[$localeId] = new CategoryGroupLocaleModel([
 				'locale'          => $localeId,
 				'urlFormat'       => Craft::$app->request->getPost('urlFormat.'.$localeId),
 				'nestedUrlFormat' => Craft::$app->request->getPost('nestedUrlFormat.'.$localeId),
-			));
+			]);
 		}
 
 		$group->setLocales($locales);
@@ -157,9 +157,9 @@ class CategoriesController extends BaseController
 		}
 
 		// Send the category group back to the template
-		Craft::$app->urlManager->setRouteVariables(array(
+		Craft::$app->urlManager->setRouteVariables([
 			'categoryGroup' => $group
-		));
+		]);
 	}
 
 	/**
@@ -176,7 +176,7 @@ class CategoriesController extends BaseController
 		$groupId = Craft::$app->request->getRequiredPost('id');
 
 		Craft::$app->categories->deleteGroupById($groupId);
-		$this->returnJson(array('success' => true));
+		$this->returnJson(['success' => true]);
 	}
 
 	// Categories
@@ -190,7 +190,7 @@ class CategoriesController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionCategoryIndex(array $variables = array())
+	public function actionCategoryIndex(array $variables = [])
 	{
 		$variables['groups'] = Craft::$app->categories->getEditableGroups();
 
@@ -210,7 +210,7 @@ class CategoriesController extends BaseController
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditCategory(array $variables = array())
+	public function actionEditCategory(array $variables = [])
 	{
 		$this->_prepEditCategoryVariables($variables);
 
@@ -224,12 +224,12 @@ class CategoriesController extends BaseController
 			$variables['elementType'] = new ElementTypeVariable(Craft::$app->elements->getElementType(ElementType::Category));
 
 			// Define the parent options criteria
-			$variables['parentOptionCriteria'] = array(
+			$variables['parentOptionCriteria'] = [
 				'locale'        => $variables['localeId'],
 				'groupId'       => $variables['group']->id,
 				'status'        => null,
 				'localeEnabled' => null,
-			);
+			];
 
 			if ($variables['group']->maxLevels)
 			{
@@ -239,7 +239,7 @@ class CategoriesController extends BaseController
 			if ($variables['category']->id)
 			{
 				// Prevent the current category, or any of its descendants, from being options
-				$idParam = array('and', 'not '.$variables['category']->id);
+				$idParam = ['and', 'not '.$variables['category']->id];
 
 				$descendantCriteria = Craft::$app->elements->getCriteria(ElementType::Category);
 				$descendantCriteria->descendantOf = $variables['category'];
@@ -289,30 +289,30 @@ class CategoriesController extends BaseController
 		}
 
 		// Breadcrumbs
-		$variables['crumbs'] = array(
-			array('label' => Craft::t('Categories'), 'url' => UrlHelper::getUrl('categories')),
-			array('label' => Craft::t($variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle))
-		);
+		$variables['crumbs'] = [
+			['label' => Craft::t('Categories'), 'url' => UrlHelper::getUrl('categories')],
+			['label' => Craft::t($variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)]
+		];
 
 		foreach ($variables['category']->getAncestors() as $ancestor)
 		{
-			$variables['crumbs'][] = array('label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl());
+			$variables['crumbs'][] = ['label' => $ancestor->title, 'url' => $ancestor->getCpEditUrl()];
 		}
 
 		// Enable Live Preview?
 		if (!Craft::$app->request->isMobileBrowser(true) && Craft::$app->categories->isGroupTemplateValid($variables['group']))
 		{
-			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode(array(
+			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
 				'extraFields'   => '#settings',
 				'previewUrl'    => $variables['category']->getUrl(),
 				'previewAction' => 'categories/previewCategory',
-				'previewParams' => array(
+				'previewParams' => [
 				                       'groupId'    => $variables['group']->id,
 				                       'categoryId' => $variables['category']->id,
 				                       'locale'     => $variables['category']->locale,
-				                   )
-			)).');');
+				]
+				]).');');
 
 			$variables['showPreviewBtn'] = true;
 
@@ -326,10 +326,10 @@ class CategoriesController extends BaseController
 				}
 				else
 				{
-					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/shareCategory', array(
+					$variables['shareUrl'] = UrlHelper::getActionUrl('categories/shareCategory', [
 						'categoryId' => $variables['category']->id,
 						'locale'     => $variables['category']->locale
-					));
+					]);
 				}
 			}
 		}
@@ -394,14 +394,14 @@ class CategoriesController extends BaseController
 				$return['title']     = $category->title;
 				$return['cpEditUrl'] = $category->getCpEditUrl();
 
-				$this->returnJson(array(
+				$this->returnJson([
 					'success'   => true,
 					'id'        => $category->id,
 					'title'     => $category->title,
 					'status'    => $category->getStatus(),
 					'url'       => $category->getUrl(),
 					'cpEditUrl' => $category->getCpEditUrl()
-				));
+				]);
 			}
 			else
 			{
@@ -413,19 +413,19 @@ class CategoriesController extends BaseController
 		{
 			if (Craft::$app->request->isAjaxRequest())
 			{
-				$this->returnJson(array(
+				$this->returnJson([
 					'success' => false,
 					'errors'  => $category->getErrors(),
-				));
+				]);
 			}
 			else
 			{
 				$userSessionService->setError(Craft::t('Couldn’t save category.'));
 
 				// Send the category back to the template
-				Craft::$app->urlManager->setRouteVariables(array(
+				Craft::$app->urlManager->setRouteVariables([
 					'category' => $category
-				));
+				]);
 			}
 		}
 	}
@@ -445,7 +445,7 @@ class CategoriesController extends BaseController
 
 		if (!$category)
 		{
-			throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $categoryId)));
+			throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $categoryId]));
 		}
 
 		// Make sure they have permission to do this
@@ -456,7 +456,7 @@ class CategoriesController extends BaseController
 		{
 			if (Craft::$app->request->isAjaxRequest())
 			{
-				$this->returnJson(array('success' => true));
+				$this->returnJson(['success' => true]);
 			}
 			else
 			{
@@ -468,16 +468,16 @@ class CategoriesController extends BaseController
 		{
 			if (Craft::$app->request->isAjaxRequest())
 			{
-				$this->returnJson(array('success' => false));
+				$this->returnJson(['success' => false]);
 			}
 			else
 			{
 				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete category.'));
 
 				// Send the category back to the template
-				Craft::$app->urlManager->setRouteVariables(array(
+				Craft::$app->urlManager->setRouteVariables([
 					'category' => $category
-				));
+				]);
 			}
 		}
 	}
@@ -510,10 +510,10 @@ class CategoriesController extends BaseController
 		}
 
 		// Create the token and redirect to the category URL with the token in place
-		$token = Craft::$app->tokens->createToken(array(
+		$token = Craft::$app->tokens->createToken([
 			'action' => 'categories/viewSharedCategory',
-			'params' => array('categoryId' => $categoryId, 'locale' => $category->locale)
-		));
+			'params' => ['categoryId' => $categoryId, 'locale' => $category->locale]
+		]);
 
 		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
 		Craft::$app->request->redirect($url);
@@ -630,7 +630,7 @@ class CategoriesController extends BaseController
 		// Define the content tabs
 		// ---------------------------------------------------------------------
 
-		$variables['tabs'] = array();
+		$variables['tabs'] = [];
 
 		foreach ($variables['group']->getFieldLayout()->getTabs() as $index => $tab)
 		{
@@ -649,11 +649,11 @@ class CategoriesController extends BaseController
 				}
 			}
 
-			$variables['tabs'][] = array(
+			$variables['tabs'][] = [
 				'label' => Craft::t($tab->name),
 				'url'   => '#tab'.($index+1),
 				'class' => ($hasErrors ? 'error' : null)
-			);
+			];
 		}
 	}
 
@@ -674,7 +674,7 @@ class CategoriesController extends BaseController
 
 			if (!$category)
 			{
-				throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $categoryId)));
+				throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $categoryId]));
 			}
 		}
 		else
@@ -766,8 +766,8 @@ class CategoriesController extends BaseController
 
 		Craft::$app->templates->getTwig()->disableStrictVariables();
 
-		$this->renderTemplate($group->template, array(
+		$this->renderTemplate($group->template, [
 			'category' => $category
-		));
+		]);
 	}
 }

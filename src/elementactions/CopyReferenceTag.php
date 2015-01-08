@@ -73,8 +73,8 @@ EOT;
 	 */
 	protected function defineParams()
 	{
-		return array(
+		return [
 			'elementType' => AttributeType::String,
-		);
+		];
 	}
 }

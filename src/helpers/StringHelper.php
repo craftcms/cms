@@ -70,7 +70,7 @@ class StringHelper
 	{
 		if (is_array($arr) || $arr instanceof \IteratorAggregate)
 		{
-			$stringValues = array();
+			$stringValues = [];
 
 			foreach ($arr as $value)
 			{
@@ -200,7 +200,7 @@ class StringHelper
 	public static function escapeRegexChars($string)
 	{
 		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
-		$escapedChars = array();
+		$escapedChars = [];
 
 		foreach ($charsToEscape as $char)
 		{
@@ -219,7 +219,7 @@ class StringHelper
 	{
 		if (!isset(static::$_asciiCharMap))
 		{
-			static::$_asciiCharMap = array(
+			static::$_asciiCharMap = [
 				216 => 'O',  223 => 'ss', 224 => 'a',  225 => 'a',  226 => 'a',
 				229 => 'a',  227 => 'ae', 230 => 'ae', 228 => 'ae', 231 => 'c',
 				232 => 'e',  233 => 'e',  234 => 'e',  235 => 'e',  236 => 'i',
@@ -231,7 +231,7 @@ class StringHelper
 				382 => 'zh', 256 => 'aa', 268 => 'ch', 274 => 'ee', 290 => 'gj',
 				298 => 'ii', 310 => 'kj', 315 => 'lj', 325 => 'nj', 352 => 'sh',
 				362 => 'uu', 381 => 'zh'
-			);
+			];
 
 			foreach (Craft::$app->config->get('customAsciiCharMappings') as $ascii => $char)
 			{
@@ -251,7 +251,7 @@ class StringHelper
 	{
 		if (!isset(static::$_asciiPunctuation))
 		{
-			static::$_asciiPunctuation =  array(
+			static::$_asciiPunctuation =  [
 				33, 34, 35, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 58, 59, 60, 62, 63,
 				64, 91, 92, 93, 94, 123, 124, 125, 126, 161, 162, 163, 164, 165, 166,
 				167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181,
@@ -263,7 +263,7 @@ class StringHelper
 				8733, 8734, 8736, 8743, 8744, 8745, 8746, 8747, 8756, 8764, 8773, 8776,
 				8800, 8801, 8804, 8805, 8834, 8835, 8836, 8838, 8839, 8853, 8855, 8869,
 				8901, 8968, 8969, 8970, 8971, 9001, 9002, 9674, 9824, 9827, 9829, 9830
-			);
+			];
 		}
 
 		return static::$_asciiPunctuation;
@@ -318,7 +318,7 @@ class StringHelper
 	 *
 	 * @return string The cleansed keywords.
 	 */
-	public static function normalizeKeywords($str, $ignore = array())
+	public static function normalizeKeywords($str, $ignore = [])
 	{
 		// Flatten
 		if (is_array($str)) $str = static::arrayToString($str, ' ');
@@ -327,7 +327,7 @@ class StringHelper
 		$str = strip_tags($str);
 
 		// Convert non-breaking spaces entities to regular ones
-		$str = str_replace(array('&nbsp;', '&#160;', '&#xa0;') , ' ', $str);
+		$str = str_replace(['&nbsp;', '&#160;', '&#xa0;'] , ' ', $str);
 
 		// Get rid of entities
 		$str = html_entity_decode($str, ENT_QUOTES, static::UTF8);
@@ -543,7 +543,7 @@ class StringHelper
 	private static function _getCharMap()
 	{
 		// Keep local copy
-		static $map = array();
+		static $map = [];
 
 		if (empty($map))
 		{

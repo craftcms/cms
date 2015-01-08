@@ -39,10 +39,10 @@ class UserGroup_User extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'group' => array(static::BELONGS_TO, 'UserGroup', 'required' => true, 'onDelete' => static::CASCADE),
-			'user'  => array(static::BELONGS_TO, 'User',      'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'group' => [static::BELONGS_TO, 'UserGroup', 'required' => true, 'onDelete' => static::CASCADE],
+			'user'  => [static::BELONGS_TO, 'User',      'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -52,8 +52,8 @@ class UserGroup_User extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('groupId', 'userId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['groupId', 'userId'], 'unique' => true],
+		];
 	}
 }

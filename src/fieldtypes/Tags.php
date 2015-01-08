@@ -74,14 +74,14 @@ class Tags extends BaseElementFieldType
 
 		if ($tagGroup)
 		{
-			return Craft::$app->templates->render('_components/fieldtypes/Tags/input', array(
+			return Craft::$app->templates->render('_components/fieldtypes/Tags/input', [
 				'elementType'     => $elementVariable,
 				'id'              => Craft::$app->templates->formatInputId($name),
 				'name'            => $name,
 				'elements'        => $criteria,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
-			));
+			]);
 		}
 		else
 		{

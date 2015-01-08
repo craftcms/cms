@@ -55,7 +55,7 @@ class QuickPost extends BaseWidget
 	public function getSettingsHtml()
 	{
 		// Find the sections the user has permission to create entries in
-		$sections = array();
+		$sections = [];
 
 		foreach (Craft::$app->sections->getAllSections() as $section)
 		{
@@ -68,10 +68,10 @@ class QuickPost extends BaseWidget
 			}
 		}
 
-		return Craft::$app->templates->render('_components/widgets/QuickPost/settings', array(
+		return Craft::$app->templates->render('_components/widgets/QuickPost/settings', [
 			'sections' => $sections,
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class QuickPost extends BaseWidget
 
 			if ($section)
 			{
-				return Craft::t('Post a new {section} entry', array('section' => $section->name));
+				return Craft::t('Post a new {section} entry', ['section' => $section->name]);
 			}
 		}
 
@@ -153,18 +153,18 @@ class QuickPost extends BaseWidget
 
 		$entryType = $entryTypes[$entryTypeId];
 
-		$params = array(
+		$params = [
 			'sectionId'   => $section->id,
 			'typeId' => $entryTypeId,
-		);
+		];
 
 		Craft::$app->templates->startJsBuffer();
 
-		$html = Craft::$app->templates->render('_components/widgets/QuickPost/body', array(
+		$html = Craft::$app->templates->render('_components/widgets/QuickPost/body', [
 			'section'   => $section,
 			'entryType' => $entryType,
 			'settings'  => $this->getSettings()
-		));
+		]);
 
 		$fieldJs = Craft::$app->templates->clearJsBuffer(false);
 

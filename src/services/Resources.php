@@ -303,7 +303,7 @@ class Resources extends Component
 		// Maybe a plugin wants to do something custom with this URL
 		Craft::$app->plugins->loadPlugins();
 
-		$pluginPath = Craft::$app->plugins->callFirst('getResourcePath', array($path), true);
+		$pluginPath = Craft::$app->plugins->callFirst('getResourcePath', [$path], true);
 
 		if ($pluginPath && IOHelper::fileExists($pluginPath))
 		{
@@ -385,7 +385,7 @@ class Resources extends Component
 
 		if (mb_strpos($mimeType, 'css') !== false)
 		{
-			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
+			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $content);
 		}
 
 		if (!Craft::$app->config->get('useXSendFile'))
@@ -471,13 +471,13 @@ class Resources extends Component
 			$ext = '';
 		}
 
-		$extAlias = array(
+		$extAlias = [
 			'docx' => 'doc',
 			'xlsx' => 'xls',
 			'pptx' => 'ppt',
 			'jpeg' => 'jpg',
 			'html' => 'htm',
-		);
+		];
 
 		if (isset($extAlias[$ext]))
 		{
@@ -498,10 +498,10 @@ class Resources extends Component
 		IOHelper::ensureFolderExists($sizeFolder);
 
 		// Determine the closest source size
-		$sourceSizes = array(
-			array('size' => 40,  'extSize' => 7,  'extY' => 32),
-			array('size' => 350, 'extSize' => 60, 'extY' => 280),
-		);
+		$sourceSizes = [
+			['size' => 40,  'extSize' => 7,  'extY' => 32],
+			['size' => 350, 'extSize' => 60, 'extY' => 280],
+		];
 
 		foreach ($sourceSizes as $sourceSize)
 		{

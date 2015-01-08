@@ -46,12 +46,12 @@ class CompositeUnique extends \CValidator
 		}
 
 		$uniqueValidator = new \CUniqueValidator();
-		$uniqueValidator->attributes = array($attribute);
+		$uniqueValidator->attributes = [$attribute];
 		$uniqueValidator->message = $this->message;
 		$uniqueValidator->on = $this->on;
 
-		$conditionParams = array();
-		$params = array();
+		$conditionParams = [];
+		$params = [];
 
 		foreach ($with as $column)
 		{
@@ -60,10 +60,10 @@ class CompositeUnique extends \CValidator
 		}
 
 		$condition = implode(' AND ', $conditionParams);
-		$uniqueValidator->criteria = array(
+		$uniqueValidator->criteria = [
 			'condition' => $condition,
 			'params' => $params
-		);
+		];
 
 		$uniqueValidator->validate($object);
 	}

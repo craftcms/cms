@@ -66,11 +66,11 @@ class Entry extends BaseElementModel
 	 */
 	public function getLocales()
 	{
-		$locales = array();
+		$locales = [];
 
 		foreach ($this->getSection()->getLocales() as $locale)
 		{
-			$locales[$locale->locale] = array('enabledByDefault' => $locale->enabledByDefault);
+			$locales[$locale->locale] = ['enabledByDefault' => $locale->enabledByDefault];
 		}
 
 		return $locales;

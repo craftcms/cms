@@ -27,7 +27,7 @@ class LogEntry extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'dateTime'    => AttributeType::DateTime,
 			'level'       => AttributeType::String,
 			'category'    => AttributeType::Number,
@@ -38,6 +38,6 @@ class LogEntry extends BaseModel
 			'server'      => AttributeType::Mixed,
 			'profile'     => AttributeType::Mixed,
 			'message'     => AttributeType::String,
-		);
+		];
 	}
 }

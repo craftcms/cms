@@ -117,7 +117,7 @@ EOT;
 
 			if (!$transferContentTo)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”.', array('id' => $transferContentTo)));
+				throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
 			}
 		}
 		else
@@ -167,14 +167,14 @@ EOT;
 		if (!Craft::$app->getUser()->getIsAdmin())
 		{
 			// Only admins can delete other admins
-			return Craft::$app->elements->getCriteria(ElementType::User, array(
+			return Craft::$app->elements->getCriteria(ElementType::User, [
 				'admin' => true
-			))->ids();
+			])->ids();
 		}
 		else
 		{
 			// Can't delete your own account from here
-			return array(Craft::$app->getUser()->getIdentity()->id);
+			return [Craft::$app->getUser()->getIdentity()->id];
 		}
 	}
 }

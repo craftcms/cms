@@ -43,7 +43,7 @@ class UpdateController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = array('actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback');
+	protected $allowAnonymous = ['actionPrepare', 'actionBackupDatabase', 'actionUpdateDatabase', 'actionCleanUp', 'actionRollback'];
 
 	// Public Methods
 	// =========================================================================
@@ -95,7 +95,7 @@ class UpdateController extends BaseController
 
 		$handle = Craft::$app->request->getRequiredPost('handle');
 
-		$return = array();
+		$return = [];
 		$updateInfo = Craft::$app->updates->getUpdates();
 
 		if (!$updateInfo)
@@ -110,7 +110,7 @@ class UpdateController extends BaseController
 				case 'all':
 				{
 					// Craft first.
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
+					$return[] = ['handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp()];
 
 					// Plugins
 					if ($updateInfo->plugins !== null)
@@ -119,7 +119,7 @@ class UpdateController extends BaseController
 						{
 							if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 							{
-								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion, 'critical' => $plugin->criticalUpdateAvailable, 'releaseDate' => $plugin->latestDate->getTimestamp());
+								$return[] = ['handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion, 'critical' => $plugin->criticalUpdateAvailable, 'releaseDate' => $plugin->latestDate->getTimestamp()];
 							}
 						}
 					}
@@ -129,7 +129,7 @@ class UpdateController extends BaseController
 
 				case 'craft':
 				{
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
+					$return[] = ['handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp()];
 					break;
 				}
 
@@ -140,21 +140,21 @@ class UpdateController extends BaseController
 					{
 						if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0)
 						{
-							$return[] = array('handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion, 'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable, 'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp());
+							$return[] = ['handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion, 'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable, 'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp()];
 						}
 						else
 						{
-							$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
+							$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", ['handle' => $handle]));
 						}
 					}
 					else
 					{
-						$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
+						$this->returnErrorJson(Craft::t("Could not find any update information for the plugin with handle “{handle}”.", ['handle' => $handle]));
 					}
 				}
 			}
 
-			$this->returnJson(array('success' => true, 'updateInfo' => $return));
+			$this->returnJson(['success' => true, 'updateInfo' => $return]);
 		}
 		catch (\Exception $e)
 		{
@@ -182,7 +182,7 @@ class UpdateController extends BaseController
 
 			if (!Craft::$app->config->get('allowAutoUpdates'))
 			{
-				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+				$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 			}
 		}
 		else
@@ -194,17 +194,17 @@ class UpdateController extends BaseController
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'finished' => true]);
 		}
 
 		if ($manual)
 		{
-			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data]);
 		}
 		else
 		{
 			$data['md5'] = $return['md5'];
-			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Downloading update…'), 'nextAction' => 'update/processDownload', 'data' => $data));
+			$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Downloading update…'), 'nextAction' => 'update/processDownload', 'data' => $data]);
 		}
 
 	}
@@ -224,7 +224,7 @@ class UpdateController extends BaseController
 
 		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
 		$data = Craft::$app->request->getRequiredPost('data');
@@ -232,12 +232,12 @@ class UpdateController extends BaseController
 		$return = Craft::$app->updates->processUpdateDownload($data['md5']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'finished' => true]);
 		}
 
 		unset($return['success']);
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Backing-up files…'), 'nextAction' => 'update/backupFiles', 'data' => $return]);
 	}
 
 	/**
@@ -255,7 +255,7 @@ class UpdateController extends BaseController
 
 		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
 		$data = Craft::$app->request->getRequiredPost('data');
@@ -263,10 +263,10 @@ class UpdateController extends BaseController
 		$return = Craft::$app->updates->backupFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'finished' => true]);
 		}
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Updating files…'), 'nextAction' => 'update/updateFiles', 'data' => $data));
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Updating files…'), 'nextAction' => 'update/updateFiles', 'data' => $data]);
 	}
 
 	/**
@@ -284,7 +284,7 @@ class UpdateController extends BaseController
 
 		if (!Craft::$app->config->get('allowAutoUpdates'))
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
+			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
 		$data = Craft::$app->request->getRequiredPost('data');
@@ -292,10 +292,10 @@ class UpdateController extends BaseController
 		$return = Craft::$app->updates->updateFiles($data['uid']);
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback']);
 		}
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data]);
 	}
 
 	/**
@@ -323,7 +323,7 @@ class UpdateController extends BaseController
 
 				if (!$return['success'])
 				{
-					$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
+					$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback']);
 				}
 
 				if (isset($return['dbBackupPath']))
@@ -333,7 +333,7 @@ class UpdateController extends BaseController
 			}
 		}
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Updating database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data));
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Updating database…'), 'nextAction' => 'update/updateDatabase', 'data' => $data]);
 	}
 
 	/**
@@ -361,10 +361,10 @@ class UpdateController extends BaseController
 
 		if (!$return['success'])
 		{
-			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
+			$this->returnJson(['alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback']);
 		}
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Cleaning up…'), 'nextAction' => 'update/cleanUp', 'data' => $data));
+		$this->returnJson(['alive' => true, 'nextStatus' => Craft::t('Cleaning up…'), 'nextAction' => 'update/cleanUp', 'data' => $data]);
 	}
 
 	/**
@@ -413,7 +413,7 @@ class UpdateController extends BaseController
 			$returnUrl = Craft::$app->config->get('postCpLoginRedirect');
 		}
 
-		$this->returnJson(array('alive' => true, 'finished' => true, 'returnUrl' => $returnUrl));
+		$this->returnJson(['alive' => true, 'finished' => true, 'returnUrl' => $returnUrl]);
 	}
 
 	/**
@@ -453,7 +453,7 @@ class UpdateController extends BaseController
 			throw new Exception($return['message']);
 		}
 
-		$this->returnJson(array('alive' => true, 'finished' => true, 'rollBack' => true));
+		$this->returnJson(['alive' => true, 'finished' => true, 'rollBack' => true]);
 	}
 
 	// Private Methods

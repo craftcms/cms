@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" n\'est pas autorisé dans ce champ.',
 	'$_SERVER Variable' => 'Variable $_SERVER',
 	'$_SERVER does not have {messages}.' => '$_SERVER n\'a pas de {messages}.',
@@ -1250,4 +1250,4 @@ Si vous n\'attendiez aucun email de ce type, ignorez-le, tout simplement.',
 	'“{plugin}” is already installed.' => 'le “{plugin}” est déjà installé.',
 	'“{plugin}” is already uninstalled.' => 'le “{plugin}” est déjà désinstallé.',
 	'…Or use one of your field groups as a starting point:' => '...Ou utilisez l\'un de vos groupes de champs comme point de départ :',
-);
+];

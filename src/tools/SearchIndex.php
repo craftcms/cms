@@ -47,7 +47,7 @@ class SearchIndex extends BaseTool
 	 *
 	 * @return array
 	 */
-	public function performAction($params = array())
+	public function performAction($params = [])
 	{
 		if (!empty($params['start']))
 		{
@@ -60,16 +60,16 @@ class SearchIndex extends BaseTool
 				->from('elements')
 				->queryAll();
 
-			$batch = array();
+			$batch = [];
 
 			foreach ($elements as $element)
 			{
-				$batch[] = array('params' => $element);
+				$batch[] = ['params' => $element];
 			}
 
-			return array(
-				'batches' => array($batch)
-			);
+			return [
+				'batches' => [$batch]
+			];
 		}
 		else
 		{
@@ -84,14 +84,14 @@ class SearchIndex extends BaseTool
 				}
 				else
 				{
-					$localeIds = array(Craft::$app->i18n->getPrimarySiteLocaleId());
+					$localeIds = [Craft::$app->i18n->getPrimarySiteLocaleId()];
 				}
 
-				$criteria = Craft::$app->elements->getCriteria($params['type'], array(
+				$criteria = Craft::$app->elements->getCriteria($params['type'], [
 					'id'            => $params['id'],
 					'status'        => null,
 					'localeEnabled' => null,
-				));
+				]);
 
 				foreach ($localeIds as $localeId)
 				{
@@ -105,7 +105,7 @@ class SearchIndex extends BaseTool
 						if ($elementType->hasContent())
 						{
 							$fieldLayout = $element->getFieldLayout();
-							$keywords = array();
+							$keywords = [];
 
 							foreach ($fieldLayout->getFields() as $fieldLayoutField)
 							{

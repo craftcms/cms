@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '"{filename}" is not allowed in this field.',
 	'$_SERVER Variable' => '$_SERVER Variable',
 	'$_SERVER does not have {messages}.' => '$_SERVER does not have {messages}.',
@@ -1250,4 +1250,4 @@ If you weren\'t expecting this email, just ignore it.',
 	'“{plugin}” is already installed.' => '“{plugin}” is already installed.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” is already uninstalled.',
 	'…Or use one of your field groups as a starting point:' => '…Or use one of your field groups as a starting point:',
-);
+];

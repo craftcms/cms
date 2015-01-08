@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'"{filename}" is not allowed in this field.' => '该字段中不允许使用"{filename}" 。',
 	'$_SERVER Variable' => '$_服务器变量',
 	'$_SERVER does not have {messages}.' => '$_SERVER 没有 {messages}。',
@@ -1249,4 +1249,4 @@ return array(
 	'“{plugin}” is already installed.' => '“{plugin}”现已安装。',
 	'“{plugin}” is already uninstalled.' => '“{plugin}”现已安装。',
 	'…Or use one of your field groups as a starting point:' => '…也可以使用您的一个字段组作为起点：',
-);
+];

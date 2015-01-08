@@ -278,9 +278,9 @@ class AssetFile extends BaseElementModel
 	{
 		if ($this->hasThumb())
 		{
-			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, array(
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, [
 				Craft::$app->resources->dateParam => $this->dateModified->getTimestamp()
-			));
+			]);
 		}
 		else
 		{
@@ -467,10 +467,10 @@ class AssetFile extends BaseElementModel
 
 		$transform = Craft::$app->assetTransforms->normalizeTransform($transform);
 
-		$dimensions = array(
+		$dimensions = [
 			'width' => $transform->width,
 			'height' => $transform->height
-		);
+		];
 
 		if (!$transform->width || !$transform->height)
 		{

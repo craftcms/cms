@@ -47,10 +47,10 @@ class PositionSelect extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/settings', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/settings', [
 			'settings'   => $this->getSettings(),
 			'allOptions' => array_keys(static::_getOptions()),
-		));
+		]);
 	}
 
 	/**
@@ -88,13 +88,13 @@ class PositionSelect extends BaseFieldType
 			$value = $options[0];
 		}
 
-		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/input', array(
+		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/input', [
 			'id'         => $id,
 			'name'       => $name,
 			'value'      => $value,
 			'options'    => $options,
 			'allOptions' => $this->_getOptions(),
-		));
+		]);
 	}
 
 	// Protected Methods
@@ -107,9 +107,9 @@ class PositionSelect extends BaseFieldType
 	 */
 	protected function defineSettings()
 	{
-		return array(
-			'options' => array(AttributeType::Mixed, 'default' => array_keys(static::_getOptions())),
-		);
+		return [
+			'options' => [AttributeType::Mixed, 'default' => array_keys(static::_getOptions())],
+		];
 	}
 
 	// Private Methods

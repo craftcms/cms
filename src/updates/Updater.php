@@ -64,7 +64,7 @@ class Updater
 	public function getUpdateFileInfo()
 	{
 		$md5 = Craft::$app->et->getUpdateFileInfo();
-		return array('md5' => $md5);
+		return ['md5' => $md5];
 	}
 
 	/**
@@ -135,7 +135,7 @@ class Updater
 			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to the following paths, but can’t:')."\n\n".$this->_markdownList($writableErrors)));
 		}
 
-		return array('uid' => $uid);
+		return ['uid' => $uid];
 	}
 
 	/**
@@ -387,7 +387,7 @@ class Updater
 	private function _validateManifestPathsWritable($unzipFolder)
 	{
 		$manifestData = UpdateHelper::getManifestData($unzipFolder);
-		$writableErrors = array();
+		$writableErrors = [];
 
 		foreach ($manifestData as $row)
 		{
@@ -499,17 +499,17 @@ class Updater
 	{
 		$requirementsFolderPath = $unzipFolder.'/app/etc/requirements/';
 		$requirementsFile = $requirementsFolderPath.'Requirements.php';
-		$errors = array();
+		$errors = [];
 
 		if (!IOHelper::fileExists($requirementsFile))
 		{
-			throw new Exception(Craft::t('The Requirements file is required and it does not exist at {path}.', array('path' => $requirementsFile)));
+			throw new Exception(Craft::t('The Requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
 		}
 
 		// Make sure we can write to craft/app/requirements
 		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'etc/requirements/'))
 		{
-			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', array('url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'))));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';

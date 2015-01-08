@@ -39,10 +39,10 @@ class UserPermission_User extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'permission' => array(static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE),
-			'user'       => array(static::BELONGS_TO, 'User',           'required' => true, 'onDelete' => static::CASCADE),
-		);
+		return [
+			'permission' => [static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE],
+			'user'       => [static::BELONGS_TO, 'User',           'required' => true, 'onDelete' => static::CASCADE],
+		];
 	}
 
 	/**
@@ -52,8 +52,8 @@ class UserPermission_User extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('permissionId', 'userId'), 'unique' => true),
-		);
+		return [
+			['columns' => ['permissionId', 'userId'], 'unique' => true],
+		];
 	}
 }

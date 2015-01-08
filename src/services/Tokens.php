@@ -43,7 +43,7 @@ class Tokens extends Component
 	 *
 	 * @param mixed $route              Where matching requests should be routed to. If you want them to be routed to a
 	 *                                  controller action, pass:
-	 *                                  `array('action' => "controller/action", 'params' => array('foo' => 'bar'))`.
+	 *                                  `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
 	 * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
 	 * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
 	 *                                  setting.
@@ -96,7 +96,7 @@ class Tokens extends Component
 		$result = Craft::$app->db->createCommand()
 			->select('id, route, usageLimit, usageCount')
 			->from('tokens')
-			->where('token = :token', array(':token' => $token))
+			->where('token = :token', [':token' => $token])
 			->queryRow();
 
 		if ($result)
@@ -142,11 +142,11 @@ class Tokens extends Component
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->update('tokens', array(
+		$affectedRows = Craft::$app->db->createCommand()->update('tokens', [
 			'usageCount' => 'usageCount + 1'
-		), array(
+		], [
 			'id' => $tokenId
-		));
+		]);
 
 		return (bool) $affectedRows;
 	}
@@ -160,9 +160,9 @@ class Tokens extends Component
 	 */
 	public function deleteTokenById($tokenId)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete('tokens', array(
+		$affectedRows = Craft::$app->db->createCommand()->delete('tokens', [
 			'id' => $tokenId
-		));
+		]);
 	}
 
 	/**
@@ -180,7 +180,7 @@ class Tokens extends Component
 
 		$affectedRows = Craft::$app->db->createCommand()->delete('tokens',
 			'expiryDate <= :now',
-			array('now' => DateTimeHelper::currentTimeForDb())
+			['now' => DateTimeHelper::currentTimeForDb()]
 		);
 
 		$this->_deletedExpiredTokens = true;

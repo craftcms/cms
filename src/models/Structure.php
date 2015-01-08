@@ -41,9 +41,9 @@ class Structure extends BaseModel
 	 */
 	protected function defineAttributes()
 	{
-		return array(
+		return [
 			'id'        => AttributeType::Number,
 			'maxLevels' => AttributeType::Number,
-		);
+		];
 	}
 }

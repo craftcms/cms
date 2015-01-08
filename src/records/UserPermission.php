@@ -40,9 +40,9 @@ class UserPermission extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+		];
 	}
 
 	// Protected Methods
@@ -55,8 +55,8 @@ class UserPermission extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'name' => array(AttributeType::Name, 'required' => true),
-		);
+		return [
+			'name' => [AttributeType::Name, 'required' => true],
+		];
 	}
 }

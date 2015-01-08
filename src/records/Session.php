@@ -38,9 +38,9 @@ class Session extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'user' => array(static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE, 'required' => true),
-		);
+		return [
+			'user' => [static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE, 'required' => true],
+		];
 	}
 
 	/**
@@ -50,11 +50,11 @@ class Session extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('uid')),
-			array('columns' => array('token')),
-			array('columns' => array('dateUpdated')),
-		);
+		return [
+			['columns' => ['uid']],
+			['columns' => ['token']],
+			['columns' => ['dateUpdated']],
+		];
 	}
 
 	// Protected Methods
@@ -67,8 +67,8 @@ class Session extends BaseRecord
 	 */
 	protected function defineAttributes()
 	{
-		return array(
-			'token' => array(AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true),
-		);
+		return [
+			'token' => [AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char, 'required' => true],
+		];
 	}
 }

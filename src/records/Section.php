@@ -38,10 +38,10 @@ class Section extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		return array(
-			'locales'       => array(static::HAS_MANY, 'SectionLocale', 'sectionId'),
-			'structure'     => array(static::BELONGS_TO, 'Structure', 'onDelete' => static::SET_NULL),
-		);
+		return [
+			'locales'       => [static::HAS_MANY, 'SectionLocale', 'sectionId'],
+			'structure'     => [static::BELONGS_TO, 'Structure', 'onDelete' => static::SET_NULL],
+		];
 	}
 
 	/**
@@ -51,10 +51,10 @@ class Section extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('name'), 'unique' => true),
-			array('columns' => array('handle'), 'unique' => true),
-		);
+		return [
+			['columns' => ['name'], 'unique' => true],
+			['columns' => ['handle'], 'unique' => true],
+		];
 	}
 
 	/**
@@ -64,9 +64,9 @@ class Section extends BaseRecord
 	 */
 	public function scopes()
 	{
-		return array(
-			'ordered' => array('order' => 'name'),
-		);
+		return [
+			'ordered' => ['order' => 'name'],
+		];
 	}
 
 	// Protected Methods

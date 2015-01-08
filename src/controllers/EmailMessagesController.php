@@ -65,7 +65,7 @@ class EmailMessagesController extends BaseController
 
 		if (Craft::$app->emailMessages->saveMessage($message))
 		{
-			$this->returnJson(array('success' => true));
+			$this->returnJson(['success' => true]);
 		}
 		else
 		{
