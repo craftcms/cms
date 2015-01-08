@@ -282,7 +282,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Authorizes the user to perform an action for the duration of the session.
 	 *
-	 * @param stirng $action
+	 * @param string $action
 	 *
 	 * @return null
 	 */

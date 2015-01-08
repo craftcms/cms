@@ -69,7 +69,6 @@ class EmailModel extends BaseModel
 	 * @param string $encoding File encoding (see $Encoding).
 	 * @param string $type     File extension (MIME) type.
 	 *
-	 * @throws phpmailerException
 	 * @return bool
 	 */
 	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')

@@ -74,7 +74,7 @@ class FieldModel extends BaseComponentModel
 	/**
 	 * Returns the field's group.
 	 *
-	 * @return EntryUserModel
+	 * @return UserGroupModel
 	 */
 	public function getGroup()
 	{

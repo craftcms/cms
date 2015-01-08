@@ -606,7 +606,7 @@ class DbHelper
 	/**
 	 * Normalizes “empty” values.
 	 *
-	 * @param stirng &$value The param value.
+	 * @param string &$value The param value.
 	 */
 	private static function _normalizeEmptyValue(&$value)
 	{

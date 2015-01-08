@@ -735,7 +735,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	 * Get a file's S3 path.
 	 *
 	 * @param AssetFileModel $file
-	 * @param                $settings Source settings to use
+	 * @param                $settings The source settings to use.
 	 *
 	 * @return string
 	 */
