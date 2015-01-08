@@ -15,7 +15,7 @@ use craft\app\models\Info     as InfoModel;
  *
  * It encapsulates [[\Yii]] and ultimately [[\YiiBase]], which provides the actual implementation.
  *
- * It also defines the global craft() method, which is a wrapper for the Craft::app() singleton.
+ * A singleton instance of the class can be accessed via `Craft::$app`.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
