@@ -41,6 +41,13 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	 */
 	protected $componentType = 'FieldType';
 
+	/**
+	 * @var bool Whether the field is fresh.
+	 * @see isFresh()
+	 * @see setIsFresh()
+	 */
+	private $_isFresh;
+
 	// Public Methods
 	// =========================================================================
 
@@ -214,6 +221,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 		}
 	}
 
+	/**
+	 * Sets whether the field is fresh.
+	 *
+	 * @param bool|null $isFresh
+	 *
+	 * @return null
+	 */
+	public function setIsFresh($isFresh)
+	{
+		$this->_isFresh = $isFresh;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -242,16 +261,21 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	 */
 	protected function isFresh()
 	{
-		// If this is for a Matrix block, we're more interested in its owner
-		if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+		if (!isset($this->_isFresh))
 		{
-			$element = $this->element->getOwner();
-		}
-		else
-		{
-			$element = $this->element;
+			// If this is for a Matrix block, we're more interested in its owner
+			if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+			{
+				$element = $this->element->getOwner();
+			}
+			else
+			{
+				$element = $this->element;
+			}
+
+			$this->_isFresh = (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
 		}
 
-		return (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
+		return $this->_isFresh;
 	}
 }

@@ -595,6 +595,7 @@ class Matrix extends BaseFieldType
 		{
 			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
 			$block = new MatrixBlockModel();
+			$block->fieldId = $this->model->id;
 			$block->typeId = $blockType->id;
 
 			if ($this->element)
@@ -607,7 +608,12 @@ class Matrix extends BaseFieldType
 			foreach ($fieldLayoutFields as $fieldLayoutField)
 			{
 				$fieldType = $fieldLayoutField->getField()->getFieldType();
-				$fieldType->element = $block;
+
+				if ($fieldType)
+				{
+					$fieldType->element = $block;
+					$fieldType->setIsFresh(true);
+				}
 			}
 
 			Craft::$app->templates->startJsBuffer();
@@ -616,6 +622,17 @@ class Matrix extends BaseFieldType
 				'namespace' => null,
 				'fields'    => $fieldLayoutFields
 			)));
+
+			// Reset $_isFresh's
+			foreach ($fieldLayoutFields as $fieldLayoutField)
+			{
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->setIsFresh(null);
+				}
+			}
 
 			$footHtml = Craft::$app->templates->clearJsBuffer();
 

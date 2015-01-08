@@ -83,14 +83,14 @@ class Application extends \yii\console\Application
 		// Set the edition components
 		$this->_setEditionComponents();
 
+		// Call parent::init() before the plugin console command logic so the command runner gets initialized
+		parent::init();
+
 		// Load the plugins
 		Craft::$app->plugins->loadPlugins();
 
 		// Validate some basics on the database configuration file.
 		Craft::$app->validateDbConfigFile();
-
-		// Call parent::init before the plugin console command logic so Craft::$app->commandRunner will be available to us.
-		parent::init();
 
 		foreach (Craft::$app->plugins->getPlugins() as $plugin)
 		{

@@ -336,10 +336,27 @@ class UsersController extends BaseController
 			{
 				if ($userToProcess->status == UserStatus::Pending)
 				{
+					// Activate them
 					Craft::$app->users->activateUser($userToProcess);
+
+					// Treat this as an activation request
+					$this->_onAfterActivateUser($userToProcess);
 				}
 
-				$this->_processPostValidationRedirect($userToProcess);
+				// Can they access the CP?
+				if ($userToProcess->can('accessCp'))
+				{
+					// Send them to the login page
+					$url = Craft::$app->config->getLoginPath();
+				}
+				else
+				{
+					// Send them to the 'setPasswordSuccessPath'.
+					$setPasswordSuccessPath = Craft::$app->config->getLocalized('setPasswordSuccessPath');
+					$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+				}
+
+				$this->redirect($url);
 			}
 
 			Craft::$app->getSession()->setNotice(Craft::t('Couldn’t update password.'));
@@ -368,10 +385,19 @@ class UsersController extends BaseController
 		if ($info = $this->_processTokenRequest())
 		{
 			$userToProcess = $info['userToProcess'];
+			$userIsPending = $userToProcess->status == UserStatus::Pending;
 
 			Craft::$app->users->verifyEmailForUser($userToProcess);
 
-			$this->_processPostValidationRedirect($userToProcess);
+			if ($userIsPending)
+			{
+				// They were just activated, so treat this as an activation request
+				$this->_onAfterActivateUser($userToProcess);
+			}
+
+			// Redirect to the site/CP root
+			$url = UrlHelper::getUrl('');
+			$this->redirect($url);
 		}
 	}
 
@@ -687,7 +713,17 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Registers a new user, or saves an existing user's account settings.
+	 * Provides an endpoint for saving a user account.
+	 *
+	 * This action accounts for the following scenarios:
+	 *
+	 * - An admin registering a new user account.
+	 * - An admin editing an existing user account.
+	 * - A normal user with user-administration permissions registering a new user account.
+	 * - A normal user with user-administration permissions editing an existing user account.
+	 * - A guest registering a new user account ("public registration").
+	 *
+	 * This action behaves the same regardless of whether it was requested from the Control Panel or the front-end site.
 	 *
 	 * @throws HttpException|Exception
 	 * @return null
@@ -697,11 +733,14 @@ class UsersController extends BaseController
 		$this->requirePostRequest();
 
 		$currentUser = Craft::$app->getUser()->getIdentity();
-		$thisIsPublicRegistration = false;
 		$requireEmailVerification = Craft::$app->systemSettings->getSetting('users', 'requireEmailVerification');
+
+		// Get the user being edited
+		// ---------------------------------------------------------------------
 
 		$userId = Craft::$app->request->getPost('userId');
 		$isNewUser = !$userId;
+		$thisIsPublicRegistration = false;
 
 		// Are we editing an existing user?
 		if ($userId)
@@ -758,90 +797,64 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		// Should we check for a new email and password?
-		if ($isNewUser || $user->isCurrent() || Craft::$app->getUser()->getIsAdmin() || $currentUser->can('changeUserEmails'))
+		// Handle secure properties (email and password)
+		// ---------------------------------------------------------------------
+
+		$verifyNewEmail = false;
+
+		// Are they allowed to set the email address?
+		if ($isNewUser || $user->isCurrent() || $currentUser->can('changeUserEmails'))
 		{
-			$newEmail    = Craft::$app->request->getPost('email');
-			$newPassword = false;
+			$newEmail = Craft::$app->request->getPost('email');
 
-			// You can only change your own password directly.
-			if ($user->isCurrent())
-			{
-				$newPassword = Craft::$app->request->getPost('newPassword');
-			}
-
-			// If this is a new user, see if a password has been set (for front-end registration forms).
-			if ($isNewUser && $thisIsPublicRegistration)
-			{
-				$newPassword = Craft::$app->request->getPost('password');
-			}
-
-			if ($user->id && $user->email == $newEmail)
-			{
-				$newEmail = false;
-			}
-
-			$verifyExistingPassword = false;
-
-			// If this is an existing user...
-			if (!$isNewUser)
-			{
-				// And it's the current user or an admin...
-				if ($user->isCurrent() || Craft::$app->getUser()->getIsAdmin() || $user->can('changeUserEmails'))
-				{
-					// Check to see if you're editing yourself and a new password has been set..
-					if ($user->isCurrent() && $newPassword)
-					{
-						$verifyExistingPassword = true;
-					}
-
-					// If a new email, everyone has to validate their password.
-					if ($newEmail)
-					{
-						$verifyExistingPassword = true;
-					}
-				}
-			}
-
-			// Do we need to verify the current user's password?
-			if ($verifyExistingPassword)
-			{
-				// Make sure the correct current password has been submitted
-				if (!$this->_verifyExistingPassword())
-				{
-					Craft::log('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', LogLevel::Warning);
-					$user->addError('currentPassword', Craft::t('Incorrect current password.'));
-
-					// We'll let the script keep executing in case we find any other validation errors...
-				}
-			}
-
-			if ($thisIsPublicRegistration || $newPassword)
-			{
-				// Don't worry about new password validation. That will be taken care of in the service.
-				$user->newPassword = $newPassword;
-			}
-
-			if ($newEmail)
+			// Did it just change?
+			if ($newEmail && $newEmail != $user->email)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!Craft::$app->getUser()->getIsAdmin() || Craft::$app->request->getPost('sendVerificationEmail')))
+				if ($requireEmailVerification && (!$currentUser->admin || Craft::$app->request->getPost('sendVerificationEmail')))
 				{
+					// Save it as an unverified email for now
 					$user->unverifiedEmail = $newEmail;
+					$verifyNewEmail = true;
 
 					if ($isNewUser)
 					{
-						// Set it as the main email too
 						$user->email = $newEmail;
 					}
 				}
 				else
 				{
+					// We trust them
 					$user->email = $newEmail;
 				}
 			}
 		}
 
+		// Are they allowed to set a new password?
+		if ($thisIsPublicRegistration)
+		{
+			$user->newPassword = Craft::$app->request->getPost('password');
+		}
+		else if ($user->isCurrent())
+		{
+			$user->newPassword = Craft::$app->request->getPost('newPassword');
+		}
+
+		// If editing an existing user and either of these properties are being changed,
+		// require the user's current password for additional security
+		if (!$isNewUser && ($newEmail || $user->newPassword))
+		{
+			if (!$this->_verifyExistingPassword())
+			{
+				Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+				$user->addError('currentPassword', Craft::t('Incorrect current password.'));
+			}
+		}
+
+		// Handle the rest of the user properties
+		// ---------------------------------------------------------------------
+
+		// Is the site set to use email addresses as usernames?
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
 			$user->username    =  $user->email;
@@ -856,24 +869,18 @@ class UsersController extends BaseController
 		$user->preferredLocale = Craft::$app->request->getPost('preferredLocale', $user->preferredLocale);
 		$user->weekStartDay    = Craft::$app->request->getPost('weekStartDay', $user->weekStartDay);
 
-		if ($isNewUser)
+		// If email verification is required, then new users will be saved in a pending state,
+		// even if an admin is doing this and opted to not send the verification email
+		if ($isNewUser && $requireEmailVerification)
 		{
-			// Check the global setting here, instead of unverifiedEmail
-			if ($requireEmailVerification)
-			{
-				$user->pending = true;
-			}
-			else
-			{
-				$user->setActive();
-			}
+			$user->pending = true;
 		}
 
 		// There are some things only admins can change
-		if (Craft::$app->getUser()->getIsAdmin())
+		if ($currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) Craft::$app->request->getPost('passwordResetRequired', $user->passwordResetRequired);
-			$user->admin = (bool) Craft::$app->request->getPost('admin', $user->admin);
+			$user->admin                 = (bool) Craft::$app->request->getPost('admin', $user->admin);
 		}
 
 		// If this is Craft Pro, grab any profile content from post
@@ -883,22 +890,27 @@ class UsersController extends BaseController
 		}
 
 		// Validate and save!
+		// ---------------------------------------------------------------------
+
 		if (Craft::$app->users->saveUser($user))
 		{
+			// Save the user's photo, if it was submitted
 			$this->_processUserPhoto($user);
 
-			if ($currentUser)
-			{
-				$this->_processUserGroupsPermissions($user, $currentUser);
-			}
-
+			// If this is public registration, assign the user to the default user group
 			if ($thisIsPublicRegistration)
 			{
 				// Assign them to the default user group
 				Craft::$app->userGroups->assignUserToDefaultGroup($user);
 			}
+			else
+			{
+				// Assign user groups and permissions if the current user is allowed to do that
+				$this->_processUserGroupsPermissions($user);
+			}
 
-			if ($requireEmailVerification && $user->unverifiedEmail)
+			// Do we need to send a verification email out?
+			if ($verifyNewEmail)
 			{
 				// Temporarily set the unverified email on the UserModel so the verification email goes to the
 				// right place
@@ -907,20 +919,15 @@ class UsersController extends BaseController
 
 				try
 				{
-					if ($isNewUser && $thisIsPublicRegistration && $newPassword)
+					if ($isNewUser)
 					{
-						Craft::$app->users->sendNewEmailVerifyEmail($user);
+						// Send the activation email
+						Craft::$app->users->sendActivationEmail($user);
 					}
 					else
 					{
-						if ($isNewUser)
-						{
-							Craft::$app->users->sendActivationEmail($user);
-						}
-						else
-						{
-							Craft::$app->users->sendNewEmailVerifyEmail($user);
-						}
+						// Send the standard verification email
+						Craft::$app->users->sendNewEmailVerifyEmail($user);
 					}
 				}
 				catch (\phpmailerException $e)
@@ -928,6 +935,7 @@ class UsersController extends BaseController
 					Craft::$app->getSession()->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
 				}
 
+				// Put the original email back into place
 				$user->email = $originalEmail;
 			}
 
@@ -1604,14 +1612,13 @@ class UsersController extends BaseController
 
 	/**
 	 * @param $user
-	 * @param $currentUser
 	 *
 	 * @return null
 	 */
-	private function _processUserGroupsPermissions($user, $currentUser)
+	private function _processUserGroupsPermissions($user)
 	{
 		// Save any user groups
-		if (Craft::$app->getEdition() == Craft::Pro && $currentUser->can('assignUserPermissions'))
+		if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('assignUserPermissions'))
 		{
 			// Save any user groups
 			$groupIds = Craft::$app->request->getPost('groups');
@@ -1718,41 +1725,30 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $userToProcess
+	 * Takes over after a user has been activated.
 	 *
-	 * @throws Exception
+	 * @param UserModel $user
 	 */
-	private function _processPostValidationRedirect($userToProcess)
+	private function _onAfterActivateUser(UserModel $user)
 	{
+		// Should we log them in?
 		$loggedIn = false;
 
-		// Do we need to auto-login?
-		if (Craft::$app->config->get('autoLoginAfterAccountActivation') === true)
+		if (Craft::$app->config->get('autoLoginAfterAccountActivation'))
 		{
-			Craft::$app->getUser()->loginByUserId($userToProcess->id, false, true);
-			$loggedIn = true;
+			$loggedIn = Craft::$app->getUser()->loginByUserId($user->id, false, true);
 		}
 
-		// If the user can't access the CP, then send them to the front-end setPasswordSuccessPath.
-		if (!$userToProcess->can('accessCp'))
+		// Can they access the CP?
+		if ($user->can('accessCp'))
 		{
-			$setPasswordSuccessPath = Craft::$app->config->getLocalized('setPasswordSuccessPath');
-			$url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+			$postCpLoginRedirect = Craft::$app->config->get('postCpLoginRedirect');
+			$url = UrlHelper::getCpUrl($postCpLoginRedirect);
 		}
 		else
 		{
-			// If we didn't log them in, just send to the appropriate login page.
-			if (!$loggedIn)
-			{
-				$url = Craft::$app->config->getLoginPath();
-			}
-			else
-			{
-				// We logged them in, so send to 'postCpLoginRedirect'.
-				$postCpLoginRedirect = Craft::$app->config->get('postCpLoginRedirect');
-				$url = UrlHelper::getCpUrl($postCpLoginRedirect);
-			}
-
+			$activateAccountSuccessPath = Craft::$app->config->getLocalized('activateAccountSuccessPath');
+			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 		}
 
 		$this->redirect($url);

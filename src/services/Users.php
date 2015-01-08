@@ -429,7 +429,15 @@ class Users extends Component
 	 */
 	public function sendActivationEmail(UserModel $user)
 	{
-		$url = $this->getPasswordResetUrl($user);
+		// If the user doesn't have a password yet, use a Password Reset URL
+		if (!$user->password)
+		{
+			$url = $this->getPasswordResetUrl($user);
+		}
+		else
+		{
+			$url = $this->getEmailVerifyUrl($user);
+		}
 
 		return Craft::$app->email->sendEmailByKey($user, 'account_activation', array(
 			'link' => TemplateHelper::getRaw($url),
@@ -447,20 +455,7 @@ class Users extends Component
 	 */
 	public function sendNewEmailVerifyEmail(UserModel $user)
 	{
-		$userRecord = $this->_getUserRecordById($user->id);
-		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-		$userRecord->save();
-
-		if ($user->can('accessCp'))
-		{
-			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
-		}
-		else
-		{
-			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = Craft::$app->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
-		}
+		$url = $this->getEmailVerifyUrl($user);
 
 		return Craft::$app->email->sendEmailByKey($user, 'verify_new_email', [
 			'link' => TemplateHelper::getRaw($url),
@@ -483,6 +478,33 @@ class Users extends Component
 		return Craft::$app->email->sendEmailByKey($user, 'forgot_password', array(
 			'link' => TemplateHelper::getRaw($url),
 		));
+	}
+
+	/**
+	 * Sets a new verification code on a user, and returns their new Email Verification URL.
+	 *
+	 * @param UserModel $user The user that should get the new Email Verification URL.
+	 *
+	 * @return string The new Email Verification URL.
+	 */
+	public function getEmailVerifyUrl(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		if ($user->can('accessCp'))
+		{
+			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+		}
+		else
+		{
+			// We want to hide the CP trigger if they don't have access to the CP.
+			$path = Craft::$app->config->get('actionTrigger').'/users/verifyemail';
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+		}
+
+		return $url;
 	}
 
 	/**
