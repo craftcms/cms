@@ -182,7 +182,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	 */
 	public function getSearchKeywords($value)
 	{
-		return StringHelper::arrayToString($value, ' ');
+		return StringHelper::toString($value, ' ');
 	}
 
 	/**
