@@ -2,7 +2,7 @@
 
 $common = require(CRAFT_APP_PATH.'etc/config/common.php');
 
-return CMap::mergeArray($common, [
+return \craft\app\helpers\ArrayHelper::merge($common, [
 
 	'basePath' => dirname(__FILE__).'/../../',
 

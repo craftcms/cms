@@ -11,6 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
@@ -792,7 +793,7 @@ class Config extends Component
 			{
 				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
 				{
-					$mergedCustomConfig = \CMap::mergeArray($mergedCustomConfig, $envConfig);
+					$mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
 				}
 			}
 

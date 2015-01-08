@@ -1,6 +1,6 @@
 <?php
 
-return CMap::mergeArray(
+return \craft\app\helpers\ArrayHelper::merge(
 
 	require CRAFT_APP_PATH.'etc/config/common.php',
 
