@@ -66,6 +66,8 @@ class UpdateController extends BaseController
 		}
 		catch (EtException $e)
 		{
+			$updates = false;
+
 			if ($e->getCode() == 10001)
 			{
 				$this->returnErrorJson($e->getMessage());
@@ -74,7 +76,6 @@ class UpdateController extends BaseController
 
 		if ($updates)
 		{
-			$updates = false;
 			$this->returnJson($updates);
 		}
 		else

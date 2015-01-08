@@ -860,7 +860,7 @@ class Plugins extends Component
 			}
 			else
 			{
-				throw new Exception(Craft::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', ['handle' => $handle, 'service' => $serviceName]));
+				throw new Exception(Craft::t('The plugin “{class}” tried to register a service “{service}” that conflicts with a core service name.', array('class' => $class, 'service' => $serviceName)));
 			}
 		}
 
