@@ -8,10 +8,9 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
-use yii\base\Component;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Field              as FieldModel;
-use craft\app\web\Application;
+use craft\app\models\Field as FieldModel;
+use yii\base\Component;
 
 /**
  * Class Relations service.

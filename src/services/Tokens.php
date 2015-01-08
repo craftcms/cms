@@ -9,13 +9,11 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\dates\DateInterval;
+use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
-use craft\app\dates\DateTime;
-use craft\app\records\Task            as TaskRecord;
-use craft\app\web\Application;
-use craft\app\records\Token           as TokenRecord;
 
 /**
  * The Tokens service.

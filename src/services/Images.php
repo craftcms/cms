@@ -8,12 +8,11 @@
 namespace craft\app\services;
 
 use craft\app\Craft;
+use craft\app\helpers\AppHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\io\Image;
 use yii\base\Component;
-use craft\app\helpers\AppHelper;
-use craft\app\web\Application;
 
 /**
  * Service for image operations.

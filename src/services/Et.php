@@ -10,11 +10,10 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
-use yii\base\Component;
-use craft\app\models\Et              as EtModel;
-use craft\app\models\Update          as UpdateModel;
+use craft\app\models\Et as EtModel;
+use craft\app\models\Update as UpdateModel;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
-use craft\app\web\Application;
+use yii\base\Component;
 
 /**
  * Class Et service.

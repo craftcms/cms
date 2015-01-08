@@ -11,7 +11,7 @@ use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
 use craft\app\helpers\JsonHelper;
-use craft\app\models\Section       as SectionModel;
+use craft\app\models\Section as SectionModel;
 
 /**
  * Class QuickPost widget.

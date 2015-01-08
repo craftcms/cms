@@ -9,9 +9,9 @@ namespace craft\app\models;
 
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
+use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
-use craft\app\models\FieldLayoutTab   as FieldLayoutTabModel;
-use craft\app\models\Field            as FieldModel;
+use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 
 /**
  * FieldLayout model class.

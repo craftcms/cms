@@ -7,12 +7,11 @@
 
 namespace craft\app\services;
 
+use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
-use craft\app\Craft;
-use craft\app\web\Application;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.

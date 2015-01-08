@@ -13,8 +13,8 @@ use craft\app\enums\AttributeType;
 use craft\app\enums\UserStatus;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
-use craft\app\models\User              as UserModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\User as UserModel;
 
 /**
  * The User class is responsible for implementing and defining users as a native element type in Craft.

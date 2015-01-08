@@ -16,19 +16,18 @@ use craft\app\fieldtypes\BaseFieldType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\models\BaseElementModel;
-use yii\base\Component;
 use craft\app\models\BaseModel;
-use craft\app\models\Field              as FieldModel;
-use craft\app\models\FieldGroup         as FieldGroupModel;
-use craft\app\models\FieldLayout        as FieldLayoutModel;
-use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
-use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
-use craft\app\records\FieldGroup        as FieldGroupRecord;
-use craft\app\records\FieldLayoutField  as FieldLayoutFieldRecord;
-use craft\app\records\FieldLayout       as FieldLayoutRecord;
-use craft\app\records\FieldLayoutTab    as FieldLayoutTabRecord;
-use craft\app\records\Field             as FieldRecord;
-use craft\app\web\Application;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldGroup as FieldGroupModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
+use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
+use craft\app\records\Field as FieldRecord;
+use craft\app\records\FieldGroup as FieldGroupRecord;
+use craft\app\records\FieldLayout as FieldLayoutRecord;
+use craft\app\records\FieldLayoutField as FieldLayoutFieldRecord;
+use craft\app\records\FieldLayoutTab as FieldLayoutTabRecord;
+use yii\base\Component;
 
 /**
  * Class Fields service.

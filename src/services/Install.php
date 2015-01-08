@@ -13,21 +13,20 @@ use craft\app\enums\ElementType;
 use craft\app\enums\EmailerType;
 use craft\app\enums\LogLevel;
 use craft\app\enums\SectionType;
+use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
-use yii\base\Component;
-use craft\app\models\Entry         as EntryModel;
-use craft\app\models\Field         as FieldModel;
-use craft\app\models\FieldGroup    as FieldGroupModel;
-use craft\app\models\Info          as InfoModel;
-use craft\app\models\Section       as SectionModel;
+use craft\app\models\Entry as EntryModel;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldGroup as FieldGroupModel;
+use craft\app\models\Info as InfoModel;
+use craft\app\models\Section as SectionModel;
 use craft\app\models\SectionLocale as SectionLocaleModel;
-use craft\app\models\TagGroup      as TagGroupModel;
-use craft\app\models\User          as UserModel;
-use craft\app\errors\Exception;
-use craft\app\records\Migration    as MigrationRecord;
-use craft\app\web\Application;
+use craft\app\models\TagGroup as TagGroupModel;
+use craft\app\models\User as UserModel;
+use craft\app\records\Migration as MigrationRecord;
+use yii\base\Component;
 
 /**
  * Class Install service.

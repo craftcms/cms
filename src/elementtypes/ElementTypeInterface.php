@@ -10,8 +10,8 @@ namespace craft\app\elementtypes;
 use craft\app\components\ComponentTypeInterface;
 use craft\app\db\DbCommand;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria             as ElementCriteriaModel;
-use craft\app\models\Field                       as FieldModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Field as FieldModel;
 
 
 /**

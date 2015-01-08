@@ -7,11 +7,10 @@
 
 namespace craft\app\services;
 
-use yii\base\Component;
 use craft\app\Craft;
-use craft\app\models\RebrandEmail       as RebrandEmailModel;
-use craft\app\records\EmailMessage      as EmailMessageRecord;
-use craft\app\web\Application;
+use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\records\EmailMessage as EmailMessageRecord;
+use yii\base\Component;
 
 Craft::$app->requireEdition(Craft::Client);
 

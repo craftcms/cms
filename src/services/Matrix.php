@@ -12,22 +12,21 @@ use craft\app\db\DbCommand;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
+use craft\app\fieldtypes\Matrix as MatrixFieldType;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\BaseElementModel;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
+use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
+use craft\app\models\MatrixBlock as MatrixBlockModel;
+use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
+use craft\app\models\MatrixSettings as MatrixSettingsModel;
+use craft\app\records\MatrixBlock as MatrixBlockRecord;
+use craft\app\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
-use craft\app\fieldtypes\Matrix         as MatrixFieldType;
-use craft\app\models\Field              as FieldModel;
-use craft\app\models\FieldLayout        as FieldLayoutModel;
-use craft\app\models\FieldLayoutField   as FieldLayoutFieldModel;
-use craft\app\models\FieldLayoutTab     as FieldLayoutTabModel;
-use craft\app\models\MatrixBlock        as MatrixBlockModel;
-use craft\app\models\MatrixBlockType    as MatrixBlockTypeModel;
-use craft\app\models\MatrixSettings     as MatrixSettingsModel;
-use craft\app\records\MatrixBlock       as MatrixBlockRecord;
-use craft\app\records\MatrixBlockType   as MatrixBlockTypeRecord;
-use craft\app\web\Application;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.

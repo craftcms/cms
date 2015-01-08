@@ -12,11 +12,11 @@ use craft\app\dates\DateTime;
 use craft\app\enums\ComponentType;
 use craft\app\enums\EmailerType;
 use craft\app\enums\LogLevel;
-use craft\app\helpers\UrlHelper;
-use craft\app\models\EmailSettings  as EmailSettingsModel;
-use craft\app\models\GlobalSet      as GlobalSetModel;
 use craft\app\errors\HttpException;
-use craft\app\variables\Tool        as ToolVariable;
+use craft\app\helpers\UrlHelper;
+use craft\app\models\EmailSettings as EmailSettingsModel;
+use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\variables\Tool as ToolVariable;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as

@@ -10,8 +10,8 @@ namespace craft\app\controllers;
 use craft\app\Craft;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\models\Structure         as StructureModel;
 use craft\app\models\BaseElementModel;
+use craft\app\models\Structure as StructureModel;
 
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within

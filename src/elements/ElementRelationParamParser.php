@@ -12,7 +12,7 @@ use craft\app\db\DbCommand;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria   as ElementCriteriaModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Parses a relatedTo param on an ElementCriteriaModel.

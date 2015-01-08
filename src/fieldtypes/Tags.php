@@ -9,8 +9,8 @@ namespace craft\app\fieldtypes;
 
 use craft\app\Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\TagGroup as TagGroupModel;
 use craft\app\variables\ElementType;
-use craft\app\models\TagGroup        as TagGroupModel;
 
 /**
  * Tags fieldtype

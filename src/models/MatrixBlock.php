@@ -10,8 +10,8 @@ namespace craft\app\models;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
-use craft\app\models\FieldLayout     as FieldLayoutModel;
-use craft\app\models\Field           as FieldModel;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**

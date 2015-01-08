@@ -21,16 +21,15 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use yii\base\Component;
-use craft\app\models\AssetFile              as AssetFileModel;
-use craft\app\models\AssetFolder            as AssetFolderModel;
-use craft\app\models\ElementCriteria        as ElementCriteriaModel;
-use craft\app\records\AssetFile             as AssetFileRecord;
-use craft\app\records\AssetFolder           as AssetFolderRecord;
-use craft\app\models\FolderCriteria         as FolderCriteriaModel;
-use craft\app\models\User                   as UserModel;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
-use craft\app\web\Application;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\FolderCriteria as FolderCriteriaModel;
+use craft\app\models\User as UserModel;
+use craft\app\records\AssetFile as AssetFileRecord;
+use craft\app\records\AssetFolder as AssetFolderRecord;
+use yii\base\Component;
 
 
 /**

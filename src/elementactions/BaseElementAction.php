@@ -9,8 +9,8 @@ namespace craft\app\elementactions;
 
 use craft\app\components\BaseComponentType;
 use craft\app\models\BaseModel;
-use craft\app\models\ElementCriteria        as ElementCriteriaModel;
-use craft\app\models\Params                 as ParamsModel;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Params as ParamsModel;
 
 /**
  * Element Action base class

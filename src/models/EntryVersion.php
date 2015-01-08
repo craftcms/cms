@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
-use craft\app\models\EntryVersion  as EntryVersionModel;
+use craft\app\models\EntryVersion as EntryVersionModel;
 
 Craft::$app->requireEdition(Craft::Client);
 

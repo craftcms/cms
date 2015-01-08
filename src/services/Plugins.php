@@ -16,9 +16,8 @@ use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
-use craft\app\records\Migration     as MigrationRecord;
-use craft\app\web\Application;
 
 /**
  * The Plugins service provides APIs for managing plugins.

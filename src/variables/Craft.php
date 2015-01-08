@@ -7,9 +7,9 @@
 
 namespace craft\app\variables;
 
+use craft\app\enums\ElementType;
 use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\enums\ElementType;
 
 /**
  * Contains all global variables.

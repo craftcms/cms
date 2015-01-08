@@ -15,10 +15,9 @@ use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\models\AssetSource as AssetSourceModel;
+use craft\app\records\AssetSource as AssetSourceRecord;
 use yii\base\Component;
-use craft\app\models\AssetSource                    as AssetSourceModel;
-use craft\app\records\AssetSource                   as AssetSourceRecord;
-use craft\app\web\Application;
 
 /**
  * Class AssetSources service.

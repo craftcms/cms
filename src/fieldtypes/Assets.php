@@ -14,7 +14,7 @@ use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetFolder             as AssetFolderModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\web\UploadedFile;
 
 /**

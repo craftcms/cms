@@ -15,9 +15,9 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetFile        as AssetFileModel;
-use craft\app\models\AssetSource      as AssetSourceModel;
-use craft\app\models\FieldLayout      as FieldLayoutModel;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetSource as AssetSourceModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
  * The AssetFile model class.

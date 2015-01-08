@@ -10,10 +10,9 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\enums\LogLevel;
 use craft\app\enums\TaskStatus;
+use craft\app\models\Task as TaskModel;
+use craft\app\records\Task as TaskRecord;
 use yii\base\Component;
-use craft\app\models\Task               as TaskModel;
-use craft\app\records\Task              as TaskRecord;
-use craft\app\web\Application;
 
 /**
  * Class Tasks service.

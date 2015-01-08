@@ -13,10 +13,10 @@ use craft\app\errors\Exception;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Content         as ContentModel;
+use craft\app\models\Content as ContentModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\FieldLayout     as FieldLayoutModel;
-use craft\app\models\Field           as FieldModel;
+use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\web\UploadedFile;
 
 /**

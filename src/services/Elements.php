@@ -19,13 +19,12 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
-use yii\base\Component;
 use craft\app\models\BaseElementModel;
-use craft\app\models\ElementCriteria    as ElementCriteriaModel;
-use craft\app\records\ElementLocale     as ElementLocaleRecord;
-use craft\app\records\Element           as ElementRecord;
-use craft\app\records\StructureElement  as StructureElementRecord;
-use craft\app\web\Application;
+use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\records\Element as ElementRecord;
+use craft\app\records\ElementLocale as ElementLocaleRecord;
+use craft\app\records\StructureElement as StructureElementRecord;
+use yii\base\Component;
 
 /**
  * The Elements service provides APIs for managing elements.

@@ -11,9 +11,8 @@ use craft\app\components\BaseComponentType;
 use craft\app\Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
-use yii\base\Component;
 use craft\app\models\BaseComponentModel;
-use craft\app\web\Application;
+use yii\base\Component;
 
 /**
  * Class Components service.

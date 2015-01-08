@@ -12,12 +12,11 @@ use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\db\DbCommand;
 use craft\app\enums\LogLevel;
+use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
-use craft\app\errors\Exception;
-use craft\app\records\Migration       as MigrationRecord;
-use craft\app\web\Application;
 
 /**
  * Class Migrations service.

@@ -12,11 +12,10 @@ use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ModelHelper;
-use yii\base\Component;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Content            as ContentModel;
-use craft\app\models\FieldLayout        as FieldLayoutModel;
-use craft\app\web\Application;
+use craft\app\models\Content as ContentModel;
+use craft\app\models\FieldLayout as FieldLayoutModel;
+use yii\base\Component;
 
 /**
  * Class Content service.

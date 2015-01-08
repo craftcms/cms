@@ -10,8 +10,8 @@ namespace craft\app\models;
 use craft\app\Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ElementHelper;
-use craft\app\models\Entry           as EntryModel;
-use craft\app\models\User            as UserModel;
+use craft\app\models\Entry as EntryModel;
+use craft\app\models\User as UserModel;
 
 Craft::$app->requireEdition(Craft::Client);
 

@@ -12,10 +12,10 @@ use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetFile              as AssetFileModel;
-use craft\app\models\AssetFolder            as AssetFolderModel;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
-use craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
+use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 
 /**
  * The local asset source type class. Handles the implementation of the local filesystem as an asset source type in

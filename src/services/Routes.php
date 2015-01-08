@@ -9,12 +9,11 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\errors\Exception;
+use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\records\Route as RouteRecord;
 use yii\base\Component;
-use craft\app\helpers\IOHelper;
-use craft\app\records\Route          as RouteRecord;
-use craft\app\web\Application;
 
 /**
  * Class Routes service.

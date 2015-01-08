@@ -14,10 +14,10 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\AssetFile              as AssetFileModel;
-use craft\app\models\AssetFolder            as AssetFolderModel;
+use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
-use craft\app\models\AssetTransformIndex    as AssetTransformIndexModel;
+use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 
 Craft::$app->requireEdition(Craft::Pro);
 

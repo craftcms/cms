@@ -16,8 +16,8 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Entry           as EntryModel;
-use craft\app\variables\ElementType  as ElementTypeVariable;
+use craft\app\models\Entry as EntryModel;
+use craft\app\variables\ElementType as ElementTypeVariable;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,

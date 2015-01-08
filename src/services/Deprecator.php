@@ -10,9 +10,8 @@ namespace craft\app\services;
 use craft\app\Craft;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\models\DeprecationError as DeprecationErrorModel;
 use yii\base\Component;
-use craft\app\models\DeprecationError   as DeprecationErrorModel;
-use craft\app\web\Application;
 
 /**
  * Class Deprecator service.

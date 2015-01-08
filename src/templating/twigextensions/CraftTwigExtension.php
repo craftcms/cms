@@ -8,6 +8,12 @@
 namespace craft\app\templating\twigextensions;
 
 use craft\app\Craft;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
+use craft\app\helpers\StringHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\UrlHelper;
+use craft\app\variables\Craft as CraftVariable;
 
 /**
  * Class CraftTwigExtension
@@ -405,8 +411,8 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['craft'] = $craftVariable;
 		$globals['blx']   = $craftVariable;
 
-		$globals['now'] = DateTimeHelper::currentUTCDateTime();
-		$globals['loginUrl'] = UrlHelper::getUrl(Craft::$app->config->getLoginPath());
+		$globals['now']       = DateTimeHelper::currentUTCDateTime();
+		$globals['loginUrl']  = UrlHelper::getUrl(Craft::$app->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(Craft::$app->config->getLogoutPath());
 
 		if (Craft::$app->isInstalled() && !Craft::$app->updates->isCraftDbMigrationNeeded())

@@ -7,8 +7,8 @@
 
 namespace craft\app\elementactions;
 
-use craft\app\enums\AttributeType;
 use craft\app\Craft;
+use craft\app\enums\AttributeType;
 
 /**
  * View Element Action

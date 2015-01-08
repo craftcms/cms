@@ -8,9 +8,9 @@
 namespace craft\app\controllers;
 
 use craft\app\Craft;
+use craft\app\errors\HttpException;
 use craft\app\helpers\ImageHelper;
 use craft\app\models\AssetTransform as AssetTransformModel;
-use craft\app\errors\HttpException;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,

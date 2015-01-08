@@ -22,12 +22,10 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\io\Image;
+use craft\app\models\Password as PasswordModel;
+use craft\app\models\User as UserModel;
+use craft\app\records\User as UserRecord;
 use yii\base\Component;
-use craft\app\models\Password         as PasswordModel;
-use craft\app\models\User             as UserModel;
-use craft\app\records\Session         as SessionRecord;
-use craft\app\records\User            as UserRecord;
-use craft\app\web\Application;
 
 /**
  * The Users service provides APIs for managing users.

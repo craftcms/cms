@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\templating\twigextensions;
+use craft\app\helpers\StringHelper;
 
 /**
  * Cache twig node.

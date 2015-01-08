@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use craft\app\Craft;
 use craft\app\errors\Exception;
-use craft\app\web\Application;
 
 /**
  * Class Security service.

@@ -16,7 +16,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Info                as InfoModel;
+use craft\app\models\Info as InfoModel;
 
 /**
  * ApplicationTrait

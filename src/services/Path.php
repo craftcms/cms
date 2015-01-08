@@ -12,7 +12,6 @@ use craft\app\enums\ConfigFile;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\Component;
-use craft\app\web\Application;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.

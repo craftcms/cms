@@ -13,8 +13,8 @@ use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\io\Zip;
-use craft\app\models\GetHelp        as GetHelpModel;
-use craft\app\models\Widget         as WidgetModel;
+use craft\app\models\GetHelp as GetHelpModel;
+use craft\app\models\Widget as WidgetModel;
 use craft\app\web\UploadedFile;
 
 /**
