@@ -630,7 +630,7 @@ class Users extends Component
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
-		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserHostAddress();
+		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserIP();
 		$userRecord->invalidLoginWindowStart = null;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 		$userRecord->verificationCode = null;
@@ -652,7 +652,7 @@ class Users extends Component
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
-		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserHostAddress();
+		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserIP();
 
 		$maxInvalidLogins = Craft::$app->config->get('maxInvalidLogins');
 
