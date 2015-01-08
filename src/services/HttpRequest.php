@@ -971,16 +971,6 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * Alias of [[getIpAddress()]].
-	 *
-	 * @return string
-	 */
-	public function getUserHostAddress()
-	{
-		return $this->getIpAddress();
-	}
-
-	/**
 	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
 	 * variations in how different ISPs handle IP addresses in headers between hops.
 	 *
@@ -989,7 +979,7 @@ class HttpRequest extends \CHttpRequest
 	 *
 	 * @return string The IP address.
 	 */
-	public function getIpAddress()
+	public function getUserIP()
 	{
 		if ($this->_ipAddress === null)
 		{

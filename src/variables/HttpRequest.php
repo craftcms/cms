@@ -304,9 +304,9 @@ class HttpRequest
 	 *
 	 * @return string
 	 */
-	public function getUserHostAddress()
+	public function getUserIP()
 	{
-		return Craft::$app->request->getUserHostAddress();
+		return Craft::$app->request->getUserIP();
 	}
 
 	/**
@@ -362,6 +362,21 @@ class HttpRequest
 		return Craft::$app->request->getQueryStringWithoutPath();
 	}
 
+	// Deprecated methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the user IP address.
+	 *
+	 * @return string
+	 * @deprecated Deprecated in Craft 3.0. Use [[getUserIP()]] instead.
+	 */
+	public function getUserHostAddress()
+	{
+		Craft::$app->deprecator->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() is deprecated. Use getUserIP() instead.');
+		return $this->getUserIP();
+	}
+
 	/**
 	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
 	 * variations in how different ISPs handle IP addresses in headers between hops.
@@ -370,9 +385,11 @@ class HttpRequest
 	 * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
 	 *
 	 * @return string The IP address.
+	 * @deprecated Deprecated in Craft 3.0. Use [[getUserIP()]] instead.
 	 */
 	public function getIpAddress()
 	{
-		return Craft::$app->request->getIpAddress();
+		Craft::$app->deprecator->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() is deprecated. Use getUserIP() instead.');
+		return $this->getUserIP();
 	}
 }

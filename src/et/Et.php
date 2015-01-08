@@ -79,7 +79,7 @@ class Et
 		$this->_model = new EtModel([
 			'licenseKey'        => $this->_getLicenseKey(),
 			'requestUrl'        => Craft::$app->request->getHostInfo().Craft::$app->request->getUrl(),
-			'requestIp'         => Craft::$app->request->getIpAddress(),
+			'requestIp'         => Craft::$app->request->getUserIP(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
 			'requestPort'       => Craft::$app->request->getPort(),
 			'localBuild'        => CRAFT_BUILD,
