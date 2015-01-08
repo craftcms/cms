@@ -186,7 +186,7 @@ class DbHelper
 			case ColumnType::Enum:
 			{
 				$def = 'ENUM(';
-				$values = ArrayHelper::stringToArray($config['values']);
+				$values = ArrayHelper::toArray($config['values']);
 
 				foreach ($values as $i => $value)
 				{
@@ -358,7 +358,7 @@ class DbHelper
 	 * Parses a query param value and returns a [[\CDbCommand::where()]]-compatible condition.
 	 *
 	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
-	 * string (via [[ArrayHelper::stringToArray()]]). If that is not desired behavior, you can escape the comma
+	 * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
 	 * with a backslash before it.
 	 *
 	 * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
@@ -386,7 +386,7 @@ class DbHelper
 
 		$conditions = [];
 
-		$value = ArrayHelper::stringToArray($value);
+		$value = ArrayHelper::toArray($value);
 
 		if (!count($value))
 		{
@@ -486,7 +486,7 @@ class DbHelper
 	{
 		$normalizedValues = [];
 
-		$value = ArrayHelper::stringToArray($value);
+		$value = ArrayHelper::toArray($value);
 
 		if (!count($value))
 		{

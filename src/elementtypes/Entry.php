@@ -510,7 +510,7 @@ class Entry extends BaseElementType
 
 		if ($criteria->ref)
 		{
-			$refs = ArrayHelper::stringToArray($criteria->ref);
+			$refs = ArrayHelper::toArray($criteria->ref);
 			$conditionals = [];
 
 			foreach ($refs as $ref)

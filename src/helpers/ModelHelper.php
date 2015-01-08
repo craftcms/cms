@@ -262,13 +262,13 @@ class ModelHelper
 
 				case AttributeType::Enum:
 				{
-					$rules[] = [$name, 'in', 'range' => ArrayHelper::stringToArray($config['values'])];
+					$rules[] = [$name, 'in', 'range' => ArrayHelper::toArray($config['values'])];
 					break;
 				}
 
 				case AttributeType::Handle:
 				{
-					$rules[] = [$name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::stringToArray($config['reservedWords'])];
+					$rules[] = [$name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::toArray($config['reservedWords'])];
 					break;
 				}
 
@@ -364,7 +364,8 @@ class ModelHelper
 			// Compare with other attributes
 			if (isset($config['compare']))
 			{
-				$comparisons = ArrayHelper::stringToArray($config['compare']);
+				$comparisons = ArrayHelper::toArray($config['compare']);
+
 				foreach ($comparisons as $comparison)
 				{
 					if (preg_match('/^(==|=|!=|>=|>|<=|<)\s*\b(.*)$/', $comparison, $match))
@@ -392,7 +393,7 @@ class ModelHelper
 
 				if ($unique || $required)
 				{
-					$columns = ArrayHelper::stringToArray($config['columns']);
+					$columns = ArrayHelper::toArray($config['columns']);
 
 					if ($unique)
 					{

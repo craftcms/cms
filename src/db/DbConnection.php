@@ -181,7 +181,7 @@ class DbConnection extends \CDbConnection
 	 */
 	public function getForeignKeyName($table, $columns)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
+		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
 
 		return $this->trimObjectName($name);
@@ -199,7 +199,7 @@ class DbConnection extends \CDbConnection
 	 */
 	public function getIndexName($table, $columns, $unique = false)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
+		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
 
 		return $this->trimObjectName($name);
@@ -215,7 +215,7 @@ class DbConnection extends \CDbConnection
 	 */
 	public function getPrimaryKeyName($table, $columns)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
+		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 
 		return $this->trimObjectName($name);

@@ -230,7 +230,7 @@ class Elements extends Component
 
 			if ($criteria->fixedOrder)
 			{
-				$ids = ArrayHelper::stringToArray($criteria->id);
+				$ids = ArrayHelper::toArray($criteria->id);
 
 				if (!$ids)
 				{
@@ -511,7 +511,7 @@ class Elements extends Component
 			if ($criteria->status)
 			{
 				$statusConditions = [];
-				$statuses = ArrayHelper::stringToArray($criteria->status);
+				$statuses = ArrayHelper::toArray($criteria->status);
 
 				foreach ($statuses as $status)
 				{

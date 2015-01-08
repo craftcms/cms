@@ -138,7 +138,7 @@ class Querygen extends BaseCommand
 			echo "\n// Add indexes to craft_{$table}\n";
 			foreach ($indexes as $index)
 			{
-				$columns = ArrayHelper::stringToArray($index['columns']);
+				$columns = ArrayHelper::toArray($index['columns']);
 				$unique = !empty($index['unique']);
 
 				echo 'Craft::$app->db->createCommand()->createIndex(' .

@@ -13,118 +13,59 @@ namespace craft\app\helpers;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ArrayHelper
+class ArrayHelper extends \yii\helpers\ArrayHelper
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * Flattens a multi-dimensional array into a single-dimensional array.
+	 * Converts an object, an array of objects, or a comma-delimited string into an array.
 	 *
-	 * @param        $arr
-	 * @param string $prefix
+	 *     ArrayHelper::toArray('one, two, three') => ['one', 'two', 'three']
 	 *
-	 * @return array
+	 * @param array|object|string $object     The object, array or string to be converted into an array.
+	 * @param array               $properties A mapping from object class names to the properties that need to put into
+	 *                                        the resulting arrays. The properties specified for each class is an array
+	 *                                        of the following format:
+     *
+     * ~~~
+     * [
+     *     'app\models\Post' => [
+     *         'id',
+     *         'title',
+     *         // the key name in array result => property name
+     *         'createTime' => 'created_at',
+     *         // the key name in array result => anonymous function
+     *         'length' => function ($post) {
+     *             return strlen($post->content);
+     *         },
+     *     ],
+     * ]
+     * ~~~
+     *
+     * The result of `ArrayHelper::toArray($post, $properties)` could be like the following:
+     *
+     * ~~~
+     * [
+     *     'id' => 123,
+     *     'title' => 'test',
+     *     'createTime' => '2013-01-01 12:00AM',
+     *     'length' => 301,
+     * ]
+     * ~~~
+	 * @param bool                $recursive Whether to recursively converts properties which are objects into arrays.
+	 *
+	 * @return array The array representation of the given object.
 	 */
-	public static function flattenArray($arr, $prefix = null)
+	public static function toArray($object, $properties = [], $recursive = true)
 	{
-		$flattened = [];
-
-		foreach ($arr as $key => $value)
-		{
-			if ($prefix !== null)
-			{
-				$key = "{$prefix}[{$key}]";
-			}
-
-			if (is_array($value))
-			{
-				$flattened = array_merge($flattened, static::flattenArray($value, $key));
-			}
-			else
-			{
-				$flattened[$key] = $value;
-			}
-		}
-
-		return $flattened;
-	}
-
-	/**
-	 * Expands a flattened array back into its original form
-	 *
-	 * @param array $arr
-	 *
-	 * @return array
-	 */
-	public static function expandArray($arr)
-	{
-		$expanded = [];
-
-		foreach ($arr as $key => $value)
-		{
-			// is this an array element?
-			if (preg_match('/^(\w+)(\[.*)/', $key, $m))
-			{
-				$key = '$expanded["'.$m[1].'"]'.preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
-				eval($key.' = "'.addslashes($value).'";');
-			}
-			else
-			{
-				$expanded[$key] = $value;
-			}
-		}
-
-		return $expanded;
-	}
-
-	/**
-	 * @param $settings
-	 *
-	 * @return array
-	 */
-	public static function expandSettingsArray($settings)
-	{
-		$arr = [];
-
-		foreach ($settings as $setting)
-		{
-			$arr[$setting->name] = $setting->value;
-		}
-
-		return static::expandArray($arr);
-	}
-
-	/**
-	 * Converts a comma-delimited string into a trimmed array, ex:
-	 *
-	 *     ArrayHelper::stringToArray('one, two, three') => ['one', 'two', 'three']
-	 *
-	 * @param mixed $str The string to convert to an array
-	 *
-	 * @return array The trimmed array
-	 */
-	public static function stringToArray($str)
-	{
-		if (is_array($str))
-		{
-			return $str;
-		}
-		else if ($str instanceof \ArrayObject)
-		{
-			return (array) $str;
-		}
-		else if (empty($str))
-		{
-			return [];
-		}
-		else if (is_string($str))
+		if (is_string($object))
 		{
 			// Split it on the non-escaped commas
-			$arr = preg_split('/(?<!\\\),/', $str);
+			$object = preg_split('/(?<!\\\),/', $object);
 
 			// Remove any of the backslashes used to escape the commas
-			foreach ($arr as $key => $val)
+			foreach ($object as $key => $val)
 			{
 				// Remove leading/trailing whitespace
 				$val = trim($val);
@@ -132,18 +73,15 @@ class ArrayHelper
 				// Remove any backslashes used to escape commas
 				$val = str_replace('\,', ',', $val);
 
-				$arr[$key] = $val;
+				$object[$key] = $val;
 			}
 
 			// Remove any empty elements and reset the keys
-			$arr = array_merge(array_filter($arr));
+			$object = array_merge(array_filter($object));
+		}
 
-			return $arr;
-		}
-		else
-		{
-			return [$str];
-		}
+		// Now run it through the parent.
+		return parent::toArray($object);
 	}
 
 	/**

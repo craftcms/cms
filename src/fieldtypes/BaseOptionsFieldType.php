@@ -154,7 +154,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 	 */
 	public function prepValue($value)
 	{
-		$selectedValues = ArrayHelper::stringToArray($value);
+		$selectedValues = ArrayHelper::toArray($value);
 
 		if ($this->multi)
 		{

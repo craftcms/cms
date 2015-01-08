@@ -78,7 +78,7 @@ class ElementRelationParamParser
 	public function parseRelationParam($relatedTo, DbCommand $query)
 	{
 		// Ensure the criteria is an array
-		$relatedTo = ArrayHelper::stringToArray($relatedTo);
+		$relatedTo = ArrayHelper::toArray($relatedTo);
 
 		if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement']))
 		{
@@ -192,7 +192,7 @@ class ElementRelationParamParser
 		{
 			if (isset($relCriteria[$elementParam]))
 			{
-				$elements = ArrayHelper::stringToArray($relCriteria[$elementParam]);
+				$elements = ArrayHelper::toArray($relCriteria[$elementParam]);
 
 				foreach ($elements as $element)
 				{
@@ -240,7 +240,7 @@ class ElementRelationParamParser
 		{
 			// Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
 			// and save the normal field IDs for later
-			$fields = ArrayHelper::stringToArray($relCriteria['field']);
+			$fields = ArrayHelper::toArray($relCriteria['field']);
 
 			foreach ($fields as $field)
 			{

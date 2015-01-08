@@ -310,7 +310,7 @@ abstract class BaseRecord extends \CActiveRecord
 		// Create the indexes
 		foreach ($indexes as $index)
 		{
-			$columns = ArrayHelper::stringToArray($index['columns']);
+			$columns = ArrayHelper::toArray($index['columns']);
 			$unique = !empty($index['unique']);
 			Craft::$app->db->createCommand()->createIndex($table, implode(',', $columns), $unique);
 		}

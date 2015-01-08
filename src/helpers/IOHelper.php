@@ -1398,11 +1398,11 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		$allowedFileExtensions = ArrayHelper::stringToArray(Craft::$app->config->get('allowedFileExtensions'));
+		$allowedFileExtensions = ArrayHelper::toArray(Craft::$app->config->get('allowedFileExtensions'));
 
 		if (($extraExtensions = Craft::$app->config->get('extraAllowedFileExtensions')) !== '')
 		{
-			$extraExtensions = ArrayHelper::stringToArray($extraExtensions);
+			$extraExtensions = ArrayHelper::toArray($extraExtensions);
 			$allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
 		}
 
