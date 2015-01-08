@@ -163,7 +163,7 @@ class Application extends \yii\web\Application
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
-		// If we're not in devMode, or it's a 'dontExtendSession' request, we're going to remove some logging routes.
+		// If we're not in devMode, or it's a 'dontEnableSession' request, we're going to remove some logging routes.
 		if (!$this->config->get('devMode') || (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession()))
 		{
 			$this->log->removeRoute('WebLogRoute');
@@ -797,7 +797,7 @@ class Application extends \yii\web\Application
 			$segments == ['users', 'forgotpassword'] ||
 			$segments == ['users', 'sendPasswordResetEmail'] ||
 			$segments == ['users', 'saveUser'] ||
-			$segments == ['users', 'getAuthTimeout']
+			$segments == ['users', 'getRemainingSessionTime']
 		)
 		{
 			return true;

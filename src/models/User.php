@@ -18,6 +18,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\UserGroup        as UserGroupModel;
 use craft\app\models\User             as UserModel;
+use craft\app\records\Session         as SessionRecord;
 use yii\web\IdentityInterface;
 use yii\base\NotSupportedException;
 
@@ -100,7 +101,16 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function getAuthKey()
 	{
-		return $this->getAttribute('authKey');
+		$token = Craft::$app->getSecurity()->generateRandomString(100);
+		$tokenUid = $this->_storeSessionToken($token);
+		$userAgent = Craft::$app->getRequest()->getUserAgent();
+
+		// The auth key is a combination of the hashed token, its row's UID, and the user agent string
+		return json_encode([
+			$hashedToken,
+			$tokenUid,
+			$userAgent,
+		], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	}
 
 	/**
@@ -112,7 +122,19 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function validateAuthKey($authKey)
 	{
-		return ($this->getAuthKey() === $authKey);
+		$data = json_decode($authKey, true);
+
+		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
+		{
+			list($token, $tokenUid, $userAgent) = $data;
+
+			return (
+				$this->_validateUserAgent($userAgent) &&
+				($token === $this->_findSessionTokenByUid($tokenUid))
+			);
+		}
+
+		return false;
 	}
 
 	/**
@@ -613,7 +635,6 @@ class User extends BaseElementModel implements IdentityInterface
 		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
 
 		return array_merge(parent::defineAttributes(), [
-			'authKey'                    => AttributeType::String,
 			'username'                   => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
 			'photo'                      => AttributeType::String,
 			'firstName'                  => AttributeType::String,
@@ -640,5 +661,61 @@ class User extends BaseElementModel implements IdentityInterface
 			'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'authError'                  => AttributeType::String,
 		]);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Saves a new session record for the user.
+	 *
+	 * @param string $sessionToken
+	 * @return string The new session row's UID.
+	 */
+	private function _storeSessionToken(UserModel $user, $sessionToken)
+	{
+		$sessionRecord = new SessionRecord();
+		$sessionRecord->userId = $user->id;
+		$sessionRecord->token = $sessionToken;
+		$sessionRecord->save();
+		return $sessionRecord->uid;
+	}
+
+	/**
+	 * Finds a session token by its row's UID.
+	 *
+	 * @param string $uid
+	 * @return string|null The session token, or `null` if it could not be found.
+	 */
+	private function _findSessionTokenByUid($uid)
+	{
+		return Craft::$app->db->createCommand()
+			->select('token')
+			->from('sessions')
+			->where(['and', 'userId=:userId', 'uid=:uid'], [':userId' => $this->id, ':uid' => $uid])
+			->queryScalar();
+	}
+
+	/**
+	 * Validates a cookie's stored user agent against the current request's user agent string,
+	 * if the 'requireMatchingUserAgentForSession' config setting is enabled.
+	 *
+	 * @param string $userAgent
+	 * @return boolean
+	 */
+	private function _validateUserAgent($userAgent)
+	{
+		if (Craft::$app->config->get('requireMatchingUserAgentForSession'))
+		{
+			$requestUserAgent = Craft::$app->getRequest()->getUserAgent();
+
+			if ($userAgent !== $requestUserAgent)
+			{
+				Craft::log('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', LogLevel::Warning);
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

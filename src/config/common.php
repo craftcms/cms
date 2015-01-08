@@ -268,7 +268,6 @@ $components['user'] = [
 	'class'                    => '\craft\app\web\User',
 	'identityClass'            => '\craft\app\models\User',
 	'enableAutoLogin'          => true,
-	'enableSession'            => true,
 	'autoRenewCookie'          => true,
 ];
 

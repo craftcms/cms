@@ -45,11 +45,11 @@ class UserSession
 	 *
 	 * @return int
 	 */
-	public function getAuthTimeout()
+	public function getRemainingSessionTime()
 	{
 		if (Craft::$app->isInstalled())
 		{
-			return Craft::$app->getUser()->getAuthTimeout();
+			return Craft::$app->getUser()->getRemainingSessionTime();
 		}
 		else
 		{

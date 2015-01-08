@@ -27,7 +27,7 @@ use craft\app\web\UploadedFile;
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
  * accounts, creating users, saving users, processing user avatars, deleting, suspending and un-suspending users.
  *
- * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetAuthTimeout]],
+ * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
  * authenticated Craft session via [[BaseController::allowAnonymous]].
  *
@@ -52,7 +52,7 @@ class UsersController extends BaseController
 	 *
 	 * @var bool
 	 */
-	protected $allowAnonymous = ['actionLogin', 'actionLogout', 'actionGetAuthTimeout', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyEmail'];
+	protected $allowAnonymous = ['actionLogin', 'actionLogout', 'actionGetRemainingSessionTime', 'actionSendPasswordResetEmail', 'actionSendActivationEmail', 'actionSaveUser', 'actionSetPassword', 'actionVerifyEmail'];
 
 	// Public Methods
 	// =========================================================================
@@ -141,9 +141,9 @@ class UsersController extends BaseController
 	 *
 	 * @return null
 	 */
-	public function actionGetAuthTimeout()
+	public function actionGetRemainingSessionTime()
 	{
-		echo Craft::$app->getUser()->getAuthTimeout();
+		echo Craft::$app->getUser()->getRemainingSessionTime();
 		Craft::$app->end();
 	}
 
