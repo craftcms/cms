@@ -342,9 +342,9 @@ class User extends \yii\web\User
 
 			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]);)
 			{
-				$authData = json_decode($identityData[1], true);
+				$authData = UserModel::getAuthData($identityData[1]);
 
-				if (count($authData) === 3 && isset($authData[0], $authData[1], $authData[2]))
+				if ($authData)
 				{
 					$tokenUid = $authData[1];
 

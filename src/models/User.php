@@ -77,6 +77,22 @@ class User extends BaseElementModel implements IdentityInterface
 	}
 
 	/**
+	 * Returns the authentication data from a given auth key.
+	 *
+	 * @param string $authKey
+	 * @return arary|null The authentication data, or `null` if it was invalid.
+	 */
+	public static function getAuthData($authKey)
+	{
+		$data = json_decode($authKey, true);
+
+		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
+		{
+			return $data;
+		}
+	}
+
+	/**
 	 * Use the full name or username as the string representation.
 	 *
 	 * @return string
@@ -122,9 +138,9 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function validateAuthKey($authKey)
 	{
-		$data = json_decode($authKey, true);
+		$data = static::getAuthData($authKey);
 
-		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
+		if ($data)
 		{
 			list($token, $tokenUid, $userAgent) = $data;
 
