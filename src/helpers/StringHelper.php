@@ -387,7 +387,7 @@ class StringHelper
 	{
 		// Don't wrap in a class_exists in case the server already has it's own version of HTMLPurifier and they have
 		// open_basedir restrictions
-		require_once Craft::getPathOfAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
+		require_once Craft::getAlias('system.vendors.htmlpurifier').'/HTMLPurifier.standalone.php';
 
 		// If it's already a UTF8 string, just clean and return it
 		if (static::isUTF8($string))

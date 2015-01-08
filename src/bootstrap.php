@@ -175,8 +175,8 @@ require CRAFT_APP_PATH.'web/Application.php';
 require CRAFT_APP_PATH.'Info.php';
 
 // Set some aliases for Craft::import()
-Yii::setPathOfAlias('app', CRAFT_APP_PATH);
-Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
+Yii::setAlias('app', CRAFT_APP_PATH);
+Yii::setAlias('plugins', CRAFT_PLUGINS_PATH);
 
 // Load the full config
 $config = require CRAFT_APP_PATH.'etc/config/main.php';

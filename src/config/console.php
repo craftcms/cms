@@ -41,5 +41,5 @@ return CMap::mergeArray($common, [
 		],
 	],
 
-	'commandPath' => craft\app\Craft::getPathOfAlias('system.cli.commands.*'),
+	'commandPath' => craft\app\Craft::getAlias('system.cli.commands.*'),
 ]);

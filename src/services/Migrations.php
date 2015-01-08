@@ -348,7 +348,7 @@ class Migrations extends Component
 	 */
 	public function getTemplate()
 	{
-		return file_get_contents(Craft::getPathOfAlias('app.etc.updates.migrationtemplate').'.php');
+		return file_get_contents(Craft::getAlias('app.etc.updates.migrationtemplate').'.php');
 	}
 
 	// Private Methods

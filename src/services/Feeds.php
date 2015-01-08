@@ -37,7 +37,7 @@ class Feeds extends Component
 
 		// Import this here to ensure that libs like SimplePie are using our version of the class and not any server's
 		// random version.
-		require_once(Craft::getPathOfAlias('app.vendor.simplepie.simplepie.idn.').DIRECTORY_SEPARATOR.'idna_convert.class.php');
+		require_once(Craft::getAlias('app.vendor.simplepie.simplepie.idn.').DIRECTORY_SEPARATOR.'idna_convert.class.php');
 	}
 
 	/**
