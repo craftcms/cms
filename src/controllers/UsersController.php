@@ -289,7 +289,7 @@ class UsersController extends BaseController
 				$id = $info['id'];
 				$code = $info['code'];
 
-				Craft::$app->getUser()->processUsernameCookie($userToProcess->username);
+				Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
 				// Send them to the set password template.
 				$url = Craft::$app->config->getSetPasswordPath($code, $id, $userToProcess);

@@ -80,7 +80,7 @@ class User extends \yii\web\User
 		parent::__construct($config);
 	}
 
-	// Authorization
+	// Authentication
 	// -------------------------------------------------------------------------
 
 	/**
@@ -139,7 +139,7 @@ class User extends \yii\web\User
 		Craft::$app->getSession()->remove($this->returnUrlParam);
 	}
 
-	// User-Based Authorization
+	// Authorization
 	// -------------------------------------------------------------------------
 
 	/**
