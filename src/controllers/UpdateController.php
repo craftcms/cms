@@ -74,6 +74,7 @@ class UpdateController extends BaseController
 
 		if ($updates)
 		{
+			$updates = false;
 			$this->returnJson($updates);
 		}
 		else
