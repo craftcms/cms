@@ -20,6 +20,7 @@ use craft\app\records\Session     as SessionRecord;
 use craft\app\users\UserIdentity;
 use craft\app\web\Application;
 use craft\app\web\HttpCookie;
+use yii\web\Cookie;
 
 /**
  * The User service provides APIs for managing the user authentication status.
@@ -33,6 +34,12 @@ class User extends \yii\web\User
 {
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var array The configuration of the username cookie.
+	 * @see Cookie
+	 */
+	public $usernameCookie;
 
 	/**
 	 * Stores whether the request has requested to not extend the user's session.
@@ -64,12 +71,42 @@ class User extends \yii\web\User
 		$appId = Craft::$app->config->get('appId');
 		$stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
 		$config['identityCookie']           = ['name' => $stateKeyPrefix.'_identity', 'httpOnly' => true];
+		$config['usernameCookie']           = ['name' => $stateKeyPrefix.'_username', 'httpOnly' => true];
 		$config['idParam']                  = $stateKeyPrefix.'__id';
 		$config['authTimeoutParam']         = $stateKeyPrefix.'__expire';
 		$config['absoluteAuthTimeoutParam'] = $stateKeyPrefix.'__absoluteExpire';
 		$config['returnUrlParam']           = $stateKeyPrefix.'__returnUrl';
 
 		parent::__construct($config);
+	}
+
+	// Authorization
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Sends a username cookie.
+	 *
+	 * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
+	 * so that login forms can remember the initial Username value on login forms.
+	 *
+	 * @param UserModel $user
+	 * @see afterLogin()
+	 */
+	public function sendUsernameCookie(UserModel $user)
+	{
+		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
+
+		if ($rememberUsernameDuration)
+		{
+			$cookie = new Cookie($this->usernameCookie);
+			$cookie->value = $user->username;
+			$cookie->expire = time() + DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+			Craft::$app->getResponse()->getCookies()->add($cookie);
+		}
+		else
+		{
+			Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
+		}
 	}
 
 	/**
@@ -352,30 +389,6 @@ class User extends \yii\web\User
 		);
 	}
 
-	/**
-	 * If the 'rememberUsernameDuration' config setting is set, will save a cookie with the given username for that
-	 * duration. Otherwise, will delete any existing username cookie.
-	 *
-	 * @param string $username The username to save in the cookie.
-	 *
-	 * @return null
-	 */
-	public function processUsernameCookie($username)
-	{
-		// See if the 'rememberUsernameDuration' config item is set. If so, save the name to a cookie.
-		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
-
-		if ($rememberUsernameDuration)
-		{
-			$this->saveCookie('username', $username, DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration));
-		}
-		else
-		{
-			// Just in case...
-			$this->deleteStateCookie('username');
-		}
-	}
-
 	// Events
 	// -------------------------------------------------------------------------
 
@@ -425,6 +438,20 @@ class User extends \yii\web\User
 
 	// Protected Methods
 	// =========================================================================
+
+	/**
+	 * @inheritDoc \yii\web\User::afterLogin()
+	 * @param IdentityInterface $identity
+	 * @param boolean $cookieBased
+	 * @param integer $duration
+	 */
+	protected function afterLogin($identity, $cookieBased, $duration)
+	{
+		// Save the username cookie
+		$this->sendUsernameCookie($identity);
+
+		parent::afterLogin($identity, $cookieBased, $duration);
+	}
 
 	/**
 	 * Updates the authentication status according to [[authTimeout]].
