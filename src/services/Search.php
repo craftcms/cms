@@ -90,7 +90,7 @@ class Search extends Component
 		foreach ($searchableAttributes as $attribute)
 		{
 			$value = $element->$attribute;
-			$value = StringHelper::arrayToString($value);
+			$value = StringHelper::toString($value);
 			$this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
 		}
 

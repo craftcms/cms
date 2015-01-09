@@ -16,7 +16,7 @@ use craft\app\errors\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class StringHelper
+class StringHelper extends \yii\helpers\StringHelper
 {
 	// Constants
 	// =========================================================================
@@ -59,29 +59,30 @@ class StringHelper
 	}
 
 	/**
-	 * Converts an array to a string.
+	 * Converts an object to its string representation. If the object is an array, will glue the array elements togeter
+	 * with the $glue param. Otherwise will cast the object to a string.
 	 *
-	 * @param mixed  $arr
-	 * @param string $glue
+	 * @param mixed  $object The object to convert to a string.
+	 * @param string $glue   The glue to use if the object is an array.
 	 *
-	 * @return string
+	 * @return string The string representation of the object.
 	 */
-	public static function arrayToString($arr, $glue = ',')
+	public static function toString($object, $glue = ',')
 	{
-		if (is_array($arr) || $arr instanceof \IteratorAggregate)
+		if (is_array($object) || $object instanceof \IteratorAggregate)
 		{
 			$stringValues = [];
 
-			foreach ($arr as $value)
+			foreach ($object as $value)
 			{
-				$stringValues[] = static::arrayToString($value, $glue);
+				$stringValues[] = static::toString($value, $glue);
 			}
 
 			return implode($glue, $stringValues);
 		}
 		else
 		{
-			return (string) $arr;
+			return (string) $object;
 		}
 	}
 
@@ -321,7 +322,7 @@ class StringHelper
 	public static function normalizeKeywords($str, $ignore = [])
 	{
 		// Flatten
-		if (is_array($str)) $str = static::arrayToString($str, ' ');
+		if (is_array($str)) $str = static::toString($str, ' ');
 
 		// Get rid of tags
 		$str = strip_tags($str);

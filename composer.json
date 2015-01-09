@@ -15,6 +15,7 @@
         "erusev/parsedown": "1.1.4",
         "lsolesen/pel": "dev-master",
         "mockery/mockery": "0.9.3",
-        "phpmailer/phpmailer": "v5.2.9"
+        "phpmailer/phpmailer": "v5.2.9",
+        "danielstjules/stringy": "1.8.1"
     }
 }
