@@ -7,7 +7,7 @@
 
 namespace craft\app\db;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;

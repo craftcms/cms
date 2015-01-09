@@ -7,7 +7,7 @@
 
 namespace craft\app\cache;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\IOHelper;
 
 /**

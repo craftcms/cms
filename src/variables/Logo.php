@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UrlHelper;
 

@@ -7,7 +7,7 @@
 
 namespace craft\app\widgets;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Class Updates widget.

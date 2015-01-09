@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;

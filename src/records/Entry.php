@@ -7,7 +7,7 @@
 
 namespace craft\app\records;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 
 /**

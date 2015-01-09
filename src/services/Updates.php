@@ -7,8 +7,8 @@
 
 namespace craft\app\services;
 
+use Craft;
 use craft\app\base\BasePlugin;
-use craft\app\Craft;
 use craft\app\enums\LogLevel;
 use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;

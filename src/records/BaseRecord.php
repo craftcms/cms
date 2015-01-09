@@ -7,7 +7,7 @@
 
 namespace craft\app\records;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;

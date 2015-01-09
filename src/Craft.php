@@ -5,19 +5,18 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app;
-
 use craft\app\enums\LogLevel;
+use yii\helpers\VarDumper;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * It encapsulates [[\Yii]] and ultimately [[\YiiBase]], which provides the actual implementation.
+ * It encapsulates [[Yii]] and ultimately [[YiiBase]], which provides the actual implementation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Craft extends \Yii
+class Craft extends Yii
 {
 	// Constants
 	// =========================================================================
@@ -33,30 +32,30 @@ class Craft extends \Yii
 	/**
 	 * Displays a variable.
      *
-	 * @param mixed $target    The variable to be dumped.
+	 * @param mixed $var       The variable to be dumped.
 	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
 	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
 	 *
 	 * @return null
 	 */
-	public static function dump($target, $depth = 10, $highlight = true)
+	public static function dump($var, $depth = 10, $highlight = true)
 	{
-		\CVarDumper::dump($target, $depth, $highlight);
+		VarDumper::dump($var, $depth, $highlight);
 	}
 
 	/**
 	 * Displays a variable and ends the request. (“Dump and die”)
      *
-	 * @param mixed $target    The variable to be dumped.
+	 * @param mixed $var       The variable to be dumped.
 	 * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
 	 * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
 	 *
 	 * @return null
 	 */
-	public static function dd($target, $depth = 10, $highlight = true)
+	public static function dd($var, $depth = 10, $highlight = true)
 	{
-		static::dump($target, $depth, $highlight);
-		Craft::$app->end();
+		VarDumper::dump($target, $depth, $highlight);
+		static::$app->end();
 	}
 
 	/**
@@ -65,7 +64,7 @@ class Craft extends \Yii
 	 * @param string $alias        The path alias to import.
 	 * @param bool   $forceInclude If set to true, Craft will require_once the file. Defaults to false.
 	 *
-	 * @throws \Exception
+	 * @throws Exception
 	 * @return string|null
 	 */
 	public static function import($alias, $forceInclude = false)
@@ -90,7 +89,7 @@ class Craft extends \Yii
 				}
 				default:
 				{
-					throw new \Exception('Unknown alias “'.$alias.'”');
+					throw new Exception('Unknown alias “'.$alias.'”');
 				}
 			}
 		}
@@ -232,7 +231,7 @@ class Craft extends \Yii
 		if (strpos($file, '/app/vendor/') === false)
 		{
 			$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
-			\Yii::$classMap[$class] = $file;
+			Yii::$classMap[$class] = $file;
 		}
 	}
 }

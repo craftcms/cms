@@ -7,7 +7,7 @@
 
 namespace craft\app\tasks;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * The generate pending transforms task.

@@ -7,8 +7,8 @@
 
 namespace craft\app\services;
 
+use Craft;
 use craft\app\components\BaseComponentType;
-use craft\app\Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
 use craft\app\models\BaseComponentModel;

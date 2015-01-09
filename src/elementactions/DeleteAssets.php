@@ -7,7 +7,7 @@
 
 namespace craft\app\elementactions;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**

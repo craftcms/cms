@@ -7,7 +7,7 @@
 
 namespace craft\app\tools;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Search Index tool.

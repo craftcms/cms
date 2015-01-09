@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\db\DbCommand;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;

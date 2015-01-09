@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;

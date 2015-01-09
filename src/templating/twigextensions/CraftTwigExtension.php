@@ -7,7 +7,7 @@
 
 namespace craft\app\templating\twigextensions;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;

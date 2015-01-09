@@ -7,8 +7,8 @@
 
 namespace craft\app\base;
 
+use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\Craft;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\StringHelper;
 

@@ -7,7 +7,7 @@
 
 namespace craft\app\widgets;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;

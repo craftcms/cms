@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\elementtypes\BaseElementType;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;

@@ -7,7 +7,7 @@
 
 namespace craft\app\db\mysql;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ConfigFile;
 
 /**

@@ -7,9 +7,9 @@
 
 namespace craft\app\services;
 
+use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
-use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\Exception;
 use craft\app\events\Event;

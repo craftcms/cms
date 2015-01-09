@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\HtmlHelper;

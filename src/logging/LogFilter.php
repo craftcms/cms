@@ -6,7 +6,7 @@
  */
 
 namespace craft\app\logging;
-use craft\app\Craft;
+use Craft;
 
 /**
  * LogFilter pre-processes the logged messages before they are handled by a log route.

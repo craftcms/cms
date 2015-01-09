@@ -7,8 +7,8 @@
 
 namespace craft\app\widgets;
 
+use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\Craft;
 use craft\app\helpers\UrlHelper;
 
 /**

@@ -7,7 +7,7 @@
 
 namespace craft\app\elements;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\db\DbCommand;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;

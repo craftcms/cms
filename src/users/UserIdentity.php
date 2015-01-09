@@ -7,7 +7,7 @@
 
 namespace craft\app\users;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\models\User as UserModel;

@@ -7,7 +7,7 @@
 
 namespace craft\app\i18n;
 
-use craft\app\Craft;
+use Craft;
 use yii\base\Object;
 
 /**

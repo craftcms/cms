@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Et as EtModel;

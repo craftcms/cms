@@ -7,7 +7,7 @@
 
 namespace craft\app\records;
 
-use craft\app\Craft;
+use Craft;
 
 Craft::$app->requireEdition(Craft::Pro);
 

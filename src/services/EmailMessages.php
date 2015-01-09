@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;

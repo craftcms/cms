@@ -7,7 +7,7 @@
 
 namespace craft\app\et;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\enums\LogLevel;
 use craft\app\errors\EtException;

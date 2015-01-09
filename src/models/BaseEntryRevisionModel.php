@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\Entry as EntryModel;

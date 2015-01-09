@@ -7,6 +7,7 @@
 
 namespace craft\app\services;
 
+use Craft;
 use craft\app\cache\ApcCache;
 use craft\app\cache\DbCache;
 use craft\app\cache\EAcceleratorCache;
@@ -16,7 +17,6 @@ use craft\app\cache\RedisCache;
 use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
-use craft\app\Craft;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;
 use yii\base\Component;

@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ConfigFile;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\AppHelper;

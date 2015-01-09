@@ -7,7 +7,7 @@
 
 namespace craft\app\tools;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\IOHelper;
 use craft\app\io\Zip;
 

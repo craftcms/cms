@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;

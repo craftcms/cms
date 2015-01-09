@@ -7,8 +7,8 @@
 
 namespace craft\app\updates;
 
+use Craft;
 use craft\app\base\BasePlugin;
-use craft\app\Craft;
 use craft\app\enums\InstallStatus;
 use craft\app\enums\LogLevel;
 use craft\app\enums\PatchManifestFileAction;

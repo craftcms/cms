@@ -7,7 +7,7 @@
 
 namespace craft\app\errors;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Class TemplateLoaderException

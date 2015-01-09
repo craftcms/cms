@@ -7,8 +7,8 @@
 
 namespace craft\app\assetsourcetypes;
 
+use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\Craft;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\enums\PeriodType;

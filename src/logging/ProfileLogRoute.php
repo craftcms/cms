@@ -7,7 +7,7 @@
 
 namespace craft\app\logging;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\HeaderHelper;
 
 /**

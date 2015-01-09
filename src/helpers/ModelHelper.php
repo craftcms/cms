@@ -7,7 +7,7 @@
 
 namespace craft\app\helpers;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\models\BaseModel;

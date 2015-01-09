@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\LogLevel;
 use craft\app\enums\TaskStatus;
 use craft\app\models\Task as TaskModel;

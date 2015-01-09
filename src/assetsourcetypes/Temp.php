@@ -7,7 +7,7 @@
 
 namespace craft\app\assetsourcetypes;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\errors\Exception;
 
 /**

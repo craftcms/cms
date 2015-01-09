@@ -7,7 +7,7 @@
 
 namespace craft\app\io;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\IOHelper;
 

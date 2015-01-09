@@ -6,7 +6,7 @@
  */
 
 namespace craft\app\fieldtypes\data;
-use craft\app\Craft;
+use Craft;
 
 /**
  * Stores the data for Rich Text fields.

@@ -7,8 +7,8 @@
 
 namespace craft\app\tasks;
 
+use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\Craft;
 
 /**
  * Task base class.

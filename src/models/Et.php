@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;

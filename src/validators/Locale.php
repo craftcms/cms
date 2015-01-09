@@ -7,7 +7,7 @@
 
 namespace craft\app\validators;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Will validate that the given attribute is a valid site locale ID.

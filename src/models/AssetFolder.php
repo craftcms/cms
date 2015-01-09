@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetSource as AssetSourceModel;

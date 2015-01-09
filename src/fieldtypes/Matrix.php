@@ -7,7 +7,7 @@
 
 namespace craft\app\fieldtypes;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ElementType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;

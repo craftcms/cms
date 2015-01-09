@@ -7,7 +7,7 @@
 
 namespace craft\app\web;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Extends \CHttpSession to add support for setting the session folder and creating it if it doesn't exist.

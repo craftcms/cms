@@ -7,7 +7,7 @@
 
 namespace craft\app\controllers;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;

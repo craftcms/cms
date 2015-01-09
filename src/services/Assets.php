@@ -7,9 +7,9 @@
 
 namespace craft\app\services;
 
+use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
-use craft\app\Craft;
 use craft\app\db\DbCommand;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;

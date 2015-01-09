@@ -7,9 +7,9 @@
 
 namespace craft\app\controllers;
 
+use Craft;
 use craft\app\assetsourcetypes\GoogleCloud;
 use craft\app\assetsourcetypes\S3;
-use craft\app\Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;

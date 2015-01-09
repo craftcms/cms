@@ -7,7 +7,7 @@
 
 namespace craft\app\controllers;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ElementType;
 use craft\app\enums\LogLevel;

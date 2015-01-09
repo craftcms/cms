@@ -7,7 +7,7 @@
 
 namespace craft\app\base;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\db\DbConnection;
 use craft\app\enums\ConfigFile;
 use craft\app\enums\LogLevel;

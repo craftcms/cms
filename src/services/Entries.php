@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;

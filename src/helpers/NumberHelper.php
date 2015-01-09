@@ -7,7 +7,7 @@
 
 namespace craft\app\helpers;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Class NumberHelper

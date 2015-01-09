@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;

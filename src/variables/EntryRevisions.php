@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
 

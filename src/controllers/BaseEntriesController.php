@@ -7,7 +7,7 @@
 
 namespace craft\app\controllers;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\SectionType;
 use craft\app\models\Entry as EntryModel;
 

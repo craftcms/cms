@@ -7,8 +7,8 @@
 
 namespace craft\app\elementtypes;
 
+use Craft;
 use craft\app\components\BaseComponentType;
-use craft\app\Craft;
 use craft\app\dates\DateTime;
 use craft\app\db\DbCommand;
 use craft\app\helpers\HtmlHelper;

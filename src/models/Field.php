@@ -7,7 +7,7 @@
 
 namespace craft\app\models;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\fieldtypes\BaseFieldType;
 use craft\app\models\FieldGroup as FieldGroupModel;

@@ -7,7 +7,7 @@
 
 namespace craft\app\web;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\BaseElementModel;
 use craft\app\services\HttpRequest;

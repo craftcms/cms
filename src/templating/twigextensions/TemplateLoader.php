@@ -7,7 +7,7 @@
 
 namespace craft\app\templating\twigextensions;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\errors\Exception;
 use craft\app\errors\TemplateLoaderException;
 use craft\app\helpers\IOHelper;

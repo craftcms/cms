@@ -7,8 +7,8 @@
 
 namespace craft\app\fieldtypes;
 
+use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\Craft;
 use craft\app\db\DbCommand;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;

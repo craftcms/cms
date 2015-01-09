@@ -7,8 +7,8 @@
 
 namespace craft\app\tools;
 
+use Craft;
 use craft\app\components\BaseComponentType;
-use craft\app\Craft;
 
 /**
  * Tool base class.

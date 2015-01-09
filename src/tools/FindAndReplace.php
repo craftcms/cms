@@ -7,7 +7,7 @@
 
 namespace craft\app\tools;
 
-use craft\app\Craft;
+use Craft;
 
 /**
  * Find and Replace tool

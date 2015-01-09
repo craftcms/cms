@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;

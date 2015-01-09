@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Field as FieldModel;
 use yii\base\Component;

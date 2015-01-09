@@ -7,7 +7,7 @@
 
 namespace craft\app\i18n;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\helpers\IOHelper;
 
 /**

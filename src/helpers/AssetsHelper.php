@@ -7,8 +7,8 @@
 
 namespace craft\app\helpers;
 
+use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
-use craft\app\Craft;
 use craft\app\models\AssetFile as AssetFileModel;
 
 /**

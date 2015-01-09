@@ -6,7 +6,7 @@
  */
 
 namespace craft\app\web;
-use craft\app\Craft;
+use Craft;
 
 /**
  * CookieCollection implements a collection class to store cookies. You normally access it via

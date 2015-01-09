@@ -7,7 +7,7 @@
 
 namespace craft\app\services;
 
-use craft\app\Craft;
+use Craft;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\models\User as UserModel;
