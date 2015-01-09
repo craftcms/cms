@@ -157,9 +157,6 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 // Load up Composer's files
 require CRAFT_APP_PATH.'vendor/autoload.php';
 
-// Disable the PHP include path
-Yii::$enableIncludePath = false;
-
 // Load 'em up
 require CRAFT_APP_PATH.'Craft.php';
 require CRAFT_APP_PATH.'web/Application.php';

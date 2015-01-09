@@ -55,9 +55,6 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 // Load up Composer's files
 require CRAFT_APP_PATH.'vendor/autoload.php';
 
-// Disable the PHP include path
-Yii::$enableIncludePath = false;
-
 require_once(dirname(__FILE__).'/Application.php');
 
 // Because CHttpRequest is one of those stupid Yii files that has multiple classes defined in it.
