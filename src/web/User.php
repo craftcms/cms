@@ -334,7 +334,7 @@ class User extends \yii\web\User
 		{
 			$identityData = json_decode($cookieValue, true);
 
-			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]);
+			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]))
 			{
 				$authData = UserModel::getAuthData($identityData[1]);
 
