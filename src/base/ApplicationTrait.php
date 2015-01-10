@@ -75,6 +75,42 @@ trait ApplicationTrait
 	private $_gettingLanguage = false;
 
 
+	/**
+	 * @var string Craft’s version number.
+	 */
+	public $version;
+
+	/**
+	 * @var string Craft’s build number.
+	 */
+	public $build;
+
+	/**
+	 * @var string Craft’s schema version number.
+	 */
+	public $schemaVersion;
+
+	/**
+	 * @var string Craft’s release date.
+	 */
+	public $releaseDate;
+
+	/**
+	 * @var string The minumum Craft build number required to update to this build.
+	 */
+	public $minBuildRequired;
+
+	/**
+	 * @var string The URL to download the minimum Craft version.
+	 * @see $minBuildRequired
+	 */
+	public $minBuildUrl;
+
+	/**
+	 * @var string The release track Craft is running on.
+	 */
+	public $track;
+
 	// Public Methods
 	// =========================================================================
 
@@ -138,56 +174,6 @@ trait ApplicationTrait
 		}
 
 		return $this->_isLocalized;
-	}
-
-	/**
-	 * Returns the installed Craft version.
-	 *
-	 * @return string
-	 */
-	public function getVersion()
-	{
-		return $this->getInfo('version');
-	}
-
-	/**
-	 * Returns the installed Craft build.
-	 *
-	 * @return string
-	 */
-	public function getBuild()
-	{
-		return $this->getInfo('build');
-	}
-
-	/**
-	 * Returns the installed Craft build.
-	 *
-	 * @return string
-	 */
-	public function getSchemaVersion()
-	{
-		return $this->getInfo('schemaVersion');
-	}
-
-	/**
-	 * Returns the installed Craft release date.
-	 *
-	 * @return string
-	 */
-	public function getReleaseDate()
-	{
-		return $this->getInfo('releaseDate');
-	}
-
-	/**
-	 * Returns the Craft track.
-	 *
-	 * @return string
-	 */
-	public function getTrack()
-	{
-		return $this->getInfo('track');
 	}
 
 	/**
