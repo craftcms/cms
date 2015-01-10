@@ -37,11 +37,6 @@ class Application extends \yii\console\Application
 	/**
 	 * @var
 	 */
-	private $_pendingEvents;
-
-	/**
-	 * @var
-	 */
 	private $_editionComponents;
 
 	// Public Methods
@@ -204,7 +199,6 @@ class Application extends \yii\console\Application
 			}
 
 			$component = parent::getComponent($id, true);
-			$this->_attachEventListeners($id);
 		}
 
 		return $component;
@@ -255,32 +249,6 @@ class Application extends \yii\console\Application
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Attaches any pending event listeners to the newly-initialized component.
-	 *
-	 * @param string $componentId
-	 *
-	 * @return null
-	 */
-	private function _attachEventListeners($componentId)
-	{
-		if (isset($this->_pendingEvents[$componentId]))
-		{
-			$component = $this->getComponent($componentId, false);
-
-			if ($component)
-			{
-				foreach ($this->_pendingEvents[$componentId] as $eventName => $handlers)
-				{
-					foreach ($handlers as $handler)
-					{
-						$component->$eventName = $handler;
-					}
-				}
-			}
-		}
-	}
 
 	/**
 	 * Sets the edition components.

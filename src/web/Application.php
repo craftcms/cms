@@ -104,11 +104,6 @@ class Application extends \yii\web\Application
 	 */
 	private $_editionComponents;
 
-	/**
-	 * @var
-	 */
-	private $_pendingEvents;
-
 	// Public Methods
 	// =========================================================================
 
@@ -518,60 +513,6 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Attaches an event handler, or remembers it for later if the component has not been initialized yet.
-	 *
-	 * The event should be identified in a `serviceHandle.eventName` format. For example, if you want to add an event
-	 * handler for [[\craft\app\services\Entries::onSaveEntry()]], you would do this:
-	 *
-	 * ```php
-	 * Craft::$app->on('entries.saveEntry', function(Event $event) {
-	 *     // ...
-	 * });
-	 * ```
-	 *
-	 * Note that the actual event name (`saveEntry`) does not need to include the “`on`”.
-	 *
-	 * By default, event handlers will not get attached if Craft is current in the middle of updating itself or a
-	 * plugin. If you want the event to fire even in that condition, pass `true` to the $evenDuringUpdates argument.
-	 *
-	 * @param string $event             The event to listen for.
-	 * @param mixed  $handler           The event handler.
-	 * @param bool   $evenDuringUpdates Whether the event handler should be attached when Craft’s updater is running.
-	 *                                  Default is `false`.
-	 *
-	 * @return null
-	 */
-	public function on($event, $handler, $evenDuringUpdates = false)
-	{
-		if (
-			!$evenDuringUpdates &&
-			$this->request->getActionSegments() == ['update', 'updateDatabase']
-		)
-		{
-			return;
-		}
-
-		list($componentId, $eventName) = explode('.', $event, 2);
-
-		$component = $this->getComponent($componentId, false);
-
-		// Normalize the event name
-		if (strncmp($eventName, 'on', 2) !== 0)
-		{
-			$eventName = 'on'.ucfirst($eventName);
-		}
-
-		if ($component)
-		{
-			$component->$eventName = $handler;
-		}
-		else
-		{
-			$this->_pendingEvents[$componentId][$eventName][] = $handler;
-		}
-	}
-
-	/**
 	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
 	 * do some special logic around creating the `Craft::$app->db` application component.
 	 *
@@ -593,25 +534,9 @@ class Application extends \yii\web\Application
 			}
 
 			$component = parent::getComponent($id, true);
-			$this->_attachEventListeners($id);
 		}
 
 		return $component;
-	}
-
-	/**
-	 * Override setComponent so we can attach any pending events.
-	 *
-	 * @param string $id
-	 * @param mixed  $component
-	 * @param bool   $merge
-	 *
-	 * @return null
-	 */
-	public function setComponent($id, $component, $merge = true)
-	{
-		parent::setComponent($id, $component, $merge);
-		$this->_attachEventListeners($id);
 	}
 
 	/**
@@ -654,32 +579,6 @@ class Application extends \yii\web\Application
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Attaches any pending event listeners to the newly-initialized component.
-	 *
-	 * @param string $componentId
-	 *
-	 * @return null
-	 */
-	private function _attachEventListeners($componentId)
-	{
-		if (isset($this->_pendingEvents[$componentId]))
-		{
-			$component = $this->getComponent($componentId, false);
-
-			if ($component)
-			{
-				foreach ($this->_pendingEvents[$componentId] as $eventName => $handlers)
-				{
-					foreach ($handlers as $handler)
-					{
-						$component->$eventName = $handler;
-					}
-				}
-			}
-		}
-	}
 
 	/**
 	 * Processes resource requests.
