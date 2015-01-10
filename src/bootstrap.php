@@ -27,6 +27,10 @@ defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BA
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
 defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
 
+// Log errors to craft/storage/runtime/logs/phperrors.log
+ini_set('log_errors', 1);
+ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
+
 function craft_createFolder($path)
 {
 	// Code borrowed from IOHelper...
@@ -130,6 +134,7 @@ if ($devMode)
 	error_reporting(E_ALL);
 	ini_set('display_errors', 1);
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
+	defined('YII_ENV') || define('YII_ENV', 'dev');
 	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 }
 else
@@ -137,39 +142,34 @@ else
 	error_reporting(0);
 	ini_set('display_errors', 0);
 	defined('YII_DEBUG') || define('YII_DEBUG', false);
+	defined('YII_ENV') || define('YII_ENV', 'prod');
 }
 
 
-// Load Yii, Composer dependencies, and the app
+// Load the Composer dependencies and the app
 // -----------------------------------------------------------------------------
-
-// Load Yii, if it's not already
-if (!class_exists('Yii', false))
-{
-	require CRAFT_APP_PATH.'framework/yii.php';
-}
 
 // Guzzle makes use of these PHP constants, but they aren't actually defined in some compilations of PHP
 // See: http://it.blog.adclick.pt/php/fixing-php-notice-use-of-undefined-constant-curlopt_timeout_ms-assumed-curlopt_timeout_ms/
 defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
-// Load up Composer's files
-require CRAFT_APP_PATH.'vendor/autoload.php';
-
-// Load 'em up
+// Load the files
+require CRAFT_APP_PATH.'vendor/autoload.php');
+require CRAFT_APP_PATH.'vendor/yiisoft/yii2/Yii.php');
 require CRAFT_APP_PATH.'Craft.php';
-require CRAFT_APP_PATH.'web/Application.php';
-require CRAFT_APP_PATH.'Info.php';
 
-// Set some aliases for Craft::import()
-Yii::setAlias('app', CRAFT_APP_PATH);
-Yii::setAlias('plugins', CRAFT_PLUGINS_PATH);
+// Set aliases
+Craft::setAlias('app', CRAFT_APP_PATH);
+Craft::setAlias('plugins', CRAFT_PLUGINS_PATH);
 
-// Load the full config
-$config = require CRAFT_APP_PATH.'etc/config/main.php';
+// Load the config
+$config = craft\app\helpers\ArrayHelper::merge(
+	require CRAFT_APP_PATH.'config/info.php',
+	require CRAFT_APP_PATH.'config/common.php',
+	require CRAFT_APP_PATH.'config/main.php',
+);
 
 // Initialize the application
 $app = new craft\app\web\Application($config);
-
 return $app;
