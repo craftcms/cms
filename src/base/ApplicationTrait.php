@@ -74,12 +74,6 @@ trait ApplicationTrait
 	 */
 	private $_gettingLanguage = false;
 
-
-	/**
-	 * @var string Craft’s version number.
-	 */
-	public $version;
-
 	/**
 	 * @var string Craft’s build number.
 	 */
