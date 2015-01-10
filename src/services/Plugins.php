@@ -29,6 +29,14 @@ use yii\base\Component;
  */
 class Plugins extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event an event that is triggered after a record is updated.
+     */
+    const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
+
 	// Properties
 	// =========================================================================
 
@@ -157,8 +165,8 @@ class Plugins extends Component
 
 			$this->_pluginsLoaded = true;
 
-			// Fire an 'onLoadPlugins' event
-			$this->onLoadPlugins(new Event($this));
+			// Fire an 'afterLoadPlugins' event
+			$this->trigger(static::EVENT_AFTER_LOAD_PLUGINS, new Event($this));
 		}
 	}
 
@@ -730,21 +738,6 @@ class Plugins extends Component
 		{
 			return false;
 		}
-	}
-
-	// Events
-	// =========================================================================
-
-	/**
-	 * Fires an 'onLoadPlugins' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onLoadPlugins(Event $event)
-	{
-		$this->raiseEvent('onLoadPlugins', $event);
 	}
 
 	// Private Methods

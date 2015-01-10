@@ -18,6 +18,7 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\services\Plugins;
 use craft\app\templating\StringTemplate;
 use craft\app\templating\twigextensions\CraftTwigExtension;
 use yii\base\Component;
@@ -1286,7 +1287,7 @@ class Templates extends Component
 		else
 		{
 			// Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-			Craft::$app->on('plugins.loadPlugins', [$this, 'onPluginsLoaded']);
+			Event::on(Plugins::className(), Plugins::EVENT_AFTER_LOAD_PLUGINS, [$this, 'onPluginsLoaded']);
 		}
 	}
 
