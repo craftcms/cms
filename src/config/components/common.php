@@ -44,7 +44,7 @@ return [
 	'users'                => 'craft\app\services\Users',
 
 	// Configured components
-	'components' = [
+	'components' => [
 		'class' => 'craft\app\services\Components',
 		'types' => [
 			'assetSource'   => ['subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType',    'enableForPlugins' => false],
@@ -76,7 +76,7 @@ return [
 				'showInFireBug' => true,
 			],
 		]
-	];
+	],
 	'plugins' => [
 		'class' => 'craft\app\services\Plugins',
 		'autoloadClasses' => ['Controller','Enum','Helper','Model','Record','Service','Variable','Validator'],
