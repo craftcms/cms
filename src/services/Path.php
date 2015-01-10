@@ -105,6 +105,17 @@ class Path extends Component
 	}
 
 	/**
+	 * Returns the path to the craft/app/vendor/ folder.
+	 *
+	 * @return string The path to the craft/app/vendor/ folder.
+	 */
+	public function getVendorPath()
+	{
+		$path = $this->getAppPath().'vendor/';
+		return $path;
+	}
+
+	/**
 	 * Returns the path to the craft/storage/runtime/temp/ folder.
 	 *
 	 * @return string The path to the craft/storage/runtime/temp/ folder.
@@ -225,16 +236,6 @@ class Path extends Component
 	}
 
 	/**
-	 * Returns the path to the craft/app/lib/ folder.
-	 *
-	 * @return string The path to the craft/app/lib/ folder.
-	 */
-	public function getLibPath()
-	{
-		return $this->getAppPath().'lib/';
-	}
-
-	/**
 	 * Returns the path to the craft/app/resources/ folder.
 	 *
 	 * @return string The path to the craft/app/resources/ folder.
@@ -242,16 +243,6 @@ class Path extends Component
 	public function getResourcesPath()
 	{
 		return $this->getAppPath().'resources/';
-	}
-
-	/**
-	 * Returns the path to the craft/app/framework/ folder.
-	 *
-	 * @return string The path to the craft/app/framework/ folder.
-	 */
-	public function getFrameworkPath()
-	{
-		return $this->getAppPath().'framework/';
 	}
 
 	/**
