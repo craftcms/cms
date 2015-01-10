@@ -27,10 +27,6 @@ defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BA
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
 defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
 
-// Log errors to craft/storage/runtime/logs/phperrors.log
-ini_set('log_errors', 1);
-ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
-
 function craft_createFolder($path)
 {
 	// Code borrowed from IOHelper...
@@ -92,6 +88,13 @@ craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH, true);
 craft_createFolder(CRAFT_STORAGE_PATH.'runtime/');
 craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/', true);
 
+// Create the craft/storage/runtime/logs/ folder if it doesn't already exist
+craft_createFolder(CRAFT_STORAGE_PATH.'runtime/logs/');
+craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/logs/', true);
+
+// Log errors to craft/storage/runtime/logs/phperrors.log
+ini_set('log_errors', 1);
+ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
 
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
