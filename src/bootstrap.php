@@ -155,8 +155,8 @@ defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155)
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-require CRAFT_APP_PATH.'vendor/autoload.php');
-require CRAFT_APP_PATH.'vendor/yiisoft/yii2/Yii.php');
+require CRAFT_APP_PATH.'vendor/autoload.php';
+require CRAFT_APP_PATH.'vendor/yiisoft/yii2/Yii.php';
 require CRAFT_APP_PATH.'Craft.php';
 
 // Set aliases
@@ -167,7 +167,7 @@ Craft::setAlias('plugins', CRAFT_PLUGINS_PATH);
 $config = craft\app\helpers\ArrayHelper::merge(
 	require CRAFT_APP_PATH.'config/info.php',
 	require CRAFT_APP_PATH.'config/common.php',
-	require CRAFT_APP_PATH.'config/main.php',
+	require CRAFT_APP_PATH.'config/main.php'
 );
 
 // Initialize the application
