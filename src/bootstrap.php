@@ -160,8 +160,8 @@ require CRAFT_APP_PATH.'vendor/yiisoft/yii2/Yii.php';
 require CRAFT_APP_PATH.'Craft.php';
 
 // Set aliases
-Craft::setAlias('app', CRAFT_APP_PATH);
-Craft::setAlias('plugins', CRAFT_PLUGINS_PATH);
+Craft::setAlias('@craft/app', CRAFT_APP_PATH);
+Craft::setAlias('@craft/plugins', CRAFT_PLUGINS_PATH);
 
 // Load the config
 $config = craft\app\helpers\ArrayHelper::merge(
@@ -172,4 +172,7 @@ $config = craft\app\helpers\ArrayHelper::merge(
 
 // Initialize the application
 $app = new craft\app\web\Application($config);
+
+Craft::dd($app);
+
 return $app;
