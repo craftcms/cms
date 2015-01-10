@@ -11,12 +11,13 @@ use Craft;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\events\Event;
+use craft\app\events\AssetEvent;
 use craft\app\fieldtypes\Assets;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\services\Assets;
 
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
@@ -183,12 +184,12 @@ class AssetsController extends BaseController
 				$this->returnErrorJson($e->getMessage());
 			}
 
-			// Fire an 'onBeforeReplaceFile' event
-			$event = new Event($this, [
+			// Fire a 'beforeReplaceFile' event
+			$event = new AssetEvent([
 				'asset' => $existingFile
 			]);
 
-			Craft::$app->assets->onBeforeReplaceFile($event);
+			Craft::$app->assets->trigger(Assets::EVENT_BEFORE_REPLACE_FILE, $event);
 
 			// Is the event preventing this from happening?
 			if (!$event->performAction)
@@ -239,8 +240,8 @@ class AssetsController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		// Fire an 'onReplaceFile' event
-		Craft::$app->assets->onReplaceFile(new Event($this, [
+		// Fire an 'afterReplaceFile' event
+		Craft::$app->assets->trigger(Assets::EVENT_AFTER_REPLACE_FILE, new AssetEvent([
 			'asset' => $existingFile
 		]));
 

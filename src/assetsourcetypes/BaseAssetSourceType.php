@@ -13,7 +13,7 @@ use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\enums\PeriodType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\AssetEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
@@ -23,6 +23,7 @@ use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 use craft\app\models\FolderCriteria as FolderCriteriaModel;
+use craft\app\services\Assets;
 
 /**
  * The base class for all asset source types.  Any asset source type must extend this class.
@@ -184,14 +185,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 */
 	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
 	{
-		// Fire an 'onBeforeUploadAsset' event
-		$event = new Event($this, [
+		// Fire a 'beforeUploadAsset' event
+		$event = new AssetEvent([
 			'path'     => $localFilePath,
 			'folder'   => $folder,
 			'filename' => $fileName
 		]);
 
-		Craft::$app->assets->onBeforeUploadAsset($event);
+		Craft::$app->assets->trigger(Assets::EVENT_BEFORE_UPLOAD_ASSET, $event);
 
 		if ($event->performAction)
 		{

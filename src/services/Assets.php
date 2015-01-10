@@ -14,7 +14,7 @@ use craft\app\db\DbCommand;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\AssetEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ImageHelper;
@@ -42,6 +42,44 @@ use yii\base\Component;
  */
 class Assets extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered before an asset is uploaded.
+     */
+    const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
+
+	/**
+     * @event Event The event that is triggered before an asset is saved.
+     */
+    const EVENT_BEFORE_SAVE_ASSET = 'beforeSaveAsset';
+
+	/**
+     * @event Event The event that is triggered after an asset is saved.
+     */
+    const EVENT_AFTER_SAVE_ASSET = 'afterSaveAsset';
+
+	/**
+     * @event Event The event that is triggered before an asset is deleted.
+     */
+    const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
+
+	/**
+     * @event Event The event that is triggered after an asset is deleted.
+     */
+    const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
+
+	/**
+     * @event Event The event that is triggered before an asset’s file is replaced.
+     */
+    const EVENT_BEFORE_REPLACE_FILE = 'beforeReplaceFile';
+
+	/**
+     * @event Event The event that is triggered after an asset’s file is replaced.
+     */
+    const EVENT_AFTER_REPLACE_FILE = 'afterReplaceFile';
+
 	// Properties
 	// =========================================================================
 
@@ -188,13 +226,12 @@ class Assets extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveAsset' event
-			$event = new Event($this, [
-				'asset'      => $file,
-				'isNewAsset' => $isNewFile
+			// Fire a 'beforeSaveAsset' event
+			$event = new AssetEvent([
+				'asset' => $file
 			]);
 
-			$this->onBeforeSaveAsset($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_ASSET, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -246,10 +283,9 @@ class Assets extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveAsset' event
-			$this->onSaveAsset(new Event($this, [
-				'asset'      => $file,
-				'isNewAsset' => $isNewFile
+			// Fire an 'afterSaveAsset' event
+			$this->trigger(static::EVENT_AFTER_SAVE_ASSET, new AssetEvent([
+				'asset' => $file
 			]));
 		}
 
@@ -791,8 +827,8 @@ class Assets extends Component
 				$file = $this->getFileById($fileId);
 				$source = Craft::$app->assetSources->getSourceTypeById($file->sourceId);
 
-				// Fire an 'onBeforeDeleteAsset' event
-				$this->onBeforeDeleteAsset(new Event($this, [
+				// Fire a 'beforeDeleteAsset' event
+				$this->trigger(static::EVENT_BEFORE_DELETE_ASSET, new AssetEvent([
 					'asset' => $file
 				]));
 
@@ -803,8 +839,8 @@ class Assets extends Component
 
 				Craft::$app->elements->deleteElementById($fileId);
 
-				// Fire an 'onDeleteAsset' event
-				$this->onDeleteAsset(new Event($this, [
+				// Fire an 'afterDeleteAsset' event
+				$this->trigger(static::EVENT_AFTER_DELETE_ASSET, new AssetEvent([
 					'asset' => $file
 				]));
 			}
@@ -1083,93 +1119,6 @@ class Assets extends Component
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
 		}
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeUploadAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeUploadAsset(Event $event)
-	{
-		$this->raiseEvent('onBeforeUploadAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSaveAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveAsset(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveAsset(Event $event)
-	{
-		$this->raiseEvent('onSaveAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeReplaceFile' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeReplaceFile(Event $event)
-	{
-		$this->raiseEvent('onBeforeReplaceFile', $event);
-	}
-
-	/**
-	 * Fires an 'onReplaceFile' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onReplaceFile(Event $event)
-	{
-		$this->raiseEvent('onReplaceFile', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteAsset(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteAsset(Event $event)
-	{
-		$this->raiseEvent('onDeleteAsset', $event);
 	}
 
 	// Private Methods
