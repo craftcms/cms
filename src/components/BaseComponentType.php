@@ -7,7 +7,7 @@
 
 namespace craft\app\components;
 
-use yii\base\Object;
+use yii\base\Component;
 
 /**
  * Base component base class.
@@ -15,7 +15,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseComponentType extends Object implements ComponentTypeInterface
+abstract class BaseComponentType extends Component implements ComponentTypeInterface
 {
 	// Properties
 	// =========================================================================
