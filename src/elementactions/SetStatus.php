@@ -9,7 +9,7 @@ namespace craft\app\elementactions;
 
 use Craft;
 use craft\app\enums\AttributeType;
-use craft\app\events\Event;
+use craft\app\events\SetStatusEvent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
@@ -21,6 +21,14 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  */
 class SetStatus extends BaseElementAction
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered after the statuses have been updated.
+     */
+    const EVENT_AFTER_SET_STATUS = 'afterSetStatus';
+
 	// Public Methods
 	// =========================================================================
 
@@ -78,8 +86,8 @@ class SetStatus extends BaseElementAction
 		// Clear their template caches
 		Craft::$app->templateCache->deleteCacheById($elementIds);
 
-		// Fire an 'onSetStatus' event
-		$this->onSetStatus(new Event($this, [
+		// Fire an 'afterSetStatus' event
+		$this->trigger(static::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
 			'criteria'   => $criteria,
 			'elementIds' => $elementIds,
 			'status'     => $status,
@@ -88,21 +96,6 @@ class SetStatus extends BaseElementAction
 		$this->setMessage(Craft::t('Statuses updated.'));
 
 		return true;
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onSetStatus' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSetStatus(Event $event)
-	{
-		$this->raiseEvent('onSetStatus', $event);
 	}
 
 	// Protected Methods

@@ -9,9 +9,10 @@ namespace craft\app\elementtypes;
 
 use Craft;
 use craft\app\db\DbCommand;
+use craft\app\elementactions\SetStatus;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
-use craft\app\events\Event;
+use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
@@ -253,15 +254,15 @@ class Entry extends BaseElementType
 		if ($canSetStatus)
 		{
 			$setStatusAction = Craft::$app->elements->getAction('SetStatus');
-			$setStatusAction->onSetStatus = function(Event $event)
+			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
 			{
-				if ($event->params['status'] == BaseElementModel::ENABLED)
+				if ($event->status == BaseElementModel::ENABLED)
 				{
 					// Set a Post Date as well
 					Craft::$app->db->createCommand()->update(
 						'entries',
 						['postDate' => DateTimeHelper::currentTimeForDb()],
-						['and', ['in', 'id', $event->params['elementIds']], 'postDate is null']
+						['and', ['in', 'id', $event->elementIds], 'postDate is null']
 					);
 				}
 			};
