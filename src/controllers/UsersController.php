@@ -14,12 +14,13 @@ use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\events\Event;
+use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\User as UserModel;
+use craft\app\services\Users;
 use craft\app\web\UploadedFile;
 
 /**
@@ -1663,8 +1664,8 @@ class UsersController extends BaseController
 
 		if ($userToProcess)
 		{
-			// Fire an 'onBeforeVerifyUser' event
-			Craft::$app->users->onBeforeVerifyUser(new Event($this, [
+			// Fire a 'beforeVerifyUser' event
+			Craft::$app->users->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL, new UserEvent([
 				'user' => $userToProcess
 			]));
 
@@ -1676,8 +1677,8 @@ class UsersController extends BaseController
 			$this->_processInvalidToken($userToProcess);
 		}
 
-		// Fire an 'onVerifyUser' event
-		Craft::$app->users->onVerifyUser(new Event($this, [
+		// Fire an 'afterVerifyUser' event
+		Craft::$app->users->trigger(Users::EVENT_AFTER_VERIFY_EMAIL, new UserEvent([
 			'user' => $userToProcess
 		]));
 

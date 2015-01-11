@@ -14,7 +14,7 @@ use craft\app\enums\ElementType;
 use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
@@ -37,6 +37,89 @@ use yii\base\Component;
  */
 class Users extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered before a user is saved.
+     */
+    const EVENT_BEFORE_SAVE_USER = 'beforeSaveUser';
+
+	/**
+     * @event Event The event that is triggered after a user is saved.
+     */
+    const EVENT_AFTER_SAVE_USER = 'afterSaveUser';
+
+	/**
+     * @event Event The event that is triggered before a user's email is verified.
+     */
+    const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
+
+	/**
+     * @event Event The event that is triggered after a user's email is verified.
+     */
+    const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
+
+	/**
+     * @event Event The event that is triggered before a user is activated.
+     */
+    const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
+
+	/**
+     * @event Event The event that is triggered after a user is activated.
+     */
+    const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+
+	/**
+     * @event Event The event that is triggered before a user is unlocked.
+     */
+    const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
+
+	/**
+     * @event Event The event that is triggered after a user is unlocked.
+     */
+    const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
+
+	/**
+     * @event Event The event that is triggered before a user is suspended.
+     */
+    const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
+
+	/**
+     * @event Event The event that is triggered after a user is suspended.
+     */
+    const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
+
+	/**
+     * @event Event The event that is triggered before a user is unsuspended.
+     */
+    const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
+
+	/**
+     * @event Event The event that is triggered after a user is unsuspended.
+     */
+    const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
+
+	/**
+     * @event Event The event that is triggered before a user is deleted.
+     */
+    const EVENT_BEFORE_DELETE_USER = 'beforeDeleteUser';
+
+	/**
+     * @event Event The event that is triggered after a user is deleted.
+     */
+    const EVENT_AFTER_DELETE_USER = 'afterDeleteUser';
+
+	/**
+     * @event Event The event that is triggered before a user's password is set.
+     */
+    const EVENT_BEFORE_SET_PASSWORD = 'beforeSetPassword';
+
+	/**
+     * @event Event The event that is triggered after a user's password is set.
+     */
+    const EVENT_AFTER_SET_PASSWORD = 'afterSetPassword';
+
 	// Properties
 	// =========================================================================
 
@@ -328,13 +411,12 @@ class Users extends Component
 				$user->pending = true;
 			}
 
-			// Fire an 'onBeforeSaveUser' event
-			$event = new Event($this, [
-				'user'      => $user,
-				'isNewUser' => $isNewUser
+			// Fire a 'beforeSaveUser' event
+			$event = new UserEvent([
+				'user' => $user
 			]);
 
-			$this->onBeforeSaveUser($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -406,10 +488,9 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveUser' event
-			$this->onSaveUser(new Event($this, [
-				'user'      => $user,
-				'isNewUser' => $isNewUser
+			// Fire an 'afterSaveUser' event
+			$this->trigger(static::EVENT_AFTER_SAVE_USER, new AssetEvent([
+				'user' => $user
 			]));
 		}
 
@@ -699,12 +780,12 @@ class Users extends Component
 
 		try
 		{
-			// Fire an 'onBeforeActivateUser' event
-			$event = new Event($this, [
+			// Fire a 'beforeActivateUser' event
+			$event = new UserEvent([
 				'user' => $user,
 			]);
 
-			$this->onBeforeActivateUser($event);
+			$this->trigger(static::EVENT_BEFORE_ACTIVATE_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -746,8 +827,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onActivateUser' event
-			$this->onActivateUser(new Event($this, [
+			// Fire an 'afterActivateUser' event
+			$this->trigger(static::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
 				'user' => $user
 			]));
 		}
@@ -801,12 +882,12 @@ class Users extends Component
 
 		try
 		{
-			// Fire an 'onBeforeUnlockUser' event
-			$event = new Event($this, [
-				'user'      => $user,
+			// Fire a 'beforeUnlockUser' event
+			$event = new UserEvent([
+				'user' => $user,
 			]);
 
-			$this->onBeforeUnlockUser($event);
+			$this->trigger(static::EVENT_BEFORE_UNLOCK_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -846,8 +927,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onUnlockUser' event
-			$this->onUnlockUser(new Event($this, [
+			// Fire an 'afterUnlockUser' event
+			$this->trigger(event::EVENT_AFTER_UNLOCK_USER, new UserEvent([
 				'user' => $user
 			]));
 		}
@@ -870,12 +951,12 @@ class Users extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSuspendUser' event
-			$event = new Event($this, [
-				'user'      => $user,
+			// Fire a 'beforeSuspendUser' event
+			$event = new UserEvent([
+				'user' => $user,
 			]);
 
-			$this->onBeforeSuspendUser($event);
+			$this->trigger(static::EVENT_BEFORE_SUSPEND_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -912,8 +993,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSuspendUser' event
-			$this->onSuspendUser(new Event($this, [
+			// Fire an 'afterSuspendUser' event
+			$this->trigger(static::EVENT_AFTER_SUSPEND_USER, new UserEvent([
 				'user' => $user
 			]));
 		}
@@ -936,12 +1017,12 @@ class Users extends Component
 
 		try
 		{
-			// Fire an 'onBeforeUnsuspendUser' event
-			$event = new Event($this, [
-				'user'      => $user,
+			// Fire a 'beforeUnsuspendUser' event
+			$event = new UserEvent([
+				'user' => $user,
 			]);
 
-			$this->onBeforeUnsuspendUser($event);
+			$this->trigger(static::EVENT_BEFORE_UNSUSPEND_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -978,8 +1059,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onUnsuspendUser' event
-			$this->onUnsuspendUser(new Event($this, [
+			// Fire an 'afterUnsuspendUser' event
+			$this->trigger(static::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
 				'user' => $user
 			]));
 		}
@@ -1007,13 +1088,13 @@ class Users extends Component
 
 		try
 		{
-			// Fire an 'onBeforeDeleteUser' event
-			$event = new Event($this, [
+			// Fire a 'beforeDeleteUser' event
+			$event = new DeleteUserEvent([
 				'user'              => $user,
 				'transferContentTo' => $transferContentTo
 			]);
 
-			$this->onBeforeDeleteUser($event);
+			$this->trigger(static::EVENT_BEFORE_DELETE_USER, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -1091,8 +1172,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onDeleteUser' event
-			$this->onDeleteUser(new Event($this, [
+			// Fire an 'afterDeleteUser' event
+			$this->trigger(static::EVENT_AFTER_DELETE_USER, new DeleteUserEvent([
 				'user'              => $user,
 				'transferContentTo' => $transferContentTo
 			]));
@@ -1225,201 +1306,6 @@ class Users extends Component
 		}
 	}
 
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeSaveUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveUser', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveUser(Event $event)
-	{
-		$this->raiseEvent('onSaveUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeVerifyUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeVerifyUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeVerifyUser', $event);
-	}
-
-	/**
-	 * Fires an 'onVerifyUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onVerifyUser(Event $event)
-	{
-		$this->raiseEvent('onVerifyUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeActivateUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeActivateUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeActivateUser', $event);
-	}
-
-	/**
-	 * Fires an 'onActivateUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onActivateUser(Event $event)
-	{
-		$this->raiseEvent('onActivateUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeUnlockUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeUnlockUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeUnlockUser', $event);
-	}
-
-	/**
-	 * Fires an 'onUnlockUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onUnlockUser(Event $event)
-	{
-		$this->raiseEvent('onUnlockUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSuspendUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSuspendUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeSuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onSuspendUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSuspendUser(Event $event)
-	{
-		$this->raiseEvent('onSuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeUnsuspendUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeUnsuspendUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeUnsuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onUnsuspendUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onUnsuspendUser(Event $event)
-	{
-		$this->raiseEvent('onUnsuspendUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteUser(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteUser', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteUser' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteUser(Event $event)
-	{
-		$this->raiseEvent('onDeleteUser', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSetPassword' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSetPassword(Event $event)
-	{
-		$this->raiseEvent('onBeforeSetPassword', $event);
-	}
-
-	/**
-	 * Fires an 'onSetPassword' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSetPassword(Event $event)
-	{
-		$this->raiseEvent('onSetPassword', $event);
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -1535,13 +1421,12 @@ class Users extends Component
 
 			if ($validates)
 			{
-				// Fire an 'onBeforeSetPassword' event
-				$event = new Event($this, [
-					'password' => $user->newPassword,
-					'user'     => $user
+				// Fire a 'beforeSetPassword' event
+				$event = new UserEvent([
+					'user' => $user
 				]);
 
-				$this->onBeforeSetPassword($event);
+				$this->trigger(static::EVENT_BEFORE_SET_PASSWORD, $event);
 
 				// Is the event is giving us the go-ahead?
 				$validates = $event->performAction;
@@ -1581,8 +1466,8 @@ class Users extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSetPassword' event
-			$this->onSetPassword(new Event($this, [
+			// Fire an 'afterSetPassword' event
+			$this->trigger(static::EVENT_AFTER_SET_PASSWORD, new UserEvent([
 				'user' => $user
 			]));
 
