@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\TagEvent;
 use craft\app\models\Tag as TagModel;
 use craft\app\models\TagGroup as TagGroupModel;
 use craft\app\records\Tag as TagRecord;
@@ -27,6 +27,21 @@ use yii\base\Component;
  */
 class Tags extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event TagEvent The event that is triggered before a tag is saved.
+     *
+     * You may set [[TagEvent::performAction]] to `false` to prevent the tag from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_TAG = 'beforeSaveTag';
+
+	/**
+     * @event TagEvent The event that is triggered after a tag is saved.
+     */
+    const EVENT_AFTER_SAVE_TAG = 'afterSaveTag';
+
 	// Properties
 	// =========================================================================
 
@@ -373,13 +388,12 @@ class Tags extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveTag' event
-			$event = new Event($this, [
-				'tag'      => $tag,
-				'isNewTag' => $isNewTag
+			// Fire a 'beforeSaveTag' event
+			$event = new TagEvent([
+				'tag' => $tag
 			]);
 
-			$this->onBeforeSaveTag($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_TAG, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -429,40 +443,12 @@ class Tags extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveTag' event
-			$this->onSaveTag(new Event($this, [
-				'tag'      => $tag,
-				'isNewTag' => $isNewTag
+			// Fire an 'afterSaveTag' event
+			$this->trigger(static::EVENT_AFTER_SAVE_TAG, new TagEvent([
+				'tag' => $tag
 			]));
 		}
 
 		return $success;
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeSaveTag' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveTag(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveTag', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveTag' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveTag(Event $event)
-	{
-		$this->raiseEvent('onSaveTag', $event);
 	}
 }
