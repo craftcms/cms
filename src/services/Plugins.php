@@ -33,7 +33,7 @@ class Plugins extends Component
 	// =========================================================================
 
 	/**
-     * @event Event an event that is triggered after a record is updated.
+     * @event Event The event that is triggered after all plugins have been loaded.
      */
     const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
 
