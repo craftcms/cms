@@ -446,16 +446,6 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns whether we are executing in the context on a console app.
-	 *
-	 * @return bool
-	 */
-	public function isConsole()
-	{
-		return false;
-	}
-
-	/**
 	 * Returns the [[\craft\app\web\Session]] (Craft::$app->getSession()).
 	 *
 	 * @return \craft\app\web\Session

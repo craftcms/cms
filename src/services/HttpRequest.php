@@ -123,7 +123,7 @@ class HttpRequest extends \CHttpRequest
 		parent::init();
 
 		// There is no path.
-		if (Craft::$app->isConsole())
+		if ($this->getIsConsoleRequest())
 		{
 			$path = '';
 		}

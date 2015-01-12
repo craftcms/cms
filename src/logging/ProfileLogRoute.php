@@ -30,7 +30,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 	protected function render($view, $data)
 	{
 		if (
-			!Craft::$app->isConsole() &&
+			!Craft::$app->getRequest()->getIsConsoleRequest() &&
 			!Craft::$app->request->isResourceRequest() &&
 			!Craft::$app->request->isAjaxRequest() &&
 			Craft::$app->config->get('devMode') &&

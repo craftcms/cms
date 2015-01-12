@@ -138,7 +138,7 @@ trait ApplicationTrait
 				return false;
 			}
 
-			$this->_isInstalled = (Craft::$app->isConsole() || Craft::$app->db->tableExists('info', false));
+			$this->_isInstalled = ($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('info', false));
 		}
 
 		return $this->_isInstalled;

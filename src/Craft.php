@@ -200,7 +200,7 @@ class Craft extends Yii
 			}
 		}
 
-		if (Craft::$app->isConsole())
+		if (Craft::$app->getRequest()->getIsConsoleRequest())
 		{
 			echo $msg."\n";
 		}

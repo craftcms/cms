@@ -116,7 +116,7 @@ class Install extends Component
 		$this->_addLocale($inputs['locale']);
 		$this->_addUser($inputs);
 
-		if (!Craft::$app->isConsole())
+		if (!Craft::$app->getRequest()->getIsConsoleRequest())
 		{
 			$this->_logUserIn($inputs);
 		}

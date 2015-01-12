@@ -102,16 +102,6 @@ class Application extends \yii\console\Application
 	}
 
 	/**
-	 * Returns whether we are executing in the context on a console app.
-	 *
-	 * @return bool
-	 */
-	public function isConsole()
-	{
-		return true;
-	}
-
-	/**
 	 * Override get() so we can do some special logic around creating the `Craft::$app->db` application component.
 	 *
 	 * @param string $id
