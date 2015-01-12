@@ -65,7 +65,6 @@ Yii::setAlias('plugins', CRAFT_PLUGINS_PATH);
 
 // Load the config
 $config = ArrayHelper::merge(
-	require CRAFT_APP_PATH.'config/info.php',
 	require CRAFT_APP_PATH.'config/common.php',
 	require CRAFT_APP_PATH.'config/main.php',
 	require CRAFT_APP_PATH.'config/console.php'
