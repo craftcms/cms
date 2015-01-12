@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\ElementEvent;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\models\BaseElementModel;
@@ -27,6 +27,14 @@ use yii\base\Component;
  */
 class Content extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered after an element's content is saved.
+     */
+    const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
+
 	// Properties
 	// =========================================================================
 
@@ -232,18 +240,6 @@ class Content extends Component
 		return $content->validate($attributesToValidate);
 	}
 
-	/**
-	 * Fires an 'onSaveContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveContent(Event $event)
-	{
-		$this->raiseEvent('onSaveContent', $event);
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -309,10 +305,9 @@ class Content extends Component
 				$content->id = Craft::$app->db->getLastInsertID();
 			}
 
-			// Fire an 'onSaveContent' event
-			$this->onSaveContent(new Event($this, [
-				'content'      => $content,
-				'isNewContent' => $isNewContent
+			// Fire an 'afterSaveContent' event
+			$this->trigger(static::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
+				'content' => $content
 			]));
 
 			return true;
