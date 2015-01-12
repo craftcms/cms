@@ -10,7 +10,8 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\DraftEvent;
+use craft\app\events\EntryEvent;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Entry as EntryModel;
 use craft\app\models\EntryDraft as EntryDraftModel;
@@ -31,6 +32,34 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class EntryRevisions extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered after a draft is saved.
+     */
+    const EVENT_AFTER_SAVE_DRAFT = 'afterSaveDraft';
+
+	/**
+     * @event Event The event that is triggered after a draft is published.
+     */
+    const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
+
+	/**
+     * @event Event The event that is triggered before a draft is deleted.
+     */
+    const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
+
+	/**
+     * @event Event The event that is triggered after a draft is deleted.
+     */
+    const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
+
+	/**
+     * @event Event The event that is triggered after an entry is reverted to an old version.
+     */
+    const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
+
 	// Public Methods
 	// =========================================================================
 
@@ -164,10 +193,9 @@ class EntryRevisions extends Component
 		{
 			$draft->draftId = $draftRecord->id;
 
-			// Fire an 'onSaveDraft' event
-			$this->onSaveDraft(new Event($this, [
-				'draft'      => $draft,
-				'isNewDraft' => $isNewDraft
+			// Fire an 'afterSaveDraft' event
+			$this->trigger(static::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+				'draft' => $draft
 			]));
 
 			return true;
@@ -201,9 +229,9 @@ class EntryRevisions extends Component
 
 		if (Craft::$app->entries->saveEntry($draft))
 		{
-			// Fire an 'onPublishDraft' event
-			$this->onPublishDraft(new Event($this, [
-				'draft'      => $draft,
+			// Fire an 'afterPublishDraft' event
+			$this->trigger(static::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+				'draft' => $draft
 			]));
 
 			$this->deleteDraft($draft);
@@ -225,12 +253,12 @@ class EntryRevisions extends Component
 
 		try
 		{
-			// Fire an 'onBeforeDeleteDraft' event
-			$event = new Event($this, [
-				'draft' => $draft,
+			// Fire a 'beforeDeleteDraft' event
+			$event = new DraftEvent([
+				'draft' => $draft
 			]);
 
-			$this->onBeforeDeleteDraft($event);
+			$this->trigger(static::EVENT_BEFORE_DELETE_DRAFT, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -264,9 +292,9 @@ class EntryRevisions extends Component
 
 		if ($success)
 		{
-			// Fire an 'onDeleteDraft' event
-			$this->onDeleteDraft(new Event($this, [
-				'draft' => $draft,
+			// Fire an 'afterDeleteDraft' event
+			$this->trigger(static::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+				'draft' => $draft
 			]));
 		}
 
@@ -380,9 +408,9 @@ class EntryRevisions extends Component
 
 		if (Craft::$app->entries->saveEntry($version))
 		{
-			// Fire an 'onRevertEntryToVersion' event
-			$this->onRevertEntryToVersion(new Event($this, [
-				'version' => $version,
+			// Fire an 'afterRevertEntryToVersion' event
+			$this->trigger(static::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
+				'entry' => $version,
 			]));
 
 			return true;
@@ -391,66 +419,6 @@ class EntryRevisions extends Component
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * Fires an 'onSaveDraft' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveDraft(Event $event)
-	{
-		$this->raiseEvent('onSaveDraft', $event);
-	}
-
-	/**
-	 * Fires an 'onPublishDraft' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onPublishDraft(Event $event)
-	{
-		$this->raiseEvent('onPublishDraft', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteDraft' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteDraft(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteDraft', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteDraft' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteDraft(Event $event)
-	{
-		$this->raiseEvent('onDeleteDraft', $event);
-	}
-
-	/**
-	 * Fires an 'onRevertEntryToVersion' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onRevertEntryToVersion(Event $event)
-	{
-		$this->raiseEvent('onRevertEntryToVersion', $event);
 	}
 
 	// Private Methods
