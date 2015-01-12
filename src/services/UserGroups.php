@@ -27,6 +27,19 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroups extends Component
 {
+	/**
+     * @event UserEvent The event that is triggered before a user is assigned to the default user group.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting assigned to the default
+     * user group.
+     */
+    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
+
+	/**
+     * @event UserEvent The event that is triggered after a user is assigned to the default user group.
+     */
+    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+
 	// Public Methods
 	// =========================================================================
 
@@ -176,13 +189,12 @@ class UserGroups extends Component
 
 		if ($defaultGroupId)
 		{
-			// Fire an 'onBeforeAssignUserToDefaultGroup' event
-			$event = new Event($this, [
-				'user'           => $user,
-				'defaultGroupId' => $defaultGroupId
+			// Fire a 'beforeAssignUserToDefaultGroup' event
+			$event = new UserEvent([
+				'user' => $user
 			]);
 
-			$this->onBeforeAssignUserToDefaultGroup($event);
+			$this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -191,10 +203,9 @@ class UserGroups extends Component
 
 				if ($success)
 				{
-					// Fire an 'onAssignUserToDefaultGroup' event
-					$this->onAssignUserToDefaultGroup(new Event($this, [
-						'user'           => $user,
-						'defaultGroupId' => $defaultGroupId
+					// Fire an 'afterAssignUserToDefaultGroup' event
+					$this->trigger(static::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP, new UserEvent([
+						'user' => $user
 					]));
 
 					return true;
@@ -216,33 +227,6 @@ class UserGroups extends Component
 	{
 		Craft::$app->db->createCommand()->delete('usergroups', ['id' => $groupId]);
 		return true;
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeAssignUserToDefaultGroup' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeAssignUserToDefaultGroup(Event $event)
-	{
-		$this->raiseEvent('onBeforeAssignUserToDefaultGroup', $event);
-	}
-
-	/**
-	 * Fires an 'onAssignUserToDefaultGroup' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onAssignUserToDefaultGroup(Event $event)
-	{
-		$this->raiseEvent('onAssignUserToDefaultGroup', $event);
 	}
 
 	// Private Methods
