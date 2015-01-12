@@ -11,7 +11,7 @@ use Craft;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\Entry as EntryModel;
 use craft\app\records\Entry as EntryRecord;
@@ -27,6 +27,29 @@ use yii\base\Component;
  */
 class Entries extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered before an entry is saved.
+     */
+    const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
+
+	/**
+     * @event Event The event that is triggered after an entry is saved.
+     */
+    const EVENT_AFTER_SAVE_ENTRY = 'afterSaveEntry';
+
+	/**
+     * @event Event The event that is triggered before an entry is deleted.
+     */
+    const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
+
+	/**
+     * @event Event The event that is triggered after an entry is deleted.
+     */
+    const EVENT_AFTER_DELETE_ENTRY = 'afterDeleteEntry';
+
 	// Public Methods
 	// =========================================================================
 
@@ -175,13 +198,12 @@ class Entries extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveEntry' event
-			$event = new Event($this, [
-				'entry'      => $entry,
-				'isNewEntry' => $isNewEntry
+			// Fire a 'beforeSaveEntry' event
+			$event = new EntryEvent([
+				'entry' => $entry
 			]);
 
-			$this->onBeforeSaveEntry($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_ENTRY, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -277,10 +299,9 @@ class Entries extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveEntry' event
-			$this->onSaveEntry(new Event($this, [
-				'entry'      => $entry,
-				'isNewEntry' => $isNewEntry
+			// Fire an 'afterSaveEntry' event
+			$this->trigger(static::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
+				'entry' => $entry
 			]));
 		}
 
@@ -315,8 +336,8 @@ class Entries extends Component
 
 			foreach ($entries as $entry)
 			{
-				// Fire an 'onBeforeDeleteEntry' event
-				$this->onBeforeDeleteEntry(new Event($this, [
+				// Fire a 'beforeDeleteEntry' event
+				$this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, new EntryEvent([
 					'entry' => $entry
 				]));
 
@@ -358,8 +379,8 @@ class Entries extends Component
 		{
 			foreach ($entries as $entry)
 			{
-				// Fire an 'onDeleteEntry' event
-				$this->onDeleteEntry(new Event($this, [
+				// Fire an 'afterDeleteEntry' event
+				$this->trigger(static::EVENT_AFTER_DELETE_ENTRY, new EntryEvent([
 					'entry' => $entry
 				]));
 			}
@@ -401,57 +422,6 @@ class Entries extends Component
 		{
 			return false;
 		}
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeSaveEntry' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveEntry(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveEntry', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveEntry' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveEntry(Event $event)
-	{
-		$this->raiseEvent('onSaveEntry', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteEntry' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteEntry(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteEntry', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteEntry' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteEntry(Event $event)
-	{
-		$this->raiseEvent('onDeleteEntry', $event);
 	}
 
 	// Private Methods
