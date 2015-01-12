@@ -497,7 +497,7 @@ class Updater
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{
-		$requirementsFolderPath = $unzipFolder.'/app/etc/requirements/';
+		$requirementsFolderPath = $unzipFolder.'/app/requirements/';
 		$requirementsFile = $requirementsFolderPath.'Requirements.php';
 		$errors = [];
 
@@ -507,9 +507,9 @@ class Updater
 		}
 
 		// Make sure we can write to craft/app/requirements
-		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'etc/requirements/'))
+		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'requirements/'))
 		{
-			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/etc/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
+			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
 		}
 
 		$tempFileName = StringHelper::UUID().'.php';
@@ -517,7 +517,7 @@ class Updater
 		// Make a dupe of the requirements file and give it a random file name.
 		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.$tempFileName);
 
-		$newTempFilePath = Craft::$app->path->getAppPath().'etc/requirements/'.$tempFileName;
+		$newTempFilePath = Craft::$app->path->getAppPath().'requirements/'.$tempFileName;
 
 		// Copy the random file name requirements to the requirements folder.
 		// We don't want to execute any PHP from the storage folder.

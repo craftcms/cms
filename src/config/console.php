@@ -1,6 +1,6 @@
 <?php
 
-$common = require(CRAFT_APP_PATH.'etc/config/common.php');
+$common = require(CRAFT_APP_PATH.'config/common.php');
 
 return \craft\app\helpers\ArrayHelper::merge($common, [
 

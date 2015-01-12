@@ -41,7 +41,7 @@ class Plugins extends Component
 	// =========================================================================
 
 	/**
-	 * The type of components plugins can have. Defined in app/etc/config/common.php.
+	 * The type of components plugins can have.
 	 *
 	 * @var array
 	 */

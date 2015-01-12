@@ -62,7 +62,7 @@ class Config extends Component
 	 * only values from config arrays that match the current request’s environment will be checked and returned.
 	 *
 	 * By default, `get()` will check craft/config/general.php, and fall back on the default values specified in
-	 * craft/app/etc/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
+	 * craft/app/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * ```php
@@ -187,7 +187,7 @@ class Config extends Component
 	 * only values from config arrays that match the current request’s environment will be checked.
 	 *
 	 * By default, `exists()` will check craft/config/general.php, and fall back on the default values specified in
-	 * craft/app/etc/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
+	 * craft/app/config/defaults/general.php. See [Craft’s documentation](http://buildwithcraft.com/docs/config-settings)
 	 * for a full list of config settings that Craft will check for within that file.
 	 *
 	 * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
@@ -708,7 +708,7 @@ class Config extends Component
 		// Is this a valid Craft config file?
 		if (ConfigFile::isValidName($name))
 		{
-			$defaultsPath = CRAFT_APP_PATH.'etc/config/defaults/'.$name.'.php';
+			$defaultsPath = CRAFT_APP_PATH.'config/defaults/'.$name.'.php';
 		}
 		else
 		{
