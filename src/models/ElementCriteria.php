@@ -466,11 +466,9 @@ class ElementCriteria extends BaseModel implements \Countable
 	 */
 	private function _includeInTemplateCaches()
 	{
-		$cacheService = Craft::$app->getComponent('templateCache', false);
-
-		if ($cacheService)
+		if (Craft::$app->has('cache', true))
 		{
-			$cacheService->includeCriteriaInTemplateCaches($this);
+			Craft::$app->cache->includeCriteriaInTemplateCaches($this);
 		}
 	}
 }

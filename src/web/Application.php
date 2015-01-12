@@ -99,11 +99,6 @@ class Application extends \yii\web\Application
 	 */
 	public $componentAliases;
 
-	/**
-	 * @var
-	 */
-	private $_editionComponents;
-
 	// Public Methods
 	// =========================================================================
 
@@ -117,20 +112,14 @@ class Application extends \yii\web\Application
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
-		// Import all the built-in components
-		foreach ($this->componentAliases as $alias)
-		{
-			Craft::import($alias);
-		}
-
 		// Initialize the Cache service, HttpRequest service and LogRouter right away (order is important)
-		$this->getComponent('cache');
-		$this->getComponent('request');
+		$this->get('cache');
+		$this->get('request');
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
-		$this->getComponent('log');
+		$this->get('log');
 
 		// So we can try to translate Yii framework strings
 		$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
@@ -480,7 +469,7 @@ class Application extends \yii\web\Application
 	 */
 	public function getSession()
 	{
-		return $this->getComponent('httpSession');
+		return $this->get('session');
 	}
 
 	/**
@@ -490,53 +479,26 @@ class Application extends \yii\web\Application
 	 */
 	public function getUser()
 	{
-		return $this->getComponent('userSession');
+		return $this->get('user');
 	}
 
 	/**
-	 * Sets the application components.
-	 *
-	 * @param      $components
-	 * @param bool $merge
-	 *
-	 * @return null
-	 */
-	public function setComponents($components, $merge = true)
-	{
-		if (isset($components['editionComponents']))
-		{
-			$this->_editionComponents = $components['editionComponents'];
-			unset($components['editionComponents']);
-		}
-
-		parent::setComponents($components, $merge);
-	}
-
-	/**
-	 * Override getComponent() so we can attach any pending events if the component is getting initialized as well as
-	 * do some special logic around creating the `Craft::$app->db` application component.
+	 * Override get() so we can do some special logic around creating the `Craft::$app->db` application component.
 	 *
 	 * @param string $id
-	 * @param bool   $createIfNull
-	 *
-	 * @return mixed
+	 * @param boolean $throwException
+	 * @return object|null
 	 */
-	public function getComponent($id, $createIfNull = true)
+	public function get($id, $throwException = true)
 	{
-		$component = parent::getComponent($id, false);
-
-		if (!$component && $createIfNull)
+		// Are they requesting the DbConnection, and is this the first time it has been requested?
+		if ($id === 'db' && !$this->has($id, true))
 		{
-			if ($id === 'db')
-			{
-				$dbConnection = $this->_createDbConnection();
-				$this->setComponent('db', $dbConnection);
-			}
-
-			$component = parent::getComponent($id, true);
+			$dbConnection = $this->_createDbConnection();
+			$this->set('db', $dbConnection);
 		}
 
-		return $component;
+		return parent::get($id, $throwException);
 	}
 
 	/**
@@ -598,28 +560,6 @@ class Application extends \yii\web\Application
 			$path = implode('/', $segs);
 
 			$this->resources->sendResource($path);
-		}
-	}
-
-	/**
-	 * Sets the edition components.
-	 *
-	 * @return null
-	 */
-	private function _setEditionComponents()
-	{
-		// Set the appropriate edition components
-		if (isset($this->_editionComponents))
-		{
-			foreach ($this->_editionComponents as $edition => $editionComponents)
-			{
-				if ($this->getEdition() >= $edition)
-				{
-					$this->setComponents($editionComponents);
-				}
-			}
-
-			unset($this->_editionComponents);
 		}
 	}
 

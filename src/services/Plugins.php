@@ -845,7 +845,7 @@ class Plugins extends Component
 			$serviceName = implode('_', $parts);
 			$serviceName = mb_substr($serviceName, 0, - mb_strlen('Service'));
 
-			if (!Craft::$app->getComponent($serviceName, false))
+			if (!Craft::$app->has($serviceName))
 			{
 				// Register the component with the handle as (className or className_*) minus the "Service" suffix
 				$nsClass = __NAMESPACE__.'\\'.$class;

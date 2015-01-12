@@ -120,7 +120,7 @@ trait ApplicationTrait
 			try
 			{
 				// First check to see if DbConnection has even been initialized, yet.
-				if (Craft::$app->getComponent('db'))
+				if (Craft::$app->has('db', true))
 				{
 					// If the db config isn't valid, then we'll assume it's not installed.
 					if (!Craft::$app->getIsDbConnectionValid())
@@ -855,5 +855,26 @@ trait ApplicationTrait
 		}
 
 		return $language;
+	}
+
+	/**
+	 * Sets the edition components.
+	 *
+	 * @return null
+	 */
+	private function _setEditionComponents()
+	{
+		// Set the appropriate edition components
+		$edition = $this->getEdition();
+
+		if ($edition === Craft::Client || $edition === Craft::Pro)
+		{
+			$this->setComponents(require CRAFT_APP_PATH.'config/components/client.php');
+
+			if ($edition === Craft::Pro)
+			{
+				$this->setComponents(require CRAFT_APP_PATH.'config/components/pro.php');
+			}
+		}
 	}
 }

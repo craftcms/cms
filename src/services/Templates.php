@@ -1257,16 +1257,14 @@ class Templates extends Component
 	private function _addPluginTwigExtensions(\Twig_Environment $twig)
 	{
 		// Check if the Plugins service has been loaded yet
-		$pluginsService = Craft::$app->getComponent('plugins', false);
+		$pluginsService = Craft::$app->plugins;
 
-		if (!$pluginsService)
+		if (!$pluginsService->arePluginsLoaded())
 		{
-			// It hasn't, so let's load it and call loadPlugins()
-			$pluginsService = Craft::$app->getComponent('plugins');
 			$pluginsService->loadPlugins();
 		}
 
-		// Make sure that loadPlugins() has finished
+		// Could be that this is getting called in the middle of plugin loading, so check again
 		if ($pluginsService->arePluginsLoaded())
 		{
 			$pluginExtensions = $pluginsService->call('addTwigExtension');
