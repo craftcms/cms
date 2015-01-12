@@ -36,27 +36,29 @@ class EntryRevisions extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered after a draft is saved.
+     * @event DraftEvent The event that is triggered after a draft is saved.
      */
     const EVENT_AFTER_SAVE_DRAFT = 'afterSaveDraft';
 
 	/**
-     * @event Event The event that is triggered after a draft is published.
+     * @event DraftEvent The event that is triggered after a draft is published.
      */
     const EVENT_AFTER_PUBLISH_DRAFT = 'afterPublishDraft';
 
 	/**
-     * @event Event The event that is triggered before a draft is deleted.
+     * @event DraftEvent The event that is triggered before a draft is deleted.
+     *
+     * You may set [[DraftEvent::performAction]] to `false` to prevent the draft from getting deleted.
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
 	/**
-     * @event Event The event that is triggered after a draft is deleted.
+     * @event DraftEvent The event that is triggered after a draft is deleted.
      */
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
 
 	/**
-     * @event Event The event that is triggered after an entry is reverted to an old version.
+     * @event EntryEvent The event that is triggered after an entry is reverted to an old version.
      */
     const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
 

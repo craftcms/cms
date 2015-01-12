@@ -42,27 +42,29 @@ class Elements extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered after an element is populated.
+     * @event ElementEvent The event that is triggered after an element is populated.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
 	/**
-     * @event Event The event that is triggered after two elements are merged together.
+     * @event MergeElementsEvent The event that is triggered after two elements are merged together.
      */
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
 	/**
-     * @event Event The event that is triggered before one or more elements are deleted.
+     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
 
 	/**
-     * @event Event The event that is triggered before an element is saved.
+     * @event ElementEvent The event that is triggered before an element is saved.
+     *
+     * You may set [[ElementEvent::performAction]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
 	/**
-     * @event Event The event that is triggered after an element is saved.
+     * @event ElementEvent The event that is triggered after an element is saved.
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 

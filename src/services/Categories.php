@@ -34,22 +34,24 @@ class Categories extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered before a category is saved.
+     * @event CategoryEvent The event that is triggered before a category is saved.
+     *
+     * You may set [[CategoryEvent::performAction]] to `false` to prevent the category from getting saved.
      */
     const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
 
 	/**
-     * @event Event The event that is triggered after a category is saved.
+     * @event CategoryEvent The event that is triggered after a category is saved.
      */
     const EVENT_AFTER_SAVE_CATEGORY = 'afterSaveCategory';
 
 	/**
-     * @event Event The event that is triggered before a category is deleted.
+     * @event CategoryEvent The event that is triggered before a category is deleted.
      */
     const EVENT_BEFORE_DELETE_CATEGORY = 'beforeDeleteCategory';
 
 	/**
-     * @event Event The event that is triggered after a category is deleted.
+     * @event CategoryEvent The event that is triggered after a category is deleted.
      */
     const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
 

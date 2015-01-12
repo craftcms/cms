@@ -46,37 +46,43 @@ class Assets extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered before an asset is uploaded.
+     * @event AssetEvent The event that is triggered before an asset is uploaded.
+     *
+     * You may set [[AssetEvent::performAction]] to `false` to prevent the asset from getting uploaded.
      */
     const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
 
 	/**
-     * @event Event The event that is triggered before an asset is saved.
+     * @event AssetEvent The event that is triggered before an asset is saved.
+     *
+     * You may set [[AssetEvent::performAction]] to `false` to prevent the asset from getting saved.
      */
     const EVENT_BEFORE_SAVE_ASSET = 'beforeSaveAsset';
 
 	/**
-     * @event Event The event that is triggered after an asset is saved.
+     * @event AssetEvent The event that is triggered after an asset is saved.
      */
     const EVENT_AFTER_SAVE_ASSET = 'afterSaveAsset';
 
 	/**
-     * @event Event The event that is triggered before an asset is deleted.
+     * @event AssetEvent The event that is triggered before an asset is deleted.
      */
     const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
 
 	/**
-     * @event Event The event that is triggered after an asset is deleted.
+     * @event AssetEvent The event that is triggered after an asset is deleted.
      */
     const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
 
 	/**
-     * @event Event The event that is triggered before an asset’s file is replaced.
+     * @event AssetEvent The event that is triggered before an asset’s file is replaced.
+     *
+     * You may set [[AssetEvent::performAction]] to `false` to prevent the file from getting replaced.
      */
     const EVENT_BEFORE_REPLACE_FILE = 'beforeReplaceFile';
 
 	/**
-     * @event Event The event that is triggered after an asset’s file is replaced.
+     * @event AssetEvent The event that is triggered after an asset’s file is replaced.
      */
     const EVENT_AFTER_REPLACE_FILE = 'afterReplaceFile';
 

@@ -14,6 +14,7 @@ use craft\app\enums\ElementType;
 use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
+use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -41,82 +42,98 @@ class Users extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered before a user is saved.
+     * @event UserEvent The event that is triggered before a user is saved.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting saved.
      */
     const EVENT_BEFORE_SAVE_USER = 'beforeSaveUser';
 
 	/**
-     * @event Event The event that is triggered after a user is saved.
+     * @event UserEvent The event that is triggered after a user is saved.
      */
     const EVENT_AFTER_SAVE_USER = 'afterSaveUser';
 
 	/**
-     * @event Event The event that is triggered before a user's email is verified.
+     * @event UserEvent The event that is triggered before a user's email is verified.
      */
     const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
 	/**
-     * @event Event The event that is triggered after a user's email is verified.
+     * @event UserEvent The event that is triggered after a user's email is verified.
      */
     const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
 	/**
-     * @event Event The event that is triggered before a user is activated.
+     * @event UserEvent The event that is triggered before a user is activated.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
 	/**
-     * @event Event The event that is triggered after a user is activated.
+     * @event UserEvent The event that is triggered after a user is activated.
      */
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
 
 	/**
-     * @event Event The event that is triggered before a user is unlocked.
+     * @event UserEvent The event that is triggered before a user is unlocked.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
 	/**
-     * @event Event The event that is triggered after a user is unlocked.
+     * @event UserEvent The event that is triggered after a user is unlocked.
      */
     const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
 
 	/**
-     * @event Event The event that is triggered before a user is suspended.
+     * @event UserEvent The event that is triggered before a user is suspended.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
 	/**
-     * @event Event The event that is triggered after a user is suspended.
+     * @event UserEvent The event that is triggered after a user is suspended.
      */
     const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
 
 	/**
-     * @event Event The event that is triggered before a user is unsuspended.
+     * @event UserEvent The event that is triggered before a user is unsuspended.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
 	/**
-     * @event Event The event that is triggered after a user is unsuspended.
+     * @event UserEvent The event that is triggered after a user is unsuspended.
      */
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
 	/**
-     * @event Event The event that is triggered before a user is deleted.
+     * @event DeleteUserEvent The event that is triggered before a user is deleted.
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user from getting deleted.
      */
     const EVENT_BEFORE_DELETE_USER = 'beforeDeleteUser';
 
 	/**
-     * @event Event The event that is triggered after a user is deleted.
+     * @event DeleteUserEvent The event that is triggered after a user is deleted.
      */
     const EVENT_AFTER_DELETE_USER = 'afterDeleteUser';
 
 	/**
-     * @event Event The event that is triggered before a user's password is set.
+     * @event UserEvent The event that is triggered before a user's password is set.
+     *
+     * The new password will be accessible from [[UserModel::newPassword]].
+     *
+     * You may set [[UserEvent::performAction]] to `false` to prevent the user's password from getting set.
      */
     const EVENT_BEFORE_SET_PASSWORD = 'beforeSetPassword';
 
 	/**
-     * @event Event The event that is triggered after a user's password is set.
+     * @event UserEvent The event that is triggered after a user's password is set.
      */
     const EVENT_AFTER_SET_PASSWORD = 'afterSetPassword';
 

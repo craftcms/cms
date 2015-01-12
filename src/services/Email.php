@@ -30,12 +30,14 @@ class Email extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered before an email is sent.
+     * @event EmailEvent The event that is triggered before an email is sent.
+     *
+     * You may set [[EmailEvent::performAction]] to `false` to prevent the email from getting sent.
      */
     const EVENT_BEFORE_SEND_EMAIL = 'beforeSendEmail';
 
 	/**
-     * @event Event The event that is triggered after an email is sent.
+     * @event EmailEvent The event that is triggered after an email is sent.
      */
     const EVENT_AFTER_SEND_EMAIL = 'afterSendEmail';
 

@@ -31,7 +31,7 @@ class Content extends Component
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered after an element's content is saved.
+     * @event ElementEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 

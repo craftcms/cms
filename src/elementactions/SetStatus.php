@@ -25,7 +25,7 @@ class SetStatus extends BaseElementAction
 	// =========================================================================
 
 	/**
-     * @event Event The event that is triggered after the statuses have been updated.
+     * @event SetStatusEvent The event that is triggered after the statuses have been updated.
      */
     const EVENT_AFTER_SET_STATUS = 'afterSetStatus';
 
