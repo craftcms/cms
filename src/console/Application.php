@@ -26,14 +26,6 @@ class Application extends \yii\console\Application
 
 	use \craft\app\base\ApplicationTrait;
 
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	public $componentAliases;
-
 	// Public Methods
 	// =========================================================================
 

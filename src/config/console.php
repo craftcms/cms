@@ -10,24 +10,6 @@ return [
 		'application.migrations.*',
 	],
 
-	'componentAliases' => [
-		'app.*',
-		'app.enums.*',
-		'app.etc.components.*',
-		'app.etc.console.*',
-		'app.etc.console.commands.*',
-		'app.etc.dates.*',
-		'app.etc.db.*',
-		'app.etc.db.schemas.*',
-		'app.etc.io.*',
-		'app.etc.logging.*',
-		'app.etc.updates.*',
-		'app.helpers.*',
-		'app.migrations.*',
-		'app.services.*',
-		'app.validators.*',
-	],
-
 	'components' => [
 		'db' => [
 			'emulatePrepare'    => true,

@@ -92,13 +92,6 @@ class Application extends \yii\web\Application
 	 */
 	public $sourceLanguage = 'en_us';
 
-	/**
-	 * List of built-in component aliases to be imported.
-	 *
-	 * @var array
-	 */
-	public $componentAliases;
-
 	// Public Methods
 	// =========================================================================
 
