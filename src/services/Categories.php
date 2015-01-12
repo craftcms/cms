@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\CategoryEvent;
 use craft\app\models\Category as CategoryModel;
 use craft\app\models\CategoryGroup as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
