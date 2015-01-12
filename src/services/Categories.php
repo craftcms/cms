@@ -30,6 +30,29 @@ use yii\base\Component;
  */
 class Categories extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered before a category is saved.
+     */
+    const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
+
+	/**
+     * @event Event The event that is triggered after a category is saved.
+     */
+    const EVENT_AFTER_SAVE_CATEGORY = 'afterSaveCategory';
+
+	/**
+     * @event Event The event that is triggered before a category is deleted.
+     */
+    const EVENT_BEFORE_DELETE_CATEGORY = 'beforeDeleteCategory';
+
+	/**
+     * @event Event The event that is triggered after a category is deleted.
+     */
+    const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
+
 	// Properties
 	// =========================================================================
 
@@ -689,13 +712,12 @@ class Categories extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveCategory' event
-			$event = new Event($this, [
-				'category'      => $category,
-				'isNewCategory' => $isNewCategory
+			// Fire a 'beforeSaveCategory' event
+			$event = new CategoryEvent([
+				'category' => $category
 			]);
 
-			$this->onBeforeSaveCategory($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_CATEGORY, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -761,10 +783,9 @@ class Categories extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveCategory' event
-			$this->onSaveCategory(new Event($this, [
-				'category'      => $category,
-				'isNewCategory' => $isNewCategory
+			// Fire an 'afterSaveCategory' event
+			$this->trigger(static::EVENT_AFTER_SAVE_CATEGORY, new CategoryEvent([
+				'category' => $category
 			]));
 		}
 
@@ -815,8 +836,8 @@ class Categories extends Component
 		{
 			foreach ($categories as $category)
 			{
-				// Fire an 'onDeleteCategory' event
-				$this->onDeleteCategory(new Event($this, [
+				// Fire an 'afterDeleteCategory' event
+				$this->trigger(static::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
 					'category' => $category
 				]));
 			}
@@ -902,57 +923,6 @@ class Categories extends Component
 		}
 
 		return $completeIds;
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeSaveCategory' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveCategory(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveCategory', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveCategory' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveCategory(Event $event)
-	{
-		$this->raiseEvent('onSaveCategory', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteCategory' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteCategory(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteCategory', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteCategory' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteCategory(Event $event)
-	{
-		$this->raiseEvent('onDeleteCategory', $event);
 	}
 
 	// Private Methods
@@ -1055,8 +1025,8 @@ class Categories extends Component
 				$this->_deleteCategories($descendants, false);
 			}
 
-			// Fire an 'onBeforeDeleteCategory' event
-			$this->onBeforeDeleteCategory(new Event($this, [
+			// Fire a 'beforeDeleteCategory' event
+			$this->trigger(static::EVENT_BEFORE_DELETE_CATEGORY, new CategoryEvent([
 				'category' => $category
 			]));
 
