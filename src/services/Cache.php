@@ -62,7 +62,7 @@ class Cache extends Component
 			case CacheMethod::Db:
 			{
 				$this->_cacheComponent = new DbCache();
-				$this->_cacheComponent->gCProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
+				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
 				$this->_cacheComponent->cacheTableName = Craft::$app->db->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
 				break;
@@ -72,7 +72,7 @@ class Cache extends Component
 			{
 				$this->_cacheComponent = new FileCache();
 				$this->_cacheComponent->cachePath = Craft::$app->config->get('cachePath', ConfigFile::FileCache);
-				$this->_cacheComponent->gCProbability = Craft::$app->config->get('gcProbability', ConfigFile::FileCache);
+				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigFile::FileCache);
 				break;
 			}
 
