@@ -20,6 +20,7 @@ use craft\app\cache\ZendDataCache;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigFile;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Cache service.
@@ -46,10 +47,13 @@ class Cache extends Component
 	 * Do the ole' Craft::$app->cache switcharoo.
 	 *
 	 * @return null
+	 * @throws InvalidConfigException
 	 */
 	public function init()
 	{
-		switch (Craft::$app->config->get('cacheMethod'))
+		$cacheMethod = Craft::$app->config->get('cacheMethod');
+
+		switch ($cacheMethod)
 		{
 			case CacheMethod::APC:
 			{
@@ -115,6 +119,11 @@ class Cache extends Component
 			{
 				$this->_cacheComponent = new ZendDataCache();
 				break;
+			}
+
+			default:
+			{
+				throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
 			}
 		}
 
