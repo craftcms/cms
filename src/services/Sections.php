@@ -12,7 +12,8 @@ use craft\app\db\DbCommand;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\EntryTypeEvent;
+use craft\app\events\SectionEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryType as EntryTypeModel;
 use craft\app\models\Section as SectionModel;
@@ -33,6 +34,33 @@ use yii\base\Component;
  */
 class Sections extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event SectionEvent The event that is triggered before a section is saved.
+     *
+     * You may set [[SectionEvent::performAction]] to `false` to prevent the section from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
+
+	/**
+     * @event SectionEvent The event that is triggered after a section is saved.
+     */
+    const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
+
+	/**
+     * @event EntryTypeEvent The event that is triggered before an entry type is saved.
+     *
+     * You may set [[EntryTypeEvent::performAction]] to `false` to prevent the entry type from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
+
+	/**
+     * @event EntryTypeEvent The event that is triggered after an entry type is saved.
+     */
+    const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
+
 	// Properties
 	// =========================================================================
 
@@ -467,13 +495,12 @@ class Sections extends Component
 
 			try
 			{
-				// Fire an 'onBeforeSaveSection' event
-				$event = new Event($this, [
-					'section'      => $section,
-					'isNewSection' => $isNewSection,
+				// Fire a 'beforeSaveSection' event
+				$event = new SectionEvent([
+					'section' => $section
 				]);
 
-				$this->onBeforeSaveSection($event);
+				$this->trigger(static::EVENT_BEFORE_SAVE_SECTION, $event);
 
 				// Is the event giving us the go-ahead?
 				if ($event->performAction)
@@ -801,10 +828,9 @@ class Sections extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveSection' event
-			$this->onSaveSection(new Event($this, [
-				'section'      => $section,
-				'isNewSection' => $isNewSection,
+			// Fire an 'afterSaveSection' event
+			$this->trigger(static::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+				'section' => $section
 			]));
 		}
 
@@ -1009,13 +1035,13 @@ class Sections extends Component
 
 			try
 			{
-				// Fire an 'onBeforeSaveEntryType' event
-				$event = new Event($this, [
+				// Fire a 'beforeSaveEntryType' event
+				$event = new EntryTypeEvent([
 					'entryType'      => $entryType,
 					'isNewEntryType' => $isNewEntryType
 				]);
 
-				$this->onBeforeSaveEntryType($event);
+				$this->trigger(static::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
 
 				// Is the event giving us the go-ahead?
 				if ($event->performAction)
@@ -1075,10 +1101,9 @@ class Sections extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveEntryType' event
-			$this->onSaveEntryType(new Event($this, [
-				'entryType'      => $entryType,
-				'isNewEntryType' => $isNewEntryType
+			// Fire an 'afterSaveEntryType' event
+			$this->trigger(static::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+				'entryType' => $entryType
 			]));
 		}
 
@@ -1260,57 +1285,6 @@ class Sections extends Component
 				return false;
 			}
 		}
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeSaveEntryType' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveEntryType(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveEntryType', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveEntryType' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveEntryType(Event $event)
-	{
-		$this->raiseEvent('onSaveEntryType', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSaveSection' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveSection(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveSection', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveSection' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveSection(Event $event)
-	{
-		$this->raiseEvent('onSaveSection', $event);
 	}
 
 	// Private Methods
