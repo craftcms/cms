@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\events\Event;
+use craft\app\events\DeleteLocaleEvent;
 use craft\app\helpers\IOHelper;
 use craft\app\i18n\Locale;
 use craft\app\i18n\LocaleData;
@@ -24,6 +24,21 @@ use yii\base\Component;
  */
 class Localization extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
+     *
+     * You may set [[DeleteLocaleEvent::performAction]] to `false` to prevent the locale from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE_LOCALE = 'beforeDeleteLocale';
+
+	/**
+     * @event DeleteLocaleEvent The event that is triggered after a locale is deleted.
+     */
+    const EVENT_AFTER_DELETE_LOCALE = 'afterDeleteLocale';
+
 	// Properties
 	// =========================================================================
 
@@ -380,13 +395,13 @@ class Localization extends Component
 
 		try
 		{
-			// Fire an 'onBeforeDeleteLocale' event
-			$event = new Event($this, [
+			// Fire a 'beforeDeleteLocale' event
+			$event = new DeleteLocaleEvent([
 				'localeId'          => $localeId,
 				'transferContentTo' => $transferContentTo
 			]);
 
-			$this->onBeforeDeleteLocale($event);
+			$this->trigger(static::EVENT_BEFORE_DELETE_LOCALE, $event);
 
 			// Is the event is giving us the go-ahead?
 			if ($event->performAction)
@@ -576,8 +591,8 @@ class Localization extends Component
 
 		if ($success)
 		{
-			// Fire an 'onDeleteLocale' event
-			$this->onDeleteLocale(new Event($this, [
+			// Fire an 'afterDeleteLocale' event
+			$this->trigger(static::EVENT_AFTER_DELETE_LOCALE, new DeleteLocaleEvent([
 				'localeId'          => $localeId,
 				'transferContentTo' => $transferContentTo
 			]));
@@ -613,32 +628,5 @@ class Localization extends Component
 		}
 
 		return $this->_localeData[$localeId];
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onBeforeDeleteLocale' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteLocale(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteLocale', $event);
-	}
-
-	/**
-	 * Fires an 'onDeleteLocale' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onDeleteLocale(Event $event)
-	{
-		$this->raiseEvent('onDeleteLocale', $event);
 	}
 }
