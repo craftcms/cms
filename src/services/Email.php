@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\EmailerType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\EmailEvent;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Email as EmailModel;
 use craft\app\models\User as UserModel;
@@ -26,6 +26,19 @@ use yii\base\Component;
  */
 class Email extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered before an email is sent.
+     */
+    const EVENT_BEFORE_SEND_EMAIL = 'beforeSendEmail';
+
+	/**
+     * @event Event The event that is triggered after an email is sent.
+     */
+    const EVENT_AFTER_SEND_EMAIL = 'afterSendEmail';
+
 	// Properties
 	// =========================================================================
 
@@ -219,26 +232,6 @@ class Email extends Component
 		return $success;
 	}
 
-	/**
-	 * Fires an 'onBeforeSendEmail' event.
-	 *
-	 * @param Event $event
-	 */
-	public function onBeforeSendEmail(Event $event)
-	{
-		$this->raiseEvent('onBeforeSendEmail', $event);
-	}
-
-	/**
-	 * Fires an 'onSendEmail' event.
-	 *
-	 * @param Event $event
-	 */
-	public function onSendEmail(Event $event)
-	{
-		$this->raiseEvent('onSendEmail', $event);
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -261,14 +254,14 @@ class Email extends Component
 		}
 
 
-		// Fire an 'onBeforeSendEmail' event
-		$event = new Event($this, [
+		// Fire a 'beforeSendEmail' event
+		$event = new EmailEvent([
 			'user' => $user,
-			'emailModel' => $emailModel,
-			'variables'	 => $variables
+			'email' => $emailModel,
+			'variables' => $variables
 		]);
 
-		$this->onBeforeSendEmail($event);
+		$this->trigger(static::EVENT_BEFORE_SEND_EMAIL, $event);
 
 		// Is the event giving us the go-ahead?
 		if ($event->performAction)
@@ -453,11 +446,11 @@ class Email extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSendEmail' event
-			$this->onSendEmail(new Event($this, [
+			// Fire an 'afterSendEmail' event
+			$this->trigger(static::EVENT_AFTER_SEND_EMAIL, new EmailEvent([
 				'user' => $user,
-				'emailModel' => $emailModel,
-				'variables'	 => $variables
+				'email' => $emailModel,
+				'variables'	=> $variables
 			]));
 		}
 
