@@ -12,7 +12,6 @@ use craft\app\cache\ApcCache;
 use craft\app\cache\DbCache;
 use craft\app\cache\FileCache;
 use craft\app\cache\MemCache;
-use craft\app\cache\RedisCache;
 use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
@@ -82,17 +81,6 @@ class Cache extends Component
 				$this->_cacheComponent = new MemCache();
 				$this->_cacheComponent->servers = Craft::$app->config->get('servers', ConfigFile::Memcache);
 				$this->_cacheComponent->useMemcached = Craft::$app->config->get('useMemcached', ConfigFile::Memcache);
-				break;
-			}
-
-			case CacheMethod::Redis:
-			{
-				$this->_cacheComponent = new RedisCache();
-				$this->_cacheComponent->hostname = Craft::$app->config->get('hostname', ConfigFile::RedisCache);
-				$this->_cacheComponent->port = Craft::$app->config->get('port', ConfigFile::RedisCache);
-				$this->_cacheComponent->password = Craft::$app->config->get('password', ConfigFile::RedisCache);
-				$this->_cacheComponent->database = Craft::$app->config->get('database', ConfigFile::RedisCache);
-				$this->_cacheComponent->timeout = Craft::$app->config->get('timeout', ConfigFile::RedisCache);
 				break;
 			}
 

@@ -25,5 +25,4 @@ abstract class ConfigFile extends BaseEnum
 	const Db           = 'db';
 	const DbCache      = 'dbcache';
 	const Memcache     = 'memcache';
-	const RedisCache   = 'rediscache';
 }
