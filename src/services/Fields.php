@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\DbCommand;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\FieldLayoutEvent;
 use craft\app\fieldtypes\BaseFieldType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
@@ -39,6 +39,14 @@ use yii\base\Component;
  */
 class Fields extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event FieldLayoutEvent The event that is triggered after a field layout is saved.
+     */
+    const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
+
 	// Properties
 	// =========================================================================
 
@@ -860,9 +868,9 @@ class Fields extends Component
 			}
 		}
 
-		// Fire an 'onSaveFieldLayout' event
-		$this->onSaveFieldLayout(new Event($this, [
-			'layout' => $layout,
+		// Fire an 'afterSaveFieldLayout' event
+		$this->trigger(static::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+			'layout' => $layout
 		]));
 
 		return true;
@@ -949,18 +957,6 @@ class Fields extends Component
 			$fieldType->element = $element;
 			return $fieldType;
 		}
-	}
-
-	/**
-	 * Fires an 'onSaveFieldLayout' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveFieldLayout(Event $event)
-	{
-		$this->raiseEvent('onSaveFieldLayout', $event);
 	}
 
 	// Private Methods
