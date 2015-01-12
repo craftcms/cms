@@ -14,6 +14,7 @@ use craft\app\enums\PluginVersionUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
+use craft\app\events\UpdateEvent;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\UpdateHelper;
 use craft\app\models\AppUpdate as AppUpdateModel;
@@ -32,6 +33,24 @@ use yii\base\Component;
  */
 class Updates extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event UpdateEvent The event that is triggered before an update is installed.
+     */
+    const EVENT_BEFORE_UPDATE = 'beforeUpdate';
+
+	/**
+     * @event Event The event that is triggered after an update is installed.
+     */
+    const EVENT_AFTER_UPDATE = 'afterUpdate';
+
+	/**
+     * @event Event The event that is triggered after an update has failed to install.
+     */
+    const EVENT_AFTER_UPDATE_FAIL = 'afterUpdateFail';
+
 	// Properties
 	// =========================================================================
 
@@ -296,8 +315,8 @@ class Updates extends Component
 
 		try
 		{
-			// Fire an 'onBeginUpdate' event and pass in the type
-			$this->onBeginUpdate(new Event($this, [
+			// Fire a 'beforeUpdate' event and pass in the type
+			$this->trigger(static::EVENT_BEFORE_UPDATE, new UpdateEvent([
 				'type' => $manual ? 'manual' : 'auto'
 			]));
 
@@ -485,21 +504,14 @@ class Updates extends Component
 			$updater->cleanUp($uid, $handle);
 
 			Craft::log('Finished cleaning up after the update.', LogLevel::Info, true);
-
-			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
-			$this->onEndUpdate(new Event($this, [
-				'success' => true
-			]));
 		}
 		catch (\Exception $e)
 		{
 			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage());
-
-			// Fire an 'onEndUpdate' event and pass in that it was a successful update.
-			$this->onEndUpdate(new Event($this, [
-				'success' => true
-			]));
 		}
+
+		// Fire an 'afterUpdate' event
+		$this->trigger(static::EVENT_AFTER_UPDATE, new Event());
 	}
 
 	/**
@@ -512,10 +524,8 @@ class Updates extends Component
 	{
 		try
 		{
-			// Fire an 'onEndUpdate' event and pass in that the update failed.
-			$this->onEndUpdate(new Event($this, [
-				'success' => false
-			]));
+			// Fire an 'afterUpdateFail' event
+			$this->trigger(static::EVENT_AFTER_UPDATE_FAIL, new Event());
 
 			Craft::$app->config->maxPowerCaptain();
 
@@ -651,29 +661,5 @@ class Updates extends Component
 		}
 
 		return $pluginsThatNeedDbUpdate;
-	}
-
-	/**
-	 * Fires an 'onBeginUpdate' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeginUpdate(Event $event)
-	{
-		$this->raiseEvent('onBeginUpdate', $event);
-	}
-
-	/**
-	 * Fires an 'onEndUpdate' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onEndUpdate(Event $event)
-	{
-		$this->raiseEvent('onEndUpdate', $event);
 	}
 }
