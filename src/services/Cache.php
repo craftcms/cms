@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\cache\ApcCache;
 use craft\app\cache\DbCache;
-use craft\app\cache\EAcceleratorCache;
 use craft\app\cache\FileCache;
 use craft\app\cache\MemCache;
 use craft\app\cache\RedisCache;
@@ -67,12 +66,6 @@ class Cache extends Component
 				$this->_cacheComponent->gCProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
 				$this->_cacheComponent->cacheTableName = Craft::$app->db->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
-				break;
-			}
-
-			case CacheMethod::EAccelerator:
-			{
-				$this->_cacheComponent = new EAcceleratorCache();
 				break;
 			}
 
