@@ -1,8 +1,6 @@
 <?php
 
-$common = require(CRAFT_APP_PATH.'config/common.php');
-
-return \craft\app\helpers\ArrayHelper::merge($common, [
+return [
 
 	'basePath' => dirname(__FILE__).'/../../',
 
@@ -42,4 +40,4 @@ return \craft\app\helpers\ArrayHelper::merge($common, [
 	],
 
 	'commandPath' => craft\app\Craft::getAlias('system.cli.commands.*'),
-]);
+];

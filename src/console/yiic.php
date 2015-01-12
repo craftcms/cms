@@ -1,6 +1,6 @@
 <?php
 
-$configPath = dirname(__FILE__).'/../config/console.php';
+use craft\app\helpers\ArrayHelper;
 
 $frontConfigPath = false;
 
@@ -63,7 +63,15 @@ require_once(CRAFT_APP_PATH.'framework/web/CHttpRequest.php');
 Yii::setAlias('app', CRAFT_APP_PATH);
 Yii::setAlias('plugins', CRAFT_PLUGINS_PATH);
 
-$app = Yii::createApplication('craft\app\console\Application', $configPath);
+// Load the config
+$config = ArrayHelper::merge(
+	require CRAFT_APP_PATH.'config/info.php',
+	require CRAFT_APP_PATH.'config/common.php',
+	require CRAFT_APP_PATH.'config/main.php',
+	require CRAFT_APP_PATH.'config/console.php'
+);
+
+$app = Yii::createApplication('craft\app\console\Application', $config);
 $app->commandRunner->addCommands(craft\app\Craft::getAlias('application.consolecommands.*'));
 
 $app->run();
