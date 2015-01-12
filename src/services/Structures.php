@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\MoveElementEvent;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Structure as StructureModel;
 use craft\app\records\Structure as StructureRecord;
@@ -26,6 +26,21 @@ use yii\base\Component;
  */
 class Structures extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event MoveElementEvent The event that is triggered before an element is moved.
+     *
+     * You may set [[MoveElementEvent::performAction]] to `false` to prevent the element from getting moved.
+     */
+    const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
+
+	/**
+     * @event MoveElementEvent The event that is triggered after an element is moved.
+     */
+    const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
+
 	// Properties
 	// =========================================================================
 
@@ -247,30 +262,6 @@ class Structures extends Component
 		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
 	}
 
-	/**
-	 * Fires an 'onBeforeMoveElement' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeMoveElement(Event $event)
-	{
-		$this->raiseEvent('onBeforeMoveElement', $event);
-	}
-
-	/**
-	 * Fires an 'onMoveElement' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onMoveElement(Event $event)
-	{
-		$this->raiseEvent('onMoveElement', $event);
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -367,13 +358,13 @@ class Structures extends Component
 		{
 			if ($mode == 'update')
 			{
-				// Fire an 'onBeforeMoveElement' event
-				$event = new Event($this, [
+				// Fire a 'beforeMoveElement' event
+				$event = new MoveElementEvent([
 					'structureId'  => $structureId,
 					'element'      => $element,
 				]);
 
-				$this->onBeforeMoveElement($event);
+				$this->trigger(static::EVENT_BEFORE_MOVE_ELEMENT, $event);
 			}
 
 			// Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
@@ -426,8 +417,8 @@ class Structures extends Component
 
 		if ($success && $mode == 'update')
 		{
-			// Fire an 'onMoveElement' event
-			$this->onMoveElement(new Event($this, [
+			// Fire an 'afterMoveElement' event
+			$this->trigger(static::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
 				'structureId'  => $structureId,
 				'element'      => $element,
 			]));
