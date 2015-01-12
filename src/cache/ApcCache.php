@@ -16,7 +16,7 @@ namespace craft\app\cache;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ApcCache extends \CApcCache
+class ApcCache extends \yii\caching\ApcCache
 {
 
 }

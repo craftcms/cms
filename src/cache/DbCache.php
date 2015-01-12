@@ -23,7 +23,7 @@ use craft\app\enums\ConfigFile;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DbCache extends \CDbCache
+class DbCache extends \yii\caching\DbCache
 {
 	// Public Methods
 	// =========================================================================

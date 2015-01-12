@@ -16,7 +16,7 @@ use craft\app\helpers\IOHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FileCache extends \CFileCache
+class FileCache extends \yii\caching\FileCache
 {
 	// Properties
 	// =========================================================================

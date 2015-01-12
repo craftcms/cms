@@ -22,7 +22,7 @@ namespace craft\app\cache;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MemCache extends \CMemCache
+class MemCache extends \yii\caching\MemCache
 {
 
 }
