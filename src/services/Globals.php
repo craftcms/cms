@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\GlobalSetEvent;
 use craft\app\models\GlobalSet as GlobalSetModel;
 use craft\app\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
@@ -25,6 +25,21 @@ use yii\base\Component;
  */
 class Globals extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event GlobalSetEvent The event that is triggered before a global set's content is saved.
+     *
+     * You may set [[GlobalSetEvent::performAction]] to `false` to prevent the global set's content from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
+
+	/**
+     * @event GlobalSetEvent The event that is triggered after a global set's content is saved.
+     */
+    const EVENT_AFTER_SAVE_GLOBAL_CONTENT = 'afterSaveGlobalContent';
+
 	// Properties
 	// =========================================================================
 
@@ -402,12 +417,12 @@ class Globals extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveGlobalContent' event
-			$event = new Event($this, [
+			// Fire a 'beforeSaveGlobalContent' event
+			$event = new GlobalSetEvent([
 				'globalSet' => $globalSet
 			]);
 
-			$this->onBeforeSaveGlobalContent($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -449,36 +464,12 @@ class Globals extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveGlobalContent' event
-			$this->onSaveGlobalContent(new Event($this, [
+			// Fire an 'afterSaveGlobalContent' event
+			$this->trigger(static::EVENT_AFTER_SAVE_GLOBAL_CONTENT, new GlobalSetEvent([
 				'globalSet' => $globalSet
 			]));
 		}
 
 		return $success;
-	}
-
-	/**
-	 * Fires an 'onSaveGlobalContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveGlobalContent(Event $event)
-	{
-		$this->raiseEvent('onSaveGlobalContent', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSaveGlobalContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveGlobalContent(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveGlobalContent', $event);
 	}
 }
