@@ -13,7 +13,7 @@ namespace craft\app\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementEvent extends Event
+class DeleteElementsEvent extends Event
 {
 	// Properties
 	// =========================================================================
@@ -21,5 +21,5 @@ class ElementEvent extends Event
 	/**
 	 * @var array The element IDs associated with this event.
 	 */
-	public $element;
+	public $elementIds;
 }
