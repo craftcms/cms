@@ -14,7 +14,9 @@ use craft\app\elements\ElementRelationParamParser;
 use craft\app\elementtypes\ElementTypeInterface;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
-use craft\app\events\Event;
+use craft\app\events\DeleteElementsEvent;
+use craft\app\events\ElementEvent;
+use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ElementHelper;
@@ -36,6 +38,34 @@ use yii\base\Component;
  */
 class Elements extends Component
 {
+	// Constants
+	// =========================================================================
+
+	/**
+     * @event Event The event that is triggered after an element is populated.
+     */
+    const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+
+	/**
+     * @event Event The event that is triggered after two elements are merged together.
+     */
+    const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
+
+	/**
+     * @event Event The event that is triggered before one or more elements are deleted.
+     */
+    const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
+
+	/**
+     * @event Event The event that is triggered before an element is saved.
+     */
+    const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
+
+	/**
+     * @event Event The event that is triggered after an element is saved.
+     */
+    const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
 	// Properties
 	// =========================================================================
 
@@ -344,8 +374,8 @@ class Elements extends Component
 								$element->setContent($content);
 							}
 
-							// Fire an 'onPopulateElement' event
-							$this->onPopulateElement(new Event($this, [
+							// Fire an 'afterPopulateElement' event
+							$this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new ElementEvent([
 								'element' => $element,
 								'result'  => $originalResult
 							]));
@@ -1116,13 +1146,12 @@ class Elements extends Component
 
 		try
 		{
-			// Fire an 'onBeforeSaveElement' event
-			$event = new Event($this, [
-				'element'      => $element,
-				'isNewElement' => $isNewElement
+			// Fire a 'beforeSaveElement' event
+			$event = new ElementEvent([
+				'element' => $element
 			]);
 
-			$this->onBeforeSaveElement($event);
+			$this->trigger(static::EVENT_BEFORE_SAVE_ELEMENT, $event);
 
 			// Is the event giving us the go-ahead?
 			if ($event->performAction)
@@ -1378,8 +1407,8 @@ class Elements extends Component
 
 		if ($success)
 		{
-			// Fire an 'onSaveElement' event
-			$this->onSaveElement(new Event($this, [
+			// Fire an 'afterSaveElement' event
+			$this->trigger(static::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
 				'element'      => $element,
 				'isNewElement' => $isNewElement
 			]));
@@ -1579,8 +1608,8 @@ class Elements extends Component
 				]);
 			}
 
-			// Fire an 'onMergeElements' event
-			$this->onMergeElements(new Event($this, [
+			// Fire an 'afterMergeElements' event
+			$this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
 				'mergedElementId'     => $mergedElementId,
 				'prevailingElementId' => $prevailingElementId
 			]));
@@ -1630,8 +1659,8 @@ class Elements extends Component
 
 		try
 		{
-			// Fire an 'onBeforeDeleteElements' event
-			$this->onBeforeDeleteElements(new Event($this, [
+			// Fire a 'beforeDeleteElements' event
+			$this->trigger(static::EVENT_BEFORE_DELETE_ELEMENTS, new DeleteElementsEvent([
 				'elementIds' => $elementIds
 			]));
 
@@ -1940,69 +1969,6 @@ class Elements extends Component
 		}
 
 		$this->_placeholderElements[$element->id][$element->locale] = $element;
-	}
-
-	// Events
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Fires an 'onPopulateElement' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onPopulateElement(Event $event)
-	{
-		$this->raiseEvent('onPopulateElement', $event);
-	}
-
-	/**
-	 * Fires an 'onMergeElements' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onMergeElements(Event $event)
-	{
-		$this->raiseEvent('onMergeElements', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeDeleteElements' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeDeleteElements(Event $event)
-	{
-		$this->raiseEvent('onBeforeDeleteElements', $event);
-	}
-
-	/**
-	 * Fires an 'onBeforeSaveElement' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveElement(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveElement', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveElement' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveElement(Event $event)
-	{
-		$this->raiseEvent('onSaveElement', $event);
 	}
 
 	// Private Methods
