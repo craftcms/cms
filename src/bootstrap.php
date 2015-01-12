@@ -1,5 +1,7 @@
 <?php
 
+use craft\app\helpers\ArrayHelper;
+
 // Path constants and validation
 // -----------------------------------------------------------------------------
 
@@ -166,8 +168,14 @@ require CRAFT_APP_PATH.'Craft.php';
 Craft::setAlias('@craft/app', CRAFT_APP_PATH);
 Craft::setAlias('@craft/plugins', CRAFT_PLUGINS_PATH);
 
+// Append Craft's class map to Yii's
+Yii::$classMap = ArrayHelper::merge(
+	Yii::$classMap,
+	require CRAFT_APP_PATH.'classes.php'
+);
+
 // Load the config
-$config = craft\app\helpers\ArrayHelper::merge(
+$config = ArrayHelper::merge(
 	require CRAFT_APP_PATH.'config/info.php',
 	require CRAFT_APP_PATH.'config/common.php',
 	require CRAFT_APP_PATH.'config/main.php'
