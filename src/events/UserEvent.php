@@ -19,7 +19,7 @@ class UserEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\models\User The user model associated with the event.
+	 * @var \craft\app\models\User The user model associated with the event.
 	 */
 	public $user;
 }

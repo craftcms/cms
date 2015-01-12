@@ -19,7 +19,7 @@ class AssetEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\models\Asset The asset model associated with the event.
+	 * @var \craft\app\models\Asset The asset model associated with the event.
 	 */
 	public $asset;
 }

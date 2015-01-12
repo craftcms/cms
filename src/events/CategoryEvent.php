@@ -19,7 +19,7 @@ class CategoryEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\models\Category The category model associated with the event.
+	 * @var \craft\app\models\Category The category model associated with the event.
 	 */
 	public $category;
 }

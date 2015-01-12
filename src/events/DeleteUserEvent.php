@@ -19,7 +19,7 @@ class DeleteUserEvent extends UserEvent
 	// =========================================================================
 
 	/**
-	 * @var \craft\models\User The user model that the deleted user's content is getting transfered to.
+	 * @var \craft\app\models\User The user model that the deleted user's content is getting transfered to.
 	 */
 	public $transferContentTo;
 }
