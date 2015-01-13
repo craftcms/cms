@@ -26,6 +26,14 @@ class Craft extends Yii
 	const Client   = 1;
 	const Pro      = 2;
 
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var \craft\app\web\Application|\craft\app\console\Application The application instance.
+	 */
+	public static $app;
+
 	// Public Methods
 	// =========================================================================
 
