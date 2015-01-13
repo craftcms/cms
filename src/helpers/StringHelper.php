@@ -350,7 +350,11 @@ class StringHelper
 		// Trim white space
 		$str = trim($str);
 
-		return $str;
+		// Make sure we've actually got something relevant to return
+		if ($str !== '')
+		{
+			return $str;
+		}
 	}
 
 	/**
