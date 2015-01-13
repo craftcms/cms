@@ -444,7 +444,7 @@ class StringHelper extends \yii\helpers\StringHelper
 	/**
 	 * Checks if the given string is UTF-8 encoded.
 	 *
-	 * @param $string The string to check.
+	 * @param string $string The string to check.
 	 *
 	 * @return bool
 	 */
