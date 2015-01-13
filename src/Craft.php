@@ -34,6 +34,11 @@ class Craft extends Yii
 	 */
 	public static $app;
 
+	/**
+	 * @var array The default cookie configuration.
+	 */
+	private static $_baseCookieConfig;
+
 	// Public Methods
 	// =========================================================================
 
@@ -219,6 +224,25 @@ class Craft extends Yii
 		}
 
 		static::getLogger()->log($msg, $level, $force, $category, $plugin);
+	}
+
+	/**
+	 * Generates and returns a cookie config.
+	 *
+	 * @param array|null $config Any config options that should be included in the config.
+	 * @return array The cookie config array.
+	 */
+	public static function getCookieConfig($config = [])
+	{
+		if (!isset(static::$_baseCookieConfig))
+		{
+			static::$_baseCookieConfig = [
+				'domain' => static::$app->config->get('defaultCookieDomain'),
+				'httpOnly' => true
+			];
+		}
+
+		return array_merge(static::$_baseCookieConfig, $config);
 	}
 
 	// Private Methods

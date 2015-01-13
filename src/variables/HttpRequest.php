@@ -8,7 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\helpers\UrlHelper;
-use craft\app\web\HttpCookie;
+use yii\web\Cookie;
 
 /**
  * Request functions.
@@ -164,15 +164,15 @@ class HttpRequest
 	}
 
 	/**
-	 * Returns a [[HttpCookie]] if it exists, otherwise, null.
+	 * Returns a [[Cookie]] if it exists, otherwise, null.
 	 *
 	 * @param $name
 	 *
-	 * @return HttpCookie|null
+	 * @return Cookie|null
 	 */
 	public function getCookie($name)
 	{
-		return Craft::$app->request->getCookie($name);
+		return Craft::$app->getRequest()->getCookies()->get($name);
 	}
 
 	/**
