@@ -50,13 +50,13 @@ class EmailMessagesController extends BaseController
 		$this->requireAjaxRequest();
 
 		$message = new RebrandEmailModel();
-		$message->key = Craft::$app->request->getRequiredPost('key');
-		$message->subject = Craft::$app->request->getRequiredPost('subject');
-		$message->body = Craft::$app->request->getRequiredPost('body');
+		$message->key = Craft::$app->request->getRequiredBodyParam('key');
+		$message->subject = Craft::$app->request->getRequiredBodyParam('subject');
+		$message->body = Craft::$app->request->getRequiredBodyParam('body');
 
 		if (Craft::$app->isLocalized())
 		{
-			$message->locale = Craft::$app->request->getPost('locale');
+			$message->locale = Craft::$app->request->getBodyParam('locale');
 		}
 		else
 		{

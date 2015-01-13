@@ -418,7 +418,7 @@ class UtilsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$logId = Craft::$app->request->getRequiredPost('logId');
+		$logId = Craft::$app->request->getRequiredBodyParam('logId');
 
 		Craft::$app->deprecator->deleteLogById($logId);
 		Craft::$app->end();

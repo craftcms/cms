@@ -291,10 +291,12 @@ class User extends \yii\web\User
 	private function _shouldEnableSession()
 	{
 		// See if these are the exact conditions we support for disabling the session on the current request
+		$request = Craft::$app->getRequest();
+
 		return !(
-			Craft::$app->request->getIsGet() &&
-			Craft::$app->request->isCpRequest() &&
-			Craft::$app->request->getParam('dontEnableSession')
+			$request->getIsGet() &&
+			$request->getIsCpRequest() &&
+			$request->getParam('dontEnableSession')
 		);
 	}
 

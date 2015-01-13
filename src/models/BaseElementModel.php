@@ -851,7 +851,7 @@ abstract class BaseElementModel extends BaseModel
 			// look in $_FILES
 			$this->setContentPostLocation($content);
 
-			$content = Craft::$app->request->getPost($content, []);
+			$content = Craft::$app->request->getBodyParam($content, []);
 		}
 
 		if (!isset($this->_rawPostContent))

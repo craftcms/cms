@@ -301,7 +301,8 @@ trait ApplicationTrait
 	 */
 	public function canTestEditions()
 	{
-		return (Craft::$app->cache->get('editionTestableDomain@'.Craft::$app->request->getHostName()) == 1);
+		$request = Craft::$app->getRequest();
+		return (!$request->getIsConsoleRequest() && Craft::$app->cache->get('editionTestableDomain@'.$request->getHostName()) == 1);
 	}
 
 	/**
@@ -773,9 +774,11 @@ trait ApplicationTrait
 		if ($this->isInstalled())
 		{
 			// Will any locale validation be necessary here?
-			if (Craft::$app->request->isCpRequest() || defined('CRAFT_LOCALE'))
+			$request = $this->getRequest();
+
+			if ($request->getIsConsoleRequest() || $request->getIsCpRequest() || defined('CRAFT_LOCALE'))
 			{
-				if (Craft::$app->request->isCpRequest())
+				if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 				{
 					$locale = 'auto';
 				}
@@ -803,19 +806,22 @@ trait ApplicationTrait
 					}
 					catch (\Exception $e)
 					{
-						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
+						Craft::log("Tried to determine the user's preferred locale, but got this exception: " . $e->getMessage(), LogLevel::Error);
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = Craft::$app->request->getBrowserLanguages();
-
-					if ($browserLanguages)
+					if (!$request->getIsConsoleRequest())
 					{
-						foreach ($browserLanguages as $language)
+						$browserLanguages = $request->getAcceptableLanguages();
+
+						if ($browserLanguages)
 						{
-							if (in_array($language, $siteLocaleIds))
+							foreach ($browserLanguages as $language)
 							{
-								return $language;
+								if (in_array($language, $siteLocaleIds))
+								{
+									return $language;
+								}
 							}
 						}
 					}

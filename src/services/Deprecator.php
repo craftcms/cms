@@ -54,12 +54,14 @@ class Deprecator extends Component
 	 */
 	public function log($key, $message)
 	{
+		$request = Craft::$app->getRequest();
+
 		$log = new DeprecationErrorModel();
 
 		$log->key            = $key;
 		$log->message        = $message;
 		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
-		$log->template       = (Craft::$app->request->isSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
+		$log->template       = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
 
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
@@ -197,7 +199,8 @@ class Deprecator extends Component
 		$pluginsPathLength = strlen($pluginsPath);
 		/* end HIDE */
 
-		$isTemplateRendering = (Craft::$app->request->isSiteRequest() && Craft::$app->templates->isRendering());
+		$request = Craft::$app->getRequest();
+		$isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->templates->isRendering());
 
 		if ($isTemplateRendering)
 		{
@@ -255,7 +258,8 @@ class Deprecator extends Component
 				if ($isTemplateRendering && !$foundTemplate)
 				{
 					// Is this a plugin's template?
-					if (!$foundPlugin && Craft::$app->request->isCpRequest() && $logTrace['template'])
+					$request = Craft::$app->getRequest();
+					if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template'])
 					{
 						$firstSeg = array_shift(explode('/', $logTrace['template']));
 

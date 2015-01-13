@@ -85,10 +85,6 @@ return [
 		'class'     => 'craft\app\services\Resources',
 		'dateParam' => 'd',
 	],
-	'request' => [
-		'class'                  => 'craft\app\services\HttpRequest',
-		'enableCookieValidation' => true,
-	],
 	'sections' => [
 		'class' => 'craft\app\services\Sections',
 		'typeLimits' => [

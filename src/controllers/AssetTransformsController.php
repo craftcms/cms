@@ -85,15 +85,15 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 
 		$transform = new AssetTransformModel();
-		$transform->id = Craft::$app->request->getPost('transformId');
-		$transform->name = Craft::$app->request->getPost('name');
-		$transform->handle = Craft::$app->request->getPost('handle');
-		$transform->width = Craft::$app->request->getPost('width');
-		$transform->height = Craft::$app->request->getPost('height');
-		$transform->mode = Craft::$app->request->getPost('mode');
-		$transform->position = Craft::$app->request->getPost('position');
-		$transform->quality = Craft::$app->request->getPost('quality');
-		$transform->format = Craft::$app->request->getPost('format');
+		$transform->id = Craft::$app->request->getBodyParam('transformId');
+		$transform->name = Craft::$app->request->getBodyParam('name');
+		$transform->handle = Craft::$app->request->getBodyParam('handle');
+		$transform->width = Craft::$app->request->getBodyParam('width');
+		$transform->height = Craft::$app->request->getBodyParam('height');
+		$transform->mode = Craft::$app->request->getBodyParam('mode');
+		$transform->position = Craft::$app->request->getBodyParam('position');
+		$transform->quality = Craft::$app->request->getBodyParam('quality');
+		$transform->format = Craft::$app->request->getBodyParam('format');
 
 		if (empty($transform->format))
 		{
@@ -148,7 +148,7 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformId = Craft::$app->request->getRequiredPost('id');
+		$transformId = Craft::$app->request->getRequiredBodyParam('id');
 
 		Craft::$app->assetTransforms->deleteTransform($transformId);
 

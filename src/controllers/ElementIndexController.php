@@ -147,8 +147,8 @@ class ElementIndexController extends BaseElementsController
 
 		$requestService = Craft::$app->request;
 
-		$actionHandle = $requestService->getRequiredPost('elementAction');
-		$elementIds = $requestService->getRequiredPost('elementIds');
+		$actionHandle = $requestService->getRequiredBodyParam('elementAction');
+		$elementIds = $requestService->getRequiredBodyParam('elementIds');
 
 		// Find that action from the list of available actions for the source
 		if ($this->_actions)
@@ -173,7 +173,7 @@ class ElementIndexController extends BaseElementsController
 
 		foreach ($params->attributeNames() as $paramName)
 		{
-			$paramValue = $requestService->getPost($paramName);
+			$paramValue = $requestService->getBodyParam($paramName);
 
 			if ($paramValue !== null)
 			{
@@ -269,7 +269,7 @@ class ElementIndexController extends BaseElementsController
 	{
 		$criteria = Craft::$app->elements->getCriteria(
 			$this->_elementType->getClassHandle(),
-			Craft::$app->request->getPost('criteria')
+			Craft::$app->request->getBodyParam('criteria')
 		);
 
 		$criteria->limit = 50;
@@ -370,7 +370,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getAvailableActions()
 	{
-		if (Craft::$app->request->isMobileBrowser())
+		if (Craft::$app->request->getIsMobileBrowser())
 		{
 			return;
 		}

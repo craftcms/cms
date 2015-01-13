@@ -572,7 +572,7 @@ class TemplateCache extends Component
 	{
 		if (!isset($this->_path))
 		{
-			if (Craft::$app->request->isCpRequest())
+			if (Craft::$app->request->getIsCpRequest())
 			{
 				$this->_path = 'cp:';
 			}

@@ -135,10 +135,10 @@ class SystemSettingsController extends BaseController
 
 		$info = Craft::$app->getInfo();
 
-		$info->on          = (bool) Craft::$app->request->getPost('on');
-		$info->siteName    = Craft::$app->request->getPost('siteName');
-		$info->siteUrl     = Craft::$app->request->getPost('siteUrl');
-		$info->timezone    = Craft::$app->request->getPost('timezone');
+		$info->on          = (bool) Craft::$app->request->getBodyParam('on');
+		$info->siteName    = Craft::$app->request->getBodyParam('siteName');
+		$info->siteUrl     = Craft::$app->request->getBodyParam('siteUrl');
+		$info->timezone    = Craft::$app->request->getBodyParam('timezone');
 
 		if (Craft::$app->saveInfo($info))
 		{
@@ -281,31 +281,31 @@ class SystemSettingsController extends BaseController
 		$emailSettings = new EmailSettingsModel();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                    = Craft::$app->request->getPost('protocol');
-		$emailSettings->host                        = Craft::$app->request->getPost('host');
-		$emailSettings->port                        = Craft::$app->request->getPost('port');
-		$emailSettings->smtpAuth                    = (bool)Craft::$app->request->getPost('smtpAuth');
+		$emailSettings->protocol                    = Craft::$app->request->getBodyParam('protocol');
+		$emailSettings->host                        = Craft::$app->request->getBodyParam('host');
+		$emailSettings->port                        = Craft::$app->request->getBodyParam('port');
+		$emailSettings->smtpAuth                    = (bool)Craft::$app->request->getBodyParam('smtpAuth');
 
 		if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail)
 		{
-			$emailSettings->username                = Craft::$app->request->getPost('smtpUsername');
-			$emailSettings->password                = Craft::$app->request->getPost('smtpPassword');
+			$emailSettings->username                = Craft::$app->request->getBodyParam('smtpUsername');
+			$emailSettings->password                = Craft::$app->request->getBodyParam('smtpPassword');
 		}
 		else
 		{
-			$emailSettings->username                = Craft::$app->request->getPost('username');
-			$emailSettings->password                = Craft::$app->request->getPost('password');
+			$emailSettings->username                = Craft::$app->request->getBodyParam('username');
+			$emailSettings->password                = Craft::$app->request->getBodyParam('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (bool)Craft::$app->request->getPost('smtpKeepAlive');
-		$emailSettings->smtpSecureTransportType     = Craft::$app->request->getPost('smtpSecureTransportType');
-		$emailSettings->timeout                     = Craft::$app->request->getPost('timeout');
-		$emailSettings->emailAddress                = Craft::$app->request->getPost('emailAddress');
-		$emailSettings->senderName                  = Craft::$app->request->getPost('senderName');
+		$emailSettings->smtpKeepAlive               = (bool)Craft::$app->request->getBodyParam('smtpKeepAlive');
+		$emailSettings->smtpSecureTransportType     = Craft::$app->request->getBodyParam('smtpSecureTransportType');
+		$emailSettings->timeout                     = Craft::$app->request->getBodyParam('timeout');
+		$emailSettings->emailAddress                = Craft::$app->request->getBodyParam('emailAddress');
+		$emailSettings->senderName                  = Craft::$app->request->getBodyParam('senderName');
 
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$settings['template'] = Craft::$app->request->getPost('template');
+			$settings['template'] = Craft::$app->request->getBodyParam('template');
 			$emailSettings->template = $settings['template'];
 		}
 

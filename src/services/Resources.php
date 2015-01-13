@@ -391,7 +391,7 @@ class Resources extends Component
 		{
 			$options['forceDownload'] = false;
 
-			if (Craft::$app->request->getQuery($this->dateParam))
+			if (Craft::$app->request->getQueryParam($this->dateParam))
 			{
 				$options['cache'] = true;
 			}

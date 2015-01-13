@@ -41,9 +41,9 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 
 		$widget = new WidgetModel();
-		$widget->id = Craft::$app->request->getPost('widgetId');
-		$widget->type = Craft::$app->request->getRequiredPost('type');
-		$widget->settings = Craft::$app->request->getPost('types.'.$widget->type);
+		$widget->id = Craft::$app->request->getBodyParam('widgetId');
+		$widget->type = Craft::$app->request->getRequiredBodyParam('type');
+		$widget->settings = Craft::$app->request->getBodyParam('types.'.$widget->type);
 
 		// Did it save?
 		if (Craft::$app->dashboard->saveUserWidget($widget))
@@ -72,7 +72,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetId = JsonHelper::decode(Craft::$app->request->getRequiredPost('id'));
+		$widgetId = JsonHelper::decode(Craft::$app->request->getRequiredBodyParam('id'));
 		Craft::$app->dashboard->deleteUserWidgetById($widgetId);
 
 		$this->returnJson(['success' => true]);
@@ -88,7 +88,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
+		$widgetIds = JsonHelper::decode(Craft::$app->request->getRequiredBodyParam('ids'));
 		Craft::$app->dashboard->reorderUserWidgets($widgetIds);
 
 		$this->returnJson(['success' => true]);
@@ -138,14 +138,14 @@ class DashboardController extends BaseController
 		$errors = [];
 		$zipFile = null;
 		$tempFolder = null;
-		$widgetId = Craft::$app->request->getPost('widgetId');
+		$widgetId = Craft::$app->request->getBodyParam('widgetId');
 
 		$getHelpModel = new GetHelpModel();
-		$getHelpModel->fromEmail = Craft::$app->request->getPost('fromEmail');
-		$getHelpModel->message = trim(Craft::$app->request->getPost('message'));
-		$getHelpModel->attachLogs = (bool) Craft::$app->request->getPost('attachLogs');
-		$getHelpModel->attachDbBackup = (bool) Craft::$app->request->getPost('attachDbBackup');
-		$getHelpModel->attachTemplates = (bool)Craft::$app->request->getPost('attachTemplates');
+		$getHelpModel->fromEmail = Craft::$app->request->getBodyParam('fromEmail');
+		$getHelpModel->message = trim(Craft::$app->request->getBodyParam('message'));
+		$getHelpModel->attachLogs = (bool) Craft::$app->request->getBodyParam('attachLogs');
+		$getHelpModel->attachDbBackup = (bool) Craft::$app->request->getBodyParam('attachDbBackup');
+		$getHelpModel->attachTemplates = (bool)Craft::$app->request->getBodyParam('attachTemplates');
 		$getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
 
 		if ($getHelpModel->validate())

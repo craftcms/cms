@@ -426,7 +426,9 @@ class CraftTwigExtension extends \Twig_Extension
 			// Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
 
-			if (Craft::$app->request->isSiteRequest())
+			$request = Craft::$app->getRequest();
+
+			if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest())
 			{
 				foreach (Craft::$app->globals->getAllSets() as $globalSet)
 				{
@@ -441,7 +443,9 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['user'] = null;
 		}
 
-		if (Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			$globals['CraftEdition']  = Craft::$app->getEdition();
 			$globals['CraftPersonal'] = Craft::Personal;

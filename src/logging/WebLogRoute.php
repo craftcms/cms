@@ -30,10 +30,11 @@ class WebLogRoute extends \CWebLogRoute
 	 */
 	protected function render($view, $data)
 	{
+		$request = Craft::$app->getRequest();
 		if (
-			!Craft::$app->getRequest()->getIsConsoleRequest() &&
-			!Craft::$app->request->isResourceRequest() &&
-			!Craft::$app->request->isAjaxRequest() &&
+			!$request->getIsConsoleRequest() &&
+			!$request->getIsResourceRequest() &&
+			!$request->getIsAjax() &&
 			Craft::$app->config->get('devMode') &&
 			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
 		)

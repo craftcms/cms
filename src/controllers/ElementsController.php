@@ -74,8 +74,8 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionGetEditorHtml()
 	{
-		$elementId = Craft::$app->request->getRequiredPost('elementId');
-		$localeId = Craft::$app->request->getPost('locale');
+		$elementId = Craft::$app->request->getRequiredBodyParam('elementId');
+		$localeId = Craft::$app->request->getBodyParam('locale');
 		$elementTypeClass = Craft::$app->elements->getElementTypeById($elementId);
 		$element = Craft::$app->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
@@ -84,7 +84,7 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(403);
 		}
 
-		$includeLocales = (bool) Craft::$app->request->getPost('includeLocales', false);
+		$includeLocales = (bool) Craft::$app->request->getBodyParam('includeLocales', false);
 
 		return $this->_returnEditorHtml($element, $includeLocales);
 	}
@@ -97,8 +97,8 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionSaveElement()
 	{
-		$elementId = Craft::$app->request->getRequiredPost('elementId');
-		$localeId = Craft::$app->request->getRequiredPost('locale');
+		$elementId = Craft::$app->request->getRequiredBodyParam('elementId');
+		$localeId = Craft::$app->request->getRequiredBodyParam('locale');
 		$elementTypeClass = Craft::$app->elements->getElementTypeById($elementId);
 		$element = Craft::$app->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
@@ -107,8 +107,8 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(403);
 		}
 
-		$namespace = Craft::$app->request->getRequiredPost('namespace');
-		$params = Craft::$app->request->getPost($namespace);
+		$namespace = Craft::$app->request->getRequiredBodyParam('namespace');
+		$params = Craft::$app->request->getBodyParam($namespace);
 
 		if (isset($params['title']))
 		{

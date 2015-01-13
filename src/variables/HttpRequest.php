@@ -7,6 +7,7 @@
 
 namespace craft\app\variables;
 
+use Craft;
 use craft\app\helpers\UrlHelper;
 use yii\web\Cookie;
 
@@ -26,9 +27,9 @@ class HttpRequest
 	 *
 	 * @return bool
 	 */
-	public function isAjax()
+	public function getIsAjax()
 	{
-		return Craft::$app->request->isAjaxRequest();
+		return Craft::$app->request->getIsAjaxRequest();
 	}
 
 	/**
@@ -36,9 +37,9 @@ class HttpRequest
 	 *
 	 * @return bool
 	 */
-	public function isSecure()
+	public function getIsSecure()
 	{
-		return Craft::$app->request->isSecureConnection();
+		return Craft::$app->request->getIsSecureConnection();
 	}
 
 	/**
@@ -46,9 +47,9 @@ class HttpRequest
 	 *
 	 * @return bool
 	 */
-	public function isLivePreview()
+	public function getIsLivePreview()
 	{
-		return Craft::$app->request->isLivePreview();
+		return Craft::$app->request->getIsLivePreview();
 	}
 
 	/**
@@ -58,7 +59,7 @@ class HttpRequest
 	 */
 	public function getScriptName()
 	{
-		return Craft::$app->request->getScriptName();
+		return Craft::$app->request->getScriptFilename();
 	}
 
 	/**
@@ -145,9 +146,9 @@ class HttpRequest
 	 *
 	 * @return mixed
 	 */
-	public function getQuery($name = null, $default = null)
+	public function getQueryParam($name = null, $default = null)
 	{
-		return Craft::$app->request->getQuery($name, $default);
+		return Craft::$app->request->getQueryParam($name, $default);
 	}
 
 	/**
@@ -158,9 +159,9 @@ class HttpRequest
 	 *
 	 * @return mixed
 	 */
-	public function getPost($name = null, $default = null)
+	public function getBodyParam($name = null, $default = null)
 	{
-		return Craft::$app->request->getPost($name, $default);
+		return Craft::$app->request->getBodyParam($name, $default);
 	}
 
 	/**
@@ -209,9 +210,9 @@ class HttpRequest
 	 *
 	 * @return bool
 	 */
-	public function isMobileBrowser($detectTablets = false)
+	public function getIsMobileBrowser($detectTablets = false)
 	{
-		return Craft::$app->request->isMobileBrowser($detectTablets);
+		return Craft::$app->request->getIsMobileBrowser($detectTablets);
 	}
 
 	/**
@@ -364,6 +365,36 @@ class HttpRequest
 
 	// Deprecated methods
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns a variable from the query string.
+	 *
+	 * @param string|null $name
+	 * @param string|null $default
+	 *
+	 * @return mixed
+	 * @deprecated Deprecated in 3.0. Use [[getQueryParam()]] instead.
+	 */
+	public function getQuery($name = null, $default = null)
+	{
+		Craft::$app->deprecator->log('craft.request.getQuery()', 'craft.request.getQuery() is deprecated. Use getQueryParam() instead.');
+		return $this->getQueryParam($name, $default);
+	}
+
+	/**
+	 * Returns a value from post data.
+	 *
+	 * @param string|null $name
+	 * @param string|null $default
+	 *
+	 * @return mixed
+	 * @deprecated Deprecated in 3.0. Use [[]] instead.
+	 */
+	public function getPost($name = null, $default = null)
+	{
+		Craft::$app->deprecator->log('craft.request.getPost()', 'craft.request.getPost() is deprecated. Use getBodyParam() instead.');
+		return $this->getBodyParam($name, $default);
+	}
 
 	/**
 	 * Returns the user IP address.

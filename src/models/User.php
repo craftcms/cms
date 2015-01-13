@@ -226,7 +226,9 @@ class User extends BaseElementModel implements IdentityInterface
 					return false;
 				}
 
-				if (Craft::$app->request->isCpRequest())
+				$request = Craft::$app->getRequest();
+
+				if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 				{
 					if (!$this->can('accessCp'))
 					{

@@ -292,7 +292,9 @@ class Path extends Component
 	{
 		if (!isset($this->_templatesPath))
 		{
-			if (Craft::$app->request->isCpRequest())
+			$request = Craft::$app->getRequest();
+
+			if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 			{
 				$this->_templatesPath = $this->getCpTemplatesPath();
 			}

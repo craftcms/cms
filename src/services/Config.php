@@ -492,7 +492,9 @@ class Config extends Component
 	 */
 	public function getLoginPath()
 	{
-		if (Craft::$app->request->isSiteRequest())
+		$request = Craft::$app->getRequest();
+
+		if ($request->getIsConsoleRequest() || $request->getIsSiteRequest())
 		{
 			return $this->getLocalized('loginPath');
 		}
@@ -510,7 +512,9 @@ class Config extends Component
 	 */
 	public function getLogoutPath()
 	{
-		if (Craft::$app->request->isSiteRequest())
+		$request = Craft::$app->getRequest();
+
+		if ($request->getIsConsoleRequest() || $request->getIsSiteRequest())
 		{
 			return $this->getLocalized('logoutPath');
 		}
@@ -546,7 +550,7 @@ class Config extends Component
 			return $url;
 		}
 
-		if (Craft::$app->request->isSecureConnection())
+		if (Craft::$app->request->getIsSecureConnection())
 		{
 			$url = UrlHelper::getUrl($url, [
 				'code' => $code, 'id' => $uid
@@ -588,7 +592,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (Craft::$app->request->isSecureConnection())
+				if (Craft::$app->request->getIsSecureConnection())
 				{
 					$url = UrlHelper::getCpUrl($url, [
 						'code' => $code, 'id' => $uid
@@ -608,7 +612,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (Craft::$app->request->isSecureConnection())
+				if (Craft::$app->request->getIsSecureConnection())
 				{
 					$url = UrlHelper::getUrl($url, [
 						'code' => $code, 'id' => $uid
@@ -687,7 +691,9 @@ class Config extends Component
 	 */
 	public function getResourceTrigger()
 	{
-		if (Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			return 'resources';
 		}

@@ -37,7 +37,7 @@ abstract class BaseElementsController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Element controllers are only available to the Control Panel
-		if (!Craft::$app->request->isCpRequest())
+		if (!Craft::$app->request->getIsCpRequest())
 		{
 			throw new HttpException(403);
 		}

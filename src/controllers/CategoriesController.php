@@ -119,12 +119,12 @@ class CategoriesController extends BaseController
 		$group = new CategoryGroupModel();
 
 		// Set the simple stuff
-		$group->id        = Craft::$app->request->getPost('groupId');
-		$group->name      = Craft::$app->request->getPost('name');
-		$group->handle    = Craft::$app->request->getPost('handle');
-		$group->hasUrls   = Craft::$app->request->getPost('hasUrls');
-		$group->template  = Craft::$app->request->getPost('template');
-		$group->maxLevels = Craft::$app->request->getPost('maxLevels');
+		$group->id        = Craft::$app->request->getBodyParam('groupId');
+		$group->name      = Craft::$app->request->getBodyParam('name');
+		$group->handle    = Craft::$app->request->getBodyParam('handle');
+		$group->hasUrls   = Craft::$app->request->getBodyParam('hasUrls');
+		$group->template  = Craft::$app->request->getBodyParam('template');
+		$group->maxLevels = Craft::$app->request->getBodyParam('maxLevels');
 
 		// Locale-specific URL formats
 		$locales = [];
@@ -133,8 +133,8 @@ class CategoriesController extends BaseController
 		{
 			$locales[$localeId] = new CategoryGroupLocaleModel([
 				'locale'          => $localeId,
-				'urlFormat'       => Craft::$app->request->getPost('urlFormat.'.$localeId),
-				'nestedUrlFormat' => Craft::$app->request->getPost('nestedUrlFormat.'.$localeId),
+				'urlFormat'       => Craft::$app->request->getBodyParam('urlFormat.'.$localeId),
+				'nestedUrlFormat' => Craft::$app->request->getBodyParam('nestedUrlFormat.'.$localeId),
 			]);
 		}
 
@@ -173,7 +173,7 @@ class CategoriesController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$groupId = Craft::$app->request->getRequiredPost('id');
+		$groupId = Craft::$app->request->getRequiredBodyParam('id');
 
 		Craft::$app->categories->deleteGroupById($groupId);
 		$this->returnJson(['success' => true]);
@@ -300,7 +300,7 @@ class CategoriesController extends BaseController
 		}
 
 		// Enable Live Preview?
-		if (!Craft::$app->request->isMobileBrowser(true) && Craft::$app->categories->isGroupTemplateValid($variables['group']))
+		if (!Craft::$app->request->getIsMobileBrowser(true) && Craft::$app->categories->isGroupTemplateValid($variables['group']))
 		{
 			Craft::$app->templates->includeJs('Craft.LivePreview.init('.JsonHelper::encode([
 				'fields'        => '#title-field, #fields > div > div > .field',
@@ -388,7 +388,7 @@ class CategoriesController extends BaseController
 		// Save the category
 		if (Craft::$app->categories->saveCategory($category))
 		{
-			if (Craft::$app->request->isAjaxRequest())
+			if (Craft::$app->request->getIsAjax())
 			{
 				$return['success']   = true;
 				$return['title']     = $category->title;
@@ -411,7 +411,7 @@ class CategoriesController extends BaseController
 		}
 		else
 		{
-			if (Craft::$app->request->isAjaxRequest())
+			if (Craft::$app->request->getIsAjax())
 			{
 				$this->returnJson([
 					'success' => false,
@@ -440,7 +440,7 @@ class CategoriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$categoryId = Craft::$app->request->getRequiredPost('categoryId');
+		$categoryId = Craft::$app->request->getRequiredBodyParam('categoryId');
 		$category = Craft::$app->categories->getCategoryById($categoryId);
 
 		if (!$category)
@@ -454,7 +454,7 @@ class CategoriesController extends BaseController
 		// Delete it
 		if (Craft::$app->categories->deleteCategory($category))
 		{
-			if (Craft::$app->request->isAjaxRequest())
+			if (Craft::$app->request->getIsAjax())
 			{
 				$this->returnJson(['success' => true]);
 			}
@@ -466,7 +466,7 @@ class CategoriesController extends BaseController
 		}
 		else
 		{
-			if (Craft::$app->request->isAjaxRequest())
+			if (Craft::$app->request->getIsAjax())
 			{
 				$this->returnJson(['success' => false]);
 			}
@@ -665,8 +665,8 @@ class CategoriesController extends BaseController
 	 */
 	private function _getCategoryModel()
 	{
-		$categoryId = Craft::$app->request->getPost('categoryId');
-		$localeId = Craft::$app->request->getPost('locale');
+		$categoryId = Craft::$app->request->getBodyParam('categoryId');
+		$localeId = Craft::$app->request->getBodyParam('locale');
 
 		if ($categoryId)
 		{
@@ -680,7 +680,7 @@ class CategoriesController extends BaseController
 		else
 		{
 			$category = new CategoryModel();
-			$category->groupId = Craft::$app->request->getRequiredPost('groupId');
+			$category->groupId = Craft::$app->request->getRequiredBodyParam('groupId');
 
 			if ($localeId)
 			{
@@ -722,16 +722,16 @@ class CategoriesController extends BaseController
 	private function _populateCategoryModel(CategoryModel $category)
 	{
 		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
-		$category->slug    = Craft::$app->request->getPost('slug', $category->slug);
-		$category->enabled = (bool) Craft::$app->request->getPost('enabled', $category->enabled);
+		$category->slug    = Craft::$app->request->getBodyParam('slug', $category->slug);
+		$category->enabled = (bool) Craft::$app->request->getBodyParam('enabled', $category->enabled);
 
-		$category->getContent()->title = Craft::$app->request->getPost('title', $category->title);
+		$category->getContent()->title = Craft::$app->request->getBodyParam('title', $category->title);
 
 		$fieldsLocation = Craft::$app->request->getParam('fieldsLocation', 'fields');
 		$category->setContentFromPost($fieldsLocation);
 
 		// Parent
-		$parentId = Craft::$app->request->getPost('parentId');
+		$parentId = Craft::$app->request->getBodyParam('parentId');
 
 		if (is_array($parentId))
 		{

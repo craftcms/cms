@@ -49,15 +49,15 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$group = new UserGroupModel();
-		$group->id = Craft::$app->request->getPost('groupId');
-		$group->name = Craft::$app->request->getPost('name');
-		$group->handle = Craft::$app->request->getPost('handle');
+		$group->id = Craft::$app->request->getBodyParam('groupId');
+		$group->name = Craft::$app->request->getBodyParam('name');
+		$group->handle = Craft::$app->request->getBodyParam('handle');
 
 		// Did it save?
 		if (Craft::$app->userGroups->saveGroup($group))
 		{
 			// Save the new permissions
-			$permissions = Craft::$app->request->getPost('permissions', []);
+			$permissions = Craft::$app->request->getBodyParam('permissions', []);
 			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
 
 			Craft::$app->getSession()->setNotice(Craft::t('Group saved.'));
@@ -84,7 +84,7 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = Craft::$app->request->getRequiredPost('id');
+		$groupId = Craft::$app->request->getRequiredBodyParam('id');
 
 		Craft::$app->userGroups->deleteGroupById($groupId);
 
@@ -100,9 +100,9 @@ class UserSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$settings['requireEmailVerification'] = (bool) Craft::$app->request->getPost('requireEmailVerification');
-		$settings['allowPublicRegistration'] = (bool) Craft::$app->request->getPost('allowPublicRegistration');
-		$settings['defaultGroup'] = Craft::$app->request->getPost('defaultGroup');
+		$settings['requireEmailVerification'] = (bool) Craft::$app->request->getBodyParam('requireEmailVerification');
+		$settings['allowPublicRegistration'] = (bool) Craft::$app->request->getBodyParam('allowPublicRegistration');
+		$settings['defaultGroup'] = Craft::$app->request->getBodyParam('defaultGroup');
 
 		if (Craft::$app->systemSettings->saveSettings('users', $settings))
 		{

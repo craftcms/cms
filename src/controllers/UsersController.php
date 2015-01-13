@@ -76,9 +76,9 @@ class UsersController extends BaseController
 		// First, a little house-cleaning for expired, pending users.
 		Craft::$app->users->purgeExpiredPendingUsers();
 
-		$loginName = Craft::$app->request->getPost('loginName');
-		$password = Craft::$app->request->getPost('password');
-		$rememberMe = (bool) Craft::$app->request->getPost('rememberMe');
+		$loginName = Craft::$app->request->getBodyParam('loginName');
+		$password = Craft::$app->request->getBodyParam('password');
+		$rememberMe = (bool) Craft::$app->request->getBodyParam('rememberMe');
 
 		// Does a user exist with that username/email?
 		$user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
@@ -122,7 +122,7 @@ class UsersController extends BaseController
 		$this->requireAdmin();
 		$this->requirePostRequest();
 
-		$userId = Craft::$app->request->getPost('userId');
+		$userId = Craft::$app->request->getBodyParam('userId');
 
 		if (Craft::$app->getUser()->loginByUserId($userId))
 		{
@@ -155,7 +155,7 @@ class UsersController extends BaseController
 	{
 		Craft::$app->getUser()->logout(false);
 
-		if (Craft::$app->request->isAjaxRequest())
+		if (Craft::$app->request->getIsAjax())
 		{
 			$this->returnJson([
 				'success' => true
@@ -182,7 +182,7 @@ class UsersController extends BaseController
 		// If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
 		if (Craft::$app->getUser()->checkPermission('editUsers'))
 		{
-			$userId = Craft::$app->request->getPost('userId');
+			$userId = Craft::$app->request->getBodyParam('userId');
 
 			if ($userId)
 			{
@@ -197,7 +197,7 @@ class UsersController extends BaseController
 
 		if (!isset($user))
 		{
-			$loginName = Craft::$app->request->getPost('loginName');
+			$loginName = Craft::$app->request->getBodyParam('loginName');
 
 			if (!$loginName)
 			{
@@ -218,7 +218,7 @@ class UsersController extends BaseController
 		{
 			if (Craft::$app->users->sendPasswordResetEmail($user))
 			{
-				if (Craft::$app->request->isAjaxRequest())
+				if (Craft::$app->request->getIsAjax())
 				{
 					$this->returnJson(['success' => true]);
 				}
@@ -232,7 +232,7 @@ class UsersController extends BaseController
 			$errors[] = Craft::t('There was a problem sending the password reset email.');
 		}
 
-		if (Craft::$app->request->isAjaxRequest())
+		if (Craft::$app->request->getIsAjax())
 		{
 			$this->returnErrorJson($errors);
 		}
@@ -282,7 +282,7 @@ class UsersController extends BaseController
 	public function actionSetPassword()
 	{
 		// Have they just submitted a password, or are we just displaying teh page?
-		if (!Craft::$app->request->isPostRequest())
+		if (!Craft::$app->request->getIsPost())
 		{
 			if ($info = $this->_processTokenRequest())
 			{
@@ -307,7 +307,7 @@ class UsersController extends BaseController
 		else
 		{
 			// POST request. They've just set the password.
-			$code          = Craft::$app->request->getRequiredPost('code');
+			$code          = Craft::$app->request->getRequiredBodyParam('code');
 			$id            = Craft::$app->request->getRequiredParam('id');
 			$userToProcess = Craft::$app->users->getUserByUid($id);
 
@@ -321,7 +321,7 @@ class UsersController extends BaseController
 				$this->_processInvalidToken($userToProcess);
 			}
 
-			$newPassword = Craft::$app->request->getRequiredPost('newPassword');
+			$newPassword = Craft::$app->request->getRequiredBodyParam('newPassword');
 			$userToProcess->newPassword = $newPassword;
 
 			if ($userToProcess->passwordResetRequired)
@@ -412,7 +412,7 @@ class UsersController extends BaseController
 		$this->requireAdmin();
 		$this->requirePostRequest();
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -739,7 +739,7 @@ class UsersController extends BaseController
 		// Get the user being edited
 		// ---------------------------------------------------------------------
 
-		$userId = Craft::$app->request->getPost('userId');
+		$userId = Craft::$app->request->getBodyParam('userId');
 		$isNewUser = !$userId;
 		$thisIsPublicRegistration = false;
 
@@ -806,13 +806,13 @@ class UsersController extends BaseController
 		// Are they allowed to set the email address?
 		if ($isNewUser || $user->isCurrent() || $currentUser->can('changeUserEmails'))
 		{
-			$newEmail = Craft::$app->request->getPost('email');
+			$newEmail = Craft::$app->request->getBodyParam('email');
 
 			// Did it just change?
 			if ($newEmail && $newEmail != $user->email)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!$currentUser->admin || Craft::$app->request->getPost('sendVerificationEmail')))
+				if ($requireEmailVerification && (!$currentUser->admin || Craft::$app->request->getBodyParam('sendVerificationEmail')))
 				{
 					// Save it as an unverified email for now
 					$user->unverifiedEmail = $newEmail;
@@ -834,11 +834,11 @@ class UsersController extends BaseController
 		// Are they allowed to set a new password?
 		if ($thisIsPublicRegistration)
 		{
-			$user->newPassword = Craft::$app->request->getPost('password');
+			$user->newPassword = Craft::$app->request->getBodyParam('password');
 		}
 		else if ($user->isCurrent())
 		{
-			$user->newPassword = Craft::$app->request->getPost('newPassword');
+			$user->newPassword = Craft::$app->request->getBodyParam('newPassword');
 		}
 
 		// If editing an existing user and either of these properties are being changed,
@@ -862,13 +862,13 @@ class UsersController extends BaseController
 		}
 		else
 		{
-			$user->username    = Craft::$app->request->getPost('username', ($user->username ? $user->username : $user->email));
+			$user->username    = Craft::$app->request->getBodyParam('username', ($user->username ? $user->username : $user->email));
 		}
 
-		$user->firstName       = Craft::$app->request->getPost('firstName', $user->firstName);
-		$user->lastName        = Craft::$app->request->getPost('lastName', $user->lastName);
-		$user->preferredLocale = Craft::$app->request->getPost('preferredLocale', $user->preferredLocale);
-		$user->weekStartDay    = Craft::$app->request->getPost('weekStartDay', $user->weekStartDay);
+		$user->firstName       = Craft::$app->request->getBodyParam('firstName', $user->firstName);
+		$user->lastName        = Craft::$app->request->getBodyParam('lastName', $user->lastName);
+		$user->preferredLocale = Craft::$app->request->getBodyParam('preferredLocale', $user->preferredLocale);
+		$user->weekStartDay    = Craft::$app->request->getBodyParam('weekStartDay', $user->weekStartDay);
 
 		// If email verification is required, then new users will be saved in a pending state,
 		// even if an admin is doing this and opted to not send the verification email
@@ -880,8 +880,8 @@ class UsersController extends BaseController
 		// There are some things only admins can change
 		if ($currentUser->admin)
 		{
-			$user->passwordResetRequired = (bool) Craft::$app->request->getPost('passwordResetRequired', $user->passwordResetRequired);
-			$user->admin                 = (bool) Craft::$app->request->getPost('admin', $user->admin);
+			$user->passwordResetRequired = (bool) Craft::$app->request->getBodyParam('passwordResetRequired', $user->passwordResetRequired);
+			$user->admin                 = (bool) Craft::$app->request->getBodyParam('admin', $user->admin);
 		}
 
 		// If this is Craft Pro, grab any profile content from post
@@ -974,7 +974,7 @@ class UsersController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$this->requireLogin();
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 
 		if ($userId != Craft::$app->getUser()->getIdentity()->id)
 		{
@@ -1051,7 +1051,7 @@ class UsersController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireLogin();
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 
 		if ($userId != Craft::$app->getUser()->getIdentity()->id)
 		{
@@ -1060,11 +1060,11 @@ class UsersController extends BaseController
 
 		try
 		{
-			$x1 = Craft::$app->request->getRequiredPost('x1');
-			$x2 = Craft::$app->request->getRequiredPost('x2');
-			$y1 = Craft::$app->request->getRequiredPost('y1');
-			$y2 = Craft::$app->request->getRequiredPost('y2');
-			$source = Craft::$app->request->getRequiredPost('source');
+			$x1 = Craft::$app->request->getRequiredBodyParam('x1');
+			$x2 = Craft::$app->request->getRequiredBodyParam('x2');
+			$y1 = Craft::$app->request->getRequiredBodyParam('y1');
+			$y2 = Craft::$app->request->getRequiredBodyParam('y2');
+			$source = Craft::$app->request->getRequiredBodyParam('source');
 
 			// Strip off any querystring info, if any.
 			if (($qIndex = mb_strpos($source, '?')) !== false)
@@ -1118,7 +1118,7 @@ class UsersController extends BaseController
 	{
 		$this->requireAjaxRequest();
 		$this->requireLogin();
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 
 		if ($userId != Craft::$app->getUser()->getIdentity()->id)
 		{
@@ -1149,7 +1149,7 @@ class UsersController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -1159,7 +1159,7 @@ class UsersController extends BaseController
 
 		Craft::$app->users->sendActivationEmail($user);
 
-		if (Craft::$app->request->isAjaxRequest())
+		if (Craft::$app->request->getIsAjax())
 		{
 			die('great!');
 		}
@@ -1182,7 +1182,7 @@ class UsersController extends BaseController
 		$this->requireLogin();
 		$this->requirePermission('administrateUsers');
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -1216,7 +1216,7 @@ class UsersController extends BaseController
 		$this->requireLogin();
 		$this->requirePermission('administrateUsers');
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -1254,7 +1254,7 @@ class UsersController extends BaseController
 
 		$this->requirePermission('deleteUsers');
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -1269,7 +1269,7 @@ class UsersController extends BaseController
 		}
 
 		// Are we transfering the user's content to a different user?
-		$transferContentToId = Craft::$app->request->getPost('transferContentTo');
+		$transferContentToId = Craft::$app->request->getBodyParam('transferContentTo');
 
 		if (is_array($transferContentToId) && isset($transferContentToId[0]))
 		{
@@ -1314,7 +1314,7 @@ class UsersController extends BaseController
 		$this->requireLogin();
 		$this->requirePermission('administrateUsers');
 
-		$userId = Craft::$app->request->getRequiredPost('userId');
+		$userId = Craft::$app->request->getRequiredBodyParam('userId');
 		$user = Craft::$app->users->getUserById($userId);
 
 		if (!$user)
@@ -1447,7 +1447,7 @@ class UsersController extends BaseController
 			}
 		}
 
-		if (Craft::$app->request->isAjaxRequest())
+		if (Craft::$app->request->getIsAjax())
 		{
 			$this->returnJson([
 				'errorCode' => $authError,
@@ -1459,8 +1459,8 @@ class UsersController extends BaseController
 			Craft::$app->getSession()->setError($message);
 
 			Craft::$app->urlManager->setRouteVariables([
-				'loginName'    => Craft::$app->request->getPost('loginName'),
-				'rememberMe'   => (bool) Craft::$app->request->getPost('rememberMe'),
+				'loginName'    => Craft::$app->request->getBodyParam('loginName'),
+				'rememberMe'   => (bool) Craft::$app->request->getBodyParam('rememberMe'),
 				'errorCode'    => $authError,
 				'errorMessage' => $message,
 			]);
@@ -1482,7 +1482,7 @@ class UsersController extends BaseController
 
 		// If this is a CP request and they can access the control panel, set the default return URL to wherever
 		// postCpLoginRedirect tells us
-		if (Craft::$app->request->isCpRequest() && $currentUser->can('accessCp'))
+		if (Craft::$app->request->getIsCpRequest() && $currentUser->can('accessCp'))
 		{
 			$postCpLoginRedirect = Craft::$app->config->get('postCpLoginRedirect');
 			$defaultReturnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
@@ -1501,7 +1501,7 @@ class UsersController extends BaseController
 		Craft::$app->getUser()->removeReturnUrl();
 
 		// If this was an Ajax request, just return success:true
-		if (Craft::$app->request->isAjaxRequest())
+		if (Craft::$app->request->getIsAjax())
 		{
 			$this->returnJson([
 				'success' => true,
@@ -1587,7 +1587,7 @@ class UsersController extends BaseController
 	private function _processUserPhoto($user)
 	{
 		// Delete their photo?
-		if (Craft::$app->request->getPost('deleteUserPhoto'))
+		if (Craft::$app->request->getBodyParam('deleteUserPhoto'))
 		{
 			Craft::$app->users->deleteUserPhoto($user);
 		}
@@ -1622,7 +1622,7 @@ class UsersController extends BaseController
 		if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('assignUserPermissions'))
 		{
 			// Save any user groups
-			$groupIds = Craft::$app->request->getPost('groups');
+			$groupIds = Craft::$app->request->getBodyParam('groups');
 
 			if ($groupIds !== null)
 			{
@@ -1636,7 +1636,7 @@ class UsersController extends BaseController
 			}
 			else
 			{
-				$permissions = Craft::$app->request->getPost('permissions');
+				$permissions = Craft::$app->request->getBodyParam('permissions');
 			}
 
 			if ($permissions !== null)

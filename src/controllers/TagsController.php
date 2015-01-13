@@ -109,9 +109,9 @@ class TagsController extends BaseController
 		$tagGroup = new TagGroupModel();
 
 		// Set the simple stuff
-		$tagGroup->id     = Craft::$app->request->getPost('tagGroupId');
-		$tagGroup->name   = Craft::$app->request->getPost('name');
-		$tagGroup->handle = Craft::$app->request->getPost('handle');
+		$tagGroup->id     = Craft::$app->request->getBodyParam('tagGroupId');
+		$tagGroup->name   = Craft::$app->request->getBodyParam('name');
+		$tagGroup->handle = Craft::$app->request->getBodyParam('handle');
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
@@ -146,7 +146,7 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$sectionId = Craft::$app->request->getRequiredPost('id');
+		$sectionId = Craft::$app->request->getRequiredBodyParam('id');
 
 		Craft::$app->tags->deleteTagGroupById($sectionId);
 		$this->returnJson(['success' => true]);
@@ -162,9 +162,9 @@ class TagsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$search = Craft::$app->request->getPost('search');
-		$tagGroupId = Craft::$app->request->getPost('tagGroupId');
-		$excludeIds = Craft::$app->request->getPost('excludeIds', []);
+		$search = Craft::$app->request->getBodyParam('search');
+		$tagGroupId = Craft::$app->request->getBodyParam('tagGroupId');
+		$excludeIds = Craft::$app->request->getBodyParam('excludeIds', []);
 
 		$notIds = ['and'];
 
@@ -227,8 +227,8 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$tag = new TagModel();
-		$tag->groupId = Craft::$app->request->getRequiredPost('groupId');
-		$tag->getContent()->title = Craft::$app->request->getRequiredPost('title');
+		$tag->groupId = Craft::$app->request->getRequiredBodyParam('groupId');
+		$tag->getContent()->title = Craft::$app->request->getRequiredBodyParam('title');
 
 		if (Craft::$app->tags->saveTag($tag))
 		{

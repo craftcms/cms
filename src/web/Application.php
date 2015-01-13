@@ -41,7 +41,7 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Fields           $fields           The [[\craft\app\services\Fields fields service]].
  * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
  * @property \craft\app\services\Globals          $globals          The [[\craft\app\services\Globals globals service]].
- * @property \craft\app\services\HttpRequest      $request          The [[\craft\app\services\HttpRequest request service]].
+ * @property \craft\app\web\Request               $request          The current [[\craft\app\web\Request request]].
  * @property \craft\app\services\Images           $images           The [[\craft\app\services\Images images service]].
  * @property \craft\app\services\Install          $install          The [[\craft\app\services\Install install service]].
  * @property \craft\app\services\Localization     $localization     The [[\craft\app\services\Localization localization service]].
@@ -106,9 +106,9 @@ class Application extends \yii\web\Application
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
-		// Initialize the Cache service, HttpRequest service and LogRouter right away (order is important)
+		// Initialize the Cache service, Request and LogRouter right away (order is important)
 		$this->get('cache');
-		$this->get('request');
+		$this->getRequest();
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
@@ -156,7 +156,7 @@ class Application extends \yii\web\Application
 
 		// If this is a CP request, prevent robots from indexing/following the page
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-		if ($this->request->isCpRequest())
+		if ($this->request->getIsCpRequest())
 		{
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
 		}
@@ -168,7 +168,7 @@ class Application extends \yii\web\Application
 		$this->_processInstallRequest();
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
-		if ($this->isInMaintenanceMode() && $this->request->isSiteRequest())
+		if ($this->isInMaintenanceMode() && $this->request->getIsSiteRequest())
 		{
 			throw new HttpException(503);
 		}
@@ -179,7 +179,7 @@ class Application extends \yii\web\Application
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
 		{
-			if ($this->request->isCpRequest())
+			if ($this->request->getIsCpRequest())
 			{
 				$version = $this->getVersion();
 				$build = $this->getBuild();
@@ -202,7 +202,7 @@ class Application extends \yii\web\Application
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
-			($this->isInMaintenanceMode() && $this->request->isCpRequest()) ||
+			($this->isInMaintenanceMode() && $this->request->getIsCpRequest()) ||
 			$this->request->getActionSegments() == ['update', 'cleanUp'] ||
 			$this->request->getActionSegments() == ['update', 'rollback']
 		)
@@ -229,7 +229,7 @@ class Application extends \yii\web\Application
 		}
 
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-		if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
+		if ($this->request->getIsCpRequest() && !($this->request->getIsActionRequest() && $this->_isSpecialCaseActionRequest()))
 		{
 			$user = $this->getUser();
 
@@ -505,7 +505,7 @@ class Application extends \yii\web\Application
 	 */
 	public function getTranslatedBrowserLanguage()
 	{
-		$browserLanguages = $this->request->getBrowserLanguages();
+		$browserLanguages = $this->request->getAcceptableLanguages();
 
 		if ($browserLanguages)
 		{
@@ -534,7 +534,7 @@ class Application extends \yii\web\Application
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->request->isResourceRequest())
+		if ($this->request->getIsResourceRequest())
 		{
 			// Don't want to log anything on a resource request.
 			$this->log->removeRoute('FileLogRoute');
@@ -555,7 +555,7 @@ class Application extends \yii\web\Application
 	 */
 	private function _processInstallRequest()
 	{
-		$isCpRequest = $this->request->isCpRequest();
+		$isCpRequest = $this->request->getIsCpRequest();
 
 		// Are they requesting an installer template/action specifically?
 		if ($isCpRequest && $this->request->getSegment(1) === 'install' && !$this->isInstalled())
@@ -564,7 +564,7 @@ class Application extends \yii\web\Application
 			$this->runController('install/'.$action);
 			$this->end();
 		}
-		else if ($isCpRequest && $this->request->isActionRequest() && ($this->request->getSegment(1) !== 'login'))
+		else if ($isCpRequest && $this->request->getIsActionRequest() && ($this->request->getSegment(1) !== 'login'))
 		{
 			$actionSegs = $this->request->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
@@ -598,7 +598,7 @@ class Application extends \yii\web\Application
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->request->isActionRequest())
+		if ($this->request->getIsActionRequest())
 		{
 			$actionSegs = $this->request->getActionSegments();
 			$route = implode('/', $actionSegs);
@@ -646,13 +646,13 @@ class Application extends \yii\web\Application
 			$update = true;
 		}
 
-		if (($data = $this->request->getPost('data', null)) !== null && isset($data['handle']))
+		if (($data = $this->request->getBodyParam('data', null)) !== null && isset($data['handle']))
 		{
 			$update = true;
 		}
 
 		// Only run for CP requests and if we're not in the middle of an update.
-		if ($this->request->isCpRequest() && !$update)
+		if ($this->request->getIsCpRequest() && !$update)
 		{
 			$cachedAppPath = $this->cache->get('appPath');
 			$appPath = $this->path->getAppPath();
@@ -675,8 +675,8 @@ class Application extends \yii\web\Application
 	{
 		// Let all non-action CP requests through.
 		if (
-			$this->request->isCpRequest() &&
-			(!$this->request->isActionRequest() || $this->request->getActionSegments() == ['users', 'login'])
+			$this->request->getIsCpRequest() &&
+			(!$this->request->getIsActionRequest() || $this->request->getActionSegments() == ['users', 'login'])
 		)
 		{
 			// If this is a request to actually manually update Craft, do it
@@ -697,7 +697,7 @@ class Application extends \yii\web\Application
 				}
 				else
 				{
-					if (!$this->request->isAjaxRequest())
+					if (!$this->request->getIsAjax())
 					{
 						if ($this->request->getPathInfo() !== '')
 						{
@@ -711,7 +711,7 @@ class Application extends \yii\web\Application
 			}
 		}
 		// We'll also let action requests to UpdateController through as well.
-		else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
+		else if ($this->request->getIsActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
 		{
 			$controller = $actionSegs[0];
 			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
@@ -742,7 +742,7 @@ class Application extends \yii\web\Application
 
 			if ($this->getUser()->isLoggedIn())
 			{
-				if ($this->request->isCpRequest())
+				if ($this->request->getIsCpRequest())
 				{
 					$error = Craft::t('Your account doesn’t have permission to access the Control Panel when the system is offline.');
 				}
@@ -756,7 +756,7 @@ class Application extends \yii\web\Application
 			else
 			{
 				// If this is a CP request, redirect to the Login page
-				if ($this->request->isCpRequest())
+				if ($this->request->getIsCpRequest())
 				{
 					$this->getUser()->requireLogin();
 				}
@@ -778,7 +778,7 @@ class Application extends \yii\web\Application
 			return true;
 		}
 
-		if ($this->request->isCpRequest() ||
+		if ($this->request->getIsCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
 			$this->request->getPath() === Craft::$app->config->get('actionTrigger').'/users/setpassword' ||

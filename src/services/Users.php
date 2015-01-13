@@ -591,13 +591,13 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = Craft::$app->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
 		}
 
 		return $url;
@@ -618,13 +618,13 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = Craft::$app->config->get('actionTrigger').'/users/setpassword';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->isSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
 		}
 
 		return $url;

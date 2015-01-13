@@ -40,9 +40,9 @@ class GlobalsController extends BaseController
 		$globalSet = new GlobalSetModel();
 
 		// Set the simple stuff
-		$globalSet->id     = Craft::$app->request->getPost('setId');
-		$globalSet->name   = Craft::$app->request->getPost('name');
-		$globalSet->handle = Craft::$app->request->getPost('handle');
+		$globalSet->id     = Craft::$app->request->getBodyParam('setId');
+		$globalSet->name   = Craft::$app->request->getBodyParam('name');
+		$globalSet->handle = Craft::$app->request->getBodyParam('handle');
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
@@ -77,7 +77,7 @@ class GlobalsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$globalSetId = Craft::$app->request->getRequiredPost('id');
+		$globalSetId = Craft::$app->request->getRequiredBodyParam('id');
 
 		Craft::$app->globals->deleteSetById($globalSetId);
 		$this->returnJson(['success' => true]);
@@ -164,8 +164,8 @@ class GlobalsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$globalSetId = Craft::$app->request->getRequiredPost('setId');
-		$localeId = Craft::$app->request->getPost('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
+		$globalSetId = Craft::$app->request->getRequiredBodyParam('setId');
+		$localeId = Craft::$app->request->getBodyParam('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
 
 		// Make sure the user is allowed to edit this global set and locale
 		$this->requirePermission('editGlobalSet:'.$globalSetId);

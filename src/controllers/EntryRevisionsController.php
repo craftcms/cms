@@ -38,7 +38,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->request->getBodyParam('draftId');
 
 		if ($draftId)
 		{
@@ -52,10 +52,10 @@ class EntryRevisionsController extends BaseEntriesController
 		else
 		{
 			$draft = new EntryDraftModel();
-			$draft->id        = Craft::$app->request->getPost('entryId');
-			$draft->sectionId = Craft::$app->request->getRequiredPost('sectionId');
+			$draft->id        = Craft::$app->request->getBodyParam('entryId');
+			$draft->sectionId = Craft::$app->request->getRequiredBodyParam('sectionId');
 			$draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
-			$draft->locale    = Craft::$app->request->getPost('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
+			$draft->locale    = Craft::$app->request->getBodyParam('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
 		}
 
 		// Make sure they have permission to be editing this
@@ -117,8 +117,8 @@ class EntryRevisionsController extends BaseEntriesController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$draftId = Craft::$app->request->getRequiredPost('draftId');
-		$name = Craft::$app->request->getRequiredPost('name');
+		$draftId = Craft::$app->request->getRequiredBodyParam('draftId');
+		$name = Craft::$app->request->getRequiredBodyParam('name');
 
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 
@@ -134,7 +134,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		$draft->name = $name;
-		$draft->revisionNotes = Craft::$app->request->getPost('notes');
+		$draft->revisionNotes = Craft::$app->request->getBodyParam('notes');
 
 		if (Craft::$app->entryRevisions->saveDraft($draft, false))
 		{
@@ -156,7 +156,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->request->getBodyParam('draftId');
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 
 		if (!$draft)
@@ -184,7 +184,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->request->getBodyParam('draftId');
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 		$userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -263,7 +263,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$versionId = Craft::$app->request->getPost('versionId');
+		$versionId = Craft::$app->request->getBodyParam('versionId');
 		$version = Craft::$app->entryRevisions->getVersionById($versionId);
 
 		if (!$version)
@@ -329,15 +329,15 @@ class EntryRevisionsController extends BaseEntriesController
 	 */
 	private function _setDraftAttributesFromPost(EntryDraftModel $draft)
 	{
-		$draft->typeId     = Craft::$app->request->getPost('typeId');
-		$draft->slug       = Craft::$app->request->getPost('slug');
-		$draft->postDate   = Craft::$app->request->getPost('postDate');
-		$draft->expiryDate = Craft::$app->request->getPost('expiryDate');
-		$draft->enabled    = (bool) Craft::$app->request->getPost('enabled');
-		$draft->getContent()->title = Craft::$app->request->getPost('title');
+		$draft->typeId     = Craft::$app->request->getBodyParam('typeId');
+		$draft->slug       = Craft::$app->request->getBodyParam('slug');
+		$draft->postDate   = Craft::$app->request->getBodyParam('postDate');
+		$draft->expiryDate = Craft::$app->request->getBodyParam('expiryDate');
+		$draft->enabled    = (bool) Craft::$app->request->getBodyParam('enabled');
+		$draft->getContent()->title = Craft::$app->request->getBodyParam('title');
 
 		// Author
-		$authorId = Craft::$app->request->getPost('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
+		$authorId = Craft::$app->request->getBodyParam('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
 
 		if (is_array($authorId))
 		{
@@ -347,7 +347,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->authorId = $authorId;
 
 		// Parent
-		$parentId = Craft::$app->request->getPost('parentId');
+		$parentId = Craft::$app->request->getBodyParam('parentId');
 
 		if (is_array($parentId))
 		{

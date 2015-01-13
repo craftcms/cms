@@ -10,7 +10,8 @@ namespace craft\app\web;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\BaseElementModel;
-use craft\app\services\HttpRequest;
+use craft\app\web\Request as WebRequest;
+use craft\app\console\Request as ConsoleRequest;
 
 /**
  * Class UrlManager
@@ -83,7 +84,6 @@ class UrlManager extends \CUrlManager
 		// Set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
-		// makes more sense to set in HttpRequest
 		if (Craft::$app->config->usePathInfo())
 		{
 			$this->setUrlFormat(static::PATH_FORMAT);
@@ -112,7 +112,7 @@ class UrlManager extends \CUrlManager
 	 * Determines which controller/action to route the request to. Routing candidates include actual template paths,
 	 * elements with URIs, and registered URL routes.
 	 *
-	 * @param HttpRequest $request
+	 * @param WebRequest|ConsoleRequest $request
 	 *
 	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
 	 * @return string The controller/action path.
@@ -194,7 +194,7 @@ class UrlManager extends \CUrlManager
 	{
 		if (!isset($this->_matchedElement))
 		{
-			if (Craft::$app->request->isSiteRequest())
+			if (Craft::$app->request->getIsSiteRequest())
 			{
 				$path = Craft::$app->request->getPath();
 				$this->_getMatchedElementRoute($path);
@@ -280,7 +280,7 @@ class UrlManager extends \CUrlManager
 			$this->_matchedElement = false;
 			$this->_matchedElementRoute = false;
 
-			if (Craft::$app->isInstalled() && Craft::$app->request->isSiteRequest())
+			if (Craft::$app->isInstalled() && Craft::$app->request->getIsSiteRequest())
 			{
 				$element = Craft::$app->elements->getElementByUri($path, Craft::$app->language, true);
 
@@ -317,7 +317,7 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _getMatchedUrlRoute($path)
 	{
-		if (Craft::$app->request->isCpRequest())
+		if (Craft::$app->request->getIsCpRequest())
 		{
 			// Merge in any edition-specific routes
 			for ($i = 1; $i <= Craft::$app->getEdition(); $i++)
@@ -460,7 +460,7 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _isPublicTemplatePath()
 	{
-		if (!Craft::$app->request->isAjaxRequest())
+		if (!Craft::$app->request->getIsAjax())
 		{
 			$trigger = Craft::$app->config->get('privateTemplateTrigger');
 			$length = strlen($trigger);

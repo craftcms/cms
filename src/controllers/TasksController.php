@@ -85,7 +85,7 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = Craft::$app->request->getRequiredPost('taskId');
+		$taskId = Craft::$app->request->getRequiredBodyParam('taskId');
 		$task = Craft::$app->tasks->rerunTaskById($taskId);
 
 		if (!Craft::$app->tasks->isTaskRunning())
@@ -114,7 +114,7 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = Craft::$app->request->getRequiredPost('taskId');
+		$taskId = Craft::$app->request->getRequiredBodyParam('taskId');
 		$task = Craft::$app->tasks->deleteTaskById($taskId);
 
 		Craft::$app->end();

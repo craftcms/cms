@@ -246,7 +246,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!Craft::$app->request->isAjaxRequest())
+		if (!Craft::$app->request->getIsAjax())
 		{
 			throw new HttpException(400);
 		}
@@ -260,7 +260,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireToken()
 	{
-		if (!Craft::$app->request->getQuery(Craft::$app->config->get('tokenParam')))
+		if (!Craft::$app->request->getQueryParam(Craft::$app->config->get('tokenParam')))
 		{
 			throw new HttpException(400);
 		}
@@ -299,7 +299,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($object = null, $default = null)
 	{
-		$url = Craft::$app->request->getPost('redirect');
+		$url = Craft::$app->request->getBodyParam('redirect');
 
 		if ($url === null)
 		{
