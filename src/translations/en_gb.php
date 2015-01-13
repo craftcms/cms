@@ -1084,7 +1084,7 @@ return array(
 	'Welcome to {siteName}!' => 'Welcome to {siteName}!',
 	'What do you want the Title field to be called?' => 'What do you want the Title field to be called?',
 	'What do you want to do with any content that is only available in {language}?' => 'What do you want to do with any content that is only available in {language}?',
-	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
+	'What do you want to do with their content?' => 'What do you want to do with their content?',
 	'What do you want to do?' => 'What do you want to do?',
 	'What do you want to name your group?' => 'What do you want to name your group?',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.',

@@ -1084,7 +1084,7 @@ return array(
 	'Welcome to {siteName}!' => '欢迎浏览 {siteName}！',
 	'What do you want the Title field to be called?' => '您想怎样称呼标题字段？',
 	'What do you want to do with any content that is only available in {language}?' => '您想用只以 {language} 提供的内容做什么？',
-	'What do you want to do with the their content?' => '您想用他们的内容做什么？',
+	'What do you want to do with their content?' => '您想用他们的内容做什么？',
 	'What do you want to do?' => '您想要做什么？',
 	'What do you want to name your group?' => '您想给群组取什么名称？',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => '自动生成的条目标题是什么样的。可以包含标记（例如 {ex}）用以输出条目属性。',

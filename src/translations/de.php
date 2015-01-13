@@ -1084,7 +1084,7 @@ return array(
 	'Welcome to {siteName}!' => 'Willkommen auf {siteName}!',
 	'What do you want the Title field to be called?' => 'Wie soll das Titelfeld genannt werden?',
 	'What do you want to do with any content that is only available in {language}?' => 'Was möchten Sie mit Inhalten machen, die nur in {language} verfügbar sind?',
-	'What do you want to do with the their content?' => 'Was möchten Sie mit deren Inhalten machen?',
+	'What do you want to do with their content?' => 'Was möchten Sie mit deren Inhalten machen?',
 	'What do you want to do?' => 'Was möchten Sie tun?',
 	'What do you want to name your group?' => 'Welchen Namen soll Ihre Gruppe bekommen?',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Wie die automatisch generierten Titel der Einträge aussehen sollen. Es können Tags verwendet werden, die Eigenschaften eines Eintrags ausgeben, wie z.B. {ex}.',

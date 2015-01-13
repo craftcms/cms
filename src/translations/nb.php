@@ -1084,7 +1084,7 @@ return array(
 	'Welcome to {siteName}!' => 'Velkommen til {siteName}!',
 	'What do you want the Title field to be called?' => 'Hva vil du at tittelfeltet skal kalles?',
 	'What do you want to do with any content that is only available in {language}?' => 'Hva vil du gjøre med innhold som kun er tilgjengelig på {language}?',
-	'What do you want to do with the their content?' => 'Hva vil du gjøre med innholdet deres?',
+	'What do you want to do with their content?' => 'Hva vil du gjøre med innholdet deres?',
 	'What do you want to do?' => 'Hva ønsker du å gjøre?',
 	'What do you want to name your group?' => 'Hva ønsker du å kalle gruppen din?',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Hvordan automatisk genererte titler skal se ut. Du kan inkludere koder som erstattes med artikkelegenskaper, slik som {ex}.',
