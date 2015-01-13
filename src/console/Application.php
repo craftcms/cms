@@ -8,6 +8,7 @@
 namespace craft\app\console;
 
 use Craft;
+use craft\app\base\ApplicationTrait;
 use craft\app\etc\console\ConsoleCommandRunner;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
@@ -24,7 +25,7 @@ class Application extends \yii\console\Application
 	// Traits
 	// =========================================================================
 
-	use \craft\app\base\ApplicationTrait;
+	use ApplicationTrait;
 
 	// Public Methods
 	// =========================================================================

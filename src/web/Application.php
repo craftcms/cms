@@ -8,6 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
+use craft\app\base\ApplicationTrait;
 use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
@@ -76,7 +77,7 @@ class Application extends \yii\web\Application
 	// Traits
 	// =========================================================================
 
-	use \craft\app\base\ApplicationTrait;
+	use ApplicationTrait;
 
 	// Properties
 	// =========================================================================
