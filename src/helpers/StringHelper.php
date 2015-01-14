@@ -740,7 +740,7 @@ class StringHelper extends \yii\helpers\StringHelper
 	/**
 	 * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
 	 *
-	 * @param      $string
+	 * @param string $string
 	 *
 	 * @return bool|string
 	 */
@@ -776,7 +776,7 @@ class StringHelper extends \yii\helpers\StringHelper
 	/**
 	 * Checks if the given string is UTF-8 encoded.
 	 *
-	 * @param $string The string to check.
+	 * @param string $string The string to check.
 	 *
 	 * @return bool
 	 */
