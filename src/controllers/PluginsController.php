@@ -45,7 +45,7 @@ class PluginsController extends BaseController
 	public function actionInstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = Craft::$app->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->getRequest()->getRequiredBodyParam('pluginClass');
 
 		if (Craft::$app->plugins->installPlugin($className))
 		{
@@ -67,7 +67,7 @@ class PluginsController extends BaseController
 	public function actionUninstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = Craft::$app->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->getRequest()->getRequiredBodyParam('pluginClass');
 
 		if (Craft::$app->plugins->uninstallPlugin($className))
 		{
@@ -89,7 +89,7 @@ class PluginsController extends BaseController
 	public function actionEnablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = Craft::$app->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->getRequest()->getRequiredBodyParam('pluginClass');
 
 		if (Craft::$app->plugins->enablePlugin($className))
 		{
@@ -111,7 +111,7 @@ class PluginsController extends BaseController
 	public function actionDisablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = Craft::$app->request->getRequiredPost('pluginClass');
+		$className = Craft::$app->getRequest()->getRequiredBodyParam('pluginClass');
 
 		if (Craft::$app->plugins->disablePlugin($className))
 		{
@@ -134,8 +134,8 @@ class PluginsController extends BaseController
 	public function actionSavePluginSettings()
 	{
 		$this->requirePostRequest();
-		$pluginClass = Craft::$app->request->getRequiredPost('pluginClass');
-		$settings = Craft::$app->request->getPost('settings');
+		$pluginClass = Craft::$app->getRequest()->getRequiredBodyParam('pluginClass');
+		$settings = Craft::$app->getRequest()->getBodyParam('settings');
 
 		$plugin = Craft::$app->plugins->getPlugin($pluginClass);
 		if (!$plugin)
@@ -153,7 +153,7 @@ class PluginsController extends BaseController
 		Craft::$app->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'plugin' => $plugin
 		]);
 	}

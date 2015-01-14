@@ -90,7 +90,7 @@ class FileLogRoute extends \CFileLogRoute
 				$lock = false;
 			}
 			// Config setting it set to 'auto', so check cache.
-			else if (Craft::$app->cache->get('useWriteFileLock') === 'yes')
+			else if (Craft::$app->getCache()->get('useWriteFileLock') === 'yes')
 			{
 				$lock = true;
 			}

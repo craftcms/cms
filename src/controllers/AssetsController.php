@@ -60,12 +60,12 @@ class AssetsController extends BaseController
 	public function actionUploadFile()
 	{
 		$this->requireAjaxRequest();
-		$folderId = Craft::$app->request->getPost('folderId');
+		$folderId = Craft::$app->getRequest()->getBodyParam('folderId');
 
 		// Conflict resolution data
-		$userResponse = Craft::$app->request->getPost('userResponse');
-		$theNewFileId = Craft::$app->request->getPost('newFileId', 0);
-		$fileName = Craft::$app->request->getPost('fileName');
+		$userResponse = Craft::$app->getRequest()->getBodyParam('userResponse');
+		$theNewFileId = Craft::$app->getRequest()->getBodyParam('newFileId', 0);
+		$fileName = Craft::$app->getRequest()->getBodyParam('fileName');
 
 		// For a conflict resolution, the folder ID is no longer there and no file is actually being uploaded
 		if (!empty($folderId) && empty($userResponse))
@@ -94,8 +94,8 @@ class AssetsController extends BaseController
 	public function actionExpressUpload()
 	{
 		$this->requireAjaxRequest();
-		$fieldId = Craft::$app->request->getPost('fieldId');
-		$elementId = Craft::$app->request->getPost('elementId');
+		$fieldId = Craft::$app->getRequest()->getBodyParam('fieldId');
+		$elementId = Craft::$app->getRequest()->getBodyParam('elementId');
 
 		if (empty($_FILES['files']) || !isset($_FILES['files']['error'][0]) || $_FILES['files']['error'][0] != 0)
 		{
@@ -157,7 +157,7 @@ class AssetsController extends BaseController
 	public function actionReplaceFile()
 	{
 		$this->requireAjaxRequest();
-		$fileId = Craft::$app->request->getPost('fileId');
+		$fileId = Craft::$app->getRequest()->getBodyParam('fileId');
 
 		try
 		{
@@ -257,8 +257,8 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$parentId = Craft::$app->request->getRequiredPost('parentId');
-		$folderName = Craft::$app->request->getRequiredPost('folderName');
+		$parentId = Craft::$app->getRequest()->getRequiredBodyParam('parentId');
+		$folderName = Craft::$app->getRequest()->getRequiredBodyParam('folderName');
 
 		try
 		{
@@ -283,7 +283,7 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$folderId = Craft::$app->request->getRequiredPost('folderId');
+		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
 
 		try
 		{
@@ -310,8 +310,8 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$folderId = Craft::$app->request->getRequiredPost('folderId');
-		$newName = Craft::$app->request->getRequiredPost('newName');
+		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
+		$newName = Craft::$app->getRequest()->getRequiredBodyParam('newName');
 
 		try
 		{
@@ -337,7 +337,7 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$fileIds = Craft::$app->request->getRequiredPost('fileId');
+		$fileIds = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
 
 		try
 		{
@@ -361,10 +361,10 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 
-		$fileIds = Craft::$app->request->getRequiredPost('fileId');
-		$folderId = Craft::$app->request->getRequiredPost('folderId');
-		$fileName = Craft::$app->request->getPost('fileName');
-		$actions = Craft::$app->request->getPost('action');
+		$fileIds = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
+		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
+		$fileName = Craft::$app->getRequest()->getBodyParam('fileName');
+		$actions = Craft::$app->getRequest()->getBodyParam('action');
 
 		try
 		{
@@ -389,9 +389,9 @@ class AssetsController extends BaseController
 	{
 		$this->requireLogin();
 
-		$folderId = Craft::$app->request->getRequiredPost('folderId');
-		$parentId = Craft::$app->request->getRequiredPost('parentId');
-		$action = Craft::$app->request->getPost('action');
+		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
+		$parentId = Craft::$app->getRequest()->getRequiredBodyParam('parentId');
+		$action = Craft::$app->getRequest()->getBodyParam('action');
 
 		try
 		{
@@ -417,14 +417,14 @@ class AssetsController extends BaseController
 	 */
 	public function actionGenerateTransform()
 	{
-		$transformId = Craft::$app->request->getQuery('transformId');
-		$returnUrl = (bool) Craft::$app->request->getPost('returnUrl', false);
+		$transformId = Craft::$app->getRequest()->getQueryParam('transformId');
+		$returnUrl = (bool) Craft::$app->getRequest()->getBodyParam('returnUrl', false);
 
 		// If transform Id was not passed in, see if file id and handle were.
 		if (empty($transformId))
 		{
-			$fileId = Craft::$app->request->getPost('fileId');
-			$handle = Craft::$app->request->getPost('handle');
+			$fileId = Craft::$app->getRequest()->getBodyParam('fileId');
+			$handle = Craft::$app->getRequest()->getBodyParam('handle');
 			$fileModel = Craft::$app->assets->getFileById($fileId);
 			$transformIndexModel = Craft::$app->assetTransforms->getTransformIndex($fileModel, $handle);
 		}

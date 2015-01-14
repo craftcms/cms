@@ -196,7 +196,7 @@ class Entries extends Component
 			$entry->getContent()->title = Craft::$app->templates->renderObjectTemplate($entryType->titleFormat, $entry);
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -325,7 +325,7 @@ class Entries extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

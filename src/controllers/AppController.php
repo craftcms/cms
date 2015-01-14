@@ -39,7 +39,7 @@ class AppController extends BaseController
 	{
 		$this->requirePermission('performUpdates');
 
-		$forceRefresh = (bool) Craft::$app->request->getPost('forceRefresh');
+		$forceRefresh = (bool) Craft::$app->getRequest()->getBodyParam('forceRefresh');
 		Craft::$app->updates->getUpdates($forceRefresh);
 
 		$this->returnJson([
@@ -58,7 +58,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$path = Craft::$app->request->getRequiredPost('path');
+		$path = Craft::$app->getRequest()->getRequiredBodyParam('path');
 
 		// Fetch 'em and send 'em
 		$alerts = CpHelper::getAlerts($path, true);
@@ -75,7 +75,7 @@ class AppController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
 
-		$message = Craft::$app->request->getRequiredPost('message');
+		$message = Craft::$app->getRequest()->getRequiredBodyParam('message');
 		$user = Craft::$app->getUser()->getIdentity();
 
 		$currentTime = DateTimeHelper::currentUTCDateTime();
@@ -194,9 +194,9 @@ class AppController extends BaseController
 		$this->requireAdmin();
 
 		$model = new UpgradePurchaseModel([
-			'ccTokenId'     => Craft::$app->request->getRequiredPost('ccTokenId'),
-			'edition'       => Craft::$app->request->getRequiredPost('edition'),
-			'expectedPrice' => Craft::$app->request->getRequiredPost('expectedPrice'),
+			'ccTokenId'     => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
+			'edition'       => Craft::$app->getRequest()->getRequiredBodyParam('edition'),
+			'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
 		]);
 
 		if (Craft::$app->et->purchaseUpgrade($model))
@@ -231,7 +231,7 @@ class AppController extends BaseController
 			throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
 		}
 
-		$edition = Craft::$app->request->getRequiredPost('edition');
+		$edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
 		Craft::$app->setEdition($edition);
 
 		$this->returnJson([

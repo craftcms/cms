@@ -52,8 +52,8 @@ class FieldsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$group = new FieldGroupModel();
-		$group->id = Craft::$app->request->getPost('id');
-		$group->name = Craft::$app->request->getRequiredPost('name');
+		$group->id = Craft::$app->getRequest()->getBodyParam('id');
+		$group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
 
 		$isNewGroup = empty($group->id);
 
@@ -87,7 +87,7 @@ class FieldsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = Craft::$app->request->getRequiredPost('id');
+		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 		$success = Craft::$app->fields->deleteGroupById($groupId);
 
 		Craft::$app->getSession()->setNotice(Craft::t('Group deleted.'));
@@ -111,16 +111,16 @@ class FieldsController extends BaseController
 
 		$field = new FieldModel();
 
-		$field->id           = Craft::$app->request->getPost('fieldId');
-		$field->groupId      = Craft::$app->request->getRequiredPost('group');
-		$field->name         = Craft::$app->request->getPost('name');
-		$field->handle       = Craft::$app->request->getPost('handle');
-		$field->instructions = Craft::$app->request->getPost('instructions');
-		$field->translatable = (bool) Craft::$app->request->getPost('translatable');
+		$field->id           = Craft::$app->getRequest()->getBodyParam('fieldId');
+		$field->groupId      = Craft::$app->getRequest()->getRequiredBodyParam('group');
+		$field->name         = Craft::$app->getRequest()->getBodyParam('name');
+		$field->handle       = Craft::$app->getRequest()->getBodyParam('handle');
+		$field->instructions = Craft::$app->getRequest()->getBodyParam('instructions');
+		$field->translatable = (bool) Craft::$app->getRequest()->getBodyParam('translatable');
 
-		$field->type = Craft::$app->request->getRequiredPost('type');
+		$field->type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-		$typeSettings = Craft::$app->request->getPost('types');
+		$typeSettings = Craft::$app->getRequest()->getBodyParam('types');
 		if (isset($typeSettings[$field->type]))
 		{
 			$field->settings = $typeSettings[$field->type];
@@ -137,7 +137,7 @@ class FieldsController extends BaseController
 		}
 
 		// Send the field back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'field' => $field
 		]);
 	}
@@ -152,7 +152,7 @@ class FieldsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$fieldId = Craft::$app->request->getRequiredPost('id');
+		$fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 		$success = Craft::$app->fields->deleteFieldById($fieldId);
 		$this->returnJson(['success' => $success]);
 	}

@@ -616,7 +616,9 @@ class Templates extends Component
 	 */
 	public function getFootHtml()
 	{
-		if (Craft::$app->isInstalled() && Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (Craft::$app->isInstalled() && !$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			// Include any JS/resource flashes
 			foreach (Craft::$app->getSession()->getJsResourceFlashes() as $path)
@@ -671,7 +673,7 @@ class Templates extends Component
 	{
 		if (Craft::$app->config->get('enableCsrfProtection') === true)
 		{
-			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->request->getCsrfToken().'">';
+			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
 		}
 
 		return '';
@@ -839,7 +841,9 @@ class Templates extends Component
 		$basePaths = [];
 
 		// Should we be looking for a localized version of the template?
-		if (Craft::$app->request->isSiteRequest() && IOHelper::folderExists($templatesPath.Craft::$app->language))
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && IOHelper::folderExists($templatesPath.Craft::$app->language))
 		{
 			$basePaths[] = $templatesPath.Craft::$app->language.'/';
 		}
@@ -857,10 +861,11 @@ class Templates extends Component
 		// Otherwise maybe it's a plugin template?
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (Craft::$app->request->isCpRequest() || Craft::$app->request->isActionRequest())
+
+		if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->getRequest()->getIsActionRequest()))
 		{
 			// Sanitize
-			$name = Craft::$app->request->decodePathInfo($name);
+			$name = Craft::$app->getRequest()->decodePathInfo($name);
 
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));
@@ -1199,7 +1204,9 @@ class Templates extends Component
 		// Set the defaultTemplateExtensions and indexTemplateFilenames vars
 		if (!isset($this->_defaultTemplateExtensions))
 		{
-			if (Craft::$app->request->isCpRequest())
+			$request = Craft::$app->getRequest();
+
+			if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 			{
 				$this->_defaultTemplateExtensions = ['html', 'twig'];
 				$this->_indexTemplateFilenames = ['index'];

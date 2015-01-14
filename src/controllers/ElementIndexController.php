@@ -75,7 +75,7 @@ class ElementIndexController extends BaseElementsController
 
 		$this->_elementType = $this->getElementType();
 		$this->_context     = $this->getContext();
-		$this->_sourceKey   = Craft::$app->request->getParam('source');
+		$this->_sourceKey   = Craft::$app->getRequest()->getParam('source');
 		$this->_source      = $this->_getSource();
 		$this->_viewState   = $this->_getViewState();
 		$this->_criteria    = $this->_getCriteria();
@@ -145,10 +145,10 @@ class ElementIndexController extends BaseElementsController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$requestService = Craft::$app->request;
+		$requestService = Craft::$app->getRequest();
 
-		$actionHandle = $requestService->getRequiredPost('elementAction');
-		$elementIds = $requestService->getRequiredPost('elementIds');
+		$actionHandle = $requestService->getRequiredBodyParam('elementAction');
+		$elementIds = $requestService->getRequiredBodyParam('elementIds');
 
 		// Find that action from the list of available actions for the source
 		if ($this->_actions)
@@ -173,7 +173,7 @@ class ElementIndexController extends BaseElementsController
 
 		foreach ($params->attributeNames() as $paramName)
 		{
-			$paramValue = $requestService->getPost($paramName);
+			$paramValue = $requestService->getBodyParam($paramName);
 
 			if ($paramValue !== null)
 			{
@@ -250,7 +250,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getViewState()
 	{
-		$viewState = Craft::$app->request->getParam('viewState', []);
+		$viewState = Craft::$app->getRequest()->getParam('viewState', []);
 
 		if (empty($viewState['mode']))
 		{
@@ -269,12 +269,12 @@ class ElementIndexController extends BaseElementsController
 	{
 		$criteria = Craft::$app->elements->getCriteria(
 			$this->_elementType->getClassHandle(),
-			Craft::$app->request->getPost('criteria')
+			Craft::$app->getRequest()->getBodyParam('criteria')
 		);
 
 		$criteria->limit = 50;
-		$criteria->offset = Craft::$app->request->getParam('offset');
-		$criteria->search = Craft::$app->request->getParam('search');
+		$criteria->offset = Craft::$app->getRequest()->getParam('offset');
+		$criteria->search = Craft::$app->getRequest()->getParam('search');
 
 		// Does the source specify any criteria attributes?
 		if (!empty($this->_source['criteria']))
@@ -285,7 +285,7 @@ class ElementIndexController extends BaseElementsController
 		// Exclude descendants of the collapsed element IDs
 		if (!$criteria->id)
 		{
-			$collapsedElementIds = Craft::$app->request->getParam('collapsedElementIds');
+			$collapsedElementIds = Craft::$app->getRequest()->getParam('collapsedElementIds');
 
 			if ($collapsedElementIds)
 			{
@@ -349,7 +349,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getElementHtml($includeContainer)
 	{
-		$disabledElementIds = Craft::$app->request->getParam('disabledElementIds', []);
+		$disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
 		$showCheckboxes = !empty($this->_actions);
 
 		return $this->_elementType->getIndexHtml(
@@ -370,7 +370,7 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getAvailableActions()
 	{
-		if (Craft::$app->request->isMobileBrowser())
+		if (Craft::$app->getRequest()->getIsMobileBrowser())
 		{
 			return;
 		}

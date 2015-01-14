@@ -13,7 +13,7 @@ use craft\app\errors\Exception;
 /**
  * Class Security service.
  *
- * An instance of the Security service is globally accessible in Craft via [[Application::security `Craft::$app->security`]].
+ * An instance of the Security service is globally accessible in Craft via [[Application::security `Craft::$app->getSecurity()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

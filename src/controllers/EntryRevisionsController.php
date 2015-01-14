@@ -38,7 +38,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->getRequest()->getBodyParam('draftId');
 
 		if ($draftId)
 		{
@@ -52,10 +52,10 @@ class EntryRevisionsController extends BaseEntriesController
 		else
 		{
 			$draft = new EntryDraftModel();
-			$draft->id        = Craft::$app->request->getPost('entryId');
-			$draft->sectionId = Craft::$app->request->getRequiredPost('sectionId');
+			$draft->id        = Craft::$app->getRequest()->getBodyParam('entryId');
+			$draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
 			$draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
-			$draft->locale    = Craft::$app->request->getPost('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
+			$draft->locale    = Craft::$app->getRequest()->getBodyParam('locale', Craft::$app->getI18n()->getPrimarySiteLocaleId());
 		}
 
 		// Make sure they have permission to be editing this
@@ -87,7 +87,7 @@ class EntryRevisionsController extends BaseEntriesController
 			}
 		}
 
-		$fieldsLocation = Craft::$app->request->getParam('fieldsLocation', 'fields');
+		$fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
 		$draft->setContentFromPost($fieldsLocation);
 
 		if ($draft->id && Craft::$app->entryRevisions->saveDraft($draft))
@@ -100,7 +100,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->urlManager->setRouteVariables([
+			Craft::$app->getUrlManeger()->setRouteVariables([
 				'entry' => $draft
 			]);
 		}
@@ -117,8 +117,8 @@ class EntryRevisionsController extends BaseEntriesController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$draftId = Craft::$app->request->getRequiredPost('draftId');
-		$name = Craft::$app->request->getRequiredPost('name');
+		$draftId = Craft::$app->getRequest()->getRequiredBodyParam('draftId');
+		$name = Craft::$app->getRequest()->getRequiredBodyParam('name');
 
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 
@@ -134,7 +134,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		$draft->name = $name;
-		$draft->revisionNotes = Craft::$app->request->getPost('notes');
+		$draft->revisionNotes = Craft::$app->getRequest()->getBodyParam('notes');
 
 		if (Craft::$app->entryRevisions->saveDraft($draft, false))
 		{
@@ -156,7 +156,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->getRequest()->getBodyParam('draftId');
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 
 		if (!$draft)
@@ -184,7 +184,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$draftId = Craft::$app->request->getPost('draftId');
+		$draftId = Craft::$app->getRequest()->getBodyParam('draftId');
 		$draft = Craft::$app->entryRevisions->getDraftById($draftId);
 		$userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -233,7 +233,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 
 		// Populate the field content
-		$fieldsLocation = Craft::$app->request->getParam('fieldsLocation', 'fields');
+		$fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
 		$draft->setContentFromPost($fieldsLocation);
 
 		// Publish the draft (finally!)
@@ -247,7 +247,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t publish draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->urlManager->setRouteVariables([
+			Craft::$app->getUrlManeger()->setRouteVariables([
 				'entry' => $draft
 			]);
 		}
@@ -263,7 +263,7 @@ class EntryRevisionsController extends BaseEntriesController
 	{
 		$this->requirePostRequest();
 
-		$versionId = Craft::$app->request->getPost('versionId');
+		$versionId = Craft::$app->getRequest()->getBodyParam('versionId');
 		$version = Craft::$app->entryRevisions->getVersionById($versionId);
 
 		if (!$version)
@@ -311,7 +311,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
-			Craft::$app->urlManager->setRouteVariables([
+			Craft::$app->getUrlManeger()->setRouteVariables([
 				'entry' => $version
 			]);
 		}
@@ -329,15 +329,15 @@ class EntryRevisionsController extends BaseEntriesController
 	 */
 	private function _setDraftAttributesFromPost(EntryDraftModel $draft)
 	{
-		$draft->typeId     = Craft::$app->request->getPost('typeId');
-		$draft->slug       = Craft::$app->request->getPost('slug');
-		$draft->postDate   = Craft::$app->request->getPost('postDate');
-		$draft->expiryDate = Craft::$app->request->getPost('expiryDate');
-		$draft->enabled    = (bool) Craft::$app->request->getPost('enabled');
-		$draft->getContent()->title = Craft::$app->request->getPost('title');
+		$draft->typeId     = Craft::$app->getRequest()->getBodyParam('typeId');
+		$draft->slug       = Craft::$app->getRequest()->getBodyParam('slug');
+		$draft->postDate   = Craft::$app->getRequest()->getBodyParam('postDate');
+		$draft->expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate');
+		$draft->enabled    = (bool) Craft::$app->getRequest()->getBodyParam('enabled');
+		$draft->getContent()->title = Craft::$app->getRequest()->getBodyParam('title');
 
 		// Author
-		$authorId = Craft::$app->request->getPost('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
+		$authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
 
 		if (is_array($authorId))
 		{
@@ -347,7 +347,7 @@ class EntryRevisionsController extends BaseEntriesController
 		$draft->authorId = $authorId;
 
 		// Parent
-		$parentId = Craft::$app->request->getPost('parentId');
+		$parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
 		if (is_array($parentId))
 		{

@@ -114,7 +114,7 @@ class UserPermissions extends Component
 		if (Craft::$app->isLocalized())
 		{
 			$label = Craft::t('Locales');
-			$locales = Craft::$app->i18n->getSiteLocales();
+			$locales = Craft::$app->getI18n()->getSiteLocales();
 
 			foreach ($locales as $locale)
 			{
@@ -197,7 +197,7 @@ class UserPermissions extends Component
 	{
 		if (!isset($this->_permissionsByUserId[$groupId]))
 		{
-			$groupPermissions = Craft::$app->db->createCommand()
+			$groupPermissions = Craft::$app->getDb()->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -219,7 +219,7 @@ class UserPermissions extends Component
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('p.name')
 			->from('userpermissions p')
 			->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
@@ -255,7 +255,7 @@ class UserPermissions extends Component
 	public function saveGroupPermissions($groupId, $permissions)
 	{
 		// Delete any existing group permissions
-		Craft::$app->db->createCommand()
+		Craft::$app->getDb()->createCommand()
 			->delete('userpermissions_usergroups', ['groupId' => $groupId]);
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
@@ -271,7 +271,7 @@ class UserPermissions extends Component
 			}
 
 			// Add the new group permissions
-			Craft::$app->db->createCommand()
+			Craft::$app->getDb()->createCommand()
 				->insertAll('userpermissions_usergroups', ['permissionId', 'groupId'], $groupPermissionVals);
 		}
 
@@ -291,7 +291,7 @@ class UserPermissions extends Component
 		{
 			$groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-			$userPermissions = Craft::$app->db->createCommand()
+			$userPermissions = Craft::$app->getDb()->createCommand()
 				->select('p.name')
 				->from('userpermissions p')
 				->join('userpermissions_users p_u', 'p_u.permissionId = p.id')
@@ -331,7 +331,7 @@ class UserPermissions extends Component
 	public function saveUserPermissions($userId, $permissions)
 	{
 		// Delete any existing user permissions
-		Craft::$app->db->createCommand()
+		Craft::$app->getDb()->createCommand()
 			->delete('userpermissions_users', ['userId' => $userId]);
 
 		// Filter out any orphaned permissions
@@ -349,7 +349,7 @@ class UserPermissions extends Component
 			}
 
 			// Add the new user permissions
-			Craft::$app->db->createCommand()
+			Craft::$app->getDb()->createCommand()
 				->insertAll('userpermissions_users', ['permissionId', 'userId'], $userPermissionVals);
 		}
 

@@ -41,9 +41,9 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 
 		$widget = new WidgetModel();
-		$widget->id = Craft::$app->request->getPost('widgetId');
-		$widget->type = Craft::$app->request->getRequiredPost('type');
-		$widget->settings = Craft::$app->request->getPost('types.'.$widget->type);
+		$widget->id = Craft::$app->getRequest()->getBodyParam('widgetId');
+		$widget->type = Craft::$app->getRequest()->getRequiredBodyParam('type');
+		$widget->settings = Craft::$app->getRequest()->getBodyParam('types.'.$widget->type);
 
 		// Did it save?
 		if (Craft::$app->dashboard->saveUserWidget($widget))
@@ -57,7 +57,7 @@ class DashboardController extends BaseController
 		}
 
 		// Send the widget back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'widget' => $widget
 		]);
 	}
@@ -72,7 +72,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetId = JsonHelper::decode(Craft::$app->request->getRequiredPost('id'));
+		$widgetId = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
 		Craft::$app->dashboard->deleteUserWidgetById($widgetId);
 
 		$this->returnJson(['success' => true]);
@@ -88,7 +88,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetIds = JsonHelper::decode(Craft::$app->request->getRequiredPost('ids'));
+		$widgetIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->dashboard->reorderUserWidgets($widgetIds);
 
 		$this->returnJson(['success' => true]);
@@ -103,8 +103,8 @@ class DashboardController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$url = Craft::$app->request->getRequiredParam('url');
-		$limit = Craft::$app->request->getParam('limit');
+		$url = Craft::$app->getRequest()->getRequiredParam('url');
+		$limit = Craft::$app->getRequest()->getParam('limit');
 
 		$items = Craft::$app->feeds->getFeedItems($url, $limit);
 
@@ -138,14 +138,14 @@ class DashboardController extends BaseController
 		$errors = [];
 		$zipFile = null;
 		$tempFolder = null;
-		$widgetId = Craft::$app->request->getPost('widgetId');
+		$widgetId = Craft::$app->getRequest()->getBodyParam('widgetId');
 
 		$getHelpModel = new GetHelpModel();
-		$getHelpModel->fromEmail = Craft::$app->request->getPost('fromEmail');
-		$getHelpModel->message = trim(Craft::$app->request->getPost('message'));
-		$getHelpModel->attachLogs = (bool) Craft::$app->request->getPost('attachLogs');
-		$getHelpModel->attachDbBackup = (bool) Craft::$app->request->getPost('attachDbBackup');
-		$getHelpModel->attachTemplates = (bool)Craft::$app->request->getPost('attachTemplates');
+		$getHelpModel->fromEmail = Craft::$app->getRequest()->getBodyParam('fromEmail');
+		$getHelpModel->message = trim(Craft::$app->getRequest()->getBodyParam('message'));
+		$getHelpModel->attachLogs = (bool) Craft::$app->getRequest()->getBodyParam('attachLogs');
+		$getHelpModel->attachDbBackup = (bool) Craft::$app->getRequest()->getBodyParam('attachDbBackup');
+		$getHelpModel->attachTemplates = (bool)Craft::$app->getRequest()->getBodyParam('attachTemplates');
 		$getHelpModel->attachment = UploadedFile::getInstanceByName('attachAdditionalFile');
 
 		if ($getHelpModel->validate())
@@ -212,7 +212,7 @@ class DashboardController extends BaseController
 					{
 						// Make a fresh database backup of the current schema/data. We want all data from all tables
 						// for debugging.
-						Craft::$app->db->backup([]);
+						Craft::$app->getDb()->backup([]);
 
 						$backups = IOHelper::getLastModifiedFiles(Craft::$app->path->getDbBackupPath(), 3);
 

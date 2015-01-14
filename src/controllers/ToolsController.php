@@ -49,8 +49,8 @@ class ToolsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$class = Craft::$app->request->getRequiredPost('tool');
-		$params = Craft::$app->request->getPost('params', []);
+		$class = Craft::$app->getRequest()->getRequiredBodyParam('tool');
+		$params = Craft::$app->getRequest()->getBodyParam('params', []);
 
 		$tool = Craft::$app->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
 
@@ -65,11 +65,11 @@ class ToolsController extends BaseController
 	 */
 	public function actionDownloadBackupFile()
 	{
-		$fileName = Craft::$app->request->getRequiredQuery('fileName');
+		$fileName = Craft::$app->getRequest()->getRequiredQueryParam('fileName');
 
 		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().$fileName.'.zip')) == true)
 		{
-			Craft::$app->request->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
+			Craft::$app->getRequest()->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
 		}
 	}
 }

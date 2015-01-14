@@ -106,12 +106,12 @@ class EntryRevisions extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
+			$localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
 		}
 
 		$drafts = [];
 
-		$results = Craft::$app->db->createCommand()
+		$results = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('entrydrafts')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
@@ -174,7 +174,7 @@ class EntryRevisions extends Component
 		if (!$draft->name && $draft->id)
 		{
 			// Get the total number of existing drafts for this entry/locale
-			$totalDrafts = Craft::$app->db->createCommand()
+			$totalDrafts = Craft::$app->getDb()->createCommand()
 				->from('entrydrafts')
 				->where(
 					['and', 'entryId = :entryId', 'locale = :locale'],
@@ -251,7 +251,7 @@ class EntryRevisions extends Component
 	 */
 	public function deleteDraft(EntryDraftModel $draft)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -333,12 +333,12 @@ class EntryRevisions extends Component
 	{
 		if (!$localeId)
 		{
-			$localeId = Craft::$app->i18n->getPrimarySiteLocale();
+			$localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
 		}
 
 		$versions = [];
 
-		$results = Craft::$app->db->createCommand()
+		$results = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('entryversions')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
@@ -370,7 +370,7 @@ class EntryRevisions extends Component
 	public function saveVersion(EntryModel $entry)
 	{
 		// Get the total number of existing versions for this entry/locale
-		$totalVersions = Craft::$app->db->createCommand()
+		$totalVersions = Craft::$app->getDb()->createCommand()
 			->from('entryversions')
 			->where(
 				['and', 'entryId = :entryId', 'locale = :locale'],

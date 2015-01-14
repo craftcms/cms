@@ -226,7 +226,9 @@ class User extends BaseElementModel implements IdentityInterface
 					return false;
 				}
 
-				if (Craft::$app->request->isCpRequest())
+				$request = Craft::$app->getRequest();
+
+				if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 				{
 					if (!$this->can('accessCp'))
 					{
@@ -713,7 +715,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	private function _findSessionTokenByUid($uid)
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('token')
 			->from('sessions')
 			->where(['and', 'userId=:userId', 'uid=:uid'], [':userId' => $this->id, ':uid' => $uid])

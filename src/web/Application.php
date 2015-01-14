@@ -19,55 +19,70 @@ use craft\app\logging\Logger;
 /**
  * Craft Web Application class
  *
- * @property \craft\app\services\AssetIndexing    $assetIndexing    The [[\craft\app\services\AssetIndexing assets indexing service]].
- * @property \craft\app\services\AssetSources     $assetSources     The [[\craft\app\services\AssetSources assets sources service]].
- * @property \craft\app\services\Assets           $assets           The [[\craft\app\services\Assets assets service]].
- * @property \craft\app\services\AssetTransforms  $assetTransforms  The [[\craft\app\services\AssetTransforms assets sizes service]].
- * @property \craft\app\services\Cache            $cache            The [[\craft\app\services\Cache cache service]].
- * @property \craft\app\services\Categories       $categories       The [[\craft\app\services\Categories categories service]].
- * @property \craft\app\services\Components       $components       The [[\craft\app\services\Components components service]].
- * @property \craft\app\services\Config           $config           The [[\craft\app\services\Config config service]].
- * @property \craft\app\services\Content          $content          The [[\craft\app\services\Content content service]].
- * @property \craft\app\services\Dashboard        $dashboard        The [[\craft\app\services\Dashboard dashboard service]].
- * @property \craft\app\db\DbConnection           $db               The [[\craft\app\db\DbConnection database connection]].
- * @property \craft\app\services\Deprecator       $deprecator       The [[\craft\app\services\Deprecator deprecator service]].
- * @property \craft\app\services\Elements         $elements         The [[\craft\app\services\Elements elements service]].
- * @property \craft\app\services\EmailMessages    $emailMessages    The [[\craft\app\services\EmailMessages email messages service]].
- * @property \craft\app\services\Email            $email            The [[\craft\app\services\Email email service]].
- * @property \craft\app\services\Entries          $entries          The [[\craft\app\services\Entries entries service]].
- * @property \craft\app\services\EntryRevisions   $entryRevisions   The [[\craft\app\services\EntryRevisions entry revisions service]].
- * @property \craft\app\services\Et               $et               The [[\craft\app\services\Et E.T. service]].
- * @property \craft\app\services\Feeds            $feeds            The [[\craft\app\services\Feeds feeds service]].
- * @property \craft\app\services\Fields           $fields           The [[\craft\app\services\Fields fields service]].
+ * @property \craft\app\services\Assets           $assets           The assets service.
+ * @property \craft\app\services\AssetIndexing    $assetIndexing    The asset indexing service.
+ * @property \craft\app\services\AssetSources     $assetSources     The asset sources service.
+ * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service.
+ * @property \craft\app\services\Cache            $cache            The cache component.
+ * @property \craft\app\services\Categories       $categories       The categories service.
+ * @property \craft\app\services\Components       $components       The components service.
+ * @property \craft\app\services\Config           $config           The config service.
+ * @property \craft\app\services\Content          $content          The content service.
+ * @property \craft\app\services\Dashboard        $dashboard        The dashboard service.
+ * @property \craft\app\db\DbConnection           $db               The database connection component.
+ * @property \craft\app\services\Deprecator       $deprecator       The deprecator service.
+ * @property \craft\app\services\Elements         $elements         The elements service.
+ * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service.
+ * @property \craft\app\services\Email            $email            The email service.
+ * @property \craft\app\services\Entries          $entries          The entries service.
+ * @property \craft\app\services\EntryRevisions   $entryRevisions   The entry revisions service.
+ * @property \craft\app\errors\ErrorHandler       $errorHandler     The error handler component.
+ * @property \craft\app\services\Et               $et               The E.T. service.
+ * @property \craft\app\services\Feeds            $feeds            The feeds service.
+ * @property \craft\app\services\Fields           $fields           The fields service.
  * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
- * @property \craft\app\services\Globals          $globals          The [[\craft\app\services\Globals globals service]].
- * @property \craft\app\services\HttpRequest      $request          The [[\craft\app\services\HttpRequest request service]].
- * @property \craft\app\services\Images           $images           The [[\craft\app\services\Images images service]].
- * @property \craft\app\services\Install          $install          The [[\craft\app\services\Install install service]].
- * @property \craft\app\services\Localization     $localization     The [[\craft\app\services\Localization localization service]].
- * @property \craft\app\services\Matrix           $matrix           The [[\craft\app\services\Matrix matrix service]].
- * @property \craft\app\services\Migrations       $migrations       The [[\craft\app\services\Migrations migrations service]].
- * @property \craft\app\services\Path             $path             The [[\craft\app\services\Path path service]].
- * @property \craft\app\services\Plugins          $plugins          The [[\craft\app\services\Plugins plugins service]].
- * @property \craft\app\services\Relations        $relations        The [[\craft\app\services\Relations relations service]].
- * @property \craft\app\services\Resources        $resources        The [[\craft\app\services\Resources resources service]].
- * @property \craft\app\services\Routes           $routes           The [[\craft\app\services\Routes routes service]].
- * @property \craft\app\services\Search           $search           The [[\craft\app\services\Search search service]].
- * @property \craft\app\services\Sections         $sections         The [[\craft\app\services\Sections sections service]].
- * @property \craft\app\services\Security         $security         The [[\craft\app\services\Security security service]].
- * @property \craft\app\services\Structures       $structures       The [[\craft\app\services\Structures structures service]].
- * @property \craft\app\services\SystemSettings   $systemSettings   The [[\craft\app\services\SystemSettings system settings service]].
- * @property \craft\app\services\Tags             $tags             The [[\craft\app\services\Tags tags service]].
- * @property \craft\app\services\Tasks            $tasks            The [[\craft\app\services\Tasks tasks service]].
- * @property \craft\app\services\TemplateCache    $templateCache    The [[\craft\app\services\TemplateCache template cache service]].
- * @property \craft\app\services\Templates        $templates        The [[\craft\app\services\Templates template service]].
- * @property \craft\app\services\Tokens           $tokens           The [[\craft\app\services\Tokens tokens service]].
- * @property \craft\app\services\Updates          $updates          The [[\craft\app\services\Updates updates service]].
- * @property \craft\app\services\UserGroups       $userGroups       The [[\craft\app\services\UserGroups user groups service]].
- * @property \craft\app\services\UserPermissions  $userPermissions  The [[\craft\app\services\UserPermissions user permission service]].
- * @property \craft\app\services\Users            $users            The [[\craft\app\services\Users users service]].
- * @property \craft\app\web\Session               $session          The [[\craft\app\web\Session HTTP session service]].
- * @property \craft\app\web\User                  $user             The [[\craft\app\web\User user session service]].
+ * @property \craft\app\services\Globals          $globals          The globals service.
+ * @property \craft\app\services\Localization     $i18n             The internationalization (i18n) component.
+ * @property \craft\app\services\Images           $images           The images service.
+ * @property \craft\app\services\Install          $install          The install service.
+ * @property \craft\app\services\Localization     $localization     The localization service.
+ * @property \craft\app\logging\LogRouter         $log              The log dispatcher component.
+ * @property \craft\app\services\Matrix           $matrix           The matrix service.
+ * @property \craft\app\services\Migrations       $migrations       The migrations service.
+ * @property \craft\app\services\Path             $path             The path service.
+ * @property \craft\app\services\Plugins          $plugins          The plugins service.
+ * @property \craft\app\services\Relations        $relations        The relations service.
+ * @property Request                              $request          The request component.
+ * @property \craft\app\services\Resources        $resources        The resources service.
+ * @property \craft\app\services\Routes           $routes           The routes service.
+ * @property \craft\app\services\Search           $search           The search service.
+ * @property \craft\app\services\Sections         $sections         The sections service.
+ * @property \craft\app\services\Security         $security         The security component.
+ * @property Session                              $session          The session component.
+ * @property \craft\app\services\Structures       $structures       The structures service.
+ * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service.
+ * @property \craft\app\services\Tags             $tags             The tags service.
+ * @property \craft\app\services\Tasks            $tasks            The tasks service.
+ * @property \craft\app\services\TemplateCache    $templateCache    The template cache service.
+ * @property \craft\app\services\Templates        $templates        The template service.
+ * @property \craft\app\services\Tokens           $tokens           The tokens service.
+ * @property \craft\app\services\Updates          $updates          The updates service.
+ * @property UrlManager                           $urlManager       The URL manager for this application.
+ * @property \craft\app\services\UserGroups       $userGroups       The user groups service.
+ * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
+ * @property \craft\app\services\Users            $users            The users service.
+ * @property User                                 $user             The user component.
+ *
+ * @method \craft\app\services\Cache              getCache()        Returns the cache component.
+ * @method \craft\app\db\DbConnection             getDb()           Returns the database connection component.
+ * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
+ * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
+ * @method \craft\app\logging\LogRouter           getLog()          Returns the log dispatcher component.
+ * @method Request                                getRequest()      Returns the request component.
+ * @method \craft\app\services\Security           getSecurity()     Returns the security component.
+ * @method \craft\app\services\Session            getSession()      Returns the session component.
+ * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
+ * @method User                                   getUser()         Returns the user component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -106,9 +121,9 @@ class Application extends \yii\web\Application
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
-		// Initialize the Cache service, HttpRequest service and LogRouter right away (order is important)
+		// Initialize the Cache service, Request and LogRouter right away (order is important)
 		$this->get('cache');
-		$this->get('request');
+		$this->getRequest();
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
@@ -116,7 +131,7 @@ class Application extends \yii\web\Application
 		$this->get('log');
 
 		// So we can try to translate Yii framework strings
-		$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
+		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
 		// Set our own custom runtime path.
 		$this->setRuntimePath($this->path->getRuntimePath());
@@ -144,19 +159,19 @@ class Application extends \yii\web\Application
 		// If we're not in devMode, or it's a 'dontEnableSession' request, we're going to remove some logging routes.
 		if (!$this->config->get('devMode') || (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession()))
 		{
-			$this->log->removeRoute('WebLogRoute');
-			$this->log->removeRoute('ProfileLogRoute');
+			$this->getLog()->removeRoute('WebLogRoute');
+			$this->getLog()->removeRoute('ProfileLogRoute');
 		}
 
 		// Additionally, we don't want these in the log files at all.
 		if (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession())
 		{
-			$this->log->removeRoute('FileLogRoute');
+			$this->getLog()->removeRoute('FileLogRoute');
 		}
 
 		// If this is a CP request, prevent robots from indexing/following the page
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-		if ($this->request->isCpRequest())
+		if ($this->getRequest()->getIsCpRequest())
 		{
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
 		}
@@ -168,7 +183,7 @@ class Application extends \yii\web\Application
 		$this->_processInstallRequest();
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
-		if ($this->isInMaintenanceMode() && $this->request->isSiteRequest())
+		if ($this->isInMaintenanceMode() && $this->getRequest()->getIsSiteRequest())
 		{
 			throw new HttpException(503);
 		}
@@ -179,7 +194,7 @@ class Application extends \yii\web\Application
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
 		{
-			if ($this->request->isCpRequest())
+			if ($this->getRequest()->getIsCpRequest())
 			{
 				$version = $this->getVersion();
 				$build = $this->getBuild();
@@ -202,9 +217,9 @@ class Application extends \yii\web\Application
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
-			($this->isInMaintenanceMode() && $this->request->isCpRequest()) ||
-			$this->request->getActionSegments() == ['update', 'cleanUp'] ||
-			$this->request->getActionSegments() == ['update', 'rollback']
+			($this->isInMaintenanceMode() && $this->getRequest()->getIsCpRequest()) ||
+			$this->getRequest()->getActionSegments() == ['update', 'cleanUp'] ||
+			$this->getRequest()->getActionSegments() == ['update', 'rollback']
 		)
 		{
 			$this->_processUpdateLogic();
@@ -229,7 +244,7 @@ class Application extends \yii\web\Application
 		}
 
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-		if ($this->request->isCpRequest() && !($this->request->isActionRequest() && $this->_isSpecialCaseActionRequest()))
+		if ($this->getRequest()->getIsCpRequest() && !($this->getRequest()->getIsActionRequest() && $this->_isSpecialCaseActionRequest()))
 		{
 			$user = $this->getUser();
 
@@ -245,7 +260,7 @@ class Application extends \yii\web\Application
 			}
 
 			// If they're accessing a plugin's section, make sure that they have permission to do so
-			$firstSeg = $this->request->getSegment(1);
+			$firstSeg = $this->getRequest()->getSegment(1);
 
 			if ($firstSeg)
 			{
@@ -299,7 +314,7 @@ class Application extends \yii\web\Application
 	 */
 	public function getLocale($localeId = null)
 	{
-		return $this->i18n->getLocaleData($localeId);
+		return $this->getI18n()->getLocaleData($localeId);
 	}
 
 	/**
@@ -447,27 +462,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the [[\craft\app\web\Session]] (Craft::$app->getSession()).
-	 *
-	 * @return \craft\app\web\Session
-	 */
-	public function getSession()
-	{
-		return $this->get('session');
-	}
-
-	/**
-	 * Returns the [[\craft\app\web\User]] (Craft::$app->getUser()).
-	 *
-	 * @return \craft\app\web\User
-	 */
-	public function getUser()
-	{
-		return $this->get('user');
-	}
-
-	/**
-	 * Override get() so we can do some special logic around creating the `Craft::$app->db` application component.
+	 * Override get() so we can do some special logic around creating the `Craft::$app->getDb()` application component.
 	 *
 	 * @param string $id
 	 * @param boolean $throwException
@@ -505,11 +500,11 @@ class Application extends \yii\web\Application
 	 */
 	public function getTranslatedBrowserLanguage()
 	{
-		$browserLanguages = $this->request->getBrowserLanguages();
+		$browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
 		if ($browserLanguages)
 		{
-			$appLocaleIds = $this->i18n->getAppLocaleIds();
+			$appLocaleIds = $this->getI18n()->getAppLocaleIds();
 
 			foreach ($browserLanguages as $language)
 			{
@@ -534,13 +529,13 @@ class Application extends \yii\web\Application
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->request->isResourceRequest())
+		if ($this->getRequest()->getIsResourceRequest())
 		{
 			// Don't want to log anything on a resource request.
-			$this->log->removeRoute('FileLogRoute');
+			$this->getLog()->removeRoute('FileLogRoute');
 
 			// Get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->request->getSegments()), 1);
+			$segs = array_slice(array_merge($this->getRequest()->getSegments()), 1);
 			$path = implode('/', $segs);
 
 			$this->resources->sendResource($path);
@@ -555,18 +550,18 @@ class Application extends \yii\web\Application
 	 */
 	private function _processInstallRequest()
 	{
-		$isCpRequest = $this->request->isCpRequest();
+		$isCpRequest = $this->getRequest()->getIsCpRequest();
 
 		// Are they requesting an installer template/action specifically?
-		if ($isCpRequest && $this->request->getSegment(1) === 'install' && !$this->isInstalled())
+		if ($isCpRequest && $this->getRequest()->getSegment(1) === 'install' && !$this->isInstalled())
 		{
-			$action = $this->request->getSegment(2, 'index');
+			$action = $this->getRequest()->getSegment(2, 'index');
 			$this->runController('install/'.$action);
 			$this->end();
 		}
-		else if ($isCpRequest && $this->request->isActionRequest() && ($this->request->getSegment(1) !== 'login'))
+		else if ($isCpRequest && $this->getRequest()->getIsActionRequest() && ($this->getRequest()->getSegment(1) !== 'login'))
 		{
-			$actionSegs = $this->request->getActionSegments();
+			$actionSegs = $this->getRequest()->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
 				$this->_processActionRequest();
@@ -580,7 +575,7 @@ class Application extends \yii\web\Application
 			if ($isCpRequest)
 			{
 				$url = UrlHelper::getUrl('install');
-				$this->request->redirect($url);
+				$this->getRequest()->redirect($url);
 			}
 			// Otherwise return a 404
 			else
@@ -598,9 +593,9 @@ class Application extends \yii\web\Application
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->request->isActionRequest())
+		if ($this->getRequest()->getIsActionRequest())
 		{
-			$actionSegs = $this->request->getActionSegments();
+			$actionSegs = $this->getRequest()->getActionSegments();
 			$route = implode('/', $actionSegs);
 			$this->runController($route);
 		}
@@ -611,7 +606,7 @@ class Application extends \yii\web\Application
 	 */
 	private function _isSpecialCaseActionRequest()
 	{
-		$segments = $this->request->getActionSegments();
+		$segments = $this->getRequest()->getActionSegments();
 
 		if (
 			$segments == ['users', 'login'] ||
@@ -641,26 +636,26 @@ class Application extends \yii\web\Application
 		// See if we're in the middle of an update.
 		$update = false;
 
-		if ($this->request->getSegment(1) == 'updates' && $this->request->getSegment(2) == 'go')
+		if ($this->getRequest()->getSegment(1) == 'updates' && $this->getRequest()->getSegment(2) == 'go')
 		{
 			$update = true;
 		}
 
-		if (($data = $this->request->getPost('data', null)) !== null && isset($data['handle']))
+		if (($data = $this->getRequest()->getBodyParam('data', null)) !== null && isset($data['handle']))
 		{
 			$update = true;
 		}
 
 		// Only run for CP requests and if we're not in the middle of an update.
-		if ($this->request->isCpRequest() && !$update)
+		if ($this->getRequest()->getIsCpRequest() && !$update)
 		{
-			$cachedAppPath = $this->cache->get('appPath');
+			$cachedAppPath = $this->getCache()->get('appPath');
 			$appPath = $this->path->getAppPath();
 
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
 			{
 				// Flush the data cache, so we're not getting cached CP resource paths.
-				Craft::$app->cache->flush();
+				Craft::$app->getCache()->flush();
 
 				$this->runController('templates/requirementscheck');
 			}
@@ -675,12 +670,12 @@ class Application extends \yii\web\Application
 	{
 		// Let all non-action CP requests through.
 		if (
-			$this->request->isCpRequest() &&
-			(!$this->request->isActionRequest() || $this->request->getActionSegments() == ['users', 'login'])
+			$this->getRequest()->getIsCpRequest() &&
+			(!$this->getRequest()->getIsActionRequest() || $this->getRequest()->getActionSegments() == ['users', 'login'])
 		)
 		{
 			// If this is a request to actually manually update Craft, do it
-			if ($this->request->getSegment(1) == 'manualupdate')
+			if ($this->getRequest()->getSegment(1) == 'manualupdate')
 			{
 				$this->runController('templates/manualUpdate');
 				$this->end();
@@ -697,11 +692,11 @@ class Application extends \yii\web\Application
 				}
 				else
 				{
-					if (!$this->request->isAjaxRequest())
+					if (!$this->getRequest()->getIsAjax())
 					{
-						if ($this->request->getPathInfo() !== '')
+						if ($this->getRequest()->getPathInfo() !== '')
 						{
-							$this->getUser()->setReturnUrl($this->request->getPath());
+							$this->getUser()->setReturnUrl($this->getRequest()->getPath());
 						}
 					}
 
@@ -711,7 +706,7 @@ class Application extends \yii\web\Application
 			}
 		}
 		// We'll also let action requests to UpdateController through as well.
-		else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
+		else if ($this->getRequest()->getIsActionRequest() && (($actionSegs = $this->getRequest()->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
 		{
 			$controller = $actionSegs[0];
 			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
@@ -742,7 +737,7 @@ class Application extends \yii\web\Application
 
 			if ($this->getUser()->isLoggedIn())
 			{
-				if ($this->request->isCpRequest())
+				if ($this->getRequest()->getIsCpRequest())
 				{
 					$error = Craft::t('Your account doesn’t have permission to access the Control Panel when the system is offline.');
 				}
@@ -756,7 +751,7 @@ class Application extends \yii\web\Application
 			else
 			{
 				// If this is a CP request, redirect to the Login page
-				if ($this->request->isCpRequest())
+				if ($this->getRequest()->getIsCpRequest())
 				{
 					$this->getUser()->requireLogin();
 				}
@@ -778,11 +773,11 @@ class Application extends \yii\web\Application
 			return true;
 		}
 
-		if ($this->request->isCpRequest() ||
+		if ($this->getRequest()->getIsCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$this->request->getPath() === Craft::$app->config->get('actionTrigger').'/users/setpassword' ||
-			$this->request->getPath() === Craft::$app->config->get('actionTrigger').'/users/verifyemail'
+			$this->getRequest()->getPath() === Craft::$app->config->get('actionTrigger').'/users/setpassword' ||
+			$this->getRequest()->getPath() === Craft::$app->config->get('actionTrigger').'/users/verifyemail'
 		)
 		{
 			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))
@@ -790,12 +785,12 @@ class Application extends \yii\web\Application
 				return true;
 			}
 
-			if ($this->request->getSegment(1) == 'manualupdate')
+			if ($this->getRequest()->getSegment(1) == 'manualupdate')
 			{
 				return true;
 			}
 
-			$actionSegs = $this->request->getActionSegments();
+			$actionSegs = $this->getRequest()->getActionSegments();
 
 			if ($actionSegs && (
 				$actionSegs == ['users', 'login'] ||

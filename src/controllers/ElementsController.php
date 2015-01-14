@@ -35,7 +35,7 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionGetModalBody()
 	{
-		$sourceKeys = Craft::$app->request->getParam('sources');
+		$sourceKeys = Craft::$app->getRequest()->getParam('sources');
 		$elementType = $this->getElementType();
 		$context = $this->getContext();
 
@@ -74,8 +74,8 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionGetEditorHtml()
 	{
-		$elementId = Craft::$app->request->getRequiredPost('elementId');
-		$localeId = Craft::$app->request->getPost('locale');
+		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
+		$localeId = Craft::$app->getRequest()->getBodyParam('locale');
 		$elementTypeClass = Craft::$app->elements->getElementTypeById($elementId);
 		$element = Craft::$app->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
@@ -84,7 +84,7 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(403);
 		}
 
-		$includeLocales = (bool) Craft::$app->request->getPost('includeLocales', false);
+		$includeLocales = (bool) Craft::$app->getRequest()->getBodyParam('includeLocales', false);
 
 		return $this->_returnEditorHtml($element, $includeLocales);
 	}
@@ -97,8 +97,8 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionSaveElement()
 	{
-		$elementId = Craft::$app->request->getRequiredPost('elementId');
-		$localeId = Craft::$app->request->getRequiredPost('locale');
+		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
+		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
 		$elementTypeClass = Craft::$app->elements->getElementTypeById($elementId);
 		$element = Craft::$app->elements->getElementById($elementId, $elementTypeClass, $localeId);
 
@@ -107,8 +107,8 @@ class ElementsController extends BaseElementsController
 			throw new HttpException(403);
 		}
 
-		$namespace = Craft::$app->request->getRequiredPost('namespace');
-		$params = Craft::$app->request->getPost($namespace);
+		$namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
+		$params = Craft::$app->getRequest()->getBodyParam($namespace);
 
 		if (isset($params['title']))
 		{
@@ -150,7 +150,7 @@ class ElementsController extends BaseElementsController
 	 */
 	public function actionGetCategoriesInputHtml()
 	{
-		$categoryIds = Craft::$app->request->getParam('categoryIds', []);
+		$categoryIds = Craft::$app->getRequest()->getParam('categoryIds', []);
 
 		// Fill in the gaps
 		$categoryIds = Craft::$app->categories->fillGapsInCategoryIds($categoryIds);
@@ -159,10 +159,10 @@ class ElementsController extends BaseElementsController
 		{
 			$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
 			$criteria->id = $categoryIds;
-			$criteria->locale = Craft::$app->request->getParam('locale');
+			$criteria->locale = Craft::$app->getRequest()->getParam('locale');
 			$criteria->status = null;
 			$criteria->localeEnabled = null;
-			$criteria->limit = Craft::$app->request->getParam('limit');
+			$criteria->limit = Craft::$app->getRequest()->getParam('limit');
 			$categories = $criteria->find();
 		}
 		else
@@ -172,8 +172,8 @@ class ElementsController extends BaseElementsController
 
 		$html = Craft::$app->templates->render('_components/fieldtypes/Categories/input', [
 			'elements' => $categories,
-			'id'       => Craft::$app->request->getParam('id'),
-			'name'     => Craft::$app->request->getParam('name'),
+			'id'       => Craft::$app->getRequest()->getParam('id'),
+			'name'     => Craft::$app->getRequest()->getParam('name'),
 		]);
 
 		$this->returnJson([
@@ -210,7 +210,7 @@ class ElementsController extends BaseElementsController
 
 				foreach ($localeIds as $localeId)
 				{
-					$locale = Craft::$app->i18n->getLocaleById($localeId);
+					$locale = Craft::$app->getI18n()->getLocaleById($localeId);
 
 					$response['locales'][] = [
 						'id'   => $localeId,

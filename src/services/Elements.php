@@ -192,7 +192,7 @@ class Elements extends Component
 			$conditions[] = 'elements.archived = 0';
 		}
 
-		$result = Craft::$app->db->createCommand()
+		$result = Craft::$app->getDb()->createCommand()
 			->select('elements.id, elements.type')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -222,7 +222,7 @@ class Elements extends Component
 	{
 		if (is_array($elementId))
 		{
-			return Craft::$app->db->createCommand()
+			return Craft::$app->getDb()->createCommand()
 				->selectDistinct('type')
 				->from('elements')
 				->where(['in', 'id', $elementId])
@@ -230,7 +230,7 @@ class Elements extends Component
 		}
 		else
 		{
-			return Craft::$app->db->createCommand()
+			return Craft::$app->getDb()->createCommand()
 				->select('type')
 				->from('elements')
 				->where(['id' => $elementId])
@@ -269,7 +269,7 @@ class Elements extends Component
 					return [];
 				}
 
-				$query->order(Craft::$app->db->getSchema()->orderByColumnValues('elements.id', $ids));
+				$query->order(Craft::$app->getDb()->getSchema()->orderByColumnValues('elements.id', $ids));
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
@@ -470,7 +470,7 @@ class Elements extends Component
 		if (!$elementType->isLocalized())
 		{
 			// The criteria *must* be set to the primary locale
-			$criteria->locale = Craft::$app->i18n->getPrimarySiteLocaleId();
+			$criteria->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
 		}
 		else if (!$criteria->locale)
 		{
@@ -481,7 +481,7 @@ class Elements extends Component
 		// Set up the query
 		// ---------------------------------------------------------------------
 
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
 			->from('elements elements')
 			->join('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
@@ -1003,7 +1003,7 @@ class Elements extends Component
 			if ($scoredSearchResults)
 			{
 				// Order the elements in the exact order that the Search service returned them in
-				$query->order(Craft::$app->db->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
+				$query->order(Craft::$app->getDb()->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
 			}
 		}
 
@@ -1020,7 +1020,7 @@ class Elements extends Component
 	 */
 	public function getElementUriForLocale($elementId, $localeId)
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('uri')
 			->from('elements_i18n')
 			->where(['elementId' => $elementId, 'locale' => $localeId])
@@ -1037,7 +1037,7 @@ class Elements extends Component
 	 */
 	public function getEnabledLocalesForElement($elementId)
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('locale')
 			->from('elements_i18n')
 			->where(['elementId' => $elementId, 'enabled' => 1])
@@ -1144,7 +1144,7 @@ class Elements extends Component
 		$elementRecord->enabled = (bool) $element->enabled;
 		$elementRecord->archived = (bool) $element->archived;
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1339,7 +1339,7 @@ class Elements extends Component
 						{
 							// Delete the rows that don't need to be there anymore
 
-							Craft::$app->db->createCommand()->delete('elements_i18n', ['and',
+							Craft::$app->getDb()->createCommand()->delete('elements_i18n', ['and',
 								'elementId = :elementId',
 								['not in', 'locale', $localeIds]
 							], [
@@ -1348,7 +1348,7 @@ class Elements extends Component
 
 							if ($elementType->hasContent())
 							{
-								Craft::$app->db->createCommand()->delete($element->getContentTable(), ['and',
+								Craft::$app->getDb()->createCommand()->delete($element->getContentTable(), ['and',
 									'elementId = :elementId',
 									['not in', 'locale', $localeIds]
 								], [
@@ -1445,7 +1445,7 @@ class Elements extends Component
 	{
 		ElementHelper::setUniqueUri($element);
 
-		Craft::$app->db->createCommand()->update('elements_i18n', [
+		Craft::$app->getDb()->createCommand()->update('elements_i18n', [
 			'slug' => $element->slug,
 			'uri'  => $element->uri
 		], [
@@ -1476,7 +1476,7 @@ class Elements extends Component
 	 */
 	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
 	{
-		foreach (Craft::$app->i18n->getSiteLocaleIds() as $localeId)
+		foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId)
 		{
 			if ($localeId == $element->locale)
 			{
@@ -1531,11 +1531,11 @@ class Elements extends Component
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Update any relations that point to the merged element
-			$relations = Craft::$app->db->createCommand()
+			$relations = Craft::$app->getDb()->createCommand()
 				->select('id, fieldId, sourceId, sourceLocale')
 				->from('relations')
 				->where(['targetId' => $mergedElementId])
@@ -1544,7 +1544,7 @@ class Elements extends Component
 			foreach ($relations as $relation)
 			{
 				// Make sure the persisting element isn't already selected in the same field
-				$persistingElementIsRelatedToo = (bool) Craft::$app->db->createCommand()
+				$persistingElementIsRelatedToo = (bool) Craft::$app->getDb()->createCommand()
 					->from('relations')
 					->where([
 						'fieldId'      => $relation['fieldId'],
@@ -1556,7 +1556,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsRelatedToo)
 				{
-					Craft::$app->db->createCommand()->update('relations', [
+					Craft::$app->getDb()->createCommand()->update('relations', [
 						'targetId' => $prevailingElementId
 					], [
 						'id' => $relation['id']
@@ -1565,7 +1565,7 @@ class Elements extends Component
 			}
 
 			// Update any structures that the merged element is in
-			$structureElements = Craft::$app->db->createCommand()
+			$structureElements = Craft::$app->getDb()->createCommand()
 				->select('id, structureId')
 				->from('structureelements')
 				->where(['elementId' => $mergedElementId])
@@ -1574,7 +1574,7 @@ class Elements extends Component
 			foreach ($structureElements as $structureElement)
 			{
 				// Make sure the persisting element isn't already a part of that structure
-				$persistingElementIsInStructureToo = (bool) Craft::$app->db->createCommand()
+				$persistingElementIsInStructureToo = (bool) Craft::$app->getDb()->createCommand()
 					->from('structureElements')
 					->where([
 						'structureId' => $structureElement['structureId'],
@@ -1584,7 +1584,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsInStructureToo)
 				{
-					Craft::$app->db->createCommand()->update('relations', [
+					Craft::$app->getDb()->createCommand()->update('relations', [
 						'elementId' => $prevailingElementId
 					], [
 						'id' => $structureElement['id']
@@ -1657,7 +1657,7 @@ class Elements extends Component
 			$elementIds = [$elementIds];
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1708,7 +1708,7 @@ class Elements extends Component
 			}
 
 			// First delete any Matrix blocks that belong to this element(s)
-			$matrixBlockIds = Craft::$app->db->createCommand()
+			$matrixBlockIds = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('matrixblocks')
 				->where($matrixBlockCondition)
@@ -1720,10 +1720,10 @@ class Elements extends Component
 			}
 
 			// Delete the elements table rows, which will cascade across all other InnoDB tables
-			$affectedRows = Craft::$app->db->createCommand()->delete('elements', $condition);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', $condition);
 
 			// The searchindex table is MyISAM, though
-			Craft::$app->db->createCommand()->delete('searchindex', $searchIndexCondition);
+			Craft::$app->getDb()->createCommand()->delete('searchindex', $searchIndexCondition);
 
 			if ($transaction !== null)
 			{
@@ -1753,7 +1753,7 @@ class Elements extends Component
 	public function deleteElementsByType($type)
 	{
 		// Get the IDs and let deleteElementById() take care of the actual deletion
-		$elementIds = Craft::$app->db->createCommand()
+		$elementIds = Craft::$app->getDb()->createCommand()
 			->select('id')
 			->from('elements')
 			->where('type = :type', [':type' => $type])
@@ -1986,7 +1986,7 @@ class Elements extends Component
 	private function _getElementIdsFromQuery(DbCommand $query)
 	{
 		// Get the matched element IDs, and then have the Search service filter them.
-		$elementIdsQuery = Craft::$app->db->createCommand()
+		$elementIdsQuery = Craft::$app->getDb()->createCommand()
 			->select('elements.id')
 			->from('elements elements')
 			->group('elements.id');

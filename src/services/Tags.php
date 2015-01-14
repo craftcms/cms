@@ -81,7 +81,7 @@ class Tags extends Component
 			}
 			else
 			{
-				$this->_allTagGroupIds = Craft::$app->db->createCommand()
+				$this->_allTagGroupIds = Craft::$app->getDb()->createCommand()
 					->select('id')
 					->from('taggroups')
 					->queryColumn();
@@ -220,7 +220,7 @@ class Tags extends Component
 
 		if (!$tagGroup->hasErrors())
 		{
-			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId)
@@ -287,11 +287,11 @@ class Tags extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = Craft::$app->db->createCommand()
+			$fieldLayoutId = Craft::$app->getDb()->createCommand()
 				->select('fieldLayoutId')
 				->from('taggroups')
 				->where(['id' => $tagGroupId])
@@ -303,7 +303,7 @@ class Tags extends Component
 			}
 
 			// Grab the tag ids so we can clean the elements table.
-			$tagIds = Craft::$app->db->createCommand()
+			$tagIds = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('tags')
 				->where(['groupId' => $tagGroupId])
@@ -311,7 +311,7 @@ class Tags extends Component
 
 			Craft::$app->elements->deleteElementById($tagIds);
 
-			$affectedRows = Craft::$app->db->createCommand()->delete('taggroups', ['id' => $tagGroupId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('taggroups', ['id' => $tagGroupId]);
 
 			if ($transaction !== null)
 			{
@@ -384,7 +384,7 @@ class Tags extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

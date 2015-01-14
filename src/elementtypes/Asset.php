@@ -265,7 +265,7 @@ class Asset extends BaseElementType
 			{
 				if ($element->size)
 				{
-					return Craft::$app->formatter->formatSize($element->size);
+					return Craft::$app->getFormatter()->formatSize($element->size);
 				}
 				else
 				{

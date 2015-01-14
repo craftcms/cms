@@ -77,7 +77,7 @@ class TemplatesController extends BaseController
 	public function actionOffline()
 	{
 		// If this is a site request, make sure the offline template exists
-		if (Craft::$app->request->isSiteRequest() && !Craft::$app->templates->doesTemplateExist('offline'))
+		if (Craft::$app->getRequest()->getIsSiteRequest() && !Craft::$app->templates->doesTemplateExist('offline'))
 		{
 			// Set the Path service to use the CP templates path instead
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
@@ -105,7 +105,7 @@ class TemplatesController extends BaseController
 	public function actionManualUpdate()
 	{
 		$this->renderTemplate('updates/_go', [
-			'handle' => Craft::$app->request->getSegment(2)
+			'handle' => Craft::$app->getRequest()->getSegment(2)
 		]);
 	}
 
@@ -122,7 +122,7 @@ class TemplatesController extends BaseController
 		if ($reqCheck->getResult() == InstallStatus::Failed)
 		{
 			// Coming from Updater.php
-			if (Craft::$app->request->isAjaxRequest())
+			if (Craft::$app->getRequest()->getIsAjax())
 			{
 				$message = '<br /><br />';
 
@@ -147,7 +147,7 @@ class TemplatesController extends BaseController
 		else
 		{
 			// Cache the app path.
-			Craft::$app->cache->set('appPath', Craft::$app->path->getAppPath());
+			Craft::$app->getCache()->set('appPath', Craft::$app->path->getAppPath());
 		}
 	}
 
@@ -159,10 +159,10 @@ class TemplatesController extends BaseController
 	 */
 	public function actionRenderError()
 	{
-		$error = Craft::$app->errorHandler->getError();
+		$error = Craft::$app->getErrorHandler()->getError();
 		$code = (string) $error['code'];
 
-		if (Craft::$app->request->isSiteRequest())
+		if (Craft::$app->getRequest()->getIsSiteRequest())
 		{
 			$prefix = Craft::$app->config->get('errorTemplatePrefix');
 

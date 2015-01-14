@@ -164,7 +164,7 @@ trait ApplicationTrait
 	{
 		if (!isset($this->_isLocalized))
 		{
-			$this->_isLocalized = ($this->getEdition() == Craft::Pro && count(Craft::$app->i18n->getSiteLocales()) > 1);
+			$this->_isLocalized = ($this->getEdition() == Craft::Pro && count(Craft::$app->getI18n()->getSiteLocales()) > 1);
 		}
 
 		return $this->_isLocalized;
@@ -197,7 +197,7 @@ trait ApplicationTrait
 	 */
 	public function getLicensedEdition()
 	{
-		$licensedEdition = Craft::$app->cache->get('licensedEdition');
+		$licensedEdition = Craft::$app->getCache()->get('licensedEdition');
 
 		if ($licensedEdition !== false)
 		{
@@ -301,7 +301,8 @@ trait ApplicationTrait
 	 */
 	public function canTestEditions()
 	{
-		return (Craft::$app->cache->get('editionTestableDomain@'.Craft::$app->request->getHostName()) == 1);
+		$request = Craft::$app->getRequest();
+		return (!$request->getIsConsoleRequest() && Craft::$app->getCache()->get('editionTestableDomain@'.$request->getHostName()) == 1);
 	}
 
 	/**
@@ -364,7 +365,7 @@ trait ApplicationTrait
 				else
 				{
 					// Figure it out for ourselves, then
-					$siteUrl = Craft::$app->request->getBaseUrl(true);
+					$siteUrl = Craft::$app->getRequest()->getBaseUrl(true);
 				}
 			}
 
@@ -455,7 +456,7 @@ trait ApplicationTrait
 		{
 			if ($this->isInstalled())
 			{
-				$row = Craft::$app->db->createCommand()
+				$row = Craft::$app->getDb()->createCommand()
 					->from('info')
 					->limit(1)
 					->queryRow();
@@ -498,14 +499,14 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
-				Craft::$app->db->createCommand()->update('info', $attributes);
+				Craft::$app->getDb()->createCommand()->update('info', $attributes);
 			}
 			else
 			{
-				Craft::$app->db->createCommand()->insert('info', $attributes);
+				Craft::$app->getDb()->createCommand()->insert('info', $attributes);
 
 				// Set the new id
-				$info->id = Craft::$app->db->getLastInsertID();
+				$info->id = Craft::$app->getDb()->getLastInsertID();
 			}
 
 			// Use this as the new cached InfoModel
@@ -615,7 +616,7 @@ trait ApplicationTrait
 	// =========================================================================
 
 	/**
-	 * Creates a [[DbConnection]] specifically initialized for Craft's Craft::$app->db instance.
+	 * Creates a [[DbConnection]] specifically initialized for Craft's Craft::$app->getDb() instance.
 	 *
 	 * @throws DbConnectException
 	 * @return DbConnection
@@ -773,9 +774,11 @@ trait ApplicationTrait
 		if ($this->isInstalled())
 		{
 			// Will any locale validation be necessary here?
-			if (Craft::$app->request->isCpRequest() || defined('CRAFT_LOCALE'))
+			$request = $this->getRequest();
+
+			if ($request->getIsConsoleRequest() || $request->getIsCpRequest() || defined('CRAFT_LOCALE'))
 			{
-				if (Craft::$app->request->isCpRequest())
+				if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 				{
 					$locale = 'auto';
 				}
@@ -785,7 +788,7 @@ trait ApplicationTrait
 				}
 
 				// Get the list of actual site locale IDs
-				$siteLocaleIds = Craft::$app->i18n->getSiteLocaleIds();
+				$siteLocaleIds = Craft::$app->getI18n()->getSiteLocaleIds();
 
 				// Is it set to "auto"?
 				if ($locale == 'auto')
@@ -803,19 +806,22 @@ trait ApplicationTrait
 					}
 					catch (\Exception $e)
 					{
-						Craft::log("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), LogLevel::Error);
+						Craft::log("Tried to determine the user's preferred locale, but got this exception: " . $e->getMessage(), LogLevel::Error);
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales
-					$browserLanguages = Craft::$app->request->getBrowserLanguages();
-
-					if ($browserLanguages)
+					if (!$request->getIsConsoleRequest())
 					{
-						foreach ($browserLanguages as $language)
+						$browserLanguages = $request->getAcceptableLanguages();
+
+						if ($browserLanguages)
 						{
-							if (in_array($language, $siteLocaleIds))
+							foreach ($browserLanguages as $language)
 							{
-								return $language;
+								if (in_array($language, $siteLocaleIds))
+								{
+									return $language;
+								}
 							}
 						}
 					}
@@ -829,7 +835,7 @@ trait ApplicationTrait
 			}
 
 			// Use the primary site locale by default
-			return Craft::$app->i18n->getPrimarySiteLocaleId();
+			return Craft::$app->getI18n()->getPrimarySiteLocaleId();
 		}
 		else
 		{

@@ -88,7 +88,7 @@ class RecentEntries extends BaseWidget
 
 		if ($targetLocale && $targetLocale != Craft::$app->language)
 		{
-			$locale = Craft::$app->i18n->getLocaleById($targetLocale);
+			$locale = Craft::$app->getI18n()->getLocaleById($targetLocale);
 
 			$title = Craft::t('{title} ({locale})', [
 				'title'  => $title,
@@ -223,7 +223,7 @@ class RecentEntries extends BaseWidget
 		// their first editable locale.
 
 		// Figure out which locales the user is actually allowed to edit
-		$editableLocaleIds = Craft::$app->i18n->getEditableLocaleIds();
+		$editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
 
 		// If they aren't allowed to edit *any* locales, return false
 		if (!$editableLocaleIds)

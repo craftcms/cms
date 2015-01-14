@@ -85,15 +85,15 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 
 		$transform = new AssetTransformModel();
-		$transform->id = Craft::$app->request->getPost('transformId');
-		$transform->name = Craft::$app->request->getPost('name');
-		$transform->handle = Craft::$app->request->getPost('handle');
-		$transform->width = Craft::$app->request->getPost('width');
-		$transform->height = Craft::$app->request->getPost('height');
-		$transform->mode = Craft::$app->request->getPost('mode');
-		$transform->position = Craft::$app->request->getPost('position');
-		$transform->quality = Craft::$app->request->getPost('quality');
-		$transform->format = Craft::$app->request->getPost('format');
+		$transform->id = Craft::$app->getRequest()->getBodyParam('transformId');
+		$transform->name = Craft::$app->getRequest()->getBodyParam('name');
+		$transform->handle = Craft::$app->getRequest()->getBodyParam('handle');
+		$transform->width = Craft::$app->getRequest()->getBodyParam('width');
+		$transform->height = Craft::$app->getRequest()->getBodyParam('height');
+		$transform->mode = Craft::$app->getRequest()->getBodyParam('mode');
+		$transform->position = Craft::$app->getRequest()->getBodyParam('position');
+		$transform->quality = Craft::$app->getRequest()->getBodyParam('quality');
+		$transform->format = Craft::$app->getRequest()->getBodyParam('format');
 
 		if (empty($transform->format))
 		{
@@ -135,7 +135,7 @@ class AssetTransformsController extends BaseController
 		}
 
 		// Send the transform back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'transform' => $transform
 		]);
 	}
@@ -148,7 +148,7 @@ class AssetTransformsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$transformId = Craft::$app->request->getRequiredPost('id');
+		$transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->assetTransforms->deleteTransform($transformId);
 

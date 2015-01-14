@@ -369,7 +369,7 @@ class User extends BaseElementType
 			}
 			else
 			{
-				$permissionId = Craft::$app->db->createCommand()
+				$permissionId = Craft::$app->getDb()->createCommand()
 					->select('id')
 					->from('userpermissions')
 					->where('name = :name', [':name' => strtolower($criteria->can)])
@@ -384,7 +384,7 @@ class User extends BaseElementType
 			if ($permissionId)
 			{
 				// Get the user groups that have that permission
-				$permittedGroupIds = Craft::$app->db->createCommand()
+				$permittedGroupIds = Craft::$app->getDb()->createCommand()
 					->select('groupId')
 					->from('userpermissions_usergroups')
 					->where('permissionId = :permissionId', [':permissionId' => $permissionId])
@@ -398,7 +398,7 @@ class User extends BaseElementType
 				// Get the users that have that permission directly
 				$permittedUserIds = array_merge(
 					$permittedUserIds,
-					Craft::$app->db->createCommand()
+					Craft::$app->getDb()->createCommand()
 						->select('userId')
 						->from('userpermissions_users')
 						->where('permissionId = :permissionId', [':permissionId' => $permissionId])
@@ -433,7 +433,7 @@ class User extends BaseElementType
 		if ($criteria->group)
 		{
 			// Get the actual group ID(s)
-			$groupIdsQuery = Craft::$app->db->createCommand()
+			$groupIdsQuery = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('usergroups');
 
@@ -554,7 +554,7 @@ class User extends BaseElementType
 	 */
 	private function _getUserIdsByGroupIds($groupIds)
 	{
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('userId')
 			->from('usergroups_users');
 

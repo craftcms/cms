@@ -160,7 +160,7 @@ class Search extends Component
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
-			Craft::$app->db->quoteTableName(Craft::$app->db->addTablePrefix('searchindex')),
+			Craft::$app->getDb()->quoteTableName(Craft::$app->getDb()->addTablePrefix('searchindex')),
 			$where
 		);
 
@@ -168,13 +168,13 @@ class Search extends Component
 		if ($elementIds)
 		{
 			$sql .= sprintf(' AND %s IN (%s)',
-				Craft::$app->db->quoteColumnName('elementId'),
+				Craft::$app->getDb()->quoteColumnName('elementId'),
 				implode(',', $elementIds)
 			);
 		}
 
 		// Execute the sql
-		$results = Craft::$app->db->createCommand()->setText($sql)->queryAll();
+		$results = Craft::$app->getDb()->createCommand()->setText($sql)->queryAll();
 
 		// Are we scoring the results?
 		if ($scoreResults)
@@ -330,7 +330,7 @@ class Search extends Component
 
 		if (!$localeId)
 		{
-			$localeId = Craft::$app->i18n->getPrimarySiteLocaleId();
+			$localeId = Craft::$app->getI18n()->getPrimarySiteLocaleId();
 		}
 
 		// Clean 'em up
@@ -376,7 +376,7 @@ class Search extends Component
 		}
 
 		// Insert/update the row in searchindex
-		Craft::$app->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, [
+		Craft::$app->getDb()->createCommand()->insertOrUpdate('searchindex', $keyColumns, [
 			'keywords' => $cleanKeywords
 		], false);
 	}
@@ -803,7 +803,7 @@ class Search extends Component
 	private function _sqlWhere($key, $oper, $val)
 	{
 		return sprintf("(%s %s '%s')",
-			Craft::$app->db->quoteColumnName($key),
+			Craft::$app->getDb()->quoteColumnName($key),
 			$oper,
 			$val
 		);
@@ -820,7 +820,7 @@ class Search extends Component
 	private function _sqlMatch($val, $bool = true)
 	{
 		return sprintf("MATCH(%s) AGAINST('%s'%s)",
-			Craft::$app->db->quoteColumnName('keywords'),
+			Craft::$app->getDb()->quoteColumnName('keywords'),
 			(is_array($val) ? implode(' ', $val) : $val),
 			($bool ? ' IN BOOLEAN MODE' : '')
 		);
@@ -836,7 +836,7 @@ class Search extends Component
 	private function _sqlSubSelect($where)
 	{
 		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
-		$elementIds = Craft::$app->db->createCommand()
+		$elementIds = Craft::$app->getDb()->createCommand()
 			->select('elementId')
 			->from('searchindex')
 			->where($where)
@@ -844,7 +844,7 @@ class Search extends Component
 
 		if ($elementIds)
 		{
-			return Craft::$app->db->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
+			return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
 		}
 		else
 		{

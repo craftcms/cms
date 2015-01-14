@@ -135,7 +135,7 @@ class AssetSources extends Component
 			}
 			else
 			{
-				$this->_allSourceIds = Craft::$app->db->createCommand()
+				$this->_allSourceIds = Craft::$app->getDb()->createCommand()
 					->select('id')
 					->from('assetsources')
 					->queryColumn();
@@ -358,13 +358,13 @@ class AssetSources extends Component
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
-			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if ($isNewSource)
 				{
 					// Set the sort order
-					$maxSortOrder = Craft::$app->db->createCommand()
+					$maxSortOrder = Craft::$app->getDb()->createCommand()
 						->select('max(sortOrder)')
 						->from('assetsources')
 						->queryScalar();
@@ -445,7 +445,7 @@ class AssetSources extends Component
 	 */
 	public function reorderSources($sourceIds)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -489,11 +489,11 @@ class AssetSources extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Grab the asset file ids so we can clean the elements table.
-			$assetFileIds = Craft::$app->db->createCommand()
+			$assetFileIds = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('assetfiles')
 				->where(['sourceId' => $sourceId])
@@ -502,7 +502,7 @@ class AssetSources extends Component
 			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = Craft::$app->db->createCommand()->delete('assetsources', ['id' => $sourceId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('assetsources', ['id' => $sourceId]);
 
 			if ($transaction !== null)
 			{
@@ -532,7 +532,7 @@ class AssetSources extends Component
 	 */
 	private function _createSourceQuery()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
 			->from('assetsources')
 			->order('sortOrder');

@@ -54,12 +54,14 @@ class Deprecator extends Component
 	 */
 	public function log($key, $message)
 	{
+		$request = Craft::$app->getRequest();
+
 		$log = new DeprecationErrorModel();
 
 		$log->key            = $key;
 		$log->message        = $message;
 		$log->lastOccurrence = DateTimeHelper::currentTimeForDb();
-		$log->template       = (Craft::$app->request->isSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
+		$log->template       = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() ? Craft::$app->templates->getRenderingTemplate() : null);
 
 		// Everything else requires the stack trace
 		$this->_populateLogWithStackTraceData($log);
@@ -67,7 +69,7 @@ class Deprecator extends Component
 		// Don't log the same key/fingerprint twice in the same request
 		if (!isset($this->_fingerprints[$log->key]) || !in_array($log->fingerprint, $this->_fingerprints[$log->key]))
 		{
-			Craft::$app->db->createCommand()->insertOrUpdate(static::$_tableName, [
+			Craft::$app->getDb()->createCommand()->insertOrUpdate(static::$_tableName, [
 				'key'            => $log->key,
 				'fingerprint'    => $log->fingerprint
 			], [
@@ -95,7 +97,7 @@ class Deprecator extends Component
 	 */
 	public function getTotalLogs()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->from(static::$_tableName)
 			->count('id');
 	}
@@ -111,7 +113,7 @@ class Deprecator extends Component
 	{
 		if (!isset($this->_allLogs))
 		{
-			$result = Craft::$app->db->createCommand()
+			$result = Craft::$app->getDb()->createCommand()
 				->select('*')
 				->from(static::$_tableName)
 				->limit($limit)
@@ -133,7 +135,7 @@ class Deprecator extends Component
 	 */
 	public function getLogById($logId)
 	{
-		$log = Craft::$app->db->createCommand()
+		$log = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from(static::$_tableName)
 			->where('id = :logId', [':logId' => $logId])
@@ -154,7 +156,7 @@ class Deprecator extends Component
 	 */
 	public function deleteLogById($id)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName, ['id' => $id]);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName, ['id' => $id]);
 		return (bool) $affectedRows;
 	}
 
@@ -165,7 +167,7 @@ class Deprecator extends Component
 	 */
 	public function deleteAllLogs()
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete(static::$_tableName);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName);
 		return (bool) $affectedRows;
 	}
 
@@ -197,7 +199,8 @@ class Deprecator extends Component
 		$pluginsPathLength = strlen($pluginsPath);
 		/* end HIDE */
 
-		$isTemplateRendering = (Craft::$app->request->isSiteRequest() && Craft::$app->templates->isRendering());
+		$request = Craft::$app->getRequest();
+		$isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->templates->isRendering());
 
 		if ($isTemplateRendering)
 		{
@@ -255,7 +258,8 @@ class Deprecator extends Component
 				if ($isTemplateRendering && !$foundTemplate)
 				{
 					// Is this a plugin's template?
-					if (!$foundPlugin && Craft::$app->request->isCpRequest() && $logTrace['template'])
+					$request = Craft::$app->getRequest();
+					if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template'])
 					{
 						$firstSeg = array_shift(explode('/', $logTrace['template']));
 

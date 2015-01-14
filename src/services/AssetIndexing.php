@@ -146,7 +146,7 @@ class AssetIndexing extends Component
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
-		Craft::$app->db->createCommand()->update('assetindexdata', ['recordId' => $recordId], ['id' => $entryId]);
+		Craft::$app->getDb()->createCommand()->update('assetindexdata', ['recordId' => $recordId], ['id' => $entryId]);
 	}
 
 
@@ -163,7 +163,7 @@ class AssetIndexing extends Component
 		$output = [];
 
 		// Load the record IDs of the files that were indexed.
-		$processedFiles = Craft::$app->db->createCommand()
+		$processedFiles = Craft::$app->getDb()->createCommand()
 			->select('recordId')
 			->from('assetindexdata')
 			->where('sessionId = :sessionId AND recordId IS NOT NULL', [':sessionId' => $sessionId])
@@ -171,7 +171,7 @@ class AssetIndexing extends Component
 
 		$processedFiles = array_flip($processedFiles);
 
-		$fileEntries = Craft::$app->db->createCommand()
+		$fileEntries = Craft::$app->getDb()->createCommand()
 			->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.path, s.name AS sourceName')
 			->from('assetfiles AS fi')
 			->join('assetfolders AS fo', 'fi.folderId = fo.id')
@@ -199,8 +199,8 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
-		Craft::$app->db->createCommand()->delete('assettransformindex', ['in', 'fileId', $fileIds]);
-		Craft::$app->db->createCommand()->delete('assetfiles', ['in', 'id', $fileIds]);
+		Craft::$app->getDb()->createCommand()->delete('assettransformindex', ['in', 'fileId', $fileIds]);
+		Craft::$app->getDb()->createCommand()->delete('assetfiles', ['in', 'id', $fileIds]);
 
 		foreach ($fileIds as $fileId)
 		{
@@ -217,7 +217,7 @@ class AssetIndexing extends Component
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{
-		Craft::$app->db->createCommand()->delete('assetfolders', ['in', 'id', $folderIds]);
+		Craft::$app->getDb()->createCommand()->delete('assetfolders', ['in', 'id', $folderIds]);
 	}
 
 }

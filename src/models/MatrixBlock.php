@@ -92,7 +92,7 @@ class MatrixBlock extends BaseElementModel
 			}
 			else
 			{
-				return [Craft::$app->i18n->getPrimarySiteLocaleId()];
+				return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
 			}
 		}
 	}

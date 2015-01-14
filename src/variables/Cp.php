@@ -74,7 +74,7 @@ class Cp
 			}
 		}
 
-		$firstSegment = Craft::$app->request->getSegment(1);
+		$firstSegment = Craft::$app->getRequest()->getSegment(1);
 
 		if ($firstSegment == 'myaccount')
 		{
@@ -153,6 +153,6 @@ class Cp
 	 */
 	public function getAlerts()
 	{
-		return CpHelper::getAlerts(Craft::$app->request->getPath());
+		return CpHelper::getAlerts(Craft::$app->getRequest()->getPath());
 	}
 }

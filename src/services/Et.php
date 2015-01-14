@@ -236,7 +236,7 @@ class Et extends Component
 	 */
 	public function getLicenseKeyStatus()
 	{
-		return Craft::$app->cache->get('licenseKeyStatus');
+		return Craft::$app->getCache()->get('licenseKeyStatus');
 	}
 
 	/**
@@ -247,7 +247,7 @@ class Et extends Component
 	 */
 	public function getLicensedDomain()
 	{
-		return Craft::$app->cache->get('licensedDomain');
+		return Craft::$app->getCache()->get('licensedDomain');
 	}
 
 	/**

@@ -152,7 +152,7 @@ class Tasks extends Component
 		if (!headers_sent())
 		{
 			// Close the client connection
-			Craft::$app->request->close();
+			Craft::$app->getRequest()->close();
 
 			// Run any pending tasks
 			$this->runPendingTasks();
@@ -344,7 +344,7 @@ class Tasks extends Component
 	 */
 	public function getTaskById($taskId)
 	{
-		$result = Craft::$app->db->createCommand()
+		$result = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('tasks')
 			->where('id = :id', [':id' => $taskId])
@@ -363,7 +363,7 @@ class Tasks extends Component
 	 */
 	public function getAllTasks()
 	{
-		$results = Craft::$app->db->createCommand()
+		$results = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('tasks')
 			->order('root asc, lft asc')
@@ -381,7 +381,7 @@ class Tasks extends Component
 	{
 		if (!isset($this->_runningTask))
 		{
-			$result = Craft::$app->db->createCommand()
+			$result = Craft::$app->getDb()->createCommand()
 				->select('*')
 				->from('tasks')
 				->where(
@@ -414,7 +414,7 @@ class Tasks extends Component
 	public function isTaskRunning()
 	{
 		// Remember that a root task could appear to be stagnant if it has sub-tasks.
-		return (bool) Craft::$app->db->createCommand()
+		return (bool) Craft::$app->getDb()->createCommand()
 			->from('tasks')
 			->where(
 				['and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
@@ -441,7 +441,7 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		return (bool) Craft::$app->db->createCommand()
+		return (bool) Craft::$app->getDb()->createCommand()
 			->from('tasks')
 			->where($conditions, $params)
 			->count('id');
@@ -466,7 +466,7 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->from('tasks')
 			->where($conditions, $params);
 
@@ -486,7 +486,7 @@ class Tasks extends Component
 	 */
 	public function haveTasksFailed()
 	{
-		return (bool) Craft::$app->db->createCommand()
+		return (bool) Craft::$app->getDb()->createCommand()
 			->from('tasks')
 			->where(['and', 'level = 0', 'status = :status'], [':status' => TaskStatus::Error])
 			->count('id');
@@ -499,7 +499,7 @@ class Tasks extends Component
 	 */
 	public function getTotalTasks()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->from('tasks')
 			->where(
 				['and', 'lft = 1', 'status != :status'],

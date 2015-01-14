@@ -289,7 +289,7 @@ class Config extends Component
 			else
 			{
 				// Check if it's cached
-				$cachedVal = Craft::$app->cache->get('omitScriptNameInUrls');
+				$cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls');
 
 				if ($cachedVal !== false)
 				{
@@ -306,12 +306,12 @@ class Config extends Component
 					else
 					{
 						// Cache it early so the testScriptNameRedirect request isn't checking for it too
-						Craft::$app->cache->set('omitScriptNameInUrls', 'n');
+						Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
 
 						// Test the server for it
 						try
 						{
-							$baseUrl = Craft::$app->request->getHostInfo().Craft::$app->request->getScriptUrl();
+							$baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
 							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
 							$client = new \Guzzle\Http\Client();
@@ -329,7 +329,7 @@ class Config extends Component
 					}
 
 					// Cache it
-					Craft::$app->cache->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
+					Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
 				}
 			}
 		}
@@ -378,7 +378,7 @@ class Config extends Component
 			else
 			{
 				// Check if it's cached
-				$cachedVal = Craft::$app->cache->get('usePathInfo');
+				$cachedVal = Craft::$app->getCache()->get('usePathInfo');
 
 				if ($cachedVal !== false)
 				{
@@ -401,12 +401,12 @@ class Config extends Component
 					else
 					{
 						// Cache it early so the testPathInfo request isn't checking for it too
-						Craft::$app->cache->set('usePathInfo', 'n');
+						Craft::$app->getCache()->set('usePathInfo', 'n');
 
 						// Test the server for it
 						try
 						{
-							$url = Craft::$app->request->getHostInfo().Craft::$app->request->getScriptUrl().'/testPathInfo';
+							$url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
 							$client = new \Guzzle\Http\Client();
 							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
 
@@ -422,7 +422,7 @@ class Config extends Component
 					}
 
 					// Cache it
-					Craft::$app->cache->set('usePathInfo', $this->_usePathInfo);
+					Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo);
 				}
 			}
 		}
@@ -492,7 +492,9 @@ class Config extends Component
 	 */
 	public function getLoginPath()
 	{
-		if (Craft::$app->request->isSiteRequest())
+		$request = Craft::$app->getRequest();
+
+		if ($request->getIsConsoleRequest() || $request->getIsSiteRequest())
 		{
 			return $this->getLocalized('loginPath');
 		}
@@ -510,7 +512,9 @@ class Config extends Component
 	 */
 	public function getLogoutPath()
 	{
-		if (Craft::$app->request->isSiteRequest())
+		$request = Craft::$app->getRequest();
+
+		if ($request->getIsConsoleRequest() || $request->getIsSiteRequest())
 		{
 			return $this->getLocalized('logoutPath');
 		}
@@ -546,7 +550,7 @@ class Config extends Component
 			return $url;
 		}
 
-		if (Craft::$app->request->isSecureConnection())
+		if (Craft::$app->getRequest()->getIsSecureConnection())
 		{
 			$url = UrlHelper::getUrl($url, [
 				'code' => $code, 'id' => $uid
@@ -588,7 +592,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (Craft::$app->request->isSecureConnection())
+				if (Craft::$app->getRequest()->getIsSecureConnection())
 				{
 					$url = UrlHelper::getCpUrl($url, [
 						'code' => $code, 'id' => $uid
@@ -608,7 +612,7 @@ class Config extends Component
 
 			if ($full)
 			{
-				if (Craft::$app->request->isSecureConnection())
+				if (Craft::$app->getRequest()->getIsSecureConnection())
 				{
 					$url = UrlHelper::getUrl($url, [
 						'code' => $code, 'id' => $uid
@@ -687,7 +691,9 @@ class Config extends Component
 	 */
 	public function getResourceTrigger()
 	{
-		if (Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			return 'resources';
 		}

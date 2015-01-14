@@ -52,10 +52,10 @@ class SearchIndex extends BaseTool
 		if (!empty($params['start']))
 		{
 			// Truncate the searchindex table
-			Craft::$app->db->createCommand()->truncateTable('searchindex');
+			Craft::$app->getDb()->createCommand()->truncateTable('searchindex');
 
 			// Get all the element IDs ever
-			$elements = Craft::$app->db->createCommand()
+			$elements = Craft::$app->getDb()->createCommand()
 				->select('id, type')
 				->from('elements')
 				->queryAll();
@@ -80,11 +80,11 @@ class SearchIndex extends BaseTool
 			{
 				if ($elementType->isLocalized())
 				{
-					$localeIds = Craft::$app->i18n->getSiteLocaleIds();
+					$localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
 				}
 				else
 				{
-					$localeIds = [Craft::$app->i18n->getPrimarySiteLocaleId()];
+					$localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
 				}
 
 				$criteria = Craft::$app->elements->getCriteria($params['type'], [

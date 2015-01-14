@@ -168,7 +168,7 @@ class AssetIndex extends BaseTool
 						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)
-					$sessionsInProgress = Craft::$app->db->createCommand()
+					$sessionsInProgress = Craft::$app->getDb()->createCommand()
 											->select('sessionId')
 											->from('assetindexdata')
 											->where('recordId IS NULL')
@@ -177,11 +177,11 @@ class AssetIndex extends BaseTool
 
 					if (empty($sessionsInProgress))
 					{
-						Craft::$app->db->createCommand()->delete('assetindexdata');
+						Craft::$app->getDb()->createCommand()->delete('assetindexdata');
 					}
 					else
 					{
-						Craft::$app->db->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress]);
+						Craft::$app->getDb()->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress]);
 					}
 
 

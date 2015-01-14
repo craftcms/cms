@@ -126,7 +126,7 @@ class Structures extends Component
 			return false;
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->delete('structures', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('structures', [
 			'id' => $structureId
 		]);
 
@@ -353,7 +353,7 @@ class Structures extends Component
 			$action = $insertAction;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			if ($mode == 'update')

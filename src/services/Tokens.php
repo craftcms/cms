@@ -57,7 +57,7 @@ class Tokens extends Component
 		}
 
 		$tokenRecord = new TokenRecord();
-		$tokenRecord->token = Craft::$app->security->generateRandomString(32, false);
+		$tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32, false);
 		$tokenRecord->route = $route;
 
 		if ($usageLimit)
@@ -91,7 +91,7 @@ class Tokens extends Component
 		// Take the opportunity to delete any expired tokens
 		$this->deleteExpiredTokens();
 
-		$result = Craft::$app->db->createCommand()
+		$result = Craft::$app->getDb()->createCommand()
 			->select('id, route, usageLimit, usageCount')
 			->from('tokens')
 			->where('token = :token', [':token' => $token])
@@ -140,7 +140,7 @@ class Tokens extends Component
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->update('tokens', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->update('tokens', [
 			'usageCount' => 'usageCount + 1'
 		], [
 			'id' => $tokenId
@@ -158,7 +158,7 @@ class Tokens extends Component
 	 */
 	public function deleteTokenById($tokenId)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete('tokens', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('tokens', [
 			'id' => $tokenId
 		]);
 	}
@@ -176,7 +176,7 @@ class Tokens extends Component
 			return false;
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->delete('tokens',
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('tokens',
 			'expiryDate <= :now',
 			['now' => DateTimeHelper::currentTimeForDb()]
 		);

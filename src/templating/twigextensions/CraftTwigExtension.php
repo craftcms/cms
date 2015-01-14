@@ -73,7 +73,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'currency'           => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
 			'datetime'           => new \Twig_Filter_Function('\craft\app\Craft::$app->dateFormatter->formatDateTime'),
-			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->formatter->formatSize'),
+			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->getFormatter()->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
@@ -426,7 +426,9 @@ class CraftTwigExtension extends \Twig_Extension
 			// Technically deprecated, though.
 			$globals['user'] = $globals['currentUser'];
 
-			if (Craft::$app->request->isSiteRequest())
+			$request = Craft::$app->getRequest();
+
+			if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest())
 			{
 				foreach (Craft::$app->globals->getAllSets() as $globalSet)
 				{
@@ -441,7 +443,9 @@ class CraftTwigExtension extends \Twig_Extension
 			$globals['user'] = null;
 		}
 
-		if (Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			$globals['CraftEdition']  = Craft::$app->getEdition();
 			$globals['CraftPersonal'] = Craft::Personal;

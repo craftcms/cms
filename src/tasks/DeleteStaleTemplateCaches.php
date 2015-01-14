@@ -192,7 +192,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 	 */
 	private function _getQuery()
 	{
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->from('templatecachecriteria');
 
 		if (is_array($this->_elementType))

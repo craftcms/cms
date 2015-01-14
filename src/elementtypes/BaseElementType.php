@@ -176,7 +176,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			'context'             => $context,
 			'elementType'         => new ElementType($this),
 			'disabledElementIds'  => $disabledElementIds,
-			'collapsedElementIds' => Craft::$app->request->getParam('collapsedElementIds'),
+			'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,
 		];
 

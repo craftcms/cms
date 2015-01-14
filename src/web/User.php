@@ -270,7 +270,7 @@ class User extends \yii\web\User
 			{
 				$authKey = $data[1];
 
-				Craft::$app->db->createCommand()->delete('sessions', ['and', 'userId=:userId', 'uid=:uid'], [
+				Craft::$app->getDb()->createCommand()->delete('sessions', ['and', 'userId=:userId', 'uid=:uid'], [
 					'userId' => $identity->id,
 					'token'  => $authKey
 				]);
@@ -291,10 +291,12 @@ class User extends \yii\web\User
 	private function _shouldEnableSession()
 	{
 		// See if these are the exact conditions we support for disabling the session on the current request
+		$request = Craft::$app->getRequest();
+
 		return !(
-			Craft::$app->request->getIsGet() &&
-			Craft::$app->request->isCpRequest() &&
-			Craft::$app->request->getParam('dontEnableSession')
+			$request->getIsGet() &&
+			$request->getIsCpRequest() &&
+			$request->getParam('dontEnableSession')
 		);
 	}
 
@@ -343,7 +345,7 @@ class User extends \yii\web\User
 					$tokenUid = $authData[1];
 
 					// Now update the associated session row's dateUpdated column
-					Craft::$app->db->createCommand()->update('sessions',
+					Craft::$app->getDb()->createCommand()->update('sessions',
 						[],
 						['and', 'userId=:userId', 'uid=:uid'],
 						[':userId' => $this->getId(), ':uid' => $tokenUid]
@@ -362,6 +364,6 @@ class User extends \yii\web\User
 		$expire = DateTimeHelper::currentUTCDateTime();
 		$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 		$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
-		Craft::$app->db->createCommand()->delete('sessions', 'dateUpdated < :pastTime', ['pastTime' => $pastTime]);
+		Craft::$app->getDb()->createCommand()->delete('sessions', 'dateUpdated < :pastTime', ['pastTime' => $pastTime]);
 	}
 }

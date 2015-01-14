@@ -95,7 +95,7 @@ class UpdateController extends BaseController
 
 		$this->requireAjaxRequest();
 
-		$handle = Craft::$app->request->getRequiredPost('handle');
+		$handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
 
 		$return = [];
 		$updateInfo = Craft::$app->updates->getUpdates();
@@ -174,7 +174,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$manual = false;
 		if (!$this->_isManualUpdate($data))
@@ -229,7 +229,7 @@ class UpdateController extends BaseController
 			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$return = Craft::$app->updates->processUpdateDownload($data['md5']);
 		if (!$return['success'])
@@ -260,7 +260,7 @@ class UpdateController extends BaseController
 			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$return = Craft::$app->updates->backupFiles($data['uid']);
 		if (!$return['success'])
@@ -289,7 +289,7 @@ class UpdateController extends BaseController
 			$this->returnJson(['alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true]);
 		}
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$return = Craft::$app->updates->updateFiles($data['uid']);
 		if (!$return['success'])
@@ -310,7 +310,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$handle = $this->_getFixedHandle($data);
 
@@ -348,7 +348,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		$handle = $this->_getFixedHandle($data);
 
@@ -381,7 +381,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		if ($this->_isManualUpdate($data))
 		{
@@ -429,7 +429,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$data = Craft::$app->request->getRequiredPost('data');
+		$data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
 		if ($this->_isManualUpdate($data))
 		{

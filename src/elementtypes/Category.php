@@ -408,7 +408,7 @@ class Category extends BaseElementType
 
 			$ancestorIds = $element->getAncestors()->ids();
 
-			$sources = Craft::$app->db->createCommand()
+			$sources = Craft::$app->getDb()->createCommand()
 				->select('fieldId, sourceId, sourceLocale')
 				->from('relations')
 				->where('targetId = :categoryId', [':categoryId' => $element->id])
@@ -416,7 +416,7 @@ class Category extends BaseElementType
 
 			foreach ($sources as $source)
 			{
-				$existingAncestorRelations = Craft::$app->db->createCommand()
+				$existingAncestorRelations = Craft::$app->getDb()->createCommand()
 					->select('targetId')
 					->from('relations')
 					->where(['and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', ['in', 'targetId', $ancestorIds]], [
@@ -436,7 +436,7 @@ class Category extends BaseElementType
 
 			if ($newRelationValues)
 			{
-				Craft::$app->db->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues);
+				Craft::$app->getDb()->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues);
 			}
 		}
 	}

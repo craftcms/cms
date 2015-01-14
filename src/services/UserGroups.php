@@ -102,7 +102,7 @@ class UserGroups extends Component
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
 	{
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('g.*')
 			->from('usergroups g')
 			->join('usergroups_users gu', 'gu.groupId = g.id')
@@ -153,7 +153,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		Craft::$app->db->createCommand()
+		Craft::$app->getDb()->createCommand()
 			->delete('usergroups_users', ['userId' => $userId]);
 
 		if ($groupIds)
@@ -168,7 +168,7 @@ class UserGroups extends Component
 				$values[] = [$groupId, $userId];
 			}
 
-			Craft::$app->db->createCommand()->insertAll('usergroups_users', ['groupId', 'userId'], $values);
+			Craft::$app->getDb()->createCommand()->insertAll('usergroups_users', ['groupId', 'userId'], $values);
 		}
 
 		return true;
@@ -225,7 +225,7 @@ class UserGroups extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		Craft::$app->db->createCommand()->delete('usergroups', ['id' => $groupId]);
+		Craft::$app->getDb()->createCommand()->delete('usergroups', ['id' => $groupId]);
 		return true;
 	}
 

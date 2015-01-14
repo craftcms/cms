@@ -207,7 +207,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransform($transformId)
 	{
-		Craft::$app->db->createCommand()->delete('assettransforms', ['id' => $transformId]);
+		Craft::$app->getDb()->createCommand()->delete('assettransforms', ['id' => $transformId]);
 		return true;
 	}
 
@@ -225,7 +225,7 @@ class AssetTransforms extends Component
 		$transformLocation = $this->_getTransformFolderName($transform);
 
 		// Check if an entry exists already
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('ti.*')
 			->from('assettransformindex ti')
 			->where('ti.sourceId = :sourceId AND ti.fileId = :fileId AND ti.location = :location',
@@ -259,7 +259,7 @@ class AssetTransforms extends Component
 			else
 			{
 				// Delete the out-of-date record
-				Craft::$app->db->createCommand()->delete('assettransformindex',
+				Craft::$app->getDb()->createCommand()->delete('assettransformindex',
 					'id = :transformIndexId',
 					[':transformIndexId' => $entry['id']]);
 			}
@@ -393,7 +393,7 @@ class AssetTransforms extends Component
 
 			// We're looking for transforms that fit the bill and are not the one we are trying to find/create
 			// the image for.
-			$results = Craft::$app->db->createCommand()
+			$results = Craft::$app->getDb()->createCommand()
 				->select('*')
 				->from('assettransformindex')
 				->where('fileId = :fileId', [':fileId' => $file->id])
@@ -490,12 +490,12 @@ class AssetTransforms extends Component
 		if (!empty($index->id))
 		{
 			$id = $index->id;
-			Craft::$app->db->createCommand()->update('assettransformindex', $values, 'id = :id', [':id' => $id]);
+			Craft::$app->getDb()->createCommand()->update('assettransformindex', $values, 'id = :id', [':id' => $id]);
 		}
 		else
 		{
-			Craft::$app->db->createCommand()->insert('assettransformindex', $values);
-			$index->id = Craft::$app->db->getLastInsertID();
+			Craft::$app->getDb()->createCommand()->insert('assettransformindex', $values);
+			$index->id = Craft::$app->getDb()->getLastInsertID();
 		}
 
 		return $index;
@@ -508,7 +508,7 @@ class AssetTransforms extends Component
 	 */
 	public function getPendingTransformIndexIds()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('id')
 			->from('assettransformindex')
 			->where(['and', 'fileExists = 0', 'inProgress = 0'])
@@ -525,7 +525,7 @@ class AssetTransforms extends Component
 	public function getTransformIndexModelById($transformId)
 	{
 		// Check if an entry exists already
-		$entry =  Craft::$app->db->createCommand()
+		$entry =  Craft::$app->getDb()->createCommand()
 			->select('ti.*')
 			->from('assettransformindex ti')
 			->where('ti.id = :id', [':id' => $transformId])
@@ -550,7 +550,7 @@ class AssetTransforms extends Component
 	public function getTransformIndexModelByFileIdAndHandle($fileId, $transformHandle)
 	{
 		// Check if an entry exists already
-		$entry =  Craft::$app->db->createCommand()
+		$entry =  Craft::$app->getDb()->createCommand()
 			->select('ti.*')
 			->from('assettransformindex ti')
 			->where('ti.fileId = :id AND ti.location = :location', [':id' => $fileId, ':location' => '_'.$transformHandle])
@@ -604,7 +604,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndexDataByFileId($fileId)
 	{
-		Craft::$app->db->createCommand()->delete('assettransformindex', 'fileId = :fileId', [':fileId' => $fileId]);
+		Craft::$app->getDb()->createCommand()->delete('assettransformindex', 'fileId = :fileId', [':fileId' => $fileId]);
 	}
 
 	/**
@@ -616,7 +616,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndex($indexId)
 	{
-		Craft::$app->db->createCommand()->delete('assettransformindex', 'id = :id', [':id' => $indexId]);
+		Craft::$app->getDb()->createCommand()->delete('assettransformindex', 'id = :id', [':id' => $indexId]);
 	}
 	/**
 	 * Get a thumb server path by file model and size.
@@ -938,7 +938,7 @@ class AssetTransforms extends Component
 	 */
 	public function getAllCreatedTransformsForFile(AssetFileModel $file)
 	{
-		$records = Craft::$app->db->createCommand()
+		$records = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('assettransformindex')
 			->where('fileId = :fileId', [':fileId' => $file->id])
@@ -957,7 +957,7 @@ class AssetTransforms extends Component
 	 */
 	private function _createTransformQuery()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('id, name, handle, mode, position, height, width, format, quality, dimensionChangeTime')
 			->from('assettransforms')
 			->order('name');

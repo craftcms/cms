@@ -19,6 +19,7 @@ return [
 		'migrations' => [
 			'class'             => 'Craft\MigrationsService',
 		],
+		'request' => 'craft\app\console\Request',
 	],
 
 	'commandPath' => craft\app\Craft::getAlias('system.cli.commands.*'),

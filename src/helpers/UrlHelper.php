@@ -142,7 +142,7 @@ class UrlHelper
 		}
 		else if (static::isRootRelativeUrl($url))
 		{
-			return Craft::$app->request->getHostInfo($protocol).$url;
+			return Craft::$app->getRequest()->getHostInfo($protocol).$url;
 		}
 		else
 		{
@@ -180,7 +180,9 @@ class UrlHelper
 
 		$path = trim($path, '/');
 
-		if (Craft::$app->request->isCpRequest())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
 		{
 			$path = Craft::$app->config->get('cpTrigger').($path ? '/'.$path : '');
 			$cpUrl = true;
@@ -191,7 +193,7 @@ class UrlHelper
 		}
 
 		// Send all resources over SSL if this request is loaded over SSL.
-		if ($protocol === '' && Craft::$app->request->isSecureConnection())
+		if ($protocol === '' && !$request->getIsConsoleRequest() && $request->getIsSecureConnection())
 		{
 			$protocol = 'https';
 		}
@@ -328,6 +330,7 @@ class UrlHelper
 		}
 
 		$showScriptName = ($mustShowScriptName || !Craft::$app->config->omitScriptNameInUrls());
+		$request = Craft::$app->getRequest();
 
 		if ($cpUrl)
 		{
@@ -348,21 +351,21 @@ class UrlHelper
 				// Should we be adding that script name in?
 				if ($showScriptName)
 				{
-					$baseUrl .= Craft::$app->request->getScriptName();
+					$baseUrl .= $request->getScriptFilename();
 				}
 			}
 			else
 			{
 				// Figure it out for ourselves, then
-				$baseUrl = Craft::$app->request->getHostInfo($protocol);
+				$baseUrl = $request->getHostInfo($protocol);
 
 				if ($showScriptName)
 				{
-					$baseUrl .= Craft::$app->request->getScriptUrl();
+					$baseUrl .= $request->getScriptUrl();
 				}
 				else
 				{
-					$baseUrl .= Craft::$app->request->getBaseUrl();
+					$baseUrl .= $request->getBaseUrl();
 				}
 			}
 		}
@@ -373,7 +376,7 @@ class UrlHelper
 			// Should we be adding that script name in?
 			if ($showScriptName)
 			{
-				$baseUrl .= Craft::$app->request->getScriptName();
+				$baseUrl .= $request->getScriptFilename();
 			}
 		}
 
@@ -384,7 +387,7 @@ class UrlHelper
 			{
 				$url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-				if (Craft::$app->request->isSiteRequest() && Craft::$app->config->get('addTrailingSlashesToUrls'))
+				if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->config->get('addTrailingSlashesToUrls'))
 				{
 					$url .= '/';
 				}
@@ -400,7 +403,7 @@ class UrlHelper
 
 			if ($path)
 			{
-				$params = Craft::$app->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
+				$params = Craft::$app->getUrlManeger()->pathParam.'='.$path.($params ? '&'.$params : '');
 			}
 		}
 

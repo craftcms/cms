@@ -107,11 +107,11 @@ class RebrandController extends BaseController
 
 		try
 		{
-			$x1 = Craft::$app->request->getRequiredPost('x1');
-			$x2 = Craft::$app->request->getRequiredPost('x2');
-			$y1 = Craft::$app->request->getRequiredPost('y1');
-			$y2 = Craft::$app->request->getRequiredPost('y2');
-			$source = Craft::$app->request->getRequiredPost('source');
+			$x1 = Craft::$app->getRequest()->getRequiredBodyParam('x1');
+			$x2 = Craft::$app->getRequest()->getRequiredBodyParam('x2');
+			$y1 = Craft::$app->getRequest()->getRequiredBodyParam('y1');
+			$y2 = Craft::$app->getRequest()->getRequiredBodyParam('y2');
+			$source = Craft::$app->getRequest()->getRequiredBodyParam('source');
 
 			// Strip off any querystring info, if any.
 			if (($qIndex = mb_strpos($source, '?')) !== false)

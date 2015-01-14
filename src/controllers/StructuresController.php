@@ -51,14 +51,14 @@ class StructuresController extends BaseController
 		$this->requireAjaxRequest();
 
 		// This controller is only available to the Control Panel
-		if (!Craft::$app->request->isCpRequest())
+		if (!Craft::$app->getRequest()->getIsCpRequest())
 		{
 			throw new HttpException(403);
 		}
 
-		$structureId = Craft::$app->request->getRequiredPost('structureId');
-		$elementId   = Craft::$app->request->getRequiredPost('elementId');
-		$localeId    = Craft::$app->request->getRequiredPost('locale');
+		$structureId = Craft::$app->getRequest()->getRequiredBodyParam('structureId');
+		$elementId   = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
+		$localeId    = Craft::$app->getRequest()->getRequiredBodyParam('locale');
 
 		// Make sure they have permission to edit this structure
 		$this->requireAuthorization('editStructure:'.$structureId);
@@ -99,8 +99,8 @@ class StructuresController extends BaseController
 	 */
 	public function actionMoveElement()
 	{
-		$parentElementId = Craft::$app->request->getPost('parentId');
-		$prevElementId   = Craft::$app->request->getPost('prevId');
+		$parentElementId = Craft::$app->getRequest()->getBodyParam('parentId');
+		$prevElementId   = Craft::$app->getRequest()->getBodyParam('prevId');
 
 		if ($prevElementId)
 		{

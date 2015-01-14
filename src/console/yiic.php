@@ -57,9 +57,6 @@ require CRAFT_APP_PATH.'vendor/autoload.php';
 
 require_once(dirname(__FILE__).'/Application.php');
 
-// Because CHttpRequest is one of those stupid Yii files that has multiple classes defined in it.
-require_once(CRAFT_APP_PATH.'framework/web/CHttpRequest.php');
-
 Yii::setAlias('app', CRAFT_APP_PATH);
 Yii::setAlias('plugins', CRAFT_PLUGINS_PATH);
 

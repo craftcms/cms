@@ -16,7 +16,7 @@
 			name:      name,
 			value:     optionValue,
 			checked:   (optionValue in values),
-			autofocus: (autofocus is defined and autofocus and loop.first and not craft.request.isMobileBrowser(true))
+			autofocus: (autofocus is defined and autofocus and loop.first and not craft.request.getIsMobileBrowser(true))
 		} only %}
 	</div>
 {%- endfor %}

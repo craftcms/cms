@@ -29,7 +29,7 @@ class PathHelper
 	public static function ensurePathIsContained($path)
 	{
 		// Sanitize
-		$path = Craft::$app->request->decodePathInfo($path);
+		$path = Craft::$app->getRequest()->decodePathInfo($path);
 
 		$segs = explode('/', $path);
 		$level = 0;

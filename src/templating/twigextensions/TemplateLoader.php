@@ -94,7 +94,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 	public function isFresh($name, $time)
 	{
 		// If this is a CP request and a DB update is needed, force a recompile.
-		if (Craft::$app->request->isCpRequest() && Craft::$app->updates->isCraftDbMigrationNeeded())
+		$request = Craft::$app->getRequest();
+
+		if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->updates->isCraftDbMigrationNeeded())
 		{
 			return false;
 		}

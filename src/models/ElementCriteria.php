@@ -468,7 +468,7 @@ class ElementCriteria extends BaseModel implements \Countable
 	{
 		if (Craft::$app->has('cache', true))
 		{
-			Craft::$app->cache->includeCriteriaInTemplateCaches($this);
+			Craft::$app->getCache()->includeCriteriaInTemplateCaches($this);
 		}
 	}
 }

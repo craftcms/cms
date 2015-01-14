@@ -31,7 +31,7 @@ class TemplateHelper
 	 */
 	public static function paginateCriteria(ElementCriteriaModel $criteria)
 	{
-		$currentPage = Craft::$app->request->getPageNum();
+		$currentPage = Craft::$app->getRequest()->getPageNum();
 		$limit = $criteria->limit;
 		$total = $criteria->total() - $criteria->offset;
 		$totalPages = ceil($total / $limit);

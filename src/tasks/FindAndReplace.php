@@ -123,7 +123,7 @@ class FindAndReplace extends BaseTask
 		{
 			if (isset($this->_textColumns[$step]))
 			{
-				Craft::$app->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
+				Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
 				return true;
 			}
 			else
