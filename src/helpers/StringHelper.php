@@ -13,7 +13,7 @@ use craft\app\helpers\HtmlPurifier;
 use Stringy\StaticStringy;
 
 /**
- * Class StringHelper
+ * This helper class provides various multi-byte aware string related manipulation and encoding methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
