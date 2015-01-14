@@ -58,7 +58,7 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Search           $search           The search service.
  * @property \craft\app\services\Sections         $sections         The sections service.
  * @property \craft\app\services\Security         $security         The security component.
- * @property \craft\app\web\Session               $session          The session component.
+ * @property Session                              $session          The session component.
  * @property \craft\app\services\Structures       $structures       The structures service.
  * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service.
  * @property \craft\app\services\Tags             $tags             The tags service.
@@ -67,11 +67,11 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Templates        $templates        The template service.
  * @property \craft\app\services\Tokens           $tokens           The tokens service.
  * @property \craft\app\services\Updates          $updates          The updates service.
- * @property \craft\app\web\UrlManager            $urlManager       The URL manager for this application.
+ * @property UrlManager                           $urlManager       The URL manager for this application.
  * @property \craft\app\services\UserGroups       $userGroups       The user groups service.
  * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
  * @property \craft\app\services\Users            $users            The users service.
- * @property \craft\app\web\User                  $user             The user component.
+ * @property User                                 $user             The user component.
  *
  * @method \craft\app\services\Cache              getCache()        Returns the cache component.
  * @method \craft\app\db\DbConnection             getDb()           Returns the database connection component.
@@ -81,8 +81,8 @@ use craft\app\logging\Logger;
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\app\services\Security           getSecurity()     Returns the security component.
  * @method \craft\app\services\Session            getSession()      Returns the session component.
- * @method \craft\app\web\UrlManager              getUrlManager()   Returns the URL manager for this application.
- * @method \craft\app\web\User                    getUser()         Returns the user component.
+ * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
+ * @method User                                   getUser()         Returns the user component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
