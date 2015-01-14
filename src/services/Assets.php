@@ -155,7 +155,9 @@ class Assets extends Component
 
 		if (isset($criteria->filename))
 		{
-			$criteria->filename = StringHelper::escapeCommas($criteria->filename);
+			// Backslash-escape any commas in a given string.
+			$filename = preg_replace('/(?<!\\\),/', '\,', $criteria->filename);
+			$criteria->filename = StringHelper::escapeCommas($filename);
 		}
 
 		return $criteria->first();
