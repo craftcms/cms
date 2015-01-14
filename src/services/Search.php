@@ -220,6 +220,57 @@ class Search extends Component
 		return $elementIds;
 	}
 
+	/**
+	 * Normalizes search keywords.
+	 *
+	 * @param string $str    The dirty keywords.
+	 * @param array  $ignore Ignore words to strip out.
+	 *
+	 * @return string The cleansed keywords.
+	 */
+	public function normalizeKeywords($str, $ignore = [])
+	{
+		// Flatten
+		if (is_array($str))
+		{
+			$str = StringHelper::toString($str, ' ');
+		}
+
+		// Get rid of tags
+		$str = strip_tags($str);
+
+		// Convert non-breaking spaces entities to regular ones
+		$str = str_replace(['&nbsp;', '&#160;', '&#xa0;'] , ' ', $str);
+
+		// Get rid of entities
+		$str = html_entity_decode($str, ENT_QUOTES, StringHelper::UTF8);
+
+		// Remove punctuation and diacritics
+		$str = strtr($str, $this->_getCharMap());
+
+		// Normalize to lowercase
+		$str = StringHelper::toLowerCase($str);
+
+		// Remove ignore-words?
+		if (is_array($ignore) && !empty($ignore))
+		{
+			foreach ($ignore as $word)
+			{
+				$word = preg_quote(static::_normalizeKeywords($word));
+				$str  = preg_replace("/\b{$word}\b/u", '', $str);
+			}
+		}
+
+		// Strip out new lines and superfluous spaces
+		$str = preg_replace('/[\n\r]+/u', ' ', $str);
+		$str = preg_replace('/\s{2,}/u', ' ', $str);
+
+		// Trim white space
+		$str = trim($str);
+
+		return $str;
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -799,5 +850,62 @@ class Search extends Component
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Get array of chars to be used for conversion.
+	 *
+	 * @return array
+	 */
+	private function _getCharMap()
+	{
+		// Keep local copy
+		static $map = [];
+
+		if (empty($map))
+		{
+			// This will replace accented chars with non-accented chars
+			foreach (StringHelper::getAsciiCharMap() as $asciiChar => $value)
+			{
+				$map[$asciiChar] = $value;
+			}
+
+			// Replace punctuation with a space
+			foreach ($this->_getPunctuation() as $value)
+			{
+				$map[$value] = ' ';
+			}
+		}
+
+		// Return the char map
+		return $map;
+	}
+
+	/**
+	 * Returns the asciiPunctuation array.
+	 *
+	 * @return array
+	 */
+	private function _getPunctuation()
+	{
+		// Keep local copy
+		static $asciiPunctuation = [];
+
+		if (empty($asciiPunctuation))
+		{
+			$asciiPunctuation =  [
+				'!', '"', '#',  '&',  '\'', '(', ')', '*', '+', ',', '-', '.', '/',  ':',  ';', '<', '>', '?',
+				'@', '[', '\\', ']',  '^',  '{', '|', '}', '~', '¡', '¢', '£', '¤',  '¥',  '¦', '§', '¨', '©',
+				'ª', '«', '¬',  '®',  '¯',  '°', '±', '²', '³', '´', 'µ', '¶', '·',  '¸',  '¹', 'º', '»', '¼',
+				'½', '¾', '¿',  '×',  'ƒ',  'ˆ', '˜', '–', '—', '―', '‘', '’', '‚',  '“',  '”', '„', '†', '‡',
+				'•', '‣', '…',  '‰',  '′',  '″', '‹', '›', '‼', '‾', '⁄', '€', '™',  '←',  '↑', '→', '↓', '↔',
+				'↵', '⇐', '⇑',  '⇒',  '⇓',  '⇔', '∀', '∂', '∃', '∅', '∇', '∈', '∉',  '∋',  '∏', '∑', '−', '∗',
+				'√', '∝', '∞',  '∠',  '∧',  '∨', '∩', '∪', '∫', '∴', '∼', '≅', '≈',  '≠',  '≡', '≤', '≥', '⊂',
+				'⊃', '⊄', '⊆',  '⊇',  '⊕',  '⊗', '⊥', '⋅', '⌈', '⌉', '⌊', '⌋', '〈', '〉', '◊', '♠', '♣', '♥',
+				'♦'
+			];
+		}
+
+		return $asciiPunctuation;
 	}
 }
