@@ -58,6 +58,7 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Search           $search           The search service.
  * @property \craft\app\services\Sections         $sections         The sections service.
  * @property \craft\app\services\Security         $security         The security component.
+ * @property \craft\app\web\Session               $session          The session component.
  * @property \craft\app\services\Structures       $structures       The structures service.
  * @property \craft\app\services\SystemSettings   $systemSettings   The system settings service.
  * @property \craft\app\services\Tags             $tags             The tags service.
@@ -66,10 +67,10 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Templates        $templates        The template service.
  * @property \craft\app\services\Tokens           $tokens           The tokens service.
  * @property \craft\app\services\Updates          $updates          The updates service.
+ * @property \craft\app\web\UrlManager            $urlManager       The URL manager for this application.
  * @property \craft\app\services\UserGroups       $userGroups       The user groups service.
  * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
  * @property \craft\app\services\Users            $users            The users service.
- * @property \craft\app\web\Session               $session          The session component.
  * @property \craft\app\web\User                  $user             The user component.
  *
  * @method \craft\app\services\Cache              getCache()        Returns the cache component.
