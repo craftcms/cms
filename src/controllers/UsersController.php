@@ -239,7 +239,7 @@ class UsersController extends BaseController
 		else
 		{
 			// Send the data back to the template
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'errors'    => $errors,
 				'loginName' => isset($loginName) ? $loginName : null,
 			]);
@@ -960,7 +960,7 @@ class UsersController extends BaseController
 		}
 
 		// Send the account back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'account' => $user
 		]);
 	}
@@ -1458,7 +1458,7 @@ class UsersController extends BaseController
 		{
 			Craft::$app->getSession()->setError($message);
 
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'loginName'    => Craft::$app->getRequest()->getBodyParam('loginName'),
 				'rememberMe'   => (bool) Craft::$app->getRequest()->getBodyParam('rememberMe'),
 				'errorCode'    => $authError,

@@ -157,7 +157,7 @@ class CategoriesController extends BaseController
 		}
 
 		// Send the category group back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'categoryGroup' => $group
 		]);
 	}
@@ -423,7 +423,7 @@ class CategoriesController extends BaseController
 				$userSessionService->setError(Craft::t('Couldn’t save category.'));
 
 				// Send the category back to the template
-				Craft::$app->getUrlManeger()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteVariables([
 					'category' => $category
 				]);
 			}
@@ -475,7 +475,7 @@ class CategoriesController extends BaseController
 				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete category.'));
 
 				// Send the category back to the template
-				Craft::$app->getUrlManeger()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteVariables([
 					'category' => $category
 				]);
 			}

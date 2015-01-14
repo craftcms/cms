@@ -61,7 +61,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'globalSet' => $globalSet
 		]);
 	}
@@ -195,7 +195,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'globalSet' => $globalSet,
 		]);
 	}

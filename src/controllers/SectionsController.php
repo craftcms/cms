@@ -228,7 +228,7 @@ class SectionsController extends BaseController
 		}
 
 		// Send the section back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'section' => $section
 		]);
 	}
@@ -394,7 +394,7 @@ class SectionsController extends BaseController
 		}
 
 		// Send the entry type back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'entryType' => $entryType
 		]);
 	}

@@ -175,7 +175,7 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Send the source back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'source' => $source
 		]);
 	}

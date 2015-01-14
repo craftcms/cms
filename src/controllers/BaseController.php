@@ -55,7 +55,7 @@ abstract class BaseController extends \CController
 	public function getActionParams()
 	{
 		$params = parent::getActionParams();
-		$routeParams = Craft::$app->getUrlManeger()->getRouteParams();
+		$routeParams = Craft::$app->getUrlManager()->getRouteParams();
 
 		if (is_array($routeParams))
 		{

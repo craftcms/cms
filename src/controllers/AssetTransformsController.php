@@ -135,7 +135,7 @@ class AssetTransformsController extends BaseController
 		}
 
 		// Send the transform back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'transform' => $transform
 		]);
 	}

@@ -100,7 +100,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'entry' => $draft
 			]);
 		}
@@ -247,7 +247,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t publish draft.'));
 
 			// Send the draft back to the template
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'entry' => $draft
 			]);
 		}
@@ -311,7 +311,7 @@ class EntryRevisionsController extends BaseEntriesController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'entry' => $version
 			]);
 		}

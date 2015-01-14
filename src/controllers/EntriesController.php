@@ -497,7 +497,7 @@ class EntriesController extends BaseEntriesController
 				$userSessionService->setError(Craft::t('Couldn’t save entry.'));
 
 				// Send the entry back to the template
-				Craft::$app->getUrlManeger()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteVariables([
 					'entry' => $entry
 				]);
 			}
@@ -559,7 +559,7 @@ class EntriesController extends BaseEntriesController
 				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete entry.'));
 
 				// Send the entry back to the template
-				Craft::$app->getUrlManeger()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteVariables([
 					'entry' => $entry
 				]);
 			}

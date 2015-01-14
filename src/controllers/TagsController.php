@@ -130,7 +130,7 @@ class TagsController extends BaseController
 		}
 
 		// Send the tag group back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'tagGroup' => $tagGroup
 		]);
 	}

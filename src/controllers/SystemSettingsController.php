@@ -150,7 +150,7 @@ class SystemSettingsController extends BaseController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save general settings.'));
 
 			// Send the info back to the template
-			Craft::$app->getUrlManeger()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteVariables([
 				'info' => $info
 			]);
 		}
@@ -180,7 +180,7 @@ class SystemSettingsController extends BaseController
 		Craft::$app->getSession()->setError(Craft::t('Couldn’t save email settings.'));
 
 		// Send the settings back to the template
-		Craft::$app->getUrlManeger()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteVariables([
 			'settings' => $settings
 		]);
 	}
