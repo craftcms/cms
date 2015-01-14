@@ -448,13 +448,13 @@ class Request extends \yii\web\Request
 	 * If the parameter does not exist, the second parameter passed to this method will be returned.
 	 *
 	 * ```php
-	 * $foo = Craft::$app->request->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
+	 * $foo = Craft::$app->getRequest()->getBodyParam('foo'); // Returns $_POST['foo'], if it exists
 	 * ```
 	 *
 	 * You can also specify a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = Craft::$app->request->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
+	 * $bar = Craft::$app->getRequest()->getBodyParam('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
 	 * ```
 	 *
 	 * @param string $name The parameter name.
@@ -522,13 +522,13 @@ class Request extends \yii\web\Request
 	 * If the GET parameter does not exist, the second parameter to this method will be returned.
 	 *
 	 * ```php
-	 * $foo = Craft::$app->request->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
+	 * $foo = Craft::$app->getRequest()->getQueryParam('foo'); // Returns $_GET['foo'], if it exists
 	 * ```
 	 *
 	 * You can also specify a nested parameter using a dot-delimited string.
 	 *
 	 * ```php
-	 * $bar = Craft::$app->request->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
+	 * $bar = Craft::$app->getRequest()->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
 	 * ```
 	 *
 	 * @param string $name         The GET parameter name.
@@ -759,7 +759,7 @@ class Request extends \yii\web\Request
 	 */
 	private function _getQueryStringPath()
 	{
-		$pathParam = Craft::$app->urlManager->pathParam;
+		$pathParam = Craft::$app->getUrlManeger()->pathParam;
 		return trim($this->getQueryParam($pathParam, ''), '/');
 	}
 

@@ -185,7 +185,7 @@ class Updater
 	public function backupDatabase()
 	{
 		Craft::log('Starting to backup database.', LogLevel::Info, true);
-		if (($dbBackupPath = Craft::$app->db->backup()) === false)
+		if (($dbBackupPath = Craft::$app->getDb()->backup()) === false)
 		{
 			throw new Exception(Craft::t('There was a problem backing up your database.'));
 		}

@@ -23,7 +23,7 @@ use yii\base\InvalidConfigException;
 /**
  * Class Cache service.
  *
- * An instance of the Cache service is globally accessible in Craft via [[Application::cache `Craft::$app->cache`]].
+ * An instance of the Cache service is globally accessible in Craft via [[Application::cache `Craft::$app->getCache()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -42,7 +42,7 @@ class Cache extends Component
 	// =========================================================================
 
 	/**
-	 * Do the ole' Craft::$app->cache switcharoo.
+	 * Do the ole' Craft::$app->getCache() switcharoo.
 	 *
 	 * @return null
 	 * @throws InvalidConfigException
@@ -63,7 +63,7 @@ class Cache extends Component
 			{
 				$this->_cacheComponent = new DbCache();
 				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
-				$this->_cacheComponent->cacheTableName = Craft::$app->db->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
+				$this->_cacheComponent->cacheTableName = Craft::$app->getDb()->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
 				break;
 			}

@@ -33,7 +33,7 @@ class DbCache extends \yii\caching\DbCache
 	 */
 	public function getDbConnection()
 	{
-		return Craft::$app->db;
+		return Craft::$app->getDb();
 	}
 
 	// Protected Methods
@@ -45,7 +45,7 @@ class DbCache extends \yii\caching\DbCache
 	 */
 	protected function createCacheTable($db, $tableName)
 	{
-		if (!Craft::$app->db->tableExists(Craft::$app->config->get('cacheTableName', ConfigFile::DbCache), true))
+		if (!Craft::$app->getDb()->tableExists(Craft::$app->config->get('cacheTableName', ConfigFile::DbCache), true))
 		{
 			parent::createCacheTable($db, $tableName);
 		}

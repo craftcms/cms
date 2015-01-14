@@ -109,9 +109,9 @@ class TagsController extends BaseController
 		$tagGroup = new TagGroupModel();
 
 		// Set the simple stuff
-		$tagGroup->id     = Craft::$app->request->getBodyParam('tagGroupId');
-		$tagGroup->name   = Craft::$app->request->getBodyParam('name');
-		$tagGroup->handle = Craft::$app->request->getBodyParam('handle');
+		$tagGroup->id     = Craft::$app->getRequest()->getBodyParam('tagGroupId');
+		$tagGroup->name   = Craft::$app->getRequest()->getBodyParam('name');
+		$tagGroup->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
@@ -130,7 +130,7 @@ class TagsController extends BaseController
 		}
 
 		// Send the tag group back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'tagGroup' => $tagGroup
 		]);
 	}
@@ -146,7 +146,7 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$sectionId = Craft::$app->request->getRequiredBodyParam('id');
+		$sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->tags->deleteTagGroupById($sectionId);
 		$this->returnJson(['success' => true]);
@@ -162,9 +162,9 @@ class TagsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$search = Craft::$app->request->getBodyParam('search');
-		$tagGroupId = Craft::$app->request->getBodyParam('tagGroupId');
-		$excludeIds = Craft::$app->request->getBodyParam('excludeIds', []);
+		$search = Craft::$app->getRequest()->getBodyParam('search');
+		$tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
+		$excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
 
 		$notIds = ['and'];
 
@@ -227,8 +227,8 @@ class TagsController extends BaseController
 		$this->requireAjaxRequest();
 
 		$tag = new TagModel();
-		$tag->groupId = Craft::$app->request->getRequiredBodyParam('groupId');
-		$tag->getContent()->title = Craft::$app->request->getRequiredBodyParam('title');
+		$tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+		$tag->getContent()->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
 
 		if (Craft::$app->tags->saveTag($tag))
 		{

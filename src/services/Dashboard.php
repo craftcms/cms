@@ -162,7 +162,7 @@ class Dashboard extends Component
 		{
 			if ($widgetRecord->isNewRecord())
 			{
-				$maxSortOrder = Craft::$app->db->createCommand()
+				$maxSortOrder = Craft::$app->getDb()->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
 					->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
@@ -216,7 +216,7 @@ class Dashboard extends Component
 	 */
 	public function reorderUserWidgets($widgetIds)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

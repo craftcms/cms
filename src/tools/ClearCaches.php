@@ -112,7 +112,7 @@ class ClearCaches extends BaseTool
 				{
 					if ($allFolder == 'dataCache')
 					{
-						Craft::$app->cache->flush();
+						Craft::$app->getCache()->flush();
 					}
 					else
 					{
@@ -130,12 +130,12 @@ class ClearCaches extends BaseTool
 
 		if ($params['caches'] == '*' || in_array('assetTransformIndex', $params['caches']))
 		{
-			Craft::$app->db->createCommand()->truncateTable('assettransformindex');
+			Craft::$app->getDb()->createCommand()->truncateTable('assettransformindex');
 		}
 
 		if ($params['caches'] == '*' || in_array('assetIndexingData', $params['caches']))
 		{
-			Craft::$app->db->createCommand()->truncateTable('assetindexdata');
+			Craft::$app->getDb()->createCommand()->truncateTable('assetindexdata');
 		}
 	}
 

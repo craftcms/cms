@@ -142,7 +142,7 @@ class UrlHelper
 		}
 		else if (static::isRootRelativeUrl($url))
 		{
-			return Craft::$app->request->getHostInfo($protocol).$url;
+			return Craft::$app->getRequest()->getHostInfo($protocol).$url;
 		}
 		else
 		{
@@ -403,7 +403,7 @@ class UrlHelper
 
 			if ($path)
 			{
-				$params = Craft::$app->urlManager->pathParam.'='.$path.($params ? '&'.$params : '');
+				$params = Craft::$app->getUrlManeger()->pathParam.'='.$path.($params ? '&'.$params : '');
 			}
 		}
 

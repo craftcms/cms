@@ -49,15 +49,15 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$group = new UserGroupModel();
-		$group->id = Craft::$app->request->getBodyParam('groupId');
-		$group->name = Craft::$app->request->getBodyParam('name');
-		$group->handle = Craft::$app->request->getBodyParam('handle');
+		$group->id = Craft::$app->getRequest()->getBodyParam('groupId');
+		$group->name = Craft::$app->getRequest()->getBodyParam('name');
+		$group->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Did it save?
 		if (Craft::$app->userGroups->saveGroup($group))
 		{
 			// Save the new permissions
-			$permissions = Craft::$app->request->getBodyParam('permissions', []);
+			$permissions = Craft::$app->getRequest()->getBodyParam('permissions', []);
 			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
 
 			Craft::$app->getSession()->setNotice(Craft::t('Group saved.'));
@@ -69,7 +69,7 @@ class UserSettingsController extends BaseController
 		}
 
 		// Send the group back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'group' => $group
 		]);
 	}
@@ -84,7 +84,7 @@ class UserSettingsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = Craft::$app->request->getRequiredBodyParam('id');
+		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->userGroups->deleteGroupById($groupId);
 
@@ -100,9 +100,9 @@ class UserSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$settings['requireEmailVerification'] = (bool) Craft::$app->request->getBodyParam('requireEmailVerification');
-		$settings['allowPublicRegistration'] = (bool) Craft::$app->request->getBodyParam('allowPublicRegistration');
-		$settings['defaultGroup'] = Craft::$app->request->getBodyParam('defaultGroup');
+		$settings['requireEmailVerification'] = (bool) Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
+		$settings['allowPublicRegistration'] = (bool) Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
+		$settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
 
 		if (Craft::$app->systemSettings->saveSettings('users', $settings))
 		{
@@ -114,7 +114,7 @@ class UserSettingsController extends BaseController
 			Craft::$app->getSession()->setError(Craft::t('Couldn’t save user settings.'));
 
 			// Send the settings back to the template
-			Craft::$app->urlManager->setRouteVariables([
+			Craft::$app->getUrlManeger()->setRouteVariables([
 				'settings' => $settings
 			]);
 		}

@@ -52,7 +52,7 @@ class MigrationHelper
 	public static function refresh()
 	{
 		static::$_tables = null;
-		Craft::$app->db->getSchema()->refresh();
+		Craft::$app->getDb()->getSchema()->refresh();
 	}
 
 	/**
@@ -126,7 +126,7 @@ class MigrationHelper
 		static::dropAllIndexesOnTable($table);
 
 		// Rename the table
-		Craft::$app->db->createCommand()->renameTable($oldName, $newName);
+		Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName);
 
 		// Update our internal records
 		static::$_tables[$newName] = $table;
@@ -191,7 +191,7 @@ class MigrationHelper
 		}
 
 		// Rename the column
-		Craft::$app->db->createCommand()->renameColumn($tableName, $oldName, $newName);
+		Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName);
 
 		// Update the table records
 		$table->columns[$newName] = $table->columns[$oldName];
@@ -250,16 +250,16 @@ class MigrationHelper
 			static::dropAllUniqueIndexesOnTable($fk->table);
 
 			// Rename the old id column and add the new one
-			Craft::$app->db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
-			Craft::$app->db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
+			Craft::$app->getDb()->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
+			Craft::$app->getDb()->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
 		}
 
 		// Rename the old id column and add the new one
-		Craft::$app->db->createCommand()->renameColumn($table, 'id', 'id_old');
-		Craft::$app->db->createCommand()->addColumnAfter($table, 'id', static::$_idColumnType, 'id_old');
+		Craft::$app->getDb()->createCommand()->renameColumn($table, 'id', 'id_old');
+		Craft::$app->getDb()->createCommand()->addColumnAfter($table, 'id', static::$_idColumnType, 'id_old');
 
 		// Get all of the rows
-		$oldRows = Craft::$app->db->createCommand()
+		$oldRows = Craft::$app->getDb()->createCommand()
 			->select('id_old')
 			->from($table)
 			->queryAll();
@@ -269,11 +269,11 @@ class MigrationHelper
 		{
 			if ($isLocalized)
 			{
-				$locales = Craft::$app->i18n->getSiteLocaleIds();
+				$locales = Craft::$app->getI18n()->getSiteLocaleIds();
 			}
 			else
 			{
-				$locales = [Craft::$app->i18n->getPrimarySiteLocaleId()];
+				$locales = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
 			}
 		}
 
@@ -283,22 +283,22 @@ class MigrationHelper
 		foreach ($oldRows as $row)
 		{
 			// Create a new row in elements
-			Craft::$app->db->createCommand()->insert('elements', [
+			Craft::$app->getDb()->createCommand()->insert('elements', [
 				'type'     => $elementType,
 				'enabled'  => 1,
 				'archived' => 0
 			]);
 
 			// Get the new element ID
-			$elementId = Craft::$app->db->getLastInsertID();
+			$elementId = Craft::$app->getDb()->getLastInsertID();
 
 			// Update this table with the new element ID
-			Craft::$app->db->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']]);
+			Craft::$app->getDb()->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']]);
 
 			// Update the other tables' new FK columns
 			foreach ($fks as $fk)
 			{
-				Craft::$app->db->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']]);
+				Craft::$app->getDb()->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']]);
 			}
 
 			// Queue up the elements_i18n and content values
@@ -317,27 +317,27 @@ class MigrationHelper
 		}
 
 		// Save the new elements_i18n and content rows
-		Craft::$app->db->createCommand()->insertAll('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues);
+		Craft::$app->getDb()->createCommand()->insertAll('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues);
 
 		if ($hasContent)
 		{
-			Craft::$app->db->createCommand()->insertAll('content', ['elementId', 'locale'], $contentValues);
+			Craft::$app->getDb()->createCommand()->insertAll('content', ['elementId', 'locale'], $contentValues);
 		}
 
 		// Drop the old id column
-		Craft::$app->db->createCommand()->dropColumn($table, 'id_old');
+		Craft::$app->getDb()->createCommand()->dropColumn($table, 'id_old');
 
 		// Set the new PK
-		Craft::$app->db->createCommand()->addPrimaryKey($table, 'id');
+		Craft::$app->getDb()->createCommand()->addPrimaryKey($table, 'id');
 
 		// Make 'id' a FK to elements
-		Craft::$app->db->createCommand()->addForeignKey($table, 'id', 'elements', 'id', 'CASCADE');
+		Craft::$app->getDb()->createCommand()->addForeignKey($table, 'id', 'elements', 'id', 'CASCADE');
 
 		// Now deal with the rest of the tables
 		foreach ($fks as $fk)
 		{
 			// Drop the old FK column
-			Craft::$app->db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old');
+			Craft::$app->getDb()->createCommand()->dropColumn($fk->table->name, $fk->column.'_old');
 
 			// Restore its unique indexes and FKs
 			static::restoreAllUniqueIndexesOnTable($fk->table);
@@ -445,7 +445,7 @@ class MigrationHelper
 	public static function dropForeignKey($fk)
 	{
 		// Don't assume that the FK name is "correct"
-		Craft::$app->db->createCommand()->setText(Craft::$app->db->getSchema()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}'))->execute();
+		Craft::$app->getDb()->createCommand()->setText(Craft::$app->getDb()->getSchema()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}'))->execute();
 	}
 
 	/**
@@ -491,7 +491,7 @@ class MigrationHelper
 	public static function dropIndex($index)
 	{
 		// Don't assume that the constraint name is "correct"
-		Craft::$app->db->createCommand()->setText(Craft::$app->db->getSchema()->dropIndex($index->name, '{{'.$index->table->name.'}}'))->execute();
+		Craft::$app->getDb()->createCommand()->setText(Craft::$app->getDb()->getSchema()->dropIndex($index->name, '{{'.$index->table->name.'}}'))->execute();
 	}
 
 	/**
@@ -536,10 +536,10 @@ class MigrationHelper
 	 */
 	public static function restoreIndex($index)
 	{
-		Craft::$app->db->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
+		Craft::$app->getDb()->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
 
 		// Update our record of its name
-		$index->name = Craft::$app->db->getIndexName($index->table->name, $index->columns, $index->unique);
+		$index->name = Craft::$app->getDb()->getIndexName($index->table->name, $index->columns, $index->unique);
 	}
 
 	/**
@@ -566,10 +566,10 @@ class MigrationHelper
 	 */
 	public static function restoreForeignKey($fk)
 	{
-		Craft::$app->db->createCommand()->addForeignKey($fk->table->name, implode(',', $fk->columns), $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate);
+		Craft::$app->getDb()->createCommand()->addForeignKey($fk->table->name, implode(',', $fk->columns), $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate);
 
 		// Update our record of its name
-		$fk->name = Craft::$app->db->getForeignKeyName($fk->table->name, $fk->columns);
+		$fk->name = Craft::$app->getDb()->getForeignKeyName($fk->table->name, $fk->columns);
 	}
 
 	// Private Methods
@@ -584,7 +584,7 @@ class MigrationHelper
 	{
 		if (!isset(static::$_tablePrefixLength))
 		{
-			static::$_tablePrefixLength = mb_strlen(Craft::$app->db->tablePrefix);
+			static::$_tablePrefixLength = mb_strlen(Craft::$app->getDb()->tablePrefix);
 		}
 
 		return static::$_tablePrefixLength;
@@ -599,7 +599,7 @@ class MigrationHelper
 	{
 		static::$_tables = [];
 
-		$tables = Craft::$app->db->getSchema()->getTableNames();
+		$tables = Craft::$app->getDb()->getSchema()->getTableNames();
 
 		foreach ($tables as $table)
 		{
@@ -625,7 +625,7 @@ class MigrationHelper
 		];
 
 		// Get the CREATE TABLE sql
-		$query = Craft::$app->db->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
+		$query = Craft::$app->getDb()->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
 
 		// Don't want to include any views.
 		if (isset($query['Create Table']))

@@ -55,7 +55,7 @@ class Resources extends Component
 	 */
 	public function getCachedResourcePath($path)
 	{
-		$realPath = Craft::$app->cache->get('resourcePath:'.$path);
+		$realPath = Craft::$app->getCache()->get('resourcePath:'.$path);
 
 		if ($realPath && IOHelper::fileExists($realPath))
 		{
@@ -78,7 +78,7 @@ class Resources extends Component
 			$realPath = ':(';
 		}
 
-		Craft::$app->cache->set('resourcePath:'.$path, $realPath);
+		Craft::$app->getCache()->set('resourcePath:'.$path, $realPath);
 	}
 
 	/**
@@ -274,7 +274,7 @@ class Resources extends Component
 					{
 						throw new HttpException(404, $exception->getMessage());
 					}
-					Craft::$app->request->redirect($url, true, 302);
+					Craft::$app->getRequest()->redirect($url, true, 302);
 					Craft::$app->end();
 				}
 			}
@@ -360,7 +360,7 @@ class Resources extends Component
 		// If there is a timestamp and HTTP_IF_MODIFIED_SINCE exists, check the timestamp against requested file's last
 		// modified date. If the last modified date is less than the timestamp, return a 304 not modified and let the
 		// browser serve it from cache.
-		$timestamp = Craft::$app->request->getParam($this->dateParam, null);
+		$timestamp = Craft::$app->getRequest()->getParam($this->dateParam, null);
 
 		if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER))
 		{
@@ -391,16 +391,16 @@ class Resources extends Component
 		{
 			$options['forceDownload'] = false;
 
-			if (Craft::$app->request->getQueryParam($this->dateParam))
+			if (Craft::$app->getRequest()->getQueryParam($this->dateParam))
 			{
 				$options['cache'] = true;
 			}
 
-			Craft::$app->request->sendFile($realPath, $content, $options);
+			Craft::$app->getRequest()->sendFile($realPath, $content, $options);
 		}
 		else
 		{
-			Craft::$app->request->xSendFile($realPath);
+			Craft::$app->getRequest()->xSendFile($realPath);
 		}
 
 		// You shall not pass.
@@ -424,7 +424,7 @@ class Resources extends Component
 		}
 
 		// Clean up any relative folders at the beginning of the CSS URL
-		$requestFolder = IOHelper::getFolderName(Craft::$app->request->getPath());
+		$requestFolder = IOHelper::getFolderName(Craft::$app->getRequest()->getPath());
 		$requestFolderParts = array_filter(explode('/', $requestFolder));
 		$cssUrlParts = array_filter(explode('/', $match[3]));
 

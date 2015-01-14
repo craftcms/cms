@@ -125,7 +125,7 @@ class UrlManager extends \CUrlManager
 		];
 
 		// Is there a token in the URL?
-		$token = Craft::$app->request->getToken();
+		$token = Craft::$app->getRequest()->getToken();
 
 		if ($token)
 		{
@@ -194,9 +194,9 @@ class UrlManager extends \CUrlManager
 	{
 		if (!isset($this->_matchedElement))
 		{
-			if (Craft::$app->request->getIsSiteRequest())
+			if (Craft::$app->getRequest()->getIsSiteRequest())
 			{
-				$path = Craft::$app->request->getPath();
+				$path = Craft::$app->getRequest()->getPath();
 				$this->_getMatchedElementRoute($path);
 			}
 			else
@@ -280,7 +280,7 @@ class UrlManager extends \CUrlManager
 			$this->_matchedElement = false;
 			$this->_matchedElementRoute = false;
 
-			if (Craft::$app->isInstalled() && Craft::$app->request->getIsSiteRequest())
+			if (Craft::$app->isInstalled() && Craft::$app->getRequest()->getIsSiteRequest())
 			{
 				$element = Craft::$app->elements->getElementByUri($path, Craft::$app->language, true);
 
@@ -317,7 +317,7 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _getMatchedUrlRoute($path)
 	{
-		if (Craft::$app->request->getIsCpRequest())
+		if (Craft::$app->getRequest()->getIsCpRequest())
 		{
 			// Merge in any edition-specific routes
 			for ($i = 1; $i <= Craft::$app->getEdition(); $i++)
@@ -460,12 +460,12 @@ class UrlManager extends \CUrlManager
 	 */
 	private function _isPublicTemplatePath()
 	{
-		if (!Craft::$app->request->getIsAjax())
+		if (!Craft::$app->getRequest()->getIsAjax())
 		{
 			$trigger = Craft::$app->config->get('privateTemplateTrigger');
 			$length = strlen($trigger);
 
-			foreach (Craft::$app->request->getSegments() as $requestPathSeg)
+			foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg)
 			{
 				if (strncmp($requestPathSeg, $trigger, $length) === 0)
 				{

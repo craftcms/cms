@@ -248,11 +248,11 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (Craft::$app->elements->getElementType($this->elementType)->isLocalized())
 		{
-			return Craft::$app->i18n->getSiteLocaleIds();
+			return Craft::$app->getI18n()->getSiteLocaleIds();
 		}
 		else
 		{
-			return [Craft::$app->i18n->getPrimarySiteLocaleId()];
+			return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
 		}
 	}
 
@@ -851,7 +851,7 @@ abstract class BaseElementModel extends BaseModel
 			// look in $_FILES
 			$this->setContentPostLocation($content);
 
-			$content = Craft::$app->request->getBodyParam($content, []);
+			$content = Craft::$app->getRequest()->getBodyParam($content, []);
 		}
 
 		if (!isset($this->_rawPostContent))
@@ -1059,7 +1059,7 @@ abstract class BaseElementModel extends BaseModel
 			'id'            => AttributeType::Number,
 			'enabled'       => [AttributeType::Bool, 'default' => true],
 			'archived'      => [AttributeType::Bool, 'default' => false],
-			'locale'        => [AttributeType::Locale, 'default' => Craft::$app->i18n->getPrimarySiteLocaleId()],
+			'locale'        => [AttributeType::Locale, 'default' => Craft::$app->getI18n()->getPrimarySiteLocaleId()],
 			'localeEnabled' => [AttributeType::Bool, 'default' => true],
 			'slug'          => [AttributeType::String, 'label' => 'Slug'],
 			'uri'           => [AttributeType::String, 'label' => 'URI'],

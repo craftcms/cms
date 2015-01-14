@@ -117,7 +117,7 @@ class Plugins extends Component
 				$this->_loadingPlugins = true;
 
 				// Find all of the enabled plugins
-				$rows = Craft::$app->db->createCommand()
+				$rows = Craft::$app->getDb()->createCommand()
 					->select('id, class, version, settings, installDate')
 					->from('plugins')
 					->where('enabled=1')
@@ -205,7 +205,7 @@ class Plugins extends Component
 				if ($plugin)
 				{
 					// Is it installed (but disabled)?
-					$plugin->isInstalled = (bool) Craft::$app->db->createCommand()
+					$plugin->isInstalled = (bool) Craft::$app->getDb()->createCommand()
 						->select('count(id)')
 						->from('plugins')
 						->where(['class' => $plugin->getClassHandle()])
@@ -319,7 +319,7 @@ class Plugins extends Component
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		Craft::$app->db->createCommand()->update('plugins',
+		Craft::$app->getDb()->createCommand()->update('plugins',
 			['enabled' => 1],
 			['class' => $plugin->getClassHandle()]
 		);
@@ -360,7 +360,7 @@ class Plugins extends Component
 
 		$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
-		Craft::$app->db->createCommand()->update('plugins',
+		Craft::$app->getDb()->createCommand()->update('plugins',
 			['enabled' => 0],
 			['class' => $plugin->getClassHandle()]
 		);
@@ -398,11 +398,11 @@ class Plugins extends Component
 
 		$plugin->onBeforeInstall();
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Add the plugins as a record to the database.
-			Craft::$app->db->createCommand()->insert('plugins', [
+			Craft::$app->getDb()->createCommand()->insert('plugins', [
 				'class'       => $plugin->getClassHandle(),
 				'version'     => $plugin->version,
 				'enabled'     => true,
@@ -413,7 +413,7 @@ class Plugins extends Component
 			$plugin->isEnabled = true;
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 
-			$this->_savePluginMigrations(Craft::$app->db->getLastInsertID(), $plugin->getClassHandle());
+			$this->_savePluginMigrations(Craft::$app->getDb()->getLastInsertID(), $plugin->getClassHandle());
 			$this->_autoloadPluginClasses($plugin);
 			$plugin->createTables();
 
@@ -469,7 +469,7 @@ class Plugins extends Component
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_autoloadPluginClasses($plugin);
 
-			$pluginRow = Craft::$app->db->createCommand()
+			$pluginRow = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('plugins')
 				->where('class=:class', ['class' => $plugin->getClassHandle()])
@@ -482,7 +482,7 @@ class Plugins extends Component
 			$pluginId = $this->_enabledPluginInfo[$handle]['id'];
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			$plugin->onBeforeUninstall();
@@ -505,10 +505,10 @@ class Plugins extends Component
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			Craft::$app->db->createCommand()->delete('plugins', ['class' => $handle]);
+			Craft::$app->getDb()->createCommand()->delete('plugins', ['class' => $handle]);
 
 			// Remove any migrations.
-			Craft::$app->db->createCommand()->delete('migrations', ['pluginId' => $pluginId]);
+			Craft::$app->getDb()->createCommand()->delete('migrations', ['pluginId' => $pluginId]);
 
 			if ($transaction !== null)
 			{
@@ -557,7 +557,7 @@ class Plugins extends Component
 			// JSON-encode them and save the plugin row
 			$settings = JsonHelper::encode($plugin->getSettings()->getAttributes());
 
-			$affectedRows = Craft::$app->db->createCommand()->update('plugins', [
+			$affectedRows = Craft::$app->getDb()->createCommand()->update('plugins', [
 				'settings' => $settings
 			], [
 				'class' => $plugin->getClassHandle()

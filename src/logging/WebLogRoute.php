@@ -39,7 +39,7 @@ class WebLogRoute extends \CWebLogRoute
 			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
 		)
 		{
-			if (($userAgent = Craft::$app->request->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))
+			if (($userAgent = Craft::$app->getRequest()->getUserAgent()) !== null && preg_match('/msie [5-9]/i', $userAgent))
 			{
 				echo '<script type="text/javascript">';
 				echo IOHelper::getFileContents((IOHelper::getFolderName(__FILE__).'/../vendors/console-normalizer/normalizeconsole.min.js'));

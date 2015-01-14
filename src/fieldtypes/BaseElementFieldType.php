@@ -431,7 +431,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 				['label' => Craft::t('Same as source'), 'value' => null]
 			];
 
-			foreach (Craft::$app->i18n->getSiteLocales() as $locale)
+			foreach (Craft::$app->getI18n()->getSiteLocales() as $locale)
 			{
 				$localeOptions[] = ['label' => $locale->getName(), 'value' => $locale->getId()];
 			}

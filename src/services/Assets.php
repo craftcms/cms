@@ -115,7 +115,7 @@ class Assets extends Component
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$files = Craft::$app->db->createCommand()
+		$files = Craft::$app->getDb()->createCommand()
 			->select('fi.*')
 			->from('assetfiles fi')
 			->join('assetfolders fo', 'fo.id = fi.folderId')
@@ -228,7 +228,7 @@ class Assets extends Component
 			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -599,7 +599,7 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f');
 
@@ -642,7 +642,7 @@ class Assets extends Component
 	 */
 	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
 	{
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('f.*')
 			->from('assetfolders AS f')
 			->where(['like', 'path', $parentFolder->path.'%'])
@@ -700,7 +700,7 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('count(id)')
 			->from('assetfolders AS f');
 
@@ -1137,7 +1137,7 @@ class Assets extends Component
 	 */
 	private function _createFolderQuery()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('id, parentId, sourceId, name, path')
 			->from('assetfolders');
 	}

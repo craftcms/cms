@@ -109,7 +109,7 @@ class DateTime extends \DateTime
 				return null;
 			}
 
-			$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
+			$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
 			$dateFormatter = $localeData->getDateFormatter();
 
 			if (!empty($dt['date']))
@@ -139,7 +139,7 @@ class DateTime extends \DateTime
 			if (!empty($dt['time']))
 			{
 				// Replace the localized "AM" and "PM"
-				$localeData = Craft::$app->i18n->getLocaleData();
+				$localeData = Craft::$app->getI18n()->getLocaleData();
 				$dt['time'] = str_replace([$localeData->getAMName(), $localeData->getPMName()], ['AM', 'PM'], $dt['time']);
 
 				$date .= ' '.$dt['time'];
@@ -340,7 +340,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeDate()
 	{
-		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
+		$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getDatepickerPhpFormat();
 
@@ -352,7 +352,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeTime()
 	{
-		$localeData = Craft::$app->i18n->getLocaleData(Craft::$app->language);
+		$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getTimepickerPhpFormat();
 
@@ -360,7 +360,7 @@ class DateTime extends \DateTime
 		$time = $this->format($format);
 
 		// Replace "AM" and "PM" with the localized versions
-		$localeData = Craft::$app->i18n->getLocaleData();
+		$localeData = Craft::$app->getI18n()->getLocaleData();
 		$amName = $localeData->getAMName();
 		$pmName = $localeData->getPMName();
 

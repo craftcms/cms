@@ -109,7 +109,7 @@ class Updates extends Component
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateModel) || Craft::$app->cache->get('updateinfo') !== false);
+		return (isset($this->_updateModel) || Craft::$app->getCache()->get('updateinfo') !== false);
 	}
 
 	/**
@@ -186,7 +186,7 @@ class Updates extends Component
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateModel = Craft::$app->cache->get('updateinfo');
+				$updateModel = Craft::$app->getCache()->get('updateinfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -205,7 +205,7 @@ class Updates extends Component
 					$updateModel = $etModel->data;
 
 					// cache it and set it to expire according to config
-					Craft::$app->cache->set('updateinfo', $updateModel);
+					Craft::$app->getCache()->set('updateinfo', $updateModel);
 				}
 			}
 
@@ -222,7 +222,7 @@ class Updates extends Component
 	{
 		Craft::log('Flushing update info from cache.', LogLevel::Info, true);
 
-		if (IOHelper::clearFolder(Craft::$app->path->getCompiledTemplatesPath(), true) && Craft::$app->cache->flush())
+		if (IOHelper::clearFolder(Craft::$app->path->getCompiledTemplatesPath(), true) && Craft::$app->getCache()->flush())
 		{
 			return true;
 		}
@@ -237,7 +237,7 @@ class Updates extends Component
 	 */
 	public function setNewPluginInfo(BasePlugin $plugin)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->update('plugins', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->update('plugins', [
 			'version' => $plugin->getVersion()
 		], [
 			'class' => $plugin->getClassHandle()

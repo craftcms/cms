@@ -418,7 +418,7 @@ class Users extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -591,13 +591,13 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/verifyemail', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = Craft::$app->config->get('actionTrigger').'/users/verifyemail';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 
 		return $url;
@@ -618,13 +618,13 @@ class Users extends Component
 
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getActionUrl('users/setpassword', ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 		else
 		{
 			// We want to hide the CP trigger if they don't have access to the CP.
 			$path = Craft::$app->config->get('actionTrigger').'/users/setpassword';
-			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->request->getIsSecureConnection() ? 'https' : 'http');
+			$url = UrlHelper::getSiteUrl($path, ['code' => $unhashedVerificationCode, 'id' => $userRecord->uid], Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
 		}
 
 		return $url;
@@ -726,7 +726,7 @@ class Users extends Component
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
-		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserIP();
+		$userRecord->lastLoginAttemptIPAddress = Craft::$app->getRequest()->getUserIP();
 		$userRecord->invalidLoginWindowStart = null;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 		$userRecord->verificationCode = null;
@@ -748,7 +748,7 @@ class Users extends Component
 		$currentTime = DateTimeHelper::currentUTCDateTime();
 
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
-		$userRecord->lastLoginAttemptIPAddress = Craft::$app->request->getUserIP();
+		$userRecord->lastLoginAttemptIPAddress = Craft::$app->getRequest()->getUserIP();
 
 		$maxInvalidLogins = Craft::$app->config->get('maxInvalidLogins');
 
@@ -793,7 +793,7 @@ class Users extends Component
 	 */
 	public function activateUser(UserModel $user)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -895,7 +895,7 @@ class Users extends Component
 	 */
 	public function unlockUser(UserModel $user)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -964,7 +964,7 @@ class Users extends Component
 	 */
 	public function suspendUser(UserModel $user)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1030,7 +1030,7 @@ class Users extends Component
 	 */
 	public function unsuspendUser(UserModel $user)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1101,7 +1101,7 @@ class Users extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1117,7 +1117,7 @@ class Users extends Component
 			if ($event->performAction)
 			{
 				// Get the entry IDs that belong to this user
-				$entryIds = Craft::$app->db->createCommand()
+				$entryIds = Craft::$app->getDb()->createCommand()
 					->select('id')
 					->from('entries')
 					->where(['authorId' => $user->id])
@@ -1138,7 +1138,7 @@ class Users extends Component
 
 					foreach ($userRefs as $table => $column)
 					{
-						Craft::$app->db->createCommand()->update($table, [
+						Craft::$app->getDb()->createCommand()->update($table, [
 							$column => $transferContentTo->id
 						], [
 							$column => $user->id
@@ -1219,7 +1219,7 @@ class Users extends Component
 			$expiryDate = null;
 		}
 
-		$affectedRows = Craft::$app->db->createCommand()->insertOrUpdate('shunnedmessages', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->insertOrUpdate('shunnedmessages', [
 			'userId'  => $userId,
 			'message' => $message
 		], [
@@ -1239,7 +1239,7 @@ class Users extends Component
 	 */
 	public function unshunMessageForUser($userId, $message)
 	{
-		$affectedRows = Craft::$app->db->createCommand()->delete('shunnedmessages', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('shunnedmessages', [
 			'userId'  => $userId,
 			'message' => $message
 		]);
@@ -1257,7 +1257,7 @@ class Users extends Component
 	 */
 	public function hasUserShunnedMessage($userId, $message)
 	{
-		$row = Craft::$app->db->createCommand()
+		$row = Craft::$app->getDb()->createCommand()
 			->select('id')
 			->from('shunnedmessages')
 			->where(['and',
@@ -1309,12 +1309,12 @@ class Users extends Component
 			$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 			$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-			$ids = Craft::$app->db->createCommand()->select('id')
+			$ids = Craft::$app->getDb()->createCommand()->select('id')
 				->from('users')
 				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', ['pastTime' => $pastTime])
 				->queryColumn();
 
-			$affectedRows = Craft::$app->db->createCommand()->delete('elements', ['in', 'id', $ids]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', ['in', 'id', $ids]);
 
 			if ($affectedRows > 0)
 			{
@@ -1356,7 +1356,7 @@ class Users extends Component
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
 		$unhashedCode = StringHelper::UUID();
-		$hashedCode = Craft::$app->security->hashPassword($unhashedCode);
+		$hashedCode = Craft::$app->getSecurity()->hashPassword($unhashedCode);
 		$userRecord->verificationCode = $hashedCode;
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
 
@@ -1452,7 +1452,7 @@ class Users extends Component
 
 		if ($validates)
 		{
-			$hash = Craft::$app->security->hashPassword($user->newPassword);
+			$hash = Craft::$app->getSecurity()->hashPassword($user->newPassword);
 
 			$userRecord->password = $user->password = $hash;
 			$userRecord->invalidLoginWindowStart = null;

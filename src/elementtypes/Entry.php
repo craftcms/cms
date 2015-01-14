@@ -259,7 +259,7 @@ class Entry extends BaseElementType
 				if ($event->status == BaseElementModel::ENABLED)
 				{
 					// Set a Post Date as well
-					Craft::$app->db->createCommand()->update(
+					Craft::$app->getDb()->createCommand()->update(
 						'entries',
 						['postDate' => DateTimeHelper::currentTimeForDb()],
 						['and', ['in', 'id', $event->elementIds], 'postDate is null']

@@ -46,10 +46,10 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$urlParts = Craft::$app->request->getRequiredBodyParam('url');
-		$template = Craft::$app->request->getRequiredBodyParam('template');
-		$routeId  = Craft::$app->request->getBodyParam('routeId');
-		$locale   = Craft::$app->request->getBodyParam('locale');
+		$urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
+		$template = Craft::$app->getRequest()->getRequiredBodyParam('template');
+		$routeId  = Craft::$app->getRequest()->getBodyParam('routeId');
+		$locale   = Craft::$app->getRequest()->getBodyParam('locale');
 
 		if ($locale === '')
 		{
@@ -81,7 +81,7 @@ class RoutesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$routeId = Craft::$app->request->getRequiredBodyParam('routeId');
+		$routeId = Craft::$app->getRequest()->getRequiredBodyParam('routeId');
 		Craft::$app->routes->deleteRouteById($routeId);
 
 		$this->returnJson(['success' => true]);
@@ -97,7 +97,7 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$routeIds = Craft::$app->request->getRequiredBodyParam('routeIds');
+		$routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
 		Craft::$app->routes->updateRouteOrder($routeIds);
 
 		$this->returnJson(['success' => true]);

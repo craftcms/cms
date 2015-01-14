@@ -73,7 +73,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'currency'           => new \Twig_Filter_Function('\craft\app\Craft::$app->numberFormatter->formatCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
 			'datetime'           => new \Twig_Filter_Function('\craft\app\Craft::$app->dateFormatter->formatDateTime'),
-			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->formatter->formatSize'),
+			'filesize'           => new \Twig_Filter_Function('\craft\app\Craft::$app->getFormatter()->formatSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),

@@ -44,7 +44,7 @@ class TasksController extends BaseController
 		{
 			// Return info about the next pending task without stopping PHP execution
 			JsonHelper::sendJsonHeaders();
-			Craft::$app->request->close(JsonHelper::encode($task->getInfo()));
+			Craft::$app->getRequest()->close(JsonHelper::encode($task->getInfo()));
 
 			// Start running tasks
 			Craft::$app->tasks->runPendingTasks();
@@ -85,13 +85,13 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = Craft::$app->request->getRequiredBodyParam('taskId');
+		$taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
 		$task = Craft::$app->tasks->rerunTaskById($taskId);
 
 		if (!Craft::$app->tasks->isTaskRunning())
 		{
 			JsonHelper::sendJsonHeaders();
-			Craft::$app->request->close(JsonHelper::encode($task->getInfo()));
+			Craft::$app->getRequest()->close(JsonHelper::encode($task->getInfo()));
 
 			Craft::$app->tasks->runPendingTasks();
 		}
@@ -114,7 +114,7 @@ class TasksController extends BaseController
 		$this->requirePostRequest();
 		$this->requirePermission('accessCp');
 
-		$taskId = Craft::$app->request->getRequiredBodyParam('taskId');
+		$taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
 		$task = Craft::$app->tasks->deleteTaskById($taskId);
 
 		Craft::$app->end();

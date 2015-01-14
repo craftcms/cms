@@ -55,7 +55,7 @@ abstract class BaseController extends \CController
 	public function getActionParams()
 	{
 		$params = parent::getActionParams();
-		$routeParams = Craft::$app->urlManager->getRouteParams();
+		$routeParams = Craft::$app->getUrlManeger()->getRouteParams();
 
 		if (is_array($routeParams))
 		{
@@ -232,7 +232,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (Craft::$app->request->getRequestType() !== 'POST')
+		if (Craft::$app->getRequest()->getRequestType() !== 'POST')
 		{
 			throw new HttpException(400);
 		}
@@ -246,7 +246,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!Craft::$app->request->getIsAjax())
+		if (!Craft::$app->getRequest()->getIsAjax())
 		{
 			throw new HttpException(400);
 		}
@@ -260,7 +260,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireToken()
 	{
-		if (!Craft::$app->request->getQueryParam(Craft::$app->config->get('tokenParam')))
+		if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->config->get('tokenParam')))
 		{
 			throw new HttpException(400);
 		}
@@ -299,7 +299,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($object = null, $default = null)
 	{
-		$url = Craft::$app->request->getBodyParam('redirect');
+		$url = Craft::$app->getRequest()->getBodyParam('redirect');
 
 		if ($url === null)
 		{
@@ -309,7 +309,7 @@ abstract class BaseController extends \CController
 			}
 			else
 			{
-				$url = Craft::$app->request->getPath();
+				$url = Craft::$app->getRequest()->getPath();
 			}
 		}
 

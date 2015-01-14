@@ -101,7 +101,7 @@ class Migrations extends Component
 		foreach ($migrations as $migration)
 		{
 			// Refresh the DB cache
-			Craft::$app->db->getSchema()->refresh();
+			Craft::$app->getDb()->getSchema()->refresh();
 
 			if ($this->migrateUp($migration, $plugin) === false)
 			{
@@ -115,7 +115,7 @@ class Migrations extends Component
 				}
 
 				// Refresh the DB cache
-				Craft::$app->db->getSchema()->refresh();
+				Craft::$app->getDb()->getSchema()->refresh();
 
 				return false;
 			}
@@ -131,7 +131,7 @@ class Migrations extends Component
 		}
 
 		// Refresh the DB cache
-		Craft::$app->db->getSchema()->refresh();
+		Craft::$app->getDb()->getSchema()->refresh();
 
 		return true;
 	}
@@ -167,7 +167,7 @@ class Migrations extends Component
 			{
 				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
 
-				Craft::$app->db->createCommand()->insert($this->_migrationTable, [
+				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginInfo['id']
@@ -175,7 +175,7 @@ class Migrations extends Component
 			}
 			else
 			{
-				Craft::$app->db->createCommand()->insert($this->_migrationTable, [
+				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb()
 				]);
@@ -214,7 +214,7 @@ class Migrations extends Component
 
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
-		$migration->setDbConnection(Craft::$app->db);
+		$migration->setDbConnection(Craft::$app->getDb());
 
 		return $migration;
 	}
@@ -363,7 +363,7 @@ class Migrations extends Component
 	 */
 	private function _createMigrationQuery($plugin = null)
 	{
-		$query = Craft::$app->db->createCommand()
+		$query = Craft::$app->getDb()->createCommand()
 			->select('version, applyTime')
 			->from($this->_migrationTable)
 			->order('version desc');

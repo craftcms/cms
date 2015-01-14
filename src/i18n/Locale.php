@@ -78,7 +78,7 @@ class Locale extends Object
 
 		if (!isset($this->_nameInLanguage) || !array_key_exists($targetLocaleId, $this->_nameInLanguage))
 		{
-			$localeData = Craft::$app->i18n->getLocaleData($targetLocaleId);
+			$localeData = Craft::$app->getI18n()->getLocaleData($targetLocaleId);
 
 			if ($localeData)
 			{

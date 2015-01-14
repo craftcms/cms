@@ -165,31 +165,31 @@ class SectionsController extends BaseController
 		$section = new SectionModel();
 
 		// Shared attributes
-		$section->id               = Craft::$app->request->getBodyParam('sectionId');
-		$section->name             = Craft::$app->request->getBodyParam('name');
-		$section->handle           = Craft::$app->request->getBodyParam('handle');
-		$section->type             = Craft::$app->request->getBodyParam('type');
-		$section->enableVersioning = Craft::$app->request->getBodyParam('enableVersioning', true);
+		$section->id               = Craft::$app->getRequest()->getBodyParam('sectionId');
+		$section->name             = Craft::$app->getRequest()->getBodyParam('name');
+		$section->handle           = Craft::$app->getRequest()->getBodyParam('handle');
+		$section->type             = Craft::$app->getRequest()->getBodyParam('type');
+		$section->enableVersioning = Craft::$app->getRequest()->getBodyParam('enableVersioning', true);
 
 		// Type-specific attributes
-		$section->hasUrls    = (bool) Craft::$app->request->getBodyParam('types.'.$section->type.'.hasUrls', true);
-		$section->template   = Craft::$app->request->getBodyParam('types.'.$section->type.'.template');
-		$section->maxLevels  = Craft::$app->request->getBodyParam('types.'.$section->type.'.maxLevels');
+		$section->hasUrls    = (bool) Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
+		$section->template   = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.template');
+		$section->maxLevels  = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.maxLevels');
 
 		// Locale-specific attributes
 		$locales = [];
 
 		if (Craft::$app->isLocalized())
 		{
-			$localeIds = Craft::$app->request->getBodyParam('locales', []);
+			$localeIds = Craft::$app->getRequest()->getBodyParam('locales', []);
 		}
 		else
 		{
-			$primaryLocaleId = Craft::$app->i18n->getPrimarySiteLocaleId();
+			$primaryLocaleId = Craft::$app->getI18n()->getPrimarySiteLocaleId();
 			$localeIds = [$primaryLocaleId];
 		}
 
-		$isHomepage = ($section->type == SectionType::Single && Craft::$app->request->getBodyParam('types.'.$section->type.'.homepage'));
+		$isHomepage = ($section->type == SectionType::Single && Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.homepage'));
 
 		foreach ($localeIds as $localeId)
 		{
@@ -200,13 +200,13 @@ class SectionsController extends BaseController
 			}
 			else
 			{
-				$urlFormat       = Craft::$app->request->getBodyParam('types.'.$section->type.'.urlFormat.'.$localeId);
-				$nestedUrlFormat = Craft::$app->request->getBodyParam('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
+				$urlFormat       = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.urlFormat.'.$localeId);
+				$nestedUrlFormat = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
 			}
 
 			$locales[$localeId] = new SectionLocaleModel([
 				'locale'           => $localeId,
-				'enabledByDefault' => (bool) Craft::$app->request->getBodyParam('defaultLocaleStatuses.'.$localeId),
+				'enabledByDefault' => (bool) Craft::$app->getRequest()->getBodyParam('defaultLocaleStatuses.'.$localeId),
 				'urlFormat'        => $urlFormat,
 				'nestedUrlFormat'  => $nestedUrlFormat,
 			]);
@@ -214,7 +214,7 @@ class SectionsController extends BaseController
 
 		$section->setLocales($locales);
 
-		$section->hasUrls    = (bool) Craft::$app->request->getBodyParam('types.'.$section->type.'.hasUrls', true);
+		$section->hasUrls    = (bool) Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
 
 		// Save it
 		if (Craft::$app->sections->saveSection($section))
@@ -228,7 +228,7 @@ class SectionsController extends BaseController
 		}
 
 		// Send the section back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'section' => $section
 		]);
 	}
@@ -243,7 +243,7 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = Craft::$app->request->getRequiredBodyParam('id');
+		$sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->sections->deleteSectionById($sectionId);
 		$this->returnJson(['success' => true]);
@@ -353,7 +353,7 @@ class SectionsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entryTypeId = Craft::$app->request->getBodyParam('entryTypeId');
+		$entryTypeId = Craft::$app->getRequest()->getBodyParam('entryTypeId');
 
 		if ($entryTypeId)
 		{
@@ -370,12 +370,12 @@ class SectionsController extends BaseController
 		}
 
 		// Set the simple stuff
-		$entryType->sectionId     = Craft::$app->request->getRequiredBodyParam('sectionId', $entryType->sectionId);
-		$entryType->name          = Craft::$app->request->getBodyParam('name', $entryType->name);
-		$entryType->handle        = Craft::$app->request->getBodyParam('handle', $entryType->handle);
-		$entryType->hasTitleField = (bool) Craft::$app->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
-		$entryType->titleLabel    = Craft::$app->request->getBodyParam('titleLabel', $entryType->titleLabel);
-		$entryType->titleFormat   = Craft::$app->request->getBodyParam('titleFormat', $entryType->titleFormat);
+		$entryType->sectionId     = Craft::$app->getRequest()->getRequiredBodyParam('sectionId', $entryType->sectionId);
+		$entryType->name          = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
+		$entryType->handle        = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
+		$entryType->hasTitleField = (bool) Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
+		$entryType->titleLabel    = Craft::$app->getRequest()->getBodyParam('titleLabel', $entryType->titleLabel);
+		$entryType->titleFormat   = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
@@ -394,7 +394,7 @@ class SectionsController extends BaseController
 		}
 
 		// Send the entry type back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'entryType' => $entryType
 		]);
 	}
@@ -409,7 +409,7 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryTypeIds = JsonHelper::decode(Craft::$app->request->getRequiredBodyParam('ids'));
+		$entryTypeIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->sections->reorderEntryTypes($entryTypeIds);
 
 		$this->returnJson(['success' => true]);
@@ -425,7 +425,7 @@ class SectionsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryTypeId = Craft::$app->request->getRequiredBodyParam('id');
+		$entryTypeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->sections->deleteEntryTypeById($entryTypeId);
 		$this->returnJson(['success' => true]);

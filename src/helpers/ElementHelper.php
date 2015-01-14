@@ -159,7 +159,7 @@ class ElementHelper
 
 			$uniqueUriParams[':uri'] = $testUri;
 
-			$totalElements = Craft::$app->db->createCommand()
+			$totalElements = Craft::$app->getDb()->createCommand()
 				->select('count(id)')
 				->from('elements_i18n')
 				->where($uniqueUriConditions, $uniqueUriParams)
@@ -261,7 +261,7 @@ class ElementHelper
 			}
 			else
 			{
-				$localeIds[] = Craft::$app->i18n->getPrimarySiteLocaleId();
+				$localeIds[] = Craft::$app->getI18n()->getPrimarySiteLocaleId();
 			}
 		}
 

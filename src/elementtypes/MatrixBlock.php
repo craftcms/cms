@@ -84,7 +84,7 @@ class MatrixBlock extends BaseElementType
 	{
 		if (!$criteria->fieldId && $criteria->id && is_numeric($criteria->id))
 		{
-			$criteria->fieldId = Craft::$app->db->createCommand()
+			$criteria->fieldId = Craft::$app->getDb()->createCommand()
 				->select('fieldId')
 				->from('matrixblocks')
 				->where('id = :id', [':id' => $criteria->id])

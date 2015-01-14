@@ -120,7 +120,7 @@ class Querygen extends BaseCommand
 		// Create the table
 		echo "\n// Create the craft_{$table} table\n";
 
-		echo 'Craft::$app->db->createCommand()->createTable(' .
+		echo 'Craft::$app->getDb()->createCommand()->createTable(' .
 			$this->_varExport($table).", [\n";
 
 		$colNameLength = max(array_map('strlen', array_keys($columns))) + 2;
@@ -141,7 +141,7 @@ class Querygen extends BaseCommand
 				$columns = ArrayHelper::toArray($index['columns']);
 				$unique = !empty($index['unique']);
 
-				echo 'Craft::$app->db->createCommand()->createIndex(' .
+				echo 'Craft::$app->getDb()->createCommand()->createIndex(' .
 					$this->_varExport($table).', ' .
 					"'".implode(',', $columns)."', " .
 					$this->_varExport($unique).");\n";
@@ -201,7 +201,7 @@ class Querygen extends BaseCommand
 					$onUpdate = null;
 				}
 
-				echo 'Craft::$app->db->createCommand()->addForeignKey(' .
+				echo 'Craft::$app->getDb()->createCommand()->addForeignKey(' .
 					$this->_varExport($table).', ' .
 					$this->_varExport($config[2]).', ' .
 					$this->_varExport($otherTable).', ' .

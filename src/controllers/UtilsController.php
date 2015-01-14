@@ -386,7 +386,7 @@ class UtilsController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$logId = Craft::$app->request->getRequiredParam('logId');
+		$logId = Craft::$app->getRequest()->getRequiredParam('logId');
 		$log = Craft::$app->deprecator->getLogById($logId);
 
 		return $this->renderTemplate('utils/deprecationerrors/_tracesmodal',
@@ -418,7 +418,7 @@ class UtilsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$logId = Craft::$app->request->getRequiredBodyParam('logId');
+		$logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
 
 		Craft::$app->deprecator->deleteLogById($logId);
 		Craft::$app->end();

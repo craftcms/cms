@@ -78,10 +78,10 @@ class Et
 
 		$this->_model = new EtModel([
 			'licenseKey'        => $this->_getLicenseKey(),
-			'requestUrl'        => Craft::$app->request->getHostInfo().Craft::$app->request->getUrl(),
-			'requestIp'         => Craft::$app->request->getUserIP(),
+			'requestUrl'        => Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getUrl(),
+			'requestIp'         => Craft::$app->getRequest()->getUserIP(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
-			'requestPort'       => Craft::$app->request->getPort(),
+			'requestPort'       => Craft::$app->getRequest()->getPort(),
 			'localBuild'        => CRAFT_BUILD,
 			'localVersion'      => CRAFT_VERSION,
 			'localEdition'      => Craft::$app->getEdition(),
@@ -179,7 +179,7 @@ class Et
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 			}
 
-			if (!Craft::$app->cache->get('etConnectFailure'))
+			if (!Craft::$app->getCache()->get('etConnectFailure'))
 			{
 				$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 
@@ -200,9 +200,9 @@ class Et
 				if ($response->isSuccessful())
 				{
 					// Clear the connection failure cached item if it exists.
-					if (Craft::$app->cache->get('etConnectFailure'))
+					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{
-						Craft::$app->cache->delete('etConnectFailure');
+						Craft::$app->getCache()->delete('etConnectFailure');
 					}
 
 					if ($this->_destinationFileName)
@@ -231,13 +231,13 @@ class Et
 						}
 
 						// Cache the license key status and which edition it has
-						Craft::$app->cache->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-						Craft::$app->cache->set('licensedEdition', $etModel->licensedEdition);
-						Craft::$app->cache->set('editionTestableDomain@'.Craft::$app->request->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+						Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+						Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
+						Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
 						if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain)
 						{
-							Craft::$app->cache->set('licensedDomain', $etModel->licensedDomain);
+							Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
 						}
 
 						return $etModel;
@@ -246,10 +246,10 @@ class Et
 					{
 						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
-						if (Craft::$app->cache->get('etConnectFailure'))
+						if (Craft::$app->getCache()->get('etConnectFailure'))
 						{
 							// There was an error, but at least we connected.
-							Craft::$app->cache->delete('etConnectFailure');
+							Craft::$app->getCache()->delete('etConnectFailure');
 						}
 					}
 				}
@@ -257,10 +257,10 @@ class Et
 				{
 					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
-					if (Craft::$app->cache->get('etConnectFailure'))
+					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{
 						// There was an error, but at least we connected.
-						Craft::$app->cache->delete('etConnectFailure');
+						Craft::$app->getCache()->delete('etConnectFailure');
 					}
 				}
 			}
@@ -270,10 +270,10 @@ class Et
 		{
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
 
-			if (Craft::$app->cache->get('etConnectFailure'))
+			if (Craft::$app->getCache()->get('etConnectFailure'))
 			{
 				// There was an error, but at least we connected.
-				Craft::$app->cache->delete('etConnectFailure');
+				Craft::$app->getCache()->delete('etConnectFailure');
 			}
 
 			throw $e;
@@ -283,7 +283,7 @@ class Et
 			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
 
 			// Cache the failure for 5 minutes so we don't try again.
-			Craft::$app->cache->set('etConnectFailure', true, 300);
+			Craft::$app->getCache()->set('etConnectFailure', true, 300);
 		}
 
 		return null;

@@ -66,7 +66,7 @@ class SetStatus extends BaseElementAction
 		$elementIds = $criteria->ids();
 
 		// Update their statuses
-		Craft::$app->db->createCommand()->update(
+		Craft::$app->getDb()->createCommand()->update(
 			'elements',
 			['enabled' => $sqlNewStatus],
 			['in', 'id', $elementIds]
@@ -75,7 +75,7 @@ class SetStatus extends BaseElementAction
 		if ($status == BaseElementModel::ENABLED)
 		{
 			// Enable their locale as well
-			Craft::$app->db->createCommand()->update(
+			Craft::$app->getDb()->createCommand()->update(
 				'elements_i18n',
 				['enabled' => $sqlNewStatus],
 				['and', ['in', 'elementId', $elementIds], 'locale = :locale'],

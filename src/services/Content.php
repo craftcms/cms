@@ -78,7 +78,7 @@ class Content extends Component
 		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
 		$this->fieldContext        = $element->getFieldContext();
 
-		$row = Craft::$app->db->createCommand()
+		$row = Craft::$app->getDb()->createCommand()
 			->from($this->contentTable)
 			->where([
 				'elementId' => $element->id,
@@ -261,8 +261,8 @@ class Content extends Component
 		$excludeColumns = array_keys($values);
 		$excludeColumns = array_merge($excludeColumns, array_keys(DbHelper::getAuditColumnConfig()));
 
-		$fullContentTableName = Craft::$app->db->addTablePrefix($this->contentTable);
-		$contentTableSchema = Craft::$app->db->schema->getTable($fullContentTableName);
+		$fullContentTableName = Craft::$app->getDb()->addTablePrefix($this->contentTable);
+		$contentTableSchema = Craft::$app->getDb()->schema->getTable($fullContentTableName);
 
 		foreach ($contentTableSchema->columns as $columnSchema)
 		{
@@ -290,11 +290,11 @@ class Content extends Component
 
 		if (!$isNewContent)
 		{
-			$affectedRows = Craft::$app->db->createCommand()->update($this->contentTable, $values, ['id' => $content->id]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $content->id]);
 		}
 		else
 		{
-			$affectedRows = Craft::$app->db->createCommand()->insert($this->contentTable, $values);
+			$affectedRows = Craft::$app->getDb()->createCommand()->insert($this->contentTable, $values);
 		}
 
 		if ($affectedRows)
@@ -302,7 +302,7 @@ class Content extends Component
 			if ($isNewContent)
 			{
 				// Set the new ID
-				$content->id = Craft::$app->db->getLastInsertID();
+				$content->id = Craft::$app->getDb()->getLastInsertID();
 			}
 
 			// Fire an 'afterSaveContent' event
@@ -351,7 +351,7 @@ class Content extends Component
 		if ($nonTranslatableFields)
 		{
 			// Get the other locales' content
-			$rows = Craft::$app->db->createCommand()
+			$rows = Craft::$app->getDb()->createCommand()
 				->from($this->contentTable)
 				->where(
 					['and', 'elementId = :elementId', 'locale != :locale'],

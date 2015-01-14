@@ -128,7 +128,7 @@ class AssetSourcesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$existingSourceId = Craft::$app->request->getBodyParam('sourceId');
+		$existingSourceId = Craft::$app->getRequest()->getBodyParam('sourceId');
 
 		if ($existingSourceId)
 		{
@@ -139,15 +139,15 @@ class AssetSourcesController extends BaseController
 			$source = new AssetSourceModel();
 		}
 
-		$source->name   = Craft::$app->request->getBodyParam('name');
-		$source->handle = Craft::$app->request->getBodyParam('handle');
+		$source->name   = Craft::$app->getRequest()->getBodyParam('name');
+		$source->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$source->type = Craft::$app->request->getBodyParam('type');
+			$source->type = Craft::$app->getRequest()->getBodyParam('type');
 		}
 
-		$typeSettings = Craft::$app->request->getBodyParam('types');
+		$typeSettings = Craft::$app->getRequest()->getBodyParam('types');
 		if (isset($typeSettings[$source->type]))
 		{
 			if (!$source->settings)
@@ -175,7 +175,7 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Send the source back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'source' => $source
 		]);
 	}
@@ -190,7 +190,7 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceIds = JsonHelper::decode(Craft::$app->request->getRequiredBodyParam('ids'));
+		$sourceIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
 		Craft::$app->assetSources->reorderSources($sourceIds);
 
 		$this->returnJson(['success' => true]);
@@ -206,7 +206,7 @@ class AssetSourcesController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sourceId = Craft::$app->request->getRequiredBodyParam('id');
+		$sourceId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->assetSources->deleteSourceById($sourceId);
 
@@ -222,8 +222,8 @@ class AssetSourcesController extends BaseController
 	{
 		Craft::$app->requireEdition(Craft::Pro);
 
-		$keyId = Craft::$app->request->getRequiredBodyParam('keyId');
-		$secret = Craft::$app->request->getRequiredBodyParam('secret');
+		$keyId = Craft::$app->getRequest()->getRequiredBodyParam('keyId');
+		$secret = Craft::$app->getRequest()->getRequiredBodyParam('secret');
 
 		try
 		{
@@ -244,8 +244,8 @@ class AssetSourcesController extends BaseController
 	{
 		Craft::$app->requireEdition(Craft::Pro);
 
-		$username = Craft::$app->request->getRequiredBodyParam('username');
-		$apiKey = Craft::$app->request->getRequiredBodyParam('apiKey');
+		$username = Craft::$app->getRequest()->getRequiredBodyParam('username');
+		$apiKey = Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
 
 		try
 		{
@@ -272,9 +272,9 @@ class AssetSourcesController extends BaseController
 	{
 		Craft::$app->requireEdition(Craft::Pro);
 
-		$username = Craft::$app->request->getRequiredBodyParam('username');
-		$apiKey = Craft::$app->request->getRequiredBodyParam('apiKey');
-		$region = Craft::$app->request->getRequiredBodyParam('region');
+		$username = Craft::$app->getRequest()->getRequiredBodyParam('username');
+		$apiKey = Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
+		$region = Craft::$app->getRequest()->getRequiredBodyParam('region');
 
 		try
 		{
@@ -301,8 +301,8 @@ class AssetSourcesController extends BaseController
 	{
 		Craft::$app->requireEdition(Craft::Pro);
 
-		$keyId = Craft::$app->request->getRequiredBodyParam('keyId');
-		$secret = Craft::$app->request->getRequiredBodyParam('secret');
+		$keyId = Craft::$app->getRequest()->getRequiredBodyParam('keyId');
+		$secret = Craft::$app->getRequest()->getRequiredBodyParam('secret');
 
 		try
 		{

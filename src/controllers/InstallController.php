@@ -69,7 +69,7 @@ class InstallController extends BaseController
 		Craft::$app->runController('templates/requirementscheck');
 
 		// Guess the site name based on the server name
-		$server = Craft::$app->request->getServerName();
+		$server = Craft::$app->getRequest()->getServerName();
 		$words = preg_split('/[\-_\.]+/', $server);
 		array_pop($words);
 		$vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
@@ -89,15 +89,15 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$accountSettings = new AccountSettingsModel();
-		$username = Craft::$app->request->getBodyParam('username');
+		$username = Craft::$app->getRequest()->getBodyParam('username');
 		if (!$username)
 		{
-			$username = Craft::$app->request->getBodyParam('email');
+			$username = Craft::$app->getRequest()->getBodyParam('email');
 		}
 
 		$accountSettings->username = $username;
-		$accountSettings->email = Craft::$app->request->getBodyParam('email');
-		$accountSettings->password = Craft::$app->request->getBodyParam('password');
+		$accountSettings->email = Craft::$app->getRequest()->getBodyParam('email');
+		$accountSettings->password = Craft::$app->getRequest()->getBodyParam('password');
 
 		if ($accountSettings->validate())
 		{
@@ -122,8 +122,8 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$siteSettings = new SiteSettingsModel();
-		$siteSettings->siteName = Craft::$app->request->getBodyParam('siteName');
-		$siteSettings->siteUrl = Craft::$app->request->getBodyParam('siteUrl');
+		$siteSettings->siteName = Craft::$app->getRequest()->getBodyParam('siteName');
+		$siteSettings->siteUrl = Craft::$app->getRequest()->getBodyParam('siteUrl');
 
 		if ($siteSettings->validate())
 		{
@@ -148,19 +148,19 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		$username = Craft::$app->request->getBodyParam('username');
+		$username = Craft::$app->getRequest()->getBodyParam('username');
 
 		if (!$username)
 		{
-			$username = Craft::$app->request->getBodyParam('email');
+			$username = Craft::$app->getRequest()->getBodyParam('email');
 		}
 
 		$inputs['username']   = $username;
-		$inputs['email']      = Craft::$app->request->getBodyParam('email');
-		$inputs['password']   = Craft::$app->request->getBodyParam('password');
-		$inputs['siteName']   = Craft::$app->request->getBodyParam('siteName');
-		$inputs['siteUrl']    = Craft::$app->request->getBodyParam('siteUrl');
-		$inputs['locale'  ]   = Craft::$app->request->getBodyParam('locale');
+		$inputs['email']      = Craft::$app->getRequest()->getBodyParam('email');
+		$inputs['password']   = Craft::$app->getRequest()->getBodyParam('password');
+		$inputs['siteName']   = Craft::$app->getRequest()->getBodyParam('siteName');
+		$inputs['siteUrl']    = Craft::$app->getRequest()->getBodyParam('siteUrl');
+		$inputs['locale'  ]   = Craft::$app->getRequest()->getBodyParam('locale');
 
 		Craft::$app->install->run($inputs);
 

@@ -152,7 +152,7 @@ class Content extends BaseModel
 		$attributes = [
 			'id'        => AttributeType::Number,
 			'elementId' => AttributeType::Number,
-			'locale'    => [AttributeType::Locale, 'default' => Craft::$app->i18n->getPrimarySiteLocaleId()],
+			'locale'    => [AttributeType::Locale, 'default' => Craft::$app->getI18n()->getPrimarySiteLocaleId()],
 			'title'     => [AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255, 'label' => 'Title'],
 		];
 

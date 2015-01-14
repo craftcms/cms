@@ -40,9 +40,9 @@ class GlobalsController extends BaseController
 		$globalSet = new GlobalSetModel();
 
 		// Set the simple stuff
-		$globalSet->id     = Craft::$app->request->getBodyParam('setId');
-		$globalSet->name   = Craft::$app->request->getBodyParam('name');
-		$globalSet->handle = Craft::$app->request->getBodyParam('handle');
+		$globalSet->id     = Craft::$app->getRequest()->getBodyParam('setId');
+		$globalSet->name   = Craft::$app->getRequest()->getBodyParam('name');
+		$globalSet->handle = Craft::$app->getRequest()->getBodyParam('handle');
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
@@ -61,7 +61,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'globalSet' => $globalSet
 		]);
 	}
@@ -77,7 +77,7 @@ class GlobalsController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requireAdmin();
 
-		$globalSetId = Craft::$app->request->getRequiredBodyParam('id');
+		$globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
 		Craft::$app->globals->deleteSetById($globalSetId);
 		$this->returnJson(['success' => true]);
@@ -100,7 +100,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Get the locales the user is allowed to edit
-		$editableLocaleIds = Craft::$app->i18n->getEditableLocaleIds();
+		$editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
 
 		// Editing a specific locale?
 		if (isset($variables['localeId']))
@@ -164,8 +164,8 @@ class GlobalsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$globalSetId = Craft::$app->request->getRequiredBodyParam('setId');
-		$localeId = Craft::$app->request->getBodyParam('locale', Craft::$app->i18n->getPrimarySiteLocaleId());
+		$globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
+		$localeId = Craft::$app->getRequest()->getBodyParam('locale', Craft::$app->getI18n()->getPrimarySiteLocaleId());
 
 		// Make sure the user is allowed to edit this global set and locale
 		$this->requirePermission('editGlobalSet:'.$globalSetId);
@@ -195,7 +195,7 @@ class GlobalsController extends BaseController
 		}
 
 		// Send the global set back to the template
-		Craft::$app->urlManager->setRouteVariables([
+		Craft::$app->getUrlManeger()->setRouteVariables([
 			'globalSet' => $globalSet,
 		]);
 	}

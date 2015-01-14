@@ -257,7 +257,7 @@ class Matrix extends Component
 	{
 		if (!$validate || $this->validateBlockType($blockType))
 		{
-			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				$contentService = Craft::$app->content;
@@ -304,7 +304,7 @@ class Matrix extends Component
 					}
 
 					// Refresh the schema cache
-					Craft::$app->db->getSchema()->refresh();
+					Craft::$app->getDb()->getSchema()->refresh();
 				}
 
 				// Set the basic info on the new block type record
@@ -416,11 +416,11 @@ class Matrix extends Component
 	 */
 	public function deleteBlockType(MatrixBlockTypeModel $blockType)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// First delete the blocks of this type
-			$blockIds = Craft::$app->db->createCommand()
+			$blockIds = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('matrixblocks')
 				->where(['typeId' => $blockType->id])
@@ -443,7 +443,7 @@ class Matrix extends Component
 			Craft::$app->fields->deleteLayoutById($blockType->fieldLayoutId);
 
 			// Finally delete the actual block type
-			$affectedRows = Craft::$app->db->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id]);
 
 			if ($transaction !== null)
 			{
@@ -528,7 +528,7 @@ class Matrix extends Component
 	{
 		if (!$validate || $this->validateFieldSettings($settings))
 		{
-			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				$matrixField = $settings->getField();
@@ -538,9 +538,9 @@ class Matrix extends Component
 				$newContentTable = $this->getContentTableName($matrixField);
 
 				// Do we need to create/rename the content table?
-				if (!Craft::$app->db->tableExists($newContentTable))
+				if (!Craft::$app->getDb()->tableExists($newContentTable))
 				{
-					if ($oldContentTable && Craft::$app->db->tableExists($oldContentTable))
+					if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable))
 					{
 						MigrationHelper::renameTable($oldContentTable, $newContentTable);
 					}
@@ -624,7 +624,7 @@ class Matrix extends Component
 	 */
 	public function deleteMatrixField(FieldModel $matrixField)
 	{
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			$originalContentTable = Craft::$app->content->contentTable;
@@ -640,7 +640,7 @@ class Matrix extends Component
 			}
 
 			// Drop the content table
-			Craft::$app->db->createCommand()->dropTable($contentTable);
+			Craft::$app->getDb()->createCommand()->dropTable($contentTable);
 
 			Craft::$app->content->contentTable = $originalContentTable;
 
@@ -771,7 +771,7 @@ class Matrix extends Component
 			$blockRecord->typeId      = $block->typeId;
 			$blockRecord->sortOrder   = $block->sortOrder;
 
-			$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if (Craft::$app->elements->saveElement($block, false))
@@ -860,7 +860,7 @@ class Matrix extends Component
 			$blocks = [];
 		}
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
@@ -904,7 +904,7 @@ class Matrix extends Component
 				$deletedBlockParams[':ownerLocale'] = $owner->locale;
 			}
 
-			$deletedBlockIds = Craft::$app->db->createCommand()
+			$deletedBlockIds = Craft::$app->getDb()->createCommand()
 				->select('id')
 				->from('matrixblocks')
 				->where($deletedBlockConditions, $deletedBlockParams)
@@ -953,7 +953,7 @@ class Matrix extends Component
 		if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields))
 		{
 			// Does this Matrix field belong to another one?
-			$parentMatrixFieldId = Craft::$app->db->createCommand()
+			$parentMatrixFieldId = Craft::$app->getDb()->createCommand()
 				->select('fields.id')
 				->from('fields fields')
 				->join('matrixblocktypes blocktypes', 'blocktypes.fieldId = fields.id')
@@ -984,7 +984,7 @@ class Matrix extends Component
 	 */
 	private function _createBlockTypeQuery()
 	{
-		return Craft::$app->db->createCommand()
+		return Craft::$app->getDb()->createCommand()
 			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
 			->from('matrixblocktypes')
 			->order('sortOrder');
@@ -1063,14 +1063,14 @@ class Matrix extends Component
 	 */
 	private function _createContentTable($name)
 	{
-		Craft::$app->db->createCommand()->createTable($name, [
+		Craft::$app->getDb()->createCommand()->createTable($name, [
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
 		]);
 
-		Craft::$app->db->createCommand()->createIndex($name, 'elementId,locale', true);
-		Craft::$app->db->createCommand()->addForeignKey($name, 'elementId', 'elements', 'id', 'CASCADE', null);
-		Craft::$app->db->createCommand()->addForeignKey($name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+		Craft::$app->getDb()->createCommand()->createIndex($name, 'elementId,locale', true);
+		Craft::$app->getDb()->createCommand()->addForeignKey($name, 'elementId', 'elements', 'id', 'CASCADE', null);
+		Craft::$app->getDb()->createCommand()->addForeignKey($name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 	}
 
 	/**
@@ -1117,7 +1117,7 @@ class Matrix extends Component
 				$criteria->ownerLocale = ':empty:';
 			}
 
-			foreach (Craft::$app->i18n->getSiteLocaleIds() as $localeId)
+			foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId)
 			{
 				if ($localeId == $owner->locale)
 				{
@@ -1163,7 +1163,7 @@ class Matrix extends Component
 
 					// Duplicate the relations, too.  First by getting all of the existing relations for the original
 					// blocks
-					$relations = Craft::$app->db->createCommand()
+					$relations = Craft::$app->getDb()->createCommand()
 						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
 						->from('relations')
 						->where(['in', 'sourceId', array_keys($newBlockIds)])
@@ -1188,7 +1188,7 @@ class Matrix extends Component
 							}
 						}
 
-						Craft::$app->db->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'], $rows);
+						Craft::$app->getDb()->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'], $rows);
 					}
 				}
 				else

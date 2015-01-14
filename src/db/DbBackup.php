@@ -100,7 +100,7 @@ class DbBackup
 
 		$this->_processHeader();
 
-		foreach (Craft::$app->db->getSchema()->getTables() as $resultName => $val)
+		foreach (Craft::$app->getDb()->getSchema()->getTables() as $resultName => $val)
 		{
 			$this->_processResult($resultName);
 		}
@@ -139,7 +139,7 @@ class DbBackup
 		foreach ($statements as $key => $statement)
 		{
 			Craft::log('Executing SQL statement: '.$statement);
-			$command = Craft::$app->db->createCommand($statement);
+			$command = Craft::$app->getDb()->createCommand($statement);
 			$command->execute();
 		}
 
@@ -208,7 +208,7 @@ class DbBackup
 
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
-		$results = Craft::$app->db->getSchema()->getTableNames();
+		$results = Craft::$app->getDb()->getSchema()->getTableNames();
 
 		foreach ($results as $result)
 		{
@@ -217,7 +217,7 @@ class DbBackup
 
 		$sql .= PHP_EOL.'SET FOREIGN_KEY_CHECKS = 1;'.PHP_EOL;
 
-		$command = Craft::$app->db->createCommand($sql);
+		$command = Craft::$app->getDb()->createCommand($sql);
 		$command->execute();
 
 		Craft::log('Database nuked.');
@@ -238,8 +238,8 @@ class DbBackup
 		{
 			if ($first && count($value[0]) > 0)
 			{
-				$sql .= PHP_EOL.'--'.PHP_EOL.'-- Constraints for table '.Craft::$app->db->quoteTableName($tableName).PHP_EOL.'--'.PHP_EOL;
-				$sql .= 'ALTER TABLE '.Craft::$app->db->quoteTableName($tableName).PHP_EOL;
+				$sql .= PHP_EOL.'--'.PHP_EOL.'-- Constraints for table '.Craft::$app->getDb()->quoteTableName($tableName).PHP_EOL.'--'.PHP_EOL;
+				$sql .= 'ALTER TABLE '.Craft::$app->getDb()->quoteTableName($tableName).PHP_EOL;
 			}
 
 			if (count($value[0]) > 0)
@@ -310,7 +310,7 @@ class DbBackup
 	 */
 	private function _processResult($resultName, $action = 'create')
 	{
-		$q = Craft::$app->db->createCommand('SHOW CREATE TABLE '.Craft::$app->db->quoteTableName($resultName).';')->queryRow();
+		$q = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE '.Craft::$app->getDb()->quoteTableName($resultName).';')->queryRow();
 
 		if (isset($q['Create Table']))
 		{
@@ -331,7 +331,7 @@ class DbBackup
 	 */
 	private function _processTable($tableName, $createQuery, $action = 'create')
 	{
-		$result = PHP_EOL.'DROP TABLE IF EXISTS '.Craft::$app->db->quoteTableName($tableName).';'.PHP_EOL.PHP_EOL;
+		$result = PHP_EOL.'DROP TABLE IF EXISTS '.Craft::$app->getDb()->quoteTableName($tableName).';'.PHP_EOL.PHP_EOL;
 
 		if ($action == 'create')
 		{
@@ -378,7 +378,7 @@ class DbBackup
 			IOHelper::writeToFile($this->_filePath, $result, true, true);
 
 			// See if we have any data.
-			$totalRows = Craft::$app->db->createCommand('SELECT count(*) FROM ' . Craft::$app->db->quoteTableName($tableName) . ';')->queryScalar();
+			$totalRows = Craft::$app->getDb()->createCommand('SELECT count(*) FROM ' . Craft::$app->getDb()->quoteTableName($tableName) . ';')->queryScalar();
 
 			if ($totalRows == 0)
 			{
@@ -400,15 +400,15 @@ class DbBackup
 					@set_time_limit(120);
 
 					$offset = $batchSize * $counter;
-					$rows = Craft::$app->db->createCommand('SELECT * FROM ' . Craft::$app->db->quoteTableName($tableName) . ' LIMIT ' . $offset . ',' . $batchSize . ';')->queryAll();
+					$rows = Craft::$app->getDb()->createCommand('SELECT * FROM ' . Craft::$app->getDb()->quoteTableName($tableName) . ' LIMIT ' . $offset . ',' . $batchSize . ';')->queryAll();
 
 					if (!empty($rows))
 					{
-						$attrs = array_map([Craft::$app->db, 'quoteColumnName'], array_keys($rows[0]));
+						$attrs = array_map([Craft::$app->getDb(), 'quoteColumnName'], array_keys($rows[0]));
 
 						foreach ($rows as $row)
 						{
-							$insertStatement = 'INSERT INTO ' . Craft::$app->db->quoteTableName($tableName) . ' (' . implode(', ', $attrs) . ') VALUES';
+							$insertStatement = 'INSERT INTO ' . Craft::$app->getDb()->quoteTableName($tableName) . ' (' . implode(', ', $attrs) . ') VALUES';
 
 							// Process row
 							foreach ($row as $columnName => $value)
@@ -419,7 +419,7 @@ class DbBackup
 								}
 								else
 								{
-									$row[$columnName] = Craft::$app->db->getPdoInstance()->quote($value);
+									$row[$columnName] = Craft::$app->getDb()->getPdoInstance()->quote($value);
 								}
 							}
 
@@ -445,7 +445,7 @@ class DbBackup
 	 */
 	private function _processView($viewName, $createQuery, $action = 'create')
 	{
-		$result = PHP_EOL.'DROP VIEW IF EXISTS '.Craft::$app->db->quoteTableName($viewName).';'.PHP_EOL.PHP_EOL;
+		$result = PHP_EOL.'DROP VIEW IF EXISTS '.Craft::$app->getDb()->quoteTableName($viewName).';'.PHP_EOL.PHP_EOL;
 
 		if ($action == 'create')
 		{

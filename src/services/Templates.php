@@ -673,7 +673,7 @@ class Templates extends Component
 	{
 		if (Craft::$app->config->get('enableCsrfProtection') === true)
 		{
-			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->request->getCsrfToken().'">';
+			return '<input type="hidden" name="'.Craft::$app->config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
 		}
 
 		return '';
@@ -862,10 +862,10 @@ class Templates extends Component
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
 
-		if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->request->getIsActionRequest()))
+		if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->getRequest()->getIsActionRequest()))
 		{
 			// Sanitize
-			$name = Craft::$app->request->decodePathInfo($name);
+			$name = Craft::$app->getRequest()->decodePathInfo($name);
 
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));

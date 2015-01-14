@@ -45,7 +45,7 @@ class Relations extends Component
 		// Prevent duplicate target IDs.
 		$targetIds = array_unique($targetIds);
 
-		$transaction = Craft::$app->db->getCurrentTransaction() === null ? Craft::$app->db->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -59,7 +59,7 @@ class Relations extends Component
 				$oldRelationParams[':sourceLocale'] = $source->locale;
 			}
 
-			Craft::$app->db->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
+			Craft::$app->getDb()->createCommand()->delete('relations', $oldRelationConditions, $oldRelationParams);
 
 			// Add the new ones
 			if ($targetIds)
@@ -81,7 +81,7 @@ class Relations extends Component
 				}
 
 				$columns = ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'];
-				Craft::$app->db->createCommand()->insertAll('relations', $columns, $values);
+				Craft::$app->getDb()->createCommand()->insertAll('relations', $columns, $values);
 			}
 
 			if ($transaction !== null)

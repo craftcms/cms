@@ -742,7 +742,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _loadAccessData()
 	{
-		$rows = Craft::$app->db->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
+		$rows = Craft::$app->getDb()->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
 
 		foreach ($rows as $row)
 		{
@@ -763,7 +763,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _updateAccessData($connectionKey, $data)
 	{
-		$recordExists = Craft::$app->db->createCommand()
+		$recordExists = Craft::$app->getDb()->createCommand()
 			->select('id')
 			->where('connectionKey = :connectionKey', [':connectionKey' => $connectionKey])
 			->from('rackspaceaccess')
@@ -771,12 +771,12 @@ class Rackspace extends BaseAssetSourceType
 
 		if ($recordExists)
 		{
-			Craft::$app->db->createCommand()->update('rackspaceaccess', $data, 'id = :id', [':id' => $recordExists]);
+			Craft::$app->getDb()->createCommand()->update('rackspaceaccess', $data, 'id = :id', [':id' => $recordExists]);
 		}
 		else
 		{
 			$data['connectionKey'] = $connectionKey;
-			Craft::$app->db->createCommand()->insert('rackspaceaccess', $data);
+			Craft::$app->getDb()->createCommand()->insert('rackspaceaccess', $data);
 		}
 	}
 

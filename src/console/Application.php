@@ -54,8 +54,8 @@ class Application extends \yii\console\Application
 		Craft::setLogger(new Logger());
 
 		// No need for these.
-		Craft::$app->log->removeRoute('WebLogRoute');
-		Craft::$app->log->removeRoute('ProfileLogRoute');
+		Craft::$app->getLog()->removeRoute('WebLogRoute');
+		Craft::$app->getLog()->removeRoute('ProfileLogRoute');
 
 		// Set the edition components
 		$this->_setEditionComponents();
@@ -103,7 +103,7 @@ class Application extends \yii\console\Application
 	}
 
 	/**
-	 * Override get() so we can do some special logic around creating the `Craft::$app->db` application component.
+	 * Override get() so we can do some special logic around creating the `Craft::$app->getDb()` application component.
 	 *
 	 * @param string $id
 	 * @param boolean $throwException
