@@ -1061,9 +1061,9 @@ class HttpRequest extends \CHttpRequest
 	{
 		$pathInfo = urldecode($pathInfo);
 
-		if (!StringHelper::isUTF8($pathInfo))
+		if (!StringHelper::isUtf8($pathInfo))
 		{
-			$pathInfo = StringHelper::convertToUTF8($pathInfo);
+			$pathInfo = StringHelper::convertToUtf8($pathInfo);
 		}
 
 		return IOHelper::normalizePathSeparators($pathInfo);
@@ -1368,13 +1368,13 @@ class HttpRequest extends \CHttpRequest
 				}
 				else
 				{
-					$things[$key] = StringHelper::convertToUTF8($value);
+					$things[$key] = StringHelper::convertToUtf8($value);
 				}
 			}
 		}
 		else
 		{
-			$things = StringHelper::convertToUTF8($things);
+			$things = StringHelper::convertToUtf8($things);
 		}
 
 		return $things;
