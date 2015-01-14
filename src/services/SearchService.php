@@ -578,7 +578,7 @@ class SearchService extends BaseApplicationComponent
 		{
 			$keywords = $this->_normalizeTerm($term->term);
 
-			if ($keywords !== false && $keywords !== null)
+			if (!empty($keywords))
 			{
 				// Create fulltext clause from term
 				if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)

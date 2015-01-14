@@ -347,14 +347,8 @@ class StringHelper
 		$str = preg_replace('/[\n\r]+/u', ' ', $str);
 		$str = preg_replace('/\s{2,}/u', ' ', $str);
 
-		// Trim white space
-		$str = trim($str);
-
-		// Make sure we've actually got something relevant to return
-		if ($str !== '')
-		{
-			return $str;
-		}
+		// Trim white space and return
+		return trim($str);
 	}
 
 	/**
