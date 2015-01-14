@@ -773,9 +773,9 @@ class Request extends \yii\web\Request
 	{
 		$pathInfo = urldecode($pathInfo);
 
-		if (!StringHelper::isUTF8($pathInfo))
+		if (!StringHelper::isUtf8($pathInfo))
 		{
-			$pathInfo = StringHelper::convertToUTF8($pathInfo);
+			$pathInfo = StringHelper::convertToUtf8($pathInfo);
 		}
 
 		return IOHelper::normalizePathSeparators($pathInfo);
@@ -883,13 +883,13 @@ class Request extends \yii\web\Request
 				}
 				else
 				{
-					$things[$key] = StringHelper::convertToUTF8($value);
+					$things[$key] = StringHelper::convertToUtf8($value);
 				}
 			}
 		}
 		else
 		{
-			$things = StringHelper::convertToUTF8($things);
+			$things = StringHelper::convertToUtf8($things);
 		}
 
 		return $things;
