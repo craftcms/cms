@@ -297,7 +297,7 @@ class Email extends Component
 					$pop = new \Pop3();
 
 					if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
-						StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password'])
+						!$emailSettings['host'] || !$emailSettings['port'] || !$emailSettings['username'] || !$emailSettings['password']
 					)
 					{
 						throw new Exception(Craft::t('Host, port, username and password must be configured under your email settings.'));
@@ -476,7 +476,7 @@ class Email extends Component
 		{
 			$email->SMTPAuth = true;
 
-			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
+			if ((!isset($emailSettings['username']) && !$emailSettings['username']) || (!isset($emailSettings['password']) && !$emailSettings['password']))
 			{
 				throw new Exception(Craft::t('Username and password are required.  Check your email settings.'));
 			}

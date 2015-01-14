@@ -549,32 +549,32 @@ trait ApplicationTrait
 			$databaseCharset = Craft::$app->config->get('charset', ConfigFile::Db);
 			$databaseCollation = Craft::$app->config->get('collation', ConfigFile::Db);
 
-			if (StringHelper::isNullOrEmpty($databaseServerName))
+			if (!$databaseServerName)
 			{
 				$messages[] = Craft::t('The database server name isn’t set in your db config file.');
 			}
 
-			if (StringHelper::isNullOrEmpty($databaseAuthName))
+			if (!$databaseAuthName)
 			{
 				$messages[] = Craft::t('The database user name isn’t set in your db config file.');
 			}
 
-			if (StringHelper::isNullOrEmpty($databaseName))
+			if (!$databaseName)
 			{
 				$messages[] = Craft::t('The database name isn’t set in your db config file.');
 			}
 
-			if (StringHelper::isNullOrEmpty($databasePort))
+			if (!$databasePort)
 			{
 				$messages[] = Craft::t('The database port isn’t set in your db config file.');
 			}
 
-			if (StringHelper::isNullOrEmpty($databaseCharset))
+			if (!$databaseCharset)
 			{
 				$messages[] = Craft::t('The database charset isn’t set in your db config file.');
 			}
 
-			if (StringHelper::isNullOrEmpty($databaseCollation))
+			if (!$databaseCollation)
 			{
 				$messages[] = Craft::t('The database collation isn’t set in your db config file.');
 			}
