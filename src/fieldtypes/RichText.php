@@ -13,6 +13,7 @@ use craft\app\enums\ColumnType;
 use craft\app\enums\SectionType;
 use craft\app\fieldtypes\data\RichTextData;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\validators\Handle;
@@ -190,13 +191,7 @@ class RichText extends BaseFieldType
 
 			if ($this->getSettings()->purifyHtml)
 			{
-				$purifier = new \CHtmlPurifier();
-				$purifier->setOptions([
-					'Attr.AllowedFrameTargets' => ['_blank'],
-					'HTML.AllowedComments' => ['pagebreak'],
-				]);
-
-				$value = $purifier->purify($value);
+				$value = HtmlPurifier::process($value, ['Attr.AllowedFrameTargets' => ['_blank'], 'HTML.AllowedComments' => ['pagebreak']]);
 			}
 
 			if ($this->getSettings()->cleanupHtml)
