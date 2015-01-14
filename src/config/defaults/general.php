@@ -133,7 +133,11 @@ return [
 	/**
 	 * Any custom ASCII character mappings.
 	 *
-	 * This array is merged into the default one in StringHelper::getAsciiCharMap().
+	 * This array is merged into the default one in StringHelper::getAsciiCharMap(). The key is the ASCII character to
+	 * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
+	 *
+	 * For example:
+	 *     'c'    => array('ç', 'ć', 'č', 'ĉ', 'ċ')
 	 */
 	'customAsciiCharMappings' => [],
 
