@@ -136,7 +136,7 @@ class Routes extends Component
 			if (is_string($part))
 			{
 				// Escape any special regex characters
-				$urlPattern .= StringHelper::escapeRegexChars($part);
+				$urlPattern .= $this->_escapeRegexChars($part);
 			}
 			else if (is_array($part))
 			{
@@ -192,5 +192,23 @@ class Routes extends Component
 
 			Craft::$app->db->createCommand()->update('routes', $data, $condition);
 		}
+	}
+
+	/**
+	 * @param $string
+	 *
+	 * @return mixed
+	 */
+	private function _escapeRegexChars($string)
+	{
+		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
+		$escapedChars = [];
+
+		foreach ($charsToEscape as $char)
+		{
+			$escapedChars[] = "\\".$char;
+		}
+
+		return str_replace($charsToEscape, $escapedChars, $string);
 	}
 }
