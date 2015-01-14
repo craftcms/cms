@@ -25,6 +25,11 @@ class AppHelper
 	 */
 	private static $_isPhpDevServer = null;
 
+	/**
+	 * @var
+	 */
+	private static $_iconv;
+
 	// Public Methods
 	// =========================================================================
 
@@ -143,5 +148,25 @@ class AppHelper
 		}
 
 		return $value;
+	}
+
+	public static function checkForValidIconv()
+	{
+		if (!isset(static::$_iconv))
+		{
+			// Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
+			// don't consider iconv "installed" if it's there but "unusable".
+			if (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK)
+			{
+				static::$_iconv = true;
+			}
+			else
+			{
+				static::$_iconv = false;
+			}
+		}
+
+		return static::$_iconv;
+
 	}
 }
