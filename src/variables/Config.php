@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 
 /**
  * Class Config variable.
@@ -29,7 +29,7 @@ class Config
 	 */
 	public function __isset($name)
 	{
-		return Craft::$app->config->exists($name, ConfigFile::General);
+		return Craft::$app->config->exists($name, ConfigCategory::General);
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Config
 	 */
 	public function __get($name)
 	{
-		return Craft::$app->config->get($name, ConfigFile::General);
+		return Craft::$app->config->get($name, ConfigCategory::General);
 	}
 
 	/**

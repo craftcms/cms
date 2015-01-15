@@ -8,7 +8,7 @@
 namespace craft\app\db\mysql;
 
 use Craft;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 
 /**
  * Class MysqlSchema
@@ -198,7 +198,7 @@ class Schema extends \CMysqlSchema
 	public function createTable($table, $columns, $options = null, $engine = 'InnoDb')
 	{
 		$cols = [];
-		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.Craft::$app->config->get('charset', ConfigFile::Db).' COLLATE='.Craft::$app->config->get('collation', ConfigFile::Db).($options ? ' '.$options : '');
+		$options = 'ENGINE='.$engine.' DEFAULT CHARSET='.Craft::$app->config->get('charset', ConfigCategory::Db).' COLLATE='.Craft::$app->config->get('collation', ConfigCategory::Db).($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{

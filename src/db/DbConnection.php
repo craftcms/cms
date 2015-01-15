@@ -8,7 +8,7 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use craft\app\helpers\ArrayHelper;
 
 /**
@@ -127,7 +127,7 @@ class DbConnection extends \CDbConnection
 	public function getNormalizedTablePrefix()
 	{
 		// Table prefixes cannot be longer than 5 characters
-		$tablePrefix = rtrim(Craft::$app->config->get('tablePrefix', ConfigFile::Db), '_');
+		$tablePrefix = rtrim(Craft::$app->config->get('tablePrefix', ConfigCategory::Db), '_');
 
 		if ($tablePrefix)
 		{

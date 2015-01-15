@@ -10,7 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 
 /**
  * Class DbHelper
@@ -101,8 +101,8 @@ class DbHelper
 		{
 			$config['column'] = ColumnType::Char;
 			$config['maxLength'] = 12;
-			$config['charset'] = Craft::$app->config->get('charset', ConfigFile::Db);
-			$config['collation'] = Craft::$app->config->get('collation', ConfigFile::Db);
+			$config['charset'] = Craft::$app->config->get('charset', ConfigCategory::Db);
+			$config['collation'] = Craft::$app->config->get('collation', ConfigCategory::Db);
 		}
 		else if (isset(static::$columnTypeDefaults[$config['column']]))
 		{

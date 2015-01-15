@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\Component;
@@ -371,7 +371,7 @@ class Path extends Component
 	 */
 	public function getCachePath()
 	{
-		$path = Craft::$app->config->get('cachePath', ConfigFile::FileCache);
+		$path = Craft::$app->config->get('cachePath', ConfigCategory::FileCache);
 
 		if (!$path)
 		{

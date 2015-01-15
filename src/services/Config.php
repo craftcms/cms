@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use craft\app\enums\LogLevel;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\ArrayHelper;
@@ -78,20 +78,20 @@ class Config extends Component
 	 * ```
 	 *
 	 * @param string $item The name of the config setting.
-	 * @param string $file The name of the config file (sans .php). Defaults to 'general'.
+	 * @param string $category The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.
 	 */
-	public function get($item, $file = ConfigFile::General)
+	public function get($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$file]))
+		if (!isset($this->_loadedConfigFiles[$category]))
 		{
-			$this->_loadConfigFile($file);
+			$this->_loadConfigFile($category);
 		}
 
-		if ($this->exists($item, $file))
+		if ($this->exists($item, $category))
 		{
-			return $this->_loadedConfigFiles[$file][$item];
+			return $this->_loadedConfigFiles[$category][$item];
 		}
 	}
 
@@ -115,18 +115,18 @@ class Config extends Component
 	 *
 	 * @param string $item  The name of the config setting.
 	 * @param mixed  $value The new value of the config setting.
-	 * @param string $file  The name of the config file (sans .php). Defaults to 'general'.
+	 * @param string $category The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return null
 	 */
-	public function set($item, $value, $file = ConfigFile::General)
+	public function set($item, $value, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$file]))
+		if (!isset($this->_loadedConfigFiles[$category]))
 		{
-			$this->_loadConfigFile($file);
+			$this->_loadConfigFile($category);
 		}
 
-		$this->_loadedConfigFiles[$file][$item] = $value;
+		$this->_loadedConfigFiles[$category][$item] = $value;
 	}
 
 	/**
@@ -148,13 +148,13 @@ class Config extends Component
 	 * @param string $item     The name of the config setting.
 	 * @param string $localeId The locale ID to return. Defaults to
 	 *                         [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
-	 * @param string $file     The name of the config file (sans .php). Defaults to 'general'.
+	 * @param string $category The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return mixed The value of the config setting, or `null` if a value could not be found.
 	 */
-	public function getLocalized($item, $localeId = null, $file = ConfigFile::General)
+	public function getLocalized($item, $localeId = null, $category = ConfigCategory::General)
 	{
-		$value = $this->get($item, $file);
+		$value = $this->get($item, $category);
 
 		if (is_array($value))
 		{
@@ -202,18 +202,18 @@ class Config extends Component
 	 * ```
 	 *
 	 * @param string $item The name of the config setting.
-	 * @param string $file The name of the config file (sans .php). Defaults to 'general'.
+	 * @param string $category The name of the config file (sans .php). Defaults to 'general'.
 	 *
 	 * @return bool Whether the config setting value exists.
 	 */
-	public function exists($item, $file = ConfigFile::General)
+	public function exists($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$file]))
+		if (!isset($this->_loadedConfigFiles[$category]))
 		{
-			$this->_loadConfigFile($file);
+			$this->_loadConfigFile($category);
 		}
 
-		if (array_key_exists($item, $this->_loadedConfigFiles[$file]))
+		if (array_key_exists($item, $this->_loadedConfigFiles[$category]))
 		{
 			return true;
 		}
@@ -711,8 +711,8 @@ class Config extends Component
 	 */
 	private function _loadConfigFile($name)
 	{
-		// Is this a valid Craft config file?
-		if (ConfigFile::isValidName($name))
+		// Is this a valid Craft config category?
+		if (ConfigCategory::isValidName($name))
 		{
 			$defaultsPath = CRAFT_APP_PATH.'config/defaults/'.$name.'.php';
 		}
@@ -731,8 +731,8 @@ class Config extends Component
 			$defaultsConfig = [];
 		}
 
-		// Little extra logic for the general config file.
-		if ($name == ConfigFile::General)
+		// Little extra logic for the general config category.
+		if ($name == ConfigCategory::General)
 		{
 			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
 			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
@@ -765,7 +765,7 @@ class Config extends Component
 				{
 					$this->_mergeConfigs($defaultsConfig, $customConfig);
 				}
-				else if ($name == ConfigFile::Db)
+				else if ($name == ConfigCategory::Db)
 				{
 					// Originally db.php defined a $dbConfig variable.
 					if (@require_once(CRAFT_CONFIG_PATH.'db.php'))

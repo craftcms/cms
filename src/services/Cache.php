@@ -16,7 +16,7 @@ use craft\app\cache\WinCache;
 use craft\app\cache\XCache;
 use craft\app\cache\ZendDataCache;
 use craft\app\enums\CacheMethod;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -62,8 +62,8 @@ class Cache extends Component
 			case CacheMethod::Db:
 			{
 				$this->_cacheComponent = new DbCache();
-				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigFile::DbCache);
-				$this->_cacheComponent->cacheTableName = Craft::$app->getDb()->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigFile::DbCache);
+				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigCategory::DbCache);
+				$this->_cacheComponent->cacheTableName = Craft::$app->getDb()->getNormalizedTablePrefix().Craft::$app->config->get('cacheTableName', ConfigCategory::DbCache);
 				$this->_cacheComponent->autoCreateCacheTable = true;
 				break;
 			}
@@ -71,16 +71,16 @@ class Cache extends Component
 			case CacheMethod::File:
 			{
 				$this->_cacheComponent = new FileCache();
-				$this->_cacheComponent->cachePath = Craft::$app->config->get('cachePath', ConfigFile::FileCache);
-				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigFile::FileCache);
+				$this->_cacheComponent->cachePath = Craft::$app->config->get('cachePath', ConfigCategory::FileCache);
+				$this->_cacheComponent->gcProbability = Craft::$app->config->get('gcProbability', ConfigCategory::FileCache);
 				break;
 			}
 
 			case CacheMethod::MemCache:
 			{
 				$this->_cacheComponent = new MemCache();
-				$this->_cacheComponent->servers = Craft::$app->config->get('servers', ConfigFile::Memcache);
-				$this->_cacheComponent->useMemcached = Craft::$app->config->get('useMemcached', ConfigFile::Memcache);
+				$this->_cacheComponent->servers = Craft::$app->config->get('servers', ConfigCategory::Memcache);
+				$this->_cacheComponent->useMemcached = Craft::$app->config->get('useMemcached', ConfigCategory::Memcache);
 				break;
 			}
 

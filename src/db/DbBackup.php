@@ -8,7 +8,7 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
@@ -86,7 +86,7 @@ class DbBackup
 	public function run()
 	{
 		// Normalize the ignored table names if there is a table prefix set.
-		if (($tablePrefix = Craft::$app->config->get('tablePrefix', ConfigFile::Db)) !== '')
+		if (($tablePrefix = Craft::$app->config->get('tablePrefix', ConfigCategory::Db)) !== '')
 		{
 			foreach ($this->_ignoreDataTables as $key => $tableName)
 			{

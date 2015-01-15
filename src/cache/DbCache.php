@@ -9,7 +9,7 @@ namespace craft\app\cache;
 
 use Craft;
 use craft\app\db\DbConnection;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 
 /**
  * DbCache implements a cache application component by storing cached data in a database.
@@ -45,7 +45,7 @@ class DbCache extends \yii\caching\DbCache
 	 */
 	protected function createCacheTable($db, $tableName)
 	{
-		if (!Craft::$app->getDb()->tableExists(Craft::$app->config->get('cacheTableName', ConfigFile::DbCache), true))
+		if (!Craft::$app->getDb()->tableExists(Craft::$app->config->get('cacheTableName', ConfigCategory::DbCache), true))
 		{
 			parent::createCacheTable($db, $tableName);
 		}

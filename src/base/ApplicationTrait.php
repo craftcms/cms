@@ -9,7 +9,7 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\db\DbConnection;
-use craft\app\enums\ConfigFile;
+use craft\app\enums\ConfigCategory;
 use craft\app\enums\LogLevel;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
@@ -543,12 +543,12 @@ trait ApplicationTrait
 		{
 			$messages = [];
 
-			$databaseServerName = Craft::$app->config->get('server', ConfigFile::Db);
-			$databaseAuthName = Craft::$app->config->get('user', ConfigFile::Db);
-			$databaseName = Craft::$app->config->get('database', ConfigFile::Db);
-			$databasePort = Craft::$app->config->get('port', ConfigFile::Db);
-			$databaseCharset = Craft::$app->config->get('charset', ConfigFile::Db);
-			$databaseCollation = Craft::$app->config->get('collation', ConfigFile::Db);
+			$databaseServerName = Craft::$app->config->get('server', ConfigCategory::Db);
+			$databaseAuthName = Craft::$app->config->get('user', ConfigCategory::Db);
+			$databaseName = Craft::$app->config->get('database', ConfigCategory::Db);
+			$databasePort = Craft::$app->config->get('port', ConfigCategory::Db);
+			$databaseCharset = Craft::$app->config->get('charset', ConfigCategory::Db);
+			$databaseCollation = Craft::$app->config->get('collation', ConfigCategory::Db);
 
 			if (!$databaseServerName)
 			{
@@ -629,9 +629,9 @@ trait ApplicationTrait
 
 			$dbConnection->connectionString = $this->_processConnectionString();
 			$dbConnection->emulatePrepare   = true;
-			$dbConnection->username         = Craft::$app->config->get('user', ConfigFile::Db);
-			$dbConnection->password         = Craft::$app->config->get('password', ConfigFile::Db);
-			$dbConnection->charset          = Craft::$app->config->get('charset', ConfigFile::Db);
+			$dbConnection->username         = Craft::$app->config->get('user', ConfigCategory::Db);
+			$dbConnection->password         = Craft::$app->config->get('password', ConfigCategory::Db);
+			$dbConnection->charset          = Craft::$app->config->get('charset', ConfigCategory::Db);
 			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
 			$dbConnection->driverMap        = ['mysql' => 'Craft\MysqlSchema'];
 
@@ -752,15 +752,15 @@ trait ApplicationTrait
 	 */
 	private function _processConnectionString()
 	{
-		$unixSocket = Craft::$app->config->get('unixSocket', ConfigFile::Db);
+		$unixSocket = Craft::$app->config->get('unixSocket', ConfigCategory::Db);
 
 		if (!empty($unixSocket))
 		{
-			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').Craft::$app->config->get('database', ConfigFile::Db).';';
+			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').Craft::$app->config->get('database', ConfigCategory::Db).';';
 		}
 		else
 		{
-			return strtolower('mysql:host='.Craft::$app->config->get('server', ConfigFile::Db).';dbname=').Craft::$app->config->get('database', ConfigFile::Db).strtolower(';port='.Craft::$app->config->get('port', ConfigFile::Db).';');
+			return strtolower('mysql:host='.Craft::$app->config->get('server', ConfigCategory::Db).';dbname=').Craft::$app->config->get('database', ConfigCategory::Db).strtolower(';port='.Craft::$app->config->get('port', ConfigCategory::Db).';');
 		}
 	}
 
