@@ -84,10 +84,7 @@ class Config extends Component
 	 */
 	public function get($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_configSettings[$category]))
-		{
-			$this->_loadConfigSettings($category);
-		}
+		$this->_loadConfigSettings($category);
 
 		if ($this->exists($item, $category))
 		{
@@ -121,11 +118,7 @@ class Config extends Component
 	 */
 	public function set($item, $value, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_configSettings[$category]))
-		{
-			$this->_loadConfigSettings($category);
-		}
-
+		$this->_loadConfigSettings($category);
 		$this->_configSettings[$category][$item] = $value;
 	}
 
@@ -208,10 +201,7 @@ class Config extends Component
 	 */
 	public function exists($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_configSettings[$category]))
-		{
-			$this->_loadConfigSettings($category);
-		}
+		$this->_loadConfigSettings($category);
 
 		if (array_key_exists($item, $this->_configSettings[$category]))
 		{
@@ -711,6 +701,12 @@ class Config extends Component
 	 */
 	private function _loadConfigSettings($category)
 	{
+		// Have we already loaded this category?
+		if (isset($this->_configSettings[$category]))
+		{
+			return;
+		}
+
 		// Is this a valid Craft config category?
 		if (ConfigCategory::isValidName($category))
 		{
