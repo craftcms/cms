@@ -1830,7 +1830,7 @@ class Elements extends Component
 	 */
 	public function parseRefs($str)
 	{
-		if (strpos($str, '{') !== false)
+		if (StringHelper::contains($str, '{'))
 		{
 			global $refTagsByElementType;
 			$refTagsByElementType = [];

@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError as DeprecationErrorModel;
 use yii\base\Component;
 
@@ -228,7 +229,7 @@ class Deprecator extends Component
 			];
 
 			// Is this a template?
-			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && strpos($trace['file'], 'compiled_templates') !== false)
+			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && StringHelper::contains($trace['file'], 'compiled_templates'))
 			{
 				$template = $trace['object'];
 

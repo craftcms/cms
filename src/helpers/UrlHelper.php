@@ -86,7 +86,7 @@ class UrlHelper
 
 		if ($params)
 		{
-			if (mb_strpos($url, '?') !== false)
+			if (StringHelper::contains($url, '?'))
 			{
 				$url .= '&';
 			}
@@ -323,7 +323,7 @@ class UrlHelper
 		$params = static::_normalizeParams($params, $anchor);
 
 		// Were there already any query string params in the path?
-		if (($qpos = strpos($path, '?')) !== false)
+		if (($qpos = mb_strpos($path, '?')) !== false)
 		{
 			$params = substr($path, $qpos+1).($params ? '&'.$params : '');
 			$path = substr($path, 0, $qpos);
@@ -340,7 +340,7 @@ class UrlHelper
 			if ($baseUrl)
 			{
 				// Make sure it ends in a slash
-				$baseUrl = rtrim($baseUrl, '/').'/';
+				$baseUrl = StringHelper::ensureRight($baseUrl, '/');
 
 				if ($protocol)
 				{

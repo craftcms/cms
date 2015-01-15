@@ -13,6 +13,7 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\User as UserModel;
 use yii\base\Component;
@@ -805,7 +806,7 @@ class Config extends Component
 
 			foreach ($customConfig as $env => $envConfig)
 			{
-				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
+				if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT, $env))
 				{
 					$mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
 				}

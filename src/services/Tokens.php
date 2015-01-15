@@ -12,6 +12,7 @@ use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
 
@@ -118,7 +119,7 @@ class Tokens extends Component
 			// Figure out where we should route the request
 			$route = $result['route'];
 
-			if (is_string($route) && mb_strlen($route) && ($route[0] == '[' || $route[0] == '{'))
+			if (is_string($route) && StringHelper::length($route) && (StringHelper::containsAny($route[0], array('[', '{'))))
 			{
 				$route = JsonHelper::decode($route);
 			}

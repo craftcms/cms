@@ -193,7 +193,7 @@ class ElementHelper
 		$element = (object) ['slug' => StringHelper::randomString()];
 		$uri = Craft::$app->templates->renderObjectTemplate($urlFormat, $element);
 
-		return (strpos($uri, $element->slug) !== false);
+		return StringHelper::contains($uri, $element->slug);
 	}
 
 	/**

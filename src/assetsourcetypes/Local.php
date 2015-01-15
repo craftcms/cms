@@ -12,6 +12,7 @@ use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\AssetFile as AssetFileModel;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
@@ -101,7 +102,7 @@ class Local extends BaseAssetSourceType
 		{
 			$fileList = array_filter($fileList, function($value) use ($localPath)
 			{
-				$path = mb_substr($value, mb_strlen($localPath));
+				$path = mb_substr($value, StringHelper::length($localPath));
 				$segments = explode('/', $path);
 
 				// Ignore the file
@@ -176,7 +177,7 @@ class Local extends BaseAssetSourceType
 		$file = $indexEntryModel->uri;
 
 		// This is the part of the path that actually matters
-		$uriPath = mb_substr($file, mb_strlen($uploadPath));
+		$uriPath = mb_substr($file, StringHelper::length($uploadPath));
 
 		$fileModel = $this->indexFile($uriPath);
 

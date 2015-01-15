@@ -453,7 +453,7 @@ class Search extends Component
 		$wordCount = count(array_filter(explode(' ', $haystack)));
 
 		// Get number of matches
-		$score = mb_substr_count($haystack, $keywords);
+		$score = StringHelper::countSubstrings($haystack, $keywords);
 
 		if ($score)
 		{
@@ -654,7 +654,7 @@ class Search extends Component
 					}
 
 					// Add quotes for exact match
-					if (mb_strpos($keywords, ' ') != false)
+					if (StringHelper::contains($keywords, ' '))
 					{
 						$keywords = '"'.$keywords.'"';
 					}

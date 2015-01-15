@@ -214,7 +214,7 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 				case AttributeType::Mixed:
 				{
-					if (is_string($value) && mb_strlen($value) && ($value[0] == '[' || $value[0] == '{'))
+					if (is_string($value) && StringHelper::length($value) && StringHelper::containsAny($value[0], array('[', '{')))
 					{
 						$this->setAttribute($name, JsonHelper::decode($value));
 					}
@@ -581,7 +581,7 @@ abstract class BaseRecord extends \CActiveRecord
 	private function _normalizeRelation($name, &$config)
 	{
 		// Add the namespace to the class name
-		if (mb_strpos($config[1], '\\') === false)
+		if (!StringHelper::contains($config[1], '\\'))
 		{
 			$config[1] = __NAMESPACE__.'\\'.$config[1];
 		}

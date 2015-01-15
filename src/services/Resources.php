@@ -381,7 +381,7 @@ class Resources extends Component
 		// Normalize URLs in CSS files
 		$mimeType = IOHelper::getMimeTypeByExtension($realPath);
 
-		if (mb_strpos($mimeType, 'css') !== false)
+		if (strpos($mimeType, 'css') !== false)
 		{
 			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $content);
 		}

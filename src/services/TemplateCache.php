@@ -11,6 +11,7 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -210,7 +211,7 @@ class TemplateCache extends Component
 	{
 		// If there are any transform generation URLs in the body, don't cache it.
 		// Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-		if (strpos($body, UrlHelper::getSiteUrl(Craft::$app->config->getResourceTrigger().'/transforms')))
+		if (StringHelper::contains($body, UrlHelper::getSiteUrl(Craft::$app->config->getResourceTrigger().'/transforms')))
 		{
 			return;
 		}

@@ -9,6 +9,7 @@ namespace craft\app\errors;
 
 use Craft;
 use craft\app\helpers\HeaderHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * ErrorHandler handles uncaught PHP errors and exceptions.
@@ -101,7 +102,7 @@ class ErrorHandler extends \CErrorHandler
 		}
 
 		// Log MySQL deadlocks
-		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
+		if ($exception instanceof \CDbException && StringHelper::contains($exception->getMessage(), 'Deadlock'))
 		{
 			$data = Craft::$app->getDb()->createCommand('SHOW ENGINE INNODB STATUS')->query();
 			$info = $data->read();

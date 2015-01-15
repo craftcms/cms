@@ -229,7 +229,7 @@ class UpdateHelper
 	 */
 	public static function isManifestMigrationLine($line)
 	{
-		if (mb_strpos($line, 'migrations/') !== false)
+		if (StringHelper::contains($line, 'migrations/'))
 		{
 			return true;
 		}
@@ -271,7 +271,7 @@ class UpdateHelper
 				// Only use the manifest data starting from the local version
 				for ($counter = 0; $counter < count($manifestData); $counter++)
 				{
-					if (mb_strpos($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild) !== false)
+					if (StringHelper::contains($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild))
 					{
 						break;
 					}

@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\validators;
+use craft\app\helpers\StringHelper;
 
 /**
  * Class Url validator.
@@ -38,7 +39,7 @@ class Url extends \CUrlValidator
 	public function validateValue($value)
 	{
 		// Ignore URLs with any environment variables in them
-		if (mb_strpos($value, '{') !== false)
+		if (StringHelper::contains($value, '{'))
 		{
 			return $value;
 		}
