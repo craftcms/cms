@@ -35,21 +35,6 @@ class FileCache extends \yii\caching\FileCache
 	// =========================================================================
 
 	/**
-	 * Override so we can set a custom file cache path.
-	 *
-	 * @return null
-	 */
-	public function init()
-	{
-		if (!$this->cachePath)
-		{
-			$this->cachePath = Craft::$app->path->getCachePath();
-		}
-
-		parent::init();
-	}
-
-	/**
 	 * Stores a value identified by a key into cache. If the cache already contains such a key, the existing value and
 	 * expiration time will be replaced with the new ones.
 	 *
@@ -104,7 +89,7 @@ class FileCache extends \yii\caching\FileCache
 	 */
 	protected function setValue($key, $value, $expire)
 	{
-		if (!$this->_gced && mt_rand(0, 1000000) < $this->getGCProbability())
+		if (!$this->_gced && mt_rand(0, 1000000) < $this->gcProbability)
 		{
 			$this->gc();
 			$this->_gced = true;
