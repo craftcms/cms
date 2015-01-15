@@ -1084,7 +1084,7 @@ return [
 	'Welcome to {siteName}!' => '{siteName}へようこそ！',
 	'What do you want the Title field to be called?' => 'タイトルフィールドに何を呼び出しますか?',
 	'What do you want to do with any content that is only available in {language}?' => '{language}でのみ利用可能なコンテンツはどうしますか?',
-	'What do you want to do with the their content?' => 'そのコンテンツはどうしますか?',
+	'What do you want to do with their content?' => 'そのコンテンツはどうしますか?',
 	'What do you want to do?' => '何をしたいですか？',
 	'What do you want to name your group?' => 'グループの名前を何にしますか？',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => '自動出力エントリ・タイトルの見え方。エントリ・プロパティを出力するタグ (例えば、{ex}) を含めることができます。',

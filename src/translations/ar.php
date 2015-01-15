@@ -1084,7 +1084,7 @@ return [
 	'Welcome to {siteName}!' => 'مرحباً بكم في {siteName}!',
 	'What do you want the Title field to be called?' => 'بماذا ترغب أن تسمي حقل العنوان؟',
 	'What do you want to do with any content that is only available in {language}?' => 'ماذا تريد أن تفعل بأي محتوى متاح فقط باللغة {language}؟',
-	'What do you want to do with the their content?' => 'ماذا تريد أن تفعل بمحتواهم؟',
+	'What do you want to do with their content?' => 'ماذا تريد أن تفعل بمحتواهم؟',
 	'What do you want to do?' => 'ماذا تريد أن تفعل؟',
 	'What do you want to name your group?' => 'ما هو الاسم الذي تريده للمجموعة؟',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'كيف ينبغي أن تبدو عليه عناوين الإدخالات التي تم إنشاؤها تلقائياً. يمكنك إدراج العلامات التي تظهر خصائص الإدخال، مثل {ex}.',

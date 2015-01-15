@@ -1084,7 +1084,7 @@ return [
 	'Welcome to {siteName}!' => 'ברוך הבא ל{siteName}!',
 	'What do you want the Title field to be called?' => 'איך אתה רוצה ששדה הכותרת יקרא?',
 	'What do you want to do with any content that is only available in {language}?' => 'מה ברצונך לעשות בתכנים שקיימים רב ב-{language}?',
-	'What do you want to do with the their content?' => 'מה ברצונך לעשות בתכנים שלהם?',
+	'What do you want to do with their content?' => 'מה ברצונך לעשות בתכנים שלהם?',
 	'What do you want to do?' => 'מה ברצונך לעשות?',
 	'What do you want to name your group?' => 'איך אתה רוצה לקרוא לקבוצה שלך?',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'כיצד אמורות להיראות כותרת הערכים שנוצרו אוטומטית. ניתן לכלול תגיות שמייצרות מאפייני ערך, כמו  {ex}.',

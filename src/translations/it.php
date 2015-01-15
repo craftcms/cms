@@ -1084,7 +1084,7 @@ return [
 	'Welcome to {siteName}!' => 'Benvenuto su {siteName}!',
 	'What do you want the Title field to be called?' => 'Come vuoi che venga chiamato il campo Titolo?',
 	'What do you want to do with any content that is only available in {language}?' => 'Cosa desideri fare con il contenuto disponibile solo in {language}?',
-	'What do you want to do with the their content?' => 'Cosa desideri fare con il loro contenuto?',
+	'What do you want to do with their content?' => 'Cosa desideri fare con il loro contenuto?',
 	'What do you want to do?' => 'Cosa vuoi fare?',
 	'What do you want to name your group?' => 'Quale nome vuoi dare al tuo gruppo?',
 	'What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Come dovrebbero sembrare i titoli delle voci auto generate. Puoi includere i tag che producono in uscita le proprietà delle voci immesse, come ad esempio {ex}. ',
