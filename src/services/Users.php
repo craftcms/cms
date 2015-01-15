@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\enums\ElementType;
-use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteUserEvent;
@@ -298,13 +297,13 @@ class Users extends Component
 				else
 				{
 					$valid = false;
-					Craft::log('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', LogLevel::Warning);
+					Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.');
 				}
 			}
 		}
 		else
 		{
-			Craft::log('Could not find a user with id:'.$user->id.'.', LogLevel::Warning);
+			Craft::warning('Could not find a user with id:'.$user->id.'.');
 		}
 
 		return $valid;
@@ -350,7 +349,7 @@ class Users extends Component
 	 *
 	 * if (!$success)
 	 * {
-	 *     Craft::log('Couldn’t save the user "'.$user->username.'"', LogLevel::Error);
+	 *     Craft::error('Couldn’t save the user "'.$user->username.'"');
 	 * }
 	 * ```
 	 *
@@ -1318,7 +1317,7 @@ class Users extends Component
 
 			if ($affectedRows > 0)
 			{
-				Craft::log('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old', LogLevel::Info, true);
+				Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old');
 			}
 		}
 	}

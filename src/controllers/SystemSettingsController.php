@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ComponentType;
 use craft\app\enums\EmailerType;
-use craft\app\enums\LogLevel;
 use craft\app\errors\HttpException;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings as EmailSettingsModel;
@@ -209,7 +208,7 @@ class SystemSettingsController extends BaseController
 			}
 			catch (\Exception $e)
 			{
-				Craft::log($e->getMessage(), LogLevel::Error);
+				Craft::error($e->getMessage());
 			}
 		}
 

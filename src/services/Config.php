@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\enums\ConfigCategory;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -326,7 +325,7 @@ class Config extends Component
 						}
 						catch (\Exception $e)
 						{
-							Craft::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), LogLevel::Error);
+							Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage());
 						}
 					}
 
@@ -419,7 +418,7 @@ class Config extends Component
 						}
 						catch (\Exception $e)
 						{
-							Craft::log('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), LogLevel::Error);
+							Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage());
 						}
 					}
 

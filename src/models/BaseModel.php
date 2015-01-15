@@ -10,7 +10,6 @@ namespace craft\app\models;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
@@ -499,7 +498,7 @@ abstract class BaseModel extends \CModel
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
+	 * logged to the `craft/storage/runtime/logs` folder as a warning.
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
@@ -517,7 +516,7 @@ abstract class BaseModel extends \CModel
 		{
 			foreach ($errorMessages as $errorMessage)
 			{
-				Craft::log(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage, LogLevel::Warning);
+				Craft::warning(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage);
 			}
 		}
 

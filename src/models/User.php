@@ -626,7 +626,7 @@ class User extends BaseElementModel implements IdentityInterface
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-	 * logged to the `craft/storage/runtime/logs` folder with a level of LogLevel::Warning.
+	 * logged to the `craft/storage/runtime/logs` folder as a warning.
 	 *
 	 * In addition, we check that the username does not have any whitespace in it.
 	 *
@@ -738,7 +738,7 @@ class User extends BaseElementModel implements IdentityInterface
 
 			if ($userAgent !== $requestUserAgent)
 			{
-				Craft::log('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').', LogLevel::Warning);
+				Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent ('.$userAgent.') does not match the current request’s ('.$requestUserAgent.').');
 				return false;
 			}
 		}

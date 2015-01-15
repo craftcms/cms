@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\enums\AuthError;
 use craft\app\enums\ElementType;
-use craft\app\enums\LogLevel;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
@@ -133,7 +132,7 @@ class UsersController extends BaseController
 		else
 		{
 			Craft::$app->getSession()->setError(Craft::t('There was a problem impersonating this user.'));
-			Craft::log(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', LogLevel::Error);
+			Craft::error(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.');
 		}
 	}
 
@@ -847,7 +846,7 @@ class UsersController extends BaseController
 		{
 			if (!$this->_verifyExistingPassword())
 			{
-				Craft::log('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', LogLevel::Warning);
+				Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.');
 				$user->addError('currentPassword', Craft::t('Incorrect current password.'));
 			}
 		}
@@ -1035,7 +1034,7 @@ class UsersController extends BaseController
 		}
 		catch (Exception $exception)
 		{
-			Craft::log('There was an error uploading the photo: '.$exception->getMessage(), LogLevel::Error);
+			Craft::error('There was an error uploading the photo: '.$exception->getMessage());
 		}
 
 		$this->returnErrorJson(Craft::t('There was an error uploading your photo.'));

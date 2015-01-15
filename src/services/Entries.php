@@ -93,7 +93,7 @@ class Entries extends Component
 	 *
 	 * if (!$success)
 	 * {
-	 *     Craft::log('Couldn’t save the entry "'.$entry->title.'"', LogLevel::Error);
+	 *     Craft::error('Couldn’t save the entry "'.$entry->title.'"');
 	 * }
 	 * ```
 	 *

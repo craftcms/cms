@@ -8,7 +8,6 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -37,7 +36,7 @@ class PclZip implements ZipInterface
 
 		if ($result == 0)
 		{
-			Craft::log('Unable to create zip file: '.$destZip, LogLevel::Error);
+			Craft::error('Unable to create zip file: '.$destZip);
 			return false;
 		}
 
@@ -60,13 +59,13 @@ class PclZip implements ZipInterface
 		// check to see if it's a valid archive.
 		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
 		{
-			Craft::log('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.', LogLevel::Error);
+			Craft::error('Tried to unzip '.$srcZip.', but PclZip thinks it is not a valid zip archive.');
 			return false;
 		}
 
 		if (count($zipFiles) == 0)
 		{
-			Craft::log($srcZip.' appears to be an empty zip archive.', LogLevel::Error);
+			Craft::error($srcZip.' appears to be an empty zip archive.');
 			return false;
 		}
 
@@ -118,7 +117,7 @@ class PclZip implements ZipInterface
 			{
 				if (!IOHelper::createFolder($finalDestFolder))
 				{
-					Craft::log('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip, LogLevel::Error);
+					Craft::error('Could not create folder '.$finalDestFolder.' while unzipping: '.$srcZip);
 					return false;
 				}
 			}
@@ -144,7 +143,7 @@ class PclZip implements ZipInterface
 
 			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, true))
 			{
-				Craft::log('Could not copy the file '.$destFile.' while unziping: '.$srcZip, LogLevel::Error);
+				Craft::error('Could not copy the file '.$destFile.' while unziping: '.$srcZip);
 				return false;
 			}
 		}
@@ -197,7 +196,7 @@ class PclZip implements ZipInterface
 
 		if ($result == 0)
 		{
-			Craft::log('Unable to add to zip file: '.$sourceZip, LogLevel::Error);
+			Craft::error('Unable to add to zip file: '.$sourceZip);
 			return false;
 		}
 

@@ -8,7 +8,6 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\enums\LogLevel;
 
 /**
  * Class HeaderHelper
@@ -75,7 +74,7 @@ class HeaderHelper
 
 		if (!isset($mimeTypes[$extension]))
 		{
-			Craft::log('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', LogLevel::Warning);
+			Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.');
 			return false;
 		}
 

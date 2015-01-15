@@ -10,7 +10,6 @@ namespace craft\app\base;
 use Craft;
 use craft\app\db\DbConnection;
 use craft\app\enums\ConfigCategory;
-use craft\app\enums\LogLevel;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
@@ -642,7 +641,7 @@ trait ApplicationTrait
 		// Most likely missing PDO in general or the specific database PDO driver.
 		catch(\CDbException $e)
 		{
-			Craft::log($e->getMessage(), LogLevel::Error);
+			Craft::error($e->getMessage());
 
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
@@ -655,13 +654,13 @@ trait ApplicationTrait
 			}
 			else
 			{
-				Craft::log($e->getMessage(), LogLevel::Error);
+				Craft::error($e->getMessage());
 				throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 			}
 		}
 		catch (\Exception $e)
 		{
-			Craft::log($e->getMessage(), LogLevel::Error);
+			Craft::error($e->getMessage());
 			throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 		}
 
@@ -808,7 +807,7 @@ trait ApplicationTrait
 					}
 					catch (\Exception $e)
 					{
-						Craft::log("Tried to determine the user's preferred locale, but got this exception: " . $e->getMessage(), LogLevel::Error);
+						Craft::error("Tried to determine the user's preferred locale, but got this exception: " . $e->getMessage());
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales

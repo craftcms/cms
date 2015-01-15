@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\enums\ElementType;
-use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
@@ -755,7 +754,7 @@ class CategoriesController extends BaseController
 
 		if (!$group)
 		{
-			Craft::log('Attempting to preview a category that doesn’t have a group', LogLevel::Error);
+			Craft::error('Attempting to preview a category that doesn’t have a group');
 			throw new HttpException(404);
 		}
 

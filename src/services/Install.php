@@ -11,7 +11,6 @@ use Craft;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
 use craft\app\enums\EmailerType;
-use craft\app\enums\LogLevel;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
@@ -150,7 +149,7 @@ class Install extends Component
 				$ref = new \ReflectionClass($class);
 				if ($ref->isAbstract() || $ref->isInterface())
 				{
-					Craft::log("Skipping record {$file} because it’s abstract or an interface.", LogLevel::Warning);
+					Craft::warning("Skipping record {$file} because it’s abstract or an interface.");
 					continue;
 				}
 
@@ -162,12 +161,12 @@ class Install extends Component
 				}
 				else
 				{
-					Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", LogLevel::Warning);
+					Craft::warning("Skipping record {$file} because it doesn’t have a createTable() method.");
 				}
 			}
 			else
 			{
-				Craft::log("Skipping record {$file} because it doesn’t exist.", LogLevel::Warning);
+				Craft::warning("Skipping record {$file} because it doesn’t exist.");
 			}
 		}
 
@@ -409,7 +408,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not populate the info table.', LogLevel::Error);
+			Craft::error('Could not populate the info table.');
 			throw new Exception(Craft::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
 	}
@@ -522,7 +521,7 @@ class Install extends Component
 			{
 				if (!$migration->save())
 				{
-					Craft::log('Could not populate the migration table.', LogLevel::Error);
+					Craft::error('Could not populate the migration table.');
 					throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
 				}
 			}
@@ -570,7 +569,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not create the user.', LogLevel::Error);
+			Craft::error('Could not create the user.');
 			throw new Exception(Craft::t('There was a problem creating the user:').$this->_getFlattenedErrors($this->_user->getErrors()));
 		}
 	}
@@ -592,7 +591,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not log the user in.', LogLevel::Warning);
+			Craft::warning('Could not log the user in.');
 		}
 	}
 
@@ -620,7 +619,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save default email settings.', LogLevel::Warning);
+			Craft::warning('Could not save default email settings.');
 		}
 	}
 
@@ -648,7 +647,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Default tag group.', LogLevel::Warning);
+			Craft::warning('Could not save the Default tag group.');
 		}
 
 		// Default field group
@@ -664,7 +663,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Default field group.', LogLevel::Warning);
+			Craft::warning('Could not save the Default field group.');
 		}
 
 		// Body field
@@ -688,7 +687,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Body field.', LogLevel::Warning);
+			Craft::warning('Could not save the Body field.');
 		}
 
 		// Tags field
@@ -710,7 +709,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Tags field.', LogLevel::Warning);
+			Craft::warning('Could not save the Tags field.');
 		}
 
 		// Homepage single section
@@ -748,7 +747,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Homepage single section.', LogLevel::Warning);
+			Craft::warning('Could not save the Homepage single section.');
 		}
 
 		$homepageEntryTypes = $homepageSingleSection->getEntryTypes();
@@ -763,7 +762,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the Homepage single section entry type.', LogLevel::Warning);
+			Craft::warning('Could not save the Homepage single section entry type.');
 		}
 
 		// Homepage content
@@ -791,7 +790,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save an entry to the Homepage single section.', LogLevel::Warning);
+			Craft::warning('Could not save an entry to the Homepage single section.');
 		}
 
 		// News section
@@ -818,7 +817,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the News section.', LogLevel::Warning);
+			Craft::warning('Could not save the News section.');
 		}
 
 		Craft::log('Saving the News entry type.');
@@ -842,7 +841,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the News entry type.', LogLevel::Warning);
+			Craft::warning('Could not save the News entry type.');
 		}
 
 		// News entry
@@ -872,7 +871,7 @@ class Install extends Component
 		}
 		else
 		{
-			Craft::log('Could not save the News entry.', LogLevel::Warning);
+			Craft::warning('Could not save the News entry.');
 		}
 	}
 

@@ -8,7 +8,6 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
@@ -1285,7 +1284,7 @@ class Templates extends Component
 			}
 			catch (\LogicException $e)
 			{
-				Craft::log('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', LogLevel::Warning);
+				Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.');
 				return;
 			}
 		}

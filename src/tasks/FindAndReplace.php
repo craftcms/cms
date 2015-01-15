@@ -9,7 +9,6 @@ namespace craft\app\tasks;
 
 use Craft;
 use craft\app\enums\AttributeType;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\ModelHelper;
 use craft\app\models\Field as FieldModel;
 
@@ -156,7 +155,7 @@ class FindAndReplace extends BaseTask
 		}
 		else
 		{
-			Craft::log('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', LogLevel::Error);
+			Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.');
 			return false;
 		}
 	}

@@ -8,7 +8,6 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
@@ -438,7 +437,7 @@ class Image
 		}
 		catch (\Imagine\Exception\NotSupportedException $exception)
 		{
-			Craft::log($exception->getMessage(), LogLevel::Error);
+			Craft::error($exception->getMessage());
 
 			return [];
 		}

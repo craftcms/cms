@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
@@ -290,7 +289,7 @@ class DashboardController extends BaseController
 			}
 			catch(\Exception $e)
 			{
-				Craft::log('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), LogLevel::Warning);
+				Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage());
 
 				// There was a problem zipping, so reset the params and just send the email without the attachment.
 				$requestParams = $requestParamDefaults;

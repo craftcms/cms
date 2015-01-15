@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\dates\DateTime;
 use craft\app\db\DbCommand;
-use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
@@ -72,11 +71,11 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				Craft::log('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', LogLevel::Info, true);
+				Craft::info('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
 			}
 			else
 			{
-				Craft::log('No new migration(s) found for Craft. Your system is up-to-date.', LogLevel::Info, true);
+				Craft::info('No new migration(s) found for Craft. Your system is up-to-date.');
 			}
 
 			return true;
@@ -86,16 +85,16 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":", LogLevel::Info, true);
+			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
 		}
 		else
 		{
-			Craft::log("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:", LogLevel::Info, true);
+			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:");
 		}
 
 		foreach ($migrations as $migration)
 		{
-			Craft::log($migration, LogLevel::Info, true);
+			Craft::info($migration);
 		}
 
 		foreach ($migrations as $migration)
@@ -107,11 +106,11 @@ class Migrations extends Component
 			{
 				if ($plugin)
 				{
-					Craft::log('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', LogLevel::Error);
+					Craft::error('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.');
 				}
 				else
 				{
-					Craft::log('Migration failed for Craft. All later Craft migrations are canceled.', LogLevel::Error);
+					Craft::error('Migration failed for Craft. All later Craft migrations are canceled.');
 				}
 
 				// Refresh the DB cache
@@ -123,11 +122,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::log($plugin->getClassHandle().' migrated up successfully.', LogLevel::Info, true);
+			Craft::info($plugin->getClassHandle().' migrated up successfully.');
 		}
 		else
 		{
-			Craft::log('Craft migrated up successfully.', LogLevel::Info, true);
+			Craft::info('Craft migrated up successfully.');
 		}
 
 		// Refresh the DB cache
@@ -151,11 +150,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::log('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle(), LogLevel::Info, true);
+			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
 		}
 		else
 		{
-			Craft::log('Applying migration: '.$class, LogLevel::Info, true);
+			Craft::info('Applying migration: '.$class);
 		}
 
 		$start = microtime(true);
@@ -182,13 +181,13 @@ class Migrations extends Component
 			}
 
 			$time = microtime(true) - $start;
-			Craft::log('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', LogLevel::Info, true);
+			Craft::info('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
 			return true;
 		}
 		else
 		{
 			$time = microtime(true) - $start;
-			Craft::log('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', LogLevel::Error);
+			Craft::error('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
 			return false;
 		}
 	}
@@ -206,7 +205,7 @@ class Migrations extends Component
 
 		if (!IOHelper::fileExists($file) || !IOHelper::isReadable($file))
 		{
-			Craft::log('Tried to find migration file '.$file.' for class '.$class.', but could not.', LogLevel::Error);
+			Craft::error('Tried to find migration file '.$file.' for class '.$class.', but could not.');
 			throw new Exception(Craft::t('Could not find the requested migration file.'));
 		}
 

@@ -9,7 +9,6 @@ namespace craft\app\et;
 
 use Craft;
 use craft\app\enums\LicenseKeyStatus;
-use craft\app\enums\LogLevel;
 use craft\app\errors\EtException;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
@@ -244,7 +243,7 @@ class Et
 					}
 					else
 					{
-						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+						Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody());
 
 						if (Craft::$app->getCache()->get('etConnectFailure'))
 						{
@@ -255,7 +254,7 @@ class Et
 				}
 				else
 				{
-					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+					Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody());
 
 					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{
@@ -268,7 +267,7 @@ class Et
 		// Let's log and rethrow any EtExceptions.
 		catch (EtException $e)
 		{
-			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
+			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage());
 
 			if (Craft::$app->getCache()->get('etConnectFailure'))
 			{
@@ -280,7 +279,7 @@ class Et
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), LogLevel::Error);
+			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage());
 
 			// Cache the failure for 5 minutes so we don't try again.
 			Craft::$app->getCache()->set('etConnectFailure', true, 300);

@@ -8,7 +8,6 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\enums\LogLevel;
 
 /**
  * Class BaseMigration
@@ -54,8 +53,8 @@ abstract class BaseMigration extends \CDbMigration
 		}
 		catch(\Exception $e)
 		{
-			Craft::log($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', LogLevel::Error);
-			Craft::log($e->getTraceAsString(), LogLevel::Error);
+			Craft::error($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')');
+			Craft::error($e->getTraceAsString());
 
 			if ($transaction !== null)
 			{
@@ -330,7 +329,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function down()
 	{
-		Craft::log('Down migrations are not supported.', LogLevel::Warning);
+		Craft::warning('Down migrations are not supported.');
 	}
 
 	/**
@@ -338,7 +337,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function safeDown()
 	{
-		Craft::log('Down migrations are not supported.', LogLevel::Warning);
+		Craft::warning('Down migrations are not supported.');
 	}
 
 	/**

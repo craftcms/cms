@@ -7,7 +7,7 @@
 
 namespace craft\app\helpers;
 
-use craft\app\enums\LogLevel;
+use yii\log\Logger;
 
 /**
  * Class LoggingHelper
@@ -34,11 +34,11 @@ class LoggingHelper
 	{
 		$time = date('H:i:s.', $time).sprintf('%03d', (int)(($time - (int)$time) * 1000));
 
-		if ($level === LogLevel::Warning)
+		if ($level === Logger::LEVEL_WARNING)
 		{
 			$func = 'warn';
 		}
-		else if ($level === LogLevel::Error)
+		else if ($level === Logger::LEVEL_ERROR)
 		{
 			$func = 'error';
 		}

@@ -8,7 +8,6 @@
 namespace craft\app\io;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -38,7 +37,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::log('Unable to create zip file: '.$destZip, LogLevel::Error);
+			Craft::error('Unable to create zip file: '.$destZip);
 			return false;
 		}
 
@@ -62,7 +61,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::log('Could not open the zip file: '.$srcZip, LogLevel::Error);
+			Craft::error('Could not open the zip file: '.$srcZip);
 			return false;
 		}
 
@@ -70,7 +69,7 @@ class ZipArchive implements ZipInterface
 		{
 			if (!$info = $zip->statIndex($i))
 			{
-				Craft::log('Could not retrieve a file from the zip archive '.$srcZip, LogLevel::Error);
+				Craft::error('Could not retrieve a file from the zip archive '.$srcZip);
 				return false;
 			}
 
@@ -94,13 +93,13 @@ class ZipArchive implements ZipInterface
 
 			if ($contents === false)
 			{
-				Craft::log('Could not extract file from zip archive '.$srcZip, LogLevel::Error);
+				Craft::error('Could not extract file from zip archive '.$srcZip);
 				return false;
 			}
 
 			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, true))
 			{
-				Craft::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, LogLevel::Error);
+				Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip);
 				return false;
 			}
 		}
@@ -126,7 +125,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::log('Unable to open zip file: '.$sourceZip, LogLevel::Error);
+			Craft::error('Unable to open zip file: '.$sourceZip);
 			return false;
 		}
 
@@ -166,7 +165,7 @@ class ZipArchive implements ZipInterface
 
 					if (!$zip->addFromString($relFilePath, $fileContents))
 					{
-						Craft::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, LogLevel::Error);
+						Craft::error('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip);
 					}
 				}
 			}

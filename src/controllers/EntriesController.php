@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\ElementType;
-use craft\app\enums\LogLevel;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
@@ -918,7 +917,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$section || !$type)
 		{
-			Craft::log('Attempting to preview an entry that doesn’t have a section/type', LogLevel::Error);
+			Craft::error('Attempting to preview an entry that doesn’t have a section/type');
 			throw new HttpException(404);
 		}
 

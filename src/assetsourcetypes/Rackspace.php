@@ -10,7 +10,6 @@ namespace craft\app\assetsourcetypes;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
-use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
@@ -816,7 +815,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _logUnexpectedResponse($response)
 	{
-		Craft::log('RACKSPACE: Received unexpected response: '.$response, LogLevel::Error);
+		Craft::error('RACKSPACE: Received unexpected response: '.$response);
 	}
 
 	/**

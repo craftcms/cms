@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\AssetsHelper;
@@ -167,7 +166,7 @@ class Resources extends Component
 							}
 							else
 							{
-								Craft::log('Tried to write to target folder and could not: '.$sizedPhotoFolder, LogLevel::Error);
+								Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder);
 							}
 						}
 
@@ -198,7 +197,7 @@ class Resources extends Component
 					}
 					else
 					{
-						Craft::log('Tried to write to the target folder, but could not:'.$targetFolder, LogLevel::Error);
+						Craft::error('Tried to write to the target folder, but could not:'.$targetFolder);
 					}
 				}
 

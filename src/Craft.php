@@ -5,7 +5,6 @@
  * @license http://buildwithcraft.com/license
  */
 
-use craft\app\enums\LogLevel;
 use yii\helpers\VarDumper;
 
 /**
@@ -177,55 +176,6 @@ class Craft extends Yii
 		}
 
 		return $translation;
-	}
-
-	/**
-	 * Logs a message.  Messages logged by this method may be retrieved via [[Logger::getLogs]] and may be recorded
-	 * in different media, such as file, email, database, using [[LogRouter]].
-	 *
-	 * @param string $msg      The message to be logged.
-	 * @param string $level    The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or
-	 *                         LogLevel::Error).
-	 *                         Defaults to LogLevel::Info.
-	 * @param bool   $force    Whether to force the message to be logged regardless of the level or category.
-	 * @param string $category The category of the message (e.g. 'application'). It is case-insensitive.
-	 * @param string $plugin   The plugin handle that made the log call. If null, will be set to 'craft'. Use for
-	 *                         determining which log file to write to.
-	 *
-	 * @return null
-	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false, $category = 'application', $plugin = null)
-	{
-		if ((YII_DEBUG && YII_TRACE_LEVEL > 0 && $level !== LogLevel::Profile) || $force)
-		{
-			$traces = debug_backtrace();
-			$count = 0;
-
-			foreach ($traces as $trace)
-			{
-				if (isset($trace['file'], $trace['line']) && mb_strpos($trace['file'], YII_PATH) !== 0)
-				{
-					$msg .= "\nin ".$trace['file'].' ('.$trace['line'].')';
-
-					if (++$count >= YII_TRACE_LEVEL)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		if (Craft::$app->getRequest()->getIsConsoleRequest())
-		{
-			echo $msg."\n";
-		}
-
-		if (!$plugin)
-		{
-			$plugin = 'craft';
-		}
-
-		static::getLogger()->log($msg, $level, $force, $category, $plugin);
 	}
 
 	/**

@@ -8,7 +8,6 @@
 namespace craft\app\errors;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\HeaderHelper;
 
 /**
@@ -90,15 +89,15 @@ class ErrorHandler extends \CErrorHandler
 		if ($exception instanceof \HttpException)
 		{
 			$status = $exception->status ? $exception->$status : '';
-			Craft::log(($status ? $status.' - ' : '').$exception->getMessage(), LogLevel::Warning);
+			Craft::warning(($status ? $status.' - ' : '').$exception->getMessage());
 		}
 		else if ($exception instanceof \Twig_Error)
 		{
-			Craft::log($exception->getRawMessage(), LogLevel::Error);
+			Craft::error($exception->getRawMessage());
 		}
 		else
 		{
-			Craft::log($exception->getMessage(), LogLevel::Error);
+			Craft::error($exception->getMessage());
 		}
 
 		// Log MySQL deadlocks
@@ -108,7 +107,7 @@ class ErrorHandler extends \CErrorHandler
 			$info = $data->read();
 			$info = serialize($info);
 
-			Craft::log('Deadlock error, innodb status: '.$info, LogLevel::Error, 'system.db.CDbCommand');
+			Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand');
 		}
 
 		// If this is a Twig Runtime exception, use the previous one instead

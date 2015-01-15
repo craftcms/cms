@@ -9,7 +9,6 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\components\BaseSavableComponentType;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -42,35 +41,6 @@ abstract class BasePlugin extends BaseSavableComponentType implements PluginInte
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * A wrapper for writing to the log files for plugins that will ultimately call [[Craft::log()]]. This allows
-	 * plugins to be able to write to their own log files at `craft/storage/runtime/logs/pluginHandle.log` using
-	 * `PluginHandle::log()` syntax.
-	 *
-	 * @param        $msg   The message to be logged.
-	 * @param string $level The level of the message (e.g. LogLevel::Trace', LogLevel::Info, LogLevel::Warning or
-	 *                      LogLevel::Error).
-	 * @param bool   $force Whether to force the message to be logged regardless of the level or category.
-	 *
-	 * @return mixed
-	 */
-	public static function log($msg, $level = LogLevel::Info, $force = false)
-	{
-		$plugin = get_called_class();
-
-		// Chunk off any namespaces
-		$parts = explode('\\', $plugin);
-		if (count($parts) > 0)
-		{
-			$plugin = $parts[count($parts) - 1];
-		}
-
-		// Remove the trailing 'Plugin'.
-		$plugin = str_replace('Plugin', '', $plugin);
-
-		Craft::log($msg, $level, $force, 'plugin', StringHelper::toLowerCase($plugin));
-	}
 
 	/**
 	 * Returns the plugin's source language

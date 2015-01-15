@@ -9,7 +9,6 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\dates\DateInterval;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\User as UserModel;
 use yii\web\Cookie;
@@ -314,7 +313,7 @@ class User extends \yii\web\User
 
 			if ($request->getUserAgent() === null || $request->getUserIP() === null)
 			{
-				Craft::log('Request didn’t meet the user agent and IP requirement for maintaining a user session.', LogLevel::Warning);
+				Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.');
 				return false;
 			}
 		}

@@ -8,7 +8,6 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\LogLevel;
 use craft\app\enums\TaskStatus;
 use craft\app\models\Task as TaskModel;
 use craft\app\records\Task as TaskRecord;
@@ -200,7 +199,7 @@ class Tasks extends Component
 		// If we're already processing tasks, let's give it a break.
 		if ($this->isTaskRunning())
 		{
-			Craft::log('Tasks are already running.', LogLevel::Info, true);
+			Craft::info('Tasks are already running.');
 			return;
 		}
 
@@ -238,7 +237,7 @@ class Tasks extends Component
 				$task->totalSteps = $taskType->getTotalSteps();
 				$task->status = TaskStatus::Running;
 
-				Craft::Log('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.', LogLevel::Info, true);
+				Craft::log('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
 
 				for ($step = 0; $step < $task->totalSteps; $step++)
 				{
@@ -246,7 +245,7 @@ class Tasks extends Component
 					$task->currentStep = $step+1;
 					$this->saveTask($task);
 
-					Craft::Log('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.', LogLevel::Info, true);
+					Craft::log('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.');
 
 					// Run it.
 					if (($result = $taskType->runStep($step)) !== true)
@@ -283,7 +282,7 @@ class Tasks extends Component
 
 		if ($error === null)
 		{
-			Craft::log('Finished task '.$task->id.' ('.$task->type.').', LogLevel::Info, true);
+			Craft::info('Finished task '.$task->id.' ('.$task->type.').');
 
 			// We're done with this task, nuke it.
 			$taskRecord->deleteNode();
@@ -332,7 +331,7 @@ class Tasks extends Component
 			$logMessage .= '.';
 		}
 
-		Craft::log($logMessage, LogLevel::Error);
+		Craft::error($logMessage);
 	}
 
 	/**

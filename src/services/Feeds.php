@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use yii\base\Component;
 
@@ -77,7 +76,7 @@ class Feeds extends Component
 
 		if (!extension_loaded('dom'))
 		{
-			Craft::log('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', LogLevel::Warning);
+			Craft::warning('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.');
 			return $items;
 		}
 
@@ -99,7 +98,7 @@ class Feeds extends Component
 		// Something went wrong.
 		if ($feed->error())
 		{
-			Craft::log('There was a problem parsing the feed: '.$feed->error(), LogLevel::Warning);
+			Craft::warning('There was a problem parsing the feed: '.$feed->error());
 			return [];
 		}
 

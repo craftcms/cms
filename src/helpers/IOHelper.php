@@ -9,10 +9,10 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\LogLevel;
 use craft\app\errors\ErrorException;
 use craft\app\io\File;
 use craft\app\io\Folder;
+use yii\helpers\FileHelper;
 
 /**
  * Class IOHelper
@@ -350,8 +350,8 @@ class IOHelper
 	}
 
 	/**
-	 * If the path points to a real file, we call [[\CFileHelper::getMimeType]], otherwise
-	 * [[\CFileHelper::getMimeTypeByExtension]]
+	 * If the path points to a real file, we call [[FileHelper::getMimeType]], otherwise
+	 * [[FileHelper::getMimeTypeByExtension]]
 	 *
 	 * @param string $path The path to test.
 	 *
@@ -361,16 +361,16 @@ class IOHelper
 	{
 		if (@file_exists($path))
 		{
-			return \CFileHelper::getMimeType($path);
+			return FileHelper::getMimeType($path);
 		}
 		else
 		{
-			return \CFileHelper::getMimeTypeByExtension($path);
+			return FileHelper::getMimeTypeByExtension($path);
 		}
 	}
 
 	/**
-	 * A wrapper for [[\CFileHelper::getMimeTypeByExtension]].
+	 * A wrapper for [[FileHelper::getMimeTypeByExtension]].
 	 *
 	 * @param  string $path The path to test.
 	 *
@@ -378,7 +378,7 @@ class IOHelper
 	 */
 	public static function getMimeTypeByExtension($path)
 	{
-		return  \CFileHelper::getMimeTypeByExtension($path);
+		return  FileHelper::getMimeTypeByExtension($path);
 	}
 
 	/**
@@ -388,7 +388,7 @@ class IOHelper
 	 * @param string $path           The path to test.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return int|bool The last modified timestamp or false if the file or folder does not exist.
+	 * @return DateTime|false The last modified timestamp or false if the file or folder does not exist.
 	 */
 	public static function getLastTimeModified($path, $suppressErrors = false)
 	{
@@ -630,7 +630,7 @@ class IOHelper
 				return $contents;
 			}
 
-			Craft::log('Tried to read the file contents at '.$path.' and could not.');
+			Craft::info('Tried to read the file contents at '.$path.' and could not.');
 			return false;
 		}
 
@@ -668,11 +668,11 @@ class IOHelper
 				}
 			}
 
-			Craft::log('Tried to read the file contents at '.$path.' and could not.', LogLevel::Error);
+			Craft::error('Tried to read the file contents at '.$path.' and could not.');
 			return false;
 		}
 
-		Craft::log('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', LogLevel::Error);
+		Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.');
 		return false;
 	}
 
@@ -693,7 +693,7 @@ class IOHelper
 		{
 			if (($handle = $suppressErrors ? @fopen($path, 'w') : fopen($path, 'w')) === false)
 			{
-				Craft::log('Tried to create a file at '.$path.', but could not.', LogLevel::Error);
+				Craft::error('Tried to create a file at '.$path.', but could not.');
 				return false;
 			}
 
@@ -730,7 +730,7 @@ class IOHelper
 
 			if ($suppressErrors ? !@mkdir($path, $permissions, true) : !mkdir($path, $permissions, true))
 			{
-				Craft::log('Tried to create a folder at '.$path.', but could not.', LogLevel::Error);
+				Craft::error('Tried to create a folder at '.$path.', but could not.');
 				return false;
 			}
 
@@ -740,7 +740,7 @@ class IOHelper
 			return new Folder($path);
 		}
 
-		Craft::log('Tried to create a folder at '.$path.', but the folder already exists.', LogLevel::Error);
+		Craft::error('Tried to create a folder at '.$path.', but the folder already exists.');
 		return false;
 	}
 
@@ -792,25 +792,25 @@ class IOHelper
 
 					try
 					{
-						Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
+						Craft::info('Trying to write to file at '.$path.' using LOCK_EX.');
 						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
 						{
 							// Restore quickly.
 							restore_error_handler();
 
 							// Cache the file lock info to use LOCK_EX for 2 months.
-							Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.');
 							Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
 							return true;
 						}
 						else
 						{
 							// Try again without the lock flag.
-							Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+							Craft::info('Trying to write to file at '.$path.' without LOCK_EX.');
 							if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 							{
 								// Cache the file lock info to not use LOCK_EX for 2 months.
-								Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+								Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.');
 								Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 								return true;
 							}
@@ -822,11 +822,11 @@ class IOHelper
 						restore_error_handler();
 
 						// Try again without the lock flag.
-						Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+						Craft::info('Trying to write to file at '.$path.' without LOCK_EX.');
 						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 						{
 							// Cache the file lock info to not use LOCK_EX for 2 months.
-							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.');
 							Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 							return true;
 						}
@@ -855,7 +855,7 @@ class IOHelper
 						}
 						else
 						{
-							Craft::log('Tried to write to file at '.$path.' and could not.', LogLevel::Error);
+							Craft::error('Tried to write to file at '.$path.' and could not.');
 							return false;
 						}
 					}
@@ -871,7 +871,7 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Tried to write to file at '.$path.' with no LOCK_EX and could not.', LogLevel::Error);
+					Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.');
 					return false;
 				}
 			}
@@ -884,14 +884,14 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Tried to write to file at '.$path.' with LOCK_EX and could not.', LogLevel::Error);
+					Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.');
 					return false;
 				}
 			}
 		}
 		else
 		{
-			Craft::log('Tried to write to file at '.$path.', but the file is not writable.', LogLevel::Error);
+			Craft::error('Tried to write to file at '.$path.', but the file is not writable.');
 		}
 
 		return false;
@@ -914,7 +914,7 @@ class IOHelper
 
 		if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner)== false))
 		{
-			Craft::log('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', LogLevel::Error);
+			Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.');
 			return false;
 		}
 
@@ -939,7 +939,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Craft::log('Tried to change the own of '.$path.', but could not.', LogLevel::Error);
+				Craft::error('Tried to change the own of '.$path.', but could not.');
 				return false;
 			}
 
@@ -947,7 +947,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log('Tried to change owner of '.$path.', but that path does not exist.', LogLevel::Error);
+			Craft::error('Tried to change owner of '.$path.', but that path does not exist.');
 		}
 
 		return false;
@@ -970,7 +970,7 @@ class IOHelper
 
 		if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false))
 		{
-			Craft::log('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', LogLevel::Error);
+			Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.');
 			return false;
 		}
 
@@ -995,7 +995,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Craft::log('Tried to change the group of '.$path.', but could not.', LogLevel::Error);
+				Craft::error('Tried to change the group of '.$path.', but could not.');
 				return false;
 			}
 
@@ -1003,7 +1003,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log('Tried to change group of '.$path.', but that path does not exist.', LogLevel::Error);
+			Craft::error('Tried to change group of '.$path.', but that path does not exist.');
 		}
 
 		return false;
@@ -1029,11 +1029,11 @@ class IOHelper
 				return true;
 			}
 
-			Craft::log('Tried to change the permissions of '.$path.', but could not.', LogLevel::Error);
+			Craft::error('Tried to change the permissions of '.$path.', but could not.');
 		}
 		else
 		{
-			Craft::log('Tried to change permissions of '.$path.', but that path does not exist.', LogLevel::Error);
+			Craft::error('Tried to change permissions of '.$path.', but that path does not exist.');
 		}
 
 		return false;
@@ -1069,16 +1069,16 @@ class IOHelper
 					return true;
 				}
 
-				Craft::log('Tried to copy '.$path.' to '.$destination.', but could not.', LogLevel::Error);
+				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.');
 			}
 			else
 			{
-				Craft::log('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', LogLevel::Error);
+				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.');
 			}
 		}
 		else
 		{
-			Craft::log('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', LogLevel::Error);
+			Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.');
 		}
 
 		return false;
@@ -1119,14 +1119,14 @@ class IOHelper
 				{
 					if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest))
 					{
-						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', LogLevel::Error);
+						Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.');
 					}
 				}
 				elseif (static::folderExists($item, $suppressErrors))
 				{
 					if (!static::createFolder($itemDest, $suppressErrors))
 					{
-						Craft::log('Could not create destination folder '.$itemDest, LogLevel::Error);
+						Craft::error('Could not create destination folder '.$itemDest);
 					}
 				}
 			}
@@ -1143,7 +1143,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', LogLevel::Error);
+			Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.');
 		}
 
 		return false;
@@ -1178,17 +1178,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Could not rename '.$path.' to '.$newName.'.', LogLevel::Error);
+					Craft::error('Could not rename '.$path.' to '.$newName.'.');
 				}
 			}
 			else
 			{
-				Craft::log('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', LogLevel::Error);
+				Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.');
 			}
 		}
 		else
 		{
-			Craft::log('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', LogLevel::Error);
+			Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.');
 		}
 
 		return false;
@@ -1229,12 +1229,12 @@ class IOHelper
 			}
 			else
 			{
-				Craft::log('Could not clear the contents of '.$path.' because the source file is not writable.', LogLevel::Error);
+				Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.');
 			}
 		}
 		else
 		{
-			Craft::log('Could not clear the contents of '.$path.' because the source file does not exist.', LogLevel::Error);
+			Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.');
 		}
 
 		return false;
@@ -1276,12 +1276,12 @@ class IOHelper
 			}
 			else
 			{
-				Craft::log('Tried to read the folder contents of '.$path.', but could not.', LogLevel::Error);
+				Craft::error('Tried to read the folder contents of '.$path.', but could not.');
 			}
 		}
 		else
 		{
-			Craft::log('Could not clear the contents of '.$path.' because the source folder does not exist.', LogLevel::Error);
+			Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.');
 		}
 
 		return false;
@@ -1309,17 +1309,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Could not delete the file '.$path.'.', LogLevel::Error);
+					Craft::error('Could not delete the file '.$path.'.');
 				}
 			}
 			else
 			{
-				Craft::log('Could not delete the file '.$path.' because it is not writable.', LogLevel::Error);
+				Craft::error('Could not delete the file '.$path.' because it is not writable.');
 			}
 		}
 		else
 		{
-			Craft::log('Could not delete the file '.$path.' because the file does not exist.', LogLevel::Error);
+			Craft::error('Could not delete the file '.$path.' because the file does not exist.');
 		}
 
 		return false;
@@ -1351,17 +1351,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::log('Could not delete the folder '.$path.'.', LogLevel::Error);
+					Craft::error('Could not delete the folder '.$path.'.');
 				}
 			}
 			else
 			{
-				Craft::log('Could not delete the folder '.$path.' because it is not writable.', LogLevel::Error);
+				Craft::error('Could not delete the folder '.$path.' because it is not writable.');
 			}
 		}
 		else
 		{
-			Craft::log('Could not delete the folder '.$path.' because the folder does not exist.', LogLevel::Error);
+			Craft::error('Could not delete the folder '.$path.' because the folder does not exist.');
 		}
 
 		return false;
@@ -1385,7 +1385,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', LogLevel::Error);
+			Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.');
 		}
 
 		return false;
@@ -1761,7 +1761,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::log(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path], LogLevel::Error));
+			Craft::error(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]));
 		}
 
 		return $descendants;

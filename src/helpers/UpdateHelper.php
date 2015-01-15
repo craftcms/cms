@@ -9,7 +9,6 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\db\DbBackup;
-use craft\app\enums\LogLevel;
 use craft\app\enums\PatchManifestFileAction;
 use craft\app\errors\Exception;
 
@@ -132,7 +131,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Craft::log('Updating folder: '.$destFile, LogLevel::Info, true);
+							Craft::info('Updating folder: '.$destFile);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
@@ -146,7 +145,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Craft::log('Updating file: '.$destFile, LogLevel::Info, true);
+							Craft::info('Updating file: '.$destFile);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -157,7 +156,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('Error updating files: '.$e->getMessage(), LogLevel::Error);
+			Craft::error('Error updating files: '.$e->getMessage());
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
