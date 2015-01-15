@@ -31,6 +31,17 @@ class Application extends \yii\console\Application
 	// =========================================================================
 
 	/**
+	 * Constructor.
+	 *
+	 * @param array $config
+	 */
+	public function __construct($config = [])
+	{
+		Craft::$app = $this;
+		parent::__construct($config);
+	}
+
+	/**
 	 * Initializes the console app by creating the command runner.
 	 *
 	 * @return null

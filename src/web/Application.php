@@ -112,6 +112,17 @@ class Application extends \yii\web\Application
 	// =========================================================================
 
 	/**
+	 * Constructor.
+	 *
+	 * @param array $config
+	 */
+	public function __construct($config = [])
+	{
+		Craft::$app = $this;
+		parent::__construct($config);
+	}
+
+	/**
 	 * Initializes the application.
 	 *
 	 * @return null
