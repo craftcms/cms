@@ -50,7 +50,7 @@ class Config extends Component
 	/**
 	 * @var array
 	 */
-	private $_loadedConfigFiles = [];
+	private $_configSettings = [];
 
 	// Public Methods
 	// =========================================================================
@@ -84,14 +84,14 @@ class Config extends Component
 	 */
 	public function get($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$category]))
+		if (!isset($this->_configSettings[$category]))
 		{
-			$this->_loadConfigFile($category);
+			$this->_loadConfigSettings($category);
 		}
 
 		if ($this->exists($item, $category))
 		{
-			return $this->_loadedConfigFiles[$category][$item];
+			return $this->_configSettings[$category][$item];
 		}
 	}
 
@@ -121,12 +121,12 @@ class Config extends Component
 	 */
 	public function set($item, $value, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$category]))
+		if (!isset($this->_configSettings[$category]))
 		{
-			$this->_loadConfigFile($category);
+			$this->_loadConfigSettings($category);
 		}
 
-		$this->_loadedConfigFiles[$category][$item] = $value;
+		$this->_configSettings[$category][$item] = $value;
 	}
 
 	/**
@@ -208,12 +208,12 @@ class Config extends Component
 	 */
 	public function exists($item, $category = ConfigCategory::General)
 	{
-		if (!isset($this->_loadedConfigFiles[$category]))
+		if (!isset($this->_configSettings[$category]))
 		{
-			$this->_loadConfigFile($category);
+			$this->_loadConfigSettings($category);
 		}
 
-		if (array_key_exists($item, $this->_loadedConfigFiles[$category]))
+		if (array_key_exists($item, $this->_configSettings[$category]))
 		{
 			return true;
 		}
@@ -707,18 +707,18 @@ class Config extends Component
 	// =========================================================================
 
 	/**
-	 * @param $name
+	 * @param $category
 	 */
-	private function _loadConfigFile($name)
+	private function _loadConfigSettings($category)
 	{
 		// Is this a valid Craft config category?
-		if (ConfigCategory::isValidName($name))
+		if (ConfigCategory::isValidName($category))
 		{
-			$defaultsPath = CRAFT_APP_PATH.'config/defaults/'.$name.'.php';
+			$defaultsPath = CRAFT_APP_PATH.'config/defaults/'.$category.'.php';
 		}
 		else
 		{
-			$defaultsPath = CRAFT_PLUGINS_PATH.$name.'/config.php';
+			$defaultsPath = CRAFT_PLUGINS_PATH.$category.'/config.php';
 		}
 
 		if (IOHelper::fileExists($defaultsPath))
@@ -732,7 +732,7 @@ class Config extends Component
 		}
 
 		// Little extra logic for the general config category.
-		if ($name == ConfigCategory::General)
+		if ($category == ConfigCategory::General)
 		{
 			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
 			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
@@ -758,14 +758,15 @@ class Config extends Component
 		}
 		else
 		{
-			$customConfigPath = CRAFT_CONFIG_PATH.$name.'.php';
+			$customConfigPath = CRAFT_CONFIG_PATH.$category.'.php';
+
 			if (IOHelper::fileExists($customConfigPath))
 			{
 				if (is_array($customConfig = @include($customConfigPath)))
 				{
 					$this->_mergeConfigs($defaultsConfig, $customConfig);
 				}
-				else if ($name == ConfigCategory::Db)
+				else if ($category == ConfigCategory::Db)
 				{
 					// Originally db.php defined a $dbConfig variable.
 					if (@require_once(CRAFT_CONFIG_PATH.'db.php'))
@@ -777,7 +778,7 @@ class Config extends Component
 			}
 		}
 
-		$this->_loadedConfigFiles[$name] = $defaultsConfig;
+		$this->_configSettings[$category] = $defaultsConfig;
 	}
 
 	/**
