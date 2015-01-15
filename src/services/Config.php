@@ -212,6 +212,18 @@ class Config extends Component
 	}
 
 	/**
+	 * Returns all of the config settings for a given category.
+	 *
+	 * @param string $category The config category
+	 * @return array The config settings.
+	 */
+	public function getConfigSettings($category)
+	{
+		$this->_loadConfigSettings($category);
+		return $this->_configSettings[$category];
+	}
+
+	/**
 	 * Returns the value of the [cacheDuration](http://buildwithcraft.com/docs/config-settings#cacheDuration) config setting,
 	 * normalized into seconds.
 	 *
