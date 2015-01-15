@@ -166,8 +166,7 @@ require CRAFT_APP_PATH.'Craft.php';
 
 // Set aliases
 Craft::setAlias('@craft/app', realpath(CRAFT_APP_PATH));
-Craft::setAlias('@app', realpath(CRAFT_APP_PATH));
-Craft::setAlias('@runtime', realpath(CRAFT_STORAGE_PATH).'/runtime');
+Craft::setAlias('@storage', realpath(CRAFT_STORAGE_PATH));
 
 // Append Craft's class map to Yii's
 Yii::$classMap = ArrayHelper::merge(

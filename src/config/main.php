@@ -10,7 +10,8 @@ $config = [
 	'minBuildRequired' => '@@@minBuildRequired@@@',
 	'minBuildUrl' => '@@@minBuildUrl@@@',
 	'track' => '@@@track@@@',
-	'basePath' => CRAFT_APP_PATH,
+	'basePath' => '@craft/app',          // Defines the @app alias
+	'runtimePath' => '@storage/runtime', // Defines the @runtime alias
 	'controllerNamespace' => 'craft\app\controllers',
 ];
 
