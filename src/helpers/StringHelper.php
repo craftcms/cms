@@ -634,21 +634,6 @@ class StringHelper extends \yii\helpers\StringHelper
 	}
 
 	/**
-	 * Truncates the string to a given length. If $substring is provided, and truncating occurs, the string is further
-	 * truncated so that the substring may be appended without exceeding the desired length.
-	 *
-	 * @param string $str       The string to truncate.
-	 * @param int    $length    The desired length of the truncated string.
-	 * @param string $substring The substring to append if it can fit.
-	 *
-	 * @return string The resulting string after truncating.
-	 */
-	public static function truncate($str, $length, $substring = '')
-	{
-		return StaticStringy::truncate($str, $length, $substring);
-	}
-
-	/**
 	 * Converts the first character of the supplied string to uppercase.
 	 *
 	 * @param string $str The string to modify.
