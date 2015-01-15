@@ -627,7 +627,7 @@ trait ApplicationTrait
 		{
 			$dbConnection = new DbConnection();
 
-			$dbConnection->connectionString = $this->_processConnectionString();
+			$dbConnection->dsn              = $this->_processConnectionString();
 			$dbConnection->emulatePrepare   = true;
 			$dbConnection->username         = Craft::$app->config->get('user', ConfigCategory::Db);
 			$dbConnection->password         = Craft::$app->config->get('password', ConfigCategory::Db);
