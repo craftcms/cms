@@ -165,7 +165,7 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
+				$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin);
 
 				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
@@ -372,7 +372,7 @@ class Migrations extends Component
 		{
 			if ($plugin != 'all')
 			{
-				$pluginInfo = Craft::$app->plugins->getPluginInfo($plugin);
+				$pluginInfo = Craft::$app->plugins->getStoredPluginInfo($plugin);
 				$query->where('pluginId = :pluginId', [':pluginId' => $pluginInfo['id']]);
 			}
 		}

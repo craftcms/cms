@@ -83,11 +83,11 @@ class Plugins extends Component
 	private $_allPlugins;
 
 	/**
-	 * Holds a list of all of the enabled plugin info indexed by the plugin class name.
+	 * Holds a list of all of the stored info for enabled plugins, indexed by the plugins’ class names.
 	 *
 	 * @var array
 	 */
-	private $_enabledPluginInfo = [];
+	private $_storedPluginInfo = [];
 
 	// Public Methods
 	// =========================================================================
@@ -137,7 +137,7 @@ class Plugins extends Component
 						$row['settings'] = JsonHelper::decode($row['settings']);
 						$row['installDate'] = DateTime::createFromString($row['installDate']);
 
-						$this->_enabledPluginInfo[$row['class']] = $row;
+						$this->_storedPluginInfo[$row['class']] = $row;
 
 						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 						$this->_plugins[$lcPluginHandle] = $plugin;
@@ -479,7 +479,7 @@ class Plugins extends Component
 		}
 		else
 		{
-			$pluginId = $this->_enabledPluginInfo[$handle]['id'];
+			$pluginId = $this->_storedPluginInfo[$handle]['id'];
 		}
 
 		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
@@ -530,7 +530,7 @@ class Plugins extends Component
 		$plugin->isInstalled = false;
 		unset($this->_enabledPlugins[$lcPluginHandle]);
 		unset($this->_plugins[$lcPluginHandle]);
-		unset($this->_enabledPluginInfo[$handle]);
+		unset($this->_storedPluginInfo[$handle]);
 
 		return true;
 	}
@@ -631,7 +631,7 @@ class Plugins extends Component
 	 */
 	public function doesPluginRequireDatabaseUpdate(BasePlugin $plugin)
 	{
-		$storedPluginInfo = $this->getPluginInfo($plugin);
+		$storedPluginInfo = $this->getStoredPluginInfo($plugin);
 
 		if ($storedPluginInfo)
 		{
@@ -651,11 +651,11 @@ class Plugins extends Component
 	 *
 	 * @return array|null The stored info, if there is any.
 	 */
-	public function getPluginInfo(BasePlugin $plugin)
+	public function getStoredPluginInfo(BasePlugin $plugin)
 	{
-		if (isset($this->_enabledPluginInfo[$plugin->getClassHandle()]))
+		if (isset($this->_storedPluginInfo[$plugin->getClassHandle()]))
 		{
-			return $this->_enabledPluginInfo[$plugin->getClassHandle()];
+			return $this->_storedPluginInfo[$plugin->getClassHandle()];
 		}
 	}
 
