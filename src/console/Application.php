@@ -59,14 +59,15 @@ class Application extends \yii\console\Application
 		$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
 		// Set our own custom runtime path.
-		$this->setRuntimePath(Craft::$app->path->getRuntimePath());
+		$this->setRuntimePath($this->path->getRuntimePath());
 
 		// Attach our own custom Logger
 		Craft::setLogger(new Logger());
 
 		// No need for these.
-		Craft::$app->getLog()->removeRoute('WebLogRoute');
-		Craft::$app->getLog()->removeRoute('ProfileLogRoute');
+		$log = $this->getLog();
+		$log->removeRoute('WebLogRoute');
+		$log->removeRoute('ProfileLogRoute');
 
 		// Set the edition components
 		$this->_setEditionComponents();
@@ -75,18 +76,18 @@ class Application extends \yii\console\Application
 		parent::init();
 
 		// Load the plugins
-		Craft::$app->plugins->loadPlugins();
+		$this->plugins->loadPlugins();
 
 		// Validate some basics on the database configuration file.
-		Craft::$app->validateDbConfigFile();
+		$this->validateDbConfigFile();
 
-		foreach (Craft::$app->plugins->getPlugins() as $plugin)
+		foreach ($this->plugins->getPlugins() as $plugin)
 		{
-			$commandsPath = Craft::$app->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
+			$commandsPath = $this->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
 
 			if (IOHelper::folderExists($commandsPath))
 			{
-				Craft::$app->commandRunner->addCommands(rtrim($commandsPath, '/'));
+				$this->commandRunner->addCommands(rtrim($commandsPath, '/'));
 			}
 		}
 	}
@@ -114,7 +115,7 @@ class Application extends \yii\console\Application
 	}
 
 	/**
-	 * Override get() so we can do some special logic around creating the `Craft::$app->getDb()` application component.
+	 * Override get() so we can do some special logic around creating the `$this->getDb()` application component.
 	 *
 	 * @param string $id
 	 * @param boolean $throwException

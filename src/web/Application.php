@@ -168,21 +168,23 @@ class Application extends \yii\web\Application
 		$this->_processResourceRequest();
 
 		// If we're not in devMode, or it's a 'dontEnableSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession()))
+		if (!$this->config->get('devMode') || ($this->isInstalled() && !$this->getUser()->shouldExtendSession()))
 		{
 			$this->getLog()->removeRoute('WebLogRoute');
 			$this->getLog()->removeRoute('ProfileLogRoute');
 		}
 
 		// Additionally, we don't want these in the log files at all.
-		if (Craft::$app->isInstalled() && !$this->getUser()->shouldExtendSession())
+		if ($this->isInstalled() && !$this->getUser()->shouldExtendSession())
 		{
 			$this->getLog()->removeRoute('FileLogRoute');
 		}
 
 		// If this is a CP request, prevent robots from indexing/following the page
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-		if ($this->getRequest()->getIsCpRequest())
+		$request = $this->getRequest();
+
+		if ($request->getIsCpRequest())
 		{
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
 		}
@@ -194,7 +196,7 @@ class Application extends \yii\web\Application
 		$this->_processInstallRequest();
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
-		if ($this->isInMaintenanceMode() && $this->getRequest()->getIsSiteRequest())
+		if ($this->isInMaintenanceMode() && $request->getIsSiteRequest())
 		{
 			throw new HttpException(503);
 		}
@@ -205,7 +207,7 @@ class Application extends \yii\web\Application
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
 		{
-			if ($this->getRequest()->getIsCpRequest())
+			if ($request->getIsCpRequest())
 			{
 				$version = $this->getVersion();
 				$build = $this->getBuild();
@@ -228,9 +230,9 @@ class Application extends \yii\web\Application
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if (
 			$this->updates->isCraftDbMigrationNeeded() ||
-			($this->isInMaintenanceMode() && $this->getRequest()->getIsCpRequest()) ||
-			$this->getRequest()->getActionSegments() == ['update', 'cleanUp'] ||
-			$this->getRequest()->getActionSegments() == ['update', 'rollback']
+			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
+			$request->getActionSegments() == ['update', 'cleanUp'] ||
+			$request->getActionSegments() == ['update', 'rollback']
 		)
 		{
 			$this->_processUpdateLogic();
@@ -255,7 +257,7 @@ class Application extends \yii\web\Application
 		}
 
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-		if ($this->getRequest()->getIsCpRequest() && !($this->getRequest()->getIsActionRequest() && $this->_isSpecialCaseActionRequest()))
+		if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest()))
 		{
 			$user = $this->getUser();
 
@@ -271,7 +273,7 @@ class Application extends \yii\web\Application
 			}
 
 			// If they're accessing a plugin's section, make sure that they have permission to do so
-			$firstSeg = $this->getRequest()->getSegment(1);
+			$firstSeg = $request->getSegment(1);
 
 			if ($firstSeg)
 			{
@@ -473,7 +475,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Override get() so we can do some special logic around creating the `Craft::$app->getDb()` application component.
+	 * Override get() so we can do some special logic around creating the `$this->getDb()` application component.
 	 *
 	 * @param string $id
 	 * @param boolean $throwException
@@ -540,13 +542,15 @@ class Application extends \yii\web\Application
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->getRequest()->getIsResourceRequest())
+		$request = $this->getRequest();
+
+		if ($request->getIsResourceRequest())
 		{
 			// Don't want to log anything on a resource request.
 			$this->getLog()->removeRoute('FileLogRoute');
 
 			// Get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->getRequest()->getSegments()), 1);
+			$segs = array_slice(array_merge($request->getSegments()), 1);
 			$path = implode('/', $segs);
 
 			$this->resources->sendResource($path);
@@ -561,18 +565,19 @@ class Application extends \yii\web\Application
 	 */
 	private function _processInstallRequest()
 	{
-		$isCpRequest = $this->getRequest()->getIsCpRequest();
+		$request = $this->getRequest();
+		$isCpRequest = $request->getIsCpRequest();
 
 		// Are they requesting an installer template/action specifically?
-		if ($isCpRequest && $this->getRequest()->getSegment(1) === 'install' && !$this->isInstalled())
+		if ($isCpRequest && $request->getSegment(1) === 'install' && !$this->isInstalled())
 		{
-			$action = $this->getRequest()->getSegment(2, 'index');
+			$action = $request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
 			$this->end();
 		}
-		else if ($isCpRequest && $this->getRequest()->getIsActionRequest() && ($this->getRequest()->getSegment(1) !== 'login'))
+		else if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login'))
 		{
-			$actionSegs = $this->getRequest()->getActionSegments();
+			$actionSegs = $request->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
 				$this->_processActionRequest();
@@ -586,7 +591,7 @@ class Application extends \yii\web\Application
 			if ($isCpRequest)
 			{
 				$url = UrlHelper::getUrl('install');
-				$this->getRequest()->redirect($url);
+				$request->redirect($url);
 			}
 			// Otherwise return a 404
 			else
@@ -604,9 +609,11 @@ class Application extends \yii\web\Application
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->getRequest()->getIsActionRequest())
+		$request = $this->getRequest();
+
+		if ($request->getIsActionRequest())
 		{
-			$actionSegs = $this->getRequest()->getActionSegments();
+			$actionSegs = $request->getActionSegments();
 			$route = implode('/', $actionSegs);
 			$this->runController($route);
 		}
@@ -646,19 +653,20 @@ class Application extends \yii\web\Application
 	{
 		// See if we're in the middle of an update.
 		$update = false;
+		$request = $this->getRequest();
 
-		if ($this->getRequest()->getSegment(1) == 'updates' && $this->getRequest()->getSegment(2) == 'go')
+		if ($request->getSegment(1) == 'updates' && $request->getSegment(2) == 'go')
 		{
 			$update = true;
 		}
 
-		if (($data = $this->getRequest()->getBodyParam('data', null)) !== null && isset($data['handle']))
+		if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle']))
 		{
 			$update = true;
 		}
 
 		// Only run for CP requests and if we're not in the middle of an update.
-		if ($this->getRequest()->getIsCpRequest() && !$update)
+		if ($request->getIsCpRequest() && !$update)
 		{
 			$cachedAppPath = $this->getCache()->get('appPath');
 			$appPath = $this->path->getAppPath();
@@ -666,7 +674,7 @@ class Application extends \yii\web\Application
 			if ($cachedAppPath === false || $cachedAppPath !== $appPath)
 			{
 				// Flush the data cache, so we're not getting cached CP resource paths.
-				Craft::$app->getCache()->flush();
+				$this->getCache()->flush();
 
 				$this->runController('templates/requirementscheck');
 			}
@@ -679,14 +687,16 @@ class Application extends \yii\web\Application
 	 */
 	private function _processUpdateLogic()
 	{
+		$request = $this->getRequest();
+
 		// Let all non-action CP requests through.
 		if (
-			$this->getRequest()->getIsCpRequest() &&
-			(!$this->getRequest()->getIsActionRequest() || $this->getRequest()->getActionSegments() == ['users', 'login'])
+			$request->getIsCpRequest() &&
+			(!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
 		)
 		{
 			// If this is a request to actually manually update Craft, do it
-			if ($this->getRequest()->getSegment(1) == 'manualupdate')
+			if ($request->getSegment(1) == 'manualupdate')
 			{
 				$this->runController('templates/manualUpdate');
 				$this->end();
@@ -703,11 +713,11 @@ class Application extends \yii\web\Application
 				}
 				else
 				{
-					if (!$this->getRequest()->getIsAjax())
+					if (!$request->getIsAjax())
 					{
-						if ($this->getRequest()->getPathInfo() !== '')
+						if ($request->getPathInfo() !== '')
 						{
-							$this->getUser()->setReturnUrl($this->getRequest()->getPath());
+							$this->getUser()->setReturnUrl($request->getPath());
 						}
 					}
 
@@ -717,7 +727,7 @@ class Application extends \yii\web\Application
 			}
 		}
 		// We'll also let action requests to UpdateController through as well.
-		else if ($this->getRequest()->getIsActionRequest() && (($actionSegs = $this->getRequest()->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
+		else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
 		{
 			$controller = $actionSegs[0];
 			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
@@ -757,7 +767,7 @@ class Application extends \yii\web\Application
 					$error = Craft::t('Your account doesn’t have permission to access the site when the system is offline.');
 				}
 
-				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl(Craft::$app->config->getLogoutPath()).')';
+				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl($this->config->getLogoutPath()).')';
 			}
 			else
 			{
@@ -784,11 +794,14 @@ class Application extends \yii\web\Application
 			return true;
 		}
 
-		if ($this->getRequest()->getIsCpRequest() ||
+		$request = $this->getRequest();
+		$actionTrigger = $this->config->get('actionTrigger');
+
+		if ($request->getIsCpRequest() ||
 
 			// Special case because we hide the cpTrigger in emails.
-			$this->getRequest()->getPath() === Craft::$app->config->get('actionTrigger').'/users/setpassword' ||
-			$this->getRequest()->getPath() === Craft::$app->config->get('actionTrigger').'/users/verifyemail'
+			$request->getPath() === $actionTrigger.'/users/setpassword' ||
+			$request->getPath() === $actionTrigger.'/users/verifyemail'
 		)
 		{
 			if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff'))
@@ -796,12 +809,12 @@ class Application extends \yii\web\Application
 				return true;
 			}
 
-			if ($this->getRequest()->getSegment(1) == 'manualupdate')
+			if ($request->getSegment(1) == 'manualupdate')
 			{
 				return true;
 			}
 
-			$actionSegs = $this->getRequest()->getActionSegments();
+			$actionSegs = $request->getActionSegments();
 
 			if ($actionSegs && (
 				$actionSegs == ['users', 'login'] ||
