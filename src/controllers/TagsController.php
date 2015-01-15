@@ -193,7 +193,7 @@ class TagsController extends BaseController
 				'title' => $tag->getContent()->title
 			];
 
-			$tagTitleLengths[] = mb_strlen($tag->getContent()->title);
+			$tagTitleLengths[] = StringHelper::length($tag->getContent()->title);
 
 			$normalizedTitle = StringHelper::normalizeKeywords($tag->getContent()->title);
 

@@ -133,7 +133,7 @@ class PhpMessageSource extends \CPhpMessageSource
 							if (is_array($translations))
 							{
 								// If this is framework data and we're not on en_us, then do some special processing.
-								if (strpos($path, 'framework/i18n/data') !== false && $file !== 'en_us')
+								if (StringHelper::contains($path, 'framework/i18n/data') && $file !== 'en_us')
 								{
 									$translations = $this->_processFrameworkData($file);
 								}

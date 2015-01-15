@@ -8,6 +8,7 @@
 namespace craft\app\web;
 
 use Craft;
+use craft\app\helpers\StringHelper;
 
 /**
  * Extends \CHttpSession to add support for setting the session folder and creating it if it doesn't exist.
@@ -64,7 +65,7 @@ class Session extends \yii\web\Session
 
 		if (
 			$overridePhpSessionLocation === true ||
-			($overridePhpSessionLocation === 'auto' && mb_strpos($this->getSavePath(), 'tcp://') === false)
+			($overridePhpSessionLocation === 'auto' && !StringHelper::contains($this->getSavePath(), 'tcp://'))
 		)
 		{
 			$savePath = Craft::$app->path->getSessionPath();

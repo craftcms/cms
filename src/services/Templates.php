@@ -296,7 +296,7 @@ class Templates extends Component
 	public function renderObjectTemplate($template, $object)
 	{
 		// If there are no dynamic tags, just return the template
-		if (strpos($template, '{') === false)
+		if (!StringHelper::contains($template, '{'))
 		{
 			return $template;
 		}
@@ -472,7 +472,7 @@ class Templates extends Component
 	public function includeJs($js, $first = false)
 	{
 		// Trim any whitespace and ensure it ends with a semicolon.
-		$js = trim($js, " \t\n\r\0\x0B;").';';
+		$js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B;"), ';');
 
 		$latestBuffer =& $this->_jsBuffers[count($this->_jsBuffers)-1];
 		ArrayHelper::prependOrAppend($latestBuffer, $js, $first);
@@ -1176,7 +1176,7 @@ class Templates extends Component
 	 */
 	private function _validateTemplateName($name)
 	{
-		if (mb_strpos($name, "\0") !== false)
+		if (StringHelper::contains($name, "\0"))
 		{
 			throw new \Twig_Error_Loader(Craft::t('A template name cannot contain NUL bytes.'));
 		}

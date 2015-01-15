@@ -81,7 +81,7 @@ class DbCommand extends \CDbCommand
 		{
 			$column = (string) $column;
 		}
-		else if (mb_strpos($column, '(') === false)
+		else if (!StringHelper::contains($column, '('))
 		{
 			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
 			{

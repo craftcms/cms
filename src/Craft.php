@@ -6,6 +6,7 @@
  */
 
 use craft\app\enums\LogLevel;
+use craft\app\helpers\StringHelper;
 use yii\helpers\VarDumper;
 
 /**
@@ -203,7 +204,7 @@ class Craft extends Yii
 
 			foreach ($traces as $trace)
 			{
-				if (isset($trace['file'], $trace['line']) && mb_strpos($trace['file'], YII_PATH) !== 0)
+				if (isset($trace['file'], $trace['line']) && StringHelper::contains($trace['file'], YII_PATH))
 				{
 					$msg .= "\nin ".$trace['file'].' ('.$trace['line'].')';
 

@@ -16,6 +16,7 @@ use craft\app\helpers\DbHelper;
 use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\validators\Handle;
 
 /**
@@ -150,7 +151,7 @@ class RichText extends BaseFieldType
 			$value = $value->getRawContent();
 		}
 
-		if (strpos($value, '{') !== false)
+		if (StringHelper::contains($value, '{'))
 		{
 			// Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
 			$value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})\2/', function($matches)

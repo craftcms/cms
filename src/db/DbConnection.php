@@ -10,6 +10,7 @@ namespace craft\app\db;
 use Craft;
 use craft\app\enums\ConfigCategory;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Class DbConnection
@@ -131,7 +132,7 @@ class DbConnection extends \CDbConnection
 
 		if ($tablePrefix)
 		{
-			if (strlen($tablePrefix) > 5)
+			if (StringHelper::length($tablePrefix) > 5)
 			{
 				$tablePrefix = substr($tablePrefix, 0, 5);
 			}
@@ -238,7 +239,7 @@ class DbConnection extends \CDbConnection
 		}
 
 		$name = trim($name, '_');
-		$nameLength = mb_strlen($name);
+		$nameLength = StringHelper::length($name);
 
 		if ($nameLength > $schema->maxObjectNameLength)
 		{
@@ -252,7 +253,7 @@ class DbConnection extends \CDbConnection
 			{
 				foreach ($parts as $i => $part)
 				{
-					$newLength = round($maxLetters * mb_strlen($part) / $totalLetters);
+					$newLength = round($maxLetters * mb_stStringHelper::lengthrlen($part) / $totalLetters);
 					$parts[$i] = mb_substr($part, 0, $newLength);
 				}
 			}
@@ -260,7 +261,7 @@ class DbConnection extends \CDbConnection
 			$name = implode('_', $parts);
 
 			// Just to be safe
-			if (mb_strlen($name) > $schema->maxObjectNameLength)
+			if (StringHelper::length($name) > $schema->maxObjectNameLength)
 			{
 				$name = mb_substr($name, 0, $schema->maxObjectNameLength);
 			}

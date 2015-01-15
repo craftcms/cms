@@ -1218,7 +1218,7 @@ class Assets extends Component
 		if (!is_null($criteria->path))
 		{
 			// This folder has a comma in it.
-			if (strpos($criteria->path, ',') !== false)
+			if (StringHelper::contains($criteria->path, ','))
 			{
 				// Escape the comma.
 				$condition = DbHelper::parseParam('f.path', str_replace(',', '\,', $criteria->path), $whereParams);

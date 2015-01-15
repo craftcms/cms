@@ -14,6 +14,7 @@ use craft\app\enums\LogLevel;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\AssetFile as AssetFileModel;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
@@ -169,7 +170,7 @@ class Rackspace extends BaseAssetSourceType
 		foreach ($fileList as $file)
 		{
 			// Strip the prefix, so we don't index the parent folders
-			$file->name = mb_substr($file->name, mb_strlen($prefix));
+			$file->name = mb_substr($file->name, StringHelper::length($prefix));
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file->name))
 			{
@@ -632,7 +633,7 @@ class Rackspace extends BaseAssetSourceType
 
 		foreach ($filesToMove as $file)
 		{
-			$filePath = mb_substr($file->name, mb_strlen($this->_getPathPrefix().$folder->path));
+			$filePath = mb_substr($file->name, StringHelper::length($this->_getPathPrefix().$folder->path));
 
 			$sourceUri = $this->_prepareRequestURI($this->getSettings()->container, $file->name);
 			$targetUri = $this->_prepareRequestURI($this->getSettings()->container, $newFullPath.$filePath);
@@ -1134,7 +1135,7 @@ class Rackspace extends BaseAssetSourceType
 
 						foreach ($headers as $header)
 						{
-							if (mb_strpos($header, 'X-Auth-Token') === false)
+							if (!StringHelper::contains($header, 'X-Auth-Token'))
 							{
 								$newHeaders[] = $header;
 							}

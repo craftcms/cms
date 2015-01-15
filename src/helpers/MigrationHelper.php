@@ -403,7 +403,7 @@ class MigrationHelper
 						$fkColumnName = $fk->columns[$fkColumnIndex];
 
 						// Get its column type
-						$fkColumnRequired = (mb_strpos($otherTable->columns[$fkColumnName]->type, 'NOT NULL') !== false);
+						$fkColumnRequired = StringHelper::contains($otherTable->columns[$fkColumnName]->type, 'NOT NULL');
 						$fkColumnType = array_merge(static::$_idColumnType, ['required' => $fkColumnRequired]);
 
 						$fks[] = (object) [
@@ -584,7 +584,7 @@ class MigrationHelper
 	{
 		if (!isset(static::$_tablePrefixLength))
 		{
-			static::$_tablePrefixLength = mb_strlen(Craft::$app->getDb()->tablePrefix);
+			static::$_tablePrefixLength = StringHelper::length(Craft::$app->getDb()->tablePrefix);
 		}
 
 		return static::$_tablePrefixLength;

@@ -640,7 +640,7 @@ class Request extends \yii\web\Request
 
 		foreach ($parts as $key => $part)
 		{
-			if (mb_strpos($part, 'p=') !== false)
+			if (StringHelper::contains($part, 'p='))
 			{
 				unset($parts[$key]);
 				break;
@@ -921,7 +921,7 @@ class Request extends \yii\web\Request
 		}
 
 		// Maybe they're looking for a nested param?
-		if (strpos($name, '.') !== false)
+		if (StringHelper::contains($name, '.'))
 		{
 			$path = explode('.', $name);
 			$param = $params;

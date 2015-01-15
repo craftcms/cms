@@ -172,12 +172,12 @@ class DbBackup
 
 		foreach ($sql as $statement)
 		{
-			if ($statement[0] == '-')
+			if (StringHelper::first($statement, 1) == '-')
 			{
 				continue;
 			}
 
-			if ($statement[mb_strlen($statement) - 1] == ';')
+			if (StringHelper::last($statement, 1) == ';')
 			{
 				if (!$runningStatement)
 				{
@@ -246,7 +246,7 @@ class DbBackup
 			{
 				for ($i = 0; $i < count($value[0]); $i++)
 				{
-					if (mb_strpos($value[0][$i], 'CONSTRAINT') === false)
+					if (!StringHelper::contains($value[0][$i], 'CONSTRAINT'))
 					{
 						$sql .= preg_replace('/(FOREIGN[\s]+KEY)/', "\tADD $1", $value[0][$i]);
 					}

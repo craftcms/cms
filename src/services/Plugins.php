@@ -16,6 +16,7 @@ use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
 
@@ -258,7 +259,7 @@ class Plugins extends Component
 								$pluginFileName = IOHelper::getFileName($pluginFilePath[0], false);
 
 								// Chop off the "Plugin" suffix
-								$handle = mb_substr($pluginFileName, 0, mb_strlen($pluginFileName) - 6);
+								$handle = mb_substr($pluginFileName, 0, StringHelper::length($pluginFileName) - 6);
 								$lcHandle = mb_strtolower($handle);
 
 								// Validate that the lowercase plugin class handle is the same as the folder name
@@ -843,7 +844,7 @@ class Plugins extends Component
 			}
 
 			$serviceName = implode('_', $parts);
-			$serviceName = mb_substr($serviceName, 0, - mb_strlen('Service'));
+			$serviceName = mb_substr($serviceName, 0, - strlen('Service'));
 
 			if (!Craft::$app->has($serviceName))
 			{
@@ -919,7 +920,7 @@ class Plugins extends Component
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{
 			$file = IOHelper::getFileName($file, false);
-			return mb_substr($file, 0, mb_strlen($file) - mb_strlen('Plugin'));
+			return mb_substr($file, 0, mb_strlen($file) - strlen('Plugin'));
 		}
 
 		return false;

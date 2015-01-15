@@ -14,6 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\AssetFile as AssetFileModel;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
@@ -142,7 +143,7 @@ class GoogleCloud extends BaseAssetSourceType
 		foreach ($fileList as $file)
 		{
 			// Strip the prefix, so we don't index the parent folders
-			$file['name'] = mb_substr($file['name'], mb_strlen($prefix));
+			$file['name'] = mb_substr($file['name'], StringHelper::length($prefix));
 
 			if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['name']))
 			{
@@ -608,7 +609,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 		foreach ($filesToMove as $file)
 		{
-			$filePath = mb_substr($file['name'], mb_strlen($this->_getPathPrefix().$folder->path));
+			$filePath = mb_substr($file['name'], StringHelper::length($this->_getPathPrefix().$folder->path));
 
 			$this->_googleCloud->copyObject($bucket, $file['name'], $bucket, $newFullPath.$filePath, \GC::ACL_PUBLIC_READ);
 			@$this->_googleCloud->deleteObject($bucket, $file['name']);

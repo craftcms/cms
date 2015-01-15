@@ -51,12 +51,12 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 		{
 			if (is_string($command))  // class file path or alias
 			{
-				if (strpos($command, '/') !== false || strpos($command, '\\') !== false)
+				if (StringHelper::containsAny($command, array('/', '\\')))
 				{
 					$className = IOHelper::getFileName($command, false);
 
 					// If it's a default framework command, don't namespace it.
-					if (strpos($command, 'framework') === false)
+					if (!StringHelper::contains($command, 'framework'))
 					{
 						$className = __NAMESPACE__.'\\'.$className;
 					}

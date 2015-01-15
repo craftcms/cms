@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 
 Craft::$app->requireEdition(Craft::Client);

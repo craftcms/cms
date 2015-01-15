@@ -18,6 +18,7 @@ use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\User as UserModel;
 use craft\app\services\Users;
@@ -106,7 +107,7 @@ class UsersController extends BaseController
 		else
 		{
 			// Unknown error
-			$this->_handleInvalidLogin(null, $user)
+			$this->_handleInvalidLogin(null, $user);
 			return;
 		}
 	}

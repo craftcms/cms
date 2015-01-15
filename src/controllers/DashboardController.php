@@ -271,7 +271,7 @@ class DashboardController extends BaseController
 							{
 								$templateFolderName = IOHelper::getFolderName(Craft::$app->path->getSiteTemplatesPath(), false);
 								$siteTemplatePath = Craft::$app->path->getSiteTemplatesPath();
-								$tempPath = substr($siteTemplatePath, 0, (strlen($siteTemplatePath) - strlen($templateFolderName)) - 1);
+								$tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
 								Zip::add($zipFile, $file, $tempPath);
 							}
 						}

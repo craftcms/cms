@@ -14,6 +14,7 @@ use craft\app\enums\LogLevel;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
+use craft\app\helpers\StringHelper;
 
 /**
  * Model base class.
@@ -244,10 +245,10 @@ abstract class BaseModel extends \CModel
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = mb_substr(get_class($this), mb_strlen(__NAMESPACE__) + 1);
+			$classHandle = mb_substr(get_class($this), StringHelper::length(__NAMESPACE__) + 1);
 
 			// Chop off the class suffix
-			$suffixLength = mb_strlen($this->classSuffix);
+			$suffixLength = StringHelper::length($this->classSuffix);
 
 			if (mb_substr($classHandle, -$suffixLength) == $this->classSuffix)
 			{
@@ -401,7 +402,7 @@ abstract class BaseModel extends \CModel
 					}
 					case AttributeType::Mixed:
 					{
-						if ($value && is_string($value) && mb_strpos('{[', $value[0]) !== false)
+						if ($value && is_string($value) && StringHelper::contains('{[', $value[0]))
 						{
 							// Presumably this is JSON.
 							$value = JsonHelper::decode($value);

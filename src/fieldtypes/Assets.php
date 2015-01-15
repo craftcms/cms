@@ -14,6 +14,7 @@ use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\web\UploadedFile;
 
@@ -435,7 +436,7 @@ class Assets extends BaseElementFieldType
 
 		$subpath = join('/', $pathParts);
 
-		if (strlen($subpath))
+		if (StringHelper::length($subpath))
 		{
 			$subpath = $subpath.'/';
 		}
@@ -560,8 +561,8 @@ class Assets extends BaseElementFieldType
 		// If there's no dynamic tags in the set path, or if the element has already been saved, we con use the real
 		// folder
 		if (!empty($this->element->id)
-			|| (!empty($settings->useSingleFolder) && strpos($settings->singleUploadLocationSubpath, '{') === false)
-			|| (empty($settings->useSingleFolder) && strpos($settings->defaultUploadLocationSubpath, '{') === false)
+			|| (!empty($settings->useSingleFolder) && !StringHelper::contains($settings->singleUploadLocationSubpath, '{'))
+			|| (empty($settings->useSingleFolder) && !StringHelper::contains($settings->defaultUploadLocationSubpath, '{'))
 		)
 		{
 			// Use the appropriate settings for folder determination
