@@ -30,11 +30,6 @@ class UrlManager extends \CUrlManager
 	public $cpRoutes;
 
 	/**
-	 * @var
-	 */
-	public $pathParam;
-
-	/**
 	 * List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
 	 *
 	 * @var array

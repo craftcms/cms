@@ -759,8 +759,8 @@ class Request extends \yii\web\Request
 	 */
 	private function _getQueryStringPath()
 	{
-		$pathParam = Craft::$app->getUrlManager()->pathParam;
-		return trim($this->getQueryParam($pathParam, ''), '/');
+		$routeParam = Craft::$app->getUrlManager()->routeParam;
+		return trim($this->getQueryParam($routeParam, ''), '/');
 	}
 
 	/**

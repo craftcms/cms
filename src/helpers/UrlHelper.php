@@ -403,7 +403,7 @@ class UrlHelper
 
 			if ($path)
 			{
-				$params = Craft::$app->getUrlManager()->pathParam.'='.$path.($params ? '&'.$params : '');
+				$params = Craft::$app->getUrlManager()->routeParam.'='.$path.($params ? '&'.$params : '');
 			}
 		}
 
