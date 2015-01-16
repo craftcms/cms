@@ -184,6 +184,4 @@ $config = ArrayHelper::merge(
 // Initialize the application
 $app = new craft\app\web\Application($config);
 
-Craft::dd($app);
-
 return $app;

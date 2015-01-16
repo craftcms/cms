@@ -10,7 +10,7 @@ return [
 	'categories'           => 'craft\app\services\Categories',
 	'config'               => 'craft\app\services\Config',
 	'content'              => 'craft\app\services\Content',
-	'coreMessages'         => 'Craft\PhpMessageSource',
+	//'coreMessages'         => 'Craft\PhpMessageSource',
 	'dashboard'            => 'craft\app\services\Dashboard',
 	'db'                   => 'craft\app\db\DbConnection',
 	'deprecator'           => 'craft\app\services\Deprecator',
@@ -56,27 +56,10 @@ return [
 			'widget'        => ['subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'WidgetInterface',        'enableForPlugins' => true],
 		]
 	],
-	'errorHandler' => [
-		'class'       => 'craft\app\errors\ErrorHandler',
-		'errorAction' => 'templates/renderError'
-	],
-	'log' => [
-		'class' => 'craft\app\logging\LogRouter',
-		'routes' => [
-			[
-				'class'  => 'craft\app\logging\FileLogRoute',
-			],
-			[
-				'class'         => 'craft\app\logging\WebLogRoute',
-				//'filter'        => 'CLogFilter',
-				'showInFireBug' => true,
-			],
-			[
-				'class'         => 'craft\app\logging\ProfileLogRoute',
-				'showInFireBug' => true,
-			],
-		]
-	],
+	//'errorHandler' => [
+	//	'class'       => 'craft\app\errors\ErrorHandler',
+	//	'errorAction' => 'templates/renderError'
+	//],
 	'plugins' => [
 		'class' => 'craft\app\services\Plugins',
 		'autoloadClasses' => ['Controller','Enum','Helper','Model','Record','Service','Variable','Validator'],
