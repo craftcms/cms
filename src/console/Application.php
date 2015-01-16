@@ -52,22 +52,14 @@ class Application extends \yii\console\Application
 		date_default_timezone_set('UTC');
 
 		// Initialize Cache and LogRouter right away (order is important)
-		$this->get('cache');
-		//$this->get('log');
+		$this->getCache();
+		$this->getLog();
 
 		// So we can try to translate Yii framework strings
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
 
-		// Set our own custom runtime path.
-		$this->setRuntimePath($this->path->getRuntimePath());
-
-		// Attach our own custom Logger
-		//Craft::setLogger(new Logger());
-
-		// No need for these.
-		$log = $this->getLog();
-		$log->removeRoute('WebLogRoute');
-		$log->removeRoute('ProfileLogRoute');
+		//$log->removeRoute('WebLogRoute');
+		//$log->removeRoute('ProfileLogRoute');
 
 		// Set the edition components
 		$this->_setEditionComponents();

@@ -133,19 +133,12 @@ class Application extends \yii\web\Application
 		// in processRequest() is called.
 
 		// Initialize the Cache service, Request and LogRouter right away (order is important)
-		$this->get('cache');
+		$this->getCache();
 		$this->getRequest();
-
-		// Attach our own custom Logger
-		//Craft::setLogger(new Logger());
-
-		//$this->get('log');
+		$this->getLog();
 
 		// So we can try to translate Yii framework strings
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
-
-		// Set our own custom runtime path.
-		$this->setRuntimePath($this->path->getRuntimePath());
 
 		// If there is a custom appId set, apply it here.
 		if ($appId = $this->config->get('appId'))
