@@ -19,7 +19,7 @@ use craft\app\console\Request as ConsoleRequest;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UrlManager extends \CUrlManager
+class UrlManager extends \yii\web\UrlManager
 {
 	// Properties
 	// =========================================================================
