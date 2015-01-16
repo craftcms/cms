@@ -92,7 +92,7 @@ class Updater
 		Craft::info('Downloading patch file to '.$tempPath);
 		if (($fileName = Craft::$app->et->downloadUpdate($tempPath, $md5)) !== false)
 		{
-			$downloadFilePath = $tempPath.$fileName;
+			$downloadFilePath = $tempPath.'/'.$fileName;
 		}
 		else
 		{
@@ -110,7 +110,7 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::info('Unpacking the downloaded package.');
-		$unzipFolder = Craft::$app->path->getTempPath().$uid;
+		$unzipFolder = Craft::$app->path->getTempPath().'/'.$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder))
 		{
@@ -302,7 +302,7 @@ class Updater
 						$tempFilePath = $rowData[0];
 					}
 
-					$filesToDelete[] = $appPath.$tempFilePath;
+					$filesToDelete[] = $appPath.'/'.$tempFilePath;
 				}
 			}
 
@@ -396,7 +396,7 @@ class Updater
 			}
 
 			$rowData = explode(';', $row);
-			$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$rowData[0]);
+			$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$rowData[0]);
 
 			if (UpdateHelper::isManifestLineAFolder($filePath))
 			{
@@ -453,7 +453,7 @@ class Updater
 				}
 
 				$rowData = explode(';', $row);
-				$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$rowData[0]);
+				$filePath = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$rowData[0]);
 
 				// It's a folder
 				if (UpdateHelper::isManifestLineAFolder($filePath))
@@ -496,8 +496,8 @@ class Updater
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{
-		$requirementsFolderPath = $unzipFolder.'/app/requirements/';
-		$requirementsFile = $requirementsFolderPath.'Requirements.php';
+		$requirementsFolderPath = $unzipFolder.'/app/requirements';
+		$requirementsFile = $requirementsFolderPath.'/Requirements.php';
 		$errors = [];
 
 		if (!IOHelper::fileExists($requirementsFile))
@@ -506,7 +506,7 @@ class Updater
 		}
 
 		// Make sure we can write to craft/app/requirements
-		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'requirements/'))
+		if (!IOHelper::isWritable(Craft::$app->path->getAppPath().'/requirements'))
 		{
 			throw new Exception(StringHelper::parseMarkdown(Craft::t('@@@appName@@@ needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
 		}
@@ -514,13 +514,13 @@ class Updater
 		$tempFileName = StringHelper::UUID().'.php';
 
 		// Make a dupe of the requirements file and give it a random file name.
-		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.$tempFileName);
+		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFileName);
 
-		$newTempFilePath = Craft::$app->path->getAppPath().'requirements/'.$tempFileName;
+		$newTempFilePath = Craft::$app->path->getAppPath().'/requirements/'.$tempFileName;
 
 		// Copy the random file name requirements to the requirements folder.
 		// We don't want to execute any PHP from the storage folder.
-		IOHelper::copyFile($requirementsFolderPath.$tempFileName, $newTempFilePath);
+		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFileName, $newTempFilePath);
 
 		require_once($newTempFilePath);
 

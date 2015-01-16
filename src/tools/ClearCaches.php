@@ -155,11 +155,11 @@ class ClearCaches extends BaseTool
 		$runtimePath = Craft::$app->path->getRuntimePath();
 
 		$folders = [
-			$obfuscate ? md5('dataCache') : 'dataCache'                                             => Craft::t('Data caches'),
-			$obfuscate ? md5($runtimePath.'cache') : $runtimePath.'cache'                           => Craft::t('RSS caches'),
-			$obfuscate ? md5($runtimePath.'assets') : $runtimePath.'assets'                         => Craft::t('Asset caches'),
-			$obfuscate ? md5($runtimePath.'compiled_templates') : $runtimePath.'compiled_templates' => Craft::t('Compiled templates'),
-			$obfuscate ? md5($runtimePath.'temp') : $runtimePath.'temp'                             => Craft::t('Temp files'),
+			$obfuscate ? md5('dataCache') : 'dataCache'                                               => Craft::t('Data caches'),
+			$obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache'                           => Craft::t('RSS caches'),
+			$obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets'                         => Craft::t('Asset caches'),
+			$obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('Compiled templates'),
+			$obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp'                             => Craft::t('Temp files'),
 		];
 
 		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');

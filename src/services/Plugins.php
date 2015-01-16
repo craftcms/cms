@@ -676,7 +676,7 @@ class Plugins extends Component
 
 		$pluginHandle = $plugin->getClassHandle();
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$pluginFolderPath = Craft::$app->path->getPluginsPath().$pluginFolder.'/';
+		$pluginFolderPath = Craft::$app->path->getPluginsPath().'/'.$pluginFolder.'/';
 		$classSubfolderPath = $pluginFolderPath.$classSubfolder.'/';
 
 		if (IOHelper::folderExists($classSubfolderPath))
@@ -724,7 +724,7 @@ class Plugins extends Component
 	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
 	{
 		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$classPath = Craft::$app->path->getPluginsPath().$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
+		$classPath = Craft::$app->path->getPluginsPath().'/'.$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
 
 		if (IOHelper::fileExists($classPath))
 		{
@@ -789,7 +789,7 @@ class Plugins extends Component
 	 */
 	private function _savePluginMigrations($pluginId, $pluginHandle)
 	{
-		$migrationsFolder = Craft::$app->path->getPluginsPath().mb_strtolower($pluginHandle).'/migrations/';
+		$migrationsFolder = Craft::$app->path->getPluginsPath().'/'.mb_strtolower($pluginHandle).'/migrations/';
 
 		if (IOHelper::folderExists($migrationsFolder))
 		{
@@ -877,7 +877,7 @@ class Plugins extends Component
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = Craft::$app->path->getPluginsPath().mb_strtolower($handle).'/'.$class.'.php';
+			$path = Craft::$app->path->getPluginsPath().'/'.mb_strtolower($handle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -915,7 +915,7 @@ class Plugins extends Component
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
 		$pluginsPath = Craft::$app->path->getPluginsPath();
-		$fullPath = $pluginsPath.mb_strtolower($iHandle).'/'.$iHandle.'Plugin.php';
+		$fullPath = $pluginsPath.'/'.mb_strtolower($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{

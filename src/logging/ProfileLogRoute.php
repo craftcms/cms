@@ -39,7 +39,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 			in_array(HeaderHelper::getMimeType(), ['text/html', 'application/xhtml+xml'])
 		)
 		{
-			$viewFile = Craft::$app->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
+			$viewFile = Craft::$app->path->getCpTemplatesPath().'/logging/'.$view.'-firebug.php';
 			include(Craft::$app->findLocalizedFile($viewFile, 'en'));
 		}
 	}

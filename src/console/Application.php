@@ -75,11 +75,11 @@ class Application extends \yii\console\Application
 
 		foreach ($this->plugins->getPlugins() as $plugin)
 		{
-			$commandsPath = $this->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands/';
+			$commandsPath = $this->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getClassHandle()).'/consolecommands';
 
 			if (IOHelper::folderExists($commandsPath))
 			{
-				$this->commandRunner->addCommands(rtrim($commandsPath, '/'));
+				$this->commandRunner->addCommands($commandsPath);
 			}
 		}
 	}

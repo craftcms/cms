@@ -1,4 +1,11 @@
 <?php
+/**
+ * Craft web bootstrap file.
+ *
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
 
 // Make sure this is PHP 5.4 or later
 // -----------------------------------------------------------------------------

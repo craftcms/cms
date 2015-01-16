@@ -7,9 +7,11 @@
  * @license http://buildwithcraft.com/license
  */
 
+$appPath = __DIR__;
+
 return [
-	'GC' => CRAFT_APP_PATH.'vendor/gc/GC.php',
-	'HelpSpotAPI' => CRAFT_APP_PATH.'vendor/helpspot/HelpSpotAPI.php',
-	'PclZip' => CRAFT_APP_PATH.'vendor/pclzip/PclZip.php',
-	'S3' => CRAFT_APP_PATH.'vendor/s3/S3.php',
+	'GC' => $appPath.'/vendor/gc/GC.php',
+	'HelpSpotAPI' => $appPath.'/vendor/helpspot/HelpSpotAPI.php',
+	'PclZip' => $appPath.'/vendor/pclzip/PclZip.php',
+	'S3' => $appPath.'/vendor/s3/S3.php',
 ];

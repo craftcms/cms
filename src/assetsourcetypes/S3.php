@@ -264,7 +264,7 @@ class S3 extends BaseAssetSourceType
 
 			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $this->_getPathPrefix().$uriPath);
 
-			$targetPath = Craft::$app->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
+			$targetPath = Craft::$app->path->getAssetsImageSourcePath().'/'.$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
 
 			$timeModified = new DateTime('@'.$fileInfo['time']);
 
@@ -298,7 +298,7 @@ class S3 extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+		return Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
 
 	/**

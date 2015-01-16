@@ -39,7 +39,7 @@ class AssetsHelper
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$fileName = uniqid('assets', true).'.'.$extension;
 
-		return IOHelper::createFile(Craft::$app->path->getTempPath().$fileName)->getRealPath();
+		return IOHelper::createFile(Craft::$app->path->getTempPath().'/'.$fileName)->getRealPath();
 	}
 
 	/**

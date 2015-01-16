@@ -82,7 +82,8 @@ class Rebrand
 	{
 		if (!isset($this->_logoPath))
 		{
-			$files = IOHelper::getFolderContents(Craft::$app->path->getStoragePath().'logo/', false);
+			$files = IOHelper::getFolderContents(Craft::$app->path->getStoragePath().'/logo', false);
+
 			if (!empty($files))
 			{
 				$this->_logoPath = $files[0];

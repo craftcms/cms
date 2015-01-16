@@ -47,7 +47,7 @@ class WebLogRoute extends \CWebLogRoute
 			}
 			else
 			{
-				$viewFile = Craft::$app->path->getCpTemplatesPath().'logging/'.$view.'-firebug.php';
+				$viewFile = Craft::$app->path->getCpTemplatesPath().'/logging/'.$view.'-firebug.php';
 				include(Craft::$app->findLocalizedFile($viewFile, 'en'));
 			}
 		}

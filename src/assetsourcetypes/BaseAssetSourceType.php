@@ -243,7 +243,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 				if (!$this->isSourceLocal() && $fileModel->kind == 'image')
 				{
-					Craft::$app->assetTransforms->storeLocalSource($localFilePath, Craft::$app->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
+					Craft::$app->assetTransforms->storeLocalSource($localFilePath, Craft::$app->path->getAssetsImageSourcePath().'/'.$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename));
 				}
 
 				// Check if we stored a conflict response originally - send that back then.
@@ -320,7 +320,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			if (!$this->isSourceLocal() && $file->kind == 'image')
 			{
 				// Store copy locally for all sorts of operations.
-				Craft::$app->assetTransforms->storeLocalSource($localCopy, Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename));
+				Craft::$app->assetTransforms->storeLocalSource($localCopy, Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
 			}
 		}
 
@@ -433,7 +433,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				if ($replaceWith->kind == 'image')
 				{
 					$localCopy = $replaceWith->getTransformSource();
-					IOHelper::copyFile($localCopy, Craft::$app->path->getAssetsImageSourcePath().$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
+					IOHelper::copyFile($localCopy, Craft::$app->path->getAssetsImageSourcePath().'/'.$oldFile->id.'.'.IOHelper::getExtension($oldFile->filename));
 				}
 			}
 		}

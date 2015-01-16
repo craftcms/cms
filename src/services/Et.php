@@ -92,7 +92,7 @@ class Et extends Component
 	{
 		if (IOHelper::folderExists($downloadPath))
 		{
-			$downloadPath .= $md5.'.zip';
+			$downloadPath .= '/'.$md5.'.zip';
 		}
 
 		$updateModel = Craft::$app->updates->getUpdates();

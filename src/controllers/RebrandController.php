@@ -54,19 +54,19 @@ class RebrandController extends BaseController
 
 				$fileName = AssetsHelper::cleanAssetName($file['name']);
 
-				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
+				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!Craft::$app->images->checkMemoryForImage($folderPath.$fileName))
+				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$fileName))
 				{
-					IOHelper::deleteFile($folderPath.$fileName);
+					IOHelper::deleteFile($folderPath.'/'.$fileName);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				Craft::$app->images->cleanImage($folderPath.$fileName);
+				Craft::$app->images->cleanImage($folderPath.'/'.$fileName);
 
 				$constraint = 500;
-				list ($width, $height) = getimagesize($folderPath.$fileName);
+				list ($width, $height) = getimagesize($folderPath.'/'.$fileName);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
@@ -128,11 +128,11 @@ class RebrandController extends BaseController
 				$source = mb_substr($source, 0, mb_strpos($source, '&'));
 			}
 
-			$imagePath = Craft::$app->path->getTempUploadsPath().$source;
+			$imagePath = Craft::$app->path->getTempUploadsPath().'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && Craft::$app->images->checkMemoryForImage($imagePath))
 			{
-				$targetPath = Craft::$app->path->getStoragePath().'logo/';
+				$targetPath = Craft::$app->path->getStoragePath().'/logo';
 
 				IOHelper::ensureFolderExists($targetPath);
 
@@ -141,7 +141,7 @@ class RebrandController extends BaseController
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
-						->saveAs($targetPath.$source);
+						->saveAs($targetPath.'/'.$source);
 
 				IOHelper::deleteFile($imagePath);
 
@@ -166,7 +166,7 @@ class RebrandController extends BaseController
 	public function actionDeleteLogo()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'logo/');
+		IOHelper::clearFolder(Craft::$app->path->getStoragePath().'/logo');
 
 		$html = Craft::$app->templates->render('settings/general/_logo');
 		$this->returnJson(['html' => $html]);

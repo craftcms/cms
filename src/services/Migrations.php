@@ -201,7 +201,7 @@ class Migrations extends Component
 	 */
 	public function instantiateMigration($class, $plugin = null)
 	{
-		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).$class.'.php');
+		$file = IOHelper::normalizePathSeparators($this->getMigrationPath($plugin).'/'.$class.'.php');
 
 		if (!IOHelper::fileExists($file) || !IOHelper::isReadable($file))
 		{

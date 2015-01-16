@@ -48,7 +48,7 @@ class PhpMessageSource extends \CPhpMessageSource
 	 */
 	public function init()
 	{
-		$this->basePath = Craft::$app->path->getFrameworkPath().'messages/';
+		$this->basePath = Craft::$app->path->getFrameworkPath().'messages';
 		parent::init();
 	}
 
@@ -70,7 +70,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			$parentMessages = parent::loadMessages($category, $language);
 
 			// See if there any craft/translations for Yii's system messages.
-			if (($filePath = IOHelper::fileExists(Craft::$app->path->getSiteTranslationsPath().$language.'.php')) !== false)
+			if (($filePath = IOHelper::fileExists(Craft::$app->path->getSiteTranslationsPath().'/'.$language.'.php')) !== false)
 			{
 				$parentMessages = array_merge($parentMessages, include($filePath));
 			}
@@ -92,7 +92,7 @@ class PhpMessageSource extends \CPhpMessageSource
 				{
 					foreach ($pluginPaths as $pluginPath)
 					{
-						$paths[] = $pluginPath.'translations/';
+						$paths[] = $pluginPath.'translations';
 					}
 				}
 			}
@@ -101,7 +101,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			$paths[] = Craft::$app->path->getCpTranslationsPath();
 
 			// Add in Yii's i18n data, which we're going to do some special parsing on
-			$paths[] = Craft::$app->path->getFrameworkPath().'i18n/data/';
+			$paths[] = Craft::$app->path->getFrameworkPath().'i18n/data';
 
 			// Site translations take the highest precidence, so they get added last
 			$paths[] = Craft::$app->path->getSiteTranslationsPath();
@@ -123,7 +123,7 @@ class PhpMessageSource extends \CPhpMessageSource
 				{
 					foreach ($translationFiles as $file)
 					{
-						$path = $folderPath.$file.'.php';
+						$path = $folderPath.'/'.$file.'.php';
 
 						if (IOHelper::fileExists($path))
 						{

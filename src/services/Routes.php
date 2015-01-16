@@ -35,7 +35,7 @@ class Routes extends Component
 	 */
 	public function getConfigFileRoutes()
 	{
-		$path = Craft::$app->path->getConfigPath().'routes.php';
+		$path = Craft::$app->path->getConfigPath().'/routes.php';
 
 		if (IOHelper::fileExists($path))
 		{

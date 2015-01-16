@@ -1,35 +1,46 @@
 <?php
+/**
+ * Craft bootstrap file.
+ *
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
 
 use craft\app\helpers\ArrayHelper;
 
-// Path constants and validation
+// Setup
 // -----------------------------------------------------------------------------
 
-// We're already in the app/ folder, so let's use that as the starting point. Make sure it doesn't look like we're on a
-// network share that starts with \\
-$appPath = realpath(dirname(__FILE__));
-
-if (isset($appPath[0]) && isset($appPath[1]))
+// Determine what type of application we're loading
+if (!isset($appType) || ($appType !== 'web' && $appType !== 'console'))
 {
-	if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
-	{
-		$appPath = str_replace('\\', '/', $appPath);
-	}
+	$appType = 'web';
 }
 
-defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', $appPath.'/');
+$getArg = function($param, $unset = true)
+{
+	if (isset($_SERVER['argv']))
+	{
+		foreach ($_SERVER['argv'] as $key => $arg)
+		{
+			if (strpos($arg, "--{$param}=") !== false)
+			{
+				$parts = explode('=', $arg);
+				$value = $parts[1];
 
-// The app/ folder goes inside craft/ by default, so work backwards from app/
-defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
+				if ($unset)
+				{
+					unset($_SERVER['argv'][$key]);
+				}
 
-// Everything else should be relative from craft/ by default
-defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
-defined('CRAFT_PLUGINS_PATH')      || define('CRAFT_PLUGINS_PATH',      CRAFT_BASE_PATH.'plugins/');
-defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BASE_PATH.'storage/');
-defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
-defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', CRAFT_BASE_PATH.'translations/');
+				return $value;
+			}
+		}
+	}
+};
 
-function craft_createFolder($path)
+$createFolder = function($path)
 {
 	// Code borrowed from IOHelper...
 	if (!is_dir($path))
@@ -48,9 +59,9 @@ function craft_createFolder($path)
 		chmod($path, 0755);
 		umask($oldumask);
 	}
-}
+};
 
-function craft_ensureFolderIsReadable($path, $writableToo = false)
+$ensureFolderIsReadable = function($path, $writableToo = false)
 {
 	$realPath = realpath($path);
 
@@ -73,30 +84,49 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 			exit($realPath.' isn\'t writable by PHP. Please fix that.');
 		}
 	}
-}
+};
+
+// Determine the paths
+// -----------------------------------------------------------------------------
+
+// App folder, we are already in you.
+$appPath = __DIR__;
+
+// By default the craft/ folder will be one level up
+$craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : $getArg('basePath') ?: dirname($appPath));
+
+// By default the remaining folders will be in craft/
+$configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $craftPath.'/config');
+$pluginsPath = realpath(defined('CRAFT_PLUGINS_PATH') ? CRAFT_PLUGINS_PATH : $getArg('pluginsPath') ?: $craftPath.'/plugins');
+$storagePath = realpath(defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $getArg('storagePath') ?: $craftPath.'/storage');
+$templatesPath = realpath(defined('CRAFT_TEMPLATES_PATH') ? CRAFT_TEMPLATES_PATH : $getArg('templatesPath') ?: $craftPath.'/templates');
+$translationsPath = realpath(defined('CRAFT_TRANSLATIONS_PATH') ? CRAFT_TRANSLATIONS_PATH : $getArg('translationsPath') ?: $craftPath.'/translations');
+
+// Validate the paths
+// -----------------------------------------------------------------------------
 
 // Validate permissions on craft/config/ and craft/storage/
-craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH);
+$ensureFolderIsReadable($configPath);
 
 // If license.key doesn't exist yet, make sure the config folder is writable.
-if (!file_exists(CRAFT_CONFIG_PATH.'license.key'))
+if (!file_exists($configPath.'/license.key'))
 {
-	craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH, true);
+	$ensureFolderIsReadable($configPath, true);
 }
 
-craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH, true);
+$ensureFolderIsReadable($storagePath, true);
 
 // Create the craft/storage/runtime/ folder if it doesn't already exist
-craft_createFolder(CRAFT_STORAGE_PATH.'runtime/');
-craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/', true);
+$createFolder($storagePath.'/runtime');
+$ensureFolderIsReadable($storagePath.'/runtime', true);
 
 // Create the craft/storage/runtime/logs/ folder if it doesn't already exist
-craft_createFolder(CRAFT_STORAGE_PATH.'runtime/logs/');
-craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH.'runtime/logs/', true);
+$createFolder($storagePath.'/runtime/logs');
+$ensureFolderIsReadable($storagePath.'/runtime/logs', true);
 
 // Log errors to craft/storage/runtime/logs/phperrors.log
 ini_set('log_errors', 1);
-ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
+ini_set('error_log', $storagePath.'/runtime/logs/phperrors.log');
 
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
@@ -105,29 +135,36 @@ ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
 defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
 
 // We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
-$devMode = false;
-$generalConfigPath = CRAFT_CONFIG_PATH.'general.php';
-
-if (file_exists($generalConfigPath))
+if ($appType === 'console')
 {
-	$generalConfig = require $generalConfigPath;
+	$devMode = true;
+}
+else
+{
+	$devMode = false;
+	$generalConfigPath = $configPath.'/general.php';
 
-	if (is_array($generalConfig))
+	if (file_exists($generalConfigPath))
 	{
-		// Normalize it to a multi-environment config
-		if (!array_key_exists('*', $generalConfig))
-		{
-			$generalConfig = ['*' => $generalConfig];
-		}
+		$generalConfig = require $generalConfigPath;
 
-		// Loop through all of the environment configs, figuring out what the final word is on Dev Mode
-		foreach ($generalConfig as $env => $envConfig)
+		if (is_array($generalConfig))
 		{
-			if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
+			// Normalize it to a multi-environment config
+			if (!array_key_exists('*', $generalConfig))
 			{
-				if (isset($envConfig['devMode']))
+				$generalConfig = ['*' => $generalConfig];
+			}
+
+			// Loop through all of the environment configs, figuring out what the final word is on Dev Mode
+			foreach ($generalConfig as $env => $envConfig)
+			{
+				if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false)
 				{
-					$devMode = $envConfig['devMode'];
+					if (isset($envConfig['devMode']))
+					{
+						$devMode = $envConfig['devMode'];
+					}
 				}
 			}
 		}
@@ -150,7 +187,6 @@ else
 	defined('YII_ENV') || define('YII_ENV', 'prod');
 }
 
-
 // Load the Composer dependencies and the app
 // -----------------------------------------------------------------------------
 
@@ -160,28 +196,33 @@ defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155)
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-require CRAFT_APP_PATH.'vendor/autoload.php';
-require CRAFT_APP_PATH.'vendor/yiisoft/yii2/Yii.php';
-require CRAFT_APP_PATH.'Craft.php';
+require $appPath.'/vendor/autoload.php';
+require $appPath.'/vendor/yiisoft/yii2/Yii.php';
+require $appPath.'/Craft.php';
 
 // Set aliases
-Craft::setAlias('@craft/app', realpath(CRAFT_APP_PATH));
-Craft::setAlias('@storage', realpath(CRAFT_STORAGE_PATH));
+Craft::setAlias('@craft/app', $appPath);
+Craft::setAlias('@config', $configPath);
+Craft::setAlias('@plugins', $pluginsPath);
+Craft::setAlias('@storage', $storagePath);
+Craft::setAlias('@templates', $templatesPath);
+Craft::setAlias('@translations', $translationsPath);
 
 // Append Craft's class map to Yii's
 Yii::$classMap = ArrayHelper::merge(
 	Yii::$classMap,
-	require CRAFT_APP_PATH.'classes.php'
+	require $appPath.'/classes.php'
 );
 
 // Load the config
 $config = ArrayHelper::merge(
-	require CRAFT_APP_PATH.'config/main.php',
-	require CRAFT_APP_PATH.'config/common.php',
-	require CRAFT_APP_PATH.'config/web.php'
+	require $appPath.'/config/main.php',
+	require $appPath.'/config/common.php',
+	require $appPath.'/config/'.$appType.'.php'
 );
 
 // Initialize the application
-$app = new craft\app\web\Application($config);
+$class = 'craft\\app\\'.$appType.'\\Application';
+$app = new $class($config);
 
 return $app;

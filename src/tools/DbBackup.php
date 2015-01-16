@@ -71,7 +71,7 @@ class DbBackup extends BaseTool
 
 		if (IOHelper::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup'])
 		{
-			$destZip = Craft::$app->path->getTempPath().IOHelper::getFileName($file, false).'.zip';
+			$destZip = Craft::$app->path->getTempPath().'/'.IOHelper::getFileName($file, false).'.zip';
 
 			if (IOHelper::fileExists($destZip))
 			{

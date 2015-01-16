@@ -263,7 +263,7 @@ class Rackspace extends BaseAssetSourceType
 
 			$timeModified = new DateTime($fileInfo->lastModified, new \DateTimeZone('UTC'));
 
-			$targetPath = Craft::$app->path->getAssetsImageSourcePath().$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
+			$targetPath = Craft::$app->path->getAssetsImageSourcePath().'/'.$fileModel->id.'.'.IOHelper::getExtension($fileModel->filename);
 
 			if ($fileModel->kind == 'image' && ($fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath)))
 			{
@@ -296,7 +296,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $file)
 	{
-		return Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename);
+		return Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
 
 	/**

@@ -992,26 +992,26 @@ class UsersController extends BaseController
 				$user = Craft::$app->users->getUserById($userId);
 				$userName = AssetsHelper::cleanAssetName($user->username);
 
-				$folderPath = Craft::$app->path->getTempUploadsPath().'userphotos/'.$userName.'/';
+				$folderPath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName;
 
 				IOHelper::clearFolder($folderPath);
 
 				IOHelper::ensureFolderExists($folderPath);
 				$fileName = AssetsHelper::cleanAssetName($file['name']);
 
-				move_uploaded_file($file['tmp_name'], $folderPath.$fileName);
+				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$fileName);
 
 				// Test if we will be able to perform image actions on this image
-				if (!Craft::$app->images->checkMemoryForImage($folderPath.$fileName))
+				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$fileName))
 				{
-					IOHelper::deleteFile($folderPath.$fileName);
+					IOHelper::deleteFile($folderPath.'/'.$fileName);
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				Craft::$app->images->cleanImage($folderPath.$fileName);
+				Craft::$app->images->cleanImage($folderPath.'/'.$fileName);
 
 				$constraint = 500;
-				list ($width, $height) = getimagesize($folderPath.$fileName);
+				list ($width, $height) = getimagesize($folderPath.'/'.$fileName);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
@@ -1076,7 +1076,7 @@ class UsersController extends BaseController
 			$userName = AssetsHelper::cleanAssetName($user->username);
 
 			// make sure that this is this user's file
-			$imagePath = Craft::$app->path->getTempUploadsPath().'userphotos/'.$userName.'/'.$source;
+			$imagePath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && Craft::$app->images->checkMemoryForImage($imagePath))
 			{
@@ -1087,7 +1087,7 @@ class UsersController extends BaseController
 
 				if (Craft::$app->users->saveUserPhoto(IOHelper::getFileName($imagePath), $image, $user))
 				{
-					IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'userphotos/'.$userName);
+					IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName);
 
 					$html = Craft::$app->templates->render('users/_userphoto',
 						[
@@ -1099,7 +1099,7 @@ class UsersController extends BaseController
 				}
 			}
 
-			IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'userphotos/'.$userName);
+			IOHelper::clearFolder(Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName);
 		}
 		catch (Exception $exception)
 		{

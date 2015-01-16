@@ -67,7 +67,7 @@ class ToolsController extends BaseController
 	{
 		$fileName = Craft::$app->getRequest()->getRequiredQueryParam('fileName');
 
-		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().$fileName.'.zip')) == true)
+		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().'/'.$fileName.'.zip')) == true)
 		{
 			Craft::$app->getRequest()->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
 		}

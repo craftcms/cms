@@ -182,7 +182,7 @@ class UtilsController extends BaseController
 			$logEntriesByRequest = [];
 			$currentLogFileName = isset($variables['currentLogFileName']) ? $variables['currentLogFileName'] : 'craft.log';
 
-			$currentFullPath = Craft::$app->path->getLogPath().$currentLogFileName;
+			$currentFullPath = Craft::$app->path->getLogPath().'/'.$currentLogFileName;
 			if (IOHelper::fileExists($currentFullPath))
 			{
 				// Different parsing logic for phperrors.log
@@ -190,7 +190,7 @@ class UtilsController extends BaseController
 				{
 					// Split the log file's contents up into arrays of individual logs, where each item is an array of
 					// the lines of that log.
-					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFileName);
 
 					$requests = explode('******************************************************************************************************', $contents);
 
@@ -346,7 +346,7 @@ class UtilsController extends BaseController
 				else
 				{
 					$logEntry = new LogEntryModel();
-					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFileName);
 					$contents = str_replace("\n", "<br />", $contents);
 					$logEntry->message = $contents;
 

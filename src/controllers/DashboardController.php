@@ -233,14 +233,14 @@ class DashboardController extends BaseController
 						$zipFile = $this->_createZip();
 					}
 
-					$tempFolder = Craft::$app->path->getTempPath().StringHelper::UUID().'/';
+					$tempFolder = Craft::$app->path->getTempPath().'/'.StringHelper::UUID();
 
 					if (!IOHelper::folderExists($tempFolder))
 					{
 						IOHelper::createFolder($tempFolder);
 					}
 
-					$tempFile = $tempFolder.$getHelpModel->attachment->getName();
+					$tempFile = $tempFolder.'/'.$getHelpModel->attachment->getName();
 					$getHelpModel->attachment->saveAs($tempFile);
 
 					// Make sure it actually saved.
@@ -345,7 +345,7 @@ class DashboardController extends BaseController
 	 */
 	private function _createZip()
 	{
-		$zipFile = Craft::$app->path->getTempPath().StringHelper::UUID().'.zip';
+		$zipFile = Craft::$app->path->getTempPath().'/'.StringHelper::UUID().'.zip';
 		IOHelper::createFile($zipFile);
 
 		return $zipFile;

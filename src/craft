@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Craft console bootstrap file.
+ *
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
+$appType = 'console';
+$app = require 'bootstrap.php';
+$exitCode = $app->run();
+exit($exitCode);

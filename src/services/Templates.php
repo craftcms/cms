@@ -212,7 +212,7 @@ class Templates extends Component
 
 				if (!$template)
 				{
-					$template = Craft::$app->path->getTemplatesPath().$this->_renderingTemplate;
+					$template = rtrim(Craft::$app->path->getTemplatesPath(), '/\\').'/'.$this->_renderingTemplate;
 				}
 			}
 
@@ -823,7 +823,7 @@ class Templates extends Component
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Get the latest template base path
-		$templatesPath = rtrim(Craft::$app->path->getTemplatesPath(), '/').'/';
+		$templatesPath = rtrim(Craft::$app->path->getTemplatesPath(), '/\\');
 
 		$key = $templatesPath.':'.$name;
 
@@ -842,9 +842,9 @@ class Templates extends Component
 		// Should we be looking for a localized version of the template?
 		$request = Craft::$app->getRequest();
 
-		if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && IOHelper::folderExists($templatesPath.Craft::$app->language))
+		if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && IOHelper::folderExists($templatesPath.'/'.Craft::$app->language))
 		{
-			$basePaths[] = $templatesPath.Craft::$app->language.'/';
+			$basePaths[] = $templatesPath.'/'.Craft::$app->language;
 		}
 
 		$basePaths[] = $templatesPath;
@@ -872,7 +872,7 @@ class Templates extends Component
 			if ($pluginHandle && ($plugin = Craft::$app->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Get the template path for the plugin.
-				$basePath = Craft::$app->path->getPluginsPath().StringHelper::toLowerCase($plugin->getClassHandle()).'/templates/';
+				$basePath = Craft::$app->path->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getClassHandle()).'/templates';
 
 				// Get the new template name to look for within the plugin's templates folder
 				$tempName = implode('/', $parts);
@@ -1197,7 +1197,7 @@ class Templates extends Component
 	private function _findTemplate($basePath, $name)
 	{
 		// Normalize the path and name
-		$basePath = rtrim(IOHelper::normalizePathSeparators($basePath), '/').'/';
+		$basePath = rtrim(IOHelper::normalizePathSeparators($basePath), '/\\');
 		$name = trim(IOHelper::normalizePathSeparators($name), '/');
 
 		// Set the defaultTemplateExtensions and indexTemplateFilenames vars
@@ -1221,7 +1221,7 @@ class Templates extends Component
 		if ($name)
 		{
 			// Maybe $name is already the full file path
-			$testPath = $basePath.$name;
+			$testPath = $basePath.'/'.$name;
 
 			if (IOHelper::fileExists($testPath))
 			{
@@ -1230,7 +1230,7 @@ class Templates extends Component
 
 			foreach ($this->_defaultTemplateExtensions as $extension)
 			{
-				$testPath = $basePath.$name.'.'.$extension;
+				$testPath = $basePath.'/'.$name.'.'.$extension;
 
 				if (IOHelper::fileExists($testPath))
 				{
@@ -1243,7 +1243,7 @@ class Templates extends Component
 		{
 			foreach ($this->_defaultTemplateExtensions as $extension)
 			{
-				$testPath = $basePath.($name ? $name.'/' : '').$filename.'.'.$extension;
+				$testPath = $basePath.'/'.($name ? $name.'/' : '').$filename.'.'.$extension;
 
 				if (IOHelper::fileExists($testPath))
 				{

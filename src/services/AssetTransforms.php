@@ -628,7 +628,7 @@ class AssetTransforms extends Component
 	 */
 	public function getThumbServerPath(AssetFileModel $fileModel, $size)
 	{
-		$thumbFolder = Craft::$app->path->getAssetsThumbsPath().$size.'/';
+		$thumbFolder = Craft::$app->path->getAssetsThumbsPath().'/'.$size.'/';
 		IOHelper::ensureFolderExists($thumbFolder);
 
 		$extension = $this->_getThumbExtension($fileModel);
@@ -889,7 +889,7 @@ class AssetTransforms extends Component
 		$this->deleteCreatedTransformsForFile($file);
 		$this->deleteTransformIndexDataByFileId($file->id);
 
-		IOHelper::deleteFile(Craft::$app->path->getAssetsImageSourcePath().$file->id.'.'.IOHelper::getExtension($file->filename), true);
+		IOHelper::deleteFile(Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename), true);
 	}
 
 	/**

@@ -876,11 +876,13 @@ trait ApplicationTrait
 
 		if ($edition === Craft::Client || $edition === Craft::Pro)
 		{
-			$this->setComponents(require CRAFT_APP_PATH.'config/components/client.php');
+			$pathService = $this->path;
+
+			$this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
 
 			if ($edition === Craft::Pro)
 			{
-				$this->setComponents(require CRAFT_APP_PATH.'config/components/pro.php');
+				$this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
 			}
 		}
 	}

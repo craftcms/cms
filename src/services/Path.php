@@ -29,7 +29,37 @@ class Path extends Component
 	/**
 	 * @var
 	 */
+	private $_appPath;
+
+	/**
+	 * @var
+	 */
+	private $_configPath;
+
+	/**
+	 * @var
+	 */
+	private $_pluginsPath;
+
+	/**
+	 * @var
+	 */
+	private $_storagePath;
+
+	/**
+	 * @var
+	 */
 	private $_templatesPath;
+
+	/**
+	 * @var
+	 */
+	private $_siteTranslationsPath;
+
+	/**
+	 * @var
+	 */
+	private $_vendorPath;
 
 	// Public Methods
 	// =========================================================================
@@ -41,7 +71,12 @@ class Path extends Component
 	 */
 	public function getAppPath()
 	{
-		return CRAFT_APP_PATH;
+		if (!isset($this->_appPath))
+		{
+			$this->_appPath = Craft::getAlias('@app');
+		}
+
+		return $this->_appPath;
 	}
 
 	/**
@@ -51,7 +86,12 @@ class Path extends Component
 	 */
 	public function getConfigPath()
 	{
-		return CRAFT_CONFIG_PATH;
+		if (!isset($this->_configPath))
+		{
+			$this->_configPath = Craft::getAlias('@config');
+		}
+
+		return $this->_configPath;
 	}
 
 	/**
@@ -61,7 +101,12 @@ class Path extends Component
 	 */
 	public function getPluginsPath()
 	{
-		return CRAFT_PLUGINS_PATH;
+		if (!isset($this->_pluginsPath))
+		{
+			$this->_pluginsPath = Craft::getAlias('@plugins');
+		}
+
+		return $this->_pluginsPath;
 	}
 
 	/**
@@ -71,7 +116,27 @@ class Path extends Component
 	 */
 	public function getStoragePath()
 	{
-		return CRAFT_STORAGE_PATH;
+		if (!isset($this->_storagePath))
+		{
+			$this->_storagePath = Craft::getAlias('@storage');
+		}
+
+		return $this->_storagePath;
+	}
+
+	/**
+	 * Returns the path to the craft/app/vendor/ folder.
+	 *
+	 * @return string The path to the craft/app/vendor/ folder.
+	 */
+	public function getVendorPath()
+	{
+		if (!isset($this->_vendorPath))
+		{
+			$this->_vendorPath = Craft::getAlias('@vendor');
+		}
+
+		return $this->_vendorPath;
 	}
 
 	/**
@@ -81,12 +146,12 @@ class Path extends Component
 	 */
 	public function getRuntimePath()
 	{
-		$path = $this->getStoragePath().'runtime/';
+		$path = $this->getStoragePath().'/runtime';
 		IOHelper::ensureFolderExists($path);
 
-		if (!IOHelper::fileExists($path.'.gitignore'))
+		if (!IOHelper::fileExists($path.'/.gitignore'))
 		{
-			IOHelper::writeToFile($path.'.gitignore', "*\n!.gitignore\n\n", true);
+			IOHelper::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n", true);
 		}
 
 		return $path;
@@ -99,19 +164,8 @@ class Path extends Component
 	 */
 	public function getDbBackupPath()
 	{
-		$path = $this->getStoragePath().'backups/';
+		$path = $this->getStoragePath().'backups';
 		IOHelper::ensureFolderExists($path);
-		return $path;
-	}
-
-	/**
-	 * Returns the path to the craft/app/vendor/ folder.
-	 *
-	 * @return string The path to the craft/app/vendor/ folder.
-	 */
-	public function getVendorPath()
-	{
-		$path = $this->getAppPath().'vendor/';
 		return $path;
 	}
 
@@ -122,7 +176,7 @@ class Path extends Component
 	 */
 	public function getTempPath()
 	{
-		$path = $this->getRuntimePath().'temp/';
+		$path = $this->getRuntimePath().'/temp';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -134,7 +188,7 @@ class Path extends Component
 	 */
 	public function getTempUploadsPath()
 	{
-		$path = $this->getTempPath().'uploads/';
+		$path = $this->getTempPath().'/uploads';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -146,7 +200,7 @@ class Path extends Component
 	 */
 	public function getUserPhotosPath()
 	{
-		$path = $this->getStoragePath().'userphotos/';
+		$path = $this->getStoragePath().'userphotos';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -158,7 +212,7 @@ class Path extends Component
 	 */
 	public function getAssetsPath()
 	{
-		$path = $this->getRuntimePath().'assets/';
+		$path = $this->getRuntimePath().'/assets';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -170,7 +224,7 @@ class Path extends Component
 	 */
 	public function getAssetsTempSourcePath()
 	{
-		$path = $this->getAssetsPath().'tempuploads/';
+		$path = $this->getAssetsPath().'/tempuploads';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -182,7 +236,7 @@ class Path extends Component
 	 */
 	public function getAssetsImageSourcePath()
 	{
-		$path = $this->getAssetsPath().'sources/';
+		$path = $this->getAssetsPath().'/sources';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -194,7 +248,7 @@ class Path extends Component
 	 */
 	public function getAssetsThumbsPath()
 	{
-		$path = $this->getAssetsPath().'thumbs/';
+		$path = $this->getAssetsPath().'/thumbs';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -206,7 +260,7 @@ class Path extends Component
 	 */
 	public function getAssetsIconsPath()
 	{
-		$path = $this->getAssetsPath().'icons/';
+		$path = $this->getAssetsPath().'/icons';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -218,19 +272,7 @@ class Path extends Component
 	 */
 	public function getLogPath()
 	{
-		$path = $this->getRuntimePath().'logs/';
-		IOHelper::ensureFolderExists($path);
-		return $path;
-	}
-
-	/**
-	 * Returns the path to the craft/storage/runtime/state/ folder.
-	 *
-	 * @return string The path to the craft/storage/runtime/state/ folder.
-	 */
-	public function getStatePath()
-	{
-		$path = $this->getRuntimePath().'state/';
+		$path = $this->getRuntimePath().'/logs';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -242,7 +284,7 @@ class Path extends Component
 	 */
 	public function getResourcesPath()
 	{
-		return $this->getAppPath().'resources/';
+		return $this->getAppPath().'resources';
 	}
 
 	/**
@@ -256,10 +298,10 @@ class Path extends Component
 	{
 		if ($pluginHandle)
 		{
-			return $this->getPluginsPath().StringHelper::toLowerCase($pluginHandle).'/migrations/';
+			return $this->getPluginsPath().'/'.StringHelper::toLowerCase($pluginHandle).'/migrations';
 		}
 
-		return $this->getAppPath().'migrations/';
+		return $this->getAppPath().'migrations';
 	}
 
 	/**
@@ -269,7 +311,7 @@ class Path extends Component
 	 */
 	public function getCpTranslationsPath()
 	{
-		return $this->getAppPath().'translations/';
+		return $this->getAppPath().'translations';
 	}
 
 	/**
@@ -279,7 +321,12 @@ class Path extends Component
 	 */
 	public function getSiteTranslationsPath()
 	{
-		return CRAFT_TRANSLATIONS_PATH;
+		if (!isset($this->_siteTranslationsPath))
+		{
+			$this->_siteTranslationsPath = Craft::getAlias('@translations');
+		}
+
+		return $this->_siteTranslationsPath;
 	}
 
 	/**
@@ -314,7 +361,7 @@ class Path extends Component
 	 */
 	public function setTemplatesPath($path)
 	{
-		$this->_templatesPath = $path;
+		$this->_templatesPath = rtrim($path, '/\\');
 	}
 
 	/**
@@ -324,7 +371,7 @@ class Path extends Component
 	 */
 	public function getCpTemplatesPath()
 	{
-		return $this->getAppPath().'templates/';
+		return $this->getAppPath().'templates';
 	}
 
 	/**
@@ -334,7 +381,7 @@ class Path extends Component
 	 */
 	public function getSiteTemplatesPath()
 	{
-		return CRAFT_TEMPLATES_PATH;
+		return Craft::getAlias('@templates');
 	}
 
 	/**
@@ -344,7 +391,7 @@ class Path extends Component
 	 */
 	public function getCompiledTemplatesPath()
 	{
-		$path = $this->getRuntimePath().'compiled_templates/';
+		$path = $this->getRuntimePath().'/compiled_templates';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -356,7 +403,7 @@ class Path extends Component
 	 */
 	public function getSessionPath()
 	{
-		$path = $this->getRuntimePath().'sessions/';
+		$path = $this->getRuntimePath().'/sessions';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -375,7 +422,7 @@ class Path extends Component
 
 		if (!$path)
 		{
-			$path = $this->getRuntimePath().'cache/';
+			$path = $this->getRuntimePath().'/cache';
 		}
 
 		IOHelper::ensureFolderExists($path);
@@ -389,6 +436,6 @@ class Path extends Component
 	 */
 	public function getLicenseKeyPath()
 	{
-		return $this->getConfigPath().'license.key';
+		return $this->getConfigPath().'/license.key';
 	}
 }

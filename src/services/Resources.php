@@ -123,7 +123,7 @@ class Resources extends Component
 							return false;
 						}
 
-						return Craft::$app->path->getTempUploadsPath().'userphotos/'.$segs[2].'/'.$segs[3];
+						return Craft::$app->path->getTempUploadsPath().'/userphotos/'.$segs[2].'/'.$segs[3];
 					}
 					else
 					{
@@ -142,14 +142,14 @@ class Resources extends Component
 						$username = AssetsHelper::cleanAssetName($segs[1], false);
 						$filename = AssetsHelper::cleanAssetName($segs[3]);
 
-						$userPhotosPath = Craft::$app->path->getUserPhotosPath().$username.'/';
-						$sizedPhotoFolder = $userPhotosPath.$size.'/';
-						$sizedPhotoPath = $sizedPhotoFolder.$filename;
+						$userPhotosPath = Craft::$app->path->getUserPhotosPath().'/'.$username;
+						$sizedPhotoFolder = $userPhotosPath.'/'.$size;
+						$sizedPhotoPath = $sizedPhotoFolder.'/'.$filename;
 
 						// If the photo doesn't exist at this size, create it.
 						if (!IOHelper::fileExists($sizedPhotoPath))
 						{
-							$originalPhotoPath = $userPhotosPath.'original/'.$filename;
+							$originalPhotoPath = $userPhotosPath.'/original/'.$filename;
 
 							if (!IOHelper::fileExists($originalPhotoPath))
 							{
@@ -182,13 +182,13 @@ class Resources extends Component
 					}
 
 					$size = $segs[1];
-					$sourceFile = Craft::$app->path->getResourcesPath().'images/'.static::DefaultUserphotoFilename;
-					$targetFolder = Craft::$app->path->getUserPhotosPath().'__default__/';
+					$sourceFile = Craft::$app->path->getResourcesPath().'/images/'.static::DefaultUserphotoFilename;
+					$targetFolder = Craft::$app->path->getUserPhotosPath().'/__default__';
 					IOHelper::ensureFolderExists($targetFolder);
 
 					if (IOHelper::isWritable($targetFolder))
 					{
-						$targetFile = $targetFolder.$size.'.'.IOHelper::getExtension($sourceFile);
+						$targetFile = $targetFolder.'/'.$size.'.'.IOHelper::getExtension($sourceFile);
 						Craft::$app->images->loadImage($sourceFile)
 							->resize($size)
 							->saveAs($targetFile);
@@ -205,14 +205,14 @@ class Resources extends Component
 				{
 					array_shift($segs);
 
-					return Craft::$app->path->getTempUploadsPath().implode('/', $segs);
+					return Craft::$app->path->getTempUploadsPath().'/'.implode('/', $segs);
 				}
 
 				case 'tempassets':
 				{
 					array_shift($segs);
 
-					return Craft::$app->path->getAssetsTempSourcePath().implode('/', $segs);
+					return Craft::$app->path->getAssetsTempSourcePath().'/'.implode('/', $segs);
 				}
 
 				case 'assetthumbs':
@@ -250,7 +250,7 @@ class Resources extends Component
 
 				case 'logo':
 				{
-					return Craft::$app->path->getStoragePath().implode('/', $segs);
+					return Craft::$app->path->getStoragePath().'/'.implode('/', $segs);
 				}
 
 				case 'transforms':
@@ -280,7 +280,7 @@ class Resources extends Component
 		}
 
 		// Check app/resources folder first.
-		$appResourcePath = Craft::$app->path->getResourcesPath().$path;
+		$appResourcePath = Craft::$app->path->getResourcesPath().'/'.$path;
 
 		if (IOHelper::fileExists($appResourcePath))
 		{
@@ -290,7 +290,7 @@ class Resources extends Component
 		// See if the first segment is a plugin handle.
 		if (isset($segs[0]))
 		{
-			$pluginResourcePath = Craft::$app->path->getPluginsPath().$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
+			$pluginResourcePath = Craft::$app->path->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/', array_splice($segs, 1));
 
 			if (IOHelper::fileExists($pluginResourcePath))
 			{
@@ -482,7 +482,7 @@ class Resources extends Component
 			$ext = $extAlias[$ext];
 		}
 
-		$sizeFolder = Craft::$app->path->getAssetsIconsPath().$size;
+		$sizeFolder = Craft::$app->path->getAssetsIconsPath().'/'.$size;
 
 		// See if we have the icon already
 		$iconLocation = $sizeFolder.'/'.$ext.'.png';
@@ -509,14 +509,14 @@ class Resources extends Component
 			}
 		}
 
-		$sourceFolder = Craft::$app->path->getAssetsIconsPath().$sourceSize['size'];
+		$sourceFolder = Craft::$app->path->getAssetsIconsPath().'/'.$sourceSize['size'];
 
 		// Do we have a source icon that we can resize?
 		$sourceIconLocation = $sourceFolder.'/'.$ext.'.png';
 
 		if (!IOHelper::fileExists($sourceIconLocation))
 		{
-			$sourceFile = Craft::$app->path->getAppPath().'resources/images/fileicons/'.$sourceSize['size'].'.png';
+			$sourceFile = Craft::$app->path->getAppPath().'/resources/images/fileicons/'.$sourceSize['size'].'.png';
 			$image = imagecreatefrompng($sourceFile);
 
 			// Text placement.
@@ -524,7 +524,7 @@ class Resources extends Component
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = StringHelper::toUpperCase($ext);
-				$font = Craft::$app->path->getAppPath().'resources/helveticaneue-webfont.ttf';
+				$font = Craft::$app->path->getAppPath().'/resources/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
 				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);

@@ -594,7 +594,7 @@ class Assets extends BaseElementFieldType
 				$folderId = $elementFolder->id;
 			}
 
-			IOHelper::ensureFolderExists(Craft::$app->path->getAssetsTempSourcePath().$folderName);
+			IOHelper::ensureFolderExists(Craft::$app->path->getAssetsTempSourcePath().'/'.$folderName);
 		}
 
 		return $folderId;

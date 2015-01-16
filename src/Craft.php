@@ -93,12 +93,12 @@ class Craft extends Yii
 			{
 				case 'app':
 				{
-					$rootPath = CRAFT_APP_PATH;
+					$rootPath = static::getAlias('@app');
 					break;
 				}
 				case 'plugins':
 				{
-					$rootPath = CRAFT_PLUGINS_PATH;
+					$rootPath = static::getAlias('@plugins');
 					break;
 				}
 				default:
@@ -109,10 +109,10 @@ class Craft extends Yii
 		}
 		else
 		{
-			$rootPath = CRAFT_APP_PATH;
+			$rootPath = static::getAlias('@app');
 		}
 
-		$path = $rootPath.implode('/', $segs);
+		$path = $rootPath.'/'.implode('/', $segs);
 
 		$folder = (mb_substr($path, -2) == '/*');
 

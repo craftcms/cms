@@ -135,7 +135,7 @@ class Install extends Component
 	{
 		$records = [];
 
-		$recordsFolder = Craft::$app->path->getAppPath().'records/';
+		$recordsFolder = Craft::$app->path->getAppPath().'/records/';
 		$recordFiles = IOHelper::getFolderContents($recordsFolder, false, ".*Record\.php$");
 
 		foreach ($recordFiles as $file)
@@ -500,7 +500,7 @@ class Install extends Component
 		$migration->applyTime = DateTimeHelper::currentUTCDateTime();
 		$migrations[] = $migration;
 
-		$migrationsFolder = Craft::$app->path->getAppPath().'migrations/';
+		$migrationsFolder = Craft::$app->path->getAppPath().'/migrations/';
 		$migrationFiles = IOHelper::getFolderContents($migrationsFolder, false, "(m(\d{6}_\d{6})_.*?)\.php");
 
 		if ($migrationFiles)

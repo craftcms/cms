@@ -217,11 +217,11 @@ class Migrate extends \MigrateCommand
 		else
 		{
 			// The plugin path for Craft can vary.
-			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/').'/';
+			$path = rtrim(IOHelper::normalizePathSeparators($args[0]), '/\\');
 		}
 
 		$content = strtr(Craft::$app->migrations->getTemplate(), ['{ClassName}' => $fullName, '{MigrationNameDesc}' => $migrationNameDesc]);
-		$file = $path.$fullName.'.php';
+		$file = $path.'/'.$fullName.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
 		{

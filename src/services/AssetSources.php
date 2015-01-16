@@ -288,7 +288,7 @@ class AssetSources extends Component
 			$source->id = $sourceId;
 			$source->name = Temp::sourceName;
 			$source->type = Temp::sourceType;
-			$source->settings = ['path' => Craft::$app->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
+			$source->settings = ['path' => Craft::$app->path->getAssetsTempSourcePath().'/', 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
 			return $source;
 		}
 		else

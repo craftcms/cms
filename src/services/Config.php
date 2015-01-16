@@ -719,74 +719,80 @@ class Config extends Component
 			return;
 		}
 
+		$pathService = Craft::$app->path;
+
 		// Is this a valid Craft config category?
 		if (ConfigCategory::isValidName($category))
 		{
-			$defaultsPath = CRAFT_APP_PATH.'config/defaults/'.$category.'.php';
+			$defaultsPath = $pathService->getAppPath().'/config/defaults/'.$category.'.php';
 		}
 		else
 		{
-			$defaultsPath = CRAFT_PLUGINS_PATH.$category.'/config.php';
+			$defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
 		}
 
 		if (IOHelper::fileExists($defaultsPath))
 		{
-			$defaultsConfig = @require_once($defaultsPath);
+			$configSettings = @require_once($defaultsPath);
 		}
 
-		if (!isset($defaultsConfig) || !is_array($defaultsConfig))
+		if (!isset($configSettings) || !is_array($configSettings))
 		{
-			$defaultsConfig = [];
+			$configSettings = [];
 		}
 
 		// Little extra logic for the general config category.
 		if ($category == ConfigCategory::General)
 		{
 			// Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
-			if (file_exists(CRAFT_CONFIG_PATH.'general.php'))
+			$filePath = $pathService->getConfigPath().'/general.php';
+
+			if (file_exists($filePath))
 			{
-				if (is_array($customConfig = @include(CRAFT_CONFIG_PATH.'general.php')))
+				if (is_array($customConfig = @include($filePath)))
 				{
-					$this->_mergeConfigs($defaultsConfig, $customConfig);
+					$this->_mergeConfigs($configSettings, $customConfig);
 				}
 			}
-			else if (file_exists(CRAFT_CONFIG_PATH.'blocks.php'))
+			else
 			{
-				// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-				if (is_array($customConfig = require_once(CRAFT_CONFIG_PATH.'blocks.php')))
+				$filePath = $pathService->getConfigPath().'/blocks.php';
+
+				if (file_exists($filePath))
 				{
-					$this->_mergeConfigs($defaultsConfig, $customConfig);
-				}
-				else if (isset($blocksConfig))
-				{
-					$defaultsConfig = array_merge($defaultsConfig, $blocksConfig);
-					unset($blocksConfig);
+					// Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
+					if (is_array($customConfig = require_once($filePath)))
+					{
+						$this->_mergeConfigs($configSettings, $customConfig);
+					}
+					else if (isset($blocksConfig))
+					{
+						$configSettings = array_merge($configSettings, $blocksConfig);
+						unset($blocksConfig);
+					}
 				}
 			}
 		}
 		else
 		{
-			$customConfigPath = CRAFT_CONFIG_PATH.$category.'.php';
+			$filePath = $pathService->getConfigPath().'/'.$category.'.php';
 
-			if (IOHelper::fileExists($customConfigPath))
+			if (IOHelper::fileExists($filePath))
 			{
-				if (is_array($customConfig = @include($customConfigPath)))
+				// Originally db.php defined a $dbConfig variable, and later returned an array directly.
+				if (is_array($customConfig = require_once($filePath)))
 				{
-					$this->_mergeConfigs($defaultsConfig, $customConfig);
+					$this->_mergeConfigs($configSettings, $customConfig);
 				}
-				else if ($category == ConfigCategory::Db)
+				else if ($category == ConfigCategory::Db && isset($dbConfig))
 				{
-					// Originally db.php defined a $dbConfig variable.
-					if (@require_once(CRAFT_CONFIG_PATH.'db.php'))
-					{
-						$this->_mergeConfigs($defaultsConfig, $dbConfig);
-						unset($dbConfig);
-					}
+					$configSettings = array_merge($configSettings, $dbConfig);
+					unset($dbConfig);
 				}
 			}
 		}
 
-		$this->_configSettings[$category] = $defaultsConfig;
+		$this->_configSettings[$category] = $configSettings;
 	}
 
 	/**

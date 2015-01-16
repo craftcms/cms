@@ -51,7 +51,7 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$rowData[0]);
+			$file = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$rowData[0]);
 
 			// It's a folder
 			if (static::isManifestLineAFolder($file))
@@ -87,7 +87,7 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$fullBackupPath = Craft::$app->path->getDbBackupPath().$backupPath.'.sql';
+		$fullBackupPath = Craft::$app->path->getDbBackupPath().'/'.$backupPath.'.sql';
 		$dbBackup->restore($fullBackupPath);
 	}
 
@@ -121,7 +121,7 @@ class UpdateHelper
 					$tempPath = $rowData[0];
 				}
 
-				$destFile = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().$tempPath);
+				$destFile = IOHelper::normalizePathSeparators(Craft::$app->path->getAppPath().'/'.$tempPath);
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
 
 				switch (trim($rowData[1]))
@@ -133,8 +133,8 @@ class UpdateHelper
 						{
 							Craft::info('Updating folder: '.$destFile);
 
-							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
-							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
+							$tempFolder = rtrim($destFile, '/').StringHelper::UUID();
+							$tempTempFolder = rtrim($destFile, '/').'-tmp';
 
 							IOHelper::createFolder($tempFolder);
 							IOHelper::copyFolder($sourceFile, $tempFolder);
@@ -292,7 +292,7 @@ class UpdateHelper
 	 */
 	public static function getUnzipFolderFromUID($uid)
 	{
-		return Craft::$app->path->getTempPath().$uid.'/';
+		return Craft::$app->path->getTempPath().'/'.$uid;
 	}
 
 	/**
@@ -302,7 +302,7 @@ class UpdateHelper
 	 */
 	public static function getZipFileFromUID($uid)
 	{
-		return Craft::$app->path->getTempPath().$uid.'.zip';
+		return Craft::$app->path->getTempPath().'/'.$uid.'.zip';
 	}
 
 	/**

@@ -56,7 +56,7 @@ class RichText extends BaseFieldType
 	public function getSettingsHtml()
 	{
 		$configOptions = ['' => Craft::t('Default')];
-		$configPath = Craft::$app->path->getConfigPath().'redactor/';
+		$configPath = Craft::$app->path->getConfigPath().'/redactor';
 
 		if (IOHelper::folderExists($configPath))
 		{
@@ -325,7 +325,7 @@ class RichText extends BaseFieldType
 	{
 		if ($this->getSettings()->configFile)
 		{
-			$configPath = Craft::$app->path->getConfigPath().'redactor/'.$this->getSettings()->configFile;
+			$configPath = Craft::$app->path->getConfigPath().'/redactor/'.$this->getSettings()->configFile;
 			$js = IOHelper::getFileContents($configPath);
 		}
 
@@ -408,7 +408,7 @@ class RichText extends BaseFieldType
 	{
 		$path = 'lib/redactor/lang/'.$lang.'.js';
 
-		if (IOHelper::fileExists(Craft::$app->path->getResourcesPath().$path))
+		if (IOHelper::fileExists(Craft::$app->path->getResourcesPath().'/'.$path))
 		{
 			Craft::$app->templates->includeJsResource($path);
 			static::$_redactorLang = $lang;
