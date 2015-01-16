@@ -324,58 +324,6 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Creates a controller instance based on a route.
-	 *
-	 * @param string $route
-	 * @param mixed  $owner
-	 *
-	 * @return array|null
-	 */
-	public function createController($route, $owner = null)
-	{
-		if (($route = trim($route, '/')) === '')
-		{
-			$route = $this->defaultController;
-		}
-
-		$routeParts = array_filter(explode('/', $route));
-
-		// First check if the controller class is a combination of the first two segments. That way FooController won't
-		// steal all of Foo_BarController's requests.
-		if (isset($routeParts[1]))
-		{
-			$controllerId = ucfirst($routeParts[0]).'_'.ucfirst($routeParts[1]);
-			$class = __NAMESPACE__.'\\'.$controllerId.'Controller';
-
-			if (class_exists($class))
-			{
-				$action = implode('/', array_slice($routeParts, 2));
-			}
-		}
-
-		// If that didn't work, now look for that FooController.
-		if (!isset($action))
-		{
-			$controllerId = ucfirst($routeParts[0]);
-			$class = __NAMESPACE__.'\\'.$controllerId.'Controller';
-
-			if (class_exists($class))
-			{
-				$action = implode('/', array_slice($routeParts, 1));
-			}
-		}
-
-		// Did we find a valid controller?
-		if (isset($action))
-		{
-			return [
-				Craft::createComponent($class, $controllerId),
-				$this->parseActionParams($action),
-			];
-		}
-	}
-
-	/**
 	 * Formats an exception into JSON before returning it to the client.
 	 *
 	 * @param array $data

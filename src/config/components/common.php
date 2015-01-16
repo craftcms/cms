@@ -100,10 +100,10 @@ return [
 			]
 		]
 	],
-	'urlManager' => [
-		'class'     => 'craft\app\web\UrlManager',
-		'routeParam' => 'p',
-	],
+	//'urlManager' => [
+	//	'class'     => 'craft\app\web\UrlManager',
+	//	'routeParam' => 'p',
+	//],
 	'user' => [
 		'class'                    => 'craft\app\web\User',
 		'identityClass'            => 'craft\app\models\User',
