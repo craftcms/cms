@@ -129,16 +129,16 @@ abstract class BasePlugin extends BaseSavableComponentType implements PluginInte
 	public function getRecords($scenario = null)
 	{
 		$records = [];
-		$classes = Craft::$app->plugins->getPluginClasses($this, 'records', 'Record', false);
+		//$classes = Craft::$app->plugins->getPluginClasses($this, 'records', 'Record', false);
 
-		foreach ($classes as $class)
-		{
-			if (Craft::$app->components->validateClass($class))
-			{
-				$class = __NAMESPACE__.'\\'.$class;
-				$records[] = new $class($scenario);
-			}
-		}
+		//foreach ($classes as $class)
+		//{
+		//	if (Craft::$app->components->validateClass($class))
+		//	{
+		//		$class = __NAMESPACE__.'\\'.$class;
+		//		$records[] = new $class($scenario);
+		//	}
+		//}
 
 		return $records;
 	}

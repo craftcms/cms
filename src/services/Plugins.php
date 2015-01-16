@@ -42,13 +42,6 @@ class Plugins extends Component
 	// =========================================================================
 
 	/**
-	 * The type of components plugins can have.
-	 *
-	 * @var array
-	 */
-	public $autoloadClasses;
-
-	/**
 	 * Stores whether plugins have been loaded yet for this request.
 	 *
 	 * @var bool
@@ -489,18 +482,18 @@ class Plugins extends Component
 			$plugin->onBeforeUninstall();
 
 			// If the plugin has any element types, delete their elements
-			$elementTypeInfo = Craft::$app->components->types['element'];
-			$elementTypeClasses = $this->getPluginClasses($plugin, $elementTypeInfo['subfolder'], $elementTypeInfo['suffix']);
+			//$elementTypeInfo = Craft::$app->components->types['element'];
+			//$elementTypeClasses = $this->getPluginClasses($plugin, $elementTypeInfo['subfolder'], $elementTypeInfo['suffix']);
 
-			foreach ($elementTypeClasses as $class)
-			{
-				$elementType = Craft::$app->components->initializeComponent($class, $elementTypeInfo['instanceof']);
+			//foreach ($elementTypeClasses as $class)
+			//{
+			//	$elementType = Craft::$app->components->initializeComponent($class, $elementTypeInfo['instanceof']);
 
-				if ($elementType)
-				{
-					Craft::$app->elements->deleteElementsByType($elementType->getClassHandle());
-				}
-			}
+			//	if ($elementType)
+			//	{
+			//		Craft::$app->elements->deleteElementsByType($elementType->getClassHandle());
+			//	}
+			//}
 
 			// Drop any tables created by the plugin's records
 			$plugin->dropTables();
@@ -660,87 +653,6 @@ class Plugins extends Component
 		}
 	}
 
-	/**
-	 * Returns an array of class names found in a given plugin folder.
-	 *
-	 * @param BasePlugin $plugin         The plugin.
-	 * @param string     $classSubfolder The subfolder to search.
-	 * @param string     $classSuffix    The class suffix we’re looking for.
-	 * @param bool       $autoload       Whether the found classes should be imported for the autoloader.
-	 *
-	 * @return array The class names.
-	 */
-	public function getPluginClasses(BasePlugin $plugin, $classSubfolder, $classSuffix, $autoload = true)
-	{
-		$classes = [];
-
-		$pluginHandle = $plugin->getClassHandle();
-		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$pluginFolderPath = Craft::$app->path->getPluginsPath().'/'.$pluginFolder.'/';
-		$classSubfolderPath = $pluginFolderPath.$classSubfolder.'/';
-
-		if (IOHelper::folderExists($classSubfolderPath))
-		{
-			// Enums don't have an "Enum" suffix.
-			if ($classSubfolder === 'enums')
-			{
-				$files = IOHelper::getFolderContents($classSubfolderPath, false);
-			}
-			else
-			{
-				// See if it has any files in ClassName*Suffix.php format.
-				$filter = $pluginHandle.'(_.+)?'.$classSuffix.'\.php$';
-				$files = IOHelper::getFolderContents($classSubfolderPath, false, $filter);
-			}
-
-			if ($files)
-			{
-				foreach ($files as $file)
-				{
-					$class = IOHelper::getFileName($file, false);
-					$classes[] = $class;
-
-					if ($autoload)
-					{
-						Craft::import("plugins.{$pluginFolder}.{$classSubfolder}.{$class}");
-					}
-				}
-			}
-		}
-
-		return $classes;
-	}
-
-	/**
-	 * Returns whether a plugin class exists.
-	 *
-	 * @param BasePlugin $plugin         The plugin.
-	 * @param string     $classSubfolder The subfolder to search.
-	 * @param string     $class          The class suffix we’re looking for.
-	 * @param bool       $autoload       Whether the found class should be imported for the autoloader.
-	 *
-	 * @return bool Whether the class exists.
-	 */
-	public function doesPluginClassExist(BasePlugin $plugin, $classSubfolder, $class, $autoload = true)
-	{
-		$pluginFolder = mb_strtolower($plugin->getClassHandle());
-		$classPath = Craft::$app->path->getPluginsPath().'/'.$pluginFolder.'/'.$classSubfolder.'/'.$class.'.php';
-
-		if (IOHelper::fileExists($classPath))
-		{
-			if ($autoload)
-			{
-				Craft::import("plugins.{$pluginFolder}.{$classSubfolder}.{$class}");
-			}
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	// Private Methods
 	// =========================================================================
 
@@ -758,25 +670,14 @@ class Plugins extends Component
 	}
 
 	/**
-	 * Finds and imports all of the auto-loadable classes for a given plugin.
+	 * Adds autoloading support for \craft\plugins\pluginname\* classes.
 	 *
 	 * @param BasePlugin $plugin
-	 *
-	 * @return null
 	 */
 	private function _autoloadPluginClasses(BasePlugin $plugin)
 	{
-		foreach ($this->autoloadClasses as $classSuffix)
-		{
-			// *Controller's live in controllers/, etc.
-			$classSubfolder = mb_strtolower($classSuffix).'s';
-			$classes = $this->getPluginClasses($plugin, $classSubfolder, $classSuffix, true);
-
-			if ($classSuffix == 'Service')
-			{
-				$this->_registerPluginServices($classes);
-			}
-		}
+		$handle = mb_strtolower($plugin->getClassHandle());
+		Craft::setAlias('@craft/plugins/'.$handle, '@plugins/'.$handle);
 	}
 
 	/**
@@ -823,45 +724,6 @@ class Plugins extends Component
 	}
 
 	/**
-	 * Registers any services provided by a plugin.
-	 *
-	 * @param array $classes
-	 *
-	 * @throws Exception
-	 * @return null
-	 */
-	private function _registerPluginServices($classes)
-	{
-		$services = [];
-
-		foreach ($classes as $class)
-		{
-			$parts = explode('_', $class);
-
-			foreach ($parts as $index => $part)
-			{
-				$parts[$index] = lcfirst($part);
-			}
-
-			$serviceName = implode('_', $parts);
-			$serviceName = mb_substr($serviceName, 0, - strlen('Service'));
-
-			if (!Craft::$app->has($serviceName))
-			{
-				// Register the component with the handle as (className or className_*) minus the "Service" suffix
-				$nsClass = __NAMESPACE__.'\\'.$class;
-				$services[$serviceName] = ['class' => $nsClass];
-			}
-			else
-			{
-				throw new Exception(Craft::t('The plugin “{class}” tried to register a service “{service}” that conflicts with a core service name.', array('class' => $class, 'service' => $serviceName)));
-			}
-		}
-
-		Craft::$app->setComponents($services, false);
-	}
-
-	/**
 	 * Returns a new plugin instance based on its class handle.
 	 *
 	 * @param string $handle
@@ -871,30 +733,30 @@ class Plugins extends Component
 	private function _getPlugin($handle)
 	{
 		// Get the full class name
-		$class = $handle.'Plugin';
-		$nsClass = __NAMESPACE__.'\\'.$class;
+		$lcHandle = mb_strtolower($handle);
+		$class = '\\craft\\plugins\\'.$lcHandle.'\\Plugin';
 
 		// Skip the autoloader
-		if (!class_exists($nsClass, false))
+		if (!class_exists($class, false))
 		{
-			$path = Craft::$app->path->getPluginsPath().'/'.mb_strtolower($handle).'/'.$class.'.php';
+			$path = Craft::$app->path->getPluginsPath().$lcHandle.'/Plugin.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
-				require_once $path;
+				require $path;
+
+				if (!class_exists($class, false))
+				{
+					return null;
+				}
 			}
 			else
 			{
-				return null;
+				return;
 			}
 		}
 
-		if (!class_exists($nsClass, false))
-		{
-			return null;
-		}
-
-		$plugin = new $nsClass;
+		$plugin = new $class;
 
 		// Make sure the plugin implements the PluginInterface
 		if (!$plugin instanceof PluginInterface)

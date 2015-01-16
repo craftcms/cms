@@ -84,28 +84,28 @@ class Components extends Component
 		if (!class_exists($nsClass))
 		{
 			// Maybe it's a plugin component?
-			if ($this->types[$type]['enableForPlugins'])
-			{
-				if (($pos = strrpos($class, '_')) !== false)
-				{
-					$pluginHandle = substr($class, 0, $pos);
-				}
-				else
-				{
-					$pluginHandle = $class;
-				}
+			//if ($this->types[$type]['enableForPlugins'])
+			//{
+			//	if (($pos = strrpos($class, '_')) !== false)
+			//	{
+			//		$pluginHandle = substr($class, 0, $pos);
+			//	}
+			//	else
+			//	{
+			//		$pluginHandle = $class;
+			//	}
 
-				$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
+			//	$plugin = Craft::$app->plugins->getPlugin($pluginHandle);
 
-				if (!$plugin || !Craft::$app->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
-				{
-					return null;
-				}
-			}
-			else
-			{
+			//	if (!$plugin || !Craft::$app->plugins->doesPluginClassExist($plugin, $this->types[$type]['subfolder'], $fullClass))
+			//	{
+			//		return null;
+			//	}
+			//}
+			//else
+			//{
 				return null;
-			}
+			//}
 		}
 
 		return $this->initializeComponent($fullClass, $this->types[$type]['instanceof']);
@@ -239,14 +239,14 @@ class Components extends Component
 		}
 
 		// Now load any plugin-supplied components
-		if ($this->types[$type]['enableForPlugins'])
-		{
-			foreach (Craft::$app->plugins->getPlugins() as $plugin)
-			{
-				$pluginClasses = Craft::$app->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
-				$componentClasses = array_merge($componentClasses, $pluginClasses);
-			}
-		}
+		//if ($this->types[$type]['enableForPlugins'])
+		//{
+		//	foreach (Craft::$app->plugins->getPlugins() as $plugin)
+		//	{
+		//		$pluginClasses = Craft::$app->plugins->getPluginClasses($plugin, $this->types[$type]['subfolder'], $this->types[$type]['suffix']);
+		//		$componentClasses = array_merge($componentClasses, $pluginClasses);
+		//	}
+		//}
 
 		// Initialize, verify, and save them
 		$components = [];

@@ -29,6 +29,7 @@ return [
 	'messages'             => 'Craft\PhpMessageSource',
 	'migrations'           => 'craft\app\services\Migrations',
 	'path'                 => 'craft\app\services\Path',
+	'plugins'              => 'craft\app\services\Plugins',
 	'relations'            => 'craft\app\services\Relations',
 	'routes'               => 'craft\app\services\Routes',
 	'search'               => 'craft\app\services\Search',
@@ -60,10 +61,6 @@ return [
 	//	'class'       => 'craft\app\errors\ErrorHandler',
 	//	'errorAction' => 'templates/renderError'
 	//],
-	'plugins' => [
-		'class' => 'craft\app\services\Plugins',
-		'autoloadClasses' => ['Controller','Enum','Helper','Model','Record','Service','Variable','Validator'],
-	],
 	'resources' => [
 		'class'     => 'craft\app\services\Resources',
 		'dateParam' => 'd',
