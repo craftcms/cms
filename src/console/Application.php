@@ -118,7 +118,7 @@ class Application extends \yii\console\Application
 		// Do we need to take special care in creating this component?
 		if (($id === 'cache' || $id === 'db') && !$this->has($id, true))
 		{
-			$definition= $this->_getComponentDefinition($id);
+			$definition = $this->_getComponentDefinition($id);
 			$this->set($id, $definition);
 		}
 
