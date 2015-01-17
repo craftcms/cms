@@ -13,12 +13,12 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 
 /**
- * Class DbConnection
+ * Class Connection
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DbConnection extends \CDbConnection
+class Connection extends \yii\db\Connection
 {
 	// Public Methods
 	// =========================================================================
@@ -120,32 +120,6 @@ class DbConnection extends \CDbConnection
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getNormalizedTablePrefix()
-	{
-		// Table prefixes cannot be longer than 5 characters
-		$tablePrefix = rtrim(Craft::$app->config->get('tablePrefix', ConfigCategory::Db), '_');
-
-		if ($tablePrefix)
-		{
-			if (StringHelper::length($tablePrefix) > 5)
-			{
-				$tablePrefix = substr($tablePrefix, 0, 5);
-			}
-
-			$tablePrefix .= '_';
-		}
-		else
-		{
-			$tablePrefix = '';
-		}
-
-		return $tablePrefix;
-
 	}
 
 	/**

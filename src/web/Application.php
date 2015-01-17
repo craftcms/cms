@@ -29,7 +29,7 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\Config           $config           The config service.
  * @property \craft\app\services\Content          $content          The content service.
  * @property \craft\app\services\Dashboard        $dashboard        The dashboard service.
- * @property \craft\app\db\DbConnection           $db               The database connection component.
+ * @property \craft\app\db\Connection             $db               The database connection component.
  * @property \craft\app\services\Deprecator       $deprecator       The deprecator service.
  * @property \craft\app\services\Elements         $elements         The elements service.
  * @property \craft\app\services\EmailMessages    $emailMessages    The email messages service.
@@ -74,7 +74,7 @@ use craft\app\logging\Logger;
  * @property User                                 $user             The user component.
  *
  * @method \craft\app\services\Cache              getCache()        Returns the cache component.
- * @method \craft\app\db\DbConnection             getDb()           Returns the database connection component.
+ * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
  * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
  * @method \craft\app\logging\LogRouter           getLog()          Returns the log dispatcher component.
@@ -416,7 +416,7 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Override get() so we can do some special logic around creating the `$this->getDb()` application component.
+	 * @inheritDoc \yii\di\ServiceLocator::get()
 	 *
 	 * @param string $id
 	 * @param boolean $throwException
@@ -424,11 +424,11 @@ class Application extends \yii\web\Application
 	 */
 	public function get($id, $throwException = true)
 	{
-		// Are they requesting the DbConnection, and is this the first time it has been requested?
-		if ($id === 'db' && !$this->has($id, true))
+		// Do we need to take special care in creating this component?
+		if (($id === 'cache' || $id === 'db') && !$this->has($id, true))
 		{
-			$dbConnection = $this->_createDbConnection();
-			$this->set('db', $dbConnection);
+			$definition= $this->_getComponentDefinition($id);
+			$this->set($id, $definition);
 		}
 
 		return parent::get($id, $throwException);

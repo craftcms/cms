@@ -8,7 +8,7 @@
 namespace craft\app\cache;
 
 use Craft;
-use craft\app\db\DbConnection;
+use craft\app\db\Connection;
 use craft\app\enums\ConfigCategory;
 
 /**
@@ -29,7 +29,7 @@ class DbCache extends \yii\caching\DbCache
 	// =========================================================================
 
 	/**
-	 * @return DbConnection
+	 * @return Connection
 	 */
 	public function getDbConnection()
 	{
@@ -40,7 +40,7 @@ class DbCache extends \yii\caching\DbCache
 	// =========================================================================
 
 	/**
-	 * @param DbConnection   $db
+	 * @param Connection   $db
 	 * @param string         $tableName
 	 */
 	protected function createCacheTable($db, $tableName)

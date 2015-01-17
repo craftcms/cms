@@ -8,7 +8,8 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\db\DbConnection;
+use craft\app\db\Connection;
+use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
@@ -16,6 +17,7 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Info as InfoModel;
+use yii\base\InvalidConfigException;
 
 /**
  * ApplicationTrait
@@ -118,7 +120,7 @@ trait ApplicationTrait
 		{
 			try
 			{
-				// First check to see if DbConnection has even been initialized, yet.
+				// First check to see if Connection has even been initialized, yet.
 				if ($this->has('db', true))
 				{
 					// If the db config isn't valid, then we'll assume it's not installed.
@@ -592,7 +594,7 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Don't even think of moving this check into DbConnection->init().
+	 * Don't even think of moving this check into Connection->init().
 	 *
 	 * @return bool
 	 */
@@ -602,7 +604,7 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Don't even think of moving this check into DbConnection->init().
+	 * Don't even think of moving this check into Connection->init().
 	 *
 	 * @param $value
 	 */
@@ -615,31 +617,116 @@ trait ApplicationTrait
 	// =========================================================================
 
 	/**
-	 * Creates a [[DbConnection]] specifically initialized for Craft's $this->getDb() instance.
+	 * Returns the definition for a given application component ID, in which we need to take special care on.
 	 *
-	 * @throws DbConnectException
-	 * @return DbConnection
+	 * @param string $id
+	 * @return mixed
 	 */
-	private function _createDbConnection()
+	private function _getComponentDefinition($id)
+	{
+		switch ($id)
+		{
+			case 'cache':
+				return $this->_getCacheDefinition();
+			case 'db':
+				return $this->_getDbDefinition();
+		}
+	}
+
+	/**
+	 * Returns the definition for the [[\yii\caching\Cache]] object that will be available from Craft::$app->cache.
+	 *
+	 * @return string|array
+	 * @throws InvalidConfigException
+	 */
+	private function _getCacheDefinition()
+	{
+		$cacheMethod = Craft::$app->config->get('cacheMethod');
+
+		switch ($cacheMethod)
+		{
+			case CacheMethod::APC:
+			{
+				return 'craft\app\cache\ApcCache';
+			}
+
+			case CacheMethod::Db:
+			{
+				return [
+					'class' => 'craft\app\cache\DbCache',
+					'gcProbability' => $this->config->get('gcProbability', ConfigCategory::DbCache),
+					'cacheTableName' => $this->_getNormalizedTablePrefix().$this->config->get('cacheTableName', ConfigCategory::DbCache),
+					'autoCreateCacheTable' => true,
+				];
+			}
+
+			case CacheMethod::File:
+			{
+				return [
+					'class' => 'craft\app\cache\FileCache',
+					'cachePath' => Craft::$app->config->get('cachePath', ConfigCategory::FileCache),
+					'gcProbability' => Craft::$app->config->get('gcProbability', ConfigCategory::FileCache),
+				];
+			}
+
+			case CacheMethod::MemCache:
+			{
+				return [
+					'class' => 'craft\app\cache\MemCache',
+					'servers' => Craft::$app->config->get('servers', ConfigCategory::Memcache),
+					'useMemcached' => Craft::$app->config->get('useMemcached', ConfigCategory::Memcache),
+				];
+			}
+
+			case CacheMethod::WinCache:
+			{
+				return 'craft\app\cache\WinCache';
+			}
+
+			case CacheMethod::XCache:
+			{
+				return 'craft\app\cache\XCache';
+			}
+
+			case CacheMethod::ZendData:
+			{
+				return 'craft\app\cache\ZendDataCache';
+			}
+
+			default:
+			{
+				throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
+			}
+		}
+	}
+
+	/**
+	 * Returns the definition for the [[DbCommand]] object that will be available from Craft::$app->db.
+	 *
+	 * @return Connection
+	 * @throws DbConnectException
+	 */
+	private function _getDbDefinition()
 	{
 		$configService = $this->config;
 
 		try
 		{
-			$dbConnection = new DbConnection();
+			$db = Craft::createObject([
+				'class' => 'craft\app\db\Connection',
+				'dsn' => $this->_processConnectionString(),
+				'emulatePrepare' => true,
+				'username' => $configService->get('user', ConfigCategory::Db),
+				'password' => $configService->get('password', ConfigCategory::Db),
+				'charset' => $configService->get('charset', ConfigCategory::Db),
+				'tablePrefix' => $this->_getNormalizedTablePrefix(),
+				'driverMap' => ['mysql' => 'Craft\MysqlSchema'],
+			]);
 
-			$dbConnection->dsn              = $this->_processConnectionString();
-			$dbConnection->emulatePrepare   = true;
-			$dbConnection->username         = $configService->get('user', ConfigCategory::Db);
-			$dbConnection->password         = $configService->get('password', ConfigCategory::Db);
-			$dbConnection->charset          = $configService->get('charset', ConfigCategory::Db);
-			$dbConnection->tablePrefix      = $dbConnection->getNormalizedTablePrefix();
-			$dbConnection->driverMap        = ['mysql' => 'Craft\MysqlSchema'];
-
-			$dbConnection->init();
+			$db->open();
 		}
 		// Most likely missing PDO in general or the specific database PDO driver.
-		catch(\CDbException $e)
+		catch(\yii\db\Exception $e)
 		{
 			Craft::error($e->getMessage());
 
@@ -669,11 +756,38 @@ trait ApplicationTrait
 		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
 		if ($configService->get('devMode'))
 		{
-			$dbConnection->enableProfiling = true;
-			$dbConnection->enableParamLogging = true;
+			$db->enableProfiling = true;
+			$db->enableParamLogging = true;
 		}
 
-		return $dbConnection;
+		return $db;
+	}
+
+	/**
+	 * Returns the application’s configured DB table prefix.
+	 *
+	 * @return string
+	 */
+	private function _getNormalizedTablePrefix()
+	{
+		// Table prefixes cannot be longer than 5 characters
+		$tablePrefix = rtrim($this->config->get('tablePrefix', ConfigCategory::Db), '_');
+
+		if ($tablePrefix)
+		{
+			if (StringHelper::length($tablePrefix) > 5)
+			{
+				$tablePrefix = substr($tablePrefix, 0, 5);
+			}
+
+			$tablePrefix .= '_';
+		}
+		else
+		{
+			$tablePrefix = '';
+		}
+
+		return $tablePrefix;
 	}
 
 	/**

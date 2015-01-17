@@ -107,7 +107,7 @@ class Application extends \yii\console\Application
 	}
 
 	/**
-	 * Override get() so we can do some special logic around creating the `$this->getDb()` application component.
+	 * @inheritDoc \yii\di\ServiceLocator::get()
 	 *
 	 * @param string $id
 	 * @param boolean $throwException
@@ -115,11 +115,11 @@ class Application extends \yii\console\Application
 	 */
 	public function get($id, $throwException = true)
 	{
-		// Are they requesting the DbConnection, and is this the first time it has been requested?
-		if ($id === 'db' && !$this->has($id, true))
+		// Do we need to take special care in creating this component?
+		if (($id === 'cache' || $id === 'db') && !$this->has($id, true))
 		{
-			$dbConnection = $this->_createDbConnection();
-			$this->set('db', $dbConnection);
+			$definition= $this->_getComponentDefinition($id);
+			$this->set($id, $definition);
 		}
 
 		return parent::get($id, $throwException);
