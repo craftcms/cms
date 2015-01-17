@@ -123,10 +123,10 @@ class FileCache extends \yii\caching\FileCache
 		}
 		else
 		{
-			if (IOHelper::writeToFile($cacheFile, $this->embedExpiry ? $expire.$value : $value) !== false)
+			if (IOHelper::writeToFile($cacheFile, $value) !== false)
 			{
 				IOHelper::changePermissions($cacheFile, Craft::$app->config->get('defaultFilePermissions'));
-				return $this->embedExpiry ? true : IOHelper::touch($cacheFile, $expire);
+				return IOHelper::touch($cacheFile, $expire);
 			}
 			else
 			{
