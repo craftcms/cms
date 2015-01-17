@@ -316,7 +316,7 @@ class Config extends Component
 							$baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
 							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
-							$client = new \Guzzle\Http\Client();
+							$client = new \GuzzleHttp\Client();
 							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')
@@ -409,7 +409,7 @@ class Config extends Component
 						try
 						{
 							$url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
-							$client = new \Guzzle\Http\Client();
+							$client = new \GuzzleHttp\Client();
 							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
 
 							if ($response->isSuccessful() && $response->getBody(true) === 'success')

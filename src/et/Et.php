@@ -182,7 +182,7 @@ class Et
 			{
 				$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 
-				$client = new \Guzzle\Http\Client();
+				$client = new \GuzzleHttp\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
 				$options = [
