@@ -177,7 +177,6 @@ if ($devMode)
 	ini_set('display_errors', 1);
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	defined('YII_ENV') || define('YII_ENV', 'dev');
-	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 }
 else
 {
