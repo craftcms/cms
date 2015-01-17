@@ -641,7 +641,8 @@ trait ApplicationTrait
 	 */
 	private function _getCacheDefinition()
 	{
-		$cacheMethod = Craft::$app->config->get('cacheMethod');
+		$configService = Craft::$app->config;
+		$cacheMethod = $configService->get('cacheMethod');
 
 		switch ($cacheMethod)
 		{
@@ -654,8 +655,8 @@ trait ApplicationTrait
 			{
 				return [
 					'class' => 'craft\app\cache\DbCache',
-					'gcProbability' => $this->config->get('gcProbability', ConfigCategory::DbCache),
-					'cacheTableName' => $this->_getNormalizedTablePrefix().$this->config->get('cacheTableName', ConfigCategory::DbCache),
+					'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
+					'cacheTableName' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName', ConfigCategory::DbCache),
 					'autoCreateCacheTable' => true,
 				];
 			}
@@ -664,8 +665,8 @@ trait ApplicationTrait
 			{
 				return [
 					'class' => 'craft\app\cache\FileCache',
-					'cachePath' => Craft::$app->config->get('cachePath', ConfigCategory::FileCache),
-					'gcProbability' => Craft::$app->config->get('gcProbability', ConfigCategory::FileCache),
+					'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
+					'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
 				];
 			}
 
@@ -673,8 +674,8 @@ trait ApplicationTrait
 			{
 				return [
 					'class' => 'craft\app\cache\MemCache',
-					'servers' => Craft::$app->config->get('servers', ConfigCategory::Memcache),
-					'useMemcached' => Craft::$app->config->get('useMemcached', ConfigCategory::Memcache),
+					'servers' => $configService->get('servers', ConfigCategory::Memcache),
+					'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
 				];
 			}
 
