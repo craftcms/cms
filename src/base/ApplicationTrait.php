@@ -91,7 +91,7 @@ trait ApplicationTrait
 	public $releaseDate;
 
 	/**
-	 * @var string The minumum Craft build number required to update to this build.
+	 * @var string The minimum Craft build number required to update to this build.
 	 */
 	public $minBuildRequired;
 
