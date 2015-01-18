@@ -749,11 +749,18 @@ class Request extends \yii\web\Request
 	{
 		if (Craft::$app->config->usePathInfo())
 		{
-			$pathInfo = $this->getRealPathInfo(false);
-
-			if (!$pathInfo)
+			try
 			{
-				$pathInfo = $this->_getQueryStringPath();
+				$pathInfo = parent::resolvePathInfo();
+
+				if (!$pathInfo)
+				{
+					$pathInfo = $this->_getQueryStringPath();
+				}
+			}
+			catch (InvalidConfigException $e)
+			{
+				return $this->_getQueryStringPath();
 			}
 		}
 		else
@@ -762,7 +769,7 @@ class Request extends \yii\web\Request
 
 			if (!$pathInfo)
 			{
-				$pathInfo = $this->getRealPathInfo(false);
+				$pathInfo = parent::resolvePathInfo();
 			}
 		}
 
