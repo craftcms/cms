@@ -256,7 +256,7 @@ class Search extends Component
 		{
 			foreach ($ignore as $word)
 			{
-				$word = preg_quote(static::_normalizeKeywords($word));
+				$word = preg_quote(static::_normalizeKeywords($word), '/');
 				$str  = preg_replace("/\b{$word}\b/u", '', $str);
 			}
 		}

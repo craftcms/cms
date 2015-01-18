@@ -144,7 +144,7 @@ class Routes extends Component
 				if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0]))
 				{
 					// Add the var as a named subpattern
-					$urlPattern .= '(?P<'.preg_quote($part[0]).'>'.$part[1].')';
+					$urlPattern .= '(?P<'.preg_quote($part[0], '/').'>'.$part[1].')';
 				}
 				else
 				{
