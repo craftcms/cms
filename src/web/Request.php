@@ -767,13 +767,13 @@ class Request extends \yii\web\Request
 					$pathInfo = parent::resolvePathInfo();
 				}
 			}
-
-			return trim($pathInfo, '/');
 		}
 		catch (InvalidConfigException $e)
 		{
-			return $this->_getQueryStringPath();
+			$pathInfo = $this->_getQueryStringPath();
 		}
+
+		return trim($pathInfo, '/');
 	}
 
 	// Private Methods
