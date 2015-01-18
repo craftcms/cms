@@ -747,9 +747,9 @@ class Request extends \yii\web\Request
 	 */
 	protected function resolvePathInfo()
 	{
-		if (Craft::$app->config->usePathInfo())
+		try
 		{
-			try
+			if (Craft::$app->config->usePathInfo())
 			{
 				$pathInfo = parent::resolvePathInfo();
 
@@ -758,22 +758,22 @@ class Request extends \yii\web\Request
 					$pathInfo = $this->_getQueryStringPath();
 				}
 			}
-			catch (InvalidConfigException $e)
+			else
 			{
-				return $this->_getQueryStringPath();
+				$pathInfo = $this->_getQueryStringPath();
+
+				if (!$pathInfo)
+				{
+					$pathInfo = parent::resolvePathInfo();
+				}
 			}
+
+			return trim($pathInfo, '/');
 		}
-		else
+		catch (InvalidConfigException $e)
 		{
-			$pathInfo = $this->_getQueryStringPath();
-
-			if (!$pathInfo)
-			{
-				$pathInfo = parent::resolvePathInfo();
-			}
+			return $this->_getQueryStringPath();
 		}
-
-		return trim($pathInfo, '/');
 	}
 
 	// Private Methods
