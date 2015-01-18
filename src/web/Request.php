@@ -10,8 +10,8 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\RequestTrait;
 use craft\app\errors\HttpException;
-use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
+use yii\base\InvalidConfigException;
 
 /**
  * @inheritDoc \yii\web\Request
@@ -29,7 +29,7 @@ use craft\app\helpers\StringHelper;
  * @property boolean $isLivePreview Whether this is a Live Preview request.
  * @property boolean $isMobileBrowser Whether the request is coming from a mobile browser.
  * @property string $hostName The host name from the current request URL.
- * @property string $queryStringWithoutPath The request’s query string, without the p= parameter.
+ * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -42,11 +42,6 @@ class Request extends \yii\web\Request
 
 	// Properties
 	// =========================================================================
-
-	/**
-	 * @var
-	 */
-	private $_fullPath;
 
 	/**
 	 * @var
@@ -145,23 +140,8 @@ class Request extends \yii\web\Request
 
 		$configService = Craft::$app->config;
 
-		// Get the full requested path
-		if (Craft::$app->config->usePathInfo())
-		{
-			$pathInfo = $this->getPathInfo();
-			$path     = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
-		}
-		else
-		{
-			$queryString = $this->_getQueryStringPath();
-			$path        = $queryString ? $queryString : $this->getPathInfo();
-		}
-
 		// Sanitize
-		$path = $this->_decodePathInfo($path);
-
-		// Save this for getFullPath()
-		$this->_fullPath = $path;
+		$path = $this->getPathInfo();
 
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path));
@@ -189,7 +169,7 @@ class Request extends \yii\web\Request
 				$this->_pageNum = (int) $match[2];
 
 				// Sanitize
-				$newPath = $this->_decodePathInfo($match[1]);
+				$newPath = $match[1];
 
 				// Reset the segments without the pagination stuff
 				$this->_segments = array_filter(explode('/', $newPath));
@@ -198,17 +178,6 @@ class Request extends \yii\web\Request
 
 		// Now that we've chopped off the admin/page segments, set the path
 		$this->_path = implode('/', $this->_segments);
-	}
-
-	/**
-	 * Returns the full requested path, including the CP trigger and pagination info.
-	 *
-	 * @return string The full path.
-	 * @see getPath()
-	 */
-	public function getFullPath()
-	{
-		return $this->_fullPath;
 	}
 
 	/**
@@ -427,7 +396,7 @@ class Request extends \yii\web\Request
 	 * @inheritDoc \yii\web\Request::getBodyParam()
 	 *
 	 * @return array the request parameters given in the request body.
-	 * @throws \yii\base\InvalidConfigException
+	 * @throws InvalidConfigException
 	 * @see getMethod()
 	 * @see getBodyParam()
 	 * @see setBodyParams()
@@ -622,7 +591,7 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * Returns the request’s query string, without the p= parameter.
+	 * Returns the request’s query string, without the path parameter.
 	 *
 	 * @return string The query string.
 	 */
@@ -638,9 +607,11 @@ class Request extends \yii\web\Request
 			return '';
 		}
 
+		$pathSubstr = Craft::$app->config->get('pathParam').'=';
+
 		foreach ($parts as $key => $part)
 		{
-			if (StringHelper::contains($part, 'p='))
+			if (StringHelper::startsWith($part, $pathSubstr))
 			{
 				unset($parts[$key]);
 				break;
@@ -648,6 +619,31 @@ class Request extends \yii\web\Request
 		}
 
 		return implode('&', $parts);
+	}
+
+	/**
+	 * @inheritDoc parent::getPathInfo()
+	 *
+	 * @param boolean $throwException Whether an [[InvalidConfigException]] should be thrown if the path info can't be determine
+	 * @return string
+	 * @throws InvalidConfigException
+	 * @see getPathInfo()
+	 */
+	public function getRealPathInfo($throwException = true)
+	{
+		if (!$throwException)
+		{
+			try
+			{
+				return parent::getPathInfo();
+			}
+			catch (InvalidConfigException $e)
+			{
+				return '';
+			}
+		}
+
+		return parent::getPathInfo();
 	}
 
 	/**
@@ -733,24 +729,52 @@ class Request extends \yii\web\Request
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\web\Request::resolvePathInfo()
+	 * Resolves the path info part of the currently requested URL.
 	 *
-	 * @return string Decoded path info.
+	 * Unlike [[\yii\web\Request::getPathInfo()]], this method does not always return the true path info
+	 * (possibly returning the [pathParam](http://buildwithcraft.com/docs/config-settings#pathParam) query string
+	 * parameter instead) because [[\yii\web\UrlManager::parseRequest()]] checks [[getPathInfo()]] to get the
+	 * request path when it is configured with enablePrettyUrl set to true. (To get the real path info, use
+	 * [[getRealPathInfo()]].)
+	 *
+	 * If [usePathInfo](http://buildwithcraft.com/docs/config-settings#usePathInfo) is disabled, or if the request does not
+	 * actually have a path info, then the pathParam query string parameter will be checked instead.
+	 *
+	 * Leading and trailing slashes will be removed.
+	 *
+	 * @return string
+	 * @see getRealPathInfo()
 	 */
 	protected function resolvePathInfo()
 	{
-		$pathInfo = $this->getUrl();
-
-		if (($pos = strpos($pathInfo, '?')) !== false)
+		if (Craft::$app->config->usePathInfo())
 		{
-			$pathInfo = substr($pathInfo, 0, $pos);
+			$pathInfo = $this->getRealPathInfo(false);
+
+			if (!$pathInfo)
+			{
+				$pathInfo = $this->_getQueryStringPath();
+			}
+		}
+		else
+		{
+			$pathInfo = $this->_getQueryStringPath();
+
+			if (!$pathInfo)
+			{
+				$pathInfo = $this->getRealPathInfo(false);
+			}
 		}
 
-		return $this->_decodePathInfo($pathInfo);
+		return trim($pathInfo, '/');
 	}
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Returns the
+	 */
 
 	/**
 	 * Returns the query string path.
@@ -759,26 +783,8 @@ class Request extends \yii\web\Request
 	 */
 	private function _getQueryStringPath()
 	{
-		$routeParam = Craft::$app->getUrlManager()->routeParam;
-		return trim($this->getQueryParam($routeParam, ''), '/');
-	}
-
-	/**
-	 * Decodes the path info.
-	 *
-	 * @param string $pathInfo Encoded path info.
-	 * @return string Decoded path info.
-	 */
-	private function _decodePathInfo($pathInfo)
-	{
-		$pathInfo = urldecode($pathInfo);
-
-		if (!StringHelper::isUtf8($pathInfo))
-		{
-			$pathInfo = StringHelper::convertToUtf8($pathInfo);
-		}
-
-		return IOHelper::normalizePathSeparators($pathInfo);
+		$pathParam = Craft::$app->config->get('pathParam');
+		return $this->getQueryParam($pathParam, '');
 	}
 
 	/**
@@ -837,7 +843,6 @@ class Request extends \yii\web\Request
 					}
 					else if ($actionParam)
 					{
-						$actionParam = $this->_decodePathInfo($actionParam);
 						$this->_actionSegments = array_filter(explode('/', $actionParam));
 					}
 					else

@@ -592,7 +592,8 @@ class TemplateCache extends Component
 			if ($queryString = Craft::$app->getRequest()->getQueryString())
 			{
 				// Strip the path param
-				$queryString = trim(preg_replace('/'.Craft::$app->getUrlManager()->routeParam.'=[^&]*/', '', $queryString), '&');
+				$pathParam = Craft::$app->config->get('pathParam');
+				$queryString = trim(preg_replace('/'.preg_quote($pathParam, '/').'=[^&]*/', '', $queryString), '&');
 
 				if ($queryString)
 				{

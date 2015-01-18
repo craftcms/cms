@@ -97,7 +97,6 @@ return [
 	],
 	//'urlManager' => [
 	//	'class'     => 'craft\app\web\UrlManager',
-	//	'routeParam' => 'p',
 	//],
 	'user' => [
 		'class'                    => 'craft\app\web\User',

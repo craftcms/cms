@@ -342,6 +342,11 @@ return [
 	'pageTrigger' => 'p',
 
 	/**
+	 * The query string param that Craft will check when determining the request's path.
+	 */
+	'pathParam' => 'p',
+
+	/**
 	 * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
 	 * unzipping and updating.
 	 */
