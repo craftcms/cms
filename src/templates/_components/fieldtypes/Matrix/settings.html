@@ -8,18 +8,20 @@
 				<h5>{{ "Block Types"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for blockType in settings.getBlockTypes() %}
-					<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
-						<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
-						<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
-						<div class="actions">
-							<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-							<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+				<div class="blocktypes">
+					{% for blockType in settings.getBlockTypes() %}
+						<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+							<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
+							<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
+							<div class="actions">
+								<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
+								<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+							</div>
+							<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
+							<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
 						</div>
-						<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
-						<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
-					</div>
-				{% endfor %}
+					{% endfor %}
+				</div>
 				<div class="btn add icon">{{ "New block type"|t }}</div>
 			</div>
 		</div>

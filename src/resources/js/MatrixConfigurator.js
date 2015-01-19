@@ -17,6 +17,7 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 	$fieldsColumnContainer: null,
 	$fieldSettingsColumnContainer: null,
 
+	$blockTypeItemsOuterContainer: null,
 	$blockTypeItemsContainer: null,
 	$fieldItemsContainer: null,
 	$fieldSettingItemsContainer: null,
@@ -42,19 +43,20 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 		this.$fieldsColumnContainer = this.$container.children('.fields').children();
 		this.$fieldSettingsColumnContainer = this.$container.children('.field-settings').children();
 
-		this.$blockTypeItemsContainer = this.$blockTypesColumnContainer.children('.items');
-		this.$fieldItemsContainer = this.$fieldsColumnContainer.children('.items');
+		this.$blockTypeItemsOuterContainer = this.$blockTypesColumnContainer.children('.items');
+		this.$blockTypeItemsContainer = this.$blockTypeItemsOuterContainer.children('.blocktypes');
+		this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.items');
 		this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.items');
 
 		this.setContainerHeight();
 
-		this.$newBlockTypeBtn = this.$blockTypeItemsContainer.children('.btn');
-		this.$newFieldBtn = this.$fieldItemsContainer.children('.btn');
+		this.$newBlockTypeBtn = this.$blockTypeItemsOuterContainer.children('.btn');
+		this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
 
 		// Find the existing block types
 		this.blockTypes = {};
 
-		var $blockTypeItems = this.$blockTypeItemsContainer.children('.matrixconfigitem');
+		var $blockTypeItems = this.$blockTypeItemsContainer.children();
 
 		for (var i = 0; i < $blockTypeItems.length; i++)
 		{
@@ -127,7 +129,7 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][name]">' +
 					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][handle]">' +
 				'</div>'
-			).insertBefore(this.$newBlockTypeBtn);
+			).appendTo(this.$blockTypeItemsContainer);
 
 			this.blockTypes[id] = new BlockType(this, $item);
 			this.blockTypes[id].applySettings(name, handle);
@@ -346,7 +348,7 @@ var BlockType = Garnish.Base.extend(
 		this.$settingsBtn = this.$item.find('.settings');
 
 		// Find the field items container if it exists, otherwise create it
-		this.$fieldItemsContainer = this.configurator.$fieldItemsContainer.children('[data-id="'+this.id+'"]:first');
+		this.$fieldItemsContainer = this.configurator.$fieldItemsOuterContainer.children('[data-id="'+this.id+'"]:first');
 
 		if (!this.$fieldItemsContainer.length)
 		{
