@@ -1,6 +1,6 @@
 {
     "homepage": "http://buildwithcraft.com",
-    "minimum-stability": "RC",
+    "minimum-stability": "rc",
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "2.0.2",
@@ -16,6 +16,13 @@
         "lsolesen/pel": "dev-master",
         "mockery/mockery": "0.9.3",
         "phpmailer/phpmailer": "v5.2.9",
-        "danielstjules/stringy": "dev-master"
+        "danielstjules/stringy": "dev-master",
+        "fxp/composer-asset-plugin": "1.0.0-beta4"
+    },
+    "extra": {
+        "asset-installer-paths": {
+            "npm-asset-library": "Source/craft/app/vendor/npm",
+            "bower-asset-library": "Source/craft/app/vendor/bower"
+        }
     }
 }
