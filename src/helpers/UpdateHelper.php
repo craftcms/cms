@@ -131,7 +131,7 @@ class UpdateHelper
 					{
 						if ($folder)
 						{
-							Craft::info('Updating folder: '.$destFile);
+							Craft::info('Updating folder: '.$destFile, __METHOD__);
 
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID();
 							$tempTempFolder = rtrim($destFile, '/').'-tmp';
@@ -145,7 +145,7 @@ class UpdateHelper
 						}
 						else
 						{
-							Craft::info('Updating file: '.$destFile);
+							Craft::info('Updating file: '.$destFile, __METHOD__);
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
@@ -156,7 +156,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Craft::error('Error updating files: '.$e->getMessage());
+			Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}

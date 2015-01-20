@@ -754,7 +754,7 @@ class CategoriesController extends BaseController
 
 		if (!$group)
 		{
-			Craft::error('Attempting to preview a category that doesn’t have a group');
+			Craft::error('Attempting to preview a category that doesn’t have a group.', __METHOD__);
 			throw new HttpException(404);
 		}
 

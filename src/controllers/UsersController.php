@@ -133,7 +133,7 @@ class UsersController extends BaseController
 		else
 		{
 			Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem impersonating this user.'));
-			Craft::error(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.');
+			Craft::error(Craft::$app->getUser()->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
 		}
 	}
 
@@ -847,7 +847,7 @@ class UsersController extends BaseController
 		{
 			if (!$this->_verifyExistingPassword())
 			{
-				Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.');
+				Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', __METHOD__);
 				$user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
 			}
 		}
@@ -1035,7 +1035,7 @@ class UsersController extends BaseController
 		}
 		catch (Exception $exception)
 		{
-			Craft::error('There was an error uploading the photo: '.$exception->getMessage());
+			Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
 		}
 
 		$this->returnErrorJson(Craft::t('app', 'There was an error uploading your photo.'));

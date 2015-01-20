@@ -630,7 +630,7 @@ class IOHelper
 				return $contents;
 			}
 
-			Craft::info('Tried to read the file contents at '.$path.' and could not.');
+			Craft::warning('Tried to read the file contents at '.$path.' and could not.', __METHOD__);
 			return false;
 		}
 
@@ -668,11 +668,11 @@ class IOHelper
 				}
 			}
 
-			Craft::error('Tried to read the file contents at '.$path.' and could not.');
+			Craft::error('Tried to read the file contents at '.$path.' and could not.', __METHOD__);
 			return false;
 		}
 
-		Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.');
+		Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', __METHOD__);
 		return false;
 	}
 
@@ -693,7 +693,7 @@ class IOHelper
 		{
 			if (($handle = $suppressErrors ? @fopen($path, 'w') : fopen($path, 'w')) === false)
 			{
-				Craft::error('Tried to create a file at '.$path.', but could not.');
+				Craft::error('Tried to create a file at '.$path.', but could not.', __METHOD__);
 				return false;
 			}
 
@@ -730,7 +730,7 @@ class IOHelper
 
 			if ($suppressErrors ? !@mkdir($path, $permissions, true) : !mkdir($path, $permissions, true))
 			{
-				Craft::error('Tried to create a folder at '.$path.', but could not.');
+				Craft::error('Tried to create a folder at '.$path.', but could not.', __METHOD__);
 				return false;
 			}
 
@@ -740,7 +740,7 @@ class IOHelper
 			return new Folder($path);
 		}
 
-		Craft::error('Tried to create a folder at '.$path.', but the folder already exists.');
+		Craft::error('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
 		return false;
 	}
 
@@ -792,25 +792,25 @@ class IOHelper
 
 					try
 					{
-						Craft::info('Trying to write to file at '.$path.' using LOCK_EX.');
+						Craft::info('Trying to write to file at '.$path.' using LOCK_EX.', __METHOD__);
 						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
 						{
 							// Restore quickly.
 							restore_error_handler();
 
 							// Cache the file lock info to use LOCK_EX for 2 months.
-							Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.');
+							Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', __METHOD__);
 							Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
 							return true;
 						}
 						else
 						{
 							// Try again without the lock flag.
-							Craft::info('Trying to write to file at '.$path.' without LOCK_EX.');
+							Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
 							if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 							{
 								// Cache the file lock info to not use LOCK_EX for 2 months.
-								Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.');
+								Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
 								Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 								return true;
 							}
@@ -822,11 +822,11 @@ class IOHelper
 						restore_error_handler();
 
 						// Try again without the lock flag.
-						Craft::info('Trying to write to file at '.$path.' without LOCK_EX.');
+						Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
 						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 						{
 							// Cache the file lock info to not use LOCK_EX for 2 months.
-							Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.');
+							Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
 							Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
 							return true;
 						}
@@ -855,7 +855,7 @@ class IOHelper
 						}
 						else
 						{
-							Craft::error('Tried to write to file at '.$path.' and could not.');
+							Craft::error('Tried to write to file at '.$path.' and could not.', __METHOD__);
 							return false;
 						}
 					}
@@ -871,7 +871,7 @@ class IOHelper
 				}
 				else
 				{
-					Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.');
+					Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.', __METHOD__);
 					return false;
 				}
 			}
@@ -884,14 +884,14 @@ class IOHelper
 				}
 				else
 				{
-					Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.');
+					Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.', __METHOD__);
 					return false;
 				}
 			}
 		}
 		else
 		{
-			Craft::error('Tried to write to file at '.$path.', but the file is not writable.');
+			Craft::error('Tried to write to file at '.$path.', but the file is not writable.', __METHOD__);
 		}
 
 		return false;
@@ -914,7 +914,7 @@ class IOHelper
 
 		if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner)== false))
 		{
-			Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.');
+			Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', __METHOD__);
 			return false;
 		}
 
@@ -939,7 +939,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Craft::error('Tried to change the own of '.$path.', but could not.');
+				Craft::error('Tried to change the own of '.$path.', but could not.', __METHOD__);
 				return false;
 			}
 
@@ -947,7 +947,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error('Tried to change owner of '.$path.', but that path does not exist.');
+			Craft::error('Tried to change owner of '.$path.', but that path does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -970,7 +970,7 @@ class IOHelper
 
 		if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false))
 		{
-			Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.');
+			Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', __METHOD__);
 			return false;
 		}
 
@@ -995,7 +995,7 @@ class IOHelper
 
 			if (!$success)
 			{
-				Craft::error('Tried to change the group of '.$path.', but could not.');
+				Craft::error('Tried to change the group of '.$path.', but could not.', __METHOD__);
 				return false;
 			}
 
@@ -1003,7 +1003,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error('Tried to change group of '.$path.', but that path does not exist.');
+			Craft::error('Tried to change group of '.$path.', but that path does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1029,11 +1029,11 @@ class IOHelper
 				return true;
 			}
 
-			Craft::error('Tried to change the permissions of '.$path.', but could not.');
+			Craft::error('Tried to change the permissions of '.$path.', but could not.', __METHOD__);
 		}
 		else
 		{
-			Craft::error('Tried to change permissions of '.$path.', but that path does not exist.');
+			Craft::error('Tried to change permissions of '.$path.', but that path does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1069,16 +1069,16 @@ class IOHelper
 					return true;
 				}
 
-				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.');
+				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.', __METHOD__);
 			}
 			else
 			{
-				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.');
+				Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.');
+			Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1119,14 +1119,14 @@ class IOHelper
 				{
 					if ($suppressErrors ? !@copy($item, $itemDest) : copy($item, $itemDest))
 					{
-						Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.');
+						Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
 					}
 				}
 				elseif (static::folderExists($item, $suppressErrors))
 				{
 					if (!static::createFolder($itemDest, $suppressErrors))
 					{
-						Craft::error('Could not create destination folder '.$itemDest);
+						Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
 					}
 				}
 			}
@@ -1143,7 +1143,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.');
+			Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1178,17 +1178,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::error('Could not rename '.$path.' to '.$newName.'.');
+					Craft::error('Could not rename '.$path.' to '.$newName.'.', __METHOD__);
 				}
 			}
 			else
 			{
-				Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.');
+				Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.');
+			Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1229,12 +1229,12 @@ class IOHelper
 			}
 			else
 			{
-				Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.');
+				Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.');
+			Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1276,12 +1276,12 @@ class IOHelper
 			}
 			else
 			{
-				Craft::error('Tried to read the folder contents of '.$path.', but could not.');
+				Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.');
+			Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1309,17 +1309,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::error('Could not delete the file '.$path.'.');
+					Craft::error('Could not delete the file '.$path.'.', __METHOD__);
 				}
 			}
 			else
 			{
-				Craft::error('Could not delete the file '.$path.' because it is not writable.');
+				Craft::error('Could not delete the file '.$path.' because it is not writable.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Could not delete the file '.$path.' because the file does not exist.');
+			Craft::error('Could not delete the file '.$path.' because the file does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1351,17 +1351,17 @@ class IOHelper
 				}
 				else
 				{
-					Craft::error('Could not delete the folder '.$path.'.');
+					Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
 				}
 			}
 			else
 			{
-				Craft::error('Could not delete the folder '.$path.' because it is not writable.');
+				Craft::error('Could not delete the folder '.$path.' because it is not writable.', __METHOD__);
 			}
 		}
 		else
 		{
-			Craft::error('Could not delete the folder '.$path.' because the folder does not exist.');
+			Craft::error('Could not delete the folder '.$path.' because the folder does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1385,7 +1385,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.');
+			Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
 		}
 
 		return false;
@@ -1436,24 +1436,24 @@ class IOHelper
 	public static function getFileKinds()
 	{
 		return [
-			'access'      => ['label' => Craft::t('Access'),      'extensions' => ['adp','accdb','mdb','accde','accdt','accdr']],
-			'archive'     => ['label' => Craft::t('Archive'),     'extensions' => ['bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx']],
-			'audio'       => ['label' => Craft::t('Audio'),       'extensions' => ['3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv']],
-			'excel'       => ['label' => Craft::t('Excel'),       'extensions' => ['xls', 'xlsx','xlsm','xltx','xltm']],
-			'flash'       => ['label' => Craft::t('Flash'),       'extensions' => ['fla','flv','swf','swt','swc']],
-			'html'        => ['label' => Craft::t('HTML'),        'extensions' => ['html','htm']],
-			'illustrator' => ['label' => Craft::t('Illustrator'), 'extensions' => ['ai']],
-			'image'       => ['label' => Craft::t('Image'),       'extensions' => ['jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg']],
-			'javascript'  => ['label' => Craft::t('Javascript'),  'extensions' => ['js']],
-			'json'        => ['label' => Craft::t('JSON'),        'extensions' => ['json']],
-			'pdf'         => ['label' => Craft::t('PDF'),         'extensions' => ['pdf']],
-			'photoshop'   => ['label' => Craft::t('Photoshop'),   'extensions' => ['psd','psb']],
-			'php'         => ['label' => Craft::t('PHP'),         'extensions' => ['php']],
-			'powerpoint'  => ['label' => Craft::t('PowerPoint'),  'extensions' => ['ppt','pptx','pps','pptm','potx']],
-			'text'        => ['label' => Craft::t('Text'),        'extensions' => ['txt','text']],
-			'video'       => ['label' => Craft::t('Video'),       'extensions' => ['avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm']],
-			'word'        => ['label' => Craft::t('Word'),        'extensions' => ['doc','docx','dot','docm','dotm']],
-			'xml'         => ['label' => Craft::t('XML'),         'extensions' => ['xml']],
+			'access'      => ['label' => Craft::t('app', 'Access'),      'extensions' => ['adp','accdb','mdb','accde','accdt','accdr']],
+			'archive'     => ['label' => Craft::t('app', 'Archive'),     'extensions' => ['bz2', 'tar', 'gz', '7z', 's7z', 'dmg', 'rar', 'zip', 'tgz', 'zipx']],
+			'audio'       => ['label' => Craft::t('app', 'Audio'),       'extensions' => ['3gp','aac','act','aif','aiff','aifc','alac','amr','au','dct','dss','dvf','flac','gsm','iklax','ivs','m4a','m4p','mmf','mp3','mpc','msv','oga','ogg','opus','ra','tta','vox','wav','wma','wv']],
+			'excel'       => ['label' => Craft::t('app', 'Excel'),       'extensions' => ['xls', 'xlsx','xlsm','xltx','xltm']],
+			'flash'       => ['label' => Craft::t('app', 'Flash'),       'extensions' => ['fla','flv','swf','swt','swc']],
+			'html'        => ['label' => Craft::t('app', 'HTML'),        'extensions' => ['html','htm']],
+			'illustrator' => ['label' => Craft::t('app', 'Illustrator'), 'extensions' => ['ai']],
+			'image'       => ['label' => Craft::t('app', 'Image'),       'extensions' => ['jfif','jp2','jpx','jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp','ppm','pgm','pnm','pfm','pam','svg']],
+			'javascript'  => ['label' => Craft::t('app', 'Javascript'),  'extensions' => ['js']],
+			'json'        => ['label' => Craft::t('app', 'JSON'),        'extensions' => ['json']],
+			'pdf'         => ['label' => Craft::t('app', 'PDF'),         'extensions' => ['pdf']],
+			'photoshop'   => ['label' => Craft::t('app', 'Photoshop'),   'extensions' => ['psd','psb']],
+			'php'         => ['label' => Craft::t('app', 'PHP'),         'extensions' => ['php']],
+			'powerpoint'  => ['label' => Craft::t('app', 'PowerPoint'),  'extensions' => ['ppt','pptx','pps','pptm','potx']],
+			'text'        => ['label' => Craft::t('app', 'Text'),        'extensions' => ['txt','text']],
+			'video'       => ['label' => Craft::t('app', 'Video'),       'extensions' => ['avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm']],
+			'word'        => ['label' => Craft::t('app', 'Word'),        'extensions' => ['doc','docx','dot','docm','dotm']],
+			'xml'         => ['label' => Craft::t('app', 'XML'),         'extensions' => ['xml']],
 		];
 	}
 
@@ -1761,7 +1761,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]));
+			Craft::error(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]), __METHOD__);
 		}
 
 		return $descendants;

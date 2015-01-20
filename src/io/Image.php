@@ -437,7 +437,7 @@ class Image
 		}
 		catch (\Imagine\Exception\NotSupportedException $exception)
 		{
-			Craft::error($exception->getMessage());
+			Craft::error($exception->getMessage(), __METHOD__);
 
 			return [];
 		}

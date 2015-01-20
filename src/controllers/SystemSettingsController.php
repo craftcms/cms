@@ -208,7 +208,7 @@ class SystemSettingsController extends BaseController
 			}
 			catch (\Exception $e)
 			{
-				Craft::error($e->getMessage());
+				Craft::error($e->getMessage(), __METHOD__);
 			}
 		}
 

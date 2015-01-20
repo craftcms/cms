@@ -289,7 +289,7 @@ class DashboardController extends BaseController
 			}
 			catch(\Exception $e)
 			{
-				Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage());
+				Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
 
 				// There was a problem zipping, so reset the params and just send the email without the attachment.
 				$requestParams = $requestParamDefaults;

@@ -155,7 +155,7 @@ class FindAndReplace extends BaseTask
 		}
 		else
 		{
-			Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.');
+			Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', __METHOD__);
 			return false;
 		}
 	}

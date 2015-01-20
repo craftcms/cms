@@ -53,8 +53,8 @@ abstract class BaseMigration extends \CDbMigration
 		}
 		catch(\Exception $e)
 		{
-			Craft::error($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')');
-			Craft::error($e->getTraceAsString());
+			Craft::error($e->getMessage().' ('.$e->getFile().':'.$e->getLine().')', __METHOD__);
+			Craft::error($e->getTraceAsString(), __METHOD__);
 
 			if ($transaction !== null)
 			{
@@ -329,7 +329,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function down()
 	{
-		Craft::warning('Down migrations are not supported.');
+		Craft::warning('Down migrations are not supported.', __METHOD__);
 	}
 
 	/**
@@ -337,7 +337,7 @@ abstract class BaseMigration extends \CDbMigration
 	 */
 	public function safeDown()
 	{
-		Craft::warning('Down migrations are not supported.');
+		Craft::warning('Down migrations are not supported.', __METHOD__);
 	}
 
 	/**

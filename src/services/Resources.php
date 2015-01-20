@@ -166,7 +166,7 @@ class Resources extends Component
 							}
 							else
 							{
-								Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder);
+								Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder, __METHOD__);
 							}
 						}
 
@@ -197,7 +197,7 @@ class Resources extends Component
 					}
 					else
 					{
-						Craft::error('Tried to write to the target folder, but could not:'.$targetFolder);
+						Craft::error('Tried to write to the target folder, but could not:'.$targetFolder, __METHOD__);
 					}
 				}
 

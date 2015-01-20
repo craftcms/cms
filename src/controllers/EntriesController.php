@@ -917,7 +917,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$section || !$type)
 		{
-			Craft::error('Attempting to preview an entry that doesn’t have a section/type');
+			Craft::error('Attempting to preview an entry that doesn’t have a section/type.', __METHOD__);
 			throw new HttpException(404);
 		}
 

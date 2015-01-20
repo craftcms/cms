@@ -74,7 +74,7 @@ class HeaderHelper
 
 		if (!isset($mimeTypes[$extension]))
 		{
-			Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.');
+			Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', __METHOD__);
 			return false;
 		}
 

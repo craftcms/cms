@@ -199,7 +199,7 @@ class Tasks extends Component
 		// If we're already processing tasks, let's give it a break.
 		if ($this->isTaskRunning())
 		{
-			Craft::info('Tasks are already running.');
+			Craft::info('Tasks are already running.', __METHOD__);
 			return;
 		}
 
@@ -282,7 +282,7 @@ class Tasks extends Component
 
 		if ($error === null)
 		{
-			Craft::info('Finished task '.$task->id.' ('.$task->type.').');
+			Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
 
 			// We're done with this task, nuke it.
 			$taskRecord->deleteNode();
@@ -331,7 +331,7 @@ class Tasks extends Component
 			$logMessage .= '.';
 		}
 
-		Craft::error($logMessage);
+		Craft::error($logMessage, __METHOD__);
 	}
 
 	/**

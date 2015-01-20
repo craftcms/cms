@@ -90,15 +90,15 @@ class ErrorHandler extends \CErrorHandler
 		if ($exception instanceof \HttpException)
 		{
 			$status = $exception->status ? $exception->$status : '';
-			Craft::warning(($status ? $status.' - ' : '').$exception->getMessage());
+			Craft::warning(($status ? $status.' - ' : '').$exception->getMessage(), __METHOD__);
 		}
 		else if ($exception instanceof \Twig_Error)
 		{
-			Craft::error($exception->getRawMessage());
+			Craft::error($exception->getRawMessage(), __METHOD__);
 		}
 		else
 		{
-			Craft::error($exception->getMessage());
+			Craft::error($exception->getMessage(), __METHOD__);
 		}
 
 		// Log MySQL deadlocks
@@ -108,7 +108,7 @@ class ErrorHandler extends \CErrorHandler
 			$info = $data->read();
 			$info = serialize($info);
 
-			Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand');
+			Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand', __METHOD__);
 		}
 
 		// If this is a Twig Runtime exception, use the previous one instead

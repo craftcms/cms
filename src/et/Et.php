@@ -243,7 +243,7 @@ class Et
 					}
 					else
 					{
-						Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody());
+						Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
 
 						if (Craft::$app->getCache()->get('etConnectFailure'))
 						{
@@ -254,7 +254,7 @@ class Et
 				}
 				else
 				{
-					Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody());
+					Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
 
 					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{
@@ -267,7 +267,7 @@ class Et
 		// Let's log and rethrow any EtExceptions.
 		catch (EtException $e)
 		{
-			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage());
+			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
 			if (Craft::$app->getCache()->get('etConnectFailure'))
 			{
@@ -279,7 +279,7 @@ class Et
 		}
 		catch (\Exception $e)
 		{
-			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage());
+			Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
 			// Cache the failure for 5 minutes so we don't try again.
 			Craft::$app->getCache()->set('etConnectFailure', true, 300);

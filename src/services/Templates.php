@@ -1284,7 +1284,7 @@ class Templates extends Component
 			}
 			catch (\LogicException $e)
 			{
-				Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.');
+				Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', __METHOD__);
 				return;
 			}
 		}

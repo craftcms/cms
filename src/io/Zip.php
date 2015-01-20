@@ -34,7 +34,7 @@ class Zip
 
 		if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip))
 		{
-			Craft::error('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.');
+			Craft::error('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', __METHOD__);
 			return false;
 		}
 
@@ -69,7 +69,7 @@ class Zip
 				{
 					if (!IOHelper::createFolder($destFolder))
 					{
-						Craft::error('Tried to create the unzip destination folder, but could not: '.$destFolder);
+						Craft::error('Tried to create the unzip destination folder, but could not: '.$destFolder, __METHOD__);
 						return false;
 					}
 				}
@@ -81,7 +81,7 @@ class Zip
 						// Begin the great purge.
 						if (!IOHelper::clearFolder($destFolder))
 						{
-							Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder);
+							Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, __METHOD__);
 							return false;
 						}
 					}
@@ -97,19 +97,19 @@ class Zip
 				}
 				else
 				{
-					Craft::error('There was an error unzipping the file: '.$srcZip);
+					Craft::error('There was an error unzipping the file: '.$srcZip, __METHOD__);
 					return false;
 				}
 			}
 			else
 			{
-				Craft::error($srcZip.' is not a zip file and cannot be unzipped.');
+				Craft::error($srcZip.' is not a zip file and cannot be unzipped.', __METHOD__);
 				return false;
 			}
 		}
 		else
 		{
-			Craft::error('Unzipping is only available for files.');
+			Craft::error('Unzipping is only available for files.', __METHOD__);
 			return false;
 		}
 	}
@@ -130,7 +130,7 @@ class Zip
 
 		if (!IOHelper::fileExists($sourceZip) || (!IOHelper::fileExists($pathToAdd) && !IOHelper::folderExists($pathToAdd)))
 		{
-			Craft::error('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.');
+			Craft::error('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', __METHOD__);
 			return false;
 		}
 

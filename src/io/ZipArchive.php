@@ -37,7 +37,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::error('Unable to create zip file: '.$destZip);
+			Craft::error('Unable to create zip file: '.$destZip, __METHOD__);
 			return false;
 		}
 
@@ -61,7 +61,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::error('Could not open the zip file: '.$srcZip);
+			Craft::error('Could not open the zip file: '.$srcZip, __METHOD__);
 			return false;
 		}
 
@@ -69,7 +69,7 @@ class ZipArchive implements ZipInterface
 		{
 			if (!$info = $zip->statIndex($i))
 			{
-				Craft::error('Could not retrieve a file from the zip archive '.$srcZip);
+				Craft::error('Could not retrieve a file from the zip archive '.$srcZip, __METHOD__);
 				return false;
 			}
 
@@ -93,13 +93,13 @@ class ZipArchive implements ZipInterface
 
 			if ($contents === false)
 			{
-				Craft::error('Could not extract file from zip archive '.$srcZip);
+				Craft::error('Could not extract file from zip archive '.$srcZip, __METHOD__);
 				return false;
 			}
 
 			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, true))
 			{
-				Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip);
+				Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, __METHOD__);
 				return false;
 			}
 		}
@@ -125,7 +125,7 @@ class ZipArchive implements ZipInterface
 
 		if ($zipContents !== true)
 		{
-			Craft::error('Unable to open zip file: '.$sourceZip);
+			Craft::error('Unable to open zip file: '.$sourceZip, __METHOD__);
 			return false;
 		}
 
@@ -165,7 +165,7 @@ class ZipArchive implements ZipInterface
 
 					if (!$zip->addFromString($relFilePath, $fileContents))
 					{
-						Craft::error('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip);
+						Craft::error('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, __METHOD__);
 					}
 				}
 			}
