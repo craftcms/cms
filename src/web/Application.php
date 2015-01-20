@@ -14,7 +14,6 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\LocaleData;
-use craft\app\logging\Logger;
 
 /**
  * Craft Web Application class
@@ -72,7 +71,6 @@ use craft\app\logging\Logger;
  * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
  * @property \craft\app\services\Users            $users            The users service.
  * @property User                                 $user             The user component.
- *
  * @method \craft\app\services\Cache              getCache()        Returns the cache component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
@@ -145,7 +143,6 @@ class Application extends \yii\web\Application
 		{
 			$this->setId($appId);
 		}
-
 		parent::init();
 	}
 
