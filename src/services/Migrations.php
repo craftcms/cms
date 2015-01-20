@@ -85,11 +85,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":", __METHOD__);
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin->getClassHandle().':', __METHOD__);
 		}
 		else
 		{
-			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:", __METHOD__);
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for Craft:', __METHOD__);
 		}
 
 		foreach ($migrations as $migration)

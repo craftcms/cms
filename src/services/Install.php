@@ -160,12 +160,12 @@ class Install extends Component
 				}
 				else
 				{
-					Craft::warning("Skipping record {$file} because it doesn’t have a createTable() method.", __METHOD__);
+					Craft::warning('Skipping record '.$file.' because it doesn’t have a createTable() method.', __METHOD__);
 				}
 			}
 			else
 			{
-				Craft::warning("Skipping record {$file} because it doesn’t exist.", __METHOD__);
+				Craft::warning('Skipping record '.$file.' because it doesn’t exist.', __METHOD__);
 			}
 		}
 

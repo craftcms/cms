@@ -922,7 +922,7 @@ trait ApplicationTrait
 					}
 					catch (\Exception $e)
 					{
-						Craft::error("Tried to determine the user's preferred locale, but got this exception: ".$e->getMessage(), __METHOD__);
+						Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
 					}
 
 					// Otherwise check if the browser's preferred language matches any of the site locales
