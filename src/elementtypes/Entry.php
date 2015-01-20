@@ -265,7 +265,7 @@ class Entry extends BaseElementType
 						['and', ['in', 'id', $event->elementIds], 'postDate is null']
 					);
 				}
-			};
+			});
 			$actions[] = $setStatusAction;
 		}
 
