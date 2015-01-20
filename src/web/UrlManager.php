@@ -288,7 +288,7 @@ class UrlManager extends \yii\web\UrlManager
 					{
 						// Give the element type a chance
 						$elementType = Craft::$app->elements->getElementType($element->getElementType());
-						$route = $elementType->routeRequestForMatchedElement($element);
+						$route = $elementType->getElementRoute($element);
 					}
 
 					if ($route)

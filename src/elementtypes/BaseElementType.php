@@ -466,13 +466,13 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::routeRequestForMatchedElement()
+	 * @inheritDoc ElementTypeInterface::getElementRoute()
 	 *
 	 * @param BaseElementModel $element
 	 *
 	 * @return bool|mixed
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
+	public function getElementRoute(BaseElementModel $element)
 	{
 		return false;
 	}

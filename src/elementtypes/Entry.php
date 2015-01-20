@@ -746,7 +746,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|bool|mixed
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
+	public function getElementRoute(BaseElementModel $element)
 	{
 		// Make sure that the entry is actually live
 		if ($element->getStatus() == EntryModel::LIVE)

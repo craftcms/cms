@@ -440,14 +440,14 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	public function saveElement(BaseElementModel $element, $params);
 
 	/**
-	 * Routes the request when the URI matches an element.
+	 * Returns the route for a given element.
 	 *
 	 * @param BaseElementModel The matched element.
 	 *
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element);
+	public function getElementRoute(BaseElementModel $element);
 
 	/**
 	 * Performs actions after an element has been moved within a structure.

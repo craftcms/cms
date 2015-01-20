@@ -359,14 +359,14 @@ class Category extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::routeRequestForMatchedElement()
+	 * @inheritDoc ElementTypeInterface::getElementRoute()
 	 *
 	 * @param BaseElementModel
 	 *
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function routeRequestForMatchedElement(BaseElementModel $element)
+	public function getElementRoute(BaseElementModel $element)
 	{
 		$group = $element->getGroup();
 
