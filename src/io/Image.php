@@ -125,7 +125,7 @@ class Image
 	{
 		if (!IOHelper::fileExists($path))
 		{
-			throw new Exception(Craft::t('No file exists at the path “{path}”', ['path' => $path]));
+			throw new Exception(Craft::t('app', 'No file exists at the path “{path}”', ['path' => $path]));
 		}
 
 		if (!Craft::$app->images->checkMemoryForImage($path))
@@ -137,7 +137,7 @@ class Image
 
 		if (!is_array($imageInfo))
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', ['path' => $path]));
+			throw new Exception(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
 		}
 
 		$this->_image = $this->_instance->open($path);
@@ -437,7 +437,7 @@ class Image
 		}
 		catch (\Imagine\Exception\NotSupportedException $exception)
 		{
-			Craft::error($exception->getMessage());
+			Craft::error($exception->getMessage(), __METHOD__);
 
 			return [];
 		}

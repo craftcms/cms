@@ -123,12 +123,12 @@ class PositionSelect extends BaseFieldType
 	private static function _getOptions()
 	{
 		return [
-			'left'       => Craft::t('Left'),
-			'center'     => Craft::t('Center'),
-			'right'      => Craft::t('Right'),
-			'full'       => Craft::t('Full'),
-			'drop-left'  => Craft::t('Drop-left'),
-			'drop-right' => Craft::t('Drop-right'),
+			'left'       => Craft::t('app', 'Left'),
+			'center'     => Craft::t('app', 'Center'),
+			'right'      => Craft::t('app', 'Right'),
+			'full'       => Craft::t('app', 'Full'),
+			'drop-left'  => Craft::t('app', 'Drop-left'),
+			'drop-right' => Craft::t('app', 'Drop-right'),
 		];
 	}
 }

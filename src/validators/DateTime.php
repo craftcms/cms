@@ -37,7 +37,7 @@ class DateTimeF extends \CValidator
 			{
 				if (!DateTimeHelper::isValidTimeStamp((string)$value))
 				{
-					$message = Craft::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', ['object' => get_class($object), 'attribute' => $attribute]);
+					$message = Craft::t('app', '“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', ['object' => get_class($object), 'attribute' => $attribute]);
 					$this->addError($object, $attribute, $message);
 				}
 			}

@@ -35,7 +35,7 @@ class Checkboxes extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Checkboxes');
+		return Craft::t('app', 'Checkboxes');
 	}
 
 	/**
@@ -73,6 +73,6 @@ class Checkboxes extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Craft::t('Checkbox Options');
+		return Craft::t('app', 'Checkbox Options');
 	}
 }

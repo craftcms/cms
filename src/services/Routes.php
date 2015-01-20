@@ -111,7 +111,7 @@ class Routes extends Component
 
 			if (!$routeRecord)
 			{
-				throw new Exception(Craft::t('No route exists with the ID “{id}”.', ['id' => $routeId]));
+				throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
 			}
 		}
 		else

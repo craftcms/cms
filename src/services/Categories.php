@@ -301,7 +301,7 @@ class Categories extends Component
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No category group exists with the ID “{id}”.', ['id' => $group->id]));
+				throw new Exception(Craft::t('app', 'No category group exists with the ID “{id}”.', ['id' => $group->id]));
 			}
 
 			$oldCategoryGroup = CategoryGroupModel::populateModel($groupRecord);
@@ -674,7 +674,7 @@ class Categories extends Component
 
 				if (!$parentCategory)
 				{
-					throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
+					throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
 				}
 			}
 			else
@@ -692,7 +692,7 @@ class Categories extends Component
 
 			if (!$categoryRecord)
 			{
-				throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $category->id]));
+				throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->id]));
 			}
 		}
 		else

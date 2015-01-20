@@ -50,7 +50,7 @@ class FindAndReplace extends BaseTask
 	{
 		$settings = $this->getSettings();
 
-		return Craft::t('Replacing “{find}” with “{replace}”', [
+		return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
 			'find'    => $settings->find,
 			'replace' => $settings->replace
 		]);
@@ -135,7 +135,7 @@ class FindAndReplace extends BaseTask
 
 					if ($field)
 					{
-						return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', ['field' => $field->name]), [
+						return $this->runSubTask('FindAndReplace', Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]), [
 							'find'          => $settings->find,
 							'replace'       => $settings->replace,
 							'matrixFieldId' => $field->id
@@ -155,7 +155,7 @@ class FindAndReplace extends BaseTask
 		}
 		else
 		{
-			Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.');
+			Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', __METHOD__);
 			return false;
 		}
 	}

@@ -71,11 +71,11 @@ class Migrations extends Component
 		{
 			if ($plugin)
 			{
-				Craft::info('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.');
+				Craft::info('No new migration(s) found for the plugin '.$plugin->getClassHandle().'. Your system is up-to-date.', __METHOD__);
 			}
 			else
 			{
-				Craft::info('No new migration(s) found for Craft. Your system is up-to-date.');
+				Craft::info('No new migration(s) found for Craft. Your system is up-to-date.', __METHOD__);
 			}
 
 			return true;
@@ -85,16 +85,16 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for plugin ".$plugin->getClassHandle().":");
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for plugin '.$plugin->getClassHandle().':', __METHOD__);
 		}
 		else
 		{
-			Craft::info("Total $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied for Craft:");
+			Craft::info('Total '.$total.' new '.($total === 1 ? 'migration' : 'migrations').' to be applied for Craft:', __METHOD__);
 		}
 
 		foreach ($migrations as $migration)
 		{
-			Craft::info($migration);
+			Craft::info($migration, __METHOD__);
 		}
 
 		foreach ($migrations as $migration)
@@ -106,11 +106,11 @@ class Migrations extends Component
 			{
 				if ($plugin)
 				{
-					Craft::error('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.');
+					Craft::error('Migration failed for plugin '.$plugin->getClassHandle().'. All later '.$plugin->getClassHandle().' migrations are canceled.', __METHOD__);
 				}
 				else
 				{
-					Craft::error('Migration failed for Craft. All later Craft migrations are canceled.');
+					Craft::error('Migration failed for Craft. All later Craft migrations are canceled.', __METHOD__);
 				}
 
 				// Refresh the DB cache
@@ -122,11 +122,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info($plugin->getClassHandle().' migrated up successfully.');
+			Craft::info($plugin->getClassHandle().' migrated up successfully.', __METHOD__);
 		}
 		else
 		{
-			Craft::info('Craft migrated up successfully.');
+			Craft::info('Craft migrated up successfully.', __METHOD__);
 		}
 
 		// Refresh the DB cache
@@ -150,11 +150,11 @@ class Migrations extends Component
 
 		if ($plugin)
 		{
-			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle());
+			Craft::info('Applying migration: '.$class.' for plugin: '.$plugin->getClassHandle(), __METHOD__);
 		}
 		else
 		{
-			Craft::info('Applying migration: '.$class);
+			Craft::info('Applying migration: '.$class, __METHOD__);
 		}
 
 		$start = microtime(true);
@@ -181,13 +181,13 @@ class Migrations extends Component
 			}
 
 			$time = microtime(true) - $start;
-			Craft::info('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
+			Craft::info('Applied migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
 			return true;
 		}
 		else
 		{
 			$time = microtime(true) - $start;
-			Craft::error('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)');
+			Craft::error('Failed to apply migration: '.$class.' (time: '.sprintf("%.3f", $time).'s)', __METHOD__);
 			return false;
 		}
 	}
@@ -205,8 +205,8 @@ class Migrations extends Component
 
 		if (!IOHelper::fileExists($file) || !IOHelper::isReadable($file))
 		{
-			Craft::error('Tried to find migration file '.$file.' for class '.$class.', but could not.');
-			throw new Exception(Craft::t('Could not find the requested migration file.'));
+			Craft::error('Tried to find migration file '.$file.' for class '.$class.', but could not.', __METHOD__);
+			throw new Exception(Craft::t('app', 'Could not find the requested migration file.'));
 		}
 
 		require_once($file);

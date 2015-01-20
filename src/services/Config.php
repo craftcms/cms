@@ -326,7 +326,7 @@ class Config extends Component
 						}
 						catch (\Exception $e)
 						{
-							Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage());
+							Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
 						}
 					}
 
@@ -419,7 +419,7 @@ class Config extends Component
 						}
 						catch (\Exception $e)
 						{
-							Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage());
+							Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
 						}
 					}
 

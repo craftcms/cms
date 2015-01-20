@@ -93,7 +93,7 @@ class Entries extends Component
 	 *
 	 * if (!$success)
 	 * {
-	 *     Craft::error('Couldn’t save the entry "'.$entry->title.'"');
+	 *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
 	 * }
 	 * ```
 	 *
@@ -117,7 +117,7 @@ class Entries extends Component
 
 				if (!$parentEntry)
 				{
-					throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
+					throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
 				}
 			}
 			else
@@ -135,7 +135,7 @@ class Entries extends Component
 
 			if (!$entryRecord)
 			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entry->id]));
+				throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->id]));
 			}
 		}
 		else
@@ -148,7 +148,7 @@ class Entries extends Component
 
 		if (!$section)
 		{
-			throw new Exception(Craft::t('No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
+			throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
 		}
 
 		// Verify that the section is available in this locale
@@ -156,7 +156,7 @@ class Entries extends Component
 
 		if (!isset($sectionLocales[$entry->locale]))
 		{
-			throw new Exception(Craft::t('The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
+			throw new Exception(Craft::t('app', 'The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
 		}
 
 		// Set the entry data

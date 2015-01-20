@@ -27,7 +27,7 @@ class AssetIndex extends BaseTool
 	 */
 	public function getName()
 	{
-		return Craft::t('Update Asset Indexes');
+		return Craft::t('app', 'Update Asset Indexes');
 	}
 
 	/**

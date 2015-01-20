@@ -37,6 +37,6 @@ class Users extends BaseElementFieldType
 	 */
 	protected function getAddButtonLabel()
 	{
-		return Craft::t('Add a user');
+		return Craft::t('app', 'Add a user');
 	}
 }

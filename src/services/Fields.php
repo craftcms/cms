@@ -1059,7 +1059,7 @@ class Fields extends Component
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No field group exists with the ID “{id}”.', ['id' => $group->id]));
+				throw new Exception(Craft::t('app', 'No field group exists with the ID “{id}”.', ['id' => $group->id]));
 			}
 		}
 		else
@@ -1090,7 +1090,7 @@ class Fields extends Component
 
 				if (!$this->_fieldRecordsById[$fieldId])
 				{
-					throw new Exception(Craft::t('No field exists with the ID “{id}”.', ['id' => $fieldId]));
+					throw new Exception(Craft::t('app', 'No field exists with the ID “{id}”.', ['id' => $fieldId]));
 				}
 			}
 

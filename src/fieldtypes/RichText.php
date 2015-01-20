@@ -45,7 +45,7 @@ class RichText extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Rich Text');
+		return Craft::t('app', 'Rich Text');
 	}
 
 	/**
@@ -55,7 +55,7 @@ class RichText extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$configOptions = ['' => Craft::t('Default')];
+		$configOptions = ['' => Craft::t('app', 'Default')];
 		$configPath = Craft::$app->path->getConfigPath().'/redactor';
 
 		if (IOHelper::folderExists($configPath))
@@ -72,8 +72,8 @@ class RichText extends BaseFieldType
 		}
 
 		$columns = [
-			'text'       => Craft::t('Text (stores about 64K)'),
-			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
+			'text'       => Craft::t('app', 'Text (stores about 64K)'),
+			'mediumtext' => Craft::t('app', 'MediumText (stores about 4GB)')
 		];
 
 		return Craft::$app->templates->render('_components/fieldtypes/RichText/settings', [
@@ -245,7 +245,7 @@ class RichText extends BaseFieldType
 
 			if ($postContentSize > $maxDbColumnSize)
 			{
-				return Craft::t('{attribute} is too long.', ['attribute' => Craft::t('app', $this->model->name)]);
+				return Craft::t('app', '{attribute} is too long.', ['attribute' => Craft::t('app', $this->model->name)]);
 			}
 		}
 

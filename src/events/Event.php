@@ -13,7 +13,7 @@ namespace craft\app\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Event extends yii\base\Event
+class Event extends \yii\base\Event
 {
 	// Properties
 	// =========================================================================

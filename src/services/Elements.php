@@ -105,7 +105,7 @@ class Elements extends Component
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists by the type “{type}”.', ['type' => $type]));
+			throw new Exception(Craft::t('app', 'No element type exists by the type “{type}”.', ['type' => $type]));
 		}
 
 		return new ElementCriteriaModel($attributes, $elementType);
@@ -1131,7 +1131,7 @@ class Elements extends Component
 
 			if (!$elementRecord)
 			{
-				throw new Exception(Craft::t('No element exists with the ID “{id}”.', ['id' => $element->id]));
+				throw new Exception(Craft::t('app', 'No element exists with the ID “{id}”.', ['id' => $element->id]));
 			}
 		}
 		else
@@ -1304,7 +1304,7 @@ class Elements extends Component
 						if ($originalSlug && !$localizedElement->slug)
 						{
 							$localizedElement->slug = $originalSlug;
-							$element->addError('slug', Craft::t('{attribute} is invalid.', ['attribute' => Craft::t('Slug')]));
+							$element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
 
 							// Don't bother with any of the other locales
 							$success = false;
@@ -1599,19 +1599,19 @@ class Elements extends Component
 			{
 				$refTagPrefix = '{'.lcfirst($elementType).':';
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), [
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.':',
 					'replace' => $refTagPrefix.$prevailingElementId.':',
 				]);
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('Updating element references'), [
+				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.'}',
 					'replace' => $refTagPrefix.$prevailingElementId.'}',
 				]);
 			}
 
 			// Fire an 'afterMergeElements' event
-			$this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
+			$this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementEvent([
 				'mergedElementId'     => $mergedElementId,
 				'prevailingElementId' => $prevailingElementId
 			]));

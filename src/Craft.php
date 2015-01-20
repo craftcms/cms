@@ -89,7 +89,7 @@ class Craft extends Yii
 	{
 		if (!$category)
 		{
-			$category = 'app';
+			$category = 'application';
 		}
 
 		$translation = parent::t($category, $message, $params, $language);
@@ -119,27 +119,5 @@ class Craft extends Yii
 		}
 
 		return array_merge(static::$_baseCookieConfig, $config);
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Imports a file into Craft's classMap.
-	 *
-	 * @param string $file The file to import.
-	 *
-	 * @return null
-	 */
-	private static function _importFile($file)
-	{
-		$file = str_replace('\\', '/', $file);
-
-		// Don't add any Composer vendor files to the class map.
-		if (strpos($file, '/app/vendor/') === false)
-		{
-			$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
-			Yii::$classMap[$class] = $file;
-		}
 	}
 }

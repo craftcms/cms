@@ -147,7 +147,7 @@ class Et extends Component
 			}
 			else
 			{
-				$error = Craft::t('Craft is unable to transfer your license to this domain at this time.');
+				$error = Craft::t('app', 'Craft is unable to transfer your license to this domain at this time.');
 			}
 
 			return $error;
@@ -196,22 +196,22 @@ class Et extends Component
 					switch ($etResponse->errors[0])
 					{
 						// Validation errors
-						case 'edition_doesnt_exist': $error = Craft::t('The selected edition doesn’t exist anymore.'); break;
-						case 'invalid_license_key':  $error = Craft::t('Your license key is invalid.'); break;
-						case 'license_has_edition':  $error = Craft::t('Your Craft license already has this edition.'); break;
-						case 'price_mismatch':       $error = Craft::t('The cost of this edition just changed.'); break;
-						case 'unknown_error':        $error = Craft::t('An unknown error occurred.'); break;
+						case 'edition_doesnt_exist': $error = Craft::t('app', 'The selected edition doesn’t exist anymore.'); break;
+						case 'invalid_license_key':  $error = Craft::t('app', 'Your license key is invalid.'); break;
+						case 'license_has_edition':  $error = Craft::t('app', 'Your Craft license already has this edition.'); break;
+						case 'price_mismatch':       $error = Craft::t('app', 'The cost of this edition just changed.'); break;
+						case 'unknown_error':        $error = Craft::t('app', 'An unknown error occurred.'); break;
 
 						// Stripe errors
-						case 'incorrect_number':     $error = Craft::t('The card number is incorrect.'); break;
-						case 'invalid_number':       $error = Craft::t('The card number is invalid.'); break;
-						case 'invalid_expiry_month': $error = Craft::t('The expiration month is invalid.'); break;
-						case 'invalid_expiry_year':  $error = Craft::t('The expiration year is invalid.'); break;
-						case 'invalid_cvc':          $error = Craft::t('The security code is invalid.'); break;
-						case 'incorrect_cvc':        $error = Craft::t('The security code is incorrect.'); break;
-						case 'expired_card':         $error = Craft::t('Your card has expired.'); break;
-						case 'card_declined':        $error = Craft::t('Your card was declined.'); break;
-						case 'processing_error':     $error = Craft::t('An error occurred while processing your card.'); break;
+						case 'incorrect_number':     $error = Craft::t('app', 'The card number is incorrect.'); break;
+						case 'invalid_number':       $error = Craft::t('app', 'The card number is invalid.'); break;
+						case 'invalid_expiry_month': $error = Craft::t('app', 'The expiration month is invalid.'); break;
+						case 'invalid_expiry_year':  $error = Craft::t('app', 'The expiration year is invalid.'); break;
+						case 'invalid_cvc':          $error = Craft::t('app', 'The security code is invalid.'); break;
+						case 'incorrect_cvc':        $error = Craft::t('app', 'The security code is incorrect.'); break;
+						case 'expired_card':         $error = Craft::t('app', 'Your card has expired.'); break;
+						case 'card_declined':        $error = Craft::t('app', 'Your card was declined.'); break;
+						case 'processing_error':     $error = Craft::t('app', 'An error occurred while processing your card.'); break;
 
 						default:                     $error = $etResponse->errors[0];
 					}
@@ -219,7 +219,7 @@ class Et extends Component
 				else
 				{
 					// Something terrible must have happened!
-					$error = Craft::t('Craft is unable to purchase an edition upgrade at this time.');
+					$error = Craft::t('app', 'Craft is unable to purchase an edition upgrade at this time.');
 				}
 
 				$model->addError('response', $error);

@@ -40,7 +40,7 @@ class Uri extends \CValidator
 
 		if ($uri && !preg_match($this->pattern, $uri))
 		{
-			$message = Craft::t('{attribute} is not a valid URI');
+			$message = Craft::t('app', '{attribute} is not a valid URI', ['attribute' => $object->attribute]);
 			$this->addError($object, $attribute, $message);
 		}
 	}

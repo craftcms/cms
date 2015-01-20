@@ -27,7 +27,7 @@ class RadioButtons extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Radio Buttons');
+		return Craft::t('app', 'Radio Buttons');
 	}
 
 	/**
@@ -65,6 +65,6 @@ class RadioButtons extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Craft::t('Radio Button Options');
+		return Craft::t('app', 'Radio Button Options');
 	}
 }

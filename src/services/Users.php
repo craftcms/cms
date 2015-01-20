@@ -297,13 +297,13 @@ class Users extends Component
 				else
 				{
 					$valid = false;
-					Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.');
+					Craft::warning('The verification code ('.$code.') given for userId: '.$user->id.' does not match the hash in the database.', __METHOD__);
 				}
 			}
 		}
 		else
 		{
-			Craft::warning('Could not find a user with id:'.$user->id.'.');
+			Craft::warning('Could not find a user with id:'.$user->id.'.', __METHOD__);
 		}
 
 		return $valid;
@@ -349,7 +349,7 @@ class Users extends Component
 	 *
 	 * if (!$success)
 	 * {
-	 *     Craft::error('Couldn’t save the user "'.$user->username.'"');
+	 *     Craft::error('Couldn’t save the user "'.$user->username.'"', __METHOD__);
 	 * }
 	 * ```
 	 *
@@ -369,7 +369,7 @@ class Users extends Component
 
 			if (!$userRecord)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $user->id]));
+				throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $user->id]));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -1317,7 +1317,7 @@ class Users extends Component
 
 			if ($affectedRows > 0)
 			{
-				Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old');
+				Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.', __METHOD__);
 			}
 		}
 	}
@@ -1339,7 +1339,7 @@ class Users extends Component
 
 		if (!$userRecord)
 		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $userId]));
+			throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $userId]));
 		}
 
 		return $userRecord;
@@ -1422,7 +1422,7 @@ class Users extends Component
 				if (Craft::$app->getSecurity()->validatePassword($user->newPassword, $userRecord->password))
 				{
 					$user->addErrors([
-						$passwordErrorField => Craft::t('That password is the same as your old password. Please choose a new one.'),
+						$passwordErrorField => Craft::t('app', 'That password is the same as your old password. Please choose a new one.'),
 					]);
 				}
 				else

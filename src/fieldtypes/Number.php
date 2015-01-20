@@ -30,7 +30,7 @@ class Number extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Number');
+		return Craft::t('app', 'Number');
 	}
 
 	/**

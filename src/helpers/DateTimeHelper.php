@@ -120,27 +120,27 @@ class DateTimeHelper
 
 		if ($weeks)
 		{
-			$timeComponents[] = $weeks.' '.($weeks == 1 ? Craft::t('week') : Craft::t('weeks'));
+			$timeComponents[] = $weeks.' '.($weeks == 1 ? Craft::t('app', 'week') : Craft::t('app', 'weeks'));
 		}
 
 		if ($days)
 		{
-			$timeComponents[] = $days.' '.($days == 1 ? Craft::t('day') : Craft::t('days'));
+			$timeComponents[] = $days.' '.($days == 1 ? Craft::t('app', 'day') : Craft::t('app', 'days'));
 		}
 
 		if ($hours)
 		{
-			$timeComponents[] = $hours.' '.($hours == 1 ? Craft::t('hour') : Craft::t('hours'));
+			$timeComponents[] = $hours.' '.($hours == 1 ? Craft::t('app', 'hour') : Craft::t('app', 'hours'));
 		}
 
 		if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours))
 		{
-			$timeComponents[] = $minutes.' '.($minutes == 1 ? Craft::t('minute') : Craft::t('minutes'));
+			$timeComponents[] = $minutes.' '.($minutes == 1 ? Craft::t('app', 'minute') : Craft::t('app', 'minutes'));
 		}
 
 		if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes))
 		{
-			$timeComponents[] = $seconds.' '.($seconds == 1 ? Craft::t('second') : Craft::t('seconds'));
+			$timeComponents[] = $seconds.' '.($seconds == 1 ? Craft::t('app', 'second') : Craft::t('app', 'seconds'));
 		}
 
 		return implode(', ', $timeComponents);
@@ -354,7 +354,7 @@ class DateTimeHelper
 		// If it was yesterday, display 'Yesterday'
 		else if (static::wasYesterday($dateTime->getTimestamp()))
 		{
-			return Craft::t('Yesterday');
+			return Craft::t('app', 'Yesterday');
 		}
 		// If it were up to 7 days ago, display the weekday name.
 		else if (static::wasWithinLast('7 days', $dateTime->getTimestamp()))

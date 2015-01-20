@@ -38,11 +38,11 @@ class ResaveAllElements extends BaseTask
 	{
 		if ($this->getSettings()->localizableOnly)
 		{
-			return Craft::t('Resaving all localizable elements');
+			return Craft::t('app', 'Resaving all localizable elements');
 		}
 		else
 		{
-			return Craft::t('Resaving all elements');
+			return Craft::t('app', 'Resaving all elements');
 		}
 	}
 

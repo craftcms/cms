@@ -149,7 +149,7 @@ class AssetTransforms extends Component
 
 			if (!$transformRecord)
 			{
-				throw new Exception(Craft::t('Can’t find the transform with ID “{id}”.', ['id' => $transform->id]));
+				throw new Exception(Craft::t('app', 'Can’t find the transform with ID “{id}”.', ['id' => $transform->id]));
 			}
 		}
 		else
@@ -669,7 +669,7 @@ class AssetTransforms extends Component
 		{
 			if (!$sourceType->isRemote())
 			{
-				throw new Exception(Craft::t('Image “{file}” cannot be found.', ['file' => $file->filename]));
+				throw new Exception(Craft::t('app', 'Image “{file}” cannot be found.', ['file' => $file->filename]));
 			}
 
 			// Delete it just in case it's a 0-byter
@@ -679,7 +679,7 @@ class AssetTransforms extends Component
 
 			if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0)
 			{
-				throw new Exception(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', ['file' => $file->filename]));
+				throw new Exception(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', ['file' => $file->filename]));
 			}
 
 			$this->storeLocalSource($localCopy, $imageSourcePath);

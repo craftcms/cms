@@ -49,8 +49,8 @@ class CpHelper
 				{
 					if (Craft::$app->updates->criticalCraftUpdateAvailable($updateModel->app->releases))
 					{
-						$alerts[] = Craft::t('There’s a critical @@@appName@@@ update available.') .
-							' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('Go to Updates').'</a>';
+						$alerts[] = Craft::t('app', 'There’s a critical @@@appName@@@ update available.') .
+							' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
 					}
 				}
 			}
@@ -64,7 +64,7 @@ class CpHelper
 				$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
 				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
 
-				$message = Craft::t('The license located at {file} belongs to {domain}.', [
+				$message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
 					'file'   => $licenseKeyFile,
 					'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
 				]);
@@ -72,11 +72,11 @@ class CpHelper
 				// Can they actually do something about it?
 				if ($user->admin)
 				{
-					$action = '<a class="domain-mismatch">'.Craft::t('Transfer it to this domain?').'</a>';
+					$action = '<a class="domain-mismatch">'.Craft::t('app', 'Transfer it to this domain?').'</a>';
 				}
 				else
 				{
-					$action = Craft::t('Please notify one of your site’s admins.');
+					$action = Craft::t('app', 'Please notify one of your site’s admins.');
 				}
 
 				$alerts[] = $message.' '.$action;

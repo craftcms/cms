@@ -252,7 +252,7 @@ class Email extends Component
 
 		if (!isset($emailSettings['protocol']))
 		{
-			throw new Exception(Craft::t('Could not determine how to send the email.  Check your email settings.'));
+			throw new Exception(Craft::t('app', 'Could not determine how to send the email.  Check your email settings.'));
 		}
 
 
@@ -300,7 +300,7 @@ class Email extends Component
 						!$emailSettings['host'] || !$emailSettings['port'] || !$emailSettings['username'] || !$emailSettings['password']
 					)
 					{
-						throw new Exception(Craft::t('Host, port, username and password must be configured under your email settings.'));
+						throw new Exception(Craft::t('app', 'Host, port, username and password must be configured under your email settings.'));
 					}
 
 					if (!isset($emailSettings['timeout']))
@@ -436,7 +436,7 @@ class Email extends Component
 
 			if (!$email->Send())
 			{
-				throw new Exception(Craft::t('Email error: {error}', ['error' => $email->ErrorInfo]));
+				throw new Exception(Craft::t('app', 'Email error: {error}', ['error' => $email->ErrorInfo]));
 			}
 
 			$success = true;
@@ -478,7 +478,7 @@ class Email extends Component
 
 			if ((!isset($emailSettings['username']) && !$emailSettings['username']) || (!isset($emailSettings['password']) && !$emailSettings['password']))
 			{
-				throw new Exception(Craft::t('Username and password are required.  Check your email settings.'));
+				throw new Exception(Craft::t('app', 'Username and password are required.  Check your email settings.'));
 			}
 
 			$email->Username = $emailSettings['username'];
@@ -494,12 +494,12 @@ class Email extends Component
 
 		if (!isset($emailSettings['host']))
 		{
-			throw new Exception(Craft::t('You must specify a host name in your email settings.'));
+			throw new Exception(Craft::t('app', 'You must specify a host name in your email settings.'));
 		}
 
 		if (!isset($emailSettings['port']))
 		{
-			throw new Exception(Craft::t('You must specify a port in your email settings.'));
+			throw new Exception(Craft::t('app', 'You must specify a port in your email settings.'));
 		}
 
 		if (!isset($emailSettings['timeout']))

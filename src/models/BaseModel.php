@@ -517,7 +517,7 @@ abstract class BaseModel extends \yii\base\Model
 		{
 			foreach ($errorMessages as $errorMessage)
 			{
-				Craft::warning(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage);
+				Craft::warning(get_class($this).'->'.$attribute.' failed validation: '.$errorMessage, __METHOD__);
 			}
 		}
 

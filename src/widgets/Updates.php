@@ -37,7 +37,7 @@ class Updates extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Updates');
+		return Craft::t('app', 'Updates');
 	}
 
 	/**
@@ -93,7 +93,7 @@ class Updates extends BaseWidget
 		}
 		else
 		{
-			return '<p class="centeralign">'.Craft::t('Checking for updates…').'</p>';
+			return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
 		}
 	}
 }

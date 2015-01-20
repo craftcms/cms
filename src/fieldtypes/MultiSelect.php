@@ -35,7 +35,7 @@ class MultiSelect extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Multi-select');
+		return Craft::t('app', 'Multi-select');
 	}
 
 	/**
@@ -73,6 +73,6 @@ class MultiSelect extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Craft::t('Multi-select Options');
+		return Craft::t('app', 'Multi-select Options');
 	}
 }

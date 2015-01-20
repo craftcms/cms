@@ -331,7 +331,7 @@ class Dashboard extends Component
 	 */
 	private function _noWidgetExists($widgetId)
 	{
-		throw new Exception(Craft::t('No widget exists with the ID “{id}”.', ['id' => $widgetId]));
+		throw new Exception(Craft::t('app', 'No widget exists with the ID “{id}”.', ['id' => $widgetId]));
 	}
 
 	/**

@@ -302,7 +302,7 @@ class Plugins extends Component
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” can’t be enabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
+			throw new Exception(Craft::t('app', '“{plugin}” can’t be enabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
 		}
 
 		if ($plugin->isEnabled)
@@ -343,7 +343,7 @@ class Plugins extends Component
 
 		if (!$plugin->isInstalled)
 		{
-			throw new Exception(Craft::t('“{plugin}” can’t be disabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
+			throw new Exception(Craft::t('app', '“{plugin}” can’t be disabled because it isn’t installed yet.', ['plugin' => $plugin->getName()]));
 		}
 
 		if (!$plugin->isEnabled)
@@ -666,7 +666,7 @@ class Plugins extends Component
 	 */
 	private function _noPluginExists($handle)
 	{
-		throw new Exception(Craft::t('No plugin exists with the class “{class}”', ['class' => $handle]));
+		throw new Exception(Craft::t('app', 'No plugin exists with the class “{class}”', ['class' => $handle]));
 	}
 
 	/**
@@ -716,7 +716,7 @@ class Plugins extends Component
 				{
 					if (!$migration->save())
 					{
-						throw new Exception(Craft::t('There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
+						throw new Exception(Craft::t('app', 'There was a problem saving to the migrations table: ').$this->_getFlattenedErrors($migration->getErrors()));
 					}
 				}
 			}

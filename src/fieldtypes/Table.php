@@ -30,7 +30,7 @@ class Table extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Table');
+		return Craft::t('app', 'Table');
 	}
 
 	/**
@@ -68,30 +68,30 @@ class Table extends BaseFieldType
 
 		$columnSettings = [
 			'heading' => [
-				'heading' => Craft::t('Column Heading'),
+				'heading' => Craft::t('app', 'Column Heading'),
 				'type' => 'singleline',
 				'autopopulate' => 'handle'
 			],
 			'handle' => [
-				'heading' => Craft::t('Handle'),
+				'heading' => Craft::t('app', 'Handle'),
 				'class' => 'code',
 				'type' => 'singleline'
 			],
 			'width' => [
-				'heading' => Craft::t('Width'),
+				'heading' => Craft::t('app', 'Width'),
 				'class' => 'code',
 				'type' => 'singleline',
 				'width' => 50
 			],
 			'type' => [
-				'heading' => Craft::t('Type'),
+				'heading' => Craft::t('app', 'Type'),
 				'class' => 'thin',
 				'type' => 'select',
 				'options' => [
-					'singleline' => Craft::t('Single-line Text'),
-					'multiline' => Craft::t('Multi-line text'),
-					'number' => Craft::t('Number'),
-					'checkbox' => Craft::t('Checkbox'),
+					'singleline' => Craft::t('app', 'Single-line Text'),
+					'multiline' => Craft::t('app', 'Multi-line text'),
+					'number' => Craft::t('app', 'Number'),
+					'checkbox' => Craft::t('app', 'Checkbox'),
 				]
 			],
 		];
@@ -107,21 +107,21 @@ class Table extends BaseFieldType
 
 		$columnsField = Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
-				'label'        => Craft::t('Table Columns'),
-				'instructions' => Craft::t('Define the columns your table should have.'),
+				'label'        => Craft::t('app', 'Table Columns'),
+				'instructions' => Craft::t('app', 'Define the columns your table should have.'),
 				'id'           => 'columns',
 				'name'         => 'columns',
 				'cols'         => $columnSettings,
 				'rows'         => $columns,
-				'addRowLabel'  => Craft::t('Add a column'),
+				'addRowLabel'  => Craft::t('app', 'Add a column'),
 				'initJs'       => false
 			]
 		]);
 
 		$defaultsField = Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
-				'label'        => Craft::t('Default Values'),
-				'instructions' => Craft::t('Define the default values for the field.'),
+				'label'        => Craft::t('app', 'Default Values'),
+				'instructions' => Craft::t('app', 'Define the default values for the field.'),
 				'id'           => 'defaults',
 				'name'         => 'defaults',
 				'cols'         => $columns,

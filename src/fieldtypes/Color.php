@@ -29,7 +29,7 @@ class Color extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Color');
+		return Craft::t('app', 'Color');
 	}
 
 	/**
