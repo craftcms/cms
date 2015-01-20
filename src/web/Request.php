@@ -46,6 +46,11 @@ class Request extends \yii\web\Request
 	/**
 	 * @var
 	 */
+	private $_fullPath;
+
+	/**
+	 * @var
+	 */
 	private $_path;
 
 	/**
@@ -143,7 +148,7 @@ class Request extends \yii\web\Request
 		$configService = Craft::$app->config;
 
 		// Sanitize
-		$path = $this->getPathInfo();
+		$path = $this->getFullPath();
 
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path));
@@ -180,6 +185,49 @@ class Request extends \yii\web\Request
 
 		// Now that we've chopped off the admin/page segments, set the path
 		$this->_path = implode('/', $this->_segments);
+	}
+
+	/**
+	 * Returns the full request path, whether that came from the path info or the path query parameter.
+	 *
+	 * Leading and trailing slashes will be removed.
+	 *
+	 * @return string
+	 */
+	public function getFullPath()
+	{
+		if ($this->_fullPath === null)
+		{
+			try
+			{
+				if (Craft::$app->config->usePathInfo())
+				{
+					$this->_fullPath = $this->getPathInfo();
+
+					if (!$this->_fullPath)
+					{
+						$this->_fullPath = $this->_getQueryStringPath();
+					}
+				}
+				else
+				{
+					$this->_fullPath = $this->_getQueryStringPath();
+
+					if (!$this->_fullPath)
+					{
+						$this->_fullPath = $this->getPathInfo();
+					}
+				}
+			}
+			catch (InvalidConfigException $e)
+			{
+				$this->_fullPath = $this->_getQueryStringPath();
+			}
+
+			$this->_fullPath = trim($this->_fullPath, '/');
+		}
+
+		return $this->_fullPath;
 	}
 
 	/**
@@ -624,31 +672,6 @@ class Request extends \yii\web\Request
 	}
 
 	/**
-	 * @inheritDoc parent::getPathInfo()
-	 *
-	 * @param boolean $throwException Whether an [[InvalidConfigException]] should be thrown if the path info can't be determine
-	 * @return string
-	 * @throws InvalidConfigException
-	 * @see getPathInfo()
-	 */
-	public function getRealPathInfo($throwException = true)
-	{
-		if (!$throwException)
-		{
-			try
-			{
-				return parent::getPathInfo();
-			}
-			catch (InvalidConfigException $e)
-			{
-				return '';
-			}
-		}
-
-		return parent::getPathInfo();
-	}
-
-	/**
 	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
 	 * variations in how different ISPs handle IP addresses in headers between hops.
 	 *
@@ -727,63 +750,8 @@ class Request extends \yii\web\Request
 		return $this->_ipAddress;
 	}
 
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * Resolves the path info part of the currently requested URL.
-	 *
-	 * Unlike [[\yii\web\Request::getPathInfo()]], this method does not always return the true path info
-	 * (possibly returning the [pathParam](http://buildwithcraft.com/docs/config-settings#pathParam) query string
-	 * parameter instead) because [[\yii\web\UrlManager::parseRequest()]] checks [[getPathInfo()]] to get the
-	 * request path when it is configured with enablePrettyUrl set to true. (To get the real path info, use
-	 * [[getRealPathInfo()]].)
-	 *
-	 * If [usePathInfo](http://buildwithcraft.com/docs/config-settings#usePathInfo) is disabled, or if the request does not
-	 * actually have a path info, then the pathParam query string parameter will be checked instead.
-	 *
-	 * Leading and trailing slashes will be removed.
-	 *
-	 * @return string
-	 * @see getRealPathInfo()
-	 */
-	protected function resolvePathInfo()
-	{
-		try
-		{
-			if (Craft::$app->config->usePathInfo())
-			{
-				$pathInfo = parent::resolvePathInfo();
-
-				if (!$pathInfo)
-				{
-					$pathInfo = $this->_getQueryStringPath();
-				}
-			}
-			else
-			{
-				$pathInfo = $this->_getQueryStringPath();
-
-				if (!$pathInfo)
-				{
-					$pathInfo = parent::resolvePathInfo();
-				}
-			}
-		}
-		catch (InvalidConfigException $e)
-		{
-			$pathInfo = $this->_getQueryStringPath();
-		}
-
-		return trim($pathInfo, '/');
-	}
-
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Returns the
-	 */
 
 	/**
 	 * Returns the query string path.
