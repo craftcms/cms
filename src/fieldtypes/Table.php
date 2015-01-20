@@ -266,7 +266,7 @@ class Table extends BaseFieldType
 			{
 				if (!empty($column['heading']))
 				{
-					$column['heading'] = Craft::t($column['heading']);
+					$column['heading'] = Craft::t('app', $column['heading']);
 				}
 			}
 

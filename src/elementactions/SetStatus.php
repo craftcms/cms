@@ -93,7 +93,7 @@ class SetStatus extends BaseElementAction
 			'status'     => $status,
 		]));
 
-		$this->setMessage(Craft::t('Statuses updated.'));
+		$this->setMessage(Craft::t('app', 'Statuses updated.'));
 
 		return true;
 	}

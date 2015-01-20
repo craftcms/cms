@@ -42,7 +42,7 @@ class TagGroup extends BaseModel
 	 */
 	public function __toString()
 	{
-		return Craft::t($this->name);
+		return Craft::t('app', $this->name);
 	}
 
 	// Protected Methods

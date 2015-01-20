@@ -69,7 +69,7 @@ class EmailMessagesController extends BaseController
 		}
 		else
 		{
-			$this->returnErrorJson(Craft::t('There was a problem saving your message.'));
+			$this->returnErrorJson(Craft::t('app', 'There was a problem saving your message.'));
 		}
 	}
 }

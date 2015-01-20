@@ -359,7 +359,7 @@ class DateTimeHelper
 		// If it were up to 7 days ago, display the weekday name.
 		else if (static::wasWithinLast('7 days', $dateTime->getTimestamp()))
 		{
-			return Craft::t($dateTime->format('l'));
+			return Craft::t('app', $dateTime->format('l'));
 		}
 		else
 		{

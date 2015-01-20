@@ -101,23 +101,23 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 		return Craft::$app->templates->renderMacro('_includes/forms', 'editableTableField', [
 			[
 				'label'        => $this->getOptionsSettingsLabel(),
-				'instructions' => Craft::t('Define the available options.'),
+				'instructions' => Craft::t('app', 'Define the available options.'),
 				'id'           => 'options',
 				'name'         => 'options',
-				'addRowLabel'  => Craft::t('Add an option'),
+				'addRowLabel'  => Craft::t('app', 'Add an option'),
 				'cols'         => [
 					'label' => [
-						'heading'      => Craft::t('Option Label'),
+						'heading'      => Craft::t('app', 'Option Label'),
 						'type'         => 'singleline',
 						'autopopulate' => 'value'
 					],
 					'value' => [
-						'heading'      => Craft::t('Value'),
+						'heading'      => Craft::t('app', 'Value'),
 						'type'         => 'singleline',
 						'class'        => 'code'
 					],
 					'default' => [
-						'heading'      => Craft::t('Default?'),
+						'heading'      => Craft::t('app', 'Default?'),
 						'type'         => 'checkbox',
 						'class'        => 'thin'
 					],
@@ -260,7 +260,7 @@ abstract class BaseOptionsFieldType extends BaseFieldType
 
 		foreach ($options as &$option)
 		{
-			$option['label'] = Craft::t($option['label']);
+			$option['label'] = Craft::t('app', $option['label']);
 		}
 
 		return $options;

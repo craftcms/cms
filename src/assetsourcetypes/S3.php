@@ -67,7 +67,7 @@ class S3 extends BaseAssetSourceType
 
 		if (empty($buckets))
 		{
-			throw new Exception(Craft::t("Credentials rejected by target host."));
+			throw new Exception(Craft::t('app', 'Credentials rejected by target host.'));
 		}
 
 		$bucketList = [];
@@ -457,7 +457,7 @@ class S3 extends BaseAssetSourceType
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Craft::t('This file type is not allowed'));
+			throw new Exception(Craft::t('app', 'This file type is not allowed'));
 		}
 
 		$uriPath = $this->_getPathPrefix().$folder->path.$fileName;
@@ -477,7 +477,7 @@ class S3 extends BaseAssetSourceType
 
 		if (!$this->putObject($filePath, $this->getSettings()->bucket, $uriPath, \S3::ACL_PUBLIC_READ))
 		{
-			throw new Exception(Craft::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('app', 'Could not copy file to target destination'));
 		}
 
 		$response = new AssetOperationResponseModel();
@@ -546,7 +546,7 @@ class S3 extends BaseAssetSourceType
 		if (!$this->_s3->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.$file->filename, $bucket, $newServerPath, \S3::ACL_PUBLIC_READ))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t("Could not save the file"));
+			return $response->setError(Craft::t('app', 'Could not save the file'));
 		}
 
 		@$this->_s3->deleteObject($sourceBucket, $this->_getS3Path($file, $originatingSettings));

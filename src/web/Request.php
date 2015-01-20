@@ -128,6 +128,8 @@ class Request extends \yii\web\Request
 			$config['csrfCookie'] = Craft::getCookieConfig();
 		}
 
+		$this->cookieValidationKey = Craft::$app->security->getValidationKey();
+
 		parent::__construct($config);
 	}
 

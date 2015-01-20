@@ -94,8 +94,8 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	public function getStatuses()
 	{
 		return [
-			BaseElementModel::ENABLED => Craft::t('Enabled'),
-			BaseElementModel::DISABLED => Craft::t('Disabled')
+			BaseElementModel::ENABLED => Craft::t('app', 'Enabled'),
+			BaseElementModel::DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -290,7 +290,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 
 					if ($value == '__home__')
 					{
-						$value = '<span data-icon="home" title="'.Craft::t('Homepage').'"></span>';
+						$value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
 					}
 					else
 					{

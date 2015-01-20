@@ -134,7 +134,7 @@ class TemplatesController extends BaseController
 					}
 				}
 
-				throw new Exception(Craft::t('The update can’t be installed :( {message}', ['message' => $message]));
+				throw new Exception(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
 			}
 			else
 			{

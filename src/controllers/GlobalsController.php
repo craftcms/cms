@@ -52,12 +52,12 @@ class GlobalsController extends BaseController
 		// Save it
 		if (Craft::$app->globals->saveSet($globalSet))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Global set saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 			$this->redirectToPostedUrl($globalSet);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save global set.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 		}
 
 		// Send the global set back to the template
@@ -96,7 +96,7 @@ class GlobalsController extends BaseController
 		// Make sure a specific global set was requested
 		if (empty($variables['globalSetHandle']))
 		{
-			throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', ['name' => 'globalSetHandle']));
+			throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.', ['name' => 'globalSetHandle']));
 		}
 
 		// Get the locales the user is allowed to edit
@@ -179,19 +179,19 @@ class GlobalsController extends BaseController
 
 		if (!$globalSet)
 		{
-			throw new Exception(Craft::t('No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+			throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
 		}
 
 		$globalSet->setContentFromPost('fields');
 
 		if (Craft::$app->globals->saveContent($globalSet))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Globals saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save globals.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
 		}
 
 		// Send the global set back to the template

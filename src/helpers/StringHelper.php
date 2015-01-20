@@ -378,7 +378,9 @@ class StringHelper extends \yii\helpers\StringHelper
 
 	/**
 	 * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
-	 * set to true, additional symbols can be included in the string.
+	 * set to true, additional symbols can be included in the string.  Note that the generated string is *not* a
+	 * cryptographically secure string. If you need a cryptographically secure string, see
+	 * [[Craft::$app->security->randomString]].
 	 *
 	 * @param int  $length        The length of the random string. Defaults to 36.
 	 * @param bool $extendedChars Whether to include symbols in the random string.

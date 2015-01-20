@@ -38,7 +38,7 @@ class Field extends BaseComponentModel
 	 */
 	public function __toString()
 	{
-		return Craft::t($this->name);
+		return Craft::t('app', $this->name);
 	}
 
 	/**

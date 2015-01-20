@@ -59,7 +59,7 @@ abstract class BaseElementsController extends BaseController
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists with the class “{class}”', ['class' => $class]));
+			throw new Exception(Craft::t('app', 'No element type exists with the class “{class}”', ['class' => $class]));
 		}
 
 		return $elementType;

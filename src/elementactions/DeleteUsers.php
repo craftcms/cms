@@ -32,7 +32,7 @@ class DeleteUsers extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Delete…');
+		return Craft::t('app', 'Delete…');
 	}
 
 	/**
@@ -117,7 +117,7 @@ EOT;
 
 			if (!$transferContentTo)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
+				throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $transferContentTo]));
 			}
 		}
 		else
@@ -134,7 +134,7 @@ EOT;
 			}
 		}
 
-		$this->setMessage(Craft::t('Users deleted.'));
+		$this->setMessage(Craft::t('app', 'Users deleted.'));
 
 		return true;
 	}

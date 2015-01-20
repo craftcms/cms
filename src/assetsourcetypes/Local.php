@@ -45,7 +45,7 @@ class Local extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return Craft::t('Local Folder');
+		return Craft::t('app', 'Local Folder');
 	}
 
 	/**
@@ -93,7 +93,7 @@ class Local extends BaseAssetSourceType
 
 		if ($localPath == '/' || !IOHelper::folderExists($localPath) || $localPath === false)
 		{
-			return ['sourceId' => $this->model->id, 'error' => Craft::t('The path of your source “{source}” appears to be invalid.', ['source' => $this->model->name])];
+			return ['sourceId' => $this->model->id, 'error' => Craft::t('app', 'The path of your source “{source}” appears to be invalid.', ['source' => $this->model->name])];
 		}
 
 		$fileList = IOHelper::getFolderContents($localPath, true);
@@ -309,7 +309,7 @@ class Local extends BaseAssetSourceType
 
 			if (!empty($basePath))
 			{
-				throw new Exception(Craft::t('The file system path “{folder}” set for this source does not exist.', ['folder' => $this->getBasePath()]));
+				throw new Exception(Craft::t('app', 'The file system path “{folder}” set for this source does not exist.', ['folder' => $this->getBasePath()]));
 			}
 		}
 
@@ -318,13 +318,13 @@ class Local extends BaseAssetSourceType
 		// Make sure the folder exists.
 		if (!IOHelper::folderExists($targetFolder))
 		{
-			throw new Exception(Craft::t('The folder “{folder}” does not exist.', ['folder' => $targetFolder]));
+			throw new Exception(Craft::t('app', 'The folder “{folder}” does not exist.', ['folder' => $targetFolder]));
 		}
 
 		// Make sure the folder is writable
 		if (!IOHelper::isWritable($targetFolder))
 		{
-			throw new Exception(Craft::t('The folder “{folder}” is not writable.', ['folder' => $targetFolder]));
+			throw new Exception(Craft::t('app', 'The folder “{folder}” is not writable.', ['folder' => $targetFolder]));
 		}
 
 		$fileName = AssetsHelper::cleanAssetName($fileName);
@@ -333,7 +333,7 @@ class Local extends BaseAssetSourceType
 
 		if (!IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Craft::t('This file type is not allowed'));
+			throw new Exception(Craft::t('app', 'This file type is not allowed'));
 		}
 
 		if (IOHelper::fileExists($targetPath))
@@ -344,7 +344,7 @@ class Local extends BaseAssetSourceType
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
 		{
-			throw new Exception(Craft::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('app', 'Could not copy file to target destination'));
 		}
 
 		IOHelper::changePermissions($targetPath, Craft::$app->config->get('defaultFilePermissions'));
@@ -468,7 +468,7 @@ class Local extends BaseAssetSourceType
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t('Could not move the file “{filename}”.', ['filename' => $fileName]));
+			return $response->setError(Craft::t('app', 'Could not move the file “{filename}”.', ['filename' => $fileName]));
 		}
 
 		if ($file->kind == 'image')

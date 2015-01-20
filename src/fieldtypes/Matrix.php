@@ -638,7 +638,7 @@ class Matrix extends BaseFieldType
 
 			$blockTypes[] = [
 				'handle'   => $blockType->handle,
-				'name'     => Craft::t($blockType->name),
+				'name'     => Craft::t('app', $blockType->name),
 				'bodyHtml' => $bodyHtml,
 				'footHtml' => $footHtml,
 			];

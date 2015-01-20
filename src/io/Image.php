@@ -130,7 +130,7 @@ class Image
 
 		if (!Craft::$app->images->checkMemoryForImage($path))
 		{
-			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
+			throw new Exception(Craft::t('app', 'Not enough memory available to perform this image operation.'));
 		}
 
 		$imageInfo = @getimagesize($path);

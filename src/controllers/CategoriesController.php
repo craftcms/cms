@@ -66,8 +66,8 @@ class CategoriesController extends BaseController
 
 		// Breadcrumbs
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Categories'),  'url' => UrlHelper::getUrl('settings/categories')]
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Categories'),  'url' => UrlHelper::getUrl('settings/categories')]
 		];
 
 		$variables['brandNewGroup'] = false;
@@ -94,12 +94,12 @@ class CategoriesController extends BaseController
 				$variables['brandNewGroup'] = true;
 			}
 
-			$variables['title'] = Craft::t('Create a new category group');
+			$variables['title'] = Craft::t('app', 'Create a new category group');
 		}
 
 		$variables['tabs'] = [
-			'settings'    => ['label' => Craft::t('Settings'), 'url' => '#categorygroup-settings'],
-			'fieldLayout' => ['label' => Craft::t('Field Layout'), 'url' => '#categorygroup-fieldlayout']
+			'settings'    => ['label' => Craft::t('app', 'Settings'), 'url' => '#categorygroup-settings'],
+			'fieldLayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#categorygroup-fieldlayout']
 		];
 
 		$this->renderTemplate('settings/categories/_edit', $variables);
@@ -147,12 +147,12 @@ class CategoriesController extends BaseController
 		// Save it
 		if (Craft::$app->categories->saveGroup($group))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Category group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
 			$this->redirectToPostedUrl($group);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save the category group.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
 		}
 
 		// Send the category group back to the template
@@ -279,18 +279,18 @@ class CategoriesController extends BaseController
 		// Page title
 		if (!$variables['category']->id)
 		{
-			$variables['title'] = Craft::t('Create a new category');
+			$variables['title'] = Craft::t('app', 'Create a new category');
 		}
 		else
 		{
-			$variables['docTitle'] = Craft::t($variables['category']->title);
-			$variables['title'] = Craft::t($variables['category']->title);
+			$variables['docTitle'] = Craft::t('app', $variables['category']->title);
+			$variables['title'] = Craft::t('app', $variables['category']->title);
 		}
 
 		// Breadcrumbs
 		$variables['crumbs'] = [
-			['label' => Craft::t('Categories'), 'url' => UrlHelper::getUrl('categories')],
-			['label' => Craft::t($variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)]
+			['label' => Craft::t('app', 'Categories'), 'url' => UrlHelper::getUrl('categories')],
+			['label' => Craft::t('app', $variables['group']->name), 'url' => UrlHelper::getUrl('categories/'.$variables['group']->handle)]
 		];
 
 		foreach ($variables['category']->getAncestors() as $ancestor)
@@ -404,7 +404,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				$userSessionService->setNotice(Craft::t('Category saved.'));
+				$userSessionService->setNotice(Craft::t('app', 'Category saved.'));
 				$this->redirectToPostedUrl($category);
 			}
 		}
@@ -419,7 +419,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				$userSessionService->setError(Craft::t('Couldn’t save category.'));
+				$userSessionService->setError(Craft::t('app', 'Couldn’t save category.'));
 
 				// Send the category back to the template
 				Craft::$app->getUrlManager()->setRouteVariables([
@@ -444,7 +444,7 @@ class CategoriesController extends BaseController
 
 		if (!$category)
 		{
-			throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $categoryId]));
+			throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
 		}
 
 		// Make sure they have permission to do this
@@ -459,7 +459,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				Craft::$app->getSession()->setNotice(Craft::t('Category deleted.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
 				$this->redirectToPostedUrl($category);
 			}
 		}
@@ -471,7 +471,7 @@ class CategoriesController extends BaseController
 			}
 			else
 			{
-				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete category.'));
+				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
 
 				// Send the category back to the template
 				Craft::$app->getUrlManager()->setRouteVariables([
@@ -578,7 +578,7 @@ class CategoriesController extends BaseController
 
 		if (!$variables['localeIds'])
 		{
-			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this site’s locales.'));
+			throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this site’s locales.'));
 		}
 
 		if (empty($variables['localeId']))
@@ -649,7 +649,7 @@ class CategoriesController extends BaseController
 			}
 
 			$variables['tabs'][] = [
-				'label' => Craft::t($tab->name),
+				'label' => Craft::t('app', $tab->name),
 				'url'   => '#tab'.($index+1),
 				'class' => ($hasErrors ? 'error' : null)
 			];
@@ -673,7 +673,7 @@ class CategoriesController extends BaseController
 
 			if (!$category)
 			{
-				throw new Exception(Craft::t('No category exists with the ID “{id}”.', ['id' => $categoryId]));
+				throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $categoryId]));
 			}
 		}
 		else

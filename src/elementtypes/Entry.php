@@ -41,7 +41,7 @@ class Entry extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Entries');
+		return Craft::t('app', 'Entries');
 	}
 
 	/**
@@ -92,10 +92,10 @@ class Entry extends BaseElementType
 	public function getStatuses()
 	{
 		return [
-			EntryModel::LIVE => Craft::t('Live'),
-			EntryModel::PENDING => Craft::t('Pending'),
-			EntryModel::EXPIRED => Craft::t('Expired'),
-			BaseElementModel::DISABLED => Craft::t('Disabled')
+			EntryModel::LIVE => Craft::t('app', 'Live'),
+			EntryModel::PENDING => Craft::t('app', 'Pending'),
+			EntryModel::EXPIRED => Craft::t('app', 'Expired'),
+			BaseElementModel::DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -139,7 +139,7 @@ class Entry extends BaseElementType
 
 		$sources = [
 			'*' => [
-				'label'    => Craft::t('All entries'),
+				'label'    => Craft::t('app', 'All entries'),
 				'criteria' => ['sectionId' => $sectionIds, 'editable' => $editable]
 			]
 		];
@@ -147,14 +147,14 @@ class Entry extends BaseElementType
 		if ($singleSectionIds)
 		{
 			$sources['singles'] = [
-				'label'    => Craft::t('Singles'),
+				'label'    => Craft::t('app', 'Singles'),
 				'criteria' => ['sectionId' => $singleSectionIds, 'editable' => $editable]
 			];
 		}
 
 		$sectionTypes = [
-			SectionType::Channel => Craft::t('Channels'),
-			SectionType::Structure => Craft::t('Structures')
+			SectionType::Channel => Craft::t('app', 'Channels'),
+			SectionType::Structure => Craft::t('app', 'Structures')
 		];
 
 		foreach ($sectionTypes as $type => $heading)
@@ -168,7 +168,7 @@ class Entry extends BaseElementType
 					$key = 'section:'.$section->id;
 
 					$sources[$key] = [
-						'label'    => Craft::t($section->name),
+						'label'    => Craft::t('app', $section->name),
 						'data'     => ['type' => $type, 'handle' => $section->handle],
 						'criteria' => ['sectionId' => $section->id, 'editable' => $editable]
 					];
@@ -274,7 +274,7 @@ class Entry extends BaseElementType
 		{
 			$editAction = Craft::$app->elements->getAction('Edit');
 			$editAction->setParams([
-				'label' => Craft::t('Edit entry'),
+				'label' => Craft::t('app', 'Edit entry'),
 			]);
 			$actions[] = $editAction;
 		}
@@ -284,7 +284,7 @@ class Entry extends BaseElementType
 			// View
 			$viewAction = Craft::$app->elements->getAction('View');
 			$viewAction->setParams([
-				'label' => Craft::t('View entry'),
+				'label' => Craft::t('app', 'View entry'),
 			]);
 			$actions[] = $viewAction;
 		}
@@ -306,7 +306,7 @@ class Entry extends BaseElementType
 				{
 					$newChildAction = Craft::$app->elements->getAction('NewChild');
 					$newChildAction->setParams([
-						'label'       => Craft::t('Create a new child entry'),
+						'label'       => Craft::t('app', 'Create a new child entry'),
 						'maxLevels'   => $structure->maxLevels,
 						'newChildUrl' => 'entries/'.$section->handle.'/new',
 					]);
@@ -322,8 +322,8 @@ class Entry extends BaseElementType
 			{
 				$deleteAction = Craft::$app->elements->getAction('Delete');
 				$deleteAction->setParams([
-					'confirmationMessage' => Craft::t('Are you sure you want to delete the selected entries?'),
-					'successMessage'      => Craft::t('Entries deleted.'),
+					'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
+					'successMessage'      => Craft::t('app', 'Entries deleted.'),
 				]);
 				$actions[] = $deleteAction;
 			}
@@ -348,10 +348,10 @@ class Entry extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = [
-			'title'      => Craft::t('Title'),
-			'uri'        => Craft::t('URI'),
-			'postDate'   => Craft::t('Post Date'),
-			'expiryDate' => Craft::t('Expiry Date'),
+			'title'      => Craft::t('app', 'Title'),
+			'uri'        => Craft::t('app', 'URI'),
+			'postDate'   => Craft::t('app', 'Post Date'),
+			'expiryDate' => Craft::t('app', 'Expiry Date'),
 		];
 
 		// Allow plugins to modify the attributes
@@ -370,19 +370,19 @@ class Entry extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		$attributes = [
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title' => Craft::t('app', 'Title'),
+			'uri'   => Craft::t('app', 'URI'),
 		];
 
 		if ($source == '*')
 		{
-			$attributes['section'] = Craft::t('Section');
+			$attributes['section'] = Craft::t('app', 'Section');
 		}
 
 		if ($source != 'singles')
 		{
-			$attributes['postDate']   = Craft::t('Post Date');
-			$attributes['expiryDate'] = Craft::t('Expiry Date');
+			$attributes['postDate']   = Craft::t('app', 'Post Date');
+			$attributes['expiryDate'] = Craft::t('app', 'Expiry Date');
 		}
 
 		// Allow plugins to modify the attributes
@@ -413,7 +413,7 @@ class Entry extends BaseElementType
 		{
 			case 'section':
 			{
-				return Craft::t($element->getSection()->name);
+				return Craft::t('app', $element->getSection()->name);
 			}
 
 			default:

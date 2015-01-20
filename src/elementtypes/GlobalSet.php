@@ -33,7 +33,7 @@ class GlobalSet extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Global Sets');
+		return Craft::t('app', 'Global Sets');
 	}
 
 	/**

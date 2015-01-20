@@ -75,7 +75,7 @@ EOT;
 	protected function defineParams()
 	{
 		return [
-			'label' => [AttributeType::String, 'default' => Craft::t('View')],
+			'label' => [AttributeType::String, 'default' => Craft::t('app', 'View')],
 		];
 	}
 }

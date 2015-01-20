@@ -9,6 +9,9 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\errors\Exception;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\StringHelper;
+use yii\base\InvalidParamException;
 
 /**
  * Class Security service.
@@ -37,6 +40,7 @@ class Security extends \yii\base\Security
 	public function init()
 	{
 		parent::init();
+
 		$this->_blowFishHashCost = Craft::$app->config->get('blowfishHashCost');
 	}
 
@@ -49,7 +53,7 @@ class Security extends \yii\base\Security
 	}
 
 	/**
-	 * Hashes a given password with the blowfish encryption algorithm.
+	 * Hashes a given password with the bcrypt blowfish encryption algorithm.
 	 *
 	 * @param string $string       The string to hash
 	 * @param bool   $validateHash If you want to validate the just generated hash. Will throw an exception if
@@ -58,18 +62,59 @@ class Security extends \yii\base\Security
 	 * @throws Exception
 	 * @return string The hash.
 	 */
-	public function hashPassword($string, $validateHash = false)
+	public function hashPassword($password, $validateHash = false)
 	{
-		$hash = \CPasswordHelper::hashPassword($string, $this->_blowFishHashCost);
+		$hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
 		if ($validateHash)
 		{
-			if (!$this->validatePassword($string, $hash))
+			if (!$this->validatePassword($password, $hash))
 			{
-				throw new Exception(Craft::t('Could not hash the given string.'));
+				throw new InvalidParamException(Craft::t('Could not hash the given string.'));
 			}
 		}
 
 		return $hash;
+	}
+
+	/**
+	 * Returns a validtion key unique to this Craft installation. Craft will initially check the 'validationKey'
+	 * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
+	 * secure, random key and save it in `craft\storage\validation.key` and server that on future requests.
+	 *
+	 * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
+	 *
+	 * @throws Exception
+	 * @return mixed|string The validation key.
+	 */
+	public function getValidationKey()
+	{
+		if ($key = Craft::$app->config->get('validationKey'))
+		{
+			return $key;
+		}
+
+		$validationKeyPath = Craft::$app->path->getRuntimePath().'/validation.key';
+
+		if (IOHelper::fileExists($validationKeyPath))
+		{
+			return StringHelper::trim(IOHelper::getFileContents($validationKeyPath));
+		}
+		else
+		{
+			if (!IOHelper::isWritable($validationKeyPath))
+			{
+				throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
+			}
+
+			$key = $this->generateRandomString();
+
+			if (IOHelper::writeToFile($validationKeyPath, $key))
+			{
+				return $key;
+			}
+
+			throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
+		}
 	}
 }

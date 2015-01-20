@@ -79,7 +79,7 @@ EOT;
 	protected function defineParams()
 	{
 		return [
-			'label'       => [AttributeType::String, 'default' => Craft::t('New Child')],
+			'label'       => [AttributeType::String, 'default' => Craft::t('app', 'New Child')],
 			'maxLevels'   => AttributeType::Number,
 			'newChildUrl' => AttributeType::String,
 		];

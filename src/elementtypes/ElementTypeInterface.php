@@ -179,8 +179,8 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * ```php
 	 * return [
-	 *     'columnName1' => Craft::t('Attribute Label 1'),
-	 *     'columnName2' => Craft::t('Attribute Label 2'),
+	 *     'columnName1' => Craft::t('app', 'Attribute Label 1'),
+	 *     'columnName2' => Craft::t('app', 'Attribute Label 2'),
 	 * ];
 	 * ```
 	 *
@@ -189,8 +189,8 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * ```php
 	 * return [
-	 *     'columnName1, columnName2 asc' => Craft::t('Attribute Label 1'),
-	 *     'columnName3'                  => Craft::t('Attribute Label 2'),
+	 *     'columnName1, columnName2 asc' => Craft::t('app', 'Attribute Label 1'),
+	 *     'columnName3'                  => Craft::t('app', 'Attribute Label 2'),
 	 * ];
 	 * ```
 	 *

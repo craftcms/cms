@@ -33,7 +33,7 @@ class Tag extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Tags');
+		return Craft::t('app', 'Tags');
 	}
 
 	/**
@@ -82,7 +82,7 @@ class Tag extends BaseElementType
 			$key = 'taggroup:'.$tagGroup->id;
 
 			$sources[$key] = [
-				'label'    => Craft::t($tagGroup->name),
+				'label'    => Craft::t('app', $tagGroup->name),
 				'criteria' => ['groupId' => $tagGroup->id]
 			];
 		}
@@ -100,7 +100,7 @@ class Tag extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		return [
-			'title' => Craft::t('Title'),
+			'title' => Craft::t('app', 'Title'),
 		];
 	}
 
@@ -189,7 +189,7 @@ class Tag extends BaseElementType
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
-				'label'     => Craft::t('Title'),
+				'label'     => Craft::t('app', 'Title'),
 				'locale'    => $element->locale,
 				'id'        => 'title',
 				'name'      => 'title',

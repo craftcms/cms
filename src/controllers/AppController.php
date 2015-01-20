@@ -89,7 +89,7 @@ class AppController extends BaseController
 		}
 		else
 		{
-			$this->returnErrorJson(Craft::t('An unknown error occurred.'));
+			$this->returnErrorJson(Craft::t('app', 'An unknown error occurred.'));
 		}
 	}
 
@@ -132,19 +132,19 @@ class AppController extends BaseController
 
 		if (!$etResponse)
 		{
-			$this->returnErrorJson(Craft::t('Craft is unable to fetch edition info at this time.'));
+			$this->returnErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
 		}
 
 		// Make sure we've got a valid license key (mismatched domain is OK for these purposes)
 		if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid)
 		{
-			$this->returnErrorJson(Craft::t('Your license key is invalid.'));
+			$this->returnErrorJson(Craft::t('app', 'Your license key is invalid.'));
 		}
 
 		// Make sure they've got a valid licensed edition, just to be safe
 		if (!AppHelper::isValidEdition($etResponse->licensedEdition))
 		{
-			$this->returnErrorJson(Craft::t('Your license has an invalid Craft edition associated with it.'));
+			$this->returnErrorJson(Craft::t('app', 'Your license has an invalid Craft edition associated with it.'));
 		}
 
 		$editions = [];

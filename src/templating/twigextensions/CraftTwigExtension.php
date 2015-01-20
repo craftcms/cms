@@ -215,7 +215,7 @@ class CraftTwigExtension extends \Twig_Extension
 			foreach ($words[0] as $word)
 			{
 				// Translate and swap out.
-				$translatedWord = Craft::t($word);
+				$translatedWord = Craft::t('app', $word);
 				$value = str_replace($word, $translatedWord, $value);
 			}
 		}

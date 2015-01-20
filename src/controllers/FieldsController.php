@@ -61,7 +61,7 @@ class FieldsController extends BaseController
 		{
 			if ($isNewGroup)
 			{
-				Craft::$app->getSession()->setNotice(Craft::t('Group added.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
 			}
 
 			$this->returnJson([
@@ -90,7 +90,7 @@ class FieldsController extends BaseController
 		$groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 		$success = Craft::$app->fields->deleteGroupById($groupId);
 
-		Craft::$app->getSession()->setNotice(Craft::t('Group deleted.'));
+		Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
 
 		$this->returnJson([
 			'success' => $success,
@@ -128,12 +128,12 @@ class FieldsController extends BaseController
 
 		if (Craft::$app->fields->saveField($field))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Field saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 			$this->redirectToPostedUrl($field);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save field.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
 		}
 
 		// Send the field back to the template

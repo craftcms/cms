@@ -193,7 +193,7 @@ class ErrorHandler extends \CErrorHandler
 
 		$this->_error = $data = [
 			'code'      => 500,
-			'type'      => Craft::t('Template Error'),
+			'type'      => Craft::t('app', 'Template Error'),
 			'errorCode' => $exception->getCode(),
 			'message'   => $exception->getRawMessage(),
 			'file'      => $file,

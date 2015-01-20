@@ -36,7 +36,7 @@ class TemplateLoaderException extends \Twig_Error_Loader
 	public function __construct($template)
 	{
 		$this->template = $template;
-		$message = Craft::t('Unable to find the template “{template}”.', ['template' => $this->template]);
+		$message = Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $this->template]);
 
 		parent::__construct($message);
 	}

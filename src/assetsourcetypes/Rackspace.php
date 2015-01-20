@@ -449,7 +449,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Craft::t('This file type is not allowed'));
+			throw new Exception(Craft::t('app', 'This file type is not allowed'));
 		}
 
 		$uriPath = $this->_getPathPrefix().$folder->path.$fileName;
@@ -471,7 +471,7 @@ class Rackspace extends BaseAssetSourceType
 		}
 		catch (\Exception $exception)
 		{
-			throw new Exception(Craft::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('app', 'Could not copy file to target destination'));
 		}
 
 		$response = new AssetOperationResponseModel();
@@ -953,7 +953,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if (empty($body->access))
 		{
-			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
+			throw new Exception(Craft::t('app', 'Wrong credentials supplied for Rackspace access!'));
 		}
 
 		$token = $body->access->token->id;
@@ -961,7 +961,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if (!$token || !$services)
 		{
-			throw new Exception(Craft::t("Wrong credentials supplied for Rackspace access!"));
+			throw new Exception(Craft::t('app', 'Wrong credentials supplied for Rackspace access!'));
 		}
 
 		$regions = [];
@@ -1064,7 +1064,7 @@ class Rackspace extends BaseAssetSourceType
 
 		if (empty($region) || $region == '-')
 		{
-			throw new Exception(Craft::t("Please update your Rackspace source settings, including the container’s region information for this source to work."));
+			throw new Exception(Craft::t('app', 'Please update your Rackspace source settings, including the container’s region information for this source to work.'));
 		}
 
 		$connectionKey = $this->_getConnectionKey($username, $apiKey, $region);
@@ -1084,7 +1084,7 @@ class Rackspace extends BaseAssetSourceType
 		// If we still don't have it, then we're all out of luck.
 		if (empty(static::$_accessStore[$connectionKey]))
 		{
-			throw new Exception(Craft::t("Connection information not found!"));
+			throw new Exception(Craft::t('app', 'Connection information not found!'));
 		}
 
 		$connectionInformation = static::$_accessStore[$connectionKey];
@@ -1107,7 +1107,7 @@ class Rackspace extends BaseAssetSourceType
 
 			default:
 			{
-				throw new Exception(Craft::t("Unrecognized operation type!"));
+				throw new Exception(Craft::t('app', 'Unrecognized operation type!'));
 			}
 		}
 
@@ -1143,7 +1143,7 @@ class Rackspace extends BaseAssetSourceType
 						return $this->_doAuthenticatedRequest($operationType, $target, $method, $newHeaders, $curlOptions);
 					}
 
-					throw new Exception(Craft::t('Token has expired and the attempt to renew it failed. Please check the source settings.'));
+					throw new Exception(Craft::t('app', 'Token has expired and the attempt to renew it failed. Please check the source settings.'));
 					break;
 				}
 
@@ -1194,7 +1194,7 @@ class Rackspace extends BaseAssetSourceType
 		if (!is_array($fileList))
 		{
 			static::_logUnexpectedResponse($response);
-			throw new Exception(Craft::t('Remote server for “{source}” returned an unexpected response.', ['source' => $this->model->name]));
+			throw new Exception(Craft::t('app', 'Remote server for “{source}” returned an unexpected response.', ['source' => $this->model->name]));
 		}
 
 		return $fileList;

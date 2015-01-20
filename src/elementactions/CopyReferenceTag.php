@@ -29,7 +29,7 @@ class CopyReferenceTag extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Copy reference tag');
+		return Craft::t('app', 'Copy reference tag');
 	}
 
 	/**
@@ -39,7 +39,7 @@ class CopyReferenceTag extends BaseElementAction
 	 */
 	public function getTriggerHtml()
 	{
-		$prompt = JsonHelper::encode(Craft::t('{ctrl}C to copy.'));
+		$prompt = JsonHelper::encode(Craft::t('app', '{ctrl}C to copy.'));
 		$elementType = lcfirst($this->getParams()->elementType);
 
 		$js = <<<EOT

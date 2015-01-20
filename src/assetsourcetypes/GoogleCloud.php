@@ -63,7 +63,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 		if (empty($buckets))
 		{
-			throw new Exception(Craft::t("Credentials rejected by target host."));
+			throw new Exception(Craft::t('app', 'Credentials rejected by target host.'));
 		}
 
 		$bucketList = [];
@@ -405,7 +405,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
-			throw new Exception(Craft::t('This file type is not allowed'));
+			throw new Exception(Craft::t('app', 'This file type is not allowed'));
 		}
 
 		$uriPath = $this->_getPathPrefix().$folder->path.$fileName;
@@ -425,7 +425,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 		if (!$this->putObject($filePath, $this->getSettings()->bucket, $uriPath, \GC::ACL_PUBLIC_READ))
 		{
-			throw new Exception(Craft::t('Could not copy file to target destination'));
+			throw new Exception(Craft::t('app', 'Could not copy file to target destination'));
 		}
 
 		$response = new AssetOperationResponseModel();
@@ -529,7 +529,7 @@ class GoogleCloud extends BaseAssetSourceType
 		if (!$this->_googleCloud->copyObject($sourceBucket, $this->_getPathPrefix($originatingSettings).$file->getFolder()->path.$file->filename, $bucket, $newServerPath, \GC::ACL_PUBLIC_READ))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t("Could not save the file"));
+			return $response->setError(Craft::t('app', 'Could not save the file'));
 		}
 
 		@$this->_googleCloud->deleteObject($sourceBucket, $this->_getGCPath($file, $originatingSettings));

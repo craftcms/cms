@@ -335,7 +335,7 @@ class Et
 			throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 		}
 
-		throw new Exception(Craft::t('Cannot overwrite an existing license.key file.'));
+		throw new Exception(Craft::t('app', 'Cannot overwrite an existing license.key file.'));
 	}
 
 	/**

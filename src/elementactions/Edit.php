@@ -70,7 +70,7 @@ EOT;
 	protected function defineParams()
 	{
 		return [
-			'label' => [AttributeType::String, 'default' => Craft::t('Edit')],
+			'label' => [AttributeType::String, 'default' => Craft::t('app', 'Edit')],
 		];
 	}
 }

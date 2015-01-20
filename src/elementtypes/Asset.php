@@ -34,7 +34,7 @@ class Asset extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Assets');
+		return Craft::t('app', 'Assets');
 	}
 
 	/**
@@ -134,14 +134,14 @@ class Asset extends BaseElementType
 		// View
 		$viewAction = Craft::$app->elements->getAction('View');
 		$viewAction->setParams([
-			'label' => Craft::t('View asset'),
+			'label' => Craft::t('app', 'View asset'),
 		]);
 		$actions[] = $viewAction;
 
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
 		$editAction->setParams([
-			'label' => Craft::t('Edit asset'),
+			'label' => Craft::t('app', 'Edit asset'),
 		]);
 		$actions[] = $editAction;
 
@@ -202,10 +202,10 @@ class Asset extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = [
-			'title'        => Craft::t('Title'),
-			'filename'     => Craft::t('Filename'),
-			'size'         => Craft::t('Size'),
-			'dateModified' => Craft::t('Date Modified'),
+			'title'        => Craft::t('app', 'Title'),
+			'filename'     => Craft::t('app', 'Filename'),
+			'size'         => Craft::t('app', 'Size'),
+			'dateModified' => Craft::t('app', 'Date Modified'),
 		];
 
 		// Allow plugins to modify the attributes
@@ -224,10 +224,10 @@ class Asset extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		$attributes = [
-			'title'        => Craft::t('Title'),
-			'filename'     => Craft::t('Filename'),
-			'size'         => Craft::t('Size'),
-			'dateModified' => Craft::t('Date Modified'),
+			'title'        => Craft::t('app', 'Title'),
+			'filename'     => Craft::t('app', 'Filename'),
+			'size'         => Craft::t('app', 'Size'),
+			'dateModified' => Craft::t('app', 'Date Modified'),
 		];
 
 		// Allow plugins to modify the attributes
@@ -391,7 +391,7 @@ class Asset extends BaseElementType
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
-				'label'     => Craft::t('Filename'),
+				'label'     => Craft::t('app', 'Filename'),
 				'id'        => 'filename',
 				'name'      => 'filename',
 				'value'     => $element->filename,
@@ -403,7 +403,7 @@ class Asset extends BaseElementType
 
 		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
-				'label'     => Craft::t('Title'),
+				'label'     => Craft::t('app', 'Title'),
 				'locale'    => $element->locale,
 				'id'        => 'title',
 				'name'      => 'title',
@@ -506,7 +506,7 @@ class Asset extends BaseElementType
 	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
 	{
 		$source = [
-			'label'     => ($folder->parentId ? $folder->name : Craft::t($folder->name)),
+			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
 			'hasThumbs' => true,
 			'criteria'  => ['folderId' => $folder->id],
 			'data'      => ['upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]

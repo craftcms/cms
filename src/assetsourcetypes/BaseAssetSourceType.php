@@ -144,7 +144,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Make sure a file was uploaded
 		if (empty($file['name']))
 		{
-			throw new Exception(Craft::t('No file was uploaded'));
+			throw new Exception(Craft::t('app', 'No file was uploaded'));
 		}
 
 		$size = $file['size'];
@@ -152,7 +152,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		// Make sure the file isn't empty
 		if (!$size)
 		{
-			throw new Exception(Craft::t('Uploaded file was empty'));
+			throw new Exception(Craft::t('app', 'Uploaded file was empty'));
 		}
 
 		$fileName = AssetsHelper::cleanAssetName($file['name']);
@@ -258,7 +258,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		else
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t('The file upload was cancelled.'));
+			$response->setError(Craft::t('app', 'The file upload was cancelled.'));
 		}
 
 		return $response;
@@ -568,12 +568,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if (Craft::$app->assets->findFolder(['parentId' => $parentFolder->id, 'name' => $folderName])
 			|| $this->folderExists($parentFolder, $folderName))
 		{
-			throw new Exception(Craft::t('A folder already exists with that name!'));
+			throw new Exception(Craft::t('app', 'A folder already exists with that name!'));
 		}
 
 		if ( !$this->createSourceFolder($parentFolder, $folderName))
 		{
-			throw new Exception(Craft::t('There was an error while creating the folder.'));
+			throw new Exception(Craft::t('app', 'There was an error while creating the folder.'));
 		}
 
 		$newFolder = new AssetFolderModel();
@@ -607,19 +607,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		if (!$parentFolder)
 		{
-			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
+			throw new Exception(Craft::t('app', 'Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
 		}
 
 		// Allow this for changing the case
 		if (!(StringHelper::toLowerCase($newName) == StringHelper::toLowerCase($folder->name)) && $this->folderExists($parentFolder, $newName))
 		{
-			throw new Exception(Craft::t('Folder “{folder}” already exists there.', ['folder' => $newName]));
+			throw new Exception(Craft::t('app', 'Folder “{folder}” already exists there.', ['folder' => $newName]));
 		}
 
 		// Try to rename the folder in the source
 		if (!$this->renameSourceFolder($folder, $newName))
 		{
-			throw new Exception(Craft::t('Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
+			throw new Exception(Craft::t('app', 'Cannot rename folder “{folder}”!', ['folder' => $folder->name]));
 		}
 
 		$oldFullPath = $folder->path;
@@ -789,12 +789,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function getPeriodList()
 	{
 		return [
-			PeriodType::Seconds => Craft::t('Seconds'),
-			PeriodType::Minutes => Craft::t('Minutes'),
-			PeriodType::Hours   => Craft::t('Hours'),
-			PeriodType::Days    => Craft::t('Days'),
-			PeriodType::Months  => Craft::t('Months'),
-			PeriodType::Years   => Craft::t('Years'),
+			PeriodType::Seconds => Craft::t('app', 'Seconds'),
+			PeriodType::Minutes => Craft::t('app', 'Minutes'),
+			PeriodType::Hours   => Craft::t('app', 'Hours'),
+			PeriodType::Days    => Craft::t('app', 'Days'),
+			PeriodType::Months  => Craft::t('app', 'Months'),
+			PeriodType::Years   => Craft::t('app', 'Years'),
 		];
 	}
 
@@ -901,11 +901,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function getUserPromptOptions($fileName)
 	{
 		return (object) [
-			'message' => Craft::t('File “{file}” already exists at target location.', ['file' => $fileName]),
+			'message' => Craft::t('app', 'File “{file}” already exists at target location.', ['file' => $fileName]),
 			'choices' => [
-				['value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('Keep both')],
-				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace it')],
-				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel')]
+				['value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('app', 'Keep both')],
+				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('app', 'Replace it')],
+				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('app', 'Cancel')]
 			]
 		];
 	}
@@ -921,11 +921,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	protected function getUserFolderPromptOptions($folderName, $folderId)
 	{
 		return [
-			'message' => Craft::t('Folder “{folder}” already exists at target location', ['folder' => $folderName]),
+			'message' => Craft::t('app', 'Folder “{folder}” already exists at target location', ['folder' => $folderName]),
 			'file_name' => $folderId,
 			'choices' => [
-				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('Replace the existing folder')],
-				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('Cancel the folder move.')]
+				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('app', 'Replace the existing folder')],
+				['value' => AssetConflictResolution::Cancel, 'title' => Craft::t('app', 'Cancel the folder move.')]
 			]
 		];
 	}
@@ -1168,7 +1168,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		}
 		else
 		{
-			throw new Exception(Craft::t('Failed to successfully mirror folder structure'));
+			throw new Exception(Craft::t('app', 'Failed to successfully mirror folder structure'));
 		}
 	}
 }

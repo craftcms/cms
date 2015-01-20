@@ -29,7 +29,7 @@ class UnsuspendUsers extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Unsuspend');
+		return Craft::t('app', 'Unsuspend');
 	}
 
 	/**
@@ -50,7 +50,7 @@ class UnsuspendUsers extends BaseElementAction
 			Craft::$app->users->unsuspendUser($user);
 		}
 
-		$this->setMessage(Craft::t('Users unsuspended.'));
+		$this->setMessage(Craft::t('app', 'Users unsuspended.'));
 
 		return true;
 	}

@@ -49,11 +49,11 @@ class PluginsController extends BaseController
 
 		if (Craft::$app->plugins->installPlugin($className))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Plugin installed.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin installed.'));
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t install plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t install plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -71,11 +71,11 @@ class PluginsController extends BaseController
 
 		if (Craft::$app->plugins->uninstallPlugin($className))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Plugin uninstalled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin uninstalled.'));
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t uninstall plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t uninstall plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -93,11 +93,11 @@ class PluginsController extends BaseController
 
 		if (Craft::$app->plugins->enablePlugin($className))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Plugin enabled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin enabled.'));
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t enable plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t enable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -115,11 +115,11 @@ class PluginsController extends BaseController
 
 		if (Craft::$app->plugins->disablePlugin($className))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Plugin disabled.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin disabled.'));
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t disable plugin.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t disable plugin.'));
 		}
 
 		$this->redirectToPostedUrl();
@@ -140,17 +140,17 @@ class PluginsController extends BaseController
 		$plugin = Craft::$app->plugins->getPlugin($pluginClass);
 		if (!$plugin)
 		{
-			throw new Exception(Craft::t('No plugin exists with the class “{class}”', ['class' => $pluginClass]));
+			throw new Exception(Craft::t('app', 'No plugin exists with the class “{class}”', ['class' => $pluginClass]));
 		}
 
 		if (Craft::$app->plugins->savePluginSettings($plugin, $settings))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Plugin settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 
-		Craft::$app->getSession()->setError(Craft::t('Couldn’t save plugin settings.'));
+		Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
 		Craft::$app->getUrlManager()->setRouteVariables([

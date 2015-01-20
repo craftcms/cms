@@ -452,7 +452,7 @@ class AssetTransforms extends Component
 				return $transformModel;
 			}
 
-			throw new Exception(Craft::t("The transform “{handle}” cannot be found!", ['handle' => $transform]));
+			throw new Exception(Craft::t('app', 'The transform “{handle}” cannot be found!', ['handle' => $transform]));
 		}
 		else if ($transform instanceof AssetTransformModel)
 		{
@@ -820,7 +820,7 @@ class AssetTransforms extends Component
 			return $format;
 		}
 
-		throw new Exception(Craft::t("Tried to detect the appropriate image format for a non-image!"));
+		throw new Exception(Craft::t('app', 'Tried to detect the appropriate image format for a non-image!'));
 	}
 
 	/**
@@ -1031,7 +1031,7 @@ class AssetTransforms extends Component
 
 			if (empty($transform))
 			{
-				throw new Exception(Craft::t("Unable to recognize the transform for this transform index!"));
+				throw new Exception(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
 			}
 		}
 		else

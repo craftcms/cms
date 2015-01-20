@@ -138,8 +138,8 @@ class Email extends Component
 		}
 		else
 		{
-			$emailModel->subject  = Craft::t($key.'_subject', null, null, 'en_us');
-			$emailModel->body     = Craft::t($key.'_body', null, null, 'en_us');
+			$emailModel->subject  = Craft::t('app', $key.'_subject', null, 'en_us');
+			$emailModel->body     = Craft::t('app', $key.'_body', null, 'en_us');
 		}
 
 		$tempTemplatesPath = '';
