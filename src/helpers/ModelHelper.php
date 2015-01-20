@@ -13,6 +13,7 @@ use craft\app\enums\ColumnType;
 use craft\app\models\BaseModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\records\BaseRecord;
+use yii\base\Model;
 
 /**
  * Class ModelHelper
@@ -206,11 +207,11 @@ class ModelHelper
 	/**
 	 * Populates any default values that are defined for a model.
 	 *
-	 * @param \CModel $model
+	 * @param Model $model
 	 *
 	 * @return null
 	 */
-	public static function populateAttributeDefaults(\CModel $model)
+	public static function populateAttributeDefaults(Model $model)
 	{
 		foreach ($model->getAttributeConfigs() as $name => $config)
 		{

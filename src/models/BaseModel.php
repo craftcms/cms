@@ -21,7 +21,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseModel extends \CModel
+abstract class BaseModel extends \yii\base\Model
 {
 	// Properties
 	// =========================================================================
@@ -446,7 +446,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @return null
 	 */
-	public function setAttributes($values)
+	public function setAttributes($values, $safeOnly = true)
 	{
 		// If this is a model, get the actual attributes on it
 		if ($values instanceof \CModel)
