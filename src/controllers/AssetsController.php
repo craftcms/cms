@@ -12,7 +12,6 @@ use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\AssetEvent;
-use craft\app\fieldtypes\Assets;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
