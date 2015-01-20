@@ -222,6 +222,7 @@ $config = ArrayHelper::merge(
 
 // Initialize the application
 $class = 'craft\\app\\'.$appType.'\\Application';
+/* @var $app craft\app\web\Application|craft\app\console\Application */
 $app = new $class($config);
 
 return $app;
