@@ -37,7 +37,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Get Help');
+		return Craft::t('app', 'Get Help');
 	}
 
 	/**
@@ -47,7 +47,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		return Craft::t('Send a message to @@@appName@@@ Support');
+		return Craft::t('app', 'Send a message to @@@appName@@@ Support');
 	}
 
 	/**

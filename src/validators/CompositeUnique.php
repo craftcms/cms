@@ -42,7 +42,7 @@ class CompositeUnique extends \CValidator
 
 		if (count($with) < 1)
 		{
-			throw new Exception(Craft::t('Attribute “with” not set.'));
+			throw new Exception(Craft::t('app', 'Attribute “with” not set.'));
 		}
 
 		$uniqueValidator = new \CUniqueValidator();

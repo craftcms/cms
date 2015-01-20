@@ -640,7 +640,7 @@ class User extends BaseElementModel implements IdentityInterface
 		// Don't allow whitespace in the username.
 		if (preg_match('/\s+/', $this->username))
 		{
-			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+			$this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
 		}
 
 		return parent::validate($attributes, false);

@@ -369,7 +369,7 @@ class Users extends Component
 
 			if (!$userRecord)
 			{
-				throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $user->id]));
+				throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $user->id]));
 			}
 
 			$oldUsername = $userRecord->username;
@@ -1339,7 +1339,7 @@ class Users extends Component
 
 		if (!$userRecord)
 		{
-			throw new Exception(Craft::t('No user exists with the ID “{id}”.', ['id' => $userId]));
+			throw new Exception(Craft::t('app', 'No user exists with the ID “{id}”.', ['id' => $userId]));
 		}
 
 		return $userRecord;
@@ -1422,7 +1422,7 @@ class Users extends Component
 				if (Craft::$app->getSecurity()->validatePassword($user->newPassword, $userRecord->password))
 				{
 					$user->addErrors([
-						$passwordErrorField => Craft::t('That password is the same as your old password. Please choose a new one.'),
+						$passwordErrorField => Craft::t('app', 'That password is the same as your old password. Please choose a new one.'),
 					]);
 				}
 				else

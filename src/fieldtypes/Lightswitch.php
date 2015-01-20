@@ -28,7 +28,7 @@ class Lightswitch extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Lightswitch');
+		return Craft::t('app', 'Lightswitch');
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Lightswitch extends BaseFieldType
 	{
 		return Craft::$app->templates->renderMacro('_includes/forms', 'lightswitchField', [
 			[
-				'label' => Craft::t('Default Value'),
+				'label' => Craft::t('app', 'Default Value'),
 				'id'    => 'default',
 				'name'  => 'default',
 				'on'    => $this->getSettings()->default,

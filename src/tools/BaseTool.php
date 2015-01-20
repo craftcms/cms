@@ -58,7 +58,7 @@ abstract class BaseTool extends BaseComponentType implements ToolInterface
 	 */
 	public function getButtonLabel()
 	{
-		return Craft::t('Go!');
+		return Craft::t('app', 'Go!');
 	}
 
 	/**

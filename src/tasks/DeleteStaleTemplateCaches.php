@@ -63,7 +63,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Deleting stale template caches');
+		return Craft::t('app', 'Deleting stale template caches');
 	}
 
 	/**

@@ -740,7 +740,7 @@ class Assets extends Component
 		catch (Exception $exception)
 		{
 			$response = new AssetOperationResponseModel();
-			$response->setError(Craft::t('Error uploading the file: {error}', ['error' => $exception->getMessage()]));
+			$response->setError(Craft::t('app', 'Error uploading the file: {error}', ['error' => $exception->getMessage()]));
 
 			return $response;
 		}
@@ -1084,7 +1084,7 @@ class Assets extends Component
 
 			if (!$folderModel)
 			{
-				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
+				throw new Exception(Craft::t('app', 'That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
 			if (
@@ -1092,7 +1092,7 @@ class Assets extends Component
 				&&
 				!Craft::$app->getSession()->checkAuthorization($permission.':'.$folderModel->id))
 			{
-				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
+				throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
 			}
 		}
 	}
@@ -1119,12 +1119,12 @@ class Assets extends Component
 
 			if (!$file)
 			{
-				throw new Exception(Craft::t('That file does not seem to exist anymore. Re-index the Assets source and try again.'));
+				throw new Exception(Craft::t('app', 'That file does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
 			if (!Craft::$app->getUser()->checkPermission($permission.':'.$file->sourceId))
 			{
-				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
+				throw new Exception(Craft::t('app', 'You don’t have the required permissions for this operation.'));
 			}
 		}
 	}

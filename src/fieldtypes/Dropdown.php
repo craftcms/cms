@@ -27,7 +27,7 @@ class Dropdown extends BaseOptionsFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Dropdown');
+		return Craft::t('app', 'Dropdown');
 	}
 
 	/**
@@ -65,6 +65,6 @@ class Dropdown extends BaseOptionsFieldType
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Craft::t('Dropdown Options');
+		return Craft::t('app', 'Dropdown Options');
 	}
 }

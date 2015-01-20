@@ -961,7 +961,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if (!$field)
 			{
-				throw new Exception(Craft::t('No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
+				throw new Exception(Craft::t('app', 'No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
 			}
 
 			$content = $this->getContent();

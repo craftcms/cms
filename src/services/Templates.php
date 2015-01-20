@@ -1177,12 +1177,12 @@ class Templates extends Component
 	{
 		if (StringHelper::contains($name, "\0"))
 		{
-			throw new \Twig_Error_Loader(Craft::t('A template name cannot contain NUL bytes.'));
+			throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
 		}
 
 		if (PathHelper::ensurePathIsContained($name) === false)
 		{
-			throw new \Twig_Error_Loader(Craft::t('Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
+			throw new \Twig_Error_Loader(Craft::t('app', 'Looks like you try to load a template outside the template folder: {template}.', ['template' => $name]));
 		}
 	}
 
@@ -1416,7 +1416,7 @@ class Templates extends Component
 		if ($context['context'] == 'field' && isset($context['name']))
 		{
 			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$context['element']->id.'">';
-			$html .= '<a class="delete icon" title="'.Craft::t('Remove').'"></a> ';
+			$html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
 		}
 
 		if ($thumbUrl)

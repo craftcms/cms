@@ -51,7 +51,7 @@ class UrlFormat extends \CValidator
 			{
 				if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat))
 				{
-					$this->addError($object, $attribute, Craft::t('{attribute} must contain “{slug}”'));
+					$this->addError($object, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', ['attribute' => $object->attribute]));
 				}
 			}
 		}

@@ -30,7 +30,7 @@ class PlainText extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Plain Text');
+		return Craft::t('app', 'Plain Text');
 	}
 
 	/**

@@ -285,6 +285,6 @@ class Components extends Component
 	 */
 	private function _noComponentTypeExists($type)
 	{
-		throw new Exception(Craft::t('No component type exists by the name “{type}”', ['type' => $type]));
+		throw new Exception(Craft::t('app', 'No component type exists by the name “{type}”', ['type' => $type]));
 	}
 }

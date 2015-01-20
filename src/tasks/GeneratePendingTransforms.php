@@ -26,7 +26,7 @@ class GeneratePendingTransforms extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Generating pending image transforms');
+		return Craft::t('app', 'Generating pending image transforms');
 	}
 
 	/**

@@ -147,7 +147,7 @@ class Content extends Component
 	{
 		if (!$element->id)
 		{
-			throw new Exception(Craft::t('Cannot save the content of an unsaved element.'));
+			throw new Exception(Craft::t('app', 'Cannot save the content of an unsaved element.'));
 		}
 
 		$originalContentTable      = $this->contentTable;

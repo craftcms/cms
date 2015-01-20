@@ -37,6 +37,6 @@ class Entries extends BaseElementFieldType
 	 */
 	protected function getAddButtonLabel()
 	{
-		return Craft::t('Add an entry');
+		return Craft::t('app', 'Add an entry');
 	}
 }

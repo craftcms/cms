@@ -62,7 +62,7 @@ class Install extends Component
 
 		if (Craft::$app->isInstalled())
 		{
-			throw new Exception(Craft::t('@@@appName@@@ is already installed.'));
+			throw new Exception(Craft::t('app', '@@@appName@@@ is already installed.'));
 		}
 
 		// Set the language to the desired locale
@@ -636,7 +636,7 @@ class Install extends Component
 		Craft::log('Creating the Default tag group.');
 
 		$tagGroup = new TagGroupModel();
-		$tagGroup->name   = Craft::t('Default');
+		$tagGroup->name   = Craft::t('app', 'Default');
 		$tagGroup->handle = 'default';
 
 		// Save it
@@ -654,7 +654,7 @@ class Install extends Component
 		Craft::log('Creating the Default field group.');
 
 		$group = new FieldGroupModel();
-		$group->name = Craft::t('Default');
+		$group->name = Craft::t('app', 'Default');
 
 		if (Craft::$app->fields->saveGroup($group))
 		{
@@ -671,7 +671,7 @@ class Install extends Component
 
 		$bodyField = new FieldModel();
 		$bodyField->groupId      = $group->id;
-		$bodyField->name         = Craft::t('Body');
+		$bodyField->name         = Craft::t('app', 'Body');
 		$bodyField->handle       = 'body';
 		$bodyField->translatable = true;
 		$bodyField->type         = 'RichText';
@@ -695,7 +695,7 @@ class Install extends Component
 
 		$tagsField = new FieldModel();
 		$tagsField->groupId      = $group->id;
-		$tagsField->name         = Craft::t('Tags');
+		$tagsField->name         = Craft::t('app', 'Tags');
 		$tagsField->handle       = 'tags';
 		$tagsField->type         = 'Tags';
 		$tagsField->settings = [
@@ -717,7 +717,7 @@ class Install extends Component
 
 		$homepageLayout = Craft::$app->fields->assembleLayout(
 			[
-				Craft::t('Content') => [$bodyField->id]
+				Craft::t('app', 'Content') => [$bodyField->id]
 			],
 			[$bodyField->id]
 		);
@@ -725,7 +725,7 @@ class Install extends Component
 		$homepageLayout->type = ElementType::Entry;
 
 		$homepageSingleSection = new SectionModel();
-		$homepageSingleSection->name = Craft::t('Homepage');
+		$homepageSingleSection->name = Craft::t('app', 'Homepage');
 		$homepageSingleSection->handle = 'homepage';
 		$homepageSingleSection->type = SectionType::Single;
 		$homepageSingleSection->hasUrls = false;
@@ -752,7 +752,7 @@ class Install extends Component
 		$homepageEntryTypes = $homepageSingleSection->getEntryTypes();
 		$homepageEntryType = $homepageEntryTypes[0];
 		$homepageEntryType->hasTitleField = true;
-		$homepageEntryType->titleLabel = Craft::t('Title');
+		$homepageEntryType->titleLabel = Craft::t('app', 'Title');
 		$homepageEntryType->setFieldLayout($homepageLayout);
 
 		if (Craft::$app->sections->saveEntryType($homepageEntryType))
@@ -777,9 +777,9 @@ class Install extends Component
 		$entryModel = $criteria->first();
 
 		$entryModel->locale = $inputs['locale'];
-		$entryModel->getContent()->title = Craft::t('Welcome to {siteName}!', $vars);
+		$entryModel->getContent()->title = Craft::t('app', 'Welcome to {siteName}!', $vars);
 		$entryModel->setContentFromPost([
-			'body' => '<p>'.Craft::t('It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
+			'body' => '<p>'.Craft::t('app', 'It’s true, this site doesn’t have a whole lot of content yet, but don’t worry. Our web developers have just installed the CMS, and they’re setting things up for the content editors this very moment. Soon {siteName} will be an oasis of fresh perspectives, sharp analyses, and astute opinions that will keep you coming back again and again.', $vars).'</p>',
 		]);
 
 		// Save the content
@@ -798,7 +798,7 @@ class Install extends Component
 
 		$newsSection = new SectionModel();
 		$newsSection->type     = SectionType::Channel;
-		$newsSection->name     = Craft::t('News');
+		$newsSection->name     = Craft::t('app', 'News');
 		$newsSection->handle   = 'news';
 		$newsSection->hasUrls  = true;
 		$newsSection->template = 'news/_entry';
@@ -823,7 +823,7 @@ class Install extends Component
 
 		$newsLayout = Craft::$app->fields->assembleLayout(
 			[
-				Craft::t('Content') => [$bodyField->id, $tagsField->id],
+				Craft::t('app', 'Content') => [$bodyField->id, $tagsField->id],
 			],
 			[$bodyField->id]
 		);
@@ -853,14 +853,14 @@ class Install extends Component
 		$newsEntry->locale     = $inputs['locale'];
 		$newsEntry->authorId   = $this->_user->id;
 		$newsEntry->enabled    = true;
-		$newsEntry->getContent()->title = Craft::t('We just installed Craft!');
+		$newsEntry->getContent()->title = Craft::t('app', 'We just installed Craft!');
 		$newsEntry->getContent()->setAttributes([
 			'body' => '<p>'
-					. Craft::t('Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)
+					. Craft::t('app', 'Craft is the CMS that’s powering {siteName}. It’s beautiful, powerful, flexible, and easy-to-use, and it’s made by Pixel &amp; Tonic. We can’t wait to dive in and see what it’s capable of!', $vars)
 					. '</p><!--pagebreak--><p>'
-					. Craft::t('This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.')
+					. Craft::t('app', 'This is even more captivating content, which you couldn’t see on the News index page because it was entered after a Page Break, and the News index template only likes to show the content on the first page.')
 					. '</p><p>'
-					. Craft::t('Craft: a nice alternative to Word, if you’re making a website.')
+					. Craft::t('app', 'Craft: a nice alternative to Word, if you’re making a website.')
 					. '</p>',
 		]);
 

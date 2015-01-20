@@ -1761,7 +1761,7 @@ class IOHelper
 		}
 		else
 		{
-			Craft::error(Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]), __METHOD__);
+			Craft::error('app', Craft::t('Unable to get folder contents for “{path}”.', ['path' => $path]), __METHOD__);
 		}
 
 		return $descendants;

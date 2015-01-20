@@ -39,7 +39,7 @@ class RecentEntries extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Recent Entries');
+		return Craft::t('app', 'Recent Entries');
 	}
 
 	/**
@@ -71,7 +71,7 @@ class RecentEntries extends BaseWidget
 
 				if ($section)
 				{
-					$title = Craft::t('Recent {section} Entries', [
+					$title = Craft::t('app', 'Recent {section} Entries', [
 						'section' => Craft::t('app', $section->name)
 					]);
 				}
@@ -80,7 +80,7 @@ class RecentEntries extends BaseWidget
 
 		if (!isset($title))
 		{
-			$title = Craft::t('Recent Entries');
+			$title = Craft::t('app', 'Recent Entries');
 		}
 
 		// See if they are pulling entries from a different locale
@@ -90,7 +90,7 @@ class RecentEntries extends BaseWidget
 		{
 			$locale = Craft::$app->getI18n()->getLocaleById($targetLocale);
 
-			$title = Craft::t('{title} ({locale})', [
+			$title = Craft::t('app', '{title} ({locale})', [
 				'title'  => $title,
 				'locale' => $locale->getName()
 			]);

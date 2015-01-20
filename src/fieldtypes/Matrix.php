@@ -36,7 +36,7 @@ class Matrix extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Matrix');
+		return Craft::t('app', 'Matrix');
 	}
 
 	/**
@@ -411,7 +411,7 @@ class Matrix extends BaseFieldType
 
 		if (!$blocksValidate)
 		{
-			$errors[] = Craft::t('Correct the errors listed above.');
+			$errors[] = Craft::t('app', 'Correct the errors listed above.');
 		}
 
 		$maxBlocks = $this->getSettings()->maxBlocks;
@@ -420,11 +420,11 @@ class Matrix extends BaseFieldType
 		{
 			if ($maxBlocks == 1)
 			{
-				$errors[] = Craft::t('There can’t be more than one block.');
+				$errors[] = Craft::t('app', 'There can’t be more than one block.');
 			}
 			else
 			{
-				$errors[] = Craft::t('There can’t be more than {max} blocks.', ['max' => $maxBlocks]);
+				$errors[] = Craft::t('app', 'There can’t be more than {max} blocks.', ['max' => $maxBlocks]);
 			}
 		}
 
@@ -514,7 +514,7 @@ class Matrix extends BaseFieldType
 		}
 		else
 		{
-			return '<p class="light">'.Craft::t('No blocks.').'</p>';
+			return '<p class="light">'.Craft::t('app', 'No blocks.').'</p>';
 		}
 	}
 

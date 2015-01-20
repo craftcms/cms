@@ -571,7 +571,7 @@ class AssetSources extends Component
 
 			if (!$sourceRecord)
 			{
-				throw new Exception(Craft::t('No source exists with the ID “{id}”.', ['id' => $sourceId]));
+				throw new Exception(Craft::t('app', 'No source exists with the ID “{id}”.', ['id' => $sourceId]));
 			}
 		}
 		else

@@ -37,7 +37,7 @@ class Feed extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Feed');
+		return Craft::t('app', 'Feed');
 	}
 
 	/**

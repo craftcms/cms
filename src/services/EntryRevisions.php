@@ -182,14 +182,12 @@ class EntryRevisions extends Component
 				)
 				->count('id');
 
-			$draft->name = Craft::t('Draft {num}', ['num' => $totalDrafts + 1]);
+			$draft->name = Craft::t('app', 'Draft {num}', ['num' => $totalDrafts + 1]);
 		}
 
 		$draftRecord->name = $draft->name;
 		$draftRecord->notes = $draft->revisionNotes;
 		$draftRecord->data = $this->_getRevisionData($draft);
-
-		$isNewDraft = !$draft->draftId;
 
 		if ($draftRecord->save())
 		{
@@ -226,7 +224,7 @@ class EntryRevisions extends Component
 		// Set the version notes
 		if (!$draft->revisionNotes)
 		{
-			$draft->revisionNotes = Craft::t('Published draft “{name}”.', ['name' => $draft->name]);
+			$draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.', ['name' => $draft->name]);
 		}
 
 		if (Craft::$app->entries->saveEntry($draft))
@@ -406,7 +404,7 @@ class EntryRevisions extends Component
 		}
 
 		// Set the version notes
-		$version->revisionNotes = Craft::t('Reverted version {num}.', ['num' => $version->num]);
+		$version->revisionNotes = Craft::t('app', 'Reverted version {num}.', ['num' => $version->num]);
 
 		if (Craft::$app->entries->saveEntry($version))
 		{
@@ -442,7 +440,7 @@ class EntryRevisions extends Component
 
 			if (!$draftRecord)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
+				throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
 			}
 		}
 		else

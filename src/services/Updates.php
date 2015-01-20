@@ -196,7 +196,7 @@ class Updates extends Component
 				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
-					$errors[] = Craft::t('Craft is unable to determine if an update is available at this time.');
+					$errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
 					$updateModel->errors = $errors;
 				}
 				else
@@ -475,7 +475,7 @@ class Updates extends Component
 				else
 				{
 					Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', __METHOD__);
-					throw new Exception(Craft::t('Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
+					throw new Exception(Craft::t('app', 'Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
 				}
 			}
 

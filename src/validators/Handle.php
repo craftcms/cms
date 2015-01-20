@@ -58,14 +58,14 @@ class Handle extends \CValidator
 
 			if (in_array($lcHandle, $reservedWords))
 			{
-				$message = Craft::t('“{handle}” is a reserved word.', ['handle' => $handle]);
+				$message = Craft::t('app', '“{handle}” is a reserved word.', ['handle' => $handle]);
 				$this->addError($object, $attribute, $message);
 			}
 			else
 			{
 				if (!preg_match('/^'.static::$handlePattern.'$/', $handle))
 				{
-					$altMessage = Craft::t('“{handle}” isn’t a valid handle.', ['handle' => $handle]);
+					$altMessage = Craft::t('app', '“{handle}” isn’t a valid handle.', ['handle' => $handle]);
 					$message = $this->message !== null ? $this->message : $altMessage;
 					$this->addError($object, $attribute, $message);
 				}

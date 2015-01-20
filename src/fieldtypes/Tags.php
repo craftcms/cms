@@ -85,7 +85,7 @@ class Tags extends BaseElementFieldType
 		}
 		else
 		{
-			return '<p class="error">'.Craft::t('This field is not set to a valid source.').'</p>';
+			return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
 		}
 	}
 

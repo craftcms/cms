@@ -216,8 +216,8 @@ class Matrix extends Component
 					// This error *might* not be entirely accurate, but it's such an edge case that it's probably better
 					// for the error to be worded for the common problem (two duplicate handles within the same block
 					// type).
-					$error = Craft::t('{attribute} "{value}" has already been taken.', [
-						'attribute' => Craft::t('Handle'),
+					$error = Craft::t('app', '{attribute} "{value}" has already been taken.', [
+						'attribute' => Craft::t('app', 'Handle'),
 						'value' => $field->handle
 					]);
 
@@ -342,7 +342,7 @@ class Matrix extends Component
 
 					if (!$fieldsService->saveField($field, false))
 					{
-						throw new Exception(Craft::t('An error occurred while saving this Matrix block type.'));
+						throw new Exception(Craft::t('app', 'An error occurred while saving this Matrix block type.'));
 					}
 
 					$fieldLayoutField = new FieldLayoutFieldModel();
@@ -502,7 +502,7 @@ class Matrix extends Component
 				}
 				else
 				{
-					$blockType->addError($attribute, Craft::t('{attribute} "{value}" has already been taken.', [
+					$blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.', [
 						'attribute' => $blockType->getAttributeLabel($attribute),
 						'value'     => HtmlHelper::encode($value)
 					]));
@@ -1010,7 +1010,7 @@ class Matrix extends Component
 
 				if (!$this->_blockTypeRecordsById[$blockTypeId])
 				{
-					throw new Exception(Craft::t('No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
+					throw new Exception(Craft::t('app', 'No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
 				}
 			}
 
@@ -1042,7 +1042,7 @@ class Matrix extends Component
 
 				if (!$this->_blockRecordsById[$blockId])
 				{
-					throw new Exception(Craft::t('No block exists with the ID “{id}”.', ['id' => $blockId]));
+					throw new Exception(Craft::t('app', 'No block exists with the ID “{id}”.', ['id' => $blockId]));
 				}
 			}
 

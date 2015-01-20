@@ -87,7 +87,7 @@ class EntryType extends BaseModel
 			'name'          => AttributeType::String,
 			'handle'        => AttributeType::String,
 			'hasTitleField' => [AttributeType::Bool, 'default' => true],
-			'titleLabel'    => [AttributeType::String, 'default' => Craft::t('Title')],
+			'titleLabel'    => [AttributeType::String, 'default' => Craft::t('app', 'Title')],
 			'titleFormat'   => AttributeType::String,
 		];
 	}

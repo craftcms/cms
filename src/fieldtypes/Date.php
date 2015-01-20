@@ -31,7 +31,7 @@ class Date extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('Date/Time');
+		return Craft::t('app', 'Date/Time');
 	}
 
 	/**
@@ -71,15 +71,15 @@ class Date extends BaseFieldType
 		return Craft::$app->templates->render('_components/fieldtypes/Date/settings', [
 			'options' => [
 				[
-					'label' => Craft::t('Show date'),
+					'label' => Craft::t('app', 'Show date'),
 					'value' => 'showDate',
 				],
 				[
-					'label' => Craft::t('Show time'),
+					'label' => Craft::t('app', 'Show time'),
 					'value' => 'showTime',
 				],
 				[
-					'label' => Craft::t('Show date and time'),
+					'label' => Craft::t('app', 'Show date and time'),
 					'value' => 'showBoth',
 				]
 			],

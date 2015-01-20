@@ -504,7 +504,7 @@ class Request extends \yii\web\Request
 			return $value;
 		}
 
-		throw new HttpException(400, Craft::t('Body param “{name}” doesn’t exist.', ['name' => $name]));
+		throw new HttpException(400, Craft::t('app', 'Body param “{name}” doesn’t exist.', ['name' => $name]));
 	}
 
 	/**
@@ -577,7 +577,7 @@ class Request extends \yii\web\Request
 			return $value;
 		}
 
-		throw new HttpException(400, Craft::t('GET param “{name}” doesn’t exist.', ['name' => $name]));
+		throw new HttpException(400, Craft::t('app', 'GET param “{name}” doesn’t exist.', ['name' => $name]));
 	}
 
 	/**
@@ -637,7 +637,7 @@ class Request extends \yii\web\Request
 			return $value;
 		}
 
-		throw new HttpException(400, Craft::t('Param “{name}” doesn’t exist.', ['name' => $name]));
+		throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.', ['name' => $name]));
 	}
 
 	/**

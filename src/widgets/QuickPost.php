@@ -44,7 +44,7 @@ class QuickPost extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Quick Post');
+		return Craft::t('app', 'Quick Post');
 	}
 
 	/**
@@ -111,7 +111,7 @@ class QuickPost extends BaseWidget
 
 			if ($section)
 			{
-				return Craft::t('Post a new {section} entry', ['section' => $section->name]);
+				return Craft::t('app', 'Post a new {section} entry', ['section' => $section->name]);
 			}
 		}
 
@@ -132,14 +132,14 @@ class QuickPost extends BaseWidget
 
 		if (!$section)
 		{
-			return '<p>'.Craft::t('No section has been selected yet.').'</p>';
+			return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
 		}
 
 		$entryTypes = $section->getEntryTypes('id');
 
 		if (!$entryTypes)
 		{
-			return '<p>'.Craft::t('No entry types exist for this section.').'</p>';
+			return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
 		}
 
 		if ($this->getSettings()->entryType && isset($entryTypes[$this->getSettings()->entryType]))

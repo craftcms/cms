@@ -153,7 +153,7 @@ class ElementHelper
 				else
 				{
 					// We're screwed, blow things up.
-					throw new Exception(Craft::t('The maximum length of a URI is 255 characters.'));
+					throw new Exception(Craft::t('app', 'The maximum length of a URI is 255 characters.'));
 				}
 			}
 
@@ -178,7 +178,7 @@ class ElementHelper
 			}
 		}
 
-		throw new Exception(Craft::t('Could not find a unique URI for this element.'));
+		throw new Exception(Craft::t('app', 'Could not find a unique URI for this element.'));
 	}
 
 	/**

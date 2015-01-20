@@ -30,15 +30,15 @@ class NumberHelper
 	public static function word($num)
 	{
 		$numberWordMap = [
-				1 => Craft::t('one'),
-				2 => Craft::t('two'),
-				3 => Craft::t('three'),
-				4 => Craft::t('four'),
-				5 => Craft::t('five'),
-				6 => Craft::t('six'),
-				7 => Craft::t('seven'),
-				8 => Craft::t('eight'),
-				9 => Craft::t('nine')
+				1 => Craft::t('app', 'one'),
+				2 => Craft::t('app', 'two'),
+				3 => Craft::t('app', 'three'),
+				4 => Craft::t('app', 'four'),
+				5 => Craft::t('app', 'five'),
+				6 => Craft::t('app', 'six'),
+				7 => Craft::t('app', 'seven'),
+				8 => Craft::t('app', 'eight'),
+				9 => Craft::t('app', 'nine')
 		];
 
 		if (isset($numberWordMap[$num]))

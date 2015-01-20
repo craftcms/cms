@@ -55,7 +55,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 			}
 			else
 			{
-				throw new Exception(Craft::t('Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
+				throw new Exception(Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
 			}
 		}
 		else

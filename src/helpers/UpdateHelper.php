@@ -256,7 +256,7 @@ class UpdateHelper
 
 				if ($manifestFileData === false)
 				{
-					throw new Exception(Craft::t('There was a problem reading the update manifest data.'));
+					throw new Exception(Craft::t('app', 'There was a problem reading the update manifest data.'));
 				}
 
 				// Remove any trailing empty newlines

@@ -370,7 +370,7 @@ class Sections extends Component
 
 			if (!$sectionRecord)
 			{
-				throw new Exception(Craft::t('No section exists with the ID “{id}”.', ['id' => $section->id]));
+				throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
 			}
 
 			$oldSection = SectionModel::populateModel($sectionRecord);
@@ -390,7 +390,7 @@ class Sections extends Component
 
 		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
 		{
-			$section->addError('type', Craft::t('You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
+			$section->addError('type', Craft::t('app', 'You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
 		}
 
 		// Type-specific attributes
@@ -420,7 +420,7 @@ class Sections extends Component
 
 		if (!$sectionLocales)
 		{
-			$section->addError('localeErrors', Craft::t('At least one locale must be selected for the section.'));
+			$section->addError('localeErrors', Craft::t('app', 'At least one locale must be selected for the section.'));
 		}
 
 		foreach ($sectionLocales as $localeId => $sectionLocale)
@@ -431,7 +431,7 @@ class Sections extends Component
 
 				if (empty($sectionLocale->urlFormat))
 				{
-					$section->addError($errorKey, Craft::t('URI cannot be blank.'));
+					$section->addError($errorKey, Craft::t('app', 'URI cannot be blank.'));
 				}
 				else if ($section)
 				{
@@ -453,7 +453,7 @@ class Sections extends Component
 
 					if ($count)
 					{
-						$section->addError($errorKey, Craft::t('This URI is already in use.'));
+						$section->addError($errorKey, Craft::t('app', 'This URI is already in use.'));
 					}
 				}
 
@@ -643,7 +643,7 @@ class Sections extends Component
 						else
 						{
 							$entryType->hasTitleField = true;
-							$entryType->titleLabel = Craft::t('Title');
+							$entryType->titleLabel = Craft::t('app', 'Title');
 							$entryType->titleFormat = null;
 						}
 
@@ -792,7 +792,7 @@ class Sections extends Component
 						$criteria->localeEnabled = null;
 						$criteria->limit = null;
 
-						Craft::$app->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', ['section' => $section->name]), [
+						Craft::$app->tasks->createTask('ResaveElements', Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]), [
 							'elementType' => ElementType::Entry,
 							'criteria'    => $criteria->getAttributes()
 						]);
@@ -1007,7 +1007,7 @@ class Sections extends Component
 
 			if (!$entryTypeRecord)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
+				throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryType->id]));
 			}
 
 			$isNewEntryType = false;

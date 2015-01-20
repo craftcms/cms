@@ -88,7 +88,7 @@ class Structures extends Component
 
 			if (!$structureRecord)
 			{
-				throw new Exception(Craft::t('No structure exists with the ID “{id}”.', ['id' => $structure->id]));
+				throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structure->id]));
 			}
 		}
 		else

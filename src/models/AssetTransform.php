@@ -49,9 +49,9 @@ class AssetTransform extends BaseModel
 	public static function getTransformModes()
 	{
 		return [
-			'crop'    => Craft::t('Scale and crop'),
-			'fit'     => Craft::t('Scale to fit'),
-			'stretch' => Craft::t('Stretch to fit')
+			'crop'    => Craft::t('app', 'Scale and crop'),
+			'fit'     => Craft::t('app', 'Scale to fit'),
+			'stretch' => Craft::t('app', 'Stretch to fit')
 		];
 	}
 
