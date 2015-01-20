@@ -67,14 +67,14 @@ class StructuresController extends BaseController
 
 		if (!$this->_structure)
 		{
-			throw new Exception(Craft::t('No structure exists with the ID “{id}”.', ['id' => $structureId]));
+			throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structureId]));
 		}
 
 		$this->_element = Craft::$app->elements->getElementById($elementId, null, $localeId);
 
 		if (!$this->_element)
 		{
-			throw new Exception(Craft::t('No element exists with the ID “{id}.”', ['id' => $elementId]));
+			throw new Exception(Craft::t('app', 'No element exists with the ID “{id}.”', ['id' => $elementId]));
 		}
 	}
 

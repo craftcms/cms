@@ -47,12 +47,12 @@ class DashboardController extends BaseController
 		// Did it save?
 		if (Craft::$app->dashboard->saveUserWidget($widget))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Widget saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save widget.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save widget.'));
 		}
 
 		// Send the widget back to the template

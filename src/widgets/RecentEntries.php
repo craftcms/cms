@@ -72,7 +72,7 @@ class RecentEntries extends BaseWidget
 				if ($section)
 				{
 					$title = Craft::t('Recent {section} Entries', [
-						'section' => Craft::t($section->name)
+						'section' => Craft::t('app', $section->name)
 					]);
 				}
 			}

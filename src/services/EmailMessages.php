@@ -217,7 +217,7 @@ class EmailMessages extends Component
 	{
 		$combinedKey = $key.'_'.$part;
 
-		$t = Craft::t($combinedKey, null, null, $localeId);
+		$t = Craft::t('app', $combinedKey, null, $localeId);
 
 		// If a translation couldn't be found, default to the message's source locale
 		if ($t == $combinedKey)
@@ -226,7 +226,7 @@ class EmailMessages extends Component
 
 			if ($sourceLocale)
 			{
-				$t = Craft::t($combinedKey, null, null, $sourceLocale);
+				$t = Craft::t('app', $combinedKey, null, $sourceLocale);
 			}
 		}
 

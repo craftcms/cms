@@ -34,7 +34,7 @@ class MatrixBlock extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Matrix Blocks');
+		return Craft::t('app', 'Matrix Blocks');
 	}
 
 	/**

@@ -99,14 +99,14 @@ class AssetsController extends BaseController
 
 		if (empty($_FILES['files']) || !isset($_FILES['files']['error'][0]) || $_FILES['files']['error'][0] != 0)
 		{
-			throw new Exception(Craft::t('The upload failed.'));
+			throw new Exception(Craft::t('app', 'The upload failed.'));
 		}
 
 		$field = Craft::$app->fields->populateFieldType(Craft::$app->fields->getFieldById($fieldId));
 
 		if (!($field instanceof Assets))
 		{
-			throw new Exception(Craft::t('That is not an Assets field.'));
+			throw new Exception(Craft::t('app', 'That is not an Assets field.'));
 		}
 
 		if ($elementId)
@@ -163,14 +163,14 @@ class AssetsController extends BaseController
 		{
 			if (empty($_FILES['replaceFile']) || !isset($_FILES['replaceFile']['error']) || $_FILES['replaceFile']['error'] != 0)
 			{
-				throw new Exception(Craft::t('The upload failed.'));
+				throw new Exception(Craft::t('app', 'The upload failed.'));
 			}
 
 			$existingFile = Craft::$app->assets->getFileById($fileId);
 
 			if (!$existingFile)
 			{
-				throw new Exception(Craft::t('The file to be replaced cannot be found.'));
+				throw new Exception(Craft::t('app', 'The file to be replaced cannot be found.'));
 			}
 
 			$targetFolderId = $existingFile->folderId;
@@ -194,7 +194,7 @@ class AssetsController extends BaseController
 			// Is the event preventing this from happening?
 			if (!$event->performAction)
 			{
-				throw new Exception(Craft::t('The file could not be replaced.'));
+				throw new Exception(Craft::t('app', 'The file could not be replaced.'));
 			}
 
 			$fileName = $_FILES['replaceFile']['name'];
@@ -232,7 +232,7 @@ class AssetsController extends BaseController
 			}
 			else
 			{
-				throw new Exception(Craft::t('Something went wrong with the replace operation.'));
+				throw new Exception(Craft::t('app', 'Something went wrong with the replace operation.'));
 			}
 		}
 		catch (Exception $exception)

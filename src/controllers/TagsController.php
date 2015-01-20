@@ -60,8 +60,8 @@ class TagsController extends BaseController
 
 		// Breadcrumbs
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Tags'),  'url' => UrlHelper::getUrl('settings/tags')]
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Tags'),  'url' => UrlHelper::getUrl('settings/tags')]
 		];
 
 		if (!empty($variables['tagGroupId']))
@@ -85,12 +85,12 @@ class TagsController extends BaseController
 				$variables['tagGroup'] = new TagGroupModel();
 			}
 
-			$variables['title'] = Craft::t('Create a new tag group');
+			$variables['title'] = Craft::t('app', 'Create a new tag group');
 		}
 
 		$variables['tabs'] = [
-			'settings'    => ['label' => Craft::t('Settings'), 'url' => '#taggroup-settings'],
-			'fieldLayout' => ['label' => Craft::t('Field Layout'), 'url' => '#taggroup-fieldlayout']
+			'settings'    => ['label' => Craft::t('app', 'Settings'), 'url' => '#taggroup-settings'],
+			'fieldLayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#taggroup-fieldlayout']
 		];
 
 		$this->renderTemplate('settings/tags/_edit', $variables);
@@ -121,12 +121,12 @@ class TagsController extends BaseController
 		// Save it
 		if (Craft::$app->tags->saveTagGroup($tagGroup))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Tag group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 			$this->redirectToPostedUrl($tagGroup);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save the tag group.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
 		}
 
 		// Send the tag group back to the template

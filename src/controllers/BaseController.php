@@ -188,7 +188,7 @@ abstract class BaseController extends \CController
 		// Make sure they're an admin
 		if (!Craft::$app->getUser()->getIsAdmin())
 		{
-			throw new HttpException(403, Craft::t('This action may only be performed by admins.'));
+			throw new HttpException(403, Craft::t('app', 'This action may only be performed by admins.'));
 		}
 	}
 

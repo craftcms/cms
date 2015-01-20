@@ -124,7 +124,7 @@ class DbBackup
 	{
 		if (!IOHelper::fileExists($filePath))
 		{
-			throw new Exception(Craft::t('Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
+			throw new Exception(Craft::t('app', 'Could not find the SQL file to restore: {filePath}', ['filePath' => $filePath]));
 		}
 
 		$this->_nukeDb();

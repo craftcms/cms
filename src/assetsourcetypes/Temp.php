@@ -42,7 +42,7 @@ class Temp extends Local
 	 */
 	public function getName()
 	{
-		return Craft::t(static::sourceName);
+		return Craft::t('app', static::sourceName);
 	}
 
 	/**
@@ -77,7 +77,7 @@ class Temp extends Local
 	 */
 	public function startIndex($sessionId)
 	{
-		throw new Exception(Craft::t("This Source Type does not support indexing."));
+		throw new Exception(Craft::t('app', 'This Source Type does not support indexing.'));
 	}
 
 	/**
@@ -91,7 +91,7 @@ class Temp extends Local
 	 */
 	public function processIndex($sessionId, $offset)
 	{
-		throw new Exception(Craft::t("This Source Type does not support indexing."));
+		throw new Exception(Craft::t('app', 'This Source Type does not support indexing.'));
 	}
 
 	/**

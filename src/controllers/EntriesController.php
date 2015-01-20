@@ -192,25 +192,25 @@ class EntriesController extends BaseEntriesController
 
 				case 'EntryVersion':
 				{
-					$variables['revisionLabel'] = Craft::t('Version {num}', ['num' => $variables['entry']->num]);
+					$variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $variables['entry']->num]);
 					break;
 				}
 
 				default:
 				{
-					$variables['revisionLabel'] = Craft::t('Current');
+					$variables['revisionLabel'] = Craft::t('app', 'Current');
 				}
 			}
 		}
 
 		if (!$variables['entry']->id)
 		{
-			$variables['title'] = Craft::t('Create a new entry');
+			$variables['title'] = Craft::t('app', 'Create a new entry');
 		}
 		else
 		{
-			$variables['docTitle'] = Craft::t($variables['entry']->title);
-			$variables['title'] = Craft::t($variables['entry']->title);
+			$variables['docTitle'] = Craft::t('app', $variables['entry']->title);
+			$variables['title'] = Craft::t('app', $variables['entry']->title);
 
 			if (Craft::$app->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
@@ -220,16 +220,16 @@ class EntriesController extends BaseEntriesController
 
 		// Breadcrumbs
 		$variables['crumbs'] = [
-			['label' => Craft::t('Entries'), 'url' => UrlHelper::getUrl('entries')]
+			['label' => Craft::t('app', 'Entries'), 'url' => UrlHelper::getUrl('entries')]
 		];
 
 		if ($variables['section']->type == SectionType::Single)
 		{
-			$variables['crumbs'][] = ['label' => Craft::t('Singles'), 'url' => UrlHelper::getUrl('entries/singles')];
+			$variables['crumbs'][] = ['label' => Craft::t('app', 'Singles'), 'url' => UrlHelper::getUrl('entries/singles')];
 		}
 		else
 		{
-			$variables['crumbs'][] = ['label' => Craft::t($variables['section']->name), 'url' => UrlHelper::getUrl('entries/'.$variables['section']->handle)];
+			$variables['crumbs'][] = ['label' => Craft::t('app', $variables['section']->name), 'url' => UrlHelper::getUrl('entries/'.$variables['section']->handle)];
 
 			if ($variables['section']->type == SectionType::Structure)
 			{
@@ -249,7 +249,7 @@ class EntriesController extends BaseEntriesController
 
 			foreach ($entryTypes as $entryType)
 			{
-				$variables['entryTypeOptions'][] = ['label' => Craft::t($entryType->name), 'value' => $entryType->id];
+				$variables['entryTypeOptions'][] = ['label' => Craft::t('app', $entryType->name), 'value' => $entryType->id];
 			}
 
 			Craft::$app->templates->includeJsResource('js/EntryTypeSwitcher.js');
@@ -479,7 +479,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				$userSessionService->setNotice(Craft::t('Entry saved.'));
+				$userSessionService->setNotice(Craft::t('app', 'Entry saved.'));
 				$this->redirectToPostedUrl($entry);
 			}
 		}
@@ -493,7 +493,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				$userSessionService->setError(Craft::t('Couldn’t save entry.'));
+				$userSessionService->setError(Craft::t('app', 'Couldn’t save entry.'));
 
 				// Send the entry back to the template
 				Craft::$app->getUrlManager()->setRouteVariables([
@@ -521,7 +521,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entryId]));
+			throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
 		}
 
 		$currentUser = Craft::$app->getUser()->getIdentity();
@@ -543,7 +543,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				Craft::$app->getSession()->setNotice(Craft::t('Entry deleted.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 				$this->redirectToPostedUrl($entry);
 			}
 		}
@@ -555,7 +555,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				Craft::$app->getSession()->setError(Craft::t('Couldn’t delete entry.'));
+				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
 				// Send the entry back to the template
 				Craft::$app->getUrlManager()->setRouteVariables([
@@ -714,7 +714,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$variables['localeIds'])
 		{
-			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this section’s locales.'));
+			throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this section’s locales.'));
 		}
 
 		if (empty($variables['localeId']))
@@ -789,7 +789,7 @@ class EntriesController extends BaseEntriesController
 
 		if (!$variables['entryType'])
 		{
-			throw new Exception(Craft::t('No entry types are available for this entry.'));
+			throw new Exception(Craft::t('app', 'No entry types are available for this entry.'));
 		}
 
 		// Define the content tabs
@@ -815,7 +815,7 @@ class EntriesController extends BaseEntriesController
 			}
 
 			$variables['tabs'][] = [
-				'label' => Craft::t($tab->name),
+				'label' => Craft::t('app', $tab->name),
 				'url'   => '#tab'.($index+1),
 				'class' => ($hasErrors ? 'error' : null)
 			];
@@ -839,7 +839,7 @@ class EntriesController extends BaseEntriesController
 
 			if (!$entry)
 			{
-				throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $entryId]));
+				throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
 			}
 		}
 		else

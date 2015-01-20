@@ -34,7 +34,7 @@ class Category extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Categories');
+		return Craft::t('app', 'Categories');
 	}
 
 	/**
@@ -102,7 +102,7 @@ class Category extends BaseElementType
 			$key = 'group:'.$group->id;
 
 			$sources[$key] = [
-				'label'             => Craft::t($group->name),
+				'label'             => Craft::t('app', $group->name),
 				'data'              => ['handle' => $group->handle],
 				'criteria'          => ['groupId' => $group->id],
 				'structureId'       => $group->structureId,
@@ -142,7 +142,7 @@ class Category extends BaseElementType
 			// View
 			$viewAction = Craft::$app->elements->getAction('View');
 			$viewAction->setParams([
-				'label' => Craft::t('View category'),
+				'label' => Craft::t('app', 'View category'),
 			]);
 			$actions[] = $viewAction;
 		}
@@ -150,7 +150,7 @@ class Category extends BaseElementType
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
 		$editAction->setParams([
-			'label' => Craft::t('Edit category'),
+			'label' => Craft::t('app', 'Edit category'),
 		]);
 		$actions[] = $editAction;
 
@@ -161,7 +161,7 @@ class Category extends BaseElementType
 		{
 			$newChildAction = Craft::$app->elements->getAction('NewChild');
 			$newChildAction->setParams([
-				'label'       => Craft::t('Create a new child category'),
+				'label'       => Craft::t('app', 'Create a new child category'),
 				'maxLevels'   => $structure->maxLevels,
 				'newChildUrl' => 'categories/'.$group->handle.'/new',
 			]);
@@ -171,8 +171,8 @@ class Category extends BaseElementType
 		// Delete
 		$deleteAction = Craft::$app->elements->getAction('Delete');
 		$deleteAction->setParams([
-			'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
-			'successMessage'      => Craft::t('Categories deleted.'),
+			'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
+			'successMessage'      => Craft::t('app', 'Categories deleted.'),
 		]);
 		$actions[] = $deleteAction;
 
@@ -195,8 +195,8 @@ class Category extends BaseElementType
 	public function defineSortableAttributes()
 	{
 		$attributes = [
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title' => Craft::t('app', 'Title'),
+			'uri'   => Craft::t('app', 'URI'),
 		];
 
 		// Allow plugins to modify the attributes
@@ -215,8 +215,8 @@ class Category extends BaseElementType
 	public function defineTableAttributes($source = null)
 	{
 		$attributes = [
-			'title' => Craft::t('Title'),
-			'uri'   => Craft::t('URI'),
+			'title' => Craft::t('app', 'Title'),
+			'uri'   => Craft::t('app', 'URI'),
 		];
 
 		// Allow plugins to modify the attributes
@@ -311,7 +311,7 @@ class Category extends BaseElementType
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
-				'label' => Craft::t('Title'),
+				'label' => Craft::t('app', 'Title'),
 				'locale' => $element->locale,
 				'id' => 'title',
 				'name' => 'title',
@@ -325,7 +325,7 @@ class Category extends BaseElementType
 
 		$html .= Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
-				'label' => Craft::t('Slug'),
+				'label' => Craft::t('app', 'Slug'),
 				'locale' => $element->locale,
 				'id' => 'slug',
 				'name' => 'slug',

@@ -502,7 +502,7 @@ class ModelHelper
 		{
 			if (isset($config['label']))
 			{
-				$labels[$name] = Craft::t($config['label']);
+				$labels[$name] = Craft::t('app', $config['label']);
 			}
 		}
 

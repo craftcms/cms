@@ -28,7 +28,7 @@ class RenameFile extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Rename file');
+		return Craft::t('app', 'Rename file');
 	}
 
 	/**
@@ -38,7 +38,7 @@ class RenameFile extends BaseElementAction
 	 */
 	public function getTriggerHtml()
 	{
-		$prompt = JsonHelper::encode(Craft::t('Enter the new filename'));
+		$prompt = JsonHelper::encode(Craft::t('app', 'Enter the new filename'));
 
 		$js = <<<EOT
 (function()

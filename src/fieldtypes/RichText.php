@@ -245,7 +245,7 @@ class RichText extends BaseFieldType
 
 			if ($postContentSize > $maxDbColumnSize)
 			{
-				return Craft::t('{attribute} is too long.', ['attribute' => Craft::t($this->model->name)]);
+				return Craft::t('{attribute} is too long.', ['attribute' => Craft::t('app', $this->model->name)]);
 			}
 		}
 

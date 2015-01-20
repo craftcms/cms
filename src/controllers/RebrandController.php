@@ -60,7 +60,7 @@ class RebrandController extends BaseController
 				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$fileName))
 				{
 					IOHelper::deleteFile($folderPath.'/'.$fileName);
-					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
+					$this->returnErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
 				Craft::$app->images->cleanImage($folderPath.'/'.$fileName);
@@ -93,7 +93,7 @@ class RebrandController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Craft::t('There was an error uploading your photo'));
+		$this->returnErrorJson(Craft::t('app', 'There was an error uploading your photo'));
 	}
 
 	/**
@@ -155,7 +155,7 @@ class RebrandController extends BaseController
 			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$this->returnErrorJson(Craft::t('Something went wrong when processing the logo.'));
+		$this->returnErrorJson(Craft::t('app', 'Something went wrong when processing the logo.'));
 	}
 
 	/**

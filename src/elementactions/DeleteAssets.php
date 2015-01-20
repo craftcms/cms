@@ -28,7 +28,7 @@ class DeleteAssets extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Delete…');
+		return Craft::t('app', 'Delete…');
 	}
 
 	/**
@@ -48,7 +48,7 @@ class DeleteAssets extends BaseElementAction
 	 */
 	public function getConfirmationMessage()
 	{
-		return Craft::t('Are you sure you want to delete the selected assets?');
+		return Craft::t('app', 'Are you sure you want to delete the selected assets?');
 	}
 
 	/**
@@ -62,7 +62,7 @@ class DeleteAssets extends BaseElementAction
 	{
 		Craft::$app->assets->deleteFiles($criteria->ids());
 
-		$this->setMessage(Craft::t('Assets deleted.'));
+		$this->setMessage(Craft::t('app', 'Assets deleted.'));
 
 		return true;
 	}

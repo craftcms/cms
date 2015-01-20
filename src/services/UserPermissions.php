@@ -131,7 +131,7 @@ class UserPermissions extends Component
 
 		foreach ($sections as $section)
 		{
-			$label = Craft::t('Section - {section}', ['section' => Craft::t($section->name)]);
+			$label = Craft::t('Section - {section}', ['section' => Craft::t('app', $section->name)]);
 
 			if ($section->type == SectionType::Single)
 			{
@@ -170,7 +170,7 @@ class UserPermissions extends Component
 
 		foreach ($assetSources as $source)
 		{
-			$label = Craft::t('Asset Source - {source}', ['source' => Craft::t($source->name)]);
+			$label = Craft::t('Asset Source - {source}', ['source' => Craft::t('app', $source->name)]);
 			$permissions[$label] = $this->_getAssetSourcePermissions($source->id);
 		}
 
@@ -372,7 +372,7 @@ class UserPermissions extends Component
 
 		return [
 			"editEntries{$suffix}" => [
-				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($section->name)]),
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t('app', $section->name)]),
 				'nested' => [
 					"publishEntries{$suffix}" => [
 						'label' => Craft::t('Publish live changes')
@@ -458,7 +458,7 @@ class UserPermissions extends Component
 		foreach ($globalSets as $globalSet)
 		{
 			$permissions['editGlobalSet:'.$globalSet->id] = [
-				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($globalSet->name)])
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t('app', $globalSet->name)])
 			];
 		}
 
@@ -479,7 +479,7 @@ class UserPermissions extends Component
 		foreach ($groups as $group)
 		{
 			$permissions['editCategories:'.$group->id] = [
-				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t($group->name)])
+				'label' => Craft::t('Edit “{title}”', ['title' => Craft::t('app', $group->name)])
 			];
 		}
 

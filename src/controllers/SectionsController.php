@@ -103,14 +103,14 @@ class SectionsController extends BaseController
 				$variables['brandNewSection'] = true;
 			}
 
-			$variables['title'] = Craft::t('Create a new section');
+			$variables['title'] = Craft::t('app', 'Create a new section');
 		}
 
 		$types = [SectionType::Single, SectionType::Channel, SectionType::Structure];
 		$variables['typeOptions'] = [];
 
 		// Get these strings to be caught by our translation util:
-		// Craft::t("Channel") Craft::t("Structure") Craft::t("Single")
+		// Craft::t('app', 'Channel') Craft::t('app', 'Structure') Craft::t('app', 'Single')
 
 		foreach ($types as $type)
 		{
@@ -119,13 +119,13 @@ class SectionsController extends BaseController
 
 			if ($allowed)
 			{
-				$variables['typeOptions'][$type] = Craft::t(ucfirst($type));
+				$variables['typeOptions'][$type] = Craft::t('app', ucfirst($type));
 			}
 		}
 
 		if (!$variables['typeOptions'])
 		{
-			throw new Exception(Craft::t('Craft Client or Pro Edition is required to create any additional sections.'));
+			throw new Exception(Craft::t('app', 'Craft Client or Pro Edition is required to create any additional sections.'));
 		}
 
 		if (!$variables['section']->type)
@@ -146,8 +146,8 @@ class SectionsController extends BaseController
 		);
 
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
 		];
 
 		$this->renderTemplate('settings/sections/_edit', $variables);
@@ -219,12 +219,12 @@ class SectionsController extends BaseController
 		// Save it
 		if (Craft::$app->sections->saveSection($section))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Section saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
 			$this->redirectToPostedUrl($section);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save section.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
 		}
 
 		// Send the section back to the template
@@ -274,12 +274,12 @@ class SectionsController extends BaseController
 		}
 
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
 			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
 		];
 
-		$variables['title'] = Craft::t('{section} Entry Types', ['section' => $variables['section']->name]);
+		$variables['title'] = Craft::t('app', '{section} Entry Types', ['section' => $variables['section']->name]);
 
 		$this->renderTemplate('settings/sections/_entrytypes/index', $variables);
 	}
@@ -328,14 +328,14 @@ class SectionsController extends BaseController
 				$variables['entryType']->sectionId = $variables['section']->id;
 			}
 
-			$variables['title'] = Craft::t('Create a new {section} entry type', ['section' => $variables['section']->name]);
+			$variables['title'] = Craft::t('app', 'Create a new {section} entry type', ['section' => $variables['section']->name]);
 		}
 
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
 			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
-			['label' => Craft::t('Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')],
+			['label' => Craft::t('app', 'Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')],
 		];
 
 		$this->renderTemplate('settings/sections/_entrytypes/edit', $variables);
@@ -361,7 +361,7 @@ class SectionsController extends BaseController
 
 			if (!$entryType)
 			{
-				throw new Exception(Craft::t('No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
+				throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
 			}
 		}
 		else
@@ -385,12 +385,12 @@ class SectionsController extends BaseController
 		// Save it
 		if (Craft::$app->sections->saveEntryType($entryType))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Entry type saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
 			$this->redirectToPostedUrl($entryType);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save entry type.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
 		}
 
 		// Send the entry type back to the template

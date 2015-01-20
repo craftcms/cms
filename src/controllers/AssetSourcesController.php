@@ -98,7 +98,7 @@ class AssetSourcesController extends BaseController
 
 		if ($variables['isNewSource'])
 		{
-			$variables['title'] = Craft::t('Create a new asset source');
+			$variables['title'] = Craft::t('app', 'Create a new asset source');
 		}
 		else
 		{
@@ -106,14 +106,14 @@ class AssetSourcesController extends BaseController
 		}
 
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Assets'),   'url' => UrlHelper::getUrl('settings/assets')],
-			['label' => Craft::t('Sources'),  'url' => UrlHelper::getUrl('settings/assets')],
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Assets'),   'url' => UrlHelper::getUrl('settings/assets')],
+			['label' => Craft::t('app', 'Sources'),  'url' => UrlHelper::getUrl('settings/assets')],
 		];
 
 		$variables['tabs'] = [
-			'settings'    => ['label' => Craft::t('Settings'),     'url' => '#assetsource-settings'],
-			'fieldlayout' => ['label' => Craft::t('Field Layout'), 'url' => '#assetsource-fieldlayout'],
+			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#assetsource-settings'],
+			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#assetsource-fieldlayout'],
 		];
 
 		$this->renderTemplate('settings/assets/sources/_edit', $variables);
@@ -166,12 +166,12 @@ class AssetSourcesController extends BaseController
 		// Did it save?
 		if (Craft::$app->assetSources->saveSource($source))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Source saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Source saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save source.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save source.'));
 		}
 
 		// Send the source back to the template

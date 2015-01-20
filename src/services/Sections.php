@@ -390,7 +390,7 @@ class Sections extends Component
 
 		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
 		{
-			$section->addError('type', Craft::t('You can’t add any more {type} sections.', ['type' => Craft::t(ucfirst($section->type))]));
+			$section->addError('type', Craft::t('You can’t add any more {type} sections.', ['type' => Craft::t('app', ucfirst($section->type))]));
 		}
 
 		// Type-specific attributes

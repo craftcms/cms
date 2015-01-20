@@ -34,7 +34,7 @@ class User extends BaseElementType
 	 */
 	public function getName()
 	{
-		return Craft::t('Users');
+		return Craft::t('app', 'Users');
 	}
 
 	/**
@@ -65,11 +65,11 @@ class User extends BaseElementType
 	public function getStatuses()
 	{
 		return [
-			UserStatus::Active    => Craft::t('Active'),
-			UserStatus::Pending   => Craft::t('Pending'),
-			UserStatus::Locked    => Craft::t('Locked'),
-			UserStatus::Suspended => Craft::t('Suspended'),
-			UserStatus::Archived  => Craft::t('Archived')
+			UserStatus::Active    => Craft::t('app', 'Active'),
+			UserStatus::Pending   => Craft::t('app', 'Pending'),
+			UserStatus::Locked    => Craft::t('app', 'Locked'),
+			UserStatus::Suspended => Craft::t('app', 'Suspended'),
+			UserStatus::Archived  => Craft::t('app', 'Archived')
 		];
 	}
 
@@ -84,7 +84,7 @@ class User extends BaseElementType
 	{
 		$sources = [
 			'*' => [
-				'label' => Craft::t('All users'),
+				'label' => Craft::t('app', 'All users'),
 				'hasThumbs' => true
 			]
 		];
@@ -96,7 +96,7 @@ class User extends BaseElementType
 				$key = 'group:'.$group->id;
 
 				$sources[$key] = [
-					'label'     => Craft::t($group->name),
+					'label'     => Craft::t('app', $group->name),
 					'criteria'  => ['groupId' => $group->id],
 					'hasThumbs' => true
 				];
@@ -120,7 +120,7 @@ class User extends BaseElementType
 		// Edit
 		$editAction = Craft::$app->elements->getAction('Edit');
 		$editAction->setParams([
-			'label' => Craft::t('Edit user'),
+			'label' => Craft::t('app', 'Edit user'),
 		]);
 		$actions[] = $editAction;
 
@@ -170,22 +170,22 @@ class User extends BaseElementType
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
 			$attributes = [
-				'email'         => Craft::t('Email'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'email'         => Craft::t('app', 'Email'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
 			];
 		}
 		else
 		{
 			$attributes = [
-				'username'      => Craft::t('Username'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'email'         => Craft::t('Email'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'username'      => Craft::t('app', 'Username'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'email'         => Craft::t('app', 'Email'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
 			];
 		}
 
@@ -207,22 +207,22 @@ class User extends BaseElementType
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
 			$attributes = [
-				'email'         => Craft::t('Email'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'email'         => Craft::t('app', 'Email'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
 			];
 		}
 		else
 		{
 			$attributes = [
-				'username'      => Craft::t('Username'),
-				'firstName'     => Craft::t('First Name'),
-				'lastName'      => Craft::t('Last Name'),
-				'email'         => Craft::t('Email'),
-				'dateCreated'   => Craft::t('Join Date'),
-				'lastLoginDate' => Craft::t('Last Login'),
+				'username'      => Craft::t('app', 'Username'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'email'         => Craft::t('app', 'Email'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
 			];
 		}
 

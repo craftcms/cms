@@ -46,7 +46,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 			if (!$draft)
 			{
-				throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
+				throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
 			}
 		}
 		else
@@ -92,12 +92,12 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if ($draft->id && Craft::$app->entryRevisions->saveDraft($draft))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Draft saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
 			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save draft.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
 
 			// Send the draft back to the template
 			Craft::$app->getUrlManager()->setRouteVariables([
@@ -124,7 +124,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
+			throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id)
@@ -161,7 +161,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
+			throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id)
@@ -190,7 +190,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$draft)
 		{
-			throw new Exception(Craft::t('No draft exists with the ID “{id}”.', ['id' => $draftId]));
+			throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
 		}
 
 		// Permission enforcement
@@ -198,7 +198,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $draft->id]));
+			throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $draft->id]));
 		}
 
 		$this->enforceEditEntryPermissions($entry);
@@ -239,12 +239,12 @@ class EntryRevisionsController extends BaseEntriesController
 		// Publish the draft (finally!)
 		if (Craft::$app->entryRevisions->publishDraft($draft))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Draft published.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
 			$this->redirectToPostedUrl($draft);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t publish draft.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
 
 			// Send the draft back to the template
 			Craft::$app->getUrlManager()->setRouteVariables([
@@ -268,7 +268,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$version)
 		{
-			throw new Exception(Craft::t('No version exists with the ID “{id}”.', ['id' => $versionId]));
+			throw new Exception(Craft::t('app', 'No version exists with the ID “{id}”.', ['id' => $versionId]));
 		}
 
 		// Permission enforcement
@@ -276,7 +276,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		if (!$entry)
 		{
-			throw new Exception(Craft::t('No entry exists with the ID “{id}”.', ['id' => $version->id]));
+			throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $version->id]));
 		}
 
 		$this->enforceEditEntryPermissions($entry);
@@ -303,12 +303,12 @@ class EntryRevisionsController extends BaseEntriesController
 		// Revert to the version
 		if (Craft::$app->entryRevisions->revertEntryToVersion($version))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('Entry reverted to past version.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 			$this->redirectToPostedUrl($version);
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t revert entry to past version.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
 
 			// Send the version back to the template
 			Craft::$app->getUrlManager()->setRouteVariables([

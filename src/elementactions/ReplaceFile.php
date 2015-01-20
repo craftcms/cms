@@ -27,7 +27,7 @@ class ReplaceFile extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Replace file');
+		return Craft::t('app', 'Replace file');
 	}
 
 	/**

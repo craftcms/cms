@@ -141,12 +141,12 @@ class SystemSettingsController extends BaseController
 
 		if (Craft::$app->saveInfo($info))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('General settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save general settings.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
 			// Send the info back to the template
 			Craft::$app->getUrlManager()->setRouteVariables([
@@ -171,12 +171,12 @@ class SystemSettingsController extends BaseController
 		{
 			if (Craft::$app->systemSettings->saveSettings('email', $settings))
 			{
-				Craft::$app->getSession()->setNotice(Craft::t('Email settings saved.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
 		}
 
-		Craft::$app->getSession()->setError(Craft::t('Couldn’t save email settings.'));
+		Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
 
 		// Send the settings back to the template
 		Craft::$app->getUrlManager()->setRouteVariables([
@@ -212,7 +212,7 @@ class SystemSettingsController extends BaseController
 			}
 		}
 
-		$this->returnErrorJson(Craft::t('There was an error testing your email settings.'));
+		$this->returnErrorJson(Craft::t('app', 'There was an error testing your email settings.'));
 	}
 
 	/**
@@ -227,14 +227,14 @@ class SystemSettingsController extends BaseController
 	{
 		// Breadcrumbs
 		$variables['crumbs'] = [
-			['label' => Craft::t('Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('Globals'),  'url' => UrlHelper::getUrl('settings/globals')]
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Globals'),  'url' => UrlHelper::getUrl('settings/globals')]
 		];
 
 		// Tabs
 		$variables['tabs'] = [
-			'settings'    => ['label' => Craft::t('Settings'),     'url' => '#set-settings'],
-			'fieldlayout' => ['label' => Craft::t('Field Layout'), 'url' => '#set-fieldlayout']
+			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#set-settings'],
+			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#set-fieldlayout']
 		];
 
 		if (empty($variables['globalSet']))
@@ -260,7 +260,7 @@ class SystemSettingsController extends BaseController
 		}
 		else
 		{
-			$variables['title'] = Craft::t('Create a new global set');
+			$variables['title'] = Craft::t('app', 'Create a new global set');
 		}
 
 		// Render the template!

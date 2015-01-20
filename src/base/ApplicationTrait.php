@@ -262,7 +262,7 @@ trait ApplicationTrait
 
 			if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition != $edition))
 			{
-				throw new Exception(Craft::t('Craft {edition} is required to perform this action.', [
+				throw new Exception(Craft::t('app', 'Craft {edition} is required to perform this action.', [
 					'edition' => AppHelper::getEditionName($edition)
 				]));
 			}
@@ -464,7 +464,7 @@ trait ApplicationTrait
 
 				if (!$row)
 				{
-					throw new Exception(Craft::t('Craft appears to be installed but the info table is empty.'));
+					throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
 				}
 
 				$this->_info = new InfoModel($row);
@@ -553,38 +553,38 @@ trait ApplicationTrait
 
 			if (!$databaseServerName)
 			{
-				$messages[] = Craft::t('The database server name isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
 			}
 
 			if (!$databaseAuthName)
 			{
-				$messages[] = Craft::t('The database user name isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database user name isn’t set in your db config file.');
 			}
 
 			if (!$databaseName)
 			{
-				$messages[] = Craft::t('The database name isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
 			}
 
 			if (!$databasePort)
 			{
-				$messages[] = Craft::t('The database port isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database port isn’t set in your db config file.');
 			}
 
 			if (!$databaseCharset)
 			{
-				$messages[] = Craft::t('The database charset isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
 			}
 
 			if (!$databaseCollation)
 			{
-				$messages[] = Craft::t('The database collation isn’t set in your db config file.');
+				$messages[] = Craft::t('app', 'The database collation isn’t set in your db config file.');
 			}
 
 			if (!empty($messages))
 			{
 				$this->_isDbConfigValid = false;
-				throw new DbConnectException(Craft::t('Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
+				throw new DbConnectException(Craft::t('app', 'Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
 			}
 
 			$this->_isDbConfigValid = true;
@@ -734,22 +734,22 @@ trait ApplicationTrait
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
 			{
-				throw new DbConnectException(Craft::t('Craft requires the PDO extension to operate.'));
+				throw new DbConnectException(Craft::t('app', 'Craft requires the PDO extension to operate.'));
 			}
 			else if (!extension_loaded('pdo_mysql'))
 			{
-				throw new DbConnectException(Craft::t('Craft requires the PDO_MYSQL driver to operate.'));
+				throw new DbConnectException(Craft::t('app', 'Craft requires the PDO_MYSQL driver to operate.'));
 			}
 			else
 			{
 				Craft::error($e->getMessage());
-				throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+				throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 			}
 		}
 		catch (\Exception $e)
 		{
 			Craft::error($e->getMessage());
-			throw new DbConnectException(Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.'));
+			throw new DbConnectException(Craft::t('app', 'Craft can’t connect to the database with the credentials in craft/config/db.php.'));
 		}
 
 		$this->setIsDbConnectionValid(true);

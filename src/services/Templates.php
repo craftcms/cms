@@ -691,7 +691,7 @@ class Templates extends Component
 		{
 			if (!array_key_exists($message, $this->_translations))
 			{
-				$translation = Craft::t($message);
+				$translation = Craft::t('app', $message);
 
 				if ($translation != $message)
 				{

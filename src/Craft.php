@@ -76,31 +76,24 @@ class Craft extends Yii
 	 * Translates a given message into the specified language. If the config setting 'translationDebugOutput' is set,
 	 * the the output will be wrapped in a pair of '@' to help diagnose any missing translations.
 	 *
-	 * @param string      $message   The original source message.
-	 * @param array       $variables An associative array of key => value pairs to be applied to the message using `strtr`.
-	 * @param string|null $source    Defines which message source application component to use. Defaults to null,
-	 *                               meaning use 'coreMessages' for messages belonging to the 'yii' category and using
-	 *                               'messages' for messages belonging to Craft.
-	 * @param string|null $language  The target language. If set to null (default), Craft::$app->getLanguage() will be used.
-	 * @param string      $category  The message category. Please use only word letters. Note, category 'craft' is
-	 *                               reserved for Craft and 'yii' is reserved for the Yii framework.
+	 * @param string      $category The message category. Please use only word letters. Note, category 'craft' is
+     *                              reserved for Craft and 'yii' is reserved for the Yii framework.
+	 * @param string      $message  The original source message.
+	 * @param array       $params   An associative array of key => value pairs to be applied to the message using `strtr`.
+	 * @param string|null $language The target language. If set to null (default), Craft::$app->getLanguage() will be used.
+
 	 *
 	 * @return string|null The translated message, or null if the source key could not be found.
 	 */
-	public static function t($message, $variables = [], $source = null, $language = null, $category = 'craft')
+	public static function t($category, $message, $params = [], $language = null)
 	{
-		// Normalize the param keys
-		$normalizedVariables = [];
-		if (is_array($variables))
+		if (!$category)
 		{
-			foreach ($variables as $key => $value)
-			{
-				$key = '{'.trim($key, '{}').'}';
-				$normalizedVariables[$key] = $value;
-			}
+			$category = 'app';
 		}
 
-		$translation = parent::t($category, (string)$message, $normalizedVariables, $source, $language);
+		$translation = parent::t($category, $message, $params, $language);
+
 		if (Craft::$app->config->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';

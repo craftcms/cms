@@ -199,7 +199,7 @@ class Assets extends Component
 
 			if (!$fileRecord)
 			{
-				throw new Exception(Craft::t("No asset exists with the ID “{id}”.", ['id' => $file->id]));
+				throw new Exception(Craft::t('app', 'No asset exists with the ID “{id}”.', ['id' => $file->id]));
 			}
 		}
 		else
@@ -442,7 +442,7 @@ class Assets extends Component
 
 			if (empty($parentFolder))
 			{
-				throw new Exception(Craft::t("Can’t find the parent folder!"));
+				throw new Exception(Craft::t('app', 'Can’t find the parent folder!'));
 			}
 
 			$source = Craft::$app->assetSources->getSourceTypeById($parentFolder->sourceId);
@@ -474,7 +474,7 @@ class Assets extends Component
 
 			if (empty($folder))
 			{
-				throw new Exception(Craft::t("Can’t find the folder to rename!"));
+				throw new Exception(Craft::t('app', 'Can’t find the folder to rename!'));
 			}
 
 			$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
@@ -508,7 +508,7 @@ class Assets extends Component
 			if (!($folder && $newParentFolder))
 			{
 				$response = new AssetOperationResponseModel();
-				$response->setError(Craft::t("Error moving folder - either source or target folders cannot be found"));
+				$response->setError(Craft::t('app', 'Error moving folder - either source or target folders cannot be found'));
 			}
 			else
 			{
@@ -541,7 +541,7 @@ class Assets extends Component
 
 			if (empty($folder))
 			{
-				throw new Exception(Craft::t("Can’t find the folder!"));
+				throw new Exception(Craft::t('app', 'Can’t find the folder!'));
 			}
 
 			$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
@@ -878,7 +878,7 @@ class Assets extends Component
 	{
 		if ($filename && is_array($fileIds) && count($fileIds) > 1)
 		{
-			throw new Exception(Craft::t("It’s not possible to rename multiple files!"));
+			throw new Exception(Craft::t('app', 'It’s not possible to rename multiple files!'));
 		}
 
 		if (!is_array($fileIds))
@@ -903,7 +903,7 @@ class Assets extends Component
 
 		if ($parent && $folder->parentId && !$newSourceType->folderExists(($parent ? $parent->path : ''), $folder->name))
 		{
-			$response->setError(Craft::t("The target folder does not exist!"));
+			$response->setError(Craft::t('app', 'The target folder does not exist!'));
 		}
 		else
 		{
@@ -943,7 +943,7 @@ class Assets extends Component
 				}
 				else
 				{
-					$response->setError(Craft::t("There was an error moving the file {file}.", ['file' => $file->filename]));
+					$response->setError(Craft::t('app', 'There was an error moving the file {file}.', ['file' => $file->filename]));
 				}
 			}
 		}

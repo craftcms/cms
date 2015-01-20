@@ -29,7 +29,7 @@ class Delete extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Delete…');
+		return Craft::t('app', 'Delete…');
 	}
 
 	/**

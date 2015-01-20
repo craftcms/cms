@@ -60,12 +60,12 @@ class UserSettingsController extends BaseController
 			$permissions = Craft::$app->getRequest()->getBodyParam('permissions', []);
 			Craft::$app->userPermissions->saveGroupPermissions($group->id, $permissions);
 
-			Craft::$app->getSession()->setNotice(Craft::t('Group saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save group.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
 		}
 
 		// Send the group back to the template
@@ -106,12 +106,12 @@ class UserSettingsController extends BaseController
 
 		if (Craft::$app->systemSettings->saveSettings('users', $settings))
 		{
-			Craft::$app->getSession()->setNotice(Craft::t('User settings saved.'));
+			Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			Craft::$app->getSession()->setError(Craft::t('Couldn’t save user settings.'));
+			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
 
 			// Send the settings back to the template
 			Craft::$app->getUrlManager()->setRouteVariables([

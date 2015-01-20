@@ -133,11 +133,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			if ($limit == 1)
 			{
-				$errors[] = Craft::t('There can’t be more than one selection.');
+				$errors[] = Craft::t('app', 'There can’t be more than one selection.');
 			}
 			else
 			{
-				$errors[] = Craft::t('There can’t be more than {limit} selections.', ['limit' => $limit]);
+				$errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $limit]);
 			}
 		}
 
@@ -287,7 +287,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		}
 		else
 		{
-			return '<p class="light">'.Craft::t('Nothing selected.').'</p>';
+			return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
 		}
 	}
 
@@ -301,7 +301,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getAddButtonLabel()
 	{
-		return Craft::t('Add {type}', [
+		return Craft::t('app', 'Add {type}', [
 			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
 		]);
 	}
@@ -318,7 +318,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		if (!$elementType)
 		{
-			throw new Exception(Craft::t('No element type exists with the class “{class}”', ['class' => $this->elementType]));
+			throw new Exception(Craft::t('app', 'No element type exists with the class “{class}”', ['class' => $this->elementType]));
 		}
 
 		return $elementType;
@@ -428,7 +428,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		if (Craft::$app->isLocalized() && $this->getElementType()->isLocalized())
 		{
 			$localeOptions = [
-				['label' => Craft::t('Same as source'), 'value' => null]
+				['label' => Craft::t('app', 'Same as source'), 'value' => null]
 			];
 
 			foreach (Craft::$app->getI18n()->getSiteLocales() as $locale)
@@ -438,8 +438,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', [
 				[
-					'label' => Craft::t('Target Locale'),
-					'instructions' => Craft::t('Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase($this->getName())]),
+					'label' => Craft::t('app', 'Target Locale'),
+					'instructions' => Craft::t('app', 'Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase($this->getName())]),
 					'id' => 'targetLocale',
 					'name' => 'targetLocale',
 					'options' => $localeOptions,

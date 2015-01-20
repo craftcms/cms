@@ -30,7 +30,7 @@ class SuspendUsers extends BaseElementAction
 	 */
 	public function getName()
 	{
-		return Craft::t('Suspend');
+		return Craft::t('app', 'Suspend');
 	}
 
 	/**
@@ -92,7 +92,7 @@ EOT;
 			}
 		}
 
-		$this->setMessage(Craft::t('Users suspended.'));
+		$this->setMessage(Craft::t('app', 'Users suspended.'));
 
 		return true;
 	}
