@@ -864,7 +864,7 @@ class Templates extends Component
 		if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->getRequest()->getIsActionRequest()))
 		{
 			// Sanitize
-			$name = Craft::$app->getRequest()->decodePathInfo($name);
+			$name = StringHelper::convertToUtf8($name);
 
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = StringHelper::toLowerCase(array_shift($parts));
