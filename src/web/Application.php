@@ -14,7 +14,7 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\LocaleData;
-use yii\log\FileTarget;
+use craft\app\log\FileTarget;
 
 /**
  * Craft Web Application class
@@ -770,8 +770,8 @@ class Application extends \yii\web\Application
 	{
 		$dispatcher = $this->getLog();
 
-		// Don't setup a target if it's shouldExtendSession request.
-		if (!$this->getUser()->shouldExtendSession())
+		// Don't setup a target if it's an enabled session.
+		if ($this->getUser()->enableSession)
 		{
 			$fileTarget = new FileTarget();
 			$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
