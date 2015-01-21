@@ -162,19 +162,6 @@ class Application extends \yii\web\Application
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
-		// If we're not in devMode, or it's a 'dontEnableSession' request, we're going to remove some logging routes.
-		if (!$this->config->get('devMode') || ($this->isInstalled() && !$this->getUser()->shouldExtendSession()))
-		{
-			$this->getLog()->removeRoute('WebLogRoute');
-			$this->getLog()->removeRoute('ProfileLogRoute');
-		}
-
-		// Additionally, we don't want these in the log files at all.
-		if ($this->isInstalled() && !$this->getUser()->shouldExtendSession())
-		{
-			$this->getLog()->removeRoute('FileLogRoute');
-		}
-
 		// If this is a CP request, prevent robots from indexing/following the page
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
 		$request = $this->getRequest();
@@ -489,9 +476,6 @@ class Application extends \yii\web\Application
 
 		if ($request->getIsResourceRequest())
 		{
-			// Don't want to log anything on a resource request.
-			$this->getLog()->removeRoute('FileLogRoute');
-
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($request->getSegments()), 1);
 			$path = implode('/', $segs);
@@ -792,17 +776,22 @@ class Application extends \yii\web\Application
 	{
 		$dispatcher = $this->getLog();
 
-		$fileTarget = new FileTarget();
-		$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
-		$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
-		$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
-
-		if (!Craft::$app->config->get('devMode'))
+		// Don't setup a target if it's shouldExtendSession request.
+		if (!$this->getUser()->shouldExtendSession())
 		{
-			$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
+			$fileTarget = new FileTarget();
+			$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
+			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
+			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
+
+			if (!Craft::$app->config->get('devMode'))
+			{
+				$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
+			}
+
+			$dispatcher->targets[] = $fileTarget;
 		}
 
-		$dispatcher->targets[] = $fileTarget;
 		$this->set('log', $dispatcher);
 	}
 }
