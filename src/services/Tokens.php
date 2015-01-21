@@ -119,10 +119,8 @@ class Tokens extends Component
 			// Figure out where we should route the request
 			$route = $result['route'];
 
-			if (is_string($route) && StringHelper::length($route) && (StringHelper::containsAny($route[0], array('[', '{'))))
-			{
-				$route = JsonHelper::decode($route);
-			}
+			// Might be JSON, might not be
+			$route = JsonHelper::encodeIfJson($route);
 
 			return $route;
 		}
