@@ -17,9 +17,9 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\log\FileTarget;
-use craft\app\log\Logger;
 use craft\app\models\Info as InfoModel;
 use yii\base\InvalidConfigException;
+use yii\log\Logger;
 
 /**
  * ApplicationTrait

@@ -142,9 +142,6 @@ class DbBackup
 			$command = Craft::$app->getDb()->createCommand($statement);
 			$command->execute();
 		}
-
-		// Re-enable.
-		Craft::getLogger()->autoDump = true;
 	}
 
 	/**
