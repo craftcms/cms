@@ -46,7 +46,6 @@ use yii\log\FileTarget;
  * @property \craft\app\services\Images           $images           The images service.
  * @property \craft\app\services\Install          $install          The install service.
  * @property \craft\app\services\Localization     $localization     The localization service.
- * @property \craft\app\logging\LogRouter         $log              The log dispatcher component.
  * @property \craft\app\services\Matrix           $matrix           The matrix service.
  * @property \craft\app\services\Migrations       $migrations       The migrations service.
  * @property \craft\app\services\Path             $path             The path service.
@@ -130,12 +129,7 @@ class Application extends \yii\web\Application
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
-		Craft::error('error!', __METHOD__);
-		Craft::warning('warning!', __METHOD__);
-		Craft::info('info', __METHOD__);
-
-
-		// Initialize the Cache service, Request and LogRouter right away (order is important)
+		// Initialize the Cache service, Request and Logger right away (order is important)
 		$this->getCache();
 		$this->getRequest();
 		$this->_processLogTargets();
