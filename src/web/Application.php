@@ -204,12 +204,7 @@ class Application extends \yii\web\Application
 
 		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
-		if (
-			$this->updates->isCraftDbMigrationNeeded() ||
-			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
-			$request->getActionSegments() == ['update', 'cleanUp'] ||
-			$request->getActionSegments() == ['update', 'rollback']
-		)
+		if ($this->_isCraftUpdating())
 		{
 			$this->_processUpdateLogic();
 		}
@@ -762,6 +757,27 @@ class Application extends \yii\web\Application
 	}
 
 	/**
+	 * Returns whether Craft is in the middle of an update.
+	 *
+	 * @return bool
+	 */
+	private function _isCraftUpdating()
+	{
+		$request = $this->getRequest();
+
+		if ($this->updates->isCraftDbMigrationNeeded() ||
+			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
+			$request->getActionSegments() == ['update', 'cleanUp'] ||
+			$request->getActionSegments() == ['update', 'rollback']
+		)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Configures the available log targets.
 	 *
 	 * @throws \yii\base\InvalidConfigException
@@ -778,7 +794,7 @@ class Application extends \yii\web\Application
 			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
 			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
 
-			if (!Craft::$app->config->get('devMode'))
+			if (!Craft::$app->config->get('devMode') || !$this->_isCraftUpdating())
 			{
 				$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
 			}
