@@ -17,9 +17,9 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\services\Plugins;
 use craft\app\templating\StringTemplate;
 use craft\app\templating\twigextensions\CraftTwigExtension;
+use craft\app\templating\twigextensions\TemplateLoader;
 use yii\base\Component;
 
 /**
@@ -151,11 +151,12 @@ class Templates extends Component
 	{
 		if (!$loaderClass)
 		{
-			$loaderClass = __NAMESPACE__.'\\TemplateLoader';
+			$loaderClass = '\\craft\\app\\templating\\twigextensions\\TemplateLoader';
 		}
 
 		if (!isset($this->_twigs[$loaderClass]))
 		{
+			/* @var $loader TemplateLoader */
 			$loader = new $loaderClass();
 			$options = $this->_getTwigOptions();
 
@@ -1150,7 +1151,7 @@ class Templates extends Component
 		if (!isset($this->_twigOptions))
 		{
 			$this->_twigOptions = [
-				'base_template_class' => 'Craft\BaseTemplate',
+				'base_template_class' => '\\craft\\app\\templating\\BaseTemplate',
 				'cache'               => Craft::$app->path->getCompiledTemplatesPath(),
 				'auto_reload'         => true,
 			];

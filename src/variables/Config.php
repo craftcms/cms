@@ -29,7 +29,7 @@ class Config
 	 */
 	public function __isset($name)
 	{
-		return Craft::$app->config->exists($name, ConfigCategory::General);
+		return \Craft::$app->config->exists($name, ConfigCategory::General);
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Config
 	 */
 	public function __get($name)
 	{
-		return Craft::$app->config->get($name, ConfigCategory::General);
+		return \Craft::$app->config->get($name, ConfigCategory::General);
 	}
 
 	/**
@@ -54,7 +54,7 @@ class Config
 	 */
 	public function get($name, $file = 'general')
 	{
-		return Craft::$app->config->get($name, $file);
+		return \Craft::$app->config->get($name, $file);
 	}
 
 	/**
@@ -64,7 +64,7 @@ class Config
 	 */
 	public function usePathInfo()
 	{
-		return Craft::$app->config->usePathInfo();
+		return \Craft::$app->config->usePathInfo();
 	}
 
 	/**
@@ -74,7 +74,7 @@ class Config
 	 */
 	public function omitScriptNameInUrls()
 	{
-		return Craft::$app->config->omitScriptNameInUrls();
+		return \Craft::$app->config->omitScriptNameInUrls();
 	}
 
 	/**
@@ -84,6 +84,6 @@ class Config
 	 */
 	public function getResourceTrigger()
 	{
-		return Craft::$app->config->getResourceTrigger();
+		return \Craft::$app->config->getResourceTrigger();
 	}
 }

@@ -39,6 +39,11 @@ class Request extends \yii\web\Request
 	// Traits
 	// =========================================================================
 
+	public function redirect()
+	{
+
+	}
+
 	use RequestTrait;
 
 	// Properties

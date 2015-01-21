@@ -371,7 +371,7 @@ class Path extends Component
 	 */
 	public function getCpTemplatesPath()
 	{
-		return $this->getAppPath().'templates';
+		return $this->getAppPath().'/templates';
 	}
 
 	/**

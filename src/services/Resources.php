@@ -273,7 +273,7 @@ class Resources extends Component
 					{
 						throw new HttpException(404, $exception->getMessage());
 					}
-					Craft::$app->getRequest()->redirect($url, true, 302);
+					Craft::$app->getResponse()->redirect($url, true, 302);
 					Craft::$app->end();
 				}
 			}

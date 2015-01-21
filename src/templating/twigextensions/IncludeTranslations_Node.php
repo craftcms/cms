@@ -29,7 +29,7 @@ class IncludeTranslations_Node extends \Twig_Node
 	{
 		$compiler
 			->addDebugInfo($this)
-			->write("\craft\app\Craft::$app->templates->includeTranslations(\n");
+			->write("\\Craft::\$app->templates->includeTranslations(\n");
 
 		foreach ($this->nodes as $index => $node)
 		{

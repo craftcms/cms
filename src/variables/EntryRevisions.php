@@ -11,7 +11,7 @@ use Craft;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
 
-Craft::$app->requireEdition(Craft::Client);
+\Craft::$app->requireEdition(\Craft::Client);
 
 /**
  * Class EntryRevisions variable.
@@ -37,7 +37,7 @@ class EntryRevisions
 	 */
 	public function getDraftsByEntryId($entryId, $localeId = null)
 	{
-		return Craft::$app->entryRevisions->getDraftsByEntryId($entryId, $localeId);
+		return \Craft::$app->entryRevisions->getDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
@@ -50,7 +50,7 @@ class EntryRevisions
 	 */
 	public function getEditableDraftsByEntryId($entryId, $localeId = null)
 	{
-		return Craft::$app->entryRevisions->getEditableDraftsByEntryId($entryId, $localeId);
+		return \Craft::$app->entryRevisions->getEditableDraftsByEntryId($entryId, $localeId);
 	}
 
 	/**
@@ -62,7 +62,7 @@ class EntryRevisions
 	 */
 	public function getDraftById($draftId)
 	{
-		return Craft::$app->entryRevisions->getDraftById($draftId);
+		return \Craft::$app->entryRevisions->getDraftById($draftId);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class EntryRevisions
 	 */
 	public function getDraftByOffset($entryId, $offset = 0)
 	{
-		return Craft::$app->entryRevisions->getDraftByOffset($entryId, $offset);
+		return \Craft::$app->entryRevisions->getDraftByOffset($entryId, $offset);
 	}
 
 	// Versions
@@ -91,7 +91,7 @@ class EntryRevisions
 	 */
 	public function getVersionsByEntryId($entryId, $localeId)
 	{
-		return Craft::$app->entryRevisions->getVersionsByEntryId($entryId, $localeId, 10);
+		return \Craft::$app->entryRevisions->getVersionsByEntryId($entryId, $localeId, 10);
 	}
 
 	/**
@@ -103,7 +103,7 @@ class EntryRevisions
 	 */
 	public function getVersionById($versionId)
 	{
-		return Craft::$app->entryRevisions->getVersionById($versionId);
+		return \Craft::$app->entryRevisions->getVersionById($versionId);
 	}
 
 	/**
@@ -116,6 +116,6 @@ class EntryRevisions
 	 */
 	public function getVersionByOffset($entryId, $offset = 0)
 	{
-		return Craft::$app->entryRevisions->getVersionByOffset($entryId, $offset);
+		return \Craft::$app->entryRevisions->getVersionByOffset($entryId, $offset);
 	}
 }

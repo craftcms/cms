@@ -516,7 +516,7 @@ class CategoriesController extends Controller
 		]);
 
 		$url = UrlHelper::getUrlWithToken($category->getUrl(), $token);
-		Craft::$app->getRequest()->redirect($url);
+		Craft::$app->getResponse()->redirect($url);
 	}
 
 	/**

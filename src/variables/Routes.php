@@ -29,7 +29,7 @@ class Routes
 	{
 		$routes = [];
 
-		$results = Craft::$app->getDb()->createCommand()
+		$results = \Craft::$app->getDb()->createCommand()
 			->select('id, locale, urlParts, template')
 			->from('routes')
 			->order('sortOrder')

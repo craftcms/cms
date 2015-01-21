@@ -39,6 +39,6 @@ class SystemSettings
 	 */
 	public function __get($category)
 	{
-		return Craft::$app->systemSettings->getSettings($category);
+		return \Craft::$app->systemSettings->getSettings($category);
 	}
 }

@@ -29,6 +29,6 @@ class RequireAdmin_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write("\craft\app\Craft::$app->getController()->requireAdmin();\n");
+		    ->write("\\Craft::$app->getController()->requireAdmin();\n");
 	}
 }

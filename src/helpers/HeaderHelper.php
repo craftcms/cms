@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use yii\helpers\FileHelper;
 
 /**
  * Class HeaderHelper
@@ -69,16 +70,13 @@ class HeaderHelper
 	 */
 	public static function setContentTypeByExtension($extension)
 	{
-		$extension = strtolower($extension);
-		$mimeTypes = require(Craft::getAlias('app.framework.utils.mimeTypes').'.php');
+		$mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 
-		if (!isset($mimeTypes[$extension]))
+		if (!$mimeType)
 		{
 			Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', __METHOD__);
 			return false;
 		}
-
-		$mimeType = $mimeTypes[$extension];
 
 		if (static::setHeader(['Content-Type' => $mimeType.'; charset=utf-8']))
 		{

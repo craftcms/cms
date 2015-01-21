@@ -10,6 +10,7 @@ namespace craft\app\variables;
 use craft\app\enums\ElementType;
 use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use yii\base\Object;
 
 /**
  * Contains all global variables.
@@ -17,7 +18,7 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Craft
+class Craft extends Object
 {
 	// Properties
 	// =========================================================================
@@ -37,7 +38,7 @@ class Craft
 	 */
 	public function __get($name)
 	{
-		$plugin = Craft::$app->plugins->getPlugin($name);
+		$plugin = \Craft::$app->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->isEnabled)
 		{
@@ -47,7 +48,7 @@ class Craft
 			// Variables should already be imported by the plugin service, but let's double check.
 			if (!class_exists($className))
 			{
-				Craft::import('plugins.'.StringHelper::toLowerCase($pluginName).'.variables.'.$pluginName.'Variable');
+				\Craft::import('plugins.'.StringHelper::toLowerCase($pluginName).'.variables.'.$pluginName.'Variable');
 			}
 
 			return new $className;
@@ -61,7 +62,7 @@ class Craft
 	 */
 	public function __isset($name)
 	{
-		$plugin = Craft::$app->plugins->getPlugin($name);
+		$plugin = \Craft::$app->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->isEnabled)
 		{
@@ -80,7 +81,7 @@ class Craft
 	 */
 	public function locale()
 	{
-		return Craft::$app->language;
+		return \Craft::$app->language;
 	}
 
 	/**
@@ -90,7 +91,7 @@ class Craft
 	 */
 	public function isLocalized()
 	{
-		return Craft::$app->isLocalized();
+		return \Craft::$app->isLocalized();
 	}
 
 	// Template variable classes
@@ -99,7 +100,7 @@ class Craft
 	/**
 	 * @return App
 	 */
-	public function app()
+	public function getApp()
 	{
 		return new App();
 	}
@@ -111,7 +112,7 @@ class Craft
 	 */
 	public function assets($criteria = null)
 	{
-		return Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
 	}
 
 	/**
@@ -121,7 +122,7 @@ class Craft
 	 */
 	public function categories($criteria = null)
 	{
-		return Craft::$app->elements->getCriteria(ElementType::Category, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementType::Category, $criteria);
 	}
 
 	/**
@@ -169,7 +170,7 @@ class Craft
 	 */
 	public function emailMessages()
 	{
-		if (Craft::$app->getEdition() >= \craft\app\Craft::Client)
+		if (\Craft::$app->getEdition() >= \Craft::Client)
 		{
 			return new EmailMessages();
 		}
@@ -182,7 +183,7 @@ class Craft
 	 */
 	public function entries($criteria = null)
 	{
-		return Craft::$app->elements->getCriteria(ElementType::Entry, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementType::Entry, $criteria);
 	}
 
 	/**
@@ -198,7 +199,7 @@ class Craft
 	 */
 	public function entryRevisions()
 	{
-		if (Craft::$app->getEdition() >= \craft\app\Craft::Client)
+		if (\Craft::$app->getEdition() >= \Craft::Client)
 		{
 			return new EntryRevisions();
 		}
@@ -233,7 +234,7 @@ class Craft
 	 */
 	public function rebrand()
 	{
-		if (Craft::$app->getEdition() >= \craft\app\Craft::Client)
+		if (\Craft::$app->getEdition() >= \Craft::Client)
 		{
 			if (!isset($this->_rebrandVariable))
 			{
@@ -283,7 +284,7 @@ class Craft
 	 */
 	public function tags($criteria = null)
 	{
-		return Craft::$app->elements->getCriteria(ElementType::Tag, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementType::Tag, $criteria);
 	}
 
 	/**
@@ -309,9 +310,9 @@ class Craft
 	 */
 	public function users($criteria = null)
 	{
-		if (Craft::$app->getEdition() == \craft\app\Craft::Pro)
+		if (\Craft::$app->getEdition() == \Craft::Pro)
 		{
-			return Craft::$app->elements->getCriteria(ElementType::User, $criteria);
+			return \Craft::$app->elements->getCriteria(ElementType::User, $criteria);
 		}
 	}
 
@@ -320,7 +321,7 @@ class Craft
 	 */
 	public function userGroups()
 	{
-		if (Craft::$app->getEdition() == \craft\app\Craft::Pro)
+		if (\Craft::$app->getEdition() == \Craft::Pro)
 		{
 			return new UserGroups();
 		}
@@ -331,7 +332,7 @@ class Craft
 	 */
 	public function userPermissions()
 	{
-		if (Craft::$app->getEdition() == \craft\app\Craft::Pro)
+		if (\Craft::$app->getEdition() == \Craft::Pro)
 		{
 			return new UserPermissions();
 		}

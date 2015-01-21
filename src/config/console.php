@@ -22,5 +22,5 @@ return [
 		'request' => 'craft\app\console\Request',
 	],
 
-	'commandPath' => craft\app\Craft::getAlias('system.cli.commands.*'),
+	'commandPath' => \Craft::getAlias('system.cli.commands.*'),
 ];

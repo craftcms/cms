@@ -46,8 +46,8 @@ class Cache_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write("\$cacheService = \craft\app\Craft::$app->templateCache;\n")
-			->write("\$ignoreCache{$n} = (\craft\app\Craft::$app->getRequest()->getIsLivePreview() || \craft\app\Craft::$app->getRequest()->getToken()");
+			->write("\$cacheService = \\Craft::$app->templateCache;\n")
+			->write("\$ignoreCache{$n} = (\\Craft::$app->getRequest()->getIsLivePreview() || \craft\app\Craft::$app->getRequest()->getToken()");
 
 		if ($conditions)
 		{

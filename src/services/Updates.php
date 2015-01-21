@@ -610,7 +610,7 @@ class Updates extends Component
 	 */
 	public function isSchemaVersionCompatible()
 	{
-		return version_compare(CRAFT_SCHEMA_VERSION, Craft::$app->getSchemaVersion(), '>=');
+		return version_compare(Craft::$app->schemaVersion, Craft::$app->getInfo('schemaVersion'), '>=');
 	}
 
 	/**
@@ -620,7 +620,7 @@ class Updates extends Component
 	 */
 	public function isCraftDbMigrationNeeded()
 	{
-		return version_compare(CRAFT_SCHEMA_VERSION, Craft::$app->getSchemaVersion(), '>');
+		return version_compare(Craft::$app->schemaVersion, Craft::$app->getInfo('schemaVersion'), '>');
 	}
 
 	/**

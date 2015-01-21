@@ -27,7 +27,7 @@ class UserSession
 	 */
 	public function isLoggedIn()
 	{
-		return !Craft::$app->getUser()->getIsGuest();
+		return !\Craft::$app->getUser()->getIsGuest();
 	}
 
 	/**
@@ -37,7 +37,7 @@ class UserSession
 	 */
 	public function getUser()
 	{
-		return Craft::$app->getUser()->getIdentity();
+		return \Craft::$app->getUser()->getIdentity();
 	}
 
 	/**
@@ -47,9 +47,9 @@ class UserSession
 	 */
 	public function getRemainingSessionTime()
 	{
-		if (Craft::$app->isInstalled())
+		if (\Craft::$app->isInstalled())
 		{
-			return Craft::$app->getUser()->getRemainingSessionTime();
+			return \Craft::$app->getUser()->getRemainingSessionTime();
 		}
 		else
 		{
@@ -64,7 +64,7 @@ class UserSession
 	 */
 	public function getRememberedUsername()
 	{
-		return Craft::$app->getUser()->getRememberedUsername();
+		return \Craft::$app->getUser()->getRememberedUsername();
 	}
 
 	/**
@@ -76,7 +76,7 @@ class UserSession
 	 */
 	public function getReturnUrl($defaultUrl = null)
 	{
-		return Craft::$app->getUser()->getReturnUrl($defaultUrl);
+		return \Craft::$app->getUser()->getReturnUrl($defaultUrl);
 	}
 
 	/**
@@ -88,7 +88,7 @@ class UserSession
 	 */
 	public function getFlashes($delete = true)
 	{
-		return Craft::$app->getSession()->getAllFlashes($delete);
+		return \Craft::$app->getSession()->getAllFlashes($delete);
 	}
 
 	/**
@@ -102,7 +102,7 @@ class UserSession
 	 */
 	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
-		return Craft::$app->getUser()->getFlash($key, $defaultValue, $delete);
+		return \Craft::$app->getUser()->getFlash($key, $defaultValue, $delete);
 	}
 
 	/**
@@ -114,6 +114,6 @@ class UserSession
 	 */
 	public function hasFlash($key)
 	{
-		return Craft::$app->getUser()->hasFlash($key);
+		return \Craft::$app->getUser()->hasFlash($key);
 	}
 }

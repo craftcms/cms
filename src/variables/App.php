@@ -29,7 +29,7 @@ class App
 	 */
 	public function getEdition()
 	{
-		return Craft::$app->getEdition();
+		return \Craft::$app->getEdition();
 	}
 
 	/**
@@ -39,7 +39,7 @@ class App
 	 */
 	public function getEditionName()
 	{
-		return Craft::$app->getEditionName();
+		return \Craft::$app->getEditionName();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class App
 	 */
 	public function getLicensedEdition()
 	{
-		return Craft::$app->getLicensedEdition();
+		return \Craft::$app->getLicensedEdition();
 	}
 
 	/**
@@ -59,7 +59,7 @@ class App
 	 */
 	public function getLicensedEditionName()
 	{
-		return Craft::$app->getLicensedEditionName();
+		return \Craft::$app->getLicensedEditionName();
 	}
 
 	/**
@@ -69,7 +69,7 @@ class App
 	 */
 	public function hasWrongEdition()
 	{
-		return Craft::$app->hasWrongEdition();
+		return \Craft::$app->hasWrongEdition();
 	}
 
 	/**
@@ -79,7 +79,7 @@ class App
 	 */
 	public function canUpgradeEdition()
 	{
-		return Craft::$app->canUpgradeEdition();
+		return \Craft::$app->canUpgradeEdition();
 	}
 
 	/**
@@ -90,7 +90,7 @@ class App
 	 */
 	public function canTestEditions()
 	{
-		return Craft::$app->canTestEditions();
+		return \Craft::$app->canTestEditions();
 	}
 
 	/**
@@ -100,7 +100,7 @@ class App
 	 */
 	public function getVersion()
 	{
-		return Craft::$app->getVersion();
+		return \Craft::$app->getVersion();
 	}
 
 	/**
@@ -110,7 +110,7 @@ class App
 	 */
 	public function getBuild()
 	{
-		return Craft::$app->getBuild();
+		return \Craft::$app->getBuild();
 	}
 
 	/**
@@ -120,7 +120,7 @@ class App
 	 */
 	public function getReleaseDate()
 	{
-		return Craft::$app->getReleaseDate();
+		return \Craft::$app->getReleaseDate();
 	}
 
 	/**
@@ -130,7 +130,7 @@ class App
 	 */
 	public function getSiteName()
 	{
-		return Craft::$app->getSiteName();
+		return \Craft::$app->getSiteName();
 	}
 
 	/**
@@ -140,7 +140,7 @@ class App
 	 */
 	public function getSiteUrl()
 	{
-		return Craft::$app->getSiteUrl();
+		return \Craft::$app->getSiteUrl();
 	}
 
 	/**
@@ -150,7 +150,7 @@ class App
 	 */
 	public function getSiteUid()
 	{
-		return Craft::$app->getSiteUid();
+		return \Craft::$app->getSiteUid();
 	}
 
 	/**
@@ -160,7 +160,7 @@ class App
 	 */
 	public function getLocale()
 	{
-		return Craft::$app->getLanguage();
+		return \Craft::$app->getLanguage();
 	}
 
 	/**
@@ -170,7 +170,7 @@ class App
 	 */
 	public function isSystemOn()
 	{
-		return Craft::$app->isSystemOn();
+		return \Craft::$app->isSystemOn();
 	}
 
 	/**
@@ -180,7 +180,7 @@ class App
 	 */
 	public function isUpdateInfoCached()
 	{
-		return Craft::$app->updates->isUpdateInfoCached();
+		return \Craft::$app->updates->isUpdateInfoCached();
 	}
 
 	/**
@@ -190,7 +190,7 @@ class App
 	 */
 	public function getTotalAvailableUpdates()
 	{
-		return Craft::$app->updates->getTotalAvailableUpdates();
+		return \Craft::$app->updates->getTotalAvailableUpdates();
 	}
 
 	/**
@@ -200,7 +200,7 @@ class App
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return Craft::$app->updates->isCriticalUpdateAvailable();
+		return \Craft::$app->updates->isCriticalUpdateAvailable();
 	}
 
 	/**
@@ -221,7 +221,7 @@ class App
 			$uploadInBytes = min($uploadInBytes, $memoryLimit);
 		}
 
-		$configLimit = (int) Craft::$app->config->get('maxUploadFileSize');
+		$configLimit = (int) \Craft::$app->config->get('maxUploadFileSize');
 
 		if ($configLimit)
 		{
