@@ -49,6 +49,23 @@ class User extends BaseElementModel implements IdentityInterface
 	// =========================================================================
 
 	/**
+	 * Use the full name or username as the string representation.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		if (Craft::$app->config->get('useEmailAsUsername'))
+		{
+			return $this->email;
+		}
+		else
+		{
+			return $this->username;
+		}
+	}
+
+	/**
 	 * @inheritDoc IdentityInterface::findIdentity()
 	 *
 	 * @param string|int $id
@@ -92,23 +109,6 @@ class User extends BaseElementModel implements IdentityInterface
 		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
 		{
 			return $data;
-		}
-	}
-
-	/**
-	 * Use the full name or username as the string representation.
-	 *
-	 * @return string
-	 */
-	public function __toString()
-	{
-		if (Craft::$app->config->get('useEmailAsUsername'))
-		{
-			return $this->email;
-		}
-		else
-		{
-			return $this->username;
 		}
 	}
 
