@@ -12,7 +12,6 @@ use craft\app\base\ApplicationTrait;
 use craft\app\etc\console\ConsoleCommandRunner;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\logging\Logger;
 
 /**
  * Craft Console Application class
@@ -53,7 +52,7 @@ class Application extends \yii\console\Application
 
 		// Initialize Cache and Logger right away (order is important)
 		$this->getCache();
-		$this->getLog();
+		$this->processLogTargets();
 
 		// So we can try to translate Yii framework strings
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);

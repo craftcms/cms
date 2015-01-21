@@ -16,6 +16,8 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\log\FileTarget;
+use craft\app\log\Logger;
 use craft\app\models\Info as InfoModel;
 use yii\base\InvalidConfigException;
 
@@ -613,6 +615,34 @@ trait ApplicationTrait
 		$this->_isDbConnectionValid = $value;
 	}
 
+	/**
+	 * Configures the available log targets.
+	 *
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function processLogTargets()
+	{
+		$dispatcher = $this->getLog();
+
+		// Don't setup a target if it's an enabled session.
+		if ($this->getUser()->enableSession)
+		{
+			$fileTarget = new FileTarget();
+			$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
+			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
+			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
+
+			if (!Craft::$app->config->get('devMode') || !$this->_isCraftUpdating())
+			{
+				$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
+			}
+
+			$dispatcher->targets[] = $fileTarget;
+		}
+
+		$this->set('log', $dispatcher);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -1000,5 +1030,26 @@ trait ApplicationTrait
 				$this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
 			}
 		}
+	}
+
+	/**
+	 * Returns whether Craft is in the middle of an update.
+	 *
+	 * @return bool
+	 */
+	private function _isCraftUpdating()
+	{
+		$request = $this->getRequest();
+
+		if ($this->updates->isCraftDbMigrationNeeded() ||
+			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
+			$request->getActionSegments() == ['update', 'cleanUp'] ||
+			$request->getActionSegments() == ['update', 'rollback']
+		)
+		{
+			return true;
+		}
+
+		return false;
 	}
 }

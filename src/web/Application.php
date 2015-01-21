@@ -14,7 +14,6 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\LocaleData;
-use craft\app\log\FileTarget;
 
 /**
  * Craft Web Application class
@@ -132,7 +131,7 @@ class Application extends \yii\web\Application
 		// Initialize the Cache service, Request and Logger right away (order is important)
 		$this->getCache();
 		$this->getRequest();
-		$this->_processLogTargets();
+		$this->processLogTargets();
 
 		// So we can try to translate Yii framework strings
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
@@ -754,54 +753,5 @@ class Application extends \yii\web\Application
 		}
 
 		return false;
-	}
-
-	/**
-	 * Returns whether Craft is in the middle of an update.
-	 *
-	 * @return bool
-	 */
-	private function _isCraftUpdating()
-	{
-		$request = $this->getRequest();
-
-		if ($this->updates->isCraftDbMigrationNeeded() ||
-			($this->isInMaintenanceMode() && $request->getIsCpRequest()) ||
-			$request->getActionSegments() == ['update', 'cleanUp'] ||
-			$request->getActionSegments() == ['update', 'rollback']
-		)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Configures the available log targets.
-	 *
-	 * @throws \yii\base\InvalidConfigException
-	 */
-	private function _processLogTargets()
-	{
-		$dispatcher = $this->getLog();
-
-		// Don't setup a target if it's an enabled session.
-		if ($this->getUser()->enableSession)
-		{
-			$fileTarget = new FileTarget();
-			$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
-			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
-			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
-
-			if (!Craft::$app->config->get('devMode') || !$this->_isCraftUpdating())
-			{
-				$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
-			}
-
-			$dispatcher->targets[] = $fileTarget;
-		}
-
-		$this->set('log', $dispatcher);
 	}
 }
