@@ -8,13 +8,12 @@
 namespace craft\app\web;
 
 use Craft;
-use craft\app\errors\HttpException;
+use craft\app\helpers\ArrayHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\web\Request as WebRequest;
-use craft\app\console\Request as ConsoleRequest;
+use yii\web\UrlRuleInterface;
 
 /**
- * Class UrlManager
+ * @inheritDoc \yii\web\UrlManager
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -25,26 +24,9 @@ class UrlManager extends \yii\web\UrlManager
 	// =========================================================================
 
 	/**
-	 * @var
+	 * @var array Params that should be included in the
 	 */
-	public $cpRoutes;
-
-	/**
-	 * List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
-	 *
-	 * @var array
-	 */
-	private $_routeVariables;
-
-	/**
-	 * @var
-	 */
-	private $_routeAction;
-
-	/**
-	 * @var
-	 */
-	private $_routeParams;
+	private $_routeParams = [];
 
 	/**
 	 * @var
@@ -56,118 +38,77 @@ class UrlManager extends \yii\web\UrlManager
 	 */
 	private $_matchedElementRoute;
 
-	/**
-	 * @var
-	 */
-	private $_regexTokens;
-
-	/**
-	 * @var
-	 */
-	private $_regexTokenPatterns;
-
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @return null
+	 * Constructor.
+	 *
+	 * @param array $config
 	 */
-	public function init()
+	public function __construct($config = [])
 	{
-		parent::init();
+		$config['showScriptName'] = !Craft::$app->config->omitScriptNameInUrls();
+		$config['rules'] = $this->_getRules();
 
-		// Set this to false so extra query string parameters don't get the path treatment
-		$this->appendParams = false;
-
-		if (Craft::$app->config->usePathInfo())
-		{
-			$this->setUrlFormat(static::PATH_FORMAT);
-		}
-		else
-		{
-			$this->setUrlFormat(static::GET_FORMAT);
-		}
-
-		$this->_routeVariables = [];
+		parent::__construct($config);
 	}
 
 	/**
-	 * Sets variables to be passed to the routed controllers action's $variables argument.
+	 * Sets params to be passed to the routed controller action.
+	 *
+	 * @param array $params
+	 */
+	public function setRouteParams($params)
+	{
+		$this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+	}
+
+	/**
+	 * Sets variables to be passed to the routed controller action's $variables argument.
 	 *
 	 * @param array $variables
-	 *
-	 * @return null
 	 */
 	public function setRouteVariables($variables)
 	{
-		$this->_routeVariables = array_merge($this->_routeVariables, $variables);
+		$this->setRouteParams([
+			'variables' => $variables
+		]);
 	}
 
 	/**
-	 * Determines which controller/action to route the request to. Routing candidates include actual template paths,
-	 * elements with URIs, and registered URL routes.
+	 * @inheritDoc \yii\web\UrlManager::parseRequest()
 	 *
-	 * @param WebRequest|ConsoleRequest $request
-	 *
-	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
-	 * @return string The controller/action path.
+	 * @param Request $request
+	 * @return array|boolean
 	 */
-	public function parseUrl($request)
+	public function parseRequest($request)
 	{
-		$this->_routeAction = null;
-		$this->_routeParams = [
-			'variables' => []
-		];
-
-		// Is there a token in the URL?
-		$token = Craft::$app->getRequest()->getToken();
-
-		if ($token)
+		// Just in case...
+		if ($request->getIsConsoleRequest())
 		{
-			$tokenRoute = Craft::$app->tokens->getTokenRoute($token);
-
-			if ($tokenRoute)
-			{
-				$this->_setRoute($tokenRoute);
-			}
+			return false;
 		}
-		else
+
+		if (($route = $this->_getRequestRoute($request)) !== false)
 		{
-			$path = $request->getPath();
-
-			// Is this an element request?
-			$matchedElementRoute = $this->_getMatchedElementRoute($path);
-
-			if ($matchedElementRoute)
+			// Merge in any additional route params
+			if ($this->_routeParams)
 			{
-				$this->_setRoute($matchedElementRoute);
-			}
-			else
-			{
-				// Does it look like they're trying to access a public template path?
-				if ($this->_isPublicTemplatePath())
+				if (isset($route[1]))
 				{
-					// Default to that, then
-					$this->_setRoute($path);
+					$route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
 				}
-
-				// Finally see if there's a URL route that matches
-				$this->_setRoute($this->_getMatchedUrlRoute($path));
+				else
+				{
+					$route[1] = $this->_routeParams;
+				}
 			}
+
+			return $route;
 		}
 
-		// Did we come up with something?
-		if ($this->_routeAction)
-		{
-			// Merge the route variables into the params
-			$this->_routeParams['variables'] = array_merge($this->_routeParams['variables'], $this->_routeVariables);
-
-			// Return the controller action
-			return $this->_routeAction;
-		}
-
-		// If we couldn't figure out what to do with the request, throw a 404
-		throw new HttpException(404);
+		return false;
 	}
 
 	/**
@@ -189,9 +130,11 @@ class UrlManager extends \yii\web\UrlManager
 	{
 		if (!isset($this->_matchedElement))
 		{
-			if (Craft::$app->getRequest()->getIsSiteRequest())
+			$request = Craft::$app->getRequest();
+
+			if ($request->getIsSiteRequest())
 			{
-				$path = Craft::$app->getRequest()->getPath();
+				$path = $request->getPath();
 				$this->_getMatchedElementRoute($path);
 			}
 			else
@@ -203,62 +146,138 @@ class UrlManager extends \yii\web\UrlManager
 		return $this->_matchedElement;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc \yii\web\UrlManager::buildRules()
+	 *
+	 * @param array $rules
+	 * @return UrlRuleInterface[]
+	 */
+	protected function buildRules($rules)
+	{
+		// Add support for patterns in keys even if the value is an array
+		$i = 0;
+		$verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
+
+		foreach ($rules as $key => $rule)
+		{
+			if (is_string($key) && is_array($rule))
+			{
+				// Code adapted from \yii\web\UrlManager::init()
+				if (
+					!isset($rule['verb']) &&
+					preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)
+				)
+				{
+					$rule['verb'] = explode(',', $matches[1]);
+
+					if (!isset($rule['mode']) && !in_array('GET', $rule['verb']))
+					{
+						$rule['mode'] = UrlRule::PARSING_ONLY;
+					}
+
+					$key = $matches[4];
+				}
+
+				$rule['pattern'] = $key;
+				array_splice($rules, $i, 1, [$rule]);
+			}
+
+			$i++;
+		}
+
+		return parent::buildRules($rules);
+	}
+
 	// Private Methods
 	// =========================================================================
 
 	/**
-	 * Sets the route.
+	 * Returns the rules that should be used for the current request.
 	 *
-	 * @param mixed $route
-	 *
-	 * @return null
+	 * @return array|null
 	 */
-	private function _setRoute($route)
+	private function _getRules()
 	{
-		if ($route !== false)
+		$request = Craft::$app->getRequest();
+
+		if ($request->getIsConsoleRequest())
 		{
-			// Normalize it
-			$route = $this->_normalizeRoute($route);
-
-			// Set the new action
-			$this->_routeAction = $route['action'];
-
-			// Merge in any params
-			if (!empty($route['params']))
-			{
-				$this->_routeParams = array_merge($this->_routeParams, $route['params']);
-			}
+			return null;
 		}
+
+		// Load the config file rules
+		if ($request->getIsCpRequest())
+		{
+			$baseCpRoutesPath = Craft::$app->path->getAppPath().'/config/cproutes';
+			$rules = require($baseCpRoutesPath.'/common.php');
+
+			if (Craft::$app->getEdition() <= Craft::Client)
+			{
+				$rules = array_merge($rules, require($baseCpRoutesPath.'/client.php'));
+
+				if (Craft::$app->getEdition() === Craft::Pro)
+				{
+					$rules = array_merge($rules, require($baseCpRoutesPath.'/pro.php'));
+				}
+			}
+
+			$pluginHook = 'registerCpRoutes';
+		}
+		else
+		{
+			$rules = Craft::$app->routes->getConfigFileRoutes();
+			$pluginHook = 'registerSiteRoutes';
+		}
+
+		// Load the plugin-supplied rules
+		$allPluginRules = Craft::$app->plugins->call($pluginHook);
+
+		foreach ($allPluginRules as $pluginRules)
+		{
+			$rules = array_merge($rules, $pluginRules);
+		}
+
+		return $rules;
 	}
 
 	/**
-	 * Normalizes a route.
+	 * Returns the request's route.
 	 *
-	 * @param mixed $route
-	 *
-	 * @return array
+	 * @param Request $request
+	 * @return mixed
 	 */
-	private function _normalizeRoute($route)
+	private function _getRequestRoute(Request $request)
 	{
-		if ($route !== false)
+		// Is there a token in the URL?
+		if (($token = $request->getToken()) !== null)
 		{
-			// Strings are template paths
-			if (is_string($route))
-			{
-				$route = [
-					'params' => [
-						'template' => $route
-					]
-				];
-			}
-
-			if (!isset($route['action']))
-			{
-				$route['action'] = 'templates/render';
-			}
+			return Craft::$app->tokens->getTokenRoute($token);
 		}
 
-		return $route;
+		$path = $request->getPath();
+
+		// Is this an element request?
+		if (($route = $this->_getMatchedElementRoute($path)) !== false)
+		{
+			return $route;
+		}
+
+		// Do we have a URL route that matches?
+		if (($route = $this->_getMatchedUrlRoute($request)) !== false)
+		{
+			return $route;
+		}
+
+		// Does it look like they're trying to access a public template path?
+		if ($this->_isPublicTemplatePath())
+		{
+			return ['templates/render', ['template' => $path]];
+		}
+
+		return false;
 	}
 
 	/**
@@ -306,146 +325,27 @@ class UrlManager extends \yii\web\UrlManager
 	/**
 	 * Attempts to match a path with the registered URL routes.
 	 *
-	 * @param string $path
+	 * @param Request $request
 	 *
 	 * @return mixed
 	 */
-	private function _getMatchedUrlRoute($path)
+	private function _getMatchedUrlRoute($request)
 	{
-		if (Craft::$app->getRequest()->getIsCpRequest())
+		// Code adapted from \yii\web\UrlManager::parseRequest()
+		/* @var $rule UrlRule */
+		foreach ($this->rules as $rule)
 		{
-			// Merge in any edition-specific routes
-			for ($i = 1; $i <= Craft::$app->getEdition(); $i++)
+			if (($route = $rule->parseRequest($this, $request)) !== false)
 			{
-				if (isset($this->cpRoutes['editionRoutes'][$i]))
+				if ($rule->params)
 				{
-					$this->cpRoutes = array_merge($this->cpRoutes, $this->cpRoutes['editionRoutes'][$i]);
+					$this->setRouteParams($rule->params);
 				}
-			}
-
-			unset($this->cpRoutes['editionRoutes']);
-
-			if (($route = $this->_matchUrlRoutes($path, $this->cpRoutes)) !== false)
-			{
-				return $route;
-			}
-
-			$pluginHook = 'registerCpRoutes';
-		}
-		else
-		{
-			// Check the user-defined routes
-			$configFileRoutes = Craft::$app->routes->getConfigFileRoutes();
-
-			if (($route = $this->_matchUrlRoutes($path, $configFileRoutes)) !== false)
-			{
-				return $route;
-			}
-
-			$dbRoutes = Craft::$app->routes->getDbRoutes();
-
-			if (($route = $this->_matchUrlRoutes($path, $dbRoutes)) !== false)
-			{
-				return $route;
-			}
-
-			$pluginHook = 'registerSiteRoutes';
-		}
-
-		// Maybe a plugin has a registered route that matches?
-		$allPluginRoutes = Craft::$app->plugins->call($pluginHook);
-
-		foreach ($allPluginRoutes as $pluginRoutes)
-		{
-			if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
-			{
 				return $route;
 			}
 		}
 
 		return false;
-	}
-
-	/**
-	 * Attempts to match a path with a set of given URL routes.
-	 *
-	 * @param string $path
-	 * @param array  $routes
-	 *
-	 * @return mixed
-	 */
-	private function _matchUrlRoutes($path, $routes)
-	{
-		foreach ($routes as $pattern => $route)
-		{
-			// Escape any unescaped forward slashes. Dumb ol' PHP is having trouble with this one when you use single
-			// quotes and don't escape the backslashes.
-			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
-
-			// Parse tokens
-			$regexPattern = $this->_parseRegexTokens($regexPattern);
-
-			// Does it match?
-			if (preg_match('/^'.$regexPattern.'$/u', $path, $match))
-			{
-				// Normalize the route
-				$route = $this->_normalizeRoute($route);
-
-				// Save the matched components as route variables
-				$routeVariables = [
-					'matches' => $match
-				];
-
-				// Add any named subpatterns too
-				foreach ($match as $key => $value)
-				{
-					// Is this a valid handle?
-					if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $key))
-					{
-						$routeVariables[$key] = $value;
-					}
-				}
-
-				$this->setRouteVariables($routeVariables);
-
-				return $route;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Parses any tokens in a given regex pattern.
-	 *
-	 * @param string $pattern
-	 *
-	 * @return string
-	 */
-	private function _parseRegexTokens($pattern)
-	{
-		if (!isset($this->_regexTokens))
-		{
-			$this->_regexTokens = [
-				'{handle}',
-				'{slug}',
-			];
-
-			$slugChars = ['.', '_', '-'];
-			$slugWordSeparator = Craft::$app->config->get('slugWordSeparator');
-
-			if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars))
-			{
-				$slugChars[] = $slugWordSeparator;
-			}
-
-			$this->_regexTokenPatterns = [
-				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
-				'(?:[\p{L}\p{N}'.preg_quote(implode($slugChars), '/').']+)',
-			];
-		}
-
-		return str_replace($this->_regexTokens, $this->_regexTokenPatterns, $pattern);
 	}
 
 	/**
@@ -455,17 +355,14 @@ class UrlManager extends \yii\web\UrlManager
 	 */
 	private function _isPublicTemplatePath()
 	{
-		if (!Craft::$app->getRequest()->getIsAjax())
-		{
-			$trigger = Craft::$app->config->get('privateTemplateTrigger');
-			$length = strlen($trigger);
+		$trigger = Craft::$app->config->get('privateTemplateTrigger');
+		$length = strlen($trigger);
 
-			foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg)
+		foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg)
+		{
+			if (strncmp($requestPathSeg, $trigger, $length) === 0)
 			{
-				if (strncmp($requestPathSeg, $trigger, $length) === 0)
-				{
-					return false;
-				}
+				return false;
 			}
 		}
 

@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'clientaccount'                                                                                => ['action' => 'users/editUser', 'params' => ['account' => 'client']],
-	'entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug}?)?/drafts/(?P<draftId>\d+)'    => ['action' => 'entries/editEntry'],
-	'entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/versions/(?P<versionId>\d+)' => ['action' => 'entries/editEntry'],
+	'clientaccount'                                                                              => ['route' => 'users/editUser', 'defaults' => ['account' => 'client']],
+	'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-{slug}?)?>/drafts/<draftId:\d+>'    => 'entries/editEntry',
+	'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-{slug})?>/versions/<versionId:\d+>' => 'entries/editEntry',
 ];

@@ -46,26 +46,6 @@ abstract class BaseController extends \CController
 	// =========================================================================
 
 	/**
-	 * Returns the request parameters that will be used for action parameter binding.
-	 *
-	 * By default, this method will return $_GET merged with [[UrlManager::getRouteParams]].
-	 *
-	 * @return array The request parameters to be used for action parameter binding.
-	 */
-	public function getActionParams()
-	{
-		$params = parent::getActionParams();
-		$routeParams = Craft::$app->getUrlManager()->getRouteParams();
-
-		if (is_array($routeParams))
-		{
-			$params = array_merge($params, $routeParams);
-		}
-
-		return $params;
-	}
-
-	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
 	 * @param mixed $template      The name of the template to load in a format supported by

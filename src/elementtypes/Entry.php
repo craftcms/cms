@@ -756,15 +756,12 @@ class Entry extends BaseElementType
 			// Make sure the section is set to have URLs and is enabled for this locale
 			if ($section->hasUrls && array_key_exists(Craft::$app->language, $section->getLocales()))
 			{
-				return [
-					'action' => 'templates/render',
-					'params' => [
-						'template' => $section->template,
-						'variables' => [
-							'entry' => $element
-						]
+				return ['templates/render', [
+					'template' => $section->template,
+					'variables' => [
+						'entry' => $element
 					]
-				];
+				]];
 			}
 		}
 

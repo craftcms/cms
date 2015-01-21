@@ -10,6 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\RequestTrait;
 use craft\app\errors\HttpException;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
@@ -228,6 +229,27 @@ class Request extends \yii\web\Request
 		}
 
 		return $this->_fullPath;
+	}
+
+	/**
+	 * @inheritDoc \yii\web\Request::resolve()
+	 *
+	 * @return array
+	 * @throws NotFoundHttpException
+	 */
+	public function resolve()
+	{
+		$result = parent::resolve();
+
+		// Merge in any additional parameters stored on UrlManager
+		$params = Craft::$app->getUrlManager()->getRouteParams();
+
+		if ($params)
+		{
+			$result[1] = ArrayHelper::merge($result[1], $params);
+		}
+
+		return $result;
 	}
 
 	/**

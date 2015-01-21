@@ -95,9 +95,11 @@ return [
 			]
 		]
 	],
-	//'urlManager' => [
-	//	'class'     => 'craft\app\web\UrlManager',
-	//],
+	'urlManager' => [
+		'class' => 'craft\app\web\UrlManager',
+		'enablePrettyUrl' => true,
+		'ruleConfig' => ['class' => 'craft\app\web\UrlRule'],
+	],
 	'user' => [
 		'class'                    => 'craft\app\web\User',
 		'identityClass'            => 'craft\app\models\User',

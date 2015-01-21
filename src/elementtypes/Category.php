@@ -373,15 +373,12 @@ class Category extends BaseElementType
 		// Make sure the group is set to have URLs
 		if ($group->hasUrls)
 		{
-			return [
-				'action' => 'templates/render',
-				'params' => [
-					'template' => $group->template,
-					'variables' => [
-						'category' => $element
-					]
+			return ['templates/render', [
+				'template' => $group->template,
+				'variables' => [
+					'category' => $element
 				]
-			];
+			]];
 		}
 
 		return false;

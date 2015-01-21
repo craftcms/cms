@@ -46,7 +46,12 @@ class Routes extends Component
 				// Check for any locale-specific routes
 				$locale = Craft::$app->language;
 
-				if (isset($routes[$locale]) && is_array($routes[$locale]))
+				if (
+					isset($routes[$locale]) &&
+					is_array($routes[$locale]) &&
+					!isset($routes[$locale]['route']) &&
+					!isset($routes[$locale]['template'])
+				)
 				{
 					$localizedRoutes = $routes[$locale];
 					unset($routes[$locale]);
