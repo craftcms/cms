@@ -13,6 +13,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\IOHelper;
 use craft\app\models\LogEntry as LogEntryModel;
 use craft\app\requirements\RequirementsChecker;
+use craft\app\web\Controller;
 
 /**
  * The UtilsController class is a controller that handles various utility related tasks such as displaying server info,
@@ -23,13 +24,13 @@ use craft\app\requirements\RequirementsChecker;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UtilsController extends BaseController
+class UtilsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

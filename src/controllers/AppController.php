@@ -15,17 +15,18 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\CpHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
+use craft\app\web\Controller;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
  * upgrading Craft editions and license requests.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AppController extends BaseController
+class AppController extends Controller
 {
 	// Public Methods
 	// =========================================================================

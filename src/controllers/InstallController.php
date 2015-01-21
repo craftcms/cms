@@ -11,6 +11,7 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\AccountSettings as AccountSettingsModel;
 use craft\app\models\SiteSettings as SiteSettingsModel;
+use craft\app\web\Controller;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -21,7 +22,7 @@ use craft\app\models\SiteSettings as SiteSettingsModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class InstallController extends BaseController
+class InstallController extends Controller
 {
 	// Properties
 	// =========================================================================
@@ -45,7 +46,7 @@ class InstallController extends BaseController
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

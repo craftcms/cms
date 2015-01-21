@@ -10,9 +10,10 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\enums\SectionType;
 use craft\app\models\Entry as EntryModel;
+use craft\app\web\Controller;
 
 /**
- * BaseController is a base class that any entry related controllers, such as [[EntriesController]] and
+ * Controller is a base class that any entry related controllers, such as [[EntriesController]] and
  * [[EntryRevisionsController]] extend to share common functionality.
  *
  * It extend's Yii's [[\CController]] overwriting specific methods as required.
@@ -20,7 +21,7 @@ use craft\app\models\Entry as EntryModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseEntriesController extends BaseController
+abstract class BaseEntriesController extends Controller
 {
 	// Protected Methods
 	// =========================================================================

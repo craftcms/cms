@@ -9,17 +9,18 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\helpers\JsonHelper;
+use craft\app\web\Controller;
 
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
  * status, re-running and deleting tasks.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class TasksController extends BaseController
+class TasksController extends Controller
 {
 	// Public Methods
 	// =========================================================================

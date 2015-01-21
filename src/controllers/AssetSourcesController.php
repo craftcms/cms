@@ -17,23 +17,24 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetSource as AssetSourceModel;
 use craft\app\variables\AssetSourceType;
+use craft\app\web\Controller;
 
 /**
  * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
  * creating, editing, renaming and reordering them.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetSourcesController extends BaseController
+class AssetSourcesController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

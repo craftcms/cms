@@ -12,17 +12,18 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\models\BaseElementModel;
 use craft\app\models\Structure as StructureModel;
+use craft\app\web\Controller;
 
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
  * a structure.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class StructuresController extends BaseController
+class StructuresController extends Controller
 {
 	// Properties
 	// =========================================================================

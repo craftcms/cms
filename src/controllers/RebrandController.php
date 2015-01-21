@@ -13,6 +13,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -20,12 +21,12 @@ Craft::$app->requireEdition(Craft::Client);
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
  * cropping and delete custom logos for displaying on the login page.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RebrandController extends BaseController
+class RebrandController extends Controller
 {
 	// Public Methods
 	// =========================================================================

@@ -16,7 +16,7 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

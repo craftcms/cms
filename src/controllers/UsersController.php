@@ -21,6 +21,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\User as UserModel;
 use craft\app\services\Users;
+use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
 /**
@@ -30,12 +31,12 @@ use craft\app\web\UploadedFile;
  *
  * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
- * authenticated Craft session via [[BaseController::allowAnonymous]].
+ * authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UsersController extends BaseController
+class UsersController extends Controller
 {
 	// Properties
 	// =========================================================================

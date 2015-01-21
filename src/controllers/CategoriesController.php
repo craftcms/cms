@@ -18,17 +18,18 @@ use craft\app\models\Category as CategoryModel;
 use craft\app\models\CategoryGroup as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\variables\ElementType as ElementTypeVariable;
+use craft\app\web\Controller;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoriesController extends BaseController
+class CategoriesController extends Controller
 {
 	// Public Methods
 	// =========================================================================

@@ -11,6 +11,7 @@ use Craft;
 use craft\app\enums\ComponentType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\IOHelper;
+use craft\app\web\Controller;
 
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.
@@ -20,13 +21,13 @@ use craft\app\helpers\IOHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ToolsController extends BaseController
+class ToolsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

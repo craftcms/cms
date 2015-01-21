@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\app\web;
 
 use Craft;
 use craft\app\errors\HttpException;
@@ -15,14 +15,14 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 
 /**
- * BaseController is a base class that all controllers in Craft extend.
+ * Controller is a base class that all controllers in Craft extend.
  *
  * It extend's Yii's [[\CController]] overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseController extends \CController
+abstract class Controller extends \yii\web\Controller
 {
 	// Properties
 	// =========================================================================

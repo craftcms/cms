@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
+use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -17,18 +18,18 @@ Craft::$app->requireEdition(Craft::Pro);
  * The LocalizationController class is a controller that handles various localization related tasks such adding,
  * deleting and re-ordering locales in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class LocalizationController extends BaseController
+class LocalizationController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

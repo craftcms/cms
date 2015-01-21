@@ -11,23 +11,24 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
+use craft\app\web\Controller;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
  * and deleting both fields and field groups.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FieldsController extends BaseController
+class FieldsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null
