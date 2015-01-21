@@ -14,6 +14,7 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\LocaleData;
+use yii\log\FileTarget;
 
 /**
  * Craft Web Application class
@@ -75,7 +76,6 @@ use craft\app\i18n\LocaleData;
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
  * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
- * @method \craft\app\logging\LogRouter           getLog()          Returns the log dispatcher component.
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\app\services\Security           getSecurity()     Returns the security component.
  * @method \craft\app\services\Session            getSession()      Returns the session component.
@@ -130,10 +130,15 @@ class Application extends \yii\web\Application
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
 		// in processRequest() is called.
 
+		Craft::error('error!', __METHOD__);
+		Craft::warning('warning!', __METHOD__);
+		Craft::info('info', __METHOD__);
+
+
 		// Initialize the Cache service, Request and LogRouter right away (order is important)
 		$this->getCache();
 		$this->getRequest();
-		$this->getLog();
+		$this->_processLogTargets();
 
 		// So we can try to translate Yii framework strings
 		//$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\LocalizationHelper', 'findMissingTranslation']);
@@ -203,7 +208,7 @@ class Application extends \yii\web\Application
 				$build = $this->getBuild();
 				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', [
+				throw new HttpException(200, Craft::t('app', '@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', [
 					'url' => '['.$build.']('.$url.')',
 				]));
 			}
@@ -439,10 +444,10 @@ class Application extends \yii\web\Application
 	 *
 	 * @return string
 	 */
-	public function getTimeZone()
-	{
-		return $this->_getTimeZone();
-	}
+	//public function getTimeZone()
+	//{
+	//	return $this->_getTimeZone();
+	//}
 
 	/**
 	 * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
@@ -643,7 +648,7 @@ class Application extends \yii\web\Application
 			{
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
-					throw new HttpException(200, Craft::t('You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', [
+					throw new HttpException(200, Craft::t('app', 'You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', [
 						'url'           => '<a href="'.CRAFT_MIN_BUILD_URL.'">build '.CRAFT_MIN_BUILD_REQUIRED.'</a>',
 						'targetVersion' => CRAFT_VERSION,
 						'targetBuild'   => CRAFT_BUILD
@@ -698,14 +703,14 @@ class Application extends \yii\web\Application
 			{
 				if ($this->getRequest()->getIsCpRequest())
 				{
-					$error = Craft::t('Your account doesn’t have permission to access the Control Panel when the system is offline.');
+					$error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
 				}
 				else
 				{
-					$error = Craft::t('Your account doesn’t have permission to access the site when the system is offline.');
+					$error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
 				}
 
-				$error .= ' ['.Craft::t('Log out?').']('.UrlHelper::getUrl($this->config->getLogoutPath()).')';
+				$error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::getUrl($this->config->getLogoutPath()).')';
 			}
 			else
 			{
@@ -776,5 +781,28 @@ class Application extends \yii\web\Application
 		}
 
 		return false;
+	}
+
+	/**
+	 * Configures the available log targets.
+	 *
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	private function _processLogTargets()
+	{
+		$dispatcher = $this->getLog();
+
+		$fileTarget = new FileTarget();
+		$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
+		$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
+		$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
+
+		if (!Craft::$app->config->get('devMode'))
+		{
+			$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
+		}
+
+		$dispatcher->targets[] = $fileTarget;
+		$this->set('log', $dispatcher);
 	}
 }
