@@ -274,31 +274,55 @@ class StringHelper
 	public static function asciiString($str)
 	{
 		$asciiStr = '';
-		$strlen = mb_strlen($str);
+		$strlen = strlen($str);
 		$asciiCharMap = static::getAsciiCharMap();
 
-		// If this looks funky, it's because mb_strlen is garbage. For example, it returns 6 for this string: "ü.png"
-		for ($counter = 0; $counter < $strlen; $counter++)
+		// Code adapted from http://php.net/ord#109812
+		$offset = 0;
+
+		while ($offset < $strlen)
 		{
-			if (!isset($str[$counter]))
+			// ord() doesn't support UTF-8 so we need to do some extra work to determine the ASCII code
+			$ascii = ord(substr($str, $offset, 1));
+
+			if ($ascii >= 128) // otherwise 0xxxxxxx
 			{
-				break;
+				if ($ascii < 224)
+				{
+					$bytesnumber = 2; // 110xxxxx
+				}
+				else if ($ascii < 240)
+				{
+					$bytesnumber = 3; // 1110xxxx
+				}
+				else if ($ascii < 248)
+				{
+					$bytesnumber = 4; // 11110xxx
+				}
+
+				$tempAscii = $ascii - 192 - ($bytesnumber > 2 ? 32 : 0) - ($bytesnumber > 3 ? 16 : 0);
+
+				for ($i = 2; $i <= $bytesnumber; $i++)
+				{
+					$offset++;
+					$ascii2 = ord(substr($str, $offset, 1)) - 128; // 10xxxxxx
+					$tempAscii = $tempAscii * 64 + $ascii2;
+				}
+
+				$ascii = $tempAscii;
 			}
 
-			$char = $str[$counter];
-			$ascii = ord($char);
+			$offset++;
 
+			// Is this an ASCII character?
 			if ($ascii >= 32 && $ascii < 128)
 			{
-				$asciiStr .= $char;
+				$asciiStr .= chr($ascii);
 			}
+			// Do we have an ASCII mapping for it?
 			else if (isset($asciiCharMap[$ascii]))
 			{
 				$asciiStr .= $asciiCharMap[$ascii];
-			}
-			else
-			{
-				$strlen++;
 			}
 		}
 
