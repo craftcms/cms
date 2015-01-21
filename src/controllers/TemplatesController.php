@@ -14,6 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\requirements\RequirementsChecker;
+use craft\app\web\Controller;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
@@ -24,7 +25,7 @@ use craft\app\requirements\RequirementsChecker;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class TemplatesController extends BaseController
+class TemplatesController extends Controller
 {
 	// Properties
 	// =========================================================================

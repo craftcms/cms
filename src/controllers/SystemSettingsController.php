@@ -16,6 +16,7 @@ use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings as EmailSettingsModel;
 use craft\app\models\GlobalSet as GlobalSetModel;
 use craft\app\variables\Tool as ToolVariable;
+use craft\app\web\Controller;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
@@ -26,13 +27,13 @@ use craft\app\variables\Tool as ToolVariable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SystemSettingsController extends BaseController
+class SystemSettingsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

@@ -12,17 +12,18 @@ use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\web\Controller;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
  * deleting displaying both globals and global sets.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GlobalsController extends BaseController
+class GlobalsController extends Controller
 {
 	// Public Methods
 	// =========================================================================

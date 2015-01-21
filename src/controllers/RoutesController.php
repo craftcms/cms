@@ -9,23 +9,24 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\errors\HttpException;
+use craft\app\web\Controller;
 
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
  * re-ordering routes in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RoutesController extends BaseController
+class RoutesController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

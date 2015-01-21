@@ -17,6 +17,7 @@ use craft\app\helpers\UrlHelper;
 use craft\app\models\EntryType as EntryTypeModel;
 use craft\app\models\Section as SectionModel;
 use craft\app\models\SectionLocale as SectionLocaleModel;
+use craft\app\web\Controller;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as
@@ -27,13 +28,13 @@ use craft\app\models\SectionLocale as SectionLocaleModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SectionsController extends BaseController
+class SectionsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

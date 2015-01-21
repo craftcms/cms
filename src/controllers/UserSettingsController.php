@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -22,13 +23,13 @@ Craft::$app->requireEdition(Craft::Pro);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UserSettingsController extends BaseController
+class UserSettingsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

@@ -13,6 +13,7 @@ use craft\app\errors\EtException;
 use craft\app\errors\Exception;
 use craft\app\helpers\UpdateHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\web\Controller;
 
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
@@ -20,12 +21,12 @@ use craft\app\helpers\UrlHelper;
  *
  * Note that all actions in the controller, except for [[actionPrepare]], [[actionBackupDatabase]],
  * [[actionUpdateDatabase]], [[actionCleanUp]] and [[actionRollback]] require an authenticated Craft session
- * via [[BaseController::allowAnonymous]].
+ * via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UpdateController extends BaseController
+class UpdateController extends Controller
 {
 	// Properties
 	// =========================================================================

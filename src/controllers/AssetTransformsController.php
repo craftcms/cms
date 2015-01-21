@@ -11,23 +11,24 @@ use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\ImageHelper;
 use craft\app\models\AssetTransform as AssetTransformModel;
+use craft\app\web\Controller;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
  * such as creating, editing and deleting transforms.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetTransformsController extends BaseController
+class AssetTransformsController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null

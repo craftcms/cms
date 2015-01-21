@@ -14,18 +14,19 @@ use craft\app\helpers\StringHelper;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp as GetHelpModel;
 use craft\app\models\Widget as WidgetModel;
+use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
  * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\GetHelp]] support ticket requests.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DashboardController extends BaseController
+class DashboardController extends Controller
 {
 	// Public Methods
 	// =========================================================================

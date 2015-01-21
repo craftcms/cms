@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\web\Controller;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -17,18 +18,18 @@ Craft::$app->requireEdition(Craft::Client);
  * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[BaseController::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class EmailMessagesController extends BaseController
+class EmailMessagesController extends Controller
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseController::init()
+	 * @inheritDoc Controller::init()
 	 *
 	 * @throws HttpException
 	 * @return null
