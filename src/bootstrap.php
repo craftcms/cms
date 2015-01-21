@@ -220,6 +220,12 @@ $config = ArrayHelper::merge(
 	require $appPath.'/config/'.$appType.'.php'
 );
 
+if ($devMode)
+{
+	$config['bootstrap'][] = 'debug';
+	$config['modules']['debug'] = 'yii\debug\Module';
+}
+
 // Initialize the application
 $class = 'craft\\app\\'.$appType.'\\Application';
 /* @var $app craft\app\web\Application|craft\app\console\Application */
