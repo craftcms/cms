@@ -389,6 +389,10 @@ class EntriesController extends BaseEntriesController
 		{
 			$entry = $this->_getEntryModel();
 			$this->enforceEditEntryPermissions($entry);
+
+			// Set the language to the user's preferred locale so DateFormatter returns the right format
+			craft()->setLanguage(craft()->getTargetLanguage(true));
+
 			$this->_populateEntryModel($entry);
 		}
 
