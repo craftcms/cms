@@ -141,6 +141,7 @@ class Application extends \yii\web\Application
 		{
 			$this->setId($appId);
 		}
+
 		parent::init();
 	}
 
