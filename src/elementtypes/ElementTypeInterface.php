@@ -8,7 +8,7 @@
 namespace craft\app\elementtypes;
 
 use craft\app\components\ComponentTypeInterface;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
@@ -351,12 +351,12 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * }
 	 * ```
 	 *
-	 * @param DbCommand $query  The database query.
+	 * @param Command $query  The database query.
 	 * @param string    $status The custom status.
 	 *
 	 * @return string|false
 	 */
-	public function getElementQueryStatusCondition(DbCommand $query, $status);
+	public function getElementQueryStatusCondition(Command $query, $status);
 
 	/**
 	 * Modifies an element query targeting elements of this type.
@@ -389,12 +389,12 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * to match any elements, you can have it return `false`. The query will be stopped before it ever gets a chance to
 	 * execute.
 	 *
-	 * @param DbCommand            $query    The database query currently being built to find the elements.
+	 * @param Command            $query    The database query currently being built to find the elements.
 	 * @param ElementCriteriaModel $criteria The criteria that is being used to find the elements.
 	 *
 	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.
 	 */
-	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria);
+	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria);
 
 	/**
 	 * Populates an element model based on a query result.

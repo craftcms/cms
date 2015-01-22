@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elements\ElementRelationParamParser;
 use craft\app\elementtypes\ElementTypeInterface;
@@ -443,7 +443,7 @@ class Elements extends Component
 	}
 
 	/**
-	 * Preps a [[DbCommand]] object for querying for elements, based on a given element criteria.
+	 * Preps a [[Command]] object for querying for elements, based on a given element criteria.
 	 *
 	 * @param ElementCriteriaModel &$criteria     The element criteria model
 	 * @param string               &$contentTable The content table that should be joined in. (This variable will
@@ -455,7 +455,7 @@ class Elements extends Component
 	 *                                            reference so whatever’s calling the method will have access to its
 	 *                                            value.)
 	 *
-	 * @return DbCommand|false The DbCommand object, or `false` if the method was able to determine ahead of time that
+	 * @return Command|false The Command object, or `false` if the method was able to determine ahead of time that
 	 *                         there’s no chance any elements are going to be found with the given parameters.
 	 */
 	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
@@ -1979,11 +1979,11 @@ class Elements extends Component
 	/**
 	 * Returns the unique element IDs that match a given element query.
 	 *
-	 * @param DbCommand $query
+	 * @param Command $query
 	 *
 	 * @return array
 	 */
-	private function _getElementIdsFromQuery(DbCommand $query)
+	private function _getElementIdsFromQuery(Command $query)
 	{
 		// Get the matched element IDs, and then have the Search service filter them.
 		$elementIdsQuery = Craft::$app->getDb()->createCommand()

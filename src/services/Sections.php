@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
@@ -1291,9 +1291,9 @@ class Sections extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving sections.
+	 * Returns a Command object prepped for retrieving sections.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createSectionQuery()
 	{

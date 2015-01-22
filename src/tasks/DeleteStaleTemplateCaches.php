@@ -8,7 +8,7 @@
 namespace craft\app\tasks;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\JsonHelper;
 
@@ -186,9 +186,9 @@ class DeleteStaleTemplateCaches extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object for selecting criteria that could be dropped by this task.
+	 * Returns a Command object for selecting criteria that could be dropped by this task.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _getQuery()
 	{

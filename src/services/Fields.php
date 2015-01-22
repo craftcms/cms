@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\events\FieldLayoutEvent;
@@ -963,9 +963,9 @@ class Fields extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving groups.
+	 * Returns a Command object prepped for retrieving groups.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createGroupQuery()
 	{
@@ -976,9 +976,9 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving fields.
+	 * Returns a Command object prepped for retrieving fields.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createFieldQuery()
 	{
@@ -989,9 +989,9 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving layouts.
+	 * Returns a Command object prepped for retrieving layouts.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createLayoutQuery()
 	{
@@ -1001,9 +1001,9 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving layout fields.
+	 * Returns a Command object prepped for retrieving layout fields.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createLayoutFieldQuery()
 	{
@@ -1014,9 +1014,9 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving layout tabs.
+	 * Returns a Command object prepped for retrieving layout tabs.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createLayoutTabQuery()
 	{

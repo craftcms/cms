@@ -8,7 +8,7 @@
 namespace craft\app\elementtypes;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\elementactions\SetStatus;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
@@ -450,12 +450,12 @@ class Entry extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
 	 *
-	 * @param DbCommand $query
+	 * @param Command $query
 	 * @param string    $status
 	 *
 	 * @return array|false|string|void
 	 */
-	public function getElementQueryStatusCondition(DbCommand $query, $status)
+	public function getElementQueryStatusCondition(Command $query, $status)
 	{
 		$currentTimeDb = DateTimeHelper::currentTimeForDb();
 
@@ -495,12 +495,12 @@ class Entry extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param DbCommand            $query
+	 * @param Command            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return bool|false|null|void
 	 */
-	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.postDate, entries.expiryDate')

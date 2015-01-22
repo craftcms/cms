@@ -732,7 +732,7 @@ trait ApplicationTrait
 	}
 
 	/**
-	 * Returns the definition for the [[DbCommand]] object that will be available from Craft::$app->db.
+	 * Returns the definition for the [[Command]] object that will be available from Craft::$app->db.
 	 *
 	 * @return Connection
 	 * @throws DbConnectException
@@ -751,7 +751,7 @@ trait ApplicationTrait
 				'password' => $configService->get('password', ConfigCategory::Db),
 				'charset' => $configService->get('charset', ConfigCategory::Db),
 				'tablePrefix' => $this->_getNormalizedTablePrefix(),
-				'driverMap' => ['mysql' => 'Craft\MysqlSchema'],
+				'schemaMap' => ['mysql' => '\\craft\\app\\db\\mysql\\Schema'],
 			]);
 
 			$db->open();
@@ -783,13 +783,6 @@ trait ApplicationTrait
 		}
 
 		$this->setIsDbConnectionValid(true);
-
-		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
-		if ($configService->get('devMode'))
-		{
-			$db->enableProfiling = true;
-			$db->enableParamLogging = true;
-		}
 
 		return $db;
 	}

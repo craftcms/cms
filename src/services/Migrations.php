@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\dates\DateTime;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
@@ -354,11 +354,11 @@ class Migrations extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving migrations.
+	 * Returns a Command object prepped for retrieving migrations.
 	 *
 	 * @param string|null $plugin
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createMigrationQuery($plugin = null)
 	{

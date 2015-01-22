@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
@@ -1133,9 +1133,9 @@ class Assets extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving assets.
+	 * Returns a Command object prepped for retrieving assets.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createFolderQuery()
 	{
@@ -1183,9 +1183,9 @@ class Assets extends Component
 	}
 
 	/**
-	 * Applies WHERE conditions to a DbCommand query for folders.
+	 * Applies WHERE conditions to a Command query for folders.
 	 *
-	 * @param DbCommand           $query
+	 * @param Command           $query
 	 * @param FolderCriteriaModel $criteria
 	 *
 	 * @return null
