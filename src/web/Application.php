@@ -14,6 +14,8 @@ use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\LocaleData;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Craft Web Application class
@@ -22,7 +24,6 @@ use craft\app\i18n\LocaleData;
  * @property \craft\app\services\AssetIndexing    $assetIndexing    The asset indexing service.
  * @property \craft\app\services\AssetSources     $assetSources     The asset sources service.
  * @property \craft\app\services\AssetTransforms  $assetTransforms  The asset transforms service.
- * @property \craft\app\services\Cache            $cache            The cache component.
  * @property \craft\app\services\Categories       $categories       The categories service.
  * @property \craft\app\services\Components       $components       The components service.
  * @property \craft\app\services\Config           $config           The config service.
@@ -70,7 +71,6 @@ use craft\app\i18n\LocaleData;
  * @property \craft\app\services\UserPermissions  $userPermissions  The user permission service.
  * @property \craft\app\services\Users            $users            The users service.
  * @property User                                 $user             The user component.
- * @method \craft\app\services\Cache              getCache()        Returns the cache component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
  * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
@@ -126,7 +126,7 @@ class Application extends \yii\web\Application
 	public function init()
 	{
 		// NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
-		// in processRequest() is called.
+		// in handleRequest() is called.
 
 		// Initialize the Cache service, Request and Logger right away (order is important)
 		$this->getCache();
@@ -145,20 +145,24 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Processes the request.
+	 * Handles the specified request.
 	 *
+	 * @param Request $request the request to be handled
+	 *
+	 * @return Response the resulting response
 	 * @throws HttpException
-	 * @return null
+	 * @throws ServiceUnavailableHttpException
+	 * @throws \craft\app\errors\DbConnectException
+	 * @throws ForbiddenHttpException
+	 * @throws \yii\web\NotFoundHttpException
 	 */
-	public function processRequest()
+	public function handleRequest($request)
 	{
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
 		// If this is a CP request, prevent robots from indexing/following the page
 		// (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-		$request = $this->getRequest();
-
 		if ($request->getIsCpRequest())
 		{
 			HeaderHelper::setHeader(['X-Robots-Tag' => 'none']);
@@ -168,16 +172,16 @@ class Application extends \yii\web\Application
 		$this->validateDbConfigFile();
 
 		// Process install requests
-		$this->_processInstallRequest();
+		$this->_processInstallRequest($request);
 
 		// If the system in is maintenance mode and it's a site request, throw a 503.
 		if ($this->isInMaintenanceMode() && $request->getIsSiteRequest())
 		{
-			throw new HttpException(503);
+			throw new ServiceUnavailableHttpException();
 		}
 
 		// Check if the app path has changed.  If so, run the requirements check again.
-		$this->_processRequirementsCheck();
+		$this->_processRequirementsCheck($request);
 
 		// Makes sure that the uploaded files are compatible with the current DB schema
 		if (!$this->updates->isSchemaVersionCompatible())
@@ -194,7 +198,7 @@ class Application extends \yii\web\Application
 			}
 			else
 			{
-				throw new HttpException(503);
+				throw new ServiceUnavailableHttpException();
 			}
 		}
 
@@ -205,7 +209,7 @@ class Application extends \yii\web\Application
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
 		if ($this->_isCraftUpdating())
 		{
-			$this->_processUpdateLogic();
+			$this->_processUpdateLogic($request);
 		}
 
 		// If there's a new version, but the schema hasn't changed, just update the info table
@@ -215,7 +219,7 @@ class Application extends \yii\web\Application
 		}
 
 		// If the system is offline, make sure they have permission to be here
-		$this->_enforceSystemStatusPermissions();
+		$this->_enforceSystemStatusPermissions($request);
 
 		// Load the plugins
 		$this->plugins->loadPlugins();
@@ -223,11 +227,11 @@ class Application extends \yii\web\Application
 		// Check if a plugin needs to update the database.
 		if ($this->updates->isPluginDbUpdateNeeded())
 		{
-			$this->_processUpdateLogic();
+			$this->_processUpdateLogic($request);
 		}
 
 		// If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-		if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest()))
+		if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request)))
 		{
 			$user = $this->getUser();
 
@@ -239,7 +243,7 @@ class Application extends \yii\web\Application
 
 			if (!$user->checkPermission('accessCp'))
 			{
-				throw new HttpException(403);
+				throw new ForbiddenHttpException();
 			}
 
 			// If they're accessing a plugin's section, make sure that they have permission to do so
@@ -253,17 +257,17 @@ class Application extends \yii\web\Application
 				{
 					if (!$user->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 					{
-						throw new HttpException(403);
+						throw new ForbiddenHttpException();
 					}
 				}
 			}
 		}
 
 		// If this is an action request, call the controller
-		$this->_processActionRequest();
+		$this->_processActionRequest($request);
 
-		// If we're still here, finally let UrlManager do it's thing.
-		parent::processRequest();
+		// If we're still here, finally let Yii do it's thing.
+		return parent::handleRequest($request);
 	}
 
 	/**
@@ -475,12 +479,14 @@ class Application extends \yii\web\Application
 	/**
 	 * Processes install requests.
 	 *
-	 * @throws HttpException
+	 * @param Request $request
+	 *
 	 * @return null
+	 * @throws NotFoundHttpException
+	 * @throws \yii\base\ExitException
 	 */
-	private function _processInstallRequest()
+	private function _processInstallRequest($request)
 	{
-		$request = $this->getRequest();
 		$isCpRequest = $request->getIsCpRequest();
 
 		// Are they requesting an installer template/action specifically?
@@ -495,7 +501,7 @@ class Application extends \yii\web\Application
 			$actionSegs = $request->getActionSegments();
 			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
-				$this->_processActionRequest();
+				$this->_processActionRequest($request);
 			}
 		}
 
@@ -511,7 +517,7 @@ class Application extends \yii\web\Application
 			// Otherwise return a 404
 			else
 			{
-				throw new HttpException(404);
+				throw new NotFoundHttpException();
 			}
 		}
 	}
@@ -519,13 +525,12 @@ class Application extends \yii\web\Application
 	/**
 	 * Processes action requests.
 	 *
+	 * @param Request $request
 	 * @throws HttpException
 	 * @return null
 	 */
-	private function _processActionRequest()
+	private function _processActionRequest($request)
 	{
-		$request = $this->getRequest();
-
 		if ($request->getIsActionRequest())
 		{
 			$actionSegs = $request->getActionSegments();
@@ -535,11 +540,12 @@ class Application extends \yii\web\Application
 	}
 
 	/**
+	 * @param Request $request
 	 * @return bool
 	 */
-	private function _isSpecialCaseActionRequest()
+	private function _isSpecialCaseActionRequest($request)
 	{
-		$segments = $this->getRequest()->getActionSegments();
+		$segments = $request->getActionSegments();
 
 		if (
 			$segments == ['users', 'login'] ||
@@ -562,13 +568,13 @@ class Application extends \yii\web\Application
 	 * requirement checker again. This should catch the case where an install is deployed to another server that doesn’t
 	 * meet Craft’s minimum requirements.
 	 *
+	 * @param Request $request
 	 * @return null
 	 */
-	private function _processRequirementsCheck()
+	private function _processRequirementsCheck($request)
 	{
 		// See if we're in the middle of an update.
 		$update = false;
-		$request = $this->getRequest();
 
 		if ($request->getSegment(1) == 'updates' && $request->getSegment(2) == 'go')
 		{
@@ -597,13 +603,14 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * @throws HttpException
+	 * @param Request $request
 	 * @return null
+	 * @throws HttpException
+	 * @throws ServiceUnavailableHttpException
+	 * @throws \yii\base\ExitException
 	 */
-	private function _processUpdateLogic()
+	private function _processUpdateLogic($request)
 	{
-		$request = $this->getRequest();
-
 		// Let all non-action CP requests through.
 		if (
 			$request->getIsCpRequest() &&
@@ -652,7 +659,7 @@ class Application extends \yii\web\Application
 		{
 			// If an exception gets throw during the rendering of the 503 template, let
 			// TemplatesController->actionRenderError() take care of it.
-			throw new HttpException(503);
+			throw new ServiceUnavailableHttpException();
 		}
 
 		// <Gandalf> YOU SHALL NOT PASS!
@@ -662,10 +669,11 @@ class Application extends \yii\web\Application
 	/**
 	 * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
 	 *
-	 * @throws HttpException
+	 * @param Request $request
 	 * @return null
+	 * @throws ServiceUnavailableHttpException
 	 */
-	private function _enforceSystemStatusPermissions()
+	private function _enforceSystemStatusPermissions($request)
 	{
 		if (!$this->_checkSystemStatusPermissions())
 		{
@@ -673,7 +681,7 @@ class Application extends \yii\web\Application
 
 			if ($this->getUser()->isLoggedIn())
 			{
-				if ($this->getRequest()->getIsCpRequest())
+				if ($request->getIsCpRequest())
 				{
 					$error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
 				}
@@ -693,7 +701,7 @@ class Application extends \yii\web\Application
 				}
 			}
 
-			throw new HttpException(503, $error);
+			throw new ServiceUnavailableHttpException($error);
 		}
 	}
 
