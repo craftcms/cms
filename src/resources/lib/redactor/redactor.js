@@ -1,10 +1,10 @@
 /*
-	Redactor v10.0.5
-	Updated: November 18, 2014
+	Redactor v10.0.6
+	Updated: January 7, 2015
 
 	http://imperavi.com/redactor/
 
-	Copyright (c) 2009-2014, Imperavi LLC.
+	Copyright (c) 2009-2015, Imperavi LLC.
 	License: http://imperavi.com/redactor/license/
 
 	Usage: $('#content').redactor();
@@ -94,7 +94,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.0.5';
+	$.Redactor.VERSION = '10.0.6';
 	$.Redactor.modules = ['alignment', 'autosave', 'block', 'buffer', 'build', 'button',
 						  'caret', 'clean', 'code', 'core', 'dropdown', 'file', 'focus',
 						  'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
@@ -168,7 +168,7 @@
 
 		preSpaces: 4, // or false
 		tabAsSpaces: false, // true or number of spaces
-		tabFocus: true,
+		tabKey: true,
 
 		scrollTarget: false,
 
@@ -343,6 +343,7 @@
 			META: 91,
 			SHIFT: 16,
 			ALT: 18,
+			RIGHT: 39,
 			LEFT: 37,
 			LEFT_WIN: 91
 		},
@@ -560,11 +561,17 @@
 			return {
 				formatting: function(name)
 				{
+					this.block.clearStyle = false;
 					var type, value;
 
 					if (typeof this.formatting[name].data != 'undefined') type = 'data';
 					else if (typeof this.formatting[name].attr != 'undefined') type = 'attr';
 					else if (typeof this.formatting[name].class != 'undefined') type = 'class';
+
+					if (typeof this.formatting[name].clear != 'undefined')
+					{
+						this.block.clearStyle = true;
+					}
 
 					if (type) value = this.formatting[name][type];
 
@@ -809,6 +816,12 @@
 				},
 				setForce: function($el)
 				{
+					// remove style and class if the specified setting
+					if (this.block.clearStyle)
+					{
+						$el.removeAttr('class').removeAttr('style');
+					}
+
 					if (this.block.type == 'class')
 					{
 						$el.addClass(this.block.value);
@@ -822,6 +835,12 @@
 				},
 				toggle: function($el)
 				{
+					// remove style and class if the specified setting
+					if (this.block.clearStyle)
+					{
+						$el.removeAttr('class').removeAttr('style');
+					}
+
 					if (this.block.type == 'class')
 					{
 						$el.toggleClass(this.block.value);
@@ -1465,6 +1484,7 @@
 					else
 					{
 						var func;
+
 						if ($.isFunction(callback))
 						{
 							callback.call(this, btnName);
@@ -1750,13 +1770,14 @@
 				{
 					var offset = 0;
 				    var sel = window.getSelection();
+
 				    if (sel.rangeCount > 0)
 				    {
 				        var range = window.getSelection().getRangeAt(0);
-				        var preCaretRange = range.cloneRange();
-				        preCaretRange.selectNodeContents(this.$editor[0]);
-				        preCaretRange.setEnd(range.endContainer, range.endOffset);
-				        offset = preCaretRange.toString().length;
+				        var caretRange = range.cloneRange();
+				        caretRange.selectNodeContents(this.$editor[0]);
+				        caretRange.setEnd(range.endContainer, range.endOffset);
+				        offset = caretRange.toString().length;
 				    }
 
 					return offset;
@@ -1766,8 +1787,7 @@
 					if (typeof end == 'undefined') end = start;
 					if (!this.focus.isFocused()) this.focus.setStart();
 
-					var range = document.createRange();
-					var sel = document.getSelection();
+					var sel = this.selection.get();
 					var node, offset = 0;
 					var walker = document.createTreeWalker(this.$editor[0], NodeFilter.SHOW_TEXT, null, null);
 
@@ -1776,19 +1796,19 @@
 						offset += node.nodeValue.length;
 						if (offset > start)
 						{
-							range.setStart(node, node.nodeValue.length + start - offset);
+							this.range.setStart(node, node.nodeValue.length + start - offset);
 							start = Infinity;
 						}
 
 						if (offset >= end)
 						{
-							range.setEnd(node, node.nodeValue.length + end - offset);
+							this.range.setEnd(node, node.nodeValue.length + end - offset);
 							break;
 						}
 					}
 
-					sel.removeAllRanges();
-					sel.addRange(range);
+					this.range.collapse(false);
+					this.selection.addRange();
 				},
 				setToPoint: function(start, end)
 				{
@@ -1862,9 +1882,13 @@
 					// remove spaces
 					html = html.replace(/[\u200B-\u200D\uFEFF]/g, '');
 					html = html.replace(/&#x200b;/gi, '');
-					html = html.replace(/&nbsp;/gi, ' ');
 
-					if (html.search(/^<p>(||\s||&nbsp;)<\/p>$/i) != -1)
+					if (this.opts.cleanSpaces)
+					{
+						html = html.replace(/&nbsp;/gi, ' ');
+					}
+
+					if (html.search(/^<p>(||\s||<br\s?\/?>||&nbsp;)<\/p>$/i) != -1)
 					{
 						return '';
 					}
@@ -1891,14 +1915,13 @@
 					// remove br in the of li
 					html = html.replace(new RegExp('<br\\s?/?></li>', 'gi'), '</li>');
 					html = html.replace(new RegExp('</li><br\\s?/?>', 'gi'), '</li>');
-
 					// remove verified
-					html = html.replace(new RegExp('<div(.*?) data-tagblock="redactor"(.*?[^>])>', 'gi'), '<div$1$2>');
+					html = html.replace(new RegExp('<div(.*?[^>]) data-tagblock="redactor"(.*?[^>])>', 'gi'), '<div$1$2>');
 					html = html.replace(new RegExp('<(.*?) data-verified="redactor"(.*?[^>])>', 'gi'), '<$1$2>');
-					html = html.replace(new RegExp('<span(.*?) rel="(.*?)"(.*?[^>])>', 'gi'), '<span$1$3>');
-					html = html.replace(new RegExp('<img(.*?) rel="(.*?)"(.*?[^>])>', 'gi'), '<img$1$3>');
-					html = html.replace(new RegExp('<img(.*?) style="" (.*?[^>])>', 'gi'), '<img$1 $2>');
-					html = html.replace(new RegExp('<img(.*?) style (.*?[^>])>', 'gi'), '<img$1 $2>');
+					html = html.replace(new RegExp('<span(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>', 'gi'), '<span$1$3>');
+					html = html.replace(new RegExp('<img(.*?[^>])\srel="(.*?[^>])"(.*?[^>])>', 'gi'), '<img$1$3>');
+					html = html.replace(new RegExp('<img(.*?[^>])\sstyle="" (.*?[^>])>', 'gi'), '<img$1 $2>');
+					html = html.replace(new RegExp('<img(.*?[^>])\sstyle (.*?[^>])>', 'gi'), '<img$1 $2>');
 					html = html.replace(new RegExp('<span class="redactor-invisible-space">(.*?)</span>', 'gi'), '$1');
 					html = html.replace(/ data-save-url="(.*?[^>])"/gi, '');
 
@@ -2314,7 +2337,7 @@
 					html = html.replace(/<img(.*?)>/gi, '[img$1]');
 
 					// remove all tags
-					html = html.replace(/<(.*?)>/gi, '');
+					html = html.replace(/<([Ss]*?)>/gi, '');
 
 					html = html.replace(/\[img(.*?)\]/gi, '<img$1>');
 
@@ -2757,7 +2780,8 @@
 								style: s.style,
 								'class': s.class,
 								attr: s.attr,
-								data: s.data
+								data: s.data,
+								clear: s.clear
 							};
 
 							dropdownObject[name] = {
@@ -2811,7 +2835,10 @@
 					var $dropdown = $button.data('dropdown').appendTo(document.body);
 
 					// ios keyboard hide
-					document.activeElement.blur();
+					if (this.utils.isMobile() && !this.utils.browser('msie'))
+					{
+						document.activeElement.blur();
+					}
 
 					if ($button.hasClass('dropact'))
 					{
@@ -2828,6 +2855,7 @@
 
 						var keyPosition = $button.offset();
 
+						// fix right placement
 						var dropdownWidth = $dropdown.width();
 
 						/* BEGIN HACK! */
@@ -2882,14 +2910,14 @@
 
 					$dropdown.on('mouseover', function() {
 
-						$body.addClass('body-hidden');
+						$body.addClass('body-redactor-hidden');
 						$body.css('margin-right', ($body.width() - width) + 'px');
 
 					 });
 
 					$dropdown.on('mouseout', function() {
 
-						$body.removeClass('body-hidden').css('margin-right', 0);
+						$body.removeClass('body-redactor-hidden').css('margin-right', 0);
 
 					});
 
@@ -2900,7 +2928,7 @@
 				{
 					this.$toolbar.find('a.dropact').removeClass('redactor-act').removeClass('dropact');
 
-					$(document.body).removeClass('body-hidden').css('margin-right', 0);
+					$(document.body).removeClass('body-redactor-hidden').css('margin-right', 0);
 					$('.redactor-dropdown').hide();
 					this.core.setCallback('dropdownHide');
 				},
@@ -2970,12 +2998,15 @@
 					this.selection.restore();
 					this.buffer.set();
 
-					this.insert.html(link);
+					this.insert.htmlWithoutClean(link);
 
 					if (typeof json == 'string') return;
 
 					var linkmarker = $(this.$editor.find('a#filelink-marker'));
-					if (linkmarker.size() !== 0) linkmarker.removeAttr('id');
+					if (linkmarker.size() !== 0)
+					{
+						linkmarker.removeAttr('id').removeAttr('style');
+					}
 					else linkmarker = false;
 
 					this.core.setCallback('fileUpload', linkmarker, json);
@@ -3194,9 +3225,10 @@
 				},
 				setEditable: function($image)
 				{
-					if (!this.opts.imageEditable) return;
-
-					$image.on('dragstart', $.proxy(this.image.onDrag, this));
+					if (this.opts.imageEditable)
+					{
+						$image.on('dragstart', $.proxy(this.image.onDrag, this));
+					}
 
 					$image.on('mousedown', $.proxy(this.image.hideResize, this));
 					$image.on('click touchstart', $.proxy(function(e)
@@ -3204,7 +3236,6 @@
 						this.observe.image = $image;
 
 						if (this.$editor.find('#redactor-image-box').size() !== 0) return false;
-
 
 						this.image.resizer = this.image.loadEditableControls($image);
 
@@ -3216,30 +3247,35 @@
 
 						this.image.resizer.on('mousedown.redactor touchstart.redactor', $.proxy(function(e)
 						{
-							e.preventDefault();
-
-						    this.image.resizeHandle = {
-						        x : e.pageX,
-						        y : e.pageY,
-						        el : $image,
-						        ratio: $image.width() / $image.height(),
-						        h: $image.height()
-						    };
-
-						    e = e.originalEvent || e;
-
-						    if (e.targetTouches)
-						    {
-						         this.image.resizeHandle.x = e.targetTouches[0].pageX;
-						         this.image.resizeHandle.y = e.targetTouches[0].pageY;
-						    }
-
-							this.image.startResize();
-
+							this.image.setResizable(e, $image);
 						}, this));
 
 
 					}, this));
+				},
+				setResizable: function(e, $image)
+				{
+					e.preventDefault();
+
+				    this.image.resizeHandle = {
+				        x : e.pageX,
+				        y : e.pageY,
+				        el : $image,
+				        ratio: $image.width() / $image.height(),
+				        h: $image.height()
+				    };
+
+				    e = e.originalEvent || e;
+
+				    if (e.targetTouches)
+				    {
+				         this.image.resizeHandle.x = e.targetTouches[0].pageX;
+				         this.image.resizeHandle.y = e.targetTouches[0].pageY;
+				    }
+
+					this.image.startResize();
+
+
 				},
 				startResize: function()
 				{
@@ -3316,7 +3352,11 @@
 					var imageBox = this.$editor.find('#redactor-image-box');
 					if (imageBox.size() === 0) return;
 
-					this.image.editter.remove();
+					if (this.opts.imageEditable)
+					{
+						this.image.editter.remove();
+					}
+
 					$(this.image.resizer).remove();
 
 					imageBox.find('img').css({
@@ -3344,6 +3384,29 @@
 					this.code.sync();
 
 				},
+				loadResizableControls: function($image, imageBox)
+				{
+					if (this.opts.imageResizable && !this.utils.isMobile())
+					{
+						var imageResizer = $('<span id="redactor-image-resizer" data-redactor="verified"></span>');
+
+						if (!this.utils.isDesktop())
+						{
+							imageResizer.css({ width: '15px', height: '15px' });
+						}
+
+						imageResizer.attr('contenteditable', false);
+						imageBox.append(imageResizer);
+						imageBox.append($image);
+
+						return imageResizer;
+					}
+					else
+					{
+						imageBox.append($image);
+						return false;
+					}
+				},
 				loadEditableControls: function($image)
 				{
 					var imageBox = $('<span id="redactor-image-box" data-redactor="verified">');
@@ -3367,42 +3430,26 @@
 
 					$image.css('opacity', '.5').after(imageBox);
 
-					// editter
-					this.image.editter = $('<span id="redactor-image-editter" data-redactor="verified">' + this.lang.get('edit') + '</span>');
-					this.image.editter.attr('contenteditable', false);
-					this.image.editter.on('click', $.proxy(function()
+
+					if (this.opts.imageEditable)
 					{
-						this.image.showEdit($image);
-					}, this));
-
-					imageBox.append(this.image.editter);
-
-					// position correction
-					var editerWidth = this.image.editter.innerWidth();
-					this.image.editter.css('margin-left', '-' + editerWidth/2 + 'px');
-
-
-					// resizer
-					if (this.opts.imageResizable && !this.utils.isMobile())
-					{
-						var imageResizer = $('<span id="redactor-image-resizer" data-redactor="verified"></span>');
-
-						if (!this.utils.isDesktop())
+						// editter
+						this.image.editter = $('<span id="redactor-image-editter" data-redactor="verified">' + this.lang.get('edit') + '</span>');
+						this.image.editter.attr('contenteditable', false);
+						this.image.editter.on('click', $.proxy(function()
 						{
-							imageResizer.css({ width: '15px', height: '15px' });
-						}
+							this.image.showEdit($image);
+						}, this));
 
-						imageResizer.attr('contenteditable', false);
-						imageBox.append(imageResizer);
-						imageBox.append($image);
+						imageBox.append(this.image.editter);
 
-						return imageResizer;
+						// position correction
+						var editerWidth = this.image.editter.innerWidth();
+						this.image.editter.css('margin-left', '-' + editerWidth/2 + 'px');
 					}
-					else
-					{
-						imageBox.append($image);
-						return false;
-					}
+
+					return this.image.loadResizableControls($image, imageBox);
+
 				},
 				remove: function(image)
 				{
@@ -3667,8 +3714,8 @@
 				},
 				format: function(tag, type, value)
 				{
-					// Stop formatting pre
-					if (this.utils.isCurrentOrParent('PRE')) return;
+					// Stop formatting pre and headers
+					if (this.utils.isCurrentOrParent('PRE') || this.utils.isCurrentOrParentHeader()) return;
 
 					var tags = ['b', 'bold', 'i', 'italic', 'underline', 'strikethrough', 'deleted', 'superscript', 'subscript'];
 					var replaced = ['strong', 'strong', 'em', 'em', 'u', 'del', 'del', 'sup', 'sub'];
@@ -3719,14 +3766,10 @@
 
 					node = this.inline.setFormat(node);
 
-					this.insert.node(node);
-
-					// 10.0.5 inline focus issue
-					//this.caret.setEnd(node);
+					var node = this.insert.node(node);
+					this.caret.setEnd(node);
 
 					this.code.sync();
-
-					return;
 				},
 				formatMultiple: function(tag)
 				{
@@ -4084,9 +4127,10 @@
 					else
 					{
 						if (this.clean.singleLine) this.insert.execHtml(html);
-						else document.execCommand('insertHTML', null, html);
+						else document.execCommand('insertHTML', false, html);
 
 						this.insert.htmlFixMozilla();
+
 					}
 
 					this.clean.normalizeLists();
@@ -4306,6 +4350,29 @@
 						return false;
 					}
 
+					// ie and ff exit from table
+					if (this.opts.enterKey && (this.utils.browser('msie') || this.utils.browser('mozilla')) && (key === this.keyCode.DOWN || key === this.keyCode.RIGHT))
+					{
+						var isEndOfTable = false;
+						var $table = false;
+						if (this.keydown.block && this.keydown.block.tagName === 'TD')
+						{
+							$table = $(this.keydown.block).closest('table');
+						}
+
+						if ($table && $table.find('td').last()[0] === this.keydown.block)
+						{
+							isEndOfTable = true;
+						}
+
+						if (this.utils.isEndOfElement() && isEndOfTable)
+						{
+							var node = $(this.opts.emptyHtml);
+							$table.after(node);
+							this.caret.setStart(node);
+						}
+					}
+
 					// down
 					if (this.opts.enterKey && key === this.keyCode.DOWN)
 					{
@@ -4392,6 +4459,8 @@
 						{
 							return this.keydown.insertParagraph(e);
 						}
+
+
 					}
 
 
@@ -4538,7 +4607,7 @@
 				{
 					this.buffer.set();
 
-					if (this.keydown.blockquote && this.utils.isEndOfElement())
+					if (this.utils.isEndOfElement())
 					{
 						return this.keydown.insertDblBreakLine(e);
 					}
@@ -4547,7 +4616,7 @@
 				},
 				onTab: function(e, key)
 				{
-					if (!this.opts.tabFocus) return true;
+					if (!this.opts.tabKey) return true;
 					if (this.utils.isEmpty(this.code.get()) && this.opts.tabAsSpaces === false) return true;
 
 					e.preventDefault();
@@ -4798,6 +4867,13 @@
 						this.keyup.replaceToParagraph();
 					}
 
+					// replace div after lists
+					if (!this.opts.linebreaks && this.utils.isRedactorParent(this.keyup.current) && this.keyup.current.tagName === 'DIV')
+					{
+						this.keyup.replaceToParagraph(false);
+					}
+
+
 					if (!this.opts.linebreaks && $(this.keyup.parent).hasClass('redactor-invisible-space') && ($parent === false || $parent[0].tagName == 'BODY'))
 					{
 						$(this.keyup.parent).contents().unwrap();
@@ -4805,7 +4881,7 @@
 					}
 
 					// linkify
-					if (this.opts.convertLinks && (this.opts.convertUrlLinks || this.opts.convertImageLinks || this.opts.convertVideoLinks) && key === this.keyCode.ENTER)
+					if (this.keyup.isLinkify(key))
 					{
 						this.formatLinkify(this.opts.linkProtocol, this.opts.convertLinks, this.opts.convertUrlLinks, this.opts.convertImageLinks, this.opts.convertVideoLinks, this.opts.linkSize);
 
@@ -4849,10 +4925,24 @@
 						return this.keyup.formatEmpty(e);
 					}
 				},
-				replaceToParagraph: function()
+				isLinkify: function(key)
+				{
+					return this.opts.convertLinks && (this.opts.convertUrlLinks || this.opts.convertImageLinks || this.opts.convertVideoLinks) && key === this.keyCode.ENTER && !this.utils.isCurrentOrParent('PRE');
+				},
+				replaceToParagraph: function(clone)
 				{
 					var $current = $(this.keyup.current);
-					var node = $('<p>').append($current.clone());
+
+					var node;
+					if (clone === false)
+					{
+						node = $('<p>').append($current.html());
+					}
+					else
+					{
+						node = $('<p>').append($current.clone());
+					}
+
 					$current.replaceWith(node);
 					var next = $(node).next();
 					if (typeof(next[0]) !== 'undefined' && next[0].tagName == 'BR')
@@ -5204,6 +5294,7 @@
 			return {
 				toggle: function(cmd)
 				{
+					this.placeholder.remove();
 					if (!this.utils.browser('msie')) this.$editor.focus();
 
 					this.buffer.set();
@@ -5254,6 +5345,10 @@
 				},
 				insert: function(cmd)
 				{
+					var parent = this.selection.getParent();
+					var current = this.selection.getCurrent();
+					var $td = $(current).closest('td, th');
+
 					if (this.utils.browser('msie') && this.opts.linebreaks)
 					{
 						this.list.insertInIe(cmd);
@@ -5263,8 +5358,24 @@
 						document.execCommand('insert' + cmd);
 					}
 
-					var parent = this.selection.getParent();
-					var $list = $(parent).closest('ol, ul');
+					var $list = $(this.selection.getParent()).closest('ol, ul');
+
+					if ($td.size() !== 0)
+					{
+						var prev = $td.prev();
+						var html = $td.html();
+						$td.html('');
+						if (prev && prev.length === 1 && (prev[0].tagName === 'TD' || prev[0].tagName === 'TH'))
+						{
+							$(prev).after($td);
+						}
+						else
+						{
+							$(parent).prepend($td);
+						}
+
+						$td.html(html);
+					}
 
 					if (this.utils.isEmpty($list.find('li').text()))
 					{
@@ -5468,9 +5579,12 @@
 				show: function()
 				{
 					// ios keyboard hide
-					document.activeElement.blur();
+					if (this.utils.isMobile() && !this.utils.browser('msie'))
+					{
+						document.activeElement.blur();
+					}
 
-					$(document.body).removeClass('body-hidden');
+					$(document.body).removeClass('body-redactor-hidden');
 					this.modal.bodyOveflow = $(document.body).css('overflow');
 					$(document.body).css('overflow', 'hidden');
 
@@ -5783,11 +5897,15 @@
 				{
 					var $link = $(e.target);
 					var $parent = $link.closest('a');
-					if ($parent.size() !== 0 && $parent[0].tagName === 'A' && $link[0].tagName !== 'A')
+					var tag = ($link.size() !== 0) ? $link[0].tagName : false;
+
+					if ($parent[0].tagName === 'A')
 					{
-						$link = $parent;
+						if (tag === 'IMG') return;
+						else if (tag !== 'A') $link = $parent;
 					}
-					else if ($link.size() === 0 || $link[0].tagName !== 'A')
+
+					if (tag !== 'A')
 					{
 						return;
 					}
@@ -6009,7 +6127,7 @@
 				},
 				createPasteBox: function()
 				{
-					this.$pasteBox = $('<div>').html(' ').attr('contenteditable', 'true').css({ position: 'fixed', width: 0, top: 0, left: '-9999px' });
+					this.$pasteBox = $('<div>').html('').attr('contenteditable', 'true').css({ position: 'fixed', width: 0, top: 0, left: '-9999px' });
 
 					this.$box.parent().append(this.$pasteBox);
 					this.$pasteBox.focus();
@@ -6037,6 +6155,18 @@
 
 					setTimeout($.proxy(this.clean.clearUnverified, this), 10);
 
+					// clean empty spans
+					setTimeout($.proxy(function()
+					{
+						var spans = this.$editor.find('span');
+						$.each(spans, function(i,s)
+						{
+							var html = s.innerHTML.replace(/[\u200B-\u200D\uFEFF]/, '');
+							if (html === '' && s.attributes.length === 0) $(s).remove();
+
+						});
+
+					}, this), 10);
 				}
 			};
 		},
@@ -7246,7 +7376,7 @@
 				},
 				setFixed: function()
 				{
-					if (this.utils.isMobile()) return;
+					if (!this.utils.isDesktop()) return;
 					if (this.opts.toolbarExternal) return;
 					if (!this.opts.toolbarFixed) return;
 
@@ -7727,6 +7857,7 @@
 					html = html.replace(/<\/?br\s?\/?>/g, '');
 					html = html.replace(/\s/g, '');
 					html = html.replace(/^<p>[^\W\w\D\d]*?<\/p>$/i, '');
+					html = html.replace(/<iframe(.*?[^>])>$/i, 'iframe');
 
 					// remove empty tags
 					if (removeEmptyTags !== false)
@@ -7950,6 +8081,10 @@
 
 					return el;
 				},
+				isCurrentOrParentHeader: function()
+				{
+					return this.utils.isCurrentOrParent(['H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
+				},
 				isCurrentOrParent: function(tagName)
 				{
 					var parent = this.selection.getParent();
@@ -7975,6 +8110,8 @@
 				},
 				isCurrentOrParentOne: function(current, parent, tagName)
 				{
+					tagName = tagName.toUpperCase();
+
 					return parent && parent.tagName === tagName ? parent : current && current.tagName === tagName ? current : false;
 				},
 
@@ -8022,7 +8159,7 @@
 	// LINKIFY
 	$.Redactor.fn.formatLinkify = function(protocol, convertLinks, convertUrlLinks, convertImageLinks, convertVideoLinks, linkSize)
 	{
-		var urlCheck = '((?:http[s]?:\\/\\/(?:www\\.)?|www\\.){1}(?:[0-9A-Za-z\\-%_]+\\.)+[a-zA-Z]{2,}(?::[0-9]+)?(?:(?:/[0-9A-Za-z\\-\\.%\+_]*)+)?(?:\\?(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?(?:&(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?)*)?(?:#[0-9A-Za-z\\-\\.%_\\+=\\?&;]*)?)';
+		var urlCheck = '((?:http[s]?:\\/\\/(?:www\\.)?|www\\.){1}(?:[0-9A-Za-z\\-%_]+\\.)+[a-zA-Z]{2,}(?::[0-9]+)?(?:(?:/[0-9A-Za-z\\-#\\.%\+_]*)+)?(?:\\?(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?(?:&(?:[0-9A-Za-z\\-\\.%_]+(?:=[0-9A-Za-z\\-\\.%_\\+]*)?)?)*)?(?:#[0-9A-Za-z\\-\\.%_\\+=\\?&;]*)?)';
 		var regex = new RegExp(urlCheck, 'gi');
 		var rProtocol = /(https?|ftp):\/\//i;
 		var urlImage = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi;
@@ -8031,7 +8168,8 @@
 		while (i--)
 		{
 			var n = childNodes[i];
-			if (n.nodeType === 3)
+
+			if (n.nodeType === 3 && n.parentNode !== 'PRE')
 			{
 				var html = n.nodeValue;
 
@@ -8093,7 +8231,7 @@
 					$(n).after(html).remove();
 				}
 			}
-			else if (n.nodeType === 1 && !/^(a|button|textarea)$/i.test(n.tagName))
+			else if (n.nodeType === 1 && !/^(pre|a|button|textarea)$/i.test(n.tagName))
 			{
 				$.Redactor.fn.formatLinkify.call(n, protocol, convertLinks, convertUrlLinks, convertImageLinks, convertVideoLinks, linkSize);
 			}
