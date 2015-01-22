@@ -8,7 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\SavableComponentTypeInterface;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\models\BaseElementModel;
 
 /**
@@ -259,11 +259,11 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 *
 	 * If the method returns `false`, the query will be stopped before it ever gets a chance to execute.
 	 *
-	 * @param DbCommand $query The database query currently being built to find the elements.
+	 * @param Command $query The database query currently being built to find the elements.
 	 * @param mixed     $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
 	 *                         if any.
 	 *
 	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.
 	 */
-	public function modifyElementsQuery(DbCommand $query, $value);
+	public function modifyElementsQuery(Command $query, $value);
 }

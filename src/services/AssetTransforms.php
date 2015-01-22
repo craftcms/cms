@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\ImageHelper;
@@ -483,7 +483,7 @@ class AssetTransforms extends Component
 		unset($values['detectedFormat']);
 		unset($values['transform']);
 
-		// Let DbCommand take care of the audit columns.
+		// Let Command take care of the audit columns.
 		unset($values['dateCreated']);
 		unset($values['dateUpdated']);
 
@@ -951,9 +951,9 @@ class AssetTransforms extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving transforms.
+	 * Returns a Command object prepped for retrieving transforms.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createTransformQuery()
 	{

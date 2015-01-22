@@ -24,15 +24,20 @@ class Connection extends \yii\db\Connection
 	// =========================================================================
 
 	/**
-	 * @param null $query
+	 * Creates a command for execution.
 	 *
-	 * @return DbCommand
+	 * @param string $sql the SQL statement to be executed
+	 * @param array $params the parameters to be bound to the SQL statement
+	 * @return Command the DB command
 	 */
-	public function createCommand($query = null)
+	public function createCommand($sql = null, $params = [])
 	{
-		$this->setActive(true);
+		$command = new Command([
+			'db' => $this,
+			'sql' => $sql,
+		]);
 
-		return new DbCommand($this, $query);
+		return $command->bindValues($params);
 	}
 
 	/**
@@ -42,7 +47,7 @@ class Connection extends \yii\db\Connection
 	 *                                     to an array or database table names, they will get merged with the default
 	 *                                     list of table names whose data is to be ignored during a database backup.
 	 *
-	 * @return bool|string The file path to the database backup, or false if something went wrong.
+	 * @return bool|string The file path to the database backup, or false if something ennt wrong.
 	 */
 	public function backup($ignoreDataTables = null)
 	{

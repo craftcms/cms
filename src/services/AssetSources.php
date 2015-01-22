@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
@@ -526,9 +526,9 @@ class AssetSources extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a DbCommand object prepped for retrieving sources.
+	 * Returns a Command object prepped for retrieving sources.
 	 *
-	 * @return DbCommand
+	 * @return Command
 	 */
 	private function _createSourceQuery()
 	{

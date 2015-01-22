@@ -8,7 +8,7 @@
 namespace craft\app\elementtypes;
 
 use Craft;
-use craft\app\db\DbCommand;
+use craft\app\db\Command;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
@@ -263,12 +263,12 @@ class Category extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param DbCommand            $query
+	 * @param Command            $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('categories.groupId')

@@ -16,27 +16,38 @@ use craft\app\enums\ConfigCategory;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Schema extends \CMysqlSchema
+class Schema extends \yii\db\mysql\Schema
 {
-	// Public Methods
+	// Properties
 	// =========================================================================
-
-	/**
-	 * Constructor.
-	 *
-	 * @param \CDbConnection $conn The database connection.
-	 */
-	public function __construct($conn)
-	{
-		parent::__construct($conn);
-
-		$this->columnTypes['mediumtext'] = 'mediumtext';
-	}
 
 	/**
 	 * @var int The maximum length that objects' names can be.
 	 */
 	public $maxObjectNameLength = 64;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc \yii\base\Object::init()
+	 */
+	public function init()
+	{
+		parent::init();
+
+		$this->typeMap['mediumtext'] = 'mediumtext';
+	}
+
+	/**
+	 * Creates a query builder for the database.
+	 * This method may be overridden by child classes to create a DBMS-specific query builder.
+	 * @return QueryBuilder query builder instance
+	 */
+	public function createQueryBuilder()
+	{
+		return new QueryBuilder($this->db);
+	}
 
 	/**
 	 * @param $table
@@ -243,7 +254,7 @@ class Schema extends \CMysqlSchema
 
 		foreach ($values as $value)
 		{
-			$sql .= ', '.$this->getDbConnection()->quoteValue($value);
+			$sql .= ', '.$this->db->quoteValue($value);
 		}
 
 		$sql .= ')';
@@ -295,9 +306,8 @@ class Schema extends \CMysqlSchema
 	{
 		if (!$schema)
 		{
-			$connection = $this->getDbConnection();
-			$likeSql = ($connection->tablePrefix ? ' LIKE \''.$connection->tablePrefix.'%\'' : '');
-			return $connection->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
+			$likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
+			return $this->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
 		}
 		else
 		{
