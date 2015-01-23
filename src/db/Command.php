@@ -629,20 +629,6 @@ class Command extends \yii\db\Command
 		return $this->setText($this->db->getSchema()->alterColumn($table, $column, $type, $newName, $after))->execute();
 	}
 
-	/**
-	 * @param string $table
-	 * @param string $columns
-	 *
-	 * @return int
-	 */
-	public function dropPrimaryKey($table, $columns)
-	{
-		$name = $this->db->getPrimaryKeyName($table, $columns);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::dropPrimaryKey($name, $table);
-	}
-
 	// Private Methods
 	// =========================================================================
 
