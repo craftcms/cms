@@ -306,7 +306,7 @@ class Install extends Component
 		$db->createCommand()->setText($db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
 
 		// Give it a composite primary key
-		$db->createCommand()->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
+		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName('searchindex', 'elementId,attribute,fieldId,locale'), 'searchindex', 'elementId,attribute,fieldId,locale')->execute();
 
 		// Add the FULLTEXT index on `keywords`
 		$db->createCommand()->setText('CREATE FULLTEXT INDEX ' .

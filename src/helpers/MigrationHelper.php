@@ -329,7 +329,7 @@ class MigrationHelper
 		$db->createCommand()->dropColumn($table, 'id_old');
 
 		// Set the new PK
-		$db->createCommand()->addPrimaryKey($table, 'id');
+		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName($table, 'id'), $table, 'id')->execute();
 
 		// Make 'id' a FK to elements
 		$db->createCommand()->addForeignKey($db->getForeignKeyName($table, 'id'), $table, 'id', 'elements', 'id', 'CASCADE')->execute();

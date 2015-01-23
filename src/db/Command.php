@@ -635,20 +635,6 @@ class Command extends \yii\db\Command
 	 *
 	 * @return int
 	 */
-	public function addPrimaryKey($table, $columns)
-	{
-		$name = $this->db->getPrimaryKeyName($table, $columns);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::addPrimaryKey($name, $table, $columns);
-	}
-
-	/**
-	 * @param string $table
-	 * @param string $columns
-	 *
-	 * @return int
-	 */
 	public function dropPrimaryKey($table, $columns)
 	{
 		$name = $this->db->getPrimaryKeyName($table, $columns);
