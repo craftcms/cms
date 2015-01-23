@@ -405,19 +405,20 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function dropForeignKeys()
 	{
+		$db = Craft::$app->getDb();
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (Craft::$app->getDb()->tableExists($table, true))
+		if ($db->tableExists($table, true))
 		{
 			foreach ($this->getBelongsToRelations() as $name => $config)
 			{
 				// Make sure the record's table exists
 				$otherRecord = new $config[1];
 
-				if (Craft::$app->getDb()->tableExists($otherRecord->getTableName()))
+				if ($db->tableExists($otherRecord->getTableName()))
 				{
-					Craft::$app->getDb()->createCommand()->dropForeignKey($table, $config[2]);
+					$db->createCommand()->dropForeignKey($db->getForeignKeyName($table, $config[2]), $table)->execute();
 				}
 			}
 		}

@@ -630,20 +630,6 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @param string $table
-	 * @param string $columns
-	 *
-	 * @return int
-	 */
-	public function dropForeignKey($table, $columns)
-	{
-		$name = $this->db->getForeignKeyName($table, $columns);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::dropForeignKey($name, $table);
-	}
-
-	/**
 	 * @param      $table
 	 * @param      $columns
 	 * @param bool $unique
