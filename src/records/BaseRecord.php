@@ -305,14 +305,15 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Create the table
-		Craft::$app->getDb()->createCommand()->createTable($table, $columns, null, $addIdColumn);
+		$db = Craft::$app->getDb();
+		$db->createCommand()->createTable($table, $columns, null, $addIdColumn);
 
 		// Create the indexes
 		foreach ($indexes as $index)
 		{
 			$columns = ArrayHelper::toArray($index['columns']);
 			$unique = !empty($index['unique']);
-			Craft::$app->getDb()->createCommand()->createIndex($table, implode(',', $columns), $unique);
+			$db->createCommand()->createIndex($db->getIndexName($table, $columns), $table, implode(',', $columns), $unique)->execute();
 		}
 	}
 
@@ -344,12 +345,13 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function dropTable()
 	{
+		$db = Craft::$app->getDb();
 		$table = $this->getTableName();
 
 		// Does the table exist?
-		if (Craft::$app->getDb()->tableExists($table))
+		if ($db->tableExists($table))
 		{
-			Craft::$app->getDb()->createCommand()->dropTable($table);
+			$db->createCommand()->dropTable($table);
 		}
 	}
 
@@ -394,7 +396,7 @@ abstract class BaseRecord extends \CActiveRecord
 			}
 
 			$db = Craft::$app->getDb();
-			Craft::$app->getDb()->createCommand()->addForeignKey($db->getForeignKeyName($table, $config[2]), $table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate)->execute();
+			$db->createCommand()->addForeignKey($db->getForeignKeyName($table, $config[2]), $table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate)->execute();
 		}
 	}
 

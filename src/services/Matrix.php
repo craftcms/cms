@@ -1069,7 +1069,7 @@ class Matrix extends Component
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
 		]);
 
-		$db->createCommand()->createIndex($name, 'elementId,locale', true);
+		$db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 	}

@@ -630,21 +630,6 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @param      $table
-	 * @param      $columns
-	 * @param bool $unique
-	 *
-	 * @return int
-	 */
-	public function createIndex($table, $columns, $unique = false)
-	{
-		$name = $this->db->getIndexName($table, $columns, $unique);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::createIndex($name, $table, $columns, $unique);
-	}
-
-	/**
 	 * @param string $table
 	 * @param string $columns
 	 * @param bool   $unique

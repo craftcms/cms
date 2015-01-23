@@ -540,7 +540,9 @@ class MigrationHelper
 	public static function restoreIndex($index)
 	{
 		$db = Craft::$app->getDb();
-		$db->createCommand()->createIndex($index->table->name, implode(',', $index->columns), $index->unique);
+		$table = $index->table->name;
+		$columns = implode(',', $index->columns);
+		$db->createCommand()->createIndex($db->getIndexName($table, $columns), $table, $columns, $index->unique)->execute();
 
 		// Update our record of its name
 		$index->name = $db->getIndexName($index->table->name, $index->columns, $index->unique);
