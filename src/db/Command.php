@@ -632,21 +632,6 @@ class Command extends \yii\db\Command
 	/**
 	 * @param string $table
 	 * @param string $columns
-	 * @param bool   $unique
-	 *
-	 * @return int
-	 */
-	public function dropIndex($table, $columns, $unique = false)
-	{
-		$name = $this->db->getIndexName($table, $columns, $unique);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::dropIndex($name, $table);
-	}
-
-	/**
-	 * @param string $table
-	 * @param string $columns
 	 *
 	 * @return int
 	 */
