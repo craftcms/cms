@@ -393,7 +393,8 @@ abstract class BaseRecord extends \CActiveRecord
 				$onUpdate = null;
 			}
 
-			Craft::$app->getDb()->createCommand()->addForeignKey($table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate);
+			$db = Craft::$app->getDb();
+			Craft::$app->getDb()->createCommand()->addForeignKey($db->getForeignKeyName($table, $config[2]), $table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate)->execute();
 		}
 	}
 

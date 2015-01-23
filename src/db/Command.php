@@ -630,25 +630,6 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @param      $table
-	 * @param      $columns
-	 * @param      $refTable
-	 * @param      $refColumns
-	 * @param null $delete
-	 * @param null $update
-	 *
-	 * @return int
-	 */
-	public function addForeignKey($table, $columns, $refTable, $refColumns, $delete = null, $update = null)
-	{
-		$name = $this->db->getForeignKeyName($table, $columns);
-		$table = $this->db->addTablePrefix($table);
-		$refTable = $this->db->addTablePrefix($refTable);
-
-		return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
-	}
-
-	/**
 	 * @param string $table
 	 * @param string $columns
 	 *

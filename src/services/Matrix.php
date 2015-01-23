@@ -1063,14 +1063,15 @@ class Matrix extends Component
 	 */
 	private function _createContentTable($name)
 	{
-		Craft::$app->getDb()->createCommand()->createTable($name, [
+		$db = Craft::$app->getDb();
+		$db->createCommand()->createTable($name, [
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex($name, 'elementId,locale', true);
-		Craft::$app->getDb()->createCommand()->addForeignKey($name, 'elementId', 'elements', 'id', 'CASCADE', null);
-		Craft::$app->getDb()->createCommand()->addForeignKey($name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+		$db->createCommand()->createIndex($name, 'elementId,locale', true);
+		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 	}
 
 	/**

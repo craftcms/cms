@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Connection;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
 use craft\app\enums\EmailerType;
@@ -71,7 +72,9 @@ class Install extends Component
 		$records = $this->findInstallableRecords();
 
 		// Start the transaction
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$db = Craft::$app->getDb();
+
+		$transaction = $db->getCurrentTransaction() === null ? $db->beginTransaction() : null;
 		try
 		{
 			Craft::log('Installing Craft.');
@@ -80,16 +83,16 @@ class Install extends Component
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
 
-			$this->_createContentTable();
-			$this->_createRelationsTable();
-			$this->_createShunnedMessagesTable();
-			$this->_createSearchIndexTable();
-			$this->_createTemplateCacheTables();
-			$this->_createAndPopulateInfoTable($inputs);
+			$this->_createContentTable($db);
+			$this->_createRelationsTable($db);
+			$this->_createShunnedMessagesTable($db);
+			$this->_createSearchIndexTable($db);
+			$this->_createTemplateCacheTables($db);
+			$this->_createAndPopulateInfoTable($inputs, $db);
 
-			$this->_createAssetTransformIndexTable();
-			$this->_createRackspaceAccessTable();
-			$this->_createDeprecationErrorsTable();
+			$this->_createAssetTransformIndexTable($db);
+			$this->_createRackspaceAccessTable($db);
+			$this->_createDeprecationErrorsTable($db);
 
 			$this->_populateMigrationTable();
 
@@ -112,7 +115,7 @@ class Install extends Component
 		// Craft, you are installed now.
 		Craft::$app->setIsInstalled();
 
-		$this->_addLocale($inputs['locale']);
+		$this->_addLocale($inputs['locale'], $db);
 		$this->_addUser($inputs);
 
 		if (!Craft::$app->getRequest()->getIsConsoleRequest())
@@ -210,22 +213,23 @@ class Install extends Component
 	/**
 	 * Creates the content table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createContentTable()
+	private function _createContentTable($db)
 	{
 		Craft::log('Creating the content table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('content', [
+		$db->createCommand()->createTable('content', [
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false],
 			'title'     => ['column' => ColumnType::Varchar],
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex('content', 'elementId,locale', true);
-		Craft::$app->getDb()->createCommand()->createIndex('content', 'title');
-		Craft::$app->getDb()->createCommand()->addForeignKey('content', 'elementId', 'elements', 'id', 'CASCADE', null);
-		Craft::$app->getDb()->createCommand()->addForeignKey('content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+		$db->createCommand()->createIndex('content', 'elementId,locale', true);
+		$db->createCommand()->createIndex('content', 'title');
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('content', 'elementId'), 'content', 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('content', 'locale'), 'content', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 
 		Craft::log('Finished creating the content table.');
 	}
@@ -233,13 +237,14 @@ class Install extends Component
 	/**
 	 * Creates the relations table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createRelationsTable()
+	private function _createRelationsTable($db)
 	{
 		Craft::log('Creating the relations table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('relations', [
+		$db->createCommand()->createTable('relations', [
 			'fieldId'      => ['column' => ColumnType::Int, 'null' => false],
 			'sourceId'     => ['column' => ColumnType::Int, 'null' => false],
 			'sourceLocale' => ['column' => ColumnType::Locale],
@@ -247,11 +252,11 @@ class Install extends Component
 			'sortOrder'    => ['column' => ColumnType::SmallInt],
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex('relations', 'fieldId,sourceId,sourceLocale,targetId', true);
-		Craft::$app->getDb()->createCommand()->addForeignKey('relations', 'fieldId', 'fields', 'id', 'CASCADE');
-		Craft::$app->getDb()->createCommand()->addForeignKey('relations', 'sourceId', 'elements', 'id', 'CASCADE');
-		Craft::$app->getDb()->createCommand()->addForeignKey('relations', 'sourceLocale', 'locales', 'locale', 'CASCADE', 'CASCADE');
-		Craft::$app->getDb()->createCommand()->addForeignKey('relations', 'targetId', 'elements', 'id', 'CASCADE');
+		$db->createCommand()->createIndex('relations', 'fieldId,sourceId,sourceLocale,targetId', true);
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'fieldId'), 'relations', 'fieldId', 'fields', 'id', 'CASCADE')->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'sourceId'), 'relations', 'sourceId', 'elements', 'id', 'CASCADE')->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'sourceLocale'), 'relations', 'sourceLocale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'targetId'), 'relations', 'targetId', 'elements', 'id', 'CASCADE')->execute();
 
 		Craft::log('Finished creating the relations table.');
 	}
@@ -259,19 +264,20 @@ class Install extends Component
 	/**
 	 * Creates the shunnedmessages table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createShunnedMessagesTable()
+	private function _createShunnedMessagesTable($db)
 	{
 		Craft::log('Creating the shunnedmessages table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('shunnedmessages', [
+		$db->createCommand()->createTable('shunnedmessages', [
 			'userId'     => ['column' => ColumnType::Int, 'null' => false],
 			'message'    => ['column' => ColumnType::Varchar, 'null' => false],
 			'expiryDate' => ['column' => ColumnType::DateTime],
 		]);
-		Craft::$app->getDb()->createCommand()->createIndex('shunnedmessages', 'userId,message', true);
-		Craft::$app->getDb()->createCommand()->addForeignKey('shunnedmessages', 'userId', 'users', 'id', 'CASCADE');
+		$db->createCommand()->createIndex('shunnedmessages', 'userId,message', true);
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('shunnedmessages', 'userId'), 'shunnedmessages', 'userId', 'users', 'id', 'CASCADE')->execute();
 
 		Craft::log('Finished creating the shunnedmessages table.');
 	}
@@ -279,14 +285,15 @@ class Install extends Component
 	/**
 	 * Creates the searchindex table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createSearchIndexTable()
+	private function _createSearchIndexTable($db)
 	{
 		Craft::log('Creating the searchindex table.');
 
 		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
-		$table = Craft::$app->getDb()->addTablePrefix('searchindex');
+		$table = $db->addTablePrefix('searchindex');
 
 		$columns = [
 			'elementId' => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),
@@ -296,16 +303,16 @@ class Install extends Component
 			'keywords'  => DbHelper::generateColumnDefinition(['column' => ColumnType::Text, 'null' => false]),
 		];
 
-		Craft::$app->getDb()->createCommand()->setText(Craft::$app->getDb()->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
+		$db->createCommand()->setText($db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
 
 		// Give it a composite primary key
-		Craft::$app->getDb()->createCommand()->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
+		$db->createCommand()->addPrimaryKey('searchindex', 'elementId,attribute,fieldId,locale');
 
 		// Add the FULLTEXT index on `keywords`
-		Craft::$app->getDb()->createCommand()->setText('CREATE FULLTEXT INDEX ' .
-			Craft::$app->getDb()->quoteTableName(Craft::$app->getDb()->getIndexName('searchindex', 'keywords')).' ON ' .
-			Craft::$app->getDb()->quoteTableName($table).' ' .
-			'('.Craft::$app->getDb()->quoteColumnName('keywords').')'
+		$db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
+			$db->quoteTableName($db->getIndexName('searchindex', 'keywords')).' ON ' .
+			$db->quoteTableName($table).' ' .
+			'('.$db->quoteColumnName('keywords').')'
 		)->execute();
 
 		Craft::log('Finished creating the searchindex table.');
@@ -314,13 +321,14 @@ class Install extends Component
 	/**
 	 * Creates the template cache tables.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createTemplateCacheTables()
+	private function _createTemplateCacheTables($db)
 	{
 		Craft::log('Creating the templatecaches table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('templatecaches', [
+		$db->createCommand()->createTable('templatecaches', [
 			'cacheKey'   => ['column' => ColumnType::Varchar, 'null' => false],
 			'locale'     => ['column' => ColumnType::Locale, 'null' => false],
 			'path'       => ['column' => ColumnType::Varchar],
@@ -328,31 +336,31 @@ class Install extends Component
 			'body'       => ['column' => ColumnType::MediumText, 'null' => false],
 		], null, true, false);
 
-		Craft::$app->getDb()->createCommand()->createIndex('templatecaches', 'expiryDate,cacheKey,locale,path');
-		Craft::$app->getDb()->createCommand()->addForeignKey('templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
+		$db->createCommand()->createIndex('templatecaches', 'expiryDate,cacheKey,locale,path');
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecaches', 'locale'), 'templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 
 		Craft::log('Finished creating the templatecaches table.');
 		Craft::log('Creating the templatecacheelements table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('templatecacheelements', [
+		$db->createCommand()->createTable('templatecacheelements', [
 			'cacheId'   => ['column' => ColumnType::Int, 'null' => false],
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 		], null, false, false);
 
-		Craft::$app->getDb()->createCommand()->addForeignKey('templatecacheelements', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
-		Craft::$app->getDb()->createCommand()->addForeignKey('templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null);
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'cacheId'), 'templatecacheelements', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'elementId'), 'templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
 
 		Craft::log('Finished creating the templatecacheelements table.');
 		Craft::log('Creating the templatecachecriteria table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('templatecachecriteria', [
+		$db->createCommand()->createTable('templatecachecriteria', [
 			'cacheId'  => ['column' => ColumnType::Int, 'null' => false],
 			'type'     => ['column' => ColumnType::Varchar, 'maxLength' => 150, 'null' => false],
 			'criteria' => ['column' => ColumnType::Text, 'null' => false],
 		], null, true, false);
 
-		Craft::$app->getDb()->createCommand()->addForeignKey('templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null);
-		Craft::$app->getDb()->createCommand()->createIndex('templatecachecriteria', 'type');
+		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecachecriteria', 'cacheId'), 'templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
+		$db->createCommand()->createIndex('templatecachecriteria', 'type');
 
 		Craft::log('Finished creating the templatecachecriteria table.');
 	}
@@ -360,17 +368,18 @@ class Install extends Component
 	/**
 	 * Populates the info table with install and environment information.
 	 *
-	 * @param $inputs
+	 * @param array      $inputs
+	 * @param Connection $db
 	 *
 	 * @throws Exception
 	 *
 	 * @return null
 	 */
-	private function _createAndPopulateInfoTable($inputs)
+	private function _createAndPopulateInfoTable($inputs, $db)
 	{
 		Craft::log('Creating the info table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('info', [
+		$db->createCommand()->createTable('info', [
 			'version'       => ['column' => ColumnType::Varchar,  'length' => 15,    'null' => false],
 			'build'         => ['column' => ColumnType::Int,      'length' => 11,    'unsigned' => true, 'null' => false],
 			'schemaVersion' => ['column' => ColumnType::Varchar,  'length' => 15,    'null' => false],
@@ -415,33 +424,35 @@ class Install extends Component
 	/**
 	 * Creates the Rackspace access table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createRackspaceAccessTable()
+	private function _createRackspaceAccessTable($db)
 	{
 		Craft::log('Creating the Rackspace access table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('rackspaceaccess', [
+		$db->createCommand()->createTable('rackspaceaccess', [
 			'connectionKey'  => ['column' => ColumnType::Varchar, 'required' => true],
 			'token'          => ['column' => ColumnType::Varchar, 'required' => true],
 			'storageUrl'     => ['column' => ColumnType::Varchar, 'required' => true],
 			'cdnUrl'         => ['column' => ColumnType::Varchar, 'required' => true],
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
+		$db->createCommand()->createIndex('rackspaceaccess', 'connectionKey', true);
 		Craft::log('Finished creating the Rackspace access table.');
 	}
 
 	/**
 	 * Creates the deprecationerrors table for The Deprecator (tm).
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createDeprecationErrorsTable()
+	private function _createDeprecationErrorsTable($db)
 	{
 		Craft::log('Creating the deprecationerrors table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('deprecationerrors', [
+		$db->createCommand()->createTable('deprecationerrors', [
 			'key'               => ['column' => ColumnType::Varchar, 'null' => false],
 			'fingerprint'       => ['column' => ColumnType::Varchar, 'null' => false],
 			'lastOccurrence'    => ['column' => ColumnType::DateTime, 'null' => false],
@@ -455,20 +466,21 @@ class Install extends Component
 			'traces'            => ['column' => ColumnType::Text],
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex('deprecationerrors', 'key,fingerprint', true);
+		$db->createCommand()->createIndex('deprecationerrors', 'key,fingerprint', true);
 		Craft::log('Finished creating the deprecationerrors table.');
 	}
 
 	/**
 	 * Create the Asset Transform Index table.
 	 *
+	 * @param Connection $db
 	 * @return null
 	 */
-	private function _createAssetTransformIndexTable()
+	private function _createAssetTransformIndexTable($db)
 	{
 		Craft::log('Creating the Asset transform index table.');
 
-		Craft::$app->getDb()->createCommand()->createTable('assettransformindex', [
+		$db->createCommand()->createTable('assettransformindex', [
 			'fileId'       => ['maxLength' => 11, 'column' => ColumnType::Int, 'required' => true],
 			'filename'     => ['maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => false],
 			'format'       => ['maxLength' => 255, 'column' => ColumnType::Varchar, 'required' => false],
@@ -479,7 +491,7 @@ class Install extends Component
 			'dateIndexed'  => ['column' => ColumnType::DateTime],
 		]);
 
-		Craft::$app->getDb()->createCommand()->createIndex('assettransformindex', 'sourceId, fileId, location');
+		$db->createCommand()->createIndex('assettransformindex', 'sourceId, fileId, location');
 		Craft::log('Finished creating the Asset transform index table.');
 	}
 
@@ -532,14 +544,15 @@ class Install extends Component
 	/**
 	 * Adds the initial locale to the database.
 	 *
-	 * @param string $locale
+	 * @param string     $locale
+	 * @param Connection $db
 	 *
 	 * @return null
 	 */
-	private function _addLocale($locale)
+	private function _addLocale($locale, $db)
 	{
 		Craft::log('Adding locale.');
-		Craft::$app->getDb()->createCommand()->insert('locales', ['locale' => $locale, 'sortOrder' => 1]);
+		$db->createCommand()->insert('locales', ['locale' => $locale, 'sortOrder' => 1]);
 		Craft::log('Locale added successfully.');
 	}
 
