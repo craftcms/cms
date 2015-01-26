@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\FixedOrderExpression;
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elements\ElementRelationParamParser;
 use craft\app\elementtypes\ElementTypeInterface;
@@ -269,7 +270,7 @@ class Elements extends Component
 					return [];
 				}
 
-				$query->order(Craft::$app->getDb()->getSchema()->orderByColumnValues('elements.id', $ids));
+				$query->orderBy(new FixedOrderExpression('elements.id', $ids));
 			}
 			else if ($criteria->order && $criteria->order != 'score')
 			{
@@ -1003,7 +1004,7 @@ class Elements extends Component
 			if ($scoredSearchResults)
 			{
 				// Order the elements in the exact order that the Search service returned them in
-				$query->order(Craft::$app->getDb()->getSchema()->orderByColumnValues('elements.id', $filteredElementIds));
+				$query->orderBy(new FixedOrderExpression('elements.id', $filteredElementIds));
 			}
 		}
 

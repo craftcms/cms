@@ -241,28 +241,6 @@ class Schema extends \yii\db\mysql\Schema
 	}
 
 	/**
-	 * Returns the SQL for ordering results by column values.
-	 *
-	 * @param string $column
-	 * @param array  $values
-	 *
-	 * @return string
-	 */
-	public function orderByColumnValues($column, $values)
-	{
-		$sql = 'FIELD('.$this->quoteColumnName($column);
-
-		foreach ($values as $value)
-		{
-			$sql .= ', '.$this->db->quoteValue($value);
-		}
-
-		$sql .= ')';
-
-		return $sql;
-	}
-
-	/**
 	 * Returns the SQL for finding/replacing text.
 	 *
 	 * @param string $table
