@@ -751,7 +751,9 @@ trait ApplicationTrait
 				'password' => $configService->get('password', ConfigCategory::Db),
 				'charset' => $configService->get('charset', ConfigCategory::Db),
 				'tablePrefix' => $this->_getNormalizedTablePrefix(),
-				'schemaMap' => ['mysql' => '\\craft\\app\\db\\mysql\\Schema'],
+				'schemaMap' => [
+					'mysql' => '\\craft\\app\\db\\mysql\\Schema',
+				],
 			]);
 
 			$db->open();
