@@ -793,6 +793,12 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
+		if ($user->isCurrent())
+		{
+			// Remember the old username in case it changes
+			$oldUsername = $user->username;
+		}
+
 		// Handle secure properties (email and password)
 		// ---------------------------------------------------------------------
 
@@ -891,6 +897,13 @@ class UsersController extends BaseController
 
 		if (craft()->users->saveUser($user))
 		{
+			// Is this the current user, and did their username just change?
+			if ($user->isCurrent() && $user->username !== $oldUsername)
+			{
+				// Update the username cookie
+				craft()->userSession->processUsernameCookie($user->username);
+			}
+
 			// Save the user's photo, if it was submitted
 			$this->_processUserPhoto($user);
 
