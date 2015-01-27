@@ -39,6 +39,12 @@ class ElementHelper
 			// Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
 			// to mimic the default JavaScript-based slug generation.
 			$slug = str_replace(['.', '_', '-'], ' ', $element->title);
+
+			// Enforce the limitAutoSlugsToAscii config setting
+			if (Craft::$app->config->get('limitAutoSlugsToAscii'))
+			{
+				$slug = StringHelper::toAscii($slug);
+			}
 		}
 
 		$element->slug = static::createSlug($slug);

@@ -112,6 +112,86 @@ trait ApplicationTrait
 	// =========================================================================
 
 	/**
+	 * Returns the target app language.
+	 *
+	 * @param boolean $useUserLanguage Whether the user's preferred language should be used.
+	 * @return string|null
+	 */
+	public function getTargetLanguage($useUserLanguage = true)
+	{
+		if ($this->isInstalled())
+		{
+			// Will any locale validation be necessary here?
+			$request = $this->getRequest();
+
+			if ($useUserLanguage || defined('CRAFT_LOCALE'))
+			{
+				if ($useUserLanguage)
+				{
+					$locale = 'auto';
+				}
+				else
+				{
+					$locale = StringHelper::toLowerCase(CRAFT_LOCALE);
+				}
+
+				// Get the list of actual site locale IDs
+				$siteLocaleIds = $this->getI18n()->getSiteLocaleIds();
+
+				// Is it set to "auto"?
+				if ($locale == 'auto')
+				{
+					// Place this within a try/catch in case userSession is being fussy.
+					try
+					{
+						// If the user is logged in *and* has a primary language set, use that
+						$user = $this->getUser()->getIdentity();
+
+						if ($user && $user->preferredLocale)
+						{
+							return $user->preferredLocale;
+						}
+					}
+					catch (\Exception $e)
+					{
+						Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
+					}
+
+					// Otherwise check if the browser's preferred language matches any of the site locales
+					if (!$request->getIsConsoleRequest())
+					{
+						$browserLanguages = $request->getAcceptableLanguages();
+
+						if ($browserLanguages)
+						{
+							foreach ($browserLanguages as $language)
+							{
+								if (in_array($language, $siteLocaleIds))
+								{
+									return $language;
+								}
+							}
+						}
+					}
+				}
+
+				// Is it set to a valid site locale?
+				else if (in_array($locale, $siteLocaleIds))
+				{
+					return $locale;
+				}
+			}
+
+			// Use the primary site locale by default
+			return $this->getI18n()->getPrimarySiteLocaleId();
+		}
+		else
+		{
+			return $this->_getFallbackLanguage();
+		}
+	}
+
+	/**
 	 * Determines if Craft is installed by checking if the info table exists.
 	 *
 	 * @return bool
@@ -829,12 +909,16 @@ trait ApplicationTrait
 			if (!$this->_gettingLanguage)
 			{
 				$this->_gettingLanguage = true;
-				$this->setLanguage($this->_getTargetLanguage());
+				$request = $this->getRequest();
+				$useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();
+				$targetLanguage = $this->getTargetLanguage($useUserLanguage);
+				$this->setLanguage($targetLanguage);
 			}
 			else
 			{
 				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-				$this->setLanguage($this->_getFallbackLanguage());
+				$fallbackLanguage = $this->_getFallbackLanguage();
+				$this->setLanguage($fallbackLanguage);
 				$this->_gettingLanguage = false;
 			}
 		}
@@ -902,85 +986,6 @@ trait ApplicationTrait
 		else
 		{
 			return strtolower('mysql:host='.$this->config->get('server', ConfigCategory::Db).';dbname=').$this->config->get('database', ConfigCategory::Db).strtolower(';port='.$this->config->get('port', ConfigCategory::Db).';');
-		}
-	}
-
-	/**
-	 * Returns the target app language.
-	 *
-	 * @return string|null
-	 */
-	private function _getTargetLanguage()
-	{
-		if ($this->isInstalled())
-		{
-			// Will any locale validation be necessary here?
-			$request = $this->getRequest();
-
-			if ($request->getIsConsoleRequest() || $request->getIsCpRequest() || defined('CRAFT_LOCALE'))
-			{
-				if (!$request->getIsConsoleRequest() && $request->getIsCpRequest())
-				{
-					$locale = 'auto';
-				}
-				else
-				{
-					$locale = StringHelper::toLowerCase(CRAFT_LOCALE);
-				}
-
-				// Get the list of actual site locale IDs
-				$siteLocaleIds = $this->getI18n()->getSiteLocaleIds();
-
-				// Is it set to "auto"?
-				if ($locale == 'auto')
-				{
-					// Place this within a try/catch in case userSession is being fussy.
-					try
-					{
-						// If the user is logged in *and* has a primary language set, use that
-						$user = $this->getUser()->getIdentity();
-
-						if ($user && $user->preferredLocale)
-						{
-							return $user->preferredLocale;
-						}
-					}
-					catch (\Exception $e)
-					{
-						Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
-					}
-
-					// Otherwise check if the browser's preferred language matches any of the site locales
-					if (!$request->getIsConsoleRequest())
-					{
-						$browserLanguages = $request->getAcceptableLanguages();
-
-						if ($browserLanguages)
-						{
-							foreach ($browserLanguages as $language)
-							{
-								if (in_array($language, $siteLocaleIds))
-								{
-									return $language;
-								}
-							}
-						}
-					}
-				}
-
-				// Is it set to a valid site locale?
-				else if (in_array($locale, $siteLocaleIds))
-				{
-					return $locale;
-				}
-			}
-
-			// Use the primary site locale by default
-			return $this->getI18n()->getPrimarySiteLocaleId();
-		}
-		else
-		{
-			return $this->_getFallbackLanguage();
 		}
 	}
 

@@ -50,7 +50,7 @@
 		text: 'Tekst',
 		mailto: 'E-Post',
 		web: 'URL',
-		video_html_code: 'Kode for innbyggingsvideo',
+		video_html_code: 'Kode for innbyggingsvideo eller Youtube/Vimeo link',
 		file: 'Sett inn fil...',
 		upload: 'Last opp',
 		download: 'Last ned',

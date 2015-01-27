@@ -799,6 +799,12 @@ class UsersController extends Controller
 			$user = new UserModel();
 		}
 
+		if ($user->isCurrent())
+		{
+			// Remember the old username in case it changes
+			$oldUsername = $user->username;
+		}
+
 		// Handle secure properties (email and password)
 		// ---------------------------------------------------------------------
 
@@ -896,6 +902,13 @@ class UsersController extends Controller
 
 		if (Craft::$app->users->saveUser($user))
 		{
+			// Is this the current user, and did their username just change?
+			if ($user->isCurrent() && $user->username !== $oldUsername)
+			{
+				// Update the username cookie
+				Craft::$app->getUser()->sendUsernameCookie($user);
+			}
+
 			// Save the user's photo, if it was submitted
 			$this->_processUserPhoto($user);
 
@@ -991,7 +1004,7 @@ class UsersController extends Controller
 			if (!empty($file['name']) && !empty($file['size'])  )
 			{
 				$user = Craft::$app->users->getUserById($userId);
-				$userName = AssetsHelper::cleanAssetName($user->username);
+				$userName = AssetsHelper::cleanAssetName($user->username, false);
 
 				$folderPath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName;
 
@@ -1074,7 +1087,7 @@ class UsersController extends Controller
 			}
 
 			$user = Craft::$app->users->getUserById($userId);
-			$userName = AssetsHelper::cleanAssetName($user->username);
+			$userName = AssetsHelper::cleanAssetName($user->username, false);
 
 			// make sure that this is this user's file
 			$imagePath = Craft::$app->path->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;

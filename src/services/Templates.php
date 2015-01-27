@@ -309,7 +309,7 @@ class Templates extends Component
 		{
 			// Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
 			$formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-			$formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '}}', $formattedTemplate);
+			$formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
 			$this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
 		}
 
