@@ -1440,7 +1440,7 @@ class IOHelper
 			'pdf'         => array('label' => Craft::t('PDF'),         'extensions' => array('pdf')),
 			'photoshop'   => array('label' => Craft::t('Photoshop'),   'extensions' => array('psd','psb')),
 			'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
-			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('ppt','pptx','pps','pptm','potx')),
+			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('pps','ppsm','ppsx','ppt','pptm','pptx','potx')),
 			'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
 			'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
 			'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
