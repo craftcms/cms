@@ -988,7 +988,7 @@ Garnish.Base = Base.extend({
 
 						var obj = elem.__resizeTrigger__ = document.createElement('object');
 						obj.className = 'resize-trigger';
-						obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1;');
+						obj.setAttribute('style', 'display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; pointer-events: none; z-index: -1; visibility: hidden;');
 						obj.__resizeElement__ = $(elem);
 						obj.__resizeElement__.data('initialWidth', obj.__resizeElement__.prop('offsetWidth'));
 						obj.__resizeElement__.data('initialHeight', obj.__resizeElement__.prop('offsetHeight'));
