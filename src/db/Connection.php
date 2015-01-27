@@ -8,12 +8,16 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\enums\ConfigCategory;
+use craft\app\db\mysql\QueryBuilder;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 
 /**
- * Class Connection
+ * @inheritDoc \yii\db\Connection
+ *
+ * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
+ *
+ * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -114,7 +118,7 @@ class Connection extends \yii\db\Connection
 			$this->getSchema()->refresh();
 		}
 
-		$table = $this->getSchema()->getTable('{{'.$table.'}}');
+		$table = $this->getTableSchema('{{'.$table.'}}');
 
 		if ($table)
 		{
@@ -232,7 +236,7 @@ class Connection extends \yii\db\Connection
 			{
 				foreach ($parts as $i => $part)
 				{
-					$newLength = round($maxLetters * mb_stStringHelper::lengthrlen($part) / $totalLetters);
+					$newLength = round($maxLetters * StringHelper::length($part) / $totalLetters);
 					$parts[$i] = mb_substr($part, 0, $newLength);
 				}
 			}

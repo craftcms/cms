@@ -13,284 +13,28 @@ use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
 /**
- * Class Command
+ * @inheritDoc \yii\db\Command
+ *
+ * @property Connection $db Connection the DB connection that this command is associated with.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
 class Command extends \yii\db\Command
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * Captures the joined tables.
-	 *
-	 * @var array
-	 */
-	private $_joinedTables = [];
-
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * Returns the tables that have been joined.
+	 * @inheritDoc \yii\db\Command::insert()
 	 *
-	 * @return array
-	 */
-	public function getJoinedTables()
-	{
-		return $this->_joinedTables;
-	}
-
-	/**
-	 * Returns whether a given table has been joined in this query.
-	 *
-	 * @param string $table
-	 *
-	 * @return bool
-	 */
-	public function isJoined($table)
-	{
-		return in_array($table, $this->_joinedTables);
-	}
-
-	/**
-	 * Returns the total number of rows matched by the query.
-	 *
-	 * @param string $column The column to count.
-	 *
-	 * @return int The total number of rows matched by the query.
-	 */
-	public function count($column)
-	{
-		if (is_object($column))
-		{
-			$column = (string) $column;
-		}
-		else if (!StringHelper::contains($column, '('))
-		{
-			if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches))
-			{
-				$column = $this->db->quoteColumnName($matches[1]).' AS '.$this->db->quoteColumnName($matches[2]);
-			}
-			else
-			{
-				$column = $this->db->quoteColumnName($column);
-			}
-		}
-
-		return (int) $this->select("count({$column})")->queryScalar();
-	}
-
-	/**
-	 * Adds additional select columns.
-	 *
-	 * @param string $columns
-	 *
-	 * @return Command
-	 */
-	public function addSelect($columns = '*')
-	{
-		$oldSelect = $this->getSelect();
-
-		if ($oldSelect)
-		{
-			$columns = str_replace('`', '', $oldSelect).','.$columns;
-		}
-
-		$this->setSelect($columns);
-
-		return $this;
-	}
-
-	/**
-	 * @param $tables
-	 *
-	 * @return Command
-	 */
-	public function from($tables)
-	{
-		$tables = $this->db->addTablePrefix($tables);
-
-		return parent::from($tables);
-	}
-
-	/**
-	 * @param mixed $conditions
-	 * @param array $params
-	 *
-	 * @return Command
-	 */
-	public function where($conditions, $params = [])
-	{
-		if (!$conditions)
-		{
-			return $this;
-		}
-
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::where($conditions, $params);
-	}
-
-	/**
-	 * Adds an additional "and where" condition.
-	 *
-	 * @param mixed      $conditions
-	 * @param array|null $params
-	 *
-	 * @return Command
-	 */
-	public function andWhere($conditions, $params = [])
-	{
-		if (!$conditions)
-		{
-			return $this;
-		}
-
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::andWhere($conditions, $params);
-	}
-
-	/**
-	 * Adds an additional "or where" condition.
-	 *
-	 * @param mixed      $conditions
-	 * @param array|null $params
-	 *
-	 * @return Command
-	 */
-	public function orWhere($conditions, $params = [])
-	{
-		if (!$conditions)
-		{
-			return $this;
-		}
-
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::orWhere($conditions, $params);
-	}
-
-	/**
-	 * @param string $table
-	 * @param mixed  $conditions
-	 * @param array  $params
-	 *
-	 * @return Command
-	 */
-	public function join($table, $conditions, $params = [])
-	{
-		$this->_addJoinedTable($table);
-		$table = $this->db->addTablePrefix($table);
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::join($table, $conditions, $params);
-	}
-
-	/**
-	 * @param string $table
-	 * @param mixed  $conditions
-	 * @param array  $params
-	 *
-	 * @return Command
-	 */
-	public function leftJoin($table, $conditions, $params = [])
-	{
-		$this->_addJoinedTable($table);
-		$table = $this->db->addTablePrefix($table);
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::leftJoin($table, $conditions, $params);
-	}
-
-	/**
-	 * @param string $table
-	 * @param mixed  $conditions
-	 * @param array  $params
-	 *
-	 * @return Command
-	 */
-	public function rightJoin($table, $conditions, $params = [])
-	{
-		$this->_addJoinedTable($table);
-		$table = $this->db->addTablePrefix($table);
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::rightJoin($table, $conditions, $params);
-	}
-
-	/**
-	 * @param $table
-	 *
-	 * @return Command
-	 */
-	public function crossJoin($table)
-	{
-		$this->_addJoinedTable($table);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::crossJoin($table);
-	}
-
-	/**
-	 * @param $table
-	 *
-	 * @return Command
-	 */
-	public function naturalJoin($table)
-	{
-		$this->_addJoinedTable($table);
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::naturalJoin($table);
-	}
-
-	/**
-	 * @param mixed $conditions
-	 * @param array $params
-	 *
-	 * @return Command
-	 */
-	public function having($conditions, $params = [])
-	{
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::having($conditions, $params);
-	}
-
-	/**
-	 * @param mixed $columns
-	 *
-	 * @return Command
-	 */
-	public function addOrder($columns)
-	{
-		$oldOrder = $this->getOrder();
-
-		if ($oldOrder)
-		{
-			return $this->order([$oldOrder, $columns]);
-		}
-		else
-		{
-			return $this->order($columns);
-		}
-	}
-
-	/**
-	 * @param string $table
-	 * @param array  $columns
-	 * @param bool   $includeAuditColumns
-	 *
-	 * @return int
+	 * @param string  $table               The table that new rows will be inserted into.
+	 * @param array   $columns             The column data (name => value) to be inserted into the table.
+	 * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+	 * @return Command The command object itself.
 	 */
 	public function insert($table, $columns, $includeAuditColumns = true)
 	{
-		$table = $this->db->addTablePrefix($table);
-
 		if ($includeAuditColumns)
 		{
 			$columns['dateCreated'] = DateTimeHelper::currentTimeForDb();
@@ -302,21 +46,20 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @param string $table
-	 * @param array  $columns
-	 * @param array  $rows
-	 * @param bool   $includeAuditColumns
+	 * @inheritDoc \yii\db\batchInsert()
 	 *
-	 * @return int
+	 * @param string  $table               The table that new rows will be inserted into.
+	 * @param array   $columns             The column names.
+	 * @param array   $rows                The rows to be batch inserted into the table.
+	 * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+	 * @return Command The command object itself.
 	 */
-	public function insertAll($table, $columns, $rows, $includeAuditColumns = true)
+	public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
 	{
 		if (!$rows)
 		{
-			return 0;
+			return $this;
 		}
-
-		$table = $this->db->addTablePrefix($table);
 
 		if ($includeAuditColumns)
 		{
@@ -324,26 +67,30 @@ class Command extends \yii\db\Command
 			$columns[] = 'dateUpdated';
 			$columns[] = 'uid';
 
+			$date = DateTimeHelper::currentTimeForDb();
+
 			foreach ($rows as &$row)
 			{
-				$row[] = DateTimeHelper::currentTimeForDb();
-				$row[] = DateTimeHelper::currentTimeForDb();
+				$row[] = $date;
+				$row[] = $date;
 				$row[] = StringHelper::UUID();
 			}
 		}
 
-		$queryParams = $this->db->getSchema()->insertAll($table, $columns, $rows);
-
-		return $this->setText($queryParams['query'])->execute($queryParams['params']);
+		return parent::batchInsert($table, $columns, $rows);
 	}
 
 	/**
-	 * @param string $table
-	 * @param array  $keyColumns
-	 * @param array  $updateColumns
-	 * @param bool   $includeAuditColumns
+	 * Creates a command that will insert some given data into a table, or update an existing row
+	 * in the event of a key constraint violation.
 	 *
-	 * @return int
+	 * @param string $table               The table that the row will be inserted into, or updated.
+	 * @param array $keyColumns           The key-constrained column data (name => value) to be inserted into the table
+	 *                                    in the event that a new row is getting created
+	 * @param array $updateColumns        The non-key-constrained column data (name => value) to be inserted into the table
+	 *                                    or updated in the existing row.
+	 * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+	 * @return Command The command object itself.
 	 */
 	public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
 	{
@@ -354,56 +101,25 @@ class Command extends \yii\db\Command
 			$updateColumns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
 		}
 
-		// TODO: This is all MySQL specific
-
-		$allColumns = array_merge($keyColumns, $updateColumns);
 		$params = [];
+		$sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
 
-		$table = $this->db->addTablePrefix($table);
-		$sql = 'INSERT INTO '.$this->db->quoteTableName($table).' (';
-
-		foreach (array_keys($allColumns) as $i => $column)
-		{
-			if ($i > 0)
-			{
-				$sql .= ', ';
-			}
-
-			$sql .= $this->db->quoteColumnName($column);
-
-			$params[':'.$column] = $allColumns[$column];
-		}
-
-		$sql .= ') VALUES (:'.implode(', :', array_keys($allColumns)).')' .
-		        ' ON DUPLICATE KEY UPDATE ';
-
-		foreach (array_keys($updateColumns) as $i => $column)
-		{
-			if ($i > 0)
-			{
-				$sql .= ', ';
-			}
-
-			$sql .= $this->db->quoteColumnName($column).' = :'.$column;
-		}
-
-		return $this->setText($sql)->execute($params);
+		return $this->setSql($sql)->bindValues($params);
 	}
 
 	/**
-	 * @param string $table
-	 * @param array  $columns
-	 * @param mixed  $conditions
-	 * @param array  $params
-	 * @param bool   $includeAuditColumns
+	 * @inheritDoc \yii\db\Command::update()
 	 *
-	 * @return int
+	 * @param string       $table               The table to be updated.
+	 * @param array        $columns             The column data (name => value) to be updated.
+	 * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+	 *                                          refer to [[Query::where()]] on how to specify condition.
+	 * @param array        $params              The parameters to be bound to the command.
+	 * @param bool         $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+	 * @return Command The command object itself.
 	 */
 	public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
 	{
-		$table = $this->db->addTablePrefix($table);
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
 		if ($includeAuditColumns)
 		{
 			$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
@@ -413,52 +129,34 @@ class Command extends \yii\db\Command
 	}
 
 	/**
-	 * @param string $table
-	 * @param string $column
-	 * @param string $find
-	 * @param string $replace
+	 * Creates a DB command for replacing some text with other text in a given table column.
 	 *
-	 * @return int
+	 * @param string $table   The table to be updated.
+	 * @param string $column  The column to be searched.
+	 * @param string $find    The text to be searched for.
+	 * @param string $replace The replacement text.
+	 * @return Command The command object itself.
 	 */
 	public function replace($table, $column, $find, $replace)
 	{
-		$table = $this->db->addTablePrefix($table);
-		$queryParams = $this->db->getSchema()->replace($table, $column, $find, $replace);
+		$params = [];
+		$sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace);
 
-		return $this->setText($queryParams['query'])->execute($queryParams['params']);
+		return $this->setSql($sql)->bindValues($params);
 	}
 
 	/**
-	 * @param string $table
-	 * @param mixed  $conditions
-	 * @param array  $params
+	 * @inheritDoc \yii\db\Command::createTable()
 	 *
-	 * @return int
-	 */
-	public function delete($table, $conditions = '', $params = [])
-	{
-		$table = $this->db->addTablePrefix($table);
-		$conditions = $this->_normalizeConditions($conditions, $params);
-
-		return parent::delete($table, $conditions, $params);
-	}
-
-	/**
-	 * Adds `id`, `dateCreated`, `date_update`, and `uid` columns to $columns, packages up the column definitions into
-	 * strings, and then passes it back to CDbCommand->createTable().
-	 *
-	 * @param string $table
-	 * @param array  $columns
-	 * @param null   $options
-	 * @param bool   $addIdColumn
-	 * @param bool   $addAuditColumns
-	 *
-	 * @return int
+	 * @param string $table           The name of the table to be created. The name will be properly quoted by the method.
+	 * @param array  $columns         The columns (name => definition) in the new table.
+	 * @param null   $options         Additional SQL fragment that will be appended to the generated SQL.
+	 * @param bool   $addIdColumn     Whether an `id` column should be added.
+	 * @param bool   $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
+	 * @return Command the command object itself
 	 */
 	public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
 	{
-		$table = $this->db->addTablePrefix($table);
-
 		$columns = array_merge(
 			($addIdColumn ? ['id' => ColumnType::PK] : []),
 			$columns,
@@ -470,266 +168,100 @@ class Command extends \yii\db\Command
 			$columns[$col] = DbHelper::generateColumnDefinition($settings);
 		}
 
-		// Create the table
 		return parent::createTable($table, $columns, $options);
 	}
 
 	/**
-	 * @param $table
-	 * @param $newName
+	 * Creates a SQL command for adding a new DB column.
 	 *
-	 * @return int
-	 */
-	public function renameTable($table, $newName)
-	{
-		$table = $this->db->addTablePrefix($table);
-		$newName = $this->db->addTablePrefix($newName);
-
-		return parent::renameTable($table, $newName);
-	}
-
-	/**
-	 * @param $table
-	 *
-	 * @return int
-	 */
-	public function dropTable($table)
-	{
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::dropTable($table);
-	}
-
-	/**
-	 * @param $table
-	 *
-	 * @return int
-	 */
-	public function dropTableIfExists($table)
-	{
-		$table = $this->db->addTablePrefix($table);
-		$sql = $this->db->getSchema()->dropTableIfExists($table);
-
-		return $this->setText($sql)->execute();
-	}
-
-	/**
-	 * @param $table
-	 *
-	 * @return int
-	 */
-	public function truncateTable($table)
-	{
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::truncateTable($table);
-	}
-
-	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 *
-	 * @return mixed
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @return Command the command object itself
 	 */
 	public function addColumn($table, $column, $type)
 	{
-		// Keep new columns before the dateCreated audit column
-		return $this->addColumnBefore($table, $column, $type, 'dateCreated');
+		$type = DbHelper::generateColumnDefinition($type);
+
+		return parent::addColumn($table, $column, $type);
 	}
 
 	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
+	 * Creates a SQL command for adding a new DB column at the beginning of a table.
 	 *
-	 * @return mixed
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @return Command the command object itself
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		$table = $this->db->addTablePrefix($table);
 		$type = DbHelper::generateColumnDefinition($type);
+		$sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column, $type);
 
-		return $this->setText($this->db->getSchema()->addColumnFirst($table, $column, $type))->execute();
+		return $this->setSql($sql);
 	}
 
 	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 * @param $before
+	 * Creates a SQL command for adding a new DB column before another column in a table.
 	 *
-	 * @return mixed
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @param string $before The name of the column that the new column should be placed before.
+	 * @return Command the command object itself
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		$table = $this->db->addTablePrefix($table);
 		$type = DbHelper::generateColumnDefinition($type);
+		$sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column, $type, $before);
 
-		return $this->setText($this->db->getSchema()->addColumnBefore($table, $column, $type, $before))->execute();
+		return $this->setSql($sql);
 	}
 
 	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 * @param $after
+	 * Creates a SQL command for adding a new DB column after another column in a table.
 	 *
-	 * @return mixed
+	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
+	 * @param string $column The name of the new column. The name will be properly quoted by the method.
+	 * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
+	 *                       to convert the give column type to the physical one. For example, `string` will be converted
+	 *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
+	 * @param string $after  The name of the column that the new column should be placed after.
+	 * @return Command the command object itself
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		$table = $this->db->addTablePrefix($table);
 		$type = DbHelper::generateColumnDefinition($type);
+		$sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column, $type, $after);
 
-		return $this->setText($this->db->getSchema()->addColumnAfter($table, $column, $type, $after))->execute();
+		return $this->setSql($sql);
 	}
 
 	/**
-	 * @param $table
-	 * @param $column
+	 * Creates a SQL command for changing the definition of a column.
 	 *
-	 * @return int
-	 */
-	public function dropColumn($table, $column)
-	{
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::dropColumn($table, $column);
-	}
-
-	/**
-	 * @param $table
-	 * @param $name
-	 * @param $newName
-	 *
-	 * @return int
-	 */
-	public function renameColumn($table, $name, $newName)
-	{
-		$table = $this->db->addTablePrefix($table);
-
-		return parent::renameColumn($table, $name, $newName);
-	}
-
-	/**
-	 * @param      $table
-	 * @param      $column
-	 * @param      $type
-	 * @param null $newName
-	 * @param null $after
-	 *
-	 * @return int
+	 * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
+	 * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
+	 * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
+	 *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
+	 *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
+	 *                             will become 'varchar(255) not null'.
+	 * @param string|null $newName The new column name, if any.
+	 * @param string|null $after   The column that this column should be placed after, if it should be moved.
+	 * @return Command the command object itself
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
-		$table = $this->db->addTablePrefix($table);
 		$type = DbHelper::generateColumnDefinition($type);
+		$sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type, $newName, $after);
 
-		return $this->setText($this->db->getSchema()->alterColumn($table, $column, $type, $newName, $after))->execute();
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Adds a table to our record of joined tables.
-	 *
-	 * @param string $table The table name
-	 *
-	 * @return bool
-	 */
-	private function _addJoinedTable($table)
-	{
-		// If there's an alias set, use the alias rather than the "real" table name.
-		$parts = explode(' ', $table);
-
-		if (count($parts) == 1)
-		{
-			$table = $parts[0];
-		}
-		else
-		{
-			$table = $parts[1];
-		}
-
-		// Don't add any backticks or whatever
-		if (preg_match('/\w+/', $table, $matches))
-		{
-			$this->_joinedTables[] = $matches[0];
-		}
-	}
-
-	/**
-	 * Adds support for ['column' => 'value'] conditional syntax. Supports nested conditionals, e.g.
-	 * ['or', ['column' => 'value'], ['column2' => 'value2']]
-	 *
-	 * @param mixed $conditions
-	 * @param array &$params
-	 *
-	 * @return mixed
-	 */
-	private function _normalizeConditions($conditions, &$params = [])
-	{
-		if (!is_array($conditions))
-		{
-			return $conditions;
-		}
-		else if ($conditions === [])
-		{
-			return '';
-		}
-
-		$normalizedConditions = [];
-
-		// Find any key/value pairs and convert them to the CDbCommand's conditional syntax
-		foreach ($conditions as $key => $value)
-		{
-			if (!is_numeric($key))
-			{
-				$param = ':p'.StringHelper::randomString(9);
-				$normalizedConditions[] = $this->db->quoteColumnName($key).'='.$param;
-				$params[$param] = $value;
-				unset($conditions[$key]);
-			}
-			else
-			{
-				$conditions[$key] = $this->_normalizeConditions($value, $params);
-			}
-		}
-
-		if ($normalizedConditions)
-		{
-			// Were there normal conditions in there as well?
-			if ($conditions)
-			{
-				// Is this already an AND conditional?
-				if (StringHelper::toLowerCase($conditions[0]) == 'and')
-				{
-					// Just merge our normalized conditions into the $conditions
-					$conditions = array_merge($conditions, $normalizedConditions);
-				}
-				else
-				{
-					// Append the normalized conditions as nested AND conditions
-					array_unshift($normalizedConditions, 'and');
-					$conditions[] = $normalizedConditions;
-				}
-			}
-			else
-			{
-				if (count($normalizedConditions) == 1)
-				{
-					$conditions = $normalizedConditions[0];
-				}
-				else
-				{
-					array_unshift($normalizedConditions, 'and');
-					$conditions = $normalizedConditions;
-				}
-			}
-		}
-
-		return $conditions;
+		return $this->setSql($sql);
 	}
 }
