@@ -1309,7 +1309,7 @@ class Users extends Component
 			$ids = (new Query())
 				->select('id')
 				->from('users')
-				->where(['and', 'pending=1', 'verificationCodeIssuedDate < :pastTime'], ['pastTime' => $pastTime])
+				->where(['and', 'pending=1', 'verificationCodeIssuedDate < :pastTime'], [':pastTime' => $pastTime])
 				->column();
 
 			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', ['in', 'id', $ids])->execute();
