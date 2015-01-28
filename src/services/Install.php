@@ -293,7 +293,7 @@ class Install extends Component
 		Craft::log('Creating the searchindex table.');
 
 		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
-		$table = $db->addTablePrefix('searchindex');
+		$table = '{{%searchindex}}';
 
 		$columns = [
 			'elementId' => DbHelper::generateColumnDefinition(['column' => ColumnType::Int, 'null' => false]),

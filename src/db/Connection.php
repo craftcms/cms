@@ -96,8 +96,6 @@ class Connection extends \yii\db\Connection
 			$this->getSchema()->refresh();
 		}
 
-		$table = $this->addTablePrefix($table);
-
 		return in_array($table, $this->getSchema()->getTableNames());
 	}
 
@@ -129,30 +127,6 @@ class Connection extends \yii\db\Connection
 		}
 
 		return false;
-	}
-
-	/**
-	 * Adds the table prefix to the passed-in table name(s).
-	 *
-	 * @param string|array $table The table name or an array of table names
-	 *
-	 * @return string|array The modified table name(s)
-	 */
-	public function addTablePrefix($table)
-	{
-		if (is_array($table))
-		{
-			foreach ($table as $key => $t)
-			{
-				$table[$key] = $this->addTablePrefix($t);
-			}
-		}
-		else
-		{
-			$table = preg_replace('/^\w+/', $this->tablePrefix.'\0', $table);
-		}
-
-		return $table;
 	}
 
 	/**

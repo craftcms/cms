@@ -42,7 +42,7 @@ class Content extends Component
 	/**
 	 * @var string
 	 */
-	public $contentTable = 'content';
+	public $contentTable = '{{%content}}';
 
 	/**
 	 * @var string
@@ -262,8 +262,7 @@ class Content extends Component
 		$excludeColumns = array_keys($values);
 		$excludeColumns = array_merge($excludeColumns, array_keys(DbHelper::getAuditColumnConfig()));
 
-		$fullContentTableName = Craft::$app->getDb()->addTablePrefix($this->contentTable);
-		$contentTableSchema = Craft::$app->getDb()->schema->getTable($fullContentTableName);
+		$contentTableSchema = Craft::$app->getDb()->getSchema()->getTable($this->contentTable);
 
 		foreach ($contentTableSchema->columns as $columnSchema)
 		{

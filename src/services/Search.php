@@ -161,7 +161,7 @@ class Search extends Component
 
 		// Begin creating SQL
 		$sql = sprintf('SELECT * FROM %s WHERE %s',
-			Craft::$app->getDb()->quoteTableName(Craft::$app->getDb()->addTablePrefix('searchindex')),
+			Craft::$app->getDb()->quoteTableName('{{%searchindex}}'),
 			$where
 		);
 

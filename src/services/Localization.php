@@ -525,7 +525,7 @@ class Localization extends Component
 									[':localeId' => $localeId]
 								)->execute();
 
-								$matrixTablePrefix = Craft::$app->getDb()->addTablePrefix('matrixcontent_');
+								$matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
 								$matrixTablePrefixLength = strlen($matrixTablePrefix);
 								$tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
