@@ -7,7 +7,7 @@
 
 namespace craft\app\migrations;
 
-use craft\app\db\BaseMigration;
+use craft\app\db\Migration;
 
 /**
  * The class name is the UTC timestamp in the format of {MigrationNameDesc}
