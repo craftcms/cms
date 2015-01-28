@@ -958,9 +958,9 @@ class AssetTransforms extends Component
 	private function _createTransformQuery()
 	{
 		return Craft::$app->getDb()->createCommand()
-			->select('id, name, handle, mode, position, height, width, format, quality, dimensionChangeTime')
+			->select(['id', 'name', 'handle', 'mode', 'position', 'height', 'width', 'format', 'quality', 'dimensionChangeTime'])
 			->from('assettransforms')
-			->order('name');
+			->orderBy('name');
 	}
 
 	/**

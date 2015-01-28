@@ -9,6 +9,7 @@ namespace craft\app\tasks;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\JsonHelper;
 
@@ -119,7 +120,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 				$this->_batchRows = $this->_getQuery()
 					->offset(100*($this->_batch-1))
 					->limit(100*$this->_batch)
-					->queryAll();
+					->all();
 
 				// Still no more rows?
 				if (!$this->_batchRows)
@@ -186,13 +187,13 @@ class DeleteStaleTemplateCaches extends BaseTask
 	// =========================================================================
 
 	/**
-	 * Returns a Command object for selecting criteria that could be dropped by this task.
+	 * Returns a Query object for selecting criteria that could be dropped by this task.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _getQuery()
 	{
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->from('templatecachecriteria');
 
 		if (is_array($this->_elementType))

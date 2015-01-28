@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
@@ -83,7 +84,7 @@ class Deprecator extends Component
 				'templateLine'   => $log->templateLine,
 				'message'        => $log->message,
 				'traces'         => JsonHelper::encode($log->traces),
-			]);
+			])->execute();
 
 			$this->_fingerprints[$key][] = $log->fingerprint;
 		}
@@ -98,7 +99,7 @@ class Deprecator extends Component
 	 */
 	public function getTotalLogs()
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from(static::$_tableName)
 			->count('id');
 	}
@@ -114,12 +115,12 @@ class Deprecator extends Component
 	{
 		if (!isset($this->_allLogs))
 		{
-			$result = Craft::$app->getDb()->createCommand()
+			$result = (new Query())
 				->select('*')
 				->from(static::$_tableName)
 				->limit($limit)
-				->order('lastOccurrence desc')
-				->queryAll();
+				->orderBy('lastOccurrence desc')
+				->all();
 
 			$this->_allLogs = DeprecationErrorModel::populateModels($result);
 		}
@@ -136,11 +137,11 @@ class Deprecator extends Component
 	 */
 	public function getLogById($logId)
 	{
-		$log = Craft::$app->getDb()->createCommand()
+		$log = (new Query())
 			->select('*')
 			->from(static::$_tableName)
 			->where('id = :logId', [':logId' => $logId])
-			->queryRow();
+			->one();
 
 		if ($log)
 		{
@@ -157,7 +158,7 @@ class Deprecator extends Component
 	 */
 	public function deleteLogById($id)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName, ['id' => $id]);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName, ['id' => $id])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -168,7 +169,7 @@ class Deprecator extends Component
 	 */
 	public function deleteAllLogs()
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName)->execute();
 		return (bool) $affectedRows;
 	}
 

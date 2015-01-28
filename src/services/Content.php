@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\ElementEvent;
 use craft\app\helpers\DbHelper;
@@ -78,13 +79,13 @@ class Content extends Component
 		$this->fieldColumnPrefix   = $element->getFieldColumnPrefix();
 		$this->fieldContext        = $element->getFieldContext();
 
-		$row = Craft::$app->getDb()->createCommand()
+		$row = (new Query())
 			->from($this->contentTable)
 			->where([
 				'elementId' => $element->id,
 				'locale'    => $element->locale
 			])
-			->queryRow();
+			->one();
 
 		if ($row)
 		{
@@ -290,11 +291,11 @@ class Content extends Component
 
 		if (!$isNewContent)
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $content->id]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $content->id])->execute();
 		}
 		else
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->insert($this->contentTable, $values);
+			$affectedRows = Craft::$app->getDb()->createCommand()->insert($this->contentTable, $values)->execute();
 		}
 
 		if ($affectedRows)
@@ -351,12 +352,12 @@ class Content extends Component
 		if ($nonTranslatableFields)
 		{
 			// Get the other locales' content
-			$rows = Craft::$app->getDb()->createCommand()
+			$rows = (new Query())
 				->from($this->contentTable)
 				->where(
 					['and', 'elementId = :elementId', 'locale != :locale'],
 					[':elementId' => $element->id, ':locale' => $content->locale])
-				->queryAll();
+				->all();
 
 			// Remove the column prefixes
 			foreach ($rows as $i => $row)

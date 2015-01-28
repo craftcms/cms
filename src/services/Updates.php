@@ -240,7 +240,7 @@ class Updates extends Component
 			'version' => $plugin->getVersion()
 		], [
 			'class' => $plugin->getClassHandle()
-		]);
+		])->execute();
 
 		return (bool) $affectedRows;
 	}

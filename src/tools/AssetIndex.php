@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\db\Query;
 
 /**
  * Asset Index tool.
@@ -168,22 +169,21 @@ class AssetIndex extends BaseTool
 						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)
-					$sessionsInProgress = Craft::$app->getDb()->createCommand()
+					$sessionsInProgress = (new Query())
 											->select('sessionId')
 											->from('assetindexdata')
 											->where('recordId IS NULL')
-											->group('sessionId')
-											->queryScalar();
+											->groupBy('sessionId')
+											->scalar();
 
 					if (empty($sessionsInProgress))
 					{
-						Craft::$app->getDb()->createCommand()->delete('assetindexdata');
+						Craft::$app->getDb()->createCommand()->delete('assetindexdata')->execute();
 					}
 					else
 					{
-						Craft::$app->getDb()->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress]);
+						Craft::$app->getDb()->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress])->execute();
 					}
-
 
 					// Generate the HTML for missing files and folders
 					return [

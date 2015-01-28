@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
@@ -95,7 +96,7 @@ class Matrix extends Component
 
 			$results = $this->_createBlockTypeQuery()
 				->where('fieldId = :fieldId', [':fieldId' => $fieldId])
-				->queryAll();
+				->all();
 
 			foreach ($results as $result)
 			{
@@ -137,7 +138,7 @@ class Matrix extends Component
 		{
 			$result = $this->_createBlockTypeQuery()
 				->where('id = :id', [':id' => $blockTypeId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -420,11 +421,11 @@ class Matrix extends Component
 		try
 		{
 			// First delete the blocks of this type
-			$blockIds = Craft::$app->getDb()->createCommand()
+			$blockIds = (new Query())
 				->select('id')
 				->from('matrixblocks')
 				->where(['typeId' => $blockType->id])
-				->queryColumn();
+				->column();
 
 			$this->deleteBlockById($blockIds);
 
@@ -443,7 +444,7 @@ class Matrix extends Component
 			Craft::$app->fields->deleteLayoutById($blockType->fieldLayoutId);
 
 			// Finally delete the actual block type
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id])->execute();
 
 			if ($transaction !== null)
 			{
@@ -640,7 +641,7 @@ class Matrix extends Component
 			}
 
 			// Drop the content table
-			Craft::$app->getDb()->createCommand()->dropTable($contentTable);
+			Craft::$app->getDb()->createCommand()->dropTable($contentTable)->execute();
 
 			Craft::$app->content->contentTable = $originalContentTable;
 
@@ -904,11 +905,11 @@ class Matrix extends Component
 				$deletedBlockParams[':ownerLocale'] = $owner->locale;
 			}
 
-			$deletedBlockIds = Craft::$app->getDb()->createCommand()
+			$deletedBlockIds = (new Query())
 				->select('id')
 				->from('matrixblocks')
 				->where($deletedBlockConditions, $deletedBlockParams)
-				->queryColumn();
+				->column();
 
 			$this->deleteBlockById($deletedBlockIds);
 
@@ -953,13 +954,13 @@ class Matrix extends Component
 		if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields))
 		{
 			// Does this Matrix field belong to another one?
-			$parentMatrixFieldId = Craft::$app->getDb()->createCommand()
+			$parentMatrixFieldId = (new Query())
 				->select('fields.id')
 				->from('fields fields')
-				->join('matrixblocktypes blocktypes', 'blocktypes.fieldId = fields.id')
-				->join('fieldlayoutfields fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
+				->innerJoin('matrixblocktypes blocktypes', 'blocktypes.fieldId = fields.id')
+				->innerJoin('fieldlayoutfields fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
 				->where('fieldlayoutfields.fieldId = :matrixFieldId', [':matrixFieldId' => $matrixField->id])
-				->queryScalar();
+				->scalar();
 
 			if ($parentMatrixFieldId)
 			{
@@ -978,16 +979,16 @@ class Matrix extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving block types.
+	 * Returns a Query object prepped for retrieving block types.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createBlockTypeQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, fieldId, fieldLayoutId, name, handle, sortOrder')
+		return (new Query())
+			->select(['id', 'fieldId', 'fieldLayoutId', 'name', 'handle', 'sortOrder'])
 			->from('matrixblocktypes')
-			->order('sortOrder');
+			->orderBy('sortOrder');
 	}
 
 	/**
@@ -1067,7 +1068,7 @@ class Matrix extends Component
 		$db->createCommand()->createTable($name, [
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false]
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
@@ -1164,11 +1165,11 @@ class Matrix extends Component
 
 					// Duplicate the relations, too.  First by getting all of the existing relations for the original
 					// blocks
-					$relations = Craft::$app->getDb()->createCommand()
-						->select('fieldId, sourceId, sourceLocale, targetId, sortOrder')
+					$relations = (new Query())
+						->select(['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'])
 						->from('relations')
 						->where(['in', 'sourceId', array_keys($newBlockIds)])
-						->queryAll();
+						->all();
 
 					if ($relations)
 					{
@@ -1189,7 +1190,11 @@ class Matrix extends Component
 							}
 						}
 
-						Craft::$app->getDb()->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'], $rows);
+						Craft::$app->getDb()->createCommand()->batchInsert(
+							'relations',
+							['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'],
+							$rows
+						)->execute();
 					}
 				}
 				else

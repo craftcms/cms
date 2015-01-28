@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
@@ -111,12 +112,12 @@ class EntryRevisions extends Component
 
 		$drafts = [];
 
-		$results = Craft::$app->getDb()->createCommand()
+		$results = (new Query())
 			->select('*')
 			->from('entrydrafts')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
-			->order('name asc')
-			->queryAll();
+			->orderBy('name asc')
+			->all();
 
 		foreach ($results as $result)
 		{
@@ -174,7 +175,7 @@ class EntryRevisions extends Component
 		if (!$draft->name && $draft->id)
 		{
 			// Get the total number of existing drafts for this entry/locale
-			$totalDrafts = Craft::$app->getDb()->createCommand()
+			$totalDrafts = (new Query())
 				->from('entrydrafts')
 				->where(
 					['and', 'entryId = :entryId', 'locale = :locale'],
@@ -336,14 +337,14 @@ class EntryRevisions extends Component
 
 		$versions = [];
 
-		$results = Craft::$app->getDb()->createCommand()
+		$results = (new Query())
 			->select('*')
 			->from('entryversions')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
-			->order('dateCreated desc')
+			->orderBy('dateCreated desc')
 			->offset(1)
 			->limit($limit)
-			->queryAll();
+			->all();
 
 		foreach ($results as $result)
 		{
@@ -368,7 +369,7 @@ class EntryRevisions extends Component
 	public function saveVersion(EntryModel $entry)
 	{
 		// Get the total number of existing versions for this entry/locale
-		$totalVersions = Craft::$app->getDb()->createCommand()
+		$totalVersions = (new Query())
 			->from('entryversions')
 			->where(
 				['and', 'entryId = :entryId', 'locale = :locale'],

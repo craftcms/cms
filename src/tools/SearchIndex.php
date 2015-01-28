@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\db\Query;
 
 /**
  * Search Index tool.
@@ -52,13 +53,13 @@ class SearchIndex extends BaseTool
 		if (!empty($params['start']))
 		{
 			// Truncate the searchindex table
-			Craft::$app->getDb()->createCommand()->truncateTable('searchindex');
+			Craft::$app->getDb()->createCommand()->truncateTable('searchindex')->execute();
 
 			// Get all the element IDs ever
-			$elements = Craft::$app->getDb()->createCommand()
-				->select('id, type')
+			$elements = (new Query())
+				->select(['id', 'type'])
 				->from('elements')
-				->queryAll();
+				->all();
 
 			$batch = [];
 

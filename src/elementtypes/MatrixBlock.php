@@ -9,6 +9,7 @@ namespace craft\app\elementtypes;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -84,11 +85,11 @@ class MatrixBlock extends BaseElementType
 	{
 		if (!$criteria->fieldId && $criteria->id && is_numeric($criteria->id))
 		{
-			$criteria->fieldId = Craft::$app->getDb()->createCommand()
+			$criteria->fieldId = (new Query())
 				->select('fieldId')
 				->from('matrixblocks')
 				->where('id = :id', [':id' => $criteria->id])
-				->queryScalar();
+				->scalar();
 		}
 
 		if ($criteria->fieldId && is_numeric($criteria->fieldId))
@@ -139,7 +140,7 @@ class MatrixBlock extends BaseElementType
 	{
 		$query
 			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.ownerLocale, matrixblocks.typeId, matrixblocks.sortOrder')
-			->join('matrixblocks matrixblocks', 'matrixblocks.id = elements.id');
+			->innerJoin('matrixblocks matrixblocks', 'matrixblocks.id = elements.id');
 
 		if ($criteria->fieldId)
 		{
@@ -158,7 +159,7 @@ class MatrixBlock extends BaseElementType
 
 		if ($criteria->type)
 		{
-			$query->join('matrixblocktypes matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
+			$query->innerJoin('matrixblocktypes matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
 			$query->andWhere(DbHelper::parseParam('matrixblocktypes.handle', $criteria->type, $query->params));
 		}
 	}

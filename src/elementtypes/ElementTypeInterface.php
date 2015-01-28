@@ -366,7 +366,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * ```php
 	 * $query
 	 *     ->addSelect('mytable.foo, mytable.bar')
-	 *     ->join('mytable mytable', 'mytable.id = elements.id');
+	 *     ->innerJoin('mytable mytable', 'mytable.id = elements.id');
 	 * ```
 	 *
 	 * This is also where you get to check the [[ElementCriteriaModel]] for all the custom attributes that this

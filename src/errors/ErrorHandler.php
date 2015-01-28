@@ -104,6 +104,7 @@ class ErrorHandler extends \CErrorHandler
 		// Log MySQL deadlocks
 		if ($exception instanceof \CDbException && StringHelper::contains($exception->getMessage(), 'Deadlock'))
 		{
+			// TODO: MySQL specific
 			$data = Craft::$app->getDb()->createCommand('SHOW ENGINE INNODB STATUS')->query();
 			$info = $data->read();
 			$info = serialize($info);

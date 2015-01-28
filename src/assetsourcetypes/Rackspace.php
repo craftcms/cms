@@ -742,7 +742,7 @@ class Rackspace extends BaseAssetSourceType
 	 */
 	private static function _loadAccessData()
 	{
-		$rows = Craft::$app->getDb()->createCommand()->select('connectionKey, token, storageUrl, cdnUrl')->from('rackspaceaccess')->queryAll();
+		$rows = Craft::$app->getDb()->createCommand()->select(['connectionKey', 'token', 'storageUrl', 'cdnUrl'])->from('rackspaceaccess')->queryAll();
 
 		foreach ($rows as $row)
 		{

@@ -9,6 +9,7 @@ namespace craft\app\elementtypes;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
@@ -272,8 +273,8 @@ class Category extends BaseElementType
 	{
 		$query
 			->addSelect('categories.groupId')
-			->join('categories categories', 'categories.id = elements.id')
-			->join('categorygroups categorygroups', 'categorygroups.id = categories.groupId')
+			->innerJoin('categories categories', 'categories.id = elements.id')
+			->innerJoin('categorygroups categorygroups', 'categorygroups.id = categories.groupId')
 			->leftJoin('structures structures', 'structures.id = categorygroups.structureId')
 			->leftJoin('structureelements structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id']);
 
@@ -405,15 +406,15 @@ class Category extends BaseElementType
 
 			$ancestorIds = $element->getAncestors()->ids();
 
-			$sources = Craft::$app->getDb()->createCommand()
-				->select('fieldId, sourceId, sourceLocale')
+			$sources = (new Query())
+				->select(['fieldId', 'sourceId', 'sourceLocale'])
 				->from('relations')
 				->where('targetId = :categoryId', [':categoryId' => $element->id])
-				->queryAll();
+				->all();
 
 			foreach ($sources as $source)
 			{
-				$existingAncestorRelations = Craft::$app->getDb()->createCommand()
+				$existingAncestorRelations = (new Query())
 					->select('targetId')
 					->from('relations')
 					->where(['and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', ['in', 'targetId', $ancestorIds]], [
@@ -421,7 +422,7 @@ class Category extends BaseElementType
 						':sourceId'     => $source['sourceId'],
 						':sourceLocale' => $source['sourceLocale']
 					])
-					->queryColumn();
+					->column();
 
 				$missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
 
@@ -433,7 +434,7 @@ class Category extends BaseElementType
 
 			if ($newRelationValues)
 			{
-				Craft::$app->getDb()->createCommand()->insertAll('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues);
+				Craft::$app->getDb()->createCommand()->batchInsert('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues)->execute();
 			}
 		}
 	}

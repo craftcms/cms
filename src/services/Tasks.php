@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\TaskStatus;
 use craft\app\models\Task as TaskModel;
 use craft\app\records\Task as TaskRecord;
@@ -343,11 +344,11 @@ class Tasks extends Component
 	 */
 	public function getTaskById($taskId)
 	{
-		$result = Craft::$app->getDb()->createCommand()
+		$result = (new Query())
 			->select('*')
 			->from('tasks')
 			->where('id = :id', [':id' => $taskId])
-			->queryRow();
+			->one();
 
 		if ($result)
 		{
@@ -362,11 +363,11 @@ class Tasks extends Component
 	 */
 	public function getAllTasks()
 	{
-		$results = Craft::$app->getDb()->createCommand()
+		$results = (new Query())
 			->select('*')
 			->from('tasks')
-			->order('root asc, lft asc')
-			->queryAll();
+			->orderBy('root asc, lft asc')
+			->all();
 
 		return TaskModel::populateModels($results);
 	}
@@ -380,14 +381,14 @@ class Tasks extends Component
 	{
 		if (!isset($this->_runningTask))
 		{
-			$result = Craft::$app->getDb()->createCommand()
+			$result = (new Query())
 				->select('*')
 				->from('tasks')
 				->where(
 					['and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
 					[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 				)
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -413,13 +414,13 @@ class Tasks extends Component
 	public function isTaskRunning()
 	{
 		// Remember that a root task could appear to be stagnant if it has sub-tasks.
-		return (bool) Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from('tasks')
 			->where(
 				['and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
 				[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
 			)
-			->count('id');
+			->exists();
 	}
 
 	/**
@@ -440,10 +441,10 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		return (bool) Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from('tasks')
 			->where($conditions, $params)
-			->count('id');
+			->exists();
 	}
 
 	/**
@@ -465,7 +466,7 @@ class Tasks extends Component
 			$params[':type'] = $type;
 		}
 
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->from('tasks')
 			->where($conditions, $params);
 
@@ -474,7 +475,7 @@ class Tasks extends Component
 			$query->limit($limit);
 		}
 
-		$results = $query->queryAll();
+		$results = $query->all();
 		return TaskModel::populateModels($results);
 	}
 
@@ -485,10 +486,10 @@ class Tasks extends Component
 	 */
 	public function haveTasksFailed()
 	{
-		return (bool) Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from('tasks')
 			->where(['and', 'level = 0', 'status = :status'], [':status' => TaskStatus::Error])
-			->count('id');
+			->exists();
 	}
 
 	/**
@@ -498,7 +499,7 @@ class Tasks extends Component
 	 */
 	public function getTotalTasks()
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from('tasks')
 			->where(
 				['and', 'lft = 1', 'status != :status'],

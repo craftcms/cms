@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\base\PluginInterface;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
@@ -111,11 +112,11 @@ class Plugins extends Component
 				$this->_loadingPlugins = true;
 
 				// Find all of the enabled plugins
-				$rows = Craft::$app->getDb()->createCommand()
-					->select('id, class, version, settings, installDate')
+				$rows = (new Query())
+					->select(['id', 'class', 'version', 'settings', 'installDate'])
 					->from('plugins')
 					->where('enabled=1')
-					->queryAll();
+					->all();
 
 				$names = [];
 
@@ -199,11 +200,10 @@ class Plugins extends Component
 				if ($plugin)
 				{
 					// Is it installed (but disabled)?
-					$plugin->isInstalled = (bool) Craft::$app->getDb()->createCommand()
-						->select('count(id)')
+					$plugin->isInstalled = (new Query())
 						->from('plugins')
 						->where(['class' => $plugin->getClassHandle()])
-						->queryScalar();
+						->exists();
 				}
 
 				$this->_plugins[$lcPluginHandle] = $plugin;
@@ -316,7 +316,7 @@ class Plugins extends Component
 		Craft::$app->getDb()->createCommand()->update('plugins',
 			['enabled' => 1],
 			['class' => $plugin->getClassHandle()]
-		);
+		)->execute();
 
 		$plugin->isEnabled = true;
 		$this->_enabledPlugins[$lcPluginHandle] = $plugin;
@@ -357,7 +357,7 @@ class Plugins extends Component
 		Craft::$app->getDb()->createCommand()->update('plugins',
 			['enabled' => 0],
 			['class' => $plugin->getClassHandle()]
-		);
+		)->execute();
 
 		$plugin->isEnabled = false;
 		unset($this->_enabledPlugins[$lcPluginHandle]);
@@ -401,7 +401,7 @@ class Plugins extends Component
 				'version'     => $plugin->version,
 				'enabled'     => true,
 				'installDate' => DateTimeHelper::currentTimeForDb(),
-			]);
+			])->execute();
 
 			$plugin->isInstalled = true;
 			$plugin->isEnabled = true;
@@ -463,11 +463,11 @@ class Plugins extends Component
 			$this->_enabledPlugins[$lcPluginHandle] = $plugin;
 			$this->_autoloadPluginClasses($plugin);
 
-			$pluginRow = Craft::$app->getDb()->createCommand()
+			$pluginRow = (new Query())
 				->select('id')
 				->from('plugins')
 				->where('class=:class', ['class' => $plugin->getClassHandle()])
-				->queryRow();
+				->one();
 
 			$pluginId = $pluginRow['id'];
 		}
@@ -499,10 +499,10 @@ class Plugins extends Component
 			$plugin->dropTables();
 
 			// Remove the row from the database.
-			Craft::$app->getDb()->createCommand()->delete('plugins', ['class' => $handle]);
+			Craft::$app->getDb()->createCommand()->delete('plugins', ['class' => $handle])->execute();
 
 			// Remove any migrations.
-			Craft::$app->getDb()->createCommand()->delete('migrations', ['pluginId' => $pluginId]);
+			Craft::$app->getDb()->createCommand()->delete('migrations', ['pluginId' => $pluginId])->execute();
 
 			if ($transaction !== null)
 			{
@@ -555,7 +555,7 @@ class Plugins extends Component
 				'settings' => $settings
 			], [
 				'class' => $plugin->getClassHandle()
-			]);
+			])->execute();
 
 			return (bool) $affectedRows;
 		}

@@ -9,6 +9,7 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\db\Connection;
+use craft\app\db\Query;
 use craft\app\enums\CacheMethod;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
@@ -561,10 +562,9 @@ trait ApplicationTrait
 		{
 			if ($this->isInstalled())
 			{
-				$row = $this->getDb()->createCommand()
+				$row = (new Query())
 					->from('info')
-					->limit(1)
-					->queryRow();
+					->one();
 
 				if (!$row)
 				{
@@ -605,11 +605,11 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
-				$this->getDb()->createCommand()->update('info', $attributes);
+				$this->getDb()->createCommand()->update('info', $attributes)->execute();
 			}
 			else
 			{
-				$this->getDb()->createCommand()->insert('info', $attributes);
+				$this->getDb()->createCommand()->insert('info', $attributes)->execute();
 
 				// Set the new id
 				$info->id = $this->getDb()->getLastInsertID();

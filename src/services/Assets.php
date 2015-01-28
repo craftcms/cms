@@ -118,9 +118,9 @@ class Assets extends Component
 		$files = Craft::$app->getDb()->createCommand()
 			->select('fi.*')
 			->from('assetfiles fi')
-			->join('assetfolders fo', 'fo.id = fi.folderId')
+			->innerJoin('assetfolders fo', 'fo.id = fi.folderId')
 			->where('fo.sourceId = :sourceId', [':sourceId' => $sourceId])
-			->order('fi.filename')
+			->orderBy('fi.filename')
 			->queryAll();
 
 		return AssetFileModel::populateModels($files, $indexBy);
@@ -609,7 +609,7 @@ class Assets extends Component
 
 		if ($criteria->order)
 		{
-			$query->order($criteria->order);
+			$query->orderBy($criteria->order);
 		}
 
 		if ($criteria->offset)
@@ -1140,7 +1140,7 @@ class Assets extends Component
 	private function _createFolderQuery()
 	{
 		return Craft::$app->getDb()->createCommand()
-			->select('id, parentId, sourceId, name, path')
+			->select(['id', 'parentId', 'sourceId', 'name', 'path'])
 			->from('assetfolders');
 	}
 

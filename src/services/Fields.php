@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\events\FieldLayoutEvent;
@@ -119,7 +120,7 @@ class Fields extends Component
 		{
 			$this->_groupsById = [];
 
-			$results = $this->_createGroupQuery()->queryAll();
+			$results = $this->_createGroupQuery()->all();
 
 			foreach ($results as $result)
 			{
@@ -164,7 +165,7 @@ class Fields extends Component
 		{
 			$result = $this->_createGroupQuery()
 				->where('id = :id', [':id' => $groupId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -236,7 +237,7 @@ class Fields extends Component
 			$this->deleteField($field);
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldgroups', ['id' => $groupId]);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldgroups', ['id' => $groupId])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -258,7 +259,7 @@ class Fields extends Component
 		{
 			$results = $this->_createFieldQuery()
 				->where('context = :context', [':context' => $context])
-				->queryAll();
+				->all();
 
 			$this->_allFieldsInContext[$context] = [];
 
@@ -327,7 +328,7 @@ class Fields extends Component
 		{
 			$result = $this->_createFieldQuery()
 				->where('id = :id', [':id' => $fieldId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -360,7 +361,7 @@ class Fields extends Component
 		{
 			$result = $this->_createFieldQuery()
 				->where(['and', 'handle = :handle', 'context = :context'], [':handle' => $handle, ':context' => $context])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -389,7 +390,7 @@ class Fields extends Component
 	{
 		$results = $this->_createFieldQuery()
 			->where('groupId = :groupId', [':groupId' => $groupId])
-			->queryAll();
+			->all();
 
 		$fields = [];
 
@@ -530,15 +531,15 @@ class Fields extends Component
 
 					if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName))
 					{
-						Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName);
+						Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)->execute();
 					}
 					else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName))
 					{
-						Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $newColumnName, $columnType);
+						Craft::$app->getDb()->createCommand()->alterColumn($contentTable, $newColumnName, $columnType)->execute();
 					}
 					else
 					{
-						Craft::$app->getDb()->createCommand()->addColumn($contentTable, $newColumnName, $columnType);
+						Craft::$app->getDb()->createCommand()->addColumn($contentTable, $newColumnName, $columnType)->execute();
 					}
 				}
 				else
@@ -548,7 +549,7 @@ class Fields extends Component
 					{
 						if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable, $oldColumnName))
 						{
-							Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $oldColumnName);
+							Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $oldColumnName)->execute();
 						}
 					}
 				}
@@ -638,11 +639,11 @@ class Fields extends Component
 
 			if (Craft::$app->getDb()->columnExists($contentTable, $fieldColumnPrefix.$field->handle))
 			{
-				Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle);
+				Craft::$app->getDb()->createCommand()->dropColumn($contentTable, $fieldColumnPrefix.$field->handle)->execute();
 			}
 
 			// Delete the row in fields
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fields', ['id' => $field->id]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fields', ['id' => $field->id])->execute();
 
 			if ($affectedRows)
 			{
@@ -686,7 +687,7 @@ class Fields extends Component
 		{
 			$result = $this->_createLayoutQuery()
 				->where('id = :id', [':id' => $layoutId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -716,7 +717,7 @@ class Fields extends Component
 		{
 			$result = $this->_createLayoutQuery()
 				->where('type = :type', [':type' => $type])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -751,7 +752,7 @@ class Fields extends Component
 	{
 		$results = $this->_createLayoutTabQuery()
 			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
-			->queryAll();
+			->all();
 
 		return FieldLayoutTabModel::populateModels($results);
 	}
@@ -767,7 +768,7 @@ class Fields extends Component
 	{
 		$results = $this->_createLayoutFieldQuery()
 			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
-			->queryAll();
+			->all();
 
 		return FieldLayoutFieldModel::populateModels($results);
 	}
@@ -892,11 +893,11 @@ class Fields extends Component
 
 		if (is_array($layoutId))
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['in', 'id', $layoutId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['in', 'id', $layoutId])->execute();
 		}
 		else
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['id' => $layoutId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['id' => $layoutId])->execute();
 		}
 
 		return (bool) $affectedRows;
@@ -911,7 +912,7 @@ class Fields extends Component
 	 */
 	public function deleteLayoutsByType($type)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['type' => $type]);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['type' => $type])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -963,67 +964,67 @@ class Fields extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving groups.
+	 * Returns a Query object prepped for retrieving groups.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createGroupQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, name')
+		return (new Query())
+			->select(['id', 'name'])
 			->from('fieldgroups')
-			->order('name');
+			->orderBy('name');
 	}
 
 	/**
-	 * Returns a Command object prepped for retrieving fields.
+	 * Returns a Query object prepped for retrieving fields.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createFieldQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, groupId, name, handle, context, instructions, translatable, type, settings')
+		return (new Query())
+			->select(['id', 'groupId', 'name', 'handle', 'context', 'instructions', 'translatable', 'type', 'settings'])
 			->from('fields')
-			->order('name');
+			->orderBy('name');
 	}
 
 	/**
-	 * Returns a Command object prepped for retrieving layouts.
+	 * Returns a Query object prepped for retrieving layouts.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createLayoutQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, type')
+		return (new Query)
+			->select(['id', 'type'])
 			->from('fieldlayouts');
 	}
 
 	/**
-	 * Returns a Command object prepped for retrieving layout fields.
+	 * Returns a Query object prepped for retrieving layout fields.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createLayoutFieldQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, layoutId, tabId, fieldId, required, sortOrder')
+		return (new Query())
+			->select(['id', 'layoutId', 'tabId', 'fieldId', 'required', 'sortOrder'])
 			->from('fieldlayoutfields')
-			->order('sortOrder');
+			->orderBy('sortOrder');
 	}
 
 	/**
-	 * Returns a Command object prepped for retrieving layout tabs.
+	 * Returns a Query object prepped for retrieving layout tabs.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createLayoutTabQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
-			->select('id, layoutId, name, sortOrder')
+		return (new Query())
+			->select(['id', 'layoutId', 'name', 'sortOrder'])
 			->from('fieldlayouttabs')
-			->order('sortOrder');
+			->orderBy('sortOrder');
 	}
 
 	/**

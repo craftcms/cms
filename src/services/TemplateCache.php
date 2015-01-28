@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
@@ -130,11 +131,11 @@ class TemplateCache extends Component
 			$params[':path'] = $this->_getPath();
 		}
 
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('body')
 			->from(static::$_templateCachesTable)
 			->where($conditions, $params)
-			->queryScalar();
+			->scalar();
 	}
 
 	/**
@@ -247,7 +248,7 @@ class TemplateCache extends Component
 				'path'       => ($global ? null : $this->_getPath()),
 				'expiryDate' => DateTimeHelper::formatTimeForDb($expiration),
 				'body'       => $body
-			], false);
+			], false)->execute();
 
 			$cacheId = Craft::$app->getDb()->getLastInsertID();
 
@@ -263,7 +264,12 @@ class TemplateCache extends Component
 					$values[] = [$cacheId, $criteria->getElementType()->getClassHandle(), JsonHelper::encode($flattenedCriteria)];
 				}
 
-				Craft::$app->getDb()->createCommand()->insertAll(static::$_templateCacheCriteriaTable, ['cacheId', 'type', 'criteria'], $values, false);
+				Craft::$app->getDb()->createCommand()->batchInsert(
+					static::$_templateCacheCriteriaTable,
+					['cacheId', 'type', 'criteria'],
+					$values,
+					false
+				)->execute();
 
 				unset($this->_cacheCriteria[$key]);
 			}
@@ -278,7 +284,12 @@ class TemplateCache extends Component
 					$values[] = [$cacheId, $elementId];
 				}
 
-				Craft::$app->getDb()->createCommand()->insertAll(static::$_templateCacheElementsTable, ['cacheId', 'elementId'], $values, false);
+				Craft::$app->getDb()->createCommand()->batchInsert(
+					static::$_templateCacheElementsTable,
+					['cacheId', 'elementId'],
+					$values,
+					false
+				)->execute();
 
 				unset($this->_cacheElementIds[$key]);
 			}
@@ -324,7 +335,7 @@ class TemplateCache extends Component
 			$params = [':id' => $cacheId];
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, $condition, $params)->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -344,7 +355,7 @@ class TemplateCache extends Component
 
 		$this->_deletedCachesByElementType[$elementType] = true;
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, ['type = :type'], [':type' => $elementType]);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable, ['type = :type'], [':type' => $elementType])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -446,8 +457,9 @@ class TemplateCache extends Component
 			}
 		}
 
-		$query = Craft::$app->getDb()->createCommand()
-			->selectDistinct('cacheId')
+		$query = (new Query())
+			->select('cacheId')
+			->distinct(true)
 			->from(static::$_templateCacheElementsTable);
 
 		if (is_array($elementId))
@@ -459,7 +471,7 @@ class TemplateCache extends Component
 			$query->where('elementId = :elementId', [':elementId' => $elementId]);
 		}
 
-		$cacheIds = $query->queryColumn();
+		$cacheIds = $query->column();
 
 		if ($cacheIds)
 		{
@@ -507,7 +519,7 @@ class TemplateCache extends Component
 		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable,
 			'expiryDate <= :now',
 			['now' => DateTimeHelper::currentTimeForDb()]
-		);
+		)->execute();
 
 		$this->_deletedExpiredCaches = true;
 
@@ -557,7 +569,7 @@ class TemplateCache extends Component
 
 		$this->_deletedAllCaches = true;
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable);
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_templateCachesTable)->execute();
 		return (bool) $affectedRows;
 	}
 

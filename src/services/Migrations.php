@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\dates\DateTime;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
@@ -170,14 +171,14 @@ class Migrations extends Component
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb(),
 					'pluginId' => $pluginInfo['id']
-				]);
+				])->execute();
 			}
 			else
 			{
 				Craft::$app->getDb()->createCommand()->insert($this->_migrationTable, [
 					'version' => $class,
 					'applyTime' => DateTimeHelper::currentTimeForDb()
-				]);
+				])->execute();
 			}
 
 			$time = microtime(true) - $start;
@@ -233,7 +234,7 @@ class Migrations extends Component
 			$query->limit($limit);
 		}
 
-		$migrations = $query->queryAll();
+		$migrations = $query->all();
 
 		// Convert the dates to DateTime objects
 		foreach ($migrations as &$migration)
@@ -255,9 +256,9 @@ class Migrations extends Component
 	 */
 	public function hasRun($version, $plugin = null)
 	{
-		return (bool) $this->_createMigrationQuery($plugin)
+		return $this->_createMigrationQuery($plugin)
 			->andWhere('version = :version', [':version' => $version])
-			->count('id');
+			->exists();
 	}
 
 	/**
@@ -354,18 +355,18 @@ class Migrations extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving migrations.
+	 * Returns a Query object prepped for retrieving migrations.
 	 *
 	 * @param string|null $plugin
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createMigrationQuery($plugin = null)
 	{
-		$query = Craft::$app->getDb()->createCommand()
-			->select('version, applyTime')
+		$query = (new Query())
+			->select(['version', 'applyTime'])
 			->from($this->_migrationTable)
-			->order('version desc');
+			->orderBy('version desc');
 
 		if ($plugin)
 		{

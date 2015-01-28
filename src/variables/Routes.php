@@ -7,6 +7,7 @@
 
 namespace craft\app\variables;
 
+use craft\app\db\Query;
 use craft\app\helpers\JsonHelper;
 
 /**
@@ -29,11 +30,11 @@ class Routes
 	{
 		$routes = [];
 
-		$results = \Craft::$app->getDb()->createCommand()
-			->select('id, locale, urlParts, template')
+		$results = (new Query())
+			->select(['id', 'locale', 'urlParts', 'template'])
 			->from('routes')
-			->order('sortOrder')
-			->queryAll();
+			->orderBy('sortOrder')
+			->all();
 
 		foreach ($results as $result)
 		{

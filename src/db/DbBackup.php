@@ -307,7 +307,8 @@ class DbBackup
 	 */
 	private function _processResult($resultName, $action = 'create')
 	{
-		$q = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE '.Craft::$app->getDb()->quoteTableName($resultName).';')->queryRow();
+		// TODO: MySQL specific
+		$q = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE '.Craft::$app->getDb()->quoteTableName($resultName).';')->queryOne();
 
 		if (isset($q['Create Table']))
 		{

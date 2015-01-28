@@ -70,7 +70,7 @@ class SetStatus extends BaseElementAction
 			'elements',
 			['enabled' => $sqlNewStatus],
 			['in', 'id', $elementIds]
-		);
+		)->execute();
 
 		if ($status == BaseElementModel::ENABLED)
 		{
@@ -80,7 +80,7 @@ class SetStatus extends BaseElementAction
 				['enabled' => $sqlNewStatus],
 				['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
 				[':locale' => $criteria->locale]
-			);
+			)->execute();
 		}
 
 		// Clear their template caches

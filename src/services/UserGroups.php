@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\models\User as UserModel;
@@ -102,12 +103,12 @@ class UserGroups extends Component
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
 	{
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->select('g.*')
 			->from('usergroups g')
-			->join('usergroups_users gu', 'gu.groupId = g.id')
+			->innerJoin('usergroups_users gu', 'gu.groupId = g.id')
 			->where(['gu.userId' => $userId])
-			->queryAll();
+			->all();
 
 		return UserGroupModel::populateModels($query, $indexBy);
 	}
@@ -153,8 +154,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		Craft::$app->getDb()->createCommand()
-			->delete('usergroups_users', ['userId' => $userId]);
+		Craft::$app->getDb()->createCommand()->delete('usergroups_users', ['userId' => $userId])->execute();
 
 		if ($groupIds)
 		{
@@ -168,7 +168,7 @@ class UserGroups extends Component
 				$values[] = [$groupId, $userId];
 			}
 
-			Craft::$app->getDb()->createCommand()->insertAll('usergroups_users', ['groupId', 'userId'], $values);
+			Craft::$app->getDb()->createCommand()->batchInsert('usergroups_users', ['groupId', 'userId'], $values)->execute();
 		}
 
 		return true;
@@ -225,7 +225,7 @@ class UserGroups extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('usergroups', ['id' => $groupId]);
+		Craft::$app->getDb()->createCommand()->delete('usergroups', ['id' => $groupId])->execute();
 		return true;
 	}
 

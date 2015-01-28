@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\SectionType;
 use craft\app\models\Section as SectionModel;
 use craft\app\records\UserPermission as UserPermissionRecord;
@@ -197,12 +198,12 @@ class UserPermissions extends Component
 	{
 		if (!isset($this->_permissionsByUserId[$groupId]))
 		{
-			$groupPermissions = Craft::$app->getDb()->createCommand()
+			$groupPermissions = (new Query())
 				->select('p.name')
 				->from('userpermissions p')
-				->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
+				->innerJoin('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
 				->where(['p_g.groupId' => $groupId])
-				->queryColumn();
+				->column();
 
 			$this->_permissionsByGroupId[$groupId] = $groupPermissions;
 		}
@@ -219,13 +220,13 @@ class UserPermissions extends Component
 	 */
 	public function getGroupPermissionsByUserId($userId)
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('p.name')
 			->from('userpermissions p')
-			->join('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
-			->join('usergroups_users g_u', 'g_u.groupId = p_g.groupId')
+			->innerJoin('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
+			->innerJoin('usergroups_users g_u', 'g_u.groupId = p_g.groupId')
 			->where(['g_u.userId' => $userId])
-			->queryColumn();
+			->column();
 	}
 
 	/**
@@ -255,8 +256,7 @@ class UserPermissions extends Component
 	public function saveGroupPermissions($groupId, $permissions)
 	{
 		// Delete any existing group permissions
-		Craft::$app->getDb()->createCommand()
-			->delete('userpermissions_usergroups', ['groupId' => $groupId]);
+		Craft::$app->getDb()->createCommand()->delete('userpermissions_usergroups', ['groupId' => $groupId])->execute();
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
 
@@ -271,8 +271,11 @@ class UserPermissions extends Component
 			}
 
 			// Add the new group permissions
-			Craft::$app->getDb()->createCommand()
-				->insertAll('userpermissions_usergroups', ['permissionId', 'groupId'], $groupPermissionVals);
+			Craft::$app->getDb()->createCommand()->batchInsert(
+				'userpermissions_usergroups',
+				['permissionId', 'groupId'],
+				$groupPermissionVals
+			)->execute();
 		}
 
 		return true;
@@ -291,12 +294,12 @@ class UserPermissions extends Component
 		{
 			$groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-			$userPermissions = Craft::$app->getDb()->createCommand()
+			$userPermissions = (new Query())
 				->select('p.name')
 				->from('userpermissions p')
-				->join('userpermissions_users p_u', 'p_u.permissionId = p.id')
+				->innerJoin('userpermissions_users p_u', 'p_u.permissionId = p.id')
 				->where(['p_u.userId' => $userId])
-				->queryColumn();
+				->column();
 
 			$this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $userPermissions));
 		}
@@ -331,8 +334,7 @@ class UserPermissions extends Component
 	public function saveUserPermissions($userId, $permissions)
 	{
 		// Delete any existing user permissions
-		Craft::$app->getDb()->createCommand()
-			->delete('userpermissions_users', ['userId' => $userId]);
+		Craft::$app->getDb()->createCommand()->delete('userpermissions_users', ['userId' => $userId])->execute();
 
 		// Filter out any orphaned permissions
 		$groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -349,8 +351,11 @@ class UserPermissions extends Component
 			}
 
 			// Add the new user permissions
-			Craft::$app->getDb()->createCommand()
-				->insertAll('userpermissions_users', ['permissionId', 'userId'], $userPermissionVals);
+			Craft::$app->getDb()->createCommand()->batchInsert(
+				'userpermissions_users',
+				['permissionId', 'userId'],
+				$userPermissionVals
+			)->execute();
 		}
 
 		return true;

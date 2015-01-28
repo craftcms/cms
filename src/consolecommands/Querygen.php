@@ -130,7 +130,7 @@ class Querygen extends BaseCommand
 			echo "\t".str_pad("'{$name}'", $colNameLength).' => '.$this->_varExport($config).",\n";
 		}
 
-		echo '], null, '.$this->_varExport($addIdColumn).");\n";
+		echo '], null, '.$this->_varExport($addIdColumn).")->execute();\n";
 
 		// Create the indexes
 		if ($indexes)
@@ -144,7 +144,8 @@ class Querygen extends BaseCommand
 				echo 'Craft::$app->getDb()->createCommand()->createIndex(' .
 					$this->_varExport($table).', ' .
 					"'".implode(',', $columns)."', " .
-					$this->_varExport($unique).");\n";
+					$this->_varExport($unique) .
+					")->execute();\n";
 			}
 		}
 
@@ -207,7 +208,8 @@ class Querygen extends BaseCommand
 					$this->_varExport($otherTable).', ' .
 					$this->_varExport($otherPk).', ' .
 					$this->_varExport($onDelete).', ' .
-					$this->_varExport($onUpdate).");\n";
+					$this->_varExport($onUpdate) .
+					")->execute();\n";
 			}
 		}
 

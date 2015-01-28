@@ -272,7 +272,7 @@ class User extends \yii\web\User
 				Craft::$app->getDb()->createCommand()->delete('sessions', ['and', 'userId=:userId', 'uid=:uid'], [
 					'userId' => $identity->id,
 					'token'  => $authKey
-				]);
+				])->execute();
 			}
 		}
 
@@ -348,7 +348,7 @@ class User extends \yii\web\User
 						[],
 						['and', 'userId=:userId', 'uid=:uid'],
 						[':userId' => $this->getId(), ':uid' => $tokenUid]
-					);
+					)->execute();
 				}
 			}
 		}
@@ -363,6 +363,6 @@ class User extends \yii\web\User
 		$expire = DateTimeHelper::currentUTCDateTime();
 		$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 		$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
-		Craft::$app->getDb()->createCommand()->delete('sessions', 'dateUpdated < :pastTime', ['pastTime' => $pastTime]);
+		Craft::$app->getDb()->createCommand()->delete('sessions', 'dateUpdated < :pastTime', ['pastTime' => $pastTime])->execute();
 	}
 }

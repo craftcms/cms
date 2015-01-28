@@ -312,11 +312,11 @@ class Asset extends BaseElementType
 	{
 		$query
 			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
-			->join('assetfiles assetfiles', 'assetfiles.id = elements.id');
+			->innerJoin('assetfiles assetfiles', 'assetfiles.id = elements.id');
 
 		if (!empty($criteria->source))
 		{
-			$query->join('assetsources assetsources', 'assetfiles.sourceId = assetsources.id');
+			$query->innerJoin('assetsources assetsources', 'assetfiles.sourceId = assetsources.id');
 		}
 
 		if ($criteria->sourceId)

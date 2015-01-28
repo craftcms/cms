@@ -10,6 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\enums\AuthError;
 use craft\app\enums\ElementType;
@@ -715,11 +716,11 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	private function _findSessionTokenByUid($uid)
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('token')
 			->from('sessions')
 			->where(['and', 'userId=:userId', 'uid=:uid'], [':userId' => $this->id, ':uid' => $uid])
-			->queryScalar();
+			->scalar();
 	}
 
 	/**

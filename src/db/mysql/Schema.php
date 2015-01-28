@@ -75,7 +75,7 @@ class Schema extends \yii\db\mysql\Schema
 		if (!$schema)
 		{
 			$likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
-			return $this->db->createCommand()->setText('SHOW TABLES'.$likeSql)->queryColumn();
+			return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
 		}
 		else
 		{

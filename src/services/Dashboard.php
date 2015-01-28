@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\models\Widget as WidgetModel;
@@ -162,11 +163,10 @@ class Dashboard extends Component
 		{
 			if ($widgetRecord->isNewRecord())
 			{
-				$maxSortOrder = Craft::$app->getDb()->createCommand()
-					->select('max(sortOrder)')
+				$maxSortOrder = (new Query())
 					->from('widgets')
 					->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
-					->queryScalar();
+					->max('sortOrder');
 
 				$widgetRecord->sortOrder = $maxSortOrder + 1;
 			}

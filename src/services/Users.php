@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
@@ -1116,11 +1117,11 @@ class Users extends Component
 			if ($event->performAction)
 			{
 				// Get the entry IDs that belong to this user
-				$entryIds = Craft::$app->getDb()->createCommand()
+				$entryIds = (new Query())
 					->select('id')
 					->from('entries')
 					->where(['authorId' => $user->id])
-					->queryColumn();
+					->column();
 
 				// Should we transfer the content to a new user?
 				if ($transferContentTo)
@@ -1141,7 +1142,7 @@ class Users extends Component
 							$column => $transferContentTo->id
 						], [
 							$column => $user->id
-						]);
+						])->execute();
 					}
 				}
 				else
@@ -1223,7 +1224,7 @@ class Users extends Component
 			'message' => $message
 		], [
 			'expiryDate' => $expiryDate
-		]);
+		])->execute();
 
 		return (bool) $affectedRows;
 	}
@@ -1241,7 +1242,7 @@ class Users extends Component
 		$affectedRows = Craft::$app->getDb()->createCommand()->delete('shunnedmessages', [
 			'userId'  => $userId,
 			'message' => $message
-		]);
+		])->execute();
 
 		return (bool) $affectedRows;
 	}
@@ -1256,8 +1257,7 @@ class Users extends Component
 	 */
 	public function hasUserShunnedMessage($userId, $message)
 	{
-		$row = Craft::$app->getDb()->createCommand()
-			->select('id')
+		return (new Query())
 			->from('shunnedmessages')
 			->where(['and',
 				'userId = :userId',
@@ -1268,9 +1268,7 @@ class Users extends Component
 				':message' => $message,
 				':now'     => DateTimeHelper::formatTimeForDb()
 			])
-			->queryRow(false);
-
-		return (bool) $row;
+			->exists();
 	}
 
 	/**
@@ -1308,12 +1306,13 @@ class Users extends Component
 			$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 			$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-			$ids = Craft::$app->getDb()->createCommand()->select('id')
+			$ids = (new Query())
+				->select('id')
 				->from('users')
-				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', ['pastTime' => $pastTime])
-				->queryColumn();
+				->where(['and', 'pending=1', 'verificationCodeIssuedDate < :pastTime'], ['pastTime' => $pastTime])
+				->column();
 
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', ['in', 'id', $ids]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', ['in', 'id', $ids])->execute();
 
 			if ($affectedRows > 0)
 			{

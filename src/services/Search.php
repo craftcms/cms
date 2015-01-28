@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
@@ -174,7 +175,7 @@ class Search extends Component
 		}
 
 		// Execute the sql
-		$results = Craft::$app->getDb()->createCommand()->setText($sql)->queryAll();
+		$results = Craft::$app->getDb()->createCommand($sql)->queryAll();
 
 		// Are we scoring the results?
 		if ($scoreResults)
@@ -378,7 +379,7 @@ class Search extends Component
 		// Insert/update the row in searchindex
 		Craft::$app->getDb()->createCommand()->insertOrUpdate('searchindex', $keyColumns, [
 			'keywords' => $cleanKeywords
-		], false);
+		], false)->execute();
 	}
 
 	/**
@@ -836,11 +837,11 @@ class Search extends Component
 	private function _sqlSubSelect($where)
 	{
 		// FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
-		$elementIds = Craft::$app->getDb()->createCommand()
+		$elementIds = (new Query())
 			->select('elementId')
 			->from('searchindex')
 			->where($where)
-			->queryColumn();
+			->column();
 
 		if ($elementIds)
 		{

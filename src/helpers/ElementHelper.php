@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\models\BaseElementModel;
 
@@ -165,11 +166,11 @@ class ElementHelper
 
 			$uniqueUriParams[':uri'] = $testUri;
 
-			$totalElements = Craft::$app->getDb()->createCommand()
-				->select('count(id)')
+			$totalElements = (new Query())
+				->select(['count(id)'])
 				->from('elements_i18n')
 				->where($uniqueUriConditions, $uniqueUriParams)
-				->queryScalar();
+				->scalar();
 
 			if ($totalElements ==  0)
 			{

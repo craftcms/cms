@@ -190,7 +190,8 @@ class Requirements
 	 */
 	private function _isInnoDbEnabled()
 	{
-		$results = Craft::$app->getDb()->createCommand()->setText('SHOW ENGINES')->queryAll();
+		// TODO: MySQL specific
+		$results = Craft::$app->getDb()->createCommand('SHOW ENGINES')->queryAll();
 
 		foreach ($results as $result)
 		{

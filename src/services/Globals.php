@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\GlobalSetEvent;
@@ -75,10 +76,10 @@ class Globals extends Component
 	{
 		if (!isset($this->_allGlobalSetIds))
 		{
-			$this->_allGlobalSetIds = Craft::$app->getDb()->createCommand()
+			$this->_allGlobalSetIds = (new Query())
 				->select('id')
 				->from('globalsets')
-				->queryColumn();
+				->column();
 		}
 
 		return $this->_allGlobalSetIds;
@@ -371,11 +372,11 @@ class Globals extends Component
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = Craft::$app->getDb()->createCommand()
+			$fieldLayoutId = (new Query())
 				->select('fieldLayoutId')
 				->from('globalsets')
 				->where(['id' => $setId])
-				->queryScalar();
+				->scalar();
 
 			if ($fieldLayoutId)
 			{

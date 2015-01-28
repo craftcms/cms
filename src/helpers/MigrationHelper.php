@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 
 /**
@@ -126,7 +127,7 @@ class MigrationHelper
 		static::dropAllIndexesOnTable($table);
 
 		// Rename the table
-		Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName);
+		Craft::$app->getDb()->createCommand()->renameTable($oldName, $newName)->execute();
 
 		// Update our internal records
 		static::$_tables[$newName] = $table;
@@ -191,7 +192,7 @@ class MigrationHelper
 		}
 
 		// Rename the column
-		Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName);
+		Craft::$app->getDb()->createCommand()->renameColumn($tableName, $oldName, $newName)->execute();
 
 		// Update the table records
 		$table->columns[$newName] = $table->columns[$oldName];
@@ -251,19 +252,19 @@ class MigrationHelper
 			static::dropAllUniqueIndexesOnTable($fk->table);
 
 			// Rename the old id column and add the new one
-			$db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
-			$db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
+			$db->createCommand()->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')->execute();
+			$db->createCommand()->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')->execute();
 		}
 
 		// Rename the old id column and add the new one
-		$db->createCommand()->renameColumn($table, 'id', 'id_old');
-		$db->createCommand()->addColumnAfter($table, 'id', static::$_idColumnType, 'id_old');
+		$db->createCommand()->renameColumn($table, 'id', 'id_old')->execute();
+		$db->createCommand()->addColumnAfter($table, 'id', static::$_idColumnType, 'id_old')->execute();
 
 		// Get all of the rows
-		$oldRows = $db->createCommand()
+		$oldRows = (new Query())
 			->select('id_old')
 			->from($table)
-			->queryAll();
+			->all($db);
 
 		// Figure out which locales we're going to be storing elements_i18n and content rows in.
 		if (!$locales || !is_array($locales))
@@ -288,18 +289,18 @@ class MigrationHelper
 				'type'     => $elementType,
 				'enabled'  => 1,
 				'archived' => 0
-			]);
+			])->execute();
 
 			// Get the new element ID
 			$elementId = $db->getLastInsertID();
 
 			// Update this table with the new element ID
-			$db->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']]);
+			$db->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']])->execute();
 
 			// Update the other tables' new FK columns
 			foreach ($fks as $fk)
 			{
-				$db->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']]);
+				$db->createCommand()->update($fk->table->name, [$fk->column => $elementId], [$fk->column.'_old' => $row['id_old']])->execute();
 			}
 
 			// Queue up the elements_i18n and content values
@@ -318,15 +319,15 @@ class MigrationHelper
 		}
 
 		// Save the new elements_i18n and content rows
-		$db->createCommand()->insertAll('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues);
+		$db->createCommand()->batchInsert('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues)->execute();
 
 		if ($hasContent)
 		{
-			$db->createCommand()->insertAll('content', ['elementId', 'locale'], $contentValues);
+			$db->createCommand()->batchInsert('content', ['elementId', 'locale'], $contentValues)->execute();
 		}
 
 		// Drop the old id column
-		$db->createCommand()->dropColumn($table, 'id_old');
+		$db->createCommand()->dropColumn($table, 'id_old')->execute();
 
 		// Set the new PK
 		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName($table, 'id'), $table, 'id')->execute();
@@ -338,7 +339,7 @@ class MigrationHelper
 		foreach ($fks as $fk)
 		{
 			// Drop the old FK column
-			$db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old');
+			$db->createCommand()->dropColumn($fk->table->name, $fk->column.'_old')->execute();
 
 			// Restore its unique indexes and FKs
 			static::restoreAllUniqueIndexesOnTable($fk->table);
@@ -445,9 +446,8 @@ class MigrationHelper
 	 */
 	public static function dropForeignKey($fk)
 	{
-		// Don't assume that the FK name is "correct"
 		$db = Craft::$app->getDb();
-		$db->createCommand()->setText($db->getSchema()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}'))->execute();
+		$db->createCommand()->dropForeignKey($fk->name, '{{'.$fk->table->name.'}}')->execute();
 	}
 
 	/**
@@ -492,9 +492,8 @@ class MigrationHelper
 	 */
 	public static function dropIndex($index)
 	{
-		// Don't assume that the constraint name is "correct"
 		$db = Craft::$app->getDb();
-		$db->createCommand()->setText($db->getSchema()->dropIndex($index->name, '{{'.$index->table->name.'}}'))->execute();
+		$db->createCommand()->dropIndex($index->name, '{{'.$index->table->name.'}}')->execute();
 	}
 
 	/**
@@ -634,7 +633,7 @@ class MigrationHelper
 		];
 
 		// Get the CREATE TABLE sql
-		$query = Craft::$app->getDb()->createCommand()->setText('SHOW CREATE TABLE `{{'.$table.'}}`')->queryRow();
+		$query = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE `{{'.$table.'}}`')->queryOne();
 
 		// Don't want to include any views.
 		if (isset($query['Create Table']))

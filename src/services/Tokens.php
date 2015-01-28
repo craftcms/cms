@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
@@ -92,11 +93,11 @@ class Tokens extends Component
 		// Take the opportunity to delete any expired tokens
 		$this->deleteExpiredTokens();
 
-		$result = Craft::$app->getDb()->createCommand()
-			->select('id, route, usageLimit, usageCount')
+		$result = (new Query())
+			->select(['id', 'route', 'usageLimit', 'usageCount'])
 			->from('tokens')
 			->where('token = :token', [':token' => $token])
-			->queryRow();
+			->one();
 
 		if ($result)
 		{
@@ -143,7 +144,7 @@ class Tokens extends Component
 			'usageCount' => 'usageCount + 1'
 		], [
 			'id' => $tokenId
-		]);
+		])->execute();
 
 		return (bool) $affectedRows;
 	}
@@ -157,9 +158,9 @@ class Tokens extends Component
 	 */
 	public function deleteTokenById($tokenId)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('tokens', [
+		Craft::$app->getDb()->createCommand()->delete('tokens', [
 			'id' => $tokenId
-		]);
+		])->execute();
 	}
 
 	/**
@@ -178,7 +179,7 @@ class Tokens extends Component
 		$affectedRows = Craft::$app->getDb()->createCommand()->delete('tokens',
 			'expiryDate <= :now',
 			['now' => DateTimeHelper::currentTimeForDb()]
-		);
+		)->execute();
 
 		$this->_deletedExpiredTokens = true;
 

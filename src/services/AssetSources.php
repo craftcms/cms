@@ -11,6 +11,7 @@ use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
@@ -364,10 +365,9 @@ class AssetSources extends Component
 				if ($isNewSource)
 				{
 					// Set the sort order
-					$maxSortOrder = Craft::$app->getDb()->createCommand()
-						->select('max(sortOrder)')
+					$maxSortOrder = (new Query())
 						->from('assetsources')
-						->queryScalar();
+						->max('sortOrder');
 
 					$sourceRecord->sortOrder = $maxSortOrder + 1;
 				}
@@ -535,7 +535,7 @@ class AssetSources extends Component
 		return Craft::$app->getDb()->createCommand()
 			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
 			->from('assetsources')
-			->order('sortOrder');
+			->orderBy('sortOrder');
 	}
 
 	/**

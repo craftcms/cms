@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
@@ -155,7 +156,7 @@ class Sections extends Component
 		if (!$this->_fetchedAllSections)
 		{
 			$results = $this->_createSectionQuery()
-				->queryAll();
+				->all();
 
 			$this->_sectionsById = [];
 
@@ -290,7 +291,7 @@ class Sections extends Component
 		{
 			$result = $this->_createSectionQuery()
 				->where('sections.id = :sectionId', [':sectionId' => $sectionId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -321,7 +322,7 @@ class Sections extends Component
 	{
 		$result = $this->_createSectionQuery()
 			->where('sections.handle = :sectionHandle', [':sectionHandle' => $sectionHandle])
-			->queryRow();
+			->one();
 
 		if ($result)
 		{
@@ -342,13 +343,13 @@ class Sections extends Component
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
-		$records = Craft::$app->getDb()->createCommand()
+		$records = (new Query())
 			->select('*')
 			->from('sections_i18n sections_i18n')
-			->join('locales locales', 'locales.locale = sections_i18n.locale')
+			->innerJoin('locales locales', 'locales.locale = sections_i18n.locale')
 			->where('sections_i18n.sectionId = :sectionId', [':sectionId' => $sectionId])
-			->order('locales.sortOrder')
-			->queryAll();
+			->orderBy('locales.sortOrder')
+			->all();
 
 		return SectionLocaleModel::populateModels($records, $indexBy);
 	}
@@ -436,7 +437,7 @@ class Sections extends Component
 				else if ($section)
 				{
 					// Make sure no other elements are using this URI already
-					$query = Craft::$app->getDb()->createCommand()
+					$query = (new Query())
 						->from('elements_i18n elements_i18n')
 						->where(
 							['and', 'elements_i18n.locale = :locale', 'elements_i18n.uri = :uri'],
@@ -445,13 +446,11 @@ class Sections extends Component
 
 					if ($section->id)
 					{
-						$query->join('entries entries', 'entries.id = elements_i18n.elementId')
+						$query->innerJoin('entries entries', 'entries.id = elements_i18n.elementId')
 							->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
 					}
 
-					$count = $query->count('elements_i18n.id');
-
-					if ($count)
+					if ($query->exists())
 					{
 						$section->addError($errorKey, Craft::t('app', 'This URI is already in use.'));
 					}
@@ -577,7 +576,7 @@ class Sections extends Component
 									'nestedUrlFormat'  => $locale->nestedUrlFormat
 								], [
 									'id' => $oldLocale->id
-								]);
+								])->execute();
 							}
 						}
 						else
@@ -587,10 +586,10 @@ class Sections extends Component
 					}
 
 					// Insert the new locales
-					Craft::$app->getDb()->createCommand()->insertAll('sections_i18n',
+					Craft::$app->getDb()->createCommand()->batchInsert('sections_i18n',
 						['sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'],
 						$newLocaleData
-					);
+					)->execute();
 
 					if (!$isNewSection)
 					{
@@ -604,7 +603,7 @@ class Sections extends Component
 							Craft::$app->getDb()->createCommand()->delete('sections_i18n',
 								['and', 'sectionId = :sectionId', ['in', 'locale', $droppedLocaleIds]],
 								[':sectionId' => $section->id]
-							);
+							)->execute();
 						}
 					}
 
@@ -614,11 +613,11 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						// Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
-						$entryTypeIds = Craft::$app->getDb()->createCommand()
+						$entryTypeIds = (new Query())
 							->select('id')
 							->from('entrytypes')
 							->where('sectionId = :sectionId', [':sectionId' => $section->id])
-							->queryColumn();
+							->column();
 
 						if ($entryTypeIds)
 						{
@@ -668,11 +667,11 @@ class Sections extends Component
 							if (!$isNewSection)
 							{
 								// Make sure there's only one entry in this section
-								$entryIds = Craft::$app->getDb()->createCommand()
+								$entryIds = (new Query())
 									->select('id')
 									->from('entries')
 									->where('sectionId = :sectionId', [':sectionId' => $section->id])
-									->queryColumn();
+									->column();
 
 								if ($entryIds)
 								{
@@ -691,7 +690,7 @@ class Sections extends Component
 										'archived' => 0,
 									], [
 										'id' => $singleEntryId
-									]);
+									])->execute();
 
 									Craft::$app->getDb()->createCommand()->update('entries', [
 										'typeId'     => $entryTypeId,
@@ -700,7 +699,7 @@ class Sections extends Component
 										'expiryDate' => null,
 									], [
 										'id' => $singleEntryId
-									]);
+									])->execute();
 								}
 
 								// Make sure there's only one entry type for this section
@@ -716,7 +715,7 @@ class Sections extends Component
 
 								Craft::$app->getDb()->createCommand()->insert('elements', [
 									'type' => ElementType::Entry
-								]);
+								])->execute();
 
 								$singleEntryId = Craft::$app->getDb()->getLastInsertID();
 
@@ -725,7 +724,7 @@ class Sections extends Component
 									'sectionId' => $section->id,
 									'typeId'    => $entryTypeId,
 									'postDate'  => DateTimeHelper::currentTimeForDb()
-								]);
+								])->execute();
 							}
 
 							// Now make sure we've got all of the i18n rows in place.
@@ -737,14 +736,14 @@ class Sections extends Component
 								], [
 									'slug' => $section->handle,
 									'uri'  => $sectionLocale->urlFormat
-								]);
+								])->execute();
 
 								Craft::$app->getDb()->createCommand()->insertOrUpdate('content', [
 									'elementId' => $singleEntryId,
 									'locale'    => $localeId
 								], [
 									'title' => $section->name
-								]);
+								])->execute();
 							}
 
 							break;
@@ -856,20 +855,20 @@ class Sections extends Component
 		try
 		{
 			// Grab the entry ids so we can clean the elements table.
-			$entryIds = Craft::$app->getDb()->createCommand()
+			$entryIds = (new Query())
 				->select('id')
 				->from('entries')
 				->where(['sectionId' => $sectionId])
-				->queryColumn();
+				->column();
 
 			Craft::$app->elements->deleteElementById($entryIds);
 
 			// Delete the structure, if there is one
-			$structureId = Craft::$app->getDb()->createCommand()
+			$structureId = (new Query())
 				->select('structureId')
 				->from('sections')
 				->where(['id' => $sectionId])
-				->queryScalar();
+				->scalar();
 
 			if ($structureId)
 			{
@@ -877,7 +876,7 @@ class Sections extends Component
 			}
 
 			// Delete the section.
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('sections', ['id' => $sectionId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('sections', ['id' => $sectionId])->execute();
 
 			if ($transaction !== null)
 			{
@@ -1168,7 +1167,7 @@ class Sections extends Component
 		try
 		{
 			// Delete the field layout
-			 $query = Craft::$app->getDb()->createCommand()
+			 $query = (new Query())
 				->select('fieldLayoutId')
 				->from('entrytypes');
 
@@ -1181,7 +1180,7 @@ class Sections extends Component
 				$query->where(['id' => $entryTypeId]);
 			}
 
-			$fieldLayoutIds = $query->queryColumn();
+			$fieldLayoutIds = $query->column();
 
 			if ($fieldLayoutIds)
 			{
@@ -1189,7 +1188,7 @@ class Sections extends Component
 			}
 
 			// Grab the entry IDs so we can clean the elements table.
-			$query = Craft::$app->getDb()->createCommand()
+			$query = (new Query())
 				->select('id')
 				->from('entries');
 
@@ -1202,18 +1201,18 @@ class Sections extends Component
 				$query->where(['typeId' => $entryTypeId]);
 			}
 
-			$entryIds = $query->queryColumn();
+			$entryIds = $query->column();
 
 			Craft::$app->elements->deleteElementById($entryIds);
 
 			// Delete the entry type.
 			if (is_array($entryTypeId))
 			{
-				$affectedRows = Craft::$app->getDb()->createCommand()->delete('entrytypes', ['in', 'id', $entryTypeId]);
+				$affectedRows = Craft::$app->getDb()->createCommand()->delete('entrytypes', ['in', 'id', $entryTypeId])->execute();
 			}
 			else
 			{
-				$affectedRows = Craft::$app->getDb()->createCommand()->delete('entrytypes', ['id' => $entryTypeId]);
+				$affectedRows = Craft::$app->getDb()->createCommand()->delete('entrytypes', ['id' => $entryTypeId])->execute();
 			}
 
 			if ($transaction !== null)
@@ -1247,13 +1246,11 @@ class Sections extends Component
 		$conditions = ['and', 'sections.type = :type', 'sections_i18n.urlFormat = :homeUri'];
 		$params     = [':type' => SectionType::Single, ':homeUri' => '__home__'];
 
-		$count = Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->from('sections sections')
-			->join('sections_i18n sections_i18n', 'sections_i18n.sectionId = sections.id')
+			->innerJoin('sections_i18n sections_i18n', 'sections_i18n.sectionId = sections.id')
 			->where($conditions, $params)
-			->count('sections.id');
-
-		return (bool) $count;
+			->exists();
 	}
 
 	/**
@@ -1273,7 +1270,7 @@ class Sections extends Component
 		{
 			if (isset($this->typeLimits[$type]))
 			{
-				$count = Craft::$app->getDb()->createCommand()
+				$count = (new Query())
 					->from('sections')
 					->where('type = :type', [':type' => $type])
 					->count('id');
@@ -1291,16 +1288,16 @@ class Sections extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving sections.
+	 * Returns a Query object prepped for retrieving sections.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createSectionQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
 			->from('sections sections')
-			->order('name');
+			->orderBy('name');
 	}
 }

@@ -9,6 +9,7 @@ namespace craft\app\elementtypes;
 
 use Craft;
 use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\enums\UserStatus;
 use craft\app\helpers\DbHelper;
@@ -348,7 +349,7 @@ class User extends BaseElementType
 	{
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
-			->join('users users', 'users.id = elements.id');
+			->innerJoin('users users', 'users.id = elements.id');
 
 		if ($criteria->admin)
 		{
@@ -369,11 +370,11 @@ class User extends BaseElementType
 			}
 			else
 			{
-				$permissionId = Craft::$app->getDb()->createCommand()
+				$permissionId = (new Query())
 					->select('id')
 					->from('userpermissions')
 					->where('name = :name', [':name' => strtolower($criteria->can)])
-					->queryScalar();
+					->scalar();
 			}
 
 			// Find the users that have that permission, either directly or through a group
@@ -384,11 +385,11 @@ class User extends BaseElementType
 			if ($permissionId)
 			{
 				// Get the user groups that have that permission
-				$permittedGroupIds = Craft::$app->getDb()->createCommand()
+				$permittedGroupIds = (new Query())
 					->select('groupId')
 					->from('userpermissions_usergroups')
 					->where('permissionId = :permissionId', [':permissionId' => $permissionId])
-					->queryColumn();
+					->column();
 
 				if ($permittedGroupIds)
 				{
@@ -398,11 +399,11 @@ class User extends BaseElementType
 				// Get the users that have that permission directly
 				$permittedUserIds = array_merge(
 					$permittedUserIds,
-					Craft::$app->getDb()->createCommand()
+					(new Query())
 						->select('userId')
 						->from('userpermissions_users')
 						->where('permissionId = :permissionId', [':permissionId' => $permissionId])
-						->queryColumn()
+						->column()
 				);
 			}
 
@@ -433,12 +434,12 @@ class User extends BaseElementType
 		if ($criteria->group)
 		{
 			// Get the actual group ID(s)
-			$groupIdsQuery = Craft::$app->getDb()->createCommand()
+			$groupIdsQuery = (new Query())
 				->select('id')
 				->from('usergroups');
 
 			$groupIdsQuery->where(DbHelper::parseParam('handle', $criteria->group, $groupIdsQuery->params));
-			$groupIds = $groupIdsQuery->queryColumn();
+			$groupIds = $groupIdsQuery->column();
 
 			// In the case where the group doesn't exist.
 			if (!$groupIds)
@@ -554,12 +555,10 @@ class User extends BaseElementType
 	 */
 	private function _getUserIdsByGroupIds($groupIds)
 	{
-		$query = Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('userId')
-			->from('usergroups_users');
-
-		$query->where(DbHelper::parseParam('groupId', $groupIds, $query->params));
-
-		return $query->queryColumn();
+			->from('usergroups_users')
+			->where(DbHelper::parseParam('groupId', $groupIds, $query->params))
+			->column();
 	}
 }

@@ -224,7 +224,7 @@ class Install extends Component
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
 			'locale'    => ['column' => ColumnType::Locale, 'null' => false],
 			'title'     => ['column' => ColumnType::Varchar],
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('content', 'elementId,locale'), 'content', 'elementId,locale', true)->execute();
 		$db->createCommand()->createIndex($db->getIndexName('content', 'title'), 'content', 'title')->execute();
@@ -250,7 +250,7 @@ class Install extends Component
 			'sourceLocale' => ['column' => ColumnType::Locale],
 			'targetId'     => ['column' => ColumnType::Int, 'null' => false],
 			'sortOrder'    => ['column' => ColumnType::SmallInt],
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('relations', 'fieldId,sourceId,sourceLocale,targetId'), 'relations', 'fieldId,sourceId,sourceLocale,targetId', true)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'fieldId'), 'relations', 'fieldId', 'fields', 'id', 'CASCADE')->execute();
@@ -275,7 +275,7 @@ class Install extends Component
 			'userId'     => ['column' => ColumnType::Int, 'null' => false],
 			'message'    => ['column' => ColumnType::Varchar, 'null' => false],
 			'expiryDate' => ['column' => ColumnType::DateTime],
-		]);
+		])->execute();
 		$db->createCommand()->createIndex($db->getIndexName('shunnedmessages', 'userId,message'), 'shunnedmessages', 'userId,message', true)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('shunnedmessages', 'userId'), 'shunnedmessages', 'userId', 'users', 'id', 'CASCADE')->execute();
 
@@ -303,13 +303,15 @@ class Install extends Component
 			'keywords'  => DbHelper::generateColumnDefinition(['column' => ColumnType::Text, 'null' => false]),
 		];
 
-		$db->createCommand()->setText($db->getSchema()->createTable($table, $columns, null, 'MyISAM'))->execute();
+		// TODO: MySQL specific
+		$db->createCommand()->createTable($table, $columns, 'ENGINE=MyISAM')->execute();
 
 		// Give it a composite primary key
 		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName('searchindex', 'elementId,attribute,fieldId,locale'), 'searchindex', 'elementId,attribute,fieldId,locale')->execute();
 
 		// Add the FULLTEXT index on `keywords`
-		$db->createCommand()->setText('CREATE FULLTEXT INDEX ' .
+		// TODO: MySQL specific
+		$db->createCommand('CREATE FULLTEXT INDEX ' .
 			$db->quoteTableName($db->getIndexName('searchindex', 'keywords')).' ON ' .
 			$db->quoteTableName($table).' ' .
 			'('.$db->quoteColumnName('keywords').')'
@@ -334,7 +336,7 @@ class Install extends Component
 			'path'       => ['column' => ColumnType::Varchar],
 			'expiryDate' => ['column' => ColumnType::DateTime, 'null' => false],
 			'body'       => ['column' => ColumnType::MediumText, 'null' => false],
-		], null, true, false);
+		], null, true, false)->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('templatecaches', 'expiryDate,cacheKey,locale,path'), 'templatecaches', 'expiryDate,cacheKey,locale,path')->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecaches', 'locale'), 'templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
@@ -345,7 +347,7 @@ class Install extends Component
 		$db->createCommand()->createTable('templatecacheelements', [
 			'cacheId'   => ['column' => ColumnType::Int, 'null' => false],
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
-		], null, false, false);
+		], null, false, false)->execute();
 
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'cacheId'), 'templatecacheelements', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'elementId'), 'templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
@@ -357,7 +359,7 @@ class Install extends Component
 			'cacheId'  => ['column' => ColumnType::Int, 'null' => false],
 			'type'     => ['column' => ColumnType::Varchar, 'maxLength' => 150, 'null' => false],
 			'criteria' => ['column' => ColumnType::Text, 'null' => false],
-		], null, true, false);
+		], null, true, false)->execute();
 
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecachecriteria', 'cacheId'), 'templatecachecriteria', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->createIndex($db->getIndexName('templatecachecriteria', 'type'), 'templatecachecriteria', 'type')->execute();
@@ -391,7 +393,7 @@ class Install extends Component
 			'on'            => ['column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => 0, 'null' => false],
 			'maintenance'   => ['column' => ColumnType::TinyInt,  'length' => 1,     'unsigned' => true, 'default' => 0, 'null' => false],
 			'track'         => ['column' => ColumnType::Varchar,  'maxLength' => 40, 'required' => true],
-		]);
+		])->execute();
 
 		Craft::log('Finished creating the info table.');
 
@@ -436,7 +438,7 @@ class Install extends Component
 			'token'          => ['column' => ColumnType::Varchar, 'required' => true],
 			'storageUrl'     => ['column' => ColumnType::Varchar, 'required' => true],
 			'cdnUrl'         => ['column' => ColumnType::Varchar, 'required' => true],
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('rackspaceaccess', 'connectionKey'), 'rackspaceaccess', 'connectionKey', true)->execute();
 		Craft::log('Finished creating the Rackspace access table.');
@@ -464,7 +466,7 @@ class Install extends Component
 			'templateLine'      => ['column' => ColumnType::SmallInt, 'unsigned' => true],
 			'message'           => ['column' => ColumnType::Varchar],
 			'traces'            => ['column' => ColumnType::Text],
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('deprecationerrors', 'key,fingerprint'), 'deprecationerrors', 'key,fingerprint', true)->execute();
 		Craft::log('Finished creating the deprecationerrors table.');
@@ -489,7 +491,7 @@ class Install extends Component
 			'fileExists'   => ['column' => ColumnType::Bool],
 			'inProgress'   => ['column' => ColumnType::Bool],
 			'dateIndexed'  => ['column' => ColumnType::DateTime],
-		]);
+		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('assettransformindex', 'sourceId,fileId,location'), 'assettransformindex', 'sourceId,fileId,location')->execute();
 		Craft::log('Finished creating the Asset transform index table.');
@@ -552,7 +554,7 @@ class Install extends Component
 	private function _addLocale($locale, $db)
 	{
 		Craft::log('Adding locale.');
-		$db->createCommand()->insert('locales', ['locale' => $locale, 'sortOrder' => 1]);
+		$db->createCommand()->insert('locales', ['locale' => $locale, 'sortOrder' => 1])->execute();
 		Craft::log('Locale added successfully.');
 	}
 

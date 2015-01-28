@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
@@ -74,12 +75,12 @@ class Routes extends Component
 	 */
 	public function getDbRoutes()
 	{
-		$results = Craft::$app->getDb()->createCommand()
-			->select('urlPattern, template')
+		$results = (new Query())
+			->select(['urlPattern', 'template'])
 			->from('routes')
 			->where(['or', 'locale is null', 'locale = :locale'], [':locale' => Craft::$app->language])
-			->order('sortOrder')
-			->queryAll();
+			->orderBy('sortOrder')
+			->all();
 
 		if ($results)
 		{
@@ -124,10 +125,9 @@ class Routes extends Component
 			$routeRecord = new RouteRecord();
 
 			// Get the next biggest sort order
-			$maxSortOrder = Craft::$app->getDb()->createCommand()
-				->select('max(sortOrder)')
+			$maxSortOrder = (new Query())
 				->from('routes')
-				->queryScalar();
+				->max('sortOrder');
 
 			$routeRecord->sortOrder = $maxSortOrder + 1;
 		}
@@ -177,7 +177,7 @@ class Routes extends Component
 	 */
 	public function deleteRouteById($routeId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('routes', ['id' => $routeId]);
+		Craft::$app->getDb()->createCommand()->delete('routes', ['id' => $routeId])->execute();
 		return true;
 	}
 
@@ -195,7 +195,7 @@ class Routes extends Component
 			$data = ['sortOrder' => $order + 1];
 			$condition = ['id' => $routeId];
 
-			Craft::$app->getDb()->createCommand()->update('routes', $data, $condition);
+			Craft::$app->getDb()->createCommand()->update('routes', $data, $condition)->execute();
 		}
 	}
 

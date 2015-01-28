@@ -174,8 +174,8 @@ class AssetIndexing extends Component
 		$fileEntries = Craft::$app->getDb()->createCommand()
 			->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.path, s.name AS sourceName')
 			->from('assetfiles AS fi')
-			->join('assetfolders AS fo', 'fi.folderId = fo.id')
-			->join('assetsources AS s', 's.id = fi.sourceId')
+			->innerJoin('assetfolders AS fo', 'fi.folderId = fo.id')
+			->innerJoin('assetsources AS s', 's.id = fi.sourceId')
 			->where(['in', 'fi.sourceId', $sources])
 			->queryAll();
 

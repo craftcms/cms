@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\TagEvent;
@@ -81,10 +82,10 @@ class Tags extends Component
 			}
 			else
 			{
-				$this->_allTagGroupIds = Craft::$app->getDb()->createCommand()
+				$this->_allTagGroupIds = (new Query())
 					->select('id')
 					->from('taggroups')
-					->queryColumn();
+					->column();
 			}
 		}
 
@@ -291,11 +292,11 @@ class Tags extends Component
 		try
 		{
 			// Delete the field layout
-			$fieldLayoutId = Craft::$app->getDb()->createCommand()
+			$fieldLayoutId = (new Query())
 				->select('fieldLayoutId')
 				->from('taggroups')
 				->where(['id' => $tagGroupId])
-				->queryScalar();
+				->scalar();
 
 			if ($fieldLayoutId)
 			{
@@ -303,15 +304,15 @@ class Tags extends Component
 			}
 
 			// Grab the tag ids so we can clean the elements table.
-			$tagIds = Craft::$app->getDb()->createCommand()
+			$tagIds = (new Query())
 				->select('id')
 				->from('tags')
 				->where(['groupId' => $tagGroupId])
-				->queryColumn();
+				->column();
 
 			Craft::$app->elements->deleteElementById($tagIds);
 
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('taggroups', ['id' => $tagGroupId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('taggroups', ['id' => $tagGroupId])->execute();
 
 			if ($transaction !== null)
 			{
