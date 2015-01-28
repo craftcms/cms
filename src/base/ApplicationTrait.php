@@ -205,16 +205,11 @@ trait ApplicationTrait
 		{
 			try
 			{
-				// First check to see if Connection has even been initialized, yet.
-				if ($this->has('db', true))
-				{
-					// If the db config isn't valid, then we'll assume it's not installed.
-					if (!$this->getIsDbConnectionValid())
-					{
-						return false;
-					}
-				}
-				else
+				// Initialize the DB connection
+				$this->getDb();
+
+				// If the db config isn't valid, then we'll assume it's not installed.
+				if (!$this->getIsDbConnectionValid())
 				{
 					return false;
 				}
