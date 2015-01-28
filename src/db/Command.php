@@ -172,6 +172,19 @@ class Command extends \yii\db\Command
 	}
 
 	/**
+	 * Creates a SQL command for dropping a DB table, if it exists.
+	 *
+	 * @param string $table The table to be dropped. The name will be properly quoted by the method.
+	 * @return Command the command object itself
+	 */
+	public function dropTableIfExists($table)
+	{
+		$sql = $this->db->getQueryBuilder()->dropTableIfExists($table);
+
+		return $this->setSql($sql);
+	}
+
+	/**
 	 * Creates a SQL command for adding a new DB column.
 	 *
 	 * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
