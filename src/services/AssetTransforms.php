@@ -207,7 +207,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransform($transformId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('assettransforms', ['id' => $transformId]);
+		Craft::$app->getDb()->createCommand()->delete('{{%assettransforms}}', ['id' => $transformId]);
 		return true;
 	}
 
@@ -227,7 +227,7 @@ class AssetTransforms extends Component
 		// Check if an entry exists already
 		$query = Craft::$app->getDb()->createCommand()
 			->select('ti.*')
-			->from('assettransformindex ti')
+			->from('{{%assettransformindex}} ti')
 			->where('ti.sourceId = :sourceId AND ti.fileId = :fileId AND ti.location = :location',
 				[':sourceId' => $file->sourceId,':fileId' => $file->id, ':location' => $transformLocation]);
 
@@ -259,7 +259,7 @@ class AssetTransforms extends Component
 			else
 			{
 				// Delete the out-of-date record
-				Craft::$app->getDb()->createCommand()->delete('assettransformindex',
+				Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}',
 					'id = :transformIndexId',
 					[':transformIndexId' => $entry['id']]);
 			}
@@ -395,7 +395,7 @@ class AssetTransforms extends Component
 			// the image for.
 			$results = Craft::$app->getDb()->createCommand()
 				->select('*')
-				->from('assettransformindex')
+				->from('{{%assettransformindex}}')
 				->where('fileId = :fileId', [':fileId' => $file->id])
 				->andWhere(['in', 'location', $possibleLocations])
 				->andWhere('id <> :indexId', [':indexId' => $index->id])
@@ -490,11 +490,11 @@ class AssetTransforms extends Component
 		if (!empty($index->id))
 		{
 			$id = $index->id;
-			Craft::$app->getDb()->createCommand()->update('assettransformindex', $values, 'id = :id', [':id' => $id]);
+			Craft::$app->getDb()->createCommand()->update('{{%assettransformindex}}', $values, 'id = :id', [':id' => $id]);
 		}
 		else
 		{
-			Craft::$app->getDb()->createCommand()->insert('assettransformindex', $values);
+			Craft::$app->getDb()->createCommand()->insert('{{%assettransformindex}}', $values);
 			$index->id = Craft::$app->getDb()->getLastInsertID();
 		}
 
@@ -510,7 +510,7 @@ class AssetTransforms extends Component
 	{
 		return Craft::$app->getDb()->createCommand()
 			->select('id')
-			->from('assettransformindex')
+			->from('{{%assettransformindex}}')
 			->where(['and', 'fileExists = 0', 'inProgress = 0'])
 			->queryColumn();
 	}
@@ -527,7 +527,7 @@ class AssetTransforms extends Component
 		// Check if an entry exists already
 		$entry =  Craft::$app->getDb()->createCommand()
 			->select('ti.*')
-			->from('assettransformindex ti')
+			->from('{{%assettransformindex}} ti')
 			->where('ti.id = :id', [':id' => $transformId])
 			->queryRow();
 
@@ -552,7 +552,7 @@ class AssetTransforms extends Component
 		// Check if an entry exists already
 		$entry =  Craft::$app->getDb()->createCommand()
 			->select('ti.*')
-			->from('assettransformindex ti')
+			->from('{{%assettransformindex}} ti')
 			->where('ti.fileId = :id AND ti.location = :location', [':id' => $fileId, ':location' => '_'.$transformHandle])
 			->queryRow();
 
@@ -604,7 +604,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndexDataByFileId($fileId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('assettransformindex', 'fileId = :fileId', [':fileId' => $fileId]);
+		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'fileId = :fileId', [':fileId' => $fileId]);
 	}
 
 	/**
@@ -616,7 +616,7 @@ class AssetTransforms extends Component
 	 */
 	public function deleteTransformIndex($indexId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('assettransformindex', 'id = :id', [':id' => $indexId]);
+		Craft::$app->getDb()->createCommand()->delete('{{%assettransformindex}}', 'id = :id', [':id' => $indexId]);
 	}
 	/**
 	 * Get a thumb server path by file model and size.
@@ -940,7 +940,7 @@ class AssetTransforms extends Component
 	{
 		$records = Craft::$app->getDb()->createCommand()
 			->select('*')
-			->from('assettransformindex')
+			->from('{{%assettransformindex}}')
 			->where('fileId = :fileId', [':fileId' => $file->id])
 			->queryAll();
 
@@ -959,7 +959,7 @@ class AssetTransforms extends Component
 	{
 		return Craft::$app->getDb()->createCommand()
 			->select(['id', 'name', 'handle', 'mode', 'position', 'height', 'width', 'format', 'quality', 'dimensionChangeTime'])
-			->from('assettransforms')
+			->from('{{%assettransforms}}')
 			->orderBy('name');
 	}
 

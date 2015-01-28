@@ -84,7 +84,7 @@ class Tags extends Component
 			{
 				$this->_allTagGroupIds = (new Query())
 					->select('id')
-					->from('taggroups')
+					->from('{{%taggroups}}')
 					->column();
 			}
 		}
@@ -294,7 +294,7 @@ class Tags extends Component
 			// Delete the field layout
 			$fieldLayoutId = (new Query())
 				->select('fieldLayoutId')
-				->from('taggroups')
+				->from('{{%taggroups}}')
 				->where(['id' => $tagGroupId])
 				->scalar();
 
@@ -306,13 +306,13 @@ class Tags extends Component
 			// Grab the tag ids so we can clean the elements table.
 			$tagIds = (new Query())
 				->select('id')
-				->from('tags')
+				->from('{{%tags}}')
 				->where(['groupId' => $tagGroupId])
 				->column();
 
 			Craft::$app->elements->deleteElementById($tagIds);
 
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('taggroups', ['id' => $tagGroupId])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%taggroups}}', ['id' => $tagGroupId])->execute();
 
 			if ($transaction !== null)
 			{

@@ -423,7 +423,7 @@ class Matrix extends Component
 			// First delete the blocks of this type
 			$blockIds = (new Query())
 				->select('id')
-				->from('matrixblocks')
+				->from('{{%matrixblocks}}')
 				->where(['typeId' => $blockType->id])
 				->column();
 
@@ -444,7 +444,7 @@ class Matrix extends Component
 			Craft::$app->fields->deleteLayoutById($blockType->fieldLayoutId);
 
 			// Finally delete the actual block type
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('matrixblocktypes', ['id' => $blockType->id])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%matrixblocktypes}}', ['id' => $blockType->id])->execute();
 
 			if ($transaction !== null)
 			{
@@ -696,7 +696,7 @@ class Matrix extends Component
 		}
 		while ($matrixField = $this->getParentMatrixField($matrixField));
 
-		return 'matrixcontent'.$name;
+		return '{{%matrixcontent'.$name.'}}';
 	}
 
 	/**
@@ -907,7 +907,7 @@ class Matrix extends Component
 
 			$deletedBlockIds = (new Query())
 				->select('id')
-				->from('matrixblocks')
+				->from('{{%matrixblocks}}')
 				->where($deletedBlockConditions, $deletedBlockParams)
 				->column();
 
@@ -956,9 +956,9 @@ class Matrix extends Component
 			// Does this Matrix field belong to another one?
 			$parentMatrixFieldId = (new Query())
 				->select('fields.id')
-				->from('fields fields')
-				->innerJoin('matrixblocktypes blocktypes', 'blocktypes.fieldId = fields.id')
-				->innerJoin('fieldlayoutfields fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
+				->from('{{%fields}} fields')
+				->innerJoin('{{%matrixblocktypes}} blocktypes', 'blocktypes.fieldId = fields.id')
+				->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
 				->where('fieldlayoutfields.fieldId = :matrixFieldId', [':matrixFieldId' => $matrixField->id])
 				->scalar();
 
@@ -987,7 +987,7 @@ class Matrix extends Component
 	{
 		return (new Query())
 			->select(['id', 'fieldId', 'fieldLayoutId', 'name', 'handle', 'sortOrder'])
-			->from('matrixblocktypes')
+			->from('{{%matrixblocktypes}}')
 			->orderBy('sortOrder');
 	}
 
@@ -1167,7 +1167,7 @@ class Matrix extends Component
 					// blocks
 					$relations = (new Query())
 						->select(['fieldId', 'sourceId', 'sourceLocale', 'targetId', 'sortOrder'])
-						->from('relations')
+						->from('{{%relations}}')
 						->where(['in', 'sourceId', array_keys($newBlockIds)])
 						->all();
 

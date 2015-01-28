@@ -77,7 +77,7 @@ class Routes extends Component
 	{
 		$results = (new Query())
 			->select(['urlPattern', 'template'])
-			->from('routes')
+			->from('{{%routes}}')
 			->where(['or', 'locale is null', 'locale = :locale'], [':locale' => Craft::$app->language])
 			->orderBy('sortOrder')
 			->all();
@@ -126,7 +126,7 @@ class Routes extends Component
 
 			// Get the next biggest sort order
 			$maxSortOrder = (new Query())
-				->from('routes')
+				->from('{{%routes}}')
 				->max('sortOrder');
 
 			$routeRecord->sortOrder = $maxSortOrder + 1;
@@ -177,7 +177,7 @@ class Routes extends Component
 	 */
 	public function deleteRouteById($routeId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('routes', ['id' => $routeId])->execute();
+		Craft::$app->getDb()->createCommand()->delete('{{%routes}}', ['id' => $routeId])->execute();
 		return true;
 	}
 
@@ -195,7 +195,7 @@ class Routes extends Component
 			$data = ['sortOrder' => $order + 1];
 			$condition = ['id' => $routeId];
 
-			Craft::$app->getDb()->createCommand()->update('routes', $data, $condition)->execute();
+			Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
 		}
 	}
 

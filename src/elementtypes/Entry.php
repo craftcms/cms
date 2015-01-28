@@ -504,10 +504,10 @@ class Entry extends BaseElementType
 	{
 		$query
 			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.postDate, entries.expiryDate')
-			->innerJoin('entries entries', 'entries.id = elements.id')
-			->innerJoin('sections sections', 'sections.id = entries.sectionId')
-			->leftJoin('structures structures', 'structures.id = sections.structureId')
-			->leftJoin('structureelements structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id']);
+			->innerJoin('{{%entries}} entries', 'entries.id = elements.id')
+			->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId')
+			->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
+			->leftJoin('{{%structureelements}} structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id']);
 
 		if ($criteria->ref)
 		{
@@ -675,7 +675,7 @@ class Entry extends BaseElementType
 
 			if ($criteria->authorGroupId || $criteria->authorGroup)
 			{
-				$query->innerJoin('usergroups_users usergroups_users', 'usergroups_users.userId = entries.authorId');
+				$query->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = entries.authorId');
 
 				if ($criteria->authorGroupId)
 				{
@@ -684,7 +684,7 @@ class Entry extends BaseElementType
 
 				if ($criteria->authorGroup)
 				{
-					$query->innerJoin('usergroups usergroups', 'usergroups.id = usergroups_users.groupId');
+					$query->innerJoin('{{%usergroups}} usergroups', 'usergroups.id = usergroups_users.groupId');
 					$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->authorGroup, $query->params));
 				}
 			}

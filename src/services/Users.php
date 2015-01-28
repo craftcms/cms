@@ -1119,7 +1119,7 @@ class Users extends Component
 				// Get the entry IDs that belong to this user
 				$entryIds = (new Query())
 					->select('id')
-					->from('entries')
+					->from('{{%entries}}')
 					->where(['authorId' => $user->id])
 					->column();
 
@@ -1131,9 +1131,9 @@ class Users extends Component
 
 					// Update the entry/version/draft tables to point to the new user
 					$userRefs = [
-						'entries' => 'authorId',
-						'entrydrafts' => 'creatorId',
-						'entryversions' => 'creatorId',
+						'{{%entries}}' => 'authorId',
+						'{{%entrydrafts}}' => 'creatorId',
+						'{{%entryversions}}' => 'creatorId',
 					];
 
 					foreach ($userRefs as $table => $column)
@@ -1239,7 +1239,7 @@ class Users extends Component
 	 */
 	public function unshunMessageForUser($userId, $message)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('shunnedmessages', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%shunnedmessages}}', [
 			'userId'  => $userId,
 			'message' => $message
 		])->execute();
@@ -1258,7 +1258,7 @@ class Users extends Component
 	public function hasUserShunnedMessage($userId, $message)
 	{
 		return (new Query())
-			->from('shunnedmessages')
+			->from('{{%shunnedmessages}}')
 			->where(['and',
 				'userId = :userId',
 				'message = :message',
@@ -1308,11 +1308,11 @@ class Users extends Component
 
 			$ids = (new Query())
 				->select('id')
-				->from('users')
+				->from('{{%users}}')
 				->where(['and', 'pending=1', 'verificationCodeIssuedDate < :pastTime'], [':pastTime' => $pastTime])
 				->column();
 
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', ['in', 'id', $ids])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', ['in', 'id', $ids])->execute();
 
 			if ($affectedRows > 0)
 			{

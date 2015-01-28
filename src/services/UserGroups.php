@@ -105,8 +105,8 @@ class UserGroups extends Component
 	{
 		$query = (new Query())
 			->select('g.*')
-			->from('usergroups g')
-			->innerJoin('usergroups_users gu', 'gu.groupId = g.id')
+			->from('{{%usergroups}} g')
+			->innerJoin('{{%usergroups_users}} gu', 'gu.groupId = g.id')
 			->where(['gu.userId' => $userId])
 			->all();
 
@@ -154,7 +154,7 @@ class UserGroups extends Component
 	 */
 	public function assignUserToGroups($userId, $groupIds = null)
 	{
-		Craft::$app->getDb()->createCommand()->delete('usergroups_users', ['userId' => $userId])->execute();
+		Craft::$app->getDb()->createCommand()->delete('{{%usergroups_users}}', ['userId' => $userId])->execute();
 
 		if ($groupIds)
 		{
@@ -168,7 +168,7 @@ class UserGroups extends Component
 				$values[] = [$groupId, $userId];
 			}
 
-			Craft::$app->getDb()->createCommand()->batchInsert('usergroups_users', ['groupId', 'userId'], $values)->execute();
+			Craft::$app->getDb()->createCommand()->batchInsert('{{%usergroups_users}}', ['groupId', 'userId'], $values)->execute();
 		}
 
 		return true;
@@ -225,7 +225,7 @@ class UserGroups extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('usergroups', ['id' => $groupId])->execute();
+		Craft::$app->getDb()->createCommand()->delete('{{%usergroups}}', ['id' => $groupId])->execute();
 		return true;
 	}
 

@@ -273,10 +273,10 @@ class Category extends BaseElementType
 	{
 		$query
 			->addSelect('categories.groupId')
-			->innerJoin('categories categories', 'categories.id = elements.id')
-			->innerJoin('categorygroups categorygroups', 'categorygroups.id = categories.groupId')
-			->leftJoin('structures structures', 'structures.id = categorygroups.structureId')
-			->leftJoin('structureelements structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id']);
+			->innerJoin('{{%categories}} categories', 'categories.id = elements.id')
+			->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+			->leftJoin('{{%structures}} structures', 'structures.id = categorygroups.structureId')
+			->leftJoin('{{%structureelements}} structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id']);
 
 		if ($criteria->groupId)
 		{
@@ -408,7 +408,7 @@ class Category extends BaseElementType
 
 			$sources = (new Query())
 				->select(['fieldId', 'sourceId', 'sourceLocale'])
-				->from('relations')
+				->from('{{%relations}}')
 				->where('targetId = :categoryId', [':categoryId' => $element->id])
 				->all();
 
@@ -416,7 +416,7 @@ class Category extends BaseElementType
 			{
 				$existingAncestorRelations = (new Query())
 					->select('targetId')
-					->from('relations')
+					->from('{{%relations}}')
 					->where(['and', 'fieldId = :fieldId', 'sourceId = :sourceId', 'sourceLocale = :sourceLocale', ['in', 'targetId', $ancestorIds]], [
 						':fieldId'      => $source['fieldId'],
 						':sourceId'     => $source['sourceId'],
@@ -434,7 +434,7 @@ class Category extends BaseElementType
 
 			if ($newRelationValues)
 			{
-				Craft::$app->getDb()->createCommand()->batchInsert('relations', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues)->execute();
+				Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues)->execute();
 			}
 		}
 	}

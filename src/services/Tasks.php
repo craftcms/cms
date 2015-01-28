@@ -346,7 +346,7 @@ class Tasks extends Component
 	{
 		$result = (new Query())
 			->select('*')
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where('id = :id', [':id' => $taskId])
 			->one();
 
@@ -365,7 +365,7 @@ class Tasks extends Component
 	{
 		$results = (new Query())
 			->select('*')
-			->from('tasks')
+			->from('{{%tasks}}')
 			->orderBy('root asc, lft asc')
 			->all();
 
@@ -383,7 +383,7 @@ class Tasks extends Component
 		{
 			$result = (new Query())
 				->select('*')
-				->from('tasks')
+				->from('{{%tasks}}')
 				->where(
 					['and', 'lft = 1', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
 					[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
@@ -415,7 +415,7 @@ class Tasks extends Component
 	{
 		// Remember that a root task could appear to be stagnant if it has sub-tasks.
 		return (new Query())
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where(
 				['and','status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
 				[':status' => TaskStatus::Running/*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/]
@@ -442,7 +442,7 @@ class Tasks extends Component
 		}
 
 		return (new Query())
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where($conditions, $params)
 			->exists();
 	}
@@ -467,7 +467,7 @@ class Tasks extends Component
 		}
 
 		$query = (new Query())
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where($conditions, $params);
 
 		if ($limit)
@@ -487,7 +487,7 @@ class Tasks extends Component
 	public function haveTasksFailed()
 	{
 		return (new Query())
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where(['and', 'level = 0', 'status = :status'], [':status' => TaskStatus::Error])
 			->exists();
 	}
@@ -500,7 +500,7 @@ class Tasks extends Component
 	public function getTotalTasks()
 	{
 		return (new Query())
-			->from('tasks')
+			->from('{{%tasks}}')
 			->where(
 				['and', 'lft = 1', 'status != :status'],
 				[':status' => TaskStatus::Error]

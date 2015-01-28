@@ -78,7 +78,7 @@ class Globals extends Component
 		{
 			$this->_allGlobalSetIds = (new Query())
 				->select('id')
-				->from('globalsets')
+				->from('{{%globalsets}}')
 				->column();
 		}
 
@@ -374,7 +374,7 @@ class Globals extends Component
 			// Delete the field layout
 			$fieldLayoutId = (new Query())
 				->select('fieldLayoutId')
-				->from('globalsets')
+				->from('{{%globalsets}}')
 				->where(['id' => $setId])
 				->scalar();
 

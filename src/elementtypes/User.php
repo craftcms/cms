@@ -349,7 +349,7 @@ class User extends BaseElementType
 	{
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
-			->innerJoin('users users', 'users.id = elements.id');
+			->innerJoin('{{%users}} users', 'users.id = elements.id');
 
 		if ($criteria->admin)
 		{
@@ -372,7 +372,7 @@ class User extends BaseElementType
 			{
 				$permissionId = (new Query())
 					->select('id')
-					->from('userpermissions')
+					->from('{{%userpermissions}}')
 					->where('name = :name', [':name' => strtolower($criteria->can)])
 					->scalar();
 			}
@@ -387,7 +387,7 @@ class User extends BaseElementType
 				// Get the user groups that have that permission
 				$permittedGroupIds = (new Query())
 					->select('groupId')
-					->from('userpermissions_usergroups')
+					->from('{{%userpermissions_usergroups}}')
 					->where('permissionId = :permissionId', [':permissionId' => $permissionId])
 					->column();
 
@@ -401,7 +401,7 @@ class User extends BaseElementType
 					$permittedUserIds,
 					(new Query())
 						->select('userId')
-						->from('userpermissions_users')
+						->from('{{%userpermissions_users}}')
 						->where('permissionId = :permissionId', [':permissionId' => $permissionId])
 						->column()
 				);
@@ -436,7 +436,7 @@ class User extends BaseElementType
 			// Get the actual group ID(s)
 			$groupIdsQuery = (new Query())
 				->select('id')
-				->from('usergroups');
+				->from('{{%usergroups}}');
 
 			$groupIdsQuery->where(DbHelper::parseParam('handle', $criteria->group, $groupIdsQuery->params));
 			$groupIds = $groupIdsQuery->column();
@@ -557,7 +557,7 @@ class User extends BaseElementType
 	{
 		return (new Query())
 			->select('userId')
-			->from('usergroups_users')
+			->from('{{%usergroups_users}}')
 			->where(DbHelper::parseParam('groupId', $groupIds, $query->params))
 			->column();
 	}

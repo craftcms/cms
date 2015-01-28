@@ -194,7 +194,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 	private function _getQuery()
 	{
 		$query = (new Query())
-			->from('templatecachecriteria');
+			->from('{{%templatecachecriteria}}');
 
 		if (is_array($this->_elementType))
 		{

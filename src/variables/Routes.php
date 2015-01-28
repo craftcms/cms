@@ -32,7 +32,7 @@ class Routes
 
 		$results = (new Query())
 			->select(['id', 'locale', 'urlParts', 'template'])
-			->from('routes')
+			->from('{{%routes}}')
 			->orderBy('sortOrder')
 			->all();
 

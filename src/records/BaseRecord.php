@@ -469,7 +469,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{'.$this->getTableName().'}}';
+		return '{{%'.$this->getTableName().'}}';
 	}
 
 	/**

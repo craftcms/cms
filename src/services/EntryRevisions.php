@@ -114,7 +114,7 @@ class EntryRevisions extends Component
 
 		$results = (new Query())
 			->select('*')
-			->from('entrydrafts')
+			->from('{{%entrydrafts}}')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
 			->orderBy('name asc')
 			->all();
@@ -176,7 +176,7 @@ class EntryRevisions extends Component
 		{
 			// Get the total number of existing drafts for this entry/locale
 			$totalDrafts = (new Query())
-				->from('entrydrafts')
+				->from('{{%entrydrafts}}')
 				->where(
 					['and', 'entryId = :entryId', 'locale = :locale'],
 					[':entryId' => $draft->id, ':locale' => $draft->locale]
@@ -339,7 +339,7 @@ class EntryRevisions extends Component
 
 		$results = (new Query())
 			->select('*')
-			->from('entryversions')
+			->from('{{%entryversions}}')
 			->where(['and', 'entryId = :entryId', 'locale = :locale'], [':entryId' => $entryId, ':locale' => $localeId])
 			->orderBy('dateCreated desc')
 			->offset(1)
@@ -370,7 +370,7 @@ class EntryRevisions extends Component
 	{
 		// Get the total number of existing versions for this entry/locale
 		$totalVersions = (new Query())
-			->from('entryversions')
+			->from('{{%entryversions}}')
 			->where(
 				['and', 'entryId = :entryId', 'locale = :locale'],
 				[':entryId' => $entry->id, ':locale' => $entry->locale]

@@ -219,7 +219,7 @@ trait ApplicationTrait
 				return false;
 			}
 
-			$this->_isInstalled = ($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('info', false));
+			$this->_isInstalled = ($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
 		}
 
 		return $this->_isInstalled;
@@ -558,7 +558,7 @@ trait ApplicationTrait
 			if ($this->isInstalled())
 			{
 				$row = (new Query())
-					->from('info')
+					->from('{{%info}}')
 					->one();
 
 				if (!$row)
@@ -600,11 +600,11 @@ trait ApplicationTrait
 
 			if ($this->isInstalled())
 			{
-				$this->getDb()->createCommand()->update('info', $attributes)->execute();
+				$this->getDb()->createCommand()->update('{{%info}}', $attributes)->execute();
 			}
 			else
 			{
-				$this->getDb()->createCommand()->insert('info', $attributes)->execute();
+				$this->getDb()->createCommand()->insert('{{%info}}', $attributes)->execute();
 
 				// Set the new id
 				$info->id = $this->getDb()->getLastInsertID();

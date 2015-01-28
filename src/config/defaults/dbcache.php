@@ -19,5 +19,5 @@ return [
 	 * The name of the cache table in the database.  Note that Craft will add the table prefix from your
 	 * craft/config/db.php file.
 	 */
-	'cacheTableName' => 'cache',
+	'cacheTableName' => '{{%cache}}',
 ];

@@ -171,18 +171,18 @@ class AssetIndex extends BaseTool
 					// Clean up stale indexing data (all sessions that have all recordIds set)
 					$sessionsInProgress = (new Query())
 											->select('sessionId')
-											->from('assetindexdata')
+											->from('{{%assetindexdata}}')
 											->where('recordId IS NULL')
 											->groupBy('sessionId')
 											->scalar();
 
 					if (empty($sessionsInProgress))
 					{
-						Craft::$app->getDb()->createCommand()->delete('assetindexdata')->execute();
+						Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}')->execute();
 					}
 					else
 					{
-						Craft::$app->getDb()->createCommand()->delete('assetindexdata', ['not in', 'sessionId', $sessionsInProgress])->execute();
+						Craft::$app->getDb()->createCommand()->delete('{{%assetindexdata}}', ['not in', 'sessionId', $sessionsInProgress])->execute();
 					}
 
 					// Generate the HTML for missing files and folders

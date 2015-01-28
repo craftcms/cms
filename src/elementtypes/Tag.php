@@ -133,7 +133,7 @@ class Tag extends BaseElementType
 	{
 		$query
 			->addSelect('tags.groupId')
-			->innerJoin('tags tags', 'tags.id = elements.id');
+			->innerJoin('{{%tags}} tags', 'tags.id = elements.id');
 
 		if ($criteria->groupId)
 		{
@@ -142,7 +142,7 @@ class Tag extends BaseElementType
 
 		if ($criteria->group)
 		{
-			$query->innerJoin('taggroups taggroups', 'taggroups.id = tags.groupId');
+			$query->innerJoin('{{%taggroups}} taggroups', 'taggroups.id = tags.groupId');
 			$query->andWhere(DbHelper::parseParam('taggroups.handle', $criteria->group, $query->params));
 		}
 

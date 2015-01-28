@@ -95,7 +95,7 @@ class Tokens extends Component
 
 		$result = (new Query())
 			->select(['id', 'route', 'usageLimit', 'usageCount'])
-			->from('tokens')
+			->from('{{%tokens}}')
 			->where('token = :token', [':token' => $token])
 			->one();
 
@@ -140,7 +140,7 @@ class Tokens extends Component
 	 */
 	public function incrementTokenUsageCountById($tokenId)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->update('tokens', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->update('{{%tokens}}', [
 			'usageCount' => 'usageCount + 1'
 		], [
 			'id' => $tokenId
@@ -158,7 +158,7 @@ class Tokens extends Component
 	 */
 	public function deleteTokenById($tokenId)
 	{
-		Craft::$app->getDb()->createCommand()->delete('tokens', [
+		Craft::$app->getDb()->createCommand()->delete('{{%tokens}}', [
 			'id' => $tokenId
 		])->execute();
 	}
@@ -176,7 +176,7 @@ class Tokens extends Component
 			return false;
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('tokens',
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%tokens}}',
 			'expiryDate <= :now',
 			['now' => DateTimeHelper::currentTimeForDb()]
 		)->execute();

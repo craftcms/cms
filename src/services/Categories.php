@@ -102,7 +102,7 @@ class Categories extends Component
 			{
 				$this->_allGroupIds = (new Query())
 					->select('id')
-					->from('categorygroups')
+					->from('{{%categorygroups}}')
 					->column();
 			}
 		}
@@ -435,7 +435,7 @@ class Categories extends Component
 						// Has the URL format changed?
 						if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat)
 						{
-							Craft::$app->getDb()->createCommand()->update('categorygroups_i18n', [
+							Craft::$app->getDb()->createCommand()->update('{{%categorygroups_i18n}}', [
 								'urlFormat'       => $locale->urlFormat,
 								'nestedUrlFormat' => $locale->nestedUrlFormat
 							], [
@@ -452,7 +452,7 @@ class Categories extends Component
 				}
 
 				// Insert the new locales
-				Craft::$app->getDb()->createCommand()->batchInsert('categorygroups_i18n',
+				Craft::$app->getDb()->createCommand()->batchInsert('{{%categorygroups_i18n}}',
 					['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
 					$newLocaleData
 				)->execute();
@@ -466,7 +466,7 @@ class Categories extends Component
 
 					if ($droppedLocaleIds)
 					{
-						Craft::$app->getDb()->createCommand()->delete('categorygroups_i18n', ['in', 'locale', $droppedLocaleIds])->execute();
+						Craft::$app->getDb()->createCommand()->delete('{{%categorygroups_i18n}}', ['in', 'locale', $droppedLocaleIds])->execute();
 					}
 				}
 
@@ -484,8 +484,8 @@ class Categories extends Component
 					// Should we be deleting
 					if ($categoryIds && $droppedLocaleIds)
 					{
-						Craft::$app->getDb()->createCommand()->delete('elements_i18n', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]])->execute();
-						Craft::$app->getDb()->createCommand()->delete('content', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]])->execute();
+						Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]])->execute();
+						Craft::$app->getDb()->createCommand()->delete('{{%content}}', ['and', ['in', 'elementId', $categoryIds], ['in', 'locale', $droppedLocaleIds]])->execute();
 					}
 
 					// Are there any locales left?
@@ -494,7 +494,7 @@ class Categories extends Component
 						// Drop the old category URIs if the group no longer has URLs
 						if (!$group->hasUrls && $oldCategoryGroup->hasUrls)
 						{
-							Craft::$app->getDb()->createCommand()->update('elements_i18n',
+							Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}',
 								['uri' => null],
 								['in', 'elementId', $categoryIds]
 							)->execute();
@@ -569,7 +569,7 @@ class Categories extends Component
 			// Delete the field layout
 			$fieldLayoutId = (new Query())
 				->select('fieldLayoutId')
-				->from('categorygroups')
+				->from('{{%categorygroups}}')
 				->where(['id' => $groupId])
 				->scalar();
 
@@ -581,13 +581,13 @@ class Categories extends Component
 			// Grab the category ids so we can clean the elements table.
 			$categoryIds = (new Query())
 				->select('id')
-				->from('categories')
+				->from('{{%categories}}')
 				->where(['groupId' => $groupId])
 				->column();
 
 			Craft::$app->elements->deleteElementById($categoryIds);
 
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('categorygroups', ['id' => $groupId])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}', ['id' => $groupId])->execute();
 
 			if ($transaction !== null)
 			{

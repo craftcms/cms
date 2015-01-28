@@ -87,7 +87,7 @@ class MatrixBlock extends BaseElementType
 		{
 			$criteria->fieldId = (new Query())
 				->select('fieldId')
-				->from('matrixblocks')
+				->from('{{%matrixblocks}}')
 				->where('id = :id', [':id' => $criteria->id])
 				->scalar();
 		}
@@ -140,7 +140,7 @@ class MatrixBlock extends BaseElementType
 	{
 		$query
 			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.ownerLocale, matrixblocks.typeId, matrixblocks.sortOrder')
-			->innerJoin('matrixblocks matrixblocks', 'matrixblocks.id = elements.id');
+			->innerJoin('{{%matrixblocks}} matrixblocks', 'matrixblocks.id = elements.id');
 
 		if ($criteria->fieldId)
 		{
@@ -159,7 +159,7 @@ class MatrixBlock extends BaseElementType
 
 		if ($criteria->type)
 		{
-			$query->innerJoin('matrixblocktypes matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
+			$query->innerJoin('{{%matrixblocktypes}} matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
 			$query->andWhere(DbHelper::parseParam('matrixblocktypes.handle', $criteria->type, $query->params));
 		}
 	}

@@ -196,8 +196,8 @@ class Elements extends Component
 
 		$result = (new Query())
 			->select('elements.id, elements.type')
-			->from('elements elements')
-			->innerJoin('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
+			->from('{{%elements}} elements')
+			->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
 			->where($conditions, $params)
 			->one();
 
@@ -227,7 +227,7 @@ class Elements extends Component
 			return (new Query())
 				->select('type')
 				->distinct(true)
-				->from('elements')
+				->from('{{%elements}}')
 				->where(['in', 'id', $elementId])
 				->column();
 		}
@@ -235,7 +235,7 @@ class Elements extends Component
 		{
 			return (new Query())
 				->select('type')
-				->from('elements')
+				->from('{{%elements}}')
 				->where(['id' => $elementId])
 				->scalar();
 		}
@@ -486,8 +486,8 @@ class Elements extends Component
 
 		$query = (new Query())
 			->select('elements.id, elements.type, elements.enabled, elements.archived, elements.dateCreated, elements.dateUpdated, elements_i18n.slug, elements_i18n.uri, elements_i18n.enabled AS localeEnabled')
-			->from('elements elements')
-			->innerJoin('elements_i18n elements_i18n', 'elements_i18n.elementId = elements.id')
+			->from('{{%elements}} elements')
+			->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
 			->where('elements_i18n.locale = :locale', [':locale' => $criteria->locale])
 			->groupBy('elements.id');
 
@@ -1025,7 +1025,7 @@ class Elements extends Component
 	{
 		return (new Query())
 			->select('uri')
-			->from('elements_i18n')
+			->from('{{%elements_i18n}}')
 			->where(['elementId' => $elementId, 'locale' => $localeId])
 			->scalar();
 	}
@@ -1042,7 +1042,7 @@ class Elements extends Component
 	{
 		return (new Query())
 			->select('locale')
-			->from('elements_i18n')
+			->from('{{%elements_i18n}}')
 			->where(['elementId' => $elementId, 'enabled' => 1])
 			->column();
 	}
@@ -1342,7 +1342,7 @@ class Elements extends Component
 						{
 							// Delete the rows that don't need to be there anymore
 
-							Craft::$app->getDb()->createCommand()->delete('elements_i18n', ['and',
+							Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}', ['and',
 								'elementId = :elementId',
 								['not in', 'locale', $localeIds]
 							], [
@@ -1448,7 +1448,7 @@ class Elements extends Component
 	{
 		ElementHelper::setUniqueUri($element);
 
-		Craft::$app->getDb()->createCommand()->update('elements_i18n', [
+		Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', [
 			'slug' => $element->slug,
 			'uri'  => $element->uri
 		], [
@@ -1540,7 +1540,7 @@ class Elements extends Component
 			// Update any relations that point to the merged element
 			$relations = (new Query())
 				->select(['id', 'fieldId', 'sourceId', 'sourceLocale'])
-				->from('relations')
+				->from('{{%relations}}')
 				->where(['targetId' => $mergedElementId])
 				->all();
 
@@ -1548,7 +1548,7 @@ class Elements extends Component
 			{
 				// Make sure the persisting element isn't already selected in the same field
 				$persistingElementIsRelatedToo = (new Query())
-					->from('relations')
+					->from('{{%relations}}')
 					->where([
 						'fieldId'      => $relation['fieldId'],
 						'sourceId'     => $relation['sourceId'],
@@ -1559,7 +1559,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsRelatedToo)
 				{
-					Craft::$app->getDb()->createCommand()->update('relations', [
+					Craft::$app->getDb()->createCommand()->update('{{%relations}}', [
 						'targetId' => $prevailingElementId
 					], [
 						'id' => $relation['id']
@@ -1570,7 +1570,7 @@ class Elements extends Component
 			// Update any structures that the merged element is in
 			$structureElements = (new Query())
 				->select(['id', 'structureId'])
-				->from('structureelements')
+				->from('{{%structureelements}}')
 				->where(['elementId' => $mergedElementId])
 				->all();
 
@@ -1578,7 +1578,7 @@ class Elements extends Component
 			{
 				// Make sure the persisting element isn't already a part of that structure
 				$persistingElementIsInStructureToo = (new Query())
-					->from('structureElements')
+					->from('{{%structureElements}}')
 					->where([
 						'structureId' => $structureElement['structureId'],
 						'elementId' => $prevailingElementId
@@ -1587,7 +1587,7 @@ class Elements extends Component
 
 				if (!$persistingElementIsInStructureToo)
 				{
-					Craft::$app->getDb()->createCommand()->update('relations', [
+					Craft::$app->getDb()->createCommand()->update('{{%relations}}', [
 						'elementId' => $prevailingElementId
 					], [
 						'id' => $structureElement['id']
@@ -1713,7 +1713,7 @@ class Elements extends Component
 			// First delete any Matrix blocks that belong to this element(s)
 			$matrixBlockIds = (new Query())
 				->select('id')
-				->from('matrixblocks')
+				->from('{{%matrixblocks}}')
 				->where($matrixBlockCondition)
 				->column();
 
@@ -1723,10 +1723,10 @@ class Elements extends Component
 			}
 
 			// Delete the elements table rows, which will cascade across all other InnoDB tables
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('elements', $condition)->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', $condition)->execute();
 
 			// The searchindex table is MyISAM, though
-			Craft::$app->getDb()->createCommand()->delete('searchindex', $searchIndexCondition)->execute();
+			Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}', $searchIndexCondition)->execute();
 
 			if ($transaction !== null)
 			{
@@ -1758,7 +1758,7 @@ class Elements extends Component
 		// Get the IDs and let deleteElementById() take care of the actual deletion
 		$elementIds = (new Query())
 			->select('id')
-			->from('elements')
+			->from('{{%elements}}')
 			->where('type = :type', [':type' => $type])
 			->column();
 
@@ -1991,7 +1991,7 @@ class Elements extends Component
 		// Get the matched element IDs, and then have the Search service filter them.
 		$elementIdsQuery = (new Query())
 			->select(['elements.id'])
-			->from('elements elements')
+			->from('{{%elements}} elements')
 			->groupBy('elements.id');
 
 		$elementIdsQuery->where = $query->where;

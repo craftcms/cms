@@ -164,7 +164,7 @@ class Dashboard extends Component
 			if ($widgetRecord->isNewRecord())
 			{
 				$maxSortOrder = (new Query())
-					->from('widgets')
+					->from('{{%widgets}}')
 					->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
 					->max('sortOrder');
 

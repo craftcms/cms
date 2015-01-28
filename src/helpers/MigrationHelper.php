@@ -285,7 +285,7 @@ class MigrationHelper
 		foreach ($oldRows as $row)
 		{
 			// Create a new row in elements
-			$db->createCommand()->insert('elements', [
+			$db->createCommand()->insert('{{%elements}}', [
 				'type'     => $elementType,
 				'enabled'  => 1,
 				'archived' => 0
@@ -319,11 +319,11 @@ class MigrationHelper
 		}
 
 		// Save the new elements_i18n and content rows
-		$db->createCommand()->batchInsert('elements_i18n', ['elementId', 'locale', 'enabled'], $i18nValues)->execute();
+		$db->createCommand()->batchInsert('{{%elements_i18n}}', ['elementId', 'locale', 'enabled'], $i18nValues)->execute();
 
 		if ($hasContent)
 		{
-			$db->createCommand()->batchInsert('content', ['elementId', 'locale'], $contentValues)->execute();
+			$db->createCommand()->batchInsert('{{%content}}', ['elementId', 'locale'], $contentValues)->execute();
 		}
 
 		// Drop the old id column

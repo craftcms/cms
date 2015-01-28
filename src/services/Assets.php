@@ -117,8 +117,8 @@ class Assets extends Component
 	{
 		$files = Craft::$app->getDb()->createCommand()
 			->select('fi.*')
-			->from('assetfiles fi')
-			->innerJoin('assetfolders fo', 'fo.id = fi.folderId')
+			->from('{{%assetfiles}} fi')
+			->innerJoin('{{%assetfolders}} fo', 'fo.id = fi.folderId')
 			->where('fo.sourceId = :sourceId', [':sourceId' => $sourceId])
 			->orderBy('fi.filename')
 			->queryAll();
@@ -603,7 +603,7 @@ class Assets extends Component
 
 		$query = Craft::$app->getDb()->createCommand()
 			->select('f.*')
-			->from('assetfolders AS f');
+			->from('{{%assetfolders}} f');
 
 		$this->_applyFolderConditions($query, $criteria);
 
@@ -646,7 +646,7 @@ class Assets extends Component
 	{
 		$query = Craft::$app->getDb()->createCommand()
 			->select('f.*')
-			->from('assetfolders AS f')
+			->from('{{%assetfolders}} f')
 			->where(['like', 'path', $parentFolder->path.'%'])
 			->andWhere('sourceId = :sourceId', [':sourceId' => $parentFolder->sourceId]);
 
@@ -704,7 +704,7 @@ class Assets extends Component
 
 		$query = Craft::$app->getDb()->createCommand()
 			->select('count(id)')
-			->from('assetfolders AS f');
+			->from('{{%assetfolders}} f');
 
 		$this->_applyFolderConditions($query, $criteria);
 
@@ -1141,7 +1141,7 @@ class Assets extends Component
 	{
 		return Craft::$app->getDb()->createCommand()
 			->select(['id', 'parentId', 'sourceId', 'name', 'path'])
-			->from('assetfolders');
+			->from('{{%assetfolders}}');
 	}
 
 	/**

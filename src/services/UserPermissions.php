@@ -200,8 +200,8 @@ class UserPermissions extends Component
 		{
 			$groupPermissions = (new Query())
 				->select('p.name')
-				->from('userpermissions p')
-				->innerJoin('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
+				->from('{{%userpermissions}} p')
+				->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
 				->where(['p_g.groupId' => $groupId])
 				->column();
 
@@ -222,9 +222,9 @@ class UserPermissions extends Component
 	{
 		return (new Query())
 			->select('p.name')
-			->from('userpermissions p')
-			->innerJoin('userpermissions_usergroups p_g', 'p_g.permissionId = p.id')
-			->innerJoin('usergroups_users g_u', 'g_u.groupId = p_g.groupId')
+			->from('{{%userpermissions}} p')
+			->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
+			->innerJoin('{{%usergroups_users}} g_u', 'g_u.groupId = p_g.groupId')
 			->where(['g_u.userId' => $userId])
 			->column();
 	}
@@ -256,7 +256,7 @@ class UserPermissions extends Component
 	public function saveGroupPermissions($groupId, $permissions)
 	{
 		// Delete any existing group permissions
-		Craft::$app->getDb()->createCommand()->delete('userpermissions_usergroups', ['groupId' => $groupId])->execute();
+		Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])->execute();
 
 		$permissions = $this->_filterOrphanedPermissions($permissions);
 
@@ -296,8 +296,8 @@ class UserPermissions extends Component
 
 			$userPermissions = (new Query())
 				->select('p.name')
-				->from('userpermissions p')
-				->innerJoin('userpermissions_users p_u', 'p_u.permissionId = p.id')
+				->from('{{%userpermissions}} p')
+				->innerJoin('{{%userpermissions_users}} p_u', 'p_u.permissionId = p.id')
 				->where(['p_u.userId' => $userId])
 				->column();
 
@@ -334,7 +334,7 @@ class UserPermissions extends Component
 	public function saveUserPermissions($userId, $permissions)
 	{
 		// Delete any existing user permissions
-		Craft::$app->getDb()->createCommand()->delete('userpermissions_users', ['userId' => $userId])->execute();
+		Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_users}}', ['userId' => $userId])->execute();
 
 		// Filter out any orphaned permissions
 		$groupPermissions = $this->getGroupPermissionsByUserId($userId);

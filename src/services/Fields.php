@@ -237,7 +237,7 @@ class Fields extends Component
 			$this->deleteField($field);
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldgroups', ['id' => $groupId])->execute();
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldgroups}}', ['id' => $groupId])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -643,7 +643,7 @@ class Fields extends Component
 			}
 
 			// Delete the row in fields
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fields', ['id' => $field->id])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fields}}', ['id' => $field->id])->execute();
 
 			if ($affectedRows)
 			{
@@ -893,11 +893,11 @@ class Fields extends Component
 
 		if (is_array($layoutId))
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['in', 'id', $layoutId])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}', ['in', 'id', $layoutId])->execute();
 		}
 		else
 		{
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['id' => $layoutId])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}', ['id' => $layoutId])->execute();
 		}
 
 		return (bool) $affectedRows;
@@ -912,7 +912,7 @@ class Fields extends Component
 	 */
 	public function deleteLayoutsByType($type)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('fieldlayouts', ['type' => $type])->execute();
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}', ['type' => $type])->execute();
 		return (bool) $affectedRows;
 	}
 
@@ -972,7 +972,7 @@ class Fields extends Component
 	{
 		return (new Query())
 			->select(['id', 'name'])
-			->from('fieldgroups')
+			->from('{{%fieldgroups}}')
 			->orderBy('name');
 	}
 
@@ -985,7 +985,7 @@ class Fields extends Component
 	{
 		return (new Query())
 			->select(['id', 'groupId', 'name', 'handle', 'context', 'instructions', 'translatable', 'type', 'settings'])
-			->from('fields')
+			->from('{{%fields}}')
 			->orderBy('name');
 	}
 
@@ -998,7 +998,7 @@ class Fields extends Component
 	{
 		return (new Query)
 			->select(['id', 'type'])
-			->from('fieldlayouts');
+			->from('{{%fieldlayouts}}');
 	}
 
 	/**
@@ -1010,7 +1010,7 @@ class Fields extends Component
 	{
 		return (new Query())
 			->select(['id', 'layoutId', 'tabId', 'fieldId', 'required', 'sortOrder'])
-			->from('fieldlayoutfields')
+			->from('{{%fieldlayoutfields}}')
 			->orderBy('sortOrder');
 	}
 
@@ -1023,7 +1023,7 @@ class Fields extends Component
 	{
 		return (new Query())
 			->select(['id', 'layoutId', 'name', 'sortOrder'])
-			->from('fieldlayouttabs')
+			->from('{{%fieldlayouttabs}}')
 			->orderBy('sortOrder');
 	}
 

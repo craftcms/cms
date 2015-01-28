@@ -718,7 +718,7 @@ class User extends BaseElementModel implements IdentityInterface
 	{
 		return (new Query())
 			->select('token')
-			->from('sessions')
+			->from('{{%sessions}}')
 			->where(['and', 'userId=:userId', 'uid=:uid'], [':userId' => $this->id, ':uid' => $uid])
 			->scalar();
 	}

@@ -126,7 +126,7 @@ class Structures extends Component
 			return false;
 		}
 
-		$affectedRows = Craft::$app->getDb()->createCommand()->delete('structures', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%structures}}', [
 			'id' => $structureId
 		])->execute();
 

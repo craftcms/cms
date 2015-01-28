@@ -138,7 +138,7 @@ class AssetSources extends Component
 			{
 				$this->_allSourceIds = Craft::$app->getDb()->createCommand()
 					->select('id')
-					->from('assetsources')
+					->from('{{%assetsources}}')
 					->queryColumn();
 			}
 		}
@@ -366,7 +366,7 @@ class AssetSources extends Component
 				{
 					// Set the sort order
 					$maxSortOrder = (new Query())
-						->from('assetsources')
+						->from('{{%assetsources}}')
 						->max('sortOrder');
 
 					$sourceRecord->sortOrder = $maxSortOrder + 1;
@@ -495,14 +495,14 @@ class AssetSources extends Component
 			// Grab the asset file ids so we can clean the elements table.
 			$assetFileIds = Craft::$app->getDb()->createCommand()
 				->select('id')
-				->from('assetfiles')
+				->from('{{%assetfiles}}')
 				->where(['sourceId' => $sourceId])
 				->queryColumn();
 
 			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('assetsources', ['id' => $sourceId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%assetsources}}', ['id' => $sourceId]);
 
 			if ($transaction !== null)
 			{
@@ -534,7 +534,7 @@ class AssetSources extends Component
 	{
 		return Craft::$app->getDb()->createCommand()
 			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
-			->from('assetsources')
+			->from('{{%assetsources}}')
 			->orderBy('sortOrder');
 	}
 

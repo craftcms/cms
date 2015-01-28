@@ -236,7 +236,7 @@ class Updates extends Component
 	 */
 	public function setNewPluginInfo(BasePlugin $plugin)
 	{
-		$affectedRows = Craft::$app->getDb()->createCommand()->update('plugins', [
+		$affectedRows = Craft::$app->getDb()->createCommand()->update('{{%plugins}}', [
 			'version' => $plugin->getVersion()
 		], [
 			'class' => $plugin->getClassHandle()
