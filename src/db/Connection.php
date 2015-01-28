@@ -139,6 +139,7 @@ class Connection extends \yii\db\Connection
 	 */
 	public function getForeignKeyName($table, $columns)
 	{
+		$table = $this->_getTableNameWithoutPrefix($table);
 		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
 
@@ -157,6 +158,7 @@ class Connection extends \yii\db\Connection
 	 */
 	public function getIndexName($table, $columns, $unique = false)
 	{
+		$table = $this->_getTableNameWithoutPrefix($table);
 		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
 
@@ -173,6 +175,7 @@ class Connection extends \yii\db\Connection
 	 */
 	public function getPrimaryKeyName($table, $columns)
 	{
+		$table = $this->_getTableNameWithoutPrefix($table);
 		$columns = ArrayHelper::toArray($columns);
 		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 
@@ -225,5 +228,31 @@ class Connection extends \yii\db\Connection
 		}
 
 		return $name;
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Returns a table name without the table prefix
+	 *
+	 * @param string $table
+	 * @return string
+	 */
+	private function _getTableNameWithoutPrefix($table)
+	{
+		$table = $this->getSchema()->getRawTableName($table);
+
+		if ($this->tablePrefix)
+		{
+			$prefixLength = strlen($this->tablePrefix);
+
+			if (strncmp($table, $this->tablePrefix, $prefixLength) === 0)
+			{
+				$table = substr($table, $prefixLength);
+			}
+		}
+
+		return $table;
 	}
 }
