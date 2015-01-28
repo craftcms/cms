@@ -26,12 +26,15 @@ class Query extends \yii\db\Query
 	 */
 	public function prepare($builder)
 	{
-		// See if we're using a fixed order
-		foreach ($this->orderBy as $orderBy)
+		if ($this->orderBy !== null)
 		{
-			if ($orderBy instanceof FixedOrderExpression)
+			// See if we're using a fixed order
+			foreach ($this->orderBy as $orderBy)
 			{
-				$orderBy->db = $builder->db;
+				if ($orderBy instanceof FixedOrderExpression)
+				{
+					$orderBy->db = $builder->db;
+				}
 			}
 		}
 
