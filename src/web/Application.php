@@ -598,7 +598,7 @@ class Application extends \yii\web\Application
 				// Flush the data cache, so we're not getting cached CP resource paths.
 				$this->getCache()->flush();
 
-				$this->runAction('templates/requirementscheck');
+				$this->runAction('templates/requirements-check');
 			}
 		}
 	}
@@ -621,7 +621,7 @@ class Application extends \yii\web\Application
 			// If this is a request to actually manually update Craft, do it
 			if ($request->getSegment(1) == 'manualupdate')
 			{
-				$this->runAction('templates/manualUpdate');
+				$this->runAction('templates/manual-update');
 				$this->end();
 			}
 			else
@@ -645,7 +645,7 @@ class Application extends \yii\web\Application
 					}
 
 					// Show the manual update notification template
-					$this->runAction('templates/manualUpdateNotification');
+					$this->runAction('templates/manual-update-notification');
 				}
 			}
 		}
