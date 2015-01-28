@@ -10,6 +10,7 @@ namespace craft\app\requirements;
 use Craft;
 use craft\app\enums\InstallStatus;
 use craft\app\enums\RequirementResult;
+use yii\base\Object;
 
 /**
  * Class RequirementsChecker
@@ -17,7 +18,7 @@ use craft\app\enums\RequirementResult;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RequirementsChecker extends \CComponent
+class RequirementsChecker extends Object
 {
 	// Properties
 	// =========================================================================
