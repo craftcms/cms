@@ -167,10 +167,9 @@ class ElementHelper
 			$uniqueUriParams[':uri'] = $testUri;
 
 			$totalElements = (new Query())
-				->select(['count(id)'])
 				->from('elements_i18n')
 				->where($uniqueUriConditions, $uniqueUriParams)
-				->scalar();
+				->count('id');
 
 			if ($totalElements ==  0)
 			{
