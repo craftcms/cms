@@ -494,7 +494,7 @@ class Application extends \yii\web\Application
 		if ($isCpRequest && $request->getSegment(1) === 'install' && !$this->isInstalled())
 		{
 			$action = $request->getSegment(2, 'index');
-			$this->runController('install/'.$action);
+			$this->runAction('install/'.$action);
 			$this->end();
 		}
 		else if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login'))
@@ -536,7 +536,7 @@ class Application extends \yii\web\Application
 		{
 			$actionSegs = $request->getActionSegments();
 			$route = implode('/', $actionSegs);
-			$this->runController($route);
+			$this->runAction($route);
 		}
 	}
 
@@ -598,7 +598,7 @@ class Application extends \yii\web\Application
 				// Flush the data cache, so we're not getting cached CP resource paths.
 				$this->getCache()->flush();
 
-				$this->runController('templates/requirementscheck');
+				$this->runAction('templates/requirementscheck');
 			}
 		}
 	}
@@ -621,7 +621,7 @@ class Application extends \yii\web\Application
 			// If this is a request to actually manually update Craft, do it
 			if ($request->getSegment(1) == 'manualupdate')
 			{
-				$this->runController('templates/manualUpdate');
+				$this->runAction('templates/manualUpdate');
 				$this->end();
 			}
 			else
@@ -645,7 +645,7 @@ class Application extends \yii\web\Application
 					}
 
 					// Show the manual update notification template
-					$this->runController('templates/manualUpdateNotification');
+					$this->runAction('templates/manualUpdateNotification');
 				}
 			}
 		}
@@ -654,7 +654,7 @@ class Application extends \yii\web\Application
 		{
 			$controller = $actionSegs[0];
 			$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
-			$this->runController($controller.'/'.$action);
+			$this->runAction($controller.'/'.$action);
 		}
 		else
 		{
