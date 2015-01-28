@@ -1261,7 +1261,7 @@ class UsersService extends BaseApplicationComponent
 
 			$ids = craft()->db->createCommand()->select('id')
 				->from('users')
-				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array('pastTime' => $pastTime))
+				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array(':pastTime' => $pastTime))
 				->queryColumn();
 
 			$affectedRows = craft()->db->createCommand()->delete('elements', array('in', 'id', $ids));
