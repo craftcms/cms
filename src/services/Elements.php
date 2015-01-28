@@ -1147,7 +1147,7 @@ class Elements extends Component
 		$elementRecord->enabled = (bool) $element->enabled;
 		$elementRecord->archived = (bool) $element->archived;
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -1534,7 +1534,7 @@ class Elements extends Component
 	 */
 	public function mergeElementsByIds($mergedElementId, $prevailingElementId)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Update any relations that point to the merged element
@@ -1660,7 +1660,7 @@ class Elements extends Component
 			$elementIds = [$elementIds];
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

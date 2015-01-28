@@ -474,7 +474,7 @@ class Fields extends Component
 	{
 		if (!$validate || $this->validateField($field))
 		{
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				$field->context = Craft::$app->content->fieldContext;
@@ -623,7 +623,7 @@ class Fields extends Component
 	 */
 	public function deleteField(FieldModel $field)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			$fieldType = $field->getFieldType();

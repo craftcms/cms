@@ -230,7 +230,7 @@ class Assets extends Component
 			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

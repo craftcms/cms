@@ -359,7 +359,7 @@ class AssetSources extends Component
 
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if ($isNewSource)
@@ -445,7 +445,7 @@ class AssetSources extends Component
 	 */
 	public function reorderSources($sourceIds)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{
@@ -489,7 +489,7 @@ class AssetSources extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Grab the asset file ids so we can clean the elements table.

@@ -304,7 +304,7 @@ class Globals extends Component
 
 		if (!$globalSet->hasErrors())
 		{
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if (Craft::$app->elements->saveElement($globalSet, false))
@@ -368,7 +368,7 @@ class Globals extends Component
 			return false;
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Delete the field layout
@@ -414,7 +414,7 @@ class Globals extends Component
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

@@ -221,7 +221,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 			throw new CDbException(Yii::t('yiiext','The node cannot be deleted because it is already deleted.'));
 
 		$db=$owner->getDbConnection();
-		$extTransFlag=$db->getCurrentTransaction();
+		$extTransFlag=$db->getTransaction();
 
 		if($extTransFlag===null)
 			$transaction=$db->beginTransaction();
@@ -418,7 +418,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 			throw new CException(Yii::t('yiiext','The node already is root node.'));
 
 		$db=$owner->getDbConnection();
-		$extTransFlag=$db->getCurrentTransaction();
+		$extTransFlag=$db->getTransaction();
 
 		if($extTransFlag===null)
 			$transaction=$db->beginTransaction();
@@ -625,7 +625,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 			$owner->{$this->rootAttribute}=$target->{$this->rootAttribute};
 
 		$db=$owner->getDbConnection();
-		$extTransFlag=$db->getCurrentTransaction();
+		$extTransFlag=$db->getTransaction();
 
 		if($extTransFlag===null)
 			$transaction=$db->beginTransaction();
@@ -693,7 +693,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 		if($this->hasManyRoots)
 		{
 			$db=$owner->getDbConnection();
-			$extTransFlag=$db->getCurrentTransaction();
+			$extTransFlag=$db->getTransaction();
 
 			if($extTransFlag===null)
 				$transaction=$db->beginTransaction();
@@ -771,7 +771,7 @@ class NestedSetBehavior extends CActiveRecordBehavior
 			throw new CException(Yii::t('yiiext','The target node should not be root.'));
 
 		$db=$owner->getDbConnection();
-		$extTransFlag=$db->getCurrentTransaction();
+		$extTransFlag=$db->getTransaction();
 
 		if($extTransFlag===null)
 			$transaction=$db->beginTransaction();

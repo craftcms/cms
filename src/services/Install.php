@@ -74,7 +74,7 @@ class Install extends Component
 		// Start the transaction
 		$db = Craft::$app->getDb();
 
-		$transaction = $db->getCurrentTransaction() === null ? $db->beginTransaction() : null;
+		$transaction = $db->getTransaction() === null ? $db->beginTransaction() : null;
 		try
 		{
 			Craft::log('Installing Craft.');

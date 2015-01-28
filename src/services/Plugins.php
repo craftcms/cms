@@ -392,7 +392,7 @@ class Plugins extends Component
 
 		$plugin->onBeforeInstall();
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// Add the plugins as a record to the database.
@@ -476,7 +476,7 @@ class Plugins extends Component
 			$pluginId = $this->_storedPluginInfo[$handle]['id'];
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			$plugin->onBeforeUninstall();

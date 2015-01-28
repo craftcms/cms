@@ -45,7 +45,7 @@ class Relations extends Component
 		// Prevent duplicate target IDs.
 		$targetIds = array_unique($targetIds);
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
 		try
 		{

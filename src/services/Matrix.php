@@ -258,7 +258,7 @@ class Matrix extends Component
 	{
 		if (!$validate || $this->validateBlockType($blockType))
 		{
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				$contentService = Craft::$app->content;
@@ -417,7 +417,7 @@ class Matrix extends Component
 	 */
 	public function deleteBlockType(MatrixBlockTypeModel $blockType)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// First delete the blocks of this type
@@ -529,7 +529,7 @@ class Matrix extends Component
 	{
 		if (!$validate || $this->validateFieldSettings($settings))
 		{
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				$matrixField = $settings->getField();
@@ -625,7 +625,7 @@ class Matrix extends Component
 	 */
 	public function deleteMatrixField(FieldModel $matrixField)
 	{
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			$originalContentTable = Craft::$app->content->contentTable;
@@ -772,7 +772,7 @@ class Matrix extends Component
 			$blockRecord->typeId      = $block->typeId;
 			$blockRecord->sortOrder   = $block->sortOrder;
 
-			$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
 				if (Craft::$app->elements->saveElement($block, false))
@@ -861,7 +861,7 @@ class Matrix extends Component
 			$blocks = [];
 		}
 
-		$transaction = Craft::$app->getDb()->getCurrentTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
+		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
 			// First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
