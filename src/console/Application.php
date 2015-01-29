@@ -111,11 +111,12 @@ class Application extends \yii\console\Application
 	 */
 	public function get($id, $throwException = true)
 	{
-		// Do we need to take special care in creating this component?
-		if (($id === 'cache' || $id === 'db') && !$this->has($id, true))
+		if (!$this->has($id, true))
 		{
-			$definition = $this->_getComponentDefinition($id);
-			$this->set($id, $definition);
+			if (($definition = $this->_getComponentDefinition($id)) !== null)
+			{
+				$this->set($id, $definition);
+			}
 		}
 
 		return parent::get($id, $throwException);

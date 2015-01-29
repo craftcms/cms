@@ -17,6 +17,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
 use craft\app\models\Info as InfoModel;
 use yii\base\InvalidConfigException;
@@ -111,6 +112,16 @@ trait ApplicationTrait
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * Returns a [[Locale]] object for the target language.
+	 *
+	 * @return Locale The locale object for the target language.
+	 */
+	public function getLocale()
+	{
+		return $this->get('locale');
+	}
 
 	/**
 	 * Returns the target app language.
@@ -763,6 +774,8 @@ trait ApplicationTrait
 				return $this->_getCacheDefinition();
 			case 'db':
 				return $this->_getDbDefinition();
+			case 'locale':
+				return $this->_getLocaleDefinition();
 		}
 	}
 
@@ -892,6 +905,17 @@ trait ApplicationTrait
 		$this->setIsDbConnectionValid(true);
 
 		return $db;
+	}
+
+	/**
+	 * Returns the definition for the [[Locale]] object that will be available from Craft::$app->locale.
+	 *
+	 * @return Locale
+	 */
+	private function _getLocaleDefinition()
+	{
+		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
+		return new Locale($this->language);
 	}
 
 	/**

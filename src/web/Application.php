@@ -45,6 +45,7 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Localization     $i18n             The internationalization (i18n) component.
  * @property \craft\app\services\Images           $images           The images service.
  * @property \craft\app\services\Install          $install          The install service.
+ * @property \craft\app\i18n\Locale               $locale           The locale component.
  * @property \craft\app\services\Localization     $localization     The localization service.
  * @property \craft\app\services\Matrix           $matrix           The matrix service.
  * @property \craft\app\services\Migrations       $migrations       The migrations service.
@@ -294,18 +295,6 @@ class Application extends \yii\web\Application
 	}
 
 	/**
-	 * Returns the localization data for a given locale.
-	 *
-	 * @param string $localeId
-	 *
-	 * @return LocaleData
-	 */
-	public function getLocale($localeId = null)
-	{
-		return $this->getI18n()->getLocaleData($localeId);
-	}
-
-	/**
 	 * Formats an exception into JSON before returning it to the client.
 	 *
 	 * @param array $data
@@ -406,11 +395,12 @@ class Application extends \yii\web\Application
 	 */
 	public function get($id, $throwException = true)
 	{
-		// Do we need to take special care in creating this component?
-		if (($id === 'cache' || $id === 'db') && !$this->has($id, true))
+		if (!$this->has($id, true))
 		{
-			$definition = $this->_getComponentDefinition($id);
-			$this->set($id, $definition);
+			if (($definition = $this->_getComponentDefinition($id)) !== null)
+			{
+				$this->set($id, $definition);
+			}
 		}
 
 		return parent::get($id, $throwException);
