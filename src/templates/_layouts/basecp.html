@@ -71,6 +71,7 @@
 			isLocalized:           {{ craft.isLocalized() ? 'true' : 'false' }},
 			translations:          {{ getTranslations()|raw }},
 			maxUploadSize:         {{ craft.app.getMaxUploadSize() }},
+			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
 			{% if craft.config.enableCsrfProtection %}
 				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
 				csrfTokenName:         "{{ craft.config.csrfTokenName|e('js') }}",
