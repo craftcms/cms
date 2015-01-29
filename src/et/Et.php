@@ -15,6 +15,8 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Et as EtModel;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Class Et
@@ -81,14 +83,14 @@ class Et
 			'requestIp'         => Craft::$app->getRequest()->getUserIP(),
 			'requestTime'       => DateTimeHelper::currentTimeStamp(),
 			'requestPort'       => Craft::$app->getRequest()->getPort(),
-			'localBuild'        => CRAFT_BUILD,
-			'localVersion'      => CRAFT_VERSION,
+			'localBuild'        => Craft::$app->build,
+			'localVersion'      => Craft::$app->version,
 			'localEdition'      => Craft::$app->getEdition(),
 			'userEmail'         => Craft::$app->getUser()->getIdentity()->email,
-			'track'             => CRAFT_TRACK,
+			'track'             => Craft::$app->track,
 		]);
 
-		$this->_userAgent = 'Craft/'.Craft::$app->getVersion().'.'.Craft::$app->getBuild();
+		$this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
 	}
 
 	/**
@@ -180,24 +182,27 @@ class Et
 
 			if (!Craft::$app->getCache()->get('etConnectFailure'))
 			{
-				$data = JsonHelper::encode($this->_model->getAttributes(null, true));
-
-				$client = new \GuzzleHttp\Client();
-				$client->setUserAgent($this->_userAgent, true);
-
-				$options = [
-					'timeout'         => $this->getTimeout(),
-					'connect_timeout' => $this->getConnectTimeout(),
-					'allow_redirects' => $this->getAllowRedirects(),
-				];
-
-				$request = $client->post($this->_endpoint, $options);
-
-				$request->setBody($data, 'application/json');
-				$response = $request->send();
-
-				if ($response->isSuccessful())
+				try
 				{
+					$data = JsonHelper::encode($this->_model->getAttributes(null, true));
+
+					$client = new Client([
+						'headers' => [
+							'User-Agent' => $this->_userAgent.' '.Client::getDefaultUserAgent()
+						]
+					]);
+
+					$options = [
+						'timeout'         => $this->getTimeout(),
+						'connect_timeout' => $this->getConnectTimeout(),
+						'allow_redirects' => $this->getAllowRedirects(),
+					];
+
+					$request = $client->post($this->_endpoint, $options);
+
+					$request->setBody($data, 'application/json');
+					$response = $request->send();
+
 					// Clear the connection failure cached item if it exists.
 					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{
@@ -252,9 +257,9 @@ class Et
 						}
 					}
 				}
-				else
+				catch (RequestException $e)
 				{
-					Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
+					Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
 					if (Craft::$app->getCache()->get('etConnectFailure'))
 					{

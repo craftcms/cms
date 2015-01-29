@@ -16,6 +16,8 @@ use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\User as UserModel;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 
 /**
@@ -316,15 +318,14 @@ class Config extends Component
 							$baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
 							$url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
-							$client = new \GuzzleHttp\Client();
-							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
+							$response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
 
-							if ($response->isSuccessful() && $response->getBody(true) === 'success')
+							if ($response->getBody(true) === 'success')
 							{
 								$this->_omitScriptNameInUrls = 'y';
 							}
 						}
-						catch (\Exception $e)
+						catch (RequestException $e)
 						{
 							Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
 						}
@@ -409,15 +410,14 @@ class Config extends Component
 						try
 						{
 							$url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
-							$client = new \GuzzleHttp\Client();
-							$response = $client->get($url, [], ['connect_timeout' => 2, 'timeout' => 4])->send();
+							$response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
 
-							if ($response->isSuccessful() && $response->getBody(true) === 'success')
+							if ($response->getBody(true) === 'success')
 							{
 								$this->_usePathInfo = 'y';
 							}
 						}
-						catch (\Exception $e)
+						catch (RequestException $e)
 						{
 							Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
 						}
