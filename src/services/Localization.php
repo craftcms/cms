@@ -186,7 +186,7 @@ class Localization extends Component
 	 */
 	public function getPrimarySiteLocaleId()
 	{
-		return $this->getPrimarySiteLocale()->getId();
+		return $this->getPrimarySiteLocale()->id;
 	}
 
 	/**

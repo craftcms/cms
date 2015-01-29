@@ -22,9 +22,9 @@ class Locale extends Object
 	// =========================================================================
 
 	/**
-	 * @var
+	 * @var The locale ID.
 	 */
-	private $_id;
+	public $id;
 
 	/**
 	 * @var
@@ -35,15 +35,15 @@ class Locale extends Object
 	// =========================================================================
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
-	 * @param $id
-	 *
-	 * @return Locale
+	 * @param int   $id     The locale ID.
+	 * @param array $config Name-value pairs that will be used to initialize the object properties.
 	 */
-	public function __construct($id)
+	public function __construct($id, $config = [])
 	{
-		$this->_id = $id;
+		$this->id = $id;
+		parent::__construct($config);
 	}
 
 	/**
@@ -53,12 +53,7 @@ class Locale extends Object
 	 */
 	public function __toString()
 	{
-		return $this->_id;
-	}
-
-	public function getId()
-	{
-		return $this->_id;
+		return $this->id;
 	}
 
 	/**

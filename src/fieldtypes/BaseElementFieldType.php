@@ -433,7 +433,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 			foreach (Craft::$app->getI18n()->getSiteLocales() as $locale)
 			{
-				$localeOptions[] = ['label' => $locale->getName(), 'value' => $locale->getId()];
+				$localeOptions[] = ['label' => $locale->getName(), 'value' => $locale->id];
 			}
 
 			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', [
