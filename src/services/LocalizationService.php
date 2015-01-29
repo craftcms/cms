@@ -279,6 +279,7 @@ class LocalizationService extends BaseApplicationComponent
 			if (!craft()->tasks->areTasksPending('ResaveAllElements'))
 			{
 				craft()->tasks->createTask('ResaveAllElements', null, array(
+					'locale'          => $this->getPrimarySiteLocaleId(),
 					'localizableOnly' => true,
 				));
 			}
