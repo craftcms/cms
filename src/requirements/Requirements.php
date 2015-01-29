@@ -9,6 +9,7 @@ namespace craft\app\requirements;
 
 use Craft;
 use craft\app\enums\RequirementResult;
+use yii\base\Object;
 
 /**
  * Class Requirements
@@ -95,7 +96,7 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('app', 'MySQL version'),
-				version_compare(Craft::$app->getDb()->getServerVersion(), $requiredMysqlVersion, ">="),
+				version_compare(Craft::$app->getDb()->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION), $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
 				Craft::t('app', 'MySQL {version} or higher is required to run @@@appName@@@.', ['version' => $requiredMysqlVersion])
@@ -188,7 +189,7 @@ class Requirements
 	 *
 	 * @return bool
 	 */
-	private function _isInnoDbEnabled()
+	private static function _isInnoDbEnabled()
 	{
 		// TODO: MySQL specific
 		$results = Craft::$app->getDb()->createCommand('SHOW ENGINES')->queryAll();
@@ -210,7 +211,7 @@ class Requirements
  *
  * @package craft.app.requirements
  */
-class Requirement extends \CComponent
+class Requirement extends Object
 {
 	// Properties
 	// =========================================================================
