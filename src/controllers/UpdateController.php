@@ -407,7 +407,7 @@ class UpdateController extends Controller
 
 		Craft::$app->updates->updateCleanUp($uid, $handle);
 
-		if ($oldVersion && version_compare($oldVersion, Craft::$app->getVersion(), '<'))
+		if ($oldVersion && version_compare($oldVersion, Craft::$app->version, '<'))
 		{
 			$returnUrl = UrlHelper::getUrl('whats-new');
 		}

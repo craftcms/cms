@@ -76,7 +76,7 @@ use yii\web\NotFoundHttpException;
  * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\app\services\Security           getSecurity()     Returns the security component.
- * @method \craft\app\services\Session            getSession()      Returns the session component.
+ * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
  *

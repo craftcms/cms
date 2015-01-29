@@ -100,7 +100,7 @@ class App
 	 */
 	public function getVersion()
 	{
-		return \Craft::$app->getVersion();
+		return \Craft::$app->version;
 	}
 
 	/**
@@ -110,7 +110,7 @@ class App
 	 */
 	public function getBuild()
 	{
-		return \Craft::$app->getBuild();
+		return \Craft::$app->build;
 	}
 
 	/**

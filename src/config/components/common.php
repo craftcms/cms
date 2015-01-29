@@ -32,7 +32,7 @@ return [
 	'routes'               => 'craft\app\services\Routes',
 	'search'               => 'craft\app\services\Search',
 	'security'             => 'craft\app\services\Security',
-	'session'              => 'craft\app\services\Session',
+	'session'              => 'craft\app\web\Session',
 	'structures'           => 'craft\app\services\Structures',
 	'tags'                 => 'craft\app\services\Tags',
 	'tasks'                => 'craft\app\services\Tasks',

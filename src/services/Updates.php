@@ -589,7 +589,7 @@ class Updates extends Component
 	 */
 	public function hasCraftBuildChanged()
 	{
-		return (CRAFT_BUILD != Craft::$app->getBuild());
+		return (Craft::$app->build != Craft::$app->getInfo('build'));
 	}
 
 	/**
@@ -600,7 +600,7 @@ class Updates extends Component
 	 */
 	public function isBreakpointUpdateNeeded()
 	{
-		return (CRAFT_MIN_BUILD_REQUIRED > Craft::$app->getBuild());
+		return (Craft::$app->minBuildRequired > Craft::$app->getInfo('build'));
 	}
 
 	/**

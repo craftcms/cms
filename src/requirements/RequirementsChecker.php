@@ -8,6 +8,7 @@
 namespace craft\app\requirements;
 
 use Craft;
+use craft\app\dates\DateTime;
 use craft\app\enums\InstallStatus;
 use craft\app\enums\RequirementResult;
 use yii\base\Object;
@@ -101,13 +102,12 @@ class RequirementsChecker extends Object
 	{
 		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
 			Craft::t('app', '{version} build {build}', [
-				'version' => CRAFT_VERSION,
-				'build'   => CRAFT_BUILD
+				'version' => Craft::$app->version,
+				'build'   => Craft::$app->build
 			]);
 
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Craft::$app->getYiiVersion();
-		$info[] =  \CTimestamp::formatDate(Craft::$app->locale->getTimeFormat());
 
 		return implode(' | ', $info);
 	}
