@@ -7446,7 +7446,12 @@
 				{
 					var top = this.opts.toolbarFixedTopOffset + scrollTop - boxTop;
 					var left = 0;
-					var end = boxTop + this.$box.height() + 30;
+
+					/* BEGIN HACK */
+					//var end = boxTop + this.$box.height() + 30;
+					var end = boxTop + this.$box.height() - 32;
+					/* END HACK */
+
 					var width = this.$box.innerWidth();
 
 					this.$toolbar.addClass('toolbar-fixed-box');
