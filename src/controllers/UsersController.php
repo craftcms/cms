@@ -836,7 +836,7 @@ class UsersController extends BaseController
 		// Are they allowed to set a new password?
 		if ($thisIsPublicRegistration)
 		{
-			$user->newPassword = craft()->request->getPost('password');
+			$user->newPassword = craft()->request->getPost('password', '');
 		}
 		else if ($user->isCurrent())
 		{
