@@ -813,7 +813,7 @@ class UsersController extends BaseController
 			if ($newEmail && $newEmail != $user->email)
 			{
 				// Does that email need to be verified?
-				if ($requireEmailVerification && (!$currentUser->admin || craft()->request->getPost('sendVerificationEmail')))
+				if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || craft()->request->getPost('sendVerificationEmail')))
 				{
 					// Save it as an unverified email for now
 					$user->unverifiedEmail = $newEmail;
@@ -880,7 +880,7 @@ class UsersController extends BaseController
 		}
 
 		// There are some things only admins can change
-		if ($currentUser->admin)
+		if ($currentUser && $currentUser->admin)
 		{
 			$user->passwordResetRequired = (bool) craft()->request->getPost('passwordResetRequired', $user->passwordResetRequired);
 			$user->admin                 = (bool) craft()->request->getPost('admin', $user->admin);
