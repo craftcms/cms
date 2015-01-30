@@ -9,6 +9,7 @@ namespace craft\app\dates;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
+use yii\helpers\FormatConverter;
 
 /**
  * Class DateTime
@@ -109,16 +110,22 @@ class DateTime extends \DateTime
 				return null;
 			}
 
-			$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
-			$dateFormatter = $localeData->getDateFormatter();
+			$locale = Craft::$app->getLocale();
 
 			if (!empty($dt['date']))
 			{
 				$date = $dt['date'];
-				$format = $dateFormatter->getDatepickerPhpFormat();
+				$format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
 
-				// Check for a two-digit year as well
-				$altFormat = str_replace('Y', 'y', $format);
+				// Check for 2 and 4 digit years
+				if (strpos($format, 'y') !== false)
+				{
+					$altFormat = str_replace('y', 'Y', $format);
+				}
+				else
+				{
+					$altFormat = str_replace('Y', 'y', $format);
+				}
 
 				if (static::createFromFormat($altFormat, $date) !== false)
 				{
@@ -139,11 +146,10 @@ class DateTime extends \DateTime
 			if (!empty($dt['time']))
 			{
 				// Replace the localized "AM" and "PM"
-				$localeData = Craft::$app->getI18n()->getLocaleData();
-				$dt['time'] = str_replace([$localeData->getAMName(), $localeData->getPMName()], ['AM', 'PM'], $dt['time']);
+				$dt['time'] = str_replace([$locale->getAMName(), $locale->getPMName()], ['AM', 'PM'], $dt['time']);
 
 				$date .= ' '.$dt['time'];
-				$format .= ' '.$dateFormatter->getTimepickerPhpFormat();
+				$format .= ' '.FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
 			}
 		}
 		else
@@ -340,11 +346,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeDate()
 	{
-		$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
-		$dateFormatter = $localeData->getDateFormatter();
-		$format = $dateFormatter->getDatepickerPhpFormat();
-
-		return $this->format($format);
+		return Craft::$app->getLocale()->getFormatter()->asDate($this, 'short');
 	}
 
 	/**
@@ -352,28 +354,7 @@ class DateTime extends \DateTime
 	 */
 	public function localeTime()
 	{
-		$localeData = Craft::$app->getI18n()->getLocaleData(Craft::$app->language);
-		$dateFormatter = $localeData->getDateFormatter();
-		$format = $dateFormatter->getTimepickerPhpFormat();
-
-		return $this->format($format);
-		$time = $this->format($format);
-
-		// Replace "AM" and "PM" with the localized versions
-		$localeData = Craft::$app->getI18n()->getLocaleData();
-		$amName = $localeData->getAMName();
-		$pmName = $localeData->getPMName();
-
-		if ($amName != 'AM' || $pmName != 'PM')
-		{
-			$time = str_replace(
-				['am', 'AM', 'pm', 'PM'],
-				[$amName, $amName, $pmName, $pmName],
-				$time
-			);
-		}
-
-		return $time;
+		return Craft::$app->getLocale()->getFormatter()->asTime($this, 'short');
 	}
 
 	/**
