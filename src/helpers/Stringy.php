@@ -14,7 +14,7 @@ namespace craft\app\helpers;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Stringy extends \Stringy
+class Stringy extends \Stringy\Stringy
 {
 	/**
 	 * @return array

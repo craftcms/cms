@@ -8,9 +8,8 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\errors\Exception;
-use craft\app\helpers\HtmlPurifier;
 use Stringy\StaticStringy;
+use Stringy\Stringy;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -197,6 +196,30 @@ class StringHelper extends \yii\helpers\StringHelper
 	public static function getCharAt($str, $i)
 	{
 		return StaticStringy::at($str, $i);
+	}
+
+	/**
+	 * Returns whether the given string has any lowercase characters in it.
+	 *
+	 * @param string $str The string to check.
+	 *
+	 * @return string
+	 */
+	public static function hasLowerCase($str)
+	{
+		return StaticStringy::hasLowerCase($str);
+	}
+
+	/**
+	 * Returns whether the given string has any uppercase characters in it.
+	 *
+	 * @param string $str The string to check.
+	 *
+	 * @return string
+	 */
+	public static function hasUpperCase($str)
+	{
+		return StaticStringy::hasUpperCase($str);
 	}
 
 	/**
