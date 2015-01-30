@@ -9,9 +9,12 @@ namespace craft\app\i18n;
 
 use Craft;
 use yii\base\Object;
+use yii\i18n\Formatter;
 
 /**
  * Stores locale info.
+ *
+ * @property string $displayName The locale’s display name.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -27,9 +30,9 @@ class Locale extends Object
 	public $id;
 
 	/**
-	 * @var
+	 * @var The locale's formatter.
 	 */
-	private $_nameInLanguage;
+	private $_formatter;
 
 	// Public Methods
 	// =========================================================================
@@ -59,70 +62,65 @@ class Locale extends Object
 	/**
 	 * Returns the locale name in a given language.
 	 *
-	 * @param string|null $targetLocaleId
-	 *
-	 * @return string|null
+	 * @param string|null $inLocale
+	 * @return string
 	 */
-	public function getName($targetLocaleId = null)
+	public function getDisplayName($inLocale = null)
 	{
-		// If no language is specified, default to the user's language
-		if (!$targetLocaleId)
+		// If no target locale is specified, default to this locale
+		if (!$inLocale)
 		{
-			$targetLocaleId = Craft::$app->language;
+			$inLocale = $this->id;
 		}
 
-		if (!isset($this->_nameInLanguage) || !array_key_exists($targetLocaleId, $this->_nameInLanguage))
+		if (extension_loaded('intl'))
 		{
-			$localeData = Craft::$app->getI18n()->getLocaleData($targetLocaleId);
-
-			if ($localeData)
-			{
-				$name = $localeData->getLocaleDisplayName($this->_id);
-
-				if (!$name)
-				{
-					// Try grabbing the language and territory separately...
-					$name = $localeData->getLanguage($this->_id);
-
-					if ($name)
-					{
-						$territory = $localeData->getTerritory($this->_id);
-
-						if ($territory)
-						{
-							$name .= ' - '.$territory;
-						}
-					}
-					else if ($targetLocaleId != 'en')
-					{
-						// Fall back on English
-						return $this->getName('en');
-					}
-					else
-					{
-						// Use the locale ID as a last result
-						return $this->_id;
-					}
-				}
-			}
-			else
-			{
-				$name = null;
-			}
-
-			$this->_nameInLanguage[$targetLocaleId] = $name;
+			return \Locale::getDisplayName($this->id, $inLocale);
 		}
-
-		return $this->_nameInLanguage[$targetLocaleId];
+		else if ($this->id === 'en')
+		{
+			return 'English';
+		}
+		else
+		{
+			return $this->id;
+		}
 	}
 
 	/**
-	 * Returns the locale name in its own language.
+	 * Returns a [[Formatter]] for this locale.
 	 *
-	 * @return string|false
+	 * @return Formatter A formatter for this locale.
 	 */
-	public function getNativeName()
+	public function getFormatter()
 	{
-		return $this->getName($this->_id);
+		if ($this->_formatter === null)
+		{
+			$this->_formatter = new Formatter([
+				'locale' => $this->id
+			]);
+		}
+
+		return $this->_formatter;
+	}
+
+	/**
+	 * Returns the "AM" name for this locale.
+	 *
+	 * @return string The "AM" name.
+	 */
+	public function getAMName()
+	{
+		return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+	}
+
+	/**
+	 * Returns the "PM" name for this locale.
+	 *
+	 * @return string The "PM" name.
+	 */
+	public function getPMName()
+	{
+		return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
 	}
 }
