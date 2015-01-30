@@ -82,6 +82,9 @@ class EtModel extends BaseModel
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;
 
+		// Any additional server info to include.
+		$attributes['serverInfo'] = AttributeType::Mixed;
+
 		return $attributes;
 	}
 }
