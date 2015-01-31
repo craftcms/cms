@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\i18n\Locale;
 
 /**
  * Class LocalizationHelper
@@ -42,10 +43,9 @@ class LocalizationHelper
 	{
 		if (is_string($number))
 		{
-			$language = Craft::$app->language;
-			$languageData = Craft::$app->getI18n()->getLocaleData($language);
-			$decimalSymbol = $languageData->getNumberSymbol('decimal');
-			$groupSymbol = $languageData->getNumberSymbol('group');
+			$locale = Craft::$app->getLocale();
+			$decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+			$groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
 			// Remove any group symbols
 			$number = str_replace($groupSymbol, '', $number);

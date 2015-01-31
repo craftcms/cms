@@ -616,33 +616,4 @@ class Localization extends Component
 
 		return $success;
 	}
-
-	/**
-	 * Returns the localization data for a given locale.
-	 *
-	 * @param string $localeId
-	 *
-	 * @return LocaleData|null
-	 */
-	public function getLocaleData($localeId = null)
-	{
-		if (!$localeId)
-		{
-			$localeId = Craft::$app->language;
-		}
-
-		if (!isset($this->_localeData) || !array_key_exists($localeId, $this->_localeData))
-		{
-			if (LocaleData::exists($localeId))
-			{
-				$this->_localeData[$localeId] = LocaleData::getInstance($localeId);
-			}
-			else
-			{
-				$this->_localeData[$localeId] = null;
-			}
-		}
-
-		return $this->_localeData[$localeId];
-	}
 }

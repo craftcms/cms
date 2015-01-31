@@ -774,6 +774,8 @@ trait ApplicationTrait
 				return $this->_getCacheDefinition();
 			case 'db':
 				return $this->_getDbDefinition();
+			case 'formatter':
+				return $this->getLocale()->getFormatter();
 			case 'locale':
 				return $this->_getLocaleDefinition();
 		}

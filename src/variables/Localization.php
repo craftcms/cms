@@ -8,7 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\i18n\Locale;
-use craft\app\i18n\LocaleData;
+use yii\helpers\FormatConverter;
 
 /**
  * Localization functions.
@@ -118,11 +118,19 @@ class Localization
 	 *
 	 * @param string|null $localeId
 	 *
-	 * @return LocaleData|null
+	 * @return Locale
 	 */
 	public function getLocaleData($localeId = null)
 	{
-		return \Craft::$app->getI18n()->getLocaleData($localeId);
+		if ($localeId === null)
+		{
+			// Return the current application locale
+			return \Craft::$app->getLocale();
+		}
+		else
+		{
+			return new Locale($localeId);
+		}
 	}
 
 	/**
@@ -132,9 +140,9 @@ class Localization
 	 */
 	public function getDatepickerJsFormat()
 	{
-		$localeData = \Craft::$app->getI18n()->getLocaleData(\Craft::$app->language);
-		$dateFormatter = $localeData->getDateFormatter();
-		return $dateFormatter->getDatepickerJsFormat();
+		$locale = \Craft::$app->getLocale();
+		$format = $locale->getDateFormat(Locale::FORMAT_SHORT);
+		return FormatConverter::convertDatePhpToJui($format);
 	}
 
 	/**
@@ -144,8 +152,8 @@ class Localization
 	 */
 	public function getTimepickerJsFormat()
 	{
-		$localeData = \Craft::$app->getI18n()->getLocaleData(\Craft::$app->language);
-		$dateFormatter = $localeData->getDateFormatter();
-		return $dateFormatter->getTimepickerPhpFormat();
+		$locale = \Craft::$app->getLocale();
+		$format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
+		return FormatConverter::convertDatePhpToJui($format);
 	}
 }
