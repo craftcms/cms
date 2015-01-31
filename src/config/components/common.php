@@ -55,10 +55,6 @@ return [
 			'widget'        => ['subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'WidgetInterface',        'enableForPlugins' => true],
 		]
 	],
-	//'errorHandler' => [
-	//	'class'       => 'craft\app\errors\ErrorHandler',
-	//	'errorAction' => 'templates/renderError'
-	//],
 	'resources' => [
 		'class'     => 'craft\app\services\Resources',
 		'dateParam' => 'd',

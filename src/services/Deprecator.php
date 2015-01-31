@@ -31,7 +31,7 @@ class Deprecator extends Component
 	/**
 	 * @var string
 	 */
-	private static $_tableName = 'deprecationerrors';
+	private static $_tableName = '{{%deprecationerrors}}';
 
 	/**
 	 * @var array

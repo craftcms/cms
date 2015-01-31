@@ -96,8 +96,8 @@ class Command extends \yii\db\Command
 	{
 		if ($includeAuditColumns)
 		{
-			$keyColumns['dateCreated']    = DateTimeHelper::currentTimeForDb();
-			$keyColumns['uid']            = StringHelper::UUID();
+			$updateColumns['dateCreated'] = DateTimeHelper::currentTimeForDb();
+			$updateColumns['uid']         = StringHelper::UUID();
 			$updateColumns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
 		}
 

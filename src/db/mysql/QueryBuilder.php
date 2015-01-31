@@ -194,8 +194,8 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
 		foreach ($columns as $name => $value)
 		{
-			$name = $schema->quoteColumnName($name);
-			$names[] = $name;
+			$qName = $schema->quoteColumnName($name);
+			$names[] = $qName;
 
 			if ($value instanceof Expression)
 			{
@@ -218,7 +218,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 			// Was this an update column?
 			if (isset($updateColumns[$name]))
 			{
-				$updates[] = "$name = $placeholder";
+				$updates[] = "$qName = $placeholder";
 			}
 		}
 
