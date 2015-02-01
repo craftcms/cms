@@ -48,7 +48,7 @@ class I18N extends \yii\i18n\I18N
 	 * @var array All of the known locales
 	 * @see getAllLocales()
 	 */
-	private $_allLocales;
+	private $_allLocaleIds;
 
 	/**
 	 * @var
@@ -98,11 +98,11 @@ class I18N extends \yii\i18n\I18N
 	 */
 	public function getAllLocaleIds()
 	{
-		if ($this->_allLocales === null)
+		if ($this->_allLocaleIds === null)
 		{
 			if ($this->_intlLoaded)
 			{
-				$this->_allLocales = ResourceBundle::getLocales(null);
+				$this->_allLocaleIds = ResourceBundle::getLocales(null);
 			}
 			else
 			{
@@ -117,22 +117,22 @@ class I18N extends \yii\i18n\I18N
 					$localeFiles = array_merge($localeFiles, $customLocaleFiles);
 				}
 
-				$this->_allLocales = [];
+				$this->_allLocaleIds = [];
 
 				foreach ($localeFiles as $file)
 				{
-					$this->_allLocales[] = IOHelper::getFileName($file, false);
+					$this->_allLocaleIds[] = IOHelper::getFileName($file, false);
 				}
 			}
 
 			// Hyphens, not underscores
-			foreach ($this->_allLocales as $i => $locale)
+			foreach ($this->_allLocaleIds as $i => $locale)
 			{
-				$this->_allLocales[$i] = str_replace('_', '-', $locale);
+				$this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
 			}
 		}
 
-		return $this->_allLocales;
+		return $this->_allLocaleIds;
 	}
 
 	/**
