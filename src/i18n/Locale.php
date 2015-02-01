@@ -27,6 +27,51 @@ class Locale extends Object
 	// Constants
 	// =========================================================================
 
+
+	/**
+	 * @var int Positive prefix.
+	 */
+	const ATTR_POSITIVE_PREFIX = 0;
+
+	/**
+	 * @var int Positive suffix.
+	 */
+	const ATTR_POSITIVE_SUFFIX = 1;
+
+	/**
+	 * @var int Negative prefix.
+	 */
+	const ATTR_NEGATIVE_PREFIX = 2;
+
+	/**
+	 * @var int Negative suffix.
+	 */
+	const ATTR_NEGATIVE_SUFFIX = 3;
+
+	/**
+	 * @var int The character used to pad to the format width.
+	 */
+	const ATTR_PADDING_CHARACTER = 4;
+
+	/**
+	 * @var int The ISO currency code.
+	 */
+	const ATTR_CURRENCY_CODE = 5;
+
+	/**
+	 * @var int The default rule set. This is only available with rule-based
+	 * formatters.
+	 */
+	const ATTR_DEFAULT_RULESET = 6;
+
+	/**
+	 * @var int The public rule sets. This is only available with rule-based
+	 * formatters. This is a read-only attribute. The public rulesets are
+	 * returned as a single string, with each ruleset name delimited by ';'
+	 * (semicolon).
+	 */
+	const ATTR_PUBLIC_RULESETS = 7;
+
 	/**
 	 * @var int The decimal separator.
 	 */
@@ -270,6 +315,35 @@ class Locale extends Object
 		}
 
 		return $this->_formatter;
+	}
+
+	/**
+	 * Returns a text attribute used by this locale.
+	 *
+	 * @param int $attribute The attribute to return. Values: Locale::
+	 * @return string The attribute.
+	 */
+	public function getTextAttribute($attribute)
+	{
+		if ($this->_intlLoaded)
+		{
+			$formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
+			return $formatter->getTextAttribute($attribute);
+		}
+		else
+		{
+			switch ($attribute)
+			{
+				case static::ATTR_POSITIVE_PREFIX: return $this->_data['textAttributes']['positivePrefix'];
+				case static::ATTR_POSITIVE_SUFFIX: return $this->_data['textAttributes']['positiveSuffix'];
+				case static::ATTR_NEGATIVE_PREFIX: return $this->_data['textAttributes']['negativePrefix'];
+				case static::ATTR_NEGATIVE_SUFFIX: return $this->_data['textAttributes']['negativeSuffix'];
+				case static::ATTR_PADDING_CHARACTER: return $this->_data['textAttributes']['paddingCharacter'];
+				case static::ATTR_CURRENCY_CODE: return $this->_data['textAttributes']['currencyCode'];
+				case static::ATTR_DEFAULT_RULESET: return $this->_data['textAttributes']['defaultRuleset'];
+				case static::ATTR_PUBLIC_RULESETS: return $this->_data['textAttributes']['publicRulesets'];
+			}
+		}
 	}
 
 	/**

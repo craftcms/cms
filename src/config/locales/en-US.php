@@ -1,6 +1,16 @@
 <?php
 
 return [
+	'textAttributes' => [
+		'positivePrefix' => '',
+		'positiveSuffix' => '',
+		'negativePrefix' => '-',
+		'negativeSuffix' => '',
+		'paddingCharacter' => '*',
+		'currencyCode' => '',
+		'defaultRuleset' => '',
+		'publicRulesets' => '',
+	],
 	'numberSymbols' => [
 		'decimalSeparator' => '.',
 		'groupingSeparator' => ',',
@@ -21,7 +31,6 @@ return [
 		'significantDigit' => '@',
 		'monetaryGroupingSeparator' => ',',
 	],
-
 	'dateFormats' => [
 		'short' => [
 			'date' => 'n/j/y',
