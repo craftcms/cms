@@ -11,6 +11,7 @@ use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\LocalizationHelper;
 use craft\app\helpers\ModelHelper;
+use craft\app\i18n\Locale;
 
 /**
  * Number fieldtype
@@ -73,9 +74,13 @@ class Number extends BaseFieldType
 			$value = $this->settings->min;
 		}
 
+		$decimals = $this->getSettings()->decimals;
+		$decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+		$value = number_format($value, $decimals, $decimalSeparator, '');
+
 		return Craft::$app->templates->render('_includes/forms/text', [
 			'name'  => $name,
-			'value' => Craft::$app->numberFormatter->formatDecimal($value, false),
+			'value' => $value,
 			'size'  => 5
 		]);
 	}

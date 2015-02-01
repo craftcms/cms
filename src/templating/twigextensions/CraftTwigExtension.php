@@ -70,7 +70,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$markdownFilter  = new \Twig_Filter_Method($this, 'markdownFilter');
 
 		return [
-			'currency'           => new \Twig_Filter_Function('\Craft::$app->numberFormatter->formatCurrency'),
+			'currency'           => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asCurrency'),
 			'date'               => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
 			'datetime'           => new \Twig_Filter_Function('\Craft::$app->dateFormatter->formatDateTime'),
 			'filesize'           => new \Twig_Filter_Function('\Craft::$app->getFormatter()->formatSize'),
@@ -86,9 +86,9 @@ class CraftTwigExtension extends \Twig_Extension
 			'ns'                 => $namespaceFilter,
 			'namespaceInputName' => new \Twig_Filter_Function('\Craft::$app->templates->namespaceInputName'),
 			'namespaceInputId'   => new \Twig_Filter_Function('\Craft::$app->templates->namespaceInputId'),
-			'number'             => new \Twig_Filter_Function('\Craft::$app->numberFormatter->formatDecimal'),
+			'number'             => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDecimal'),
 			'parseRefs'          => new \Twig_Filter_Method($this, 'parseRefsFilter'),
-			'percentage'         => new \Twig_Filter_Function('\Craft::$app->numberFormatter->formatPercentage'),
+			'percentage'         => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asPercent'),
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,

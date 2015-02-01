@@ -149,16 +149,17 @@ class AppController extends Controller
 		}
 
 		$editions = [];
+		$formatter = Craft::$app->getFormatter();
 
 		foreach ($etResponse->data as $edition => $info)
 		{
 			$editions[$edition]['price']          = $info['price'];
-			$editions[$edition]['formattedPrice'] = Craft::$app->numberFormatter->formatCurrency($info['price'], 'USD', true);
+			$editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
 
 			if (isset($info['salePrice']) && $info['salePrice'] < $info['price'])
 			{
 				$editions[$edition]['salePrice']          = $info['salePrice'];
-				$editions[$edition]['formattedSalePrice'] = Craft::$app->numberFormatter->formatCurrency($info['salePrice'], 'USD', true);
+				$editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'], 'USD', [], [], true);
 			}
 			else
 			{
