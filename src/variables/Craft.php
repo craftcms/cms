@@ -347,10 +347,10 @@ class Craft extends Object
 	}
 
 	/**
-	 * @return Localization
+	 * @return I18N
 	 */
 	public function i18n()
 	{
-		return new Localization();
+		return new I18N();
 	}
 }

@@ -16,7 +16,7 @@ use yii\helpers\FormatConverter;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Localization
+class I18N
 {
 	// Public Methods
 	// =========================================================================

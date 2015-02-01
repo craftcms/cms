@@ -20,7 +20,7 @@ return [
 	'fields'               => 'craft\app\services\Fields',
 	'fileCache'            => 'craft\app\cache\FileCache',
 	'globals'              => 'craft\app\services\Globals',
-	//'i18n'                 => 'craft\app\services\Localization',
+	'i18n'                 => 'craft\app\i18n\I18N',
 	'install'              => 'craft\app\services\Install',
 	'images'               => 'craft\app\services\Images',
 	'matrix'               => 'craft\app\services\Matrix',

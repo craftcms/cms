@@ -43,11 +43,10 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
  * @property \craft\app\i18n\Formatter            $formatter        The formatter component.
  * @property \craft\app\services\Globals          $globals          The globals service.
- * @property \craft\app\services\Localization     $i18n             The internationalization (i18n) component.
+ * @property \craft\app\i18n\I18N                 $i18n             The internationalization (i18n) component.
  * @property \craft\app\services\Images           $images           The images service.
  * @property \craft\app\services\Install          $install          The install service.
  * @property \craft\app\i18n\Locale               $locale           The locale component.
- * @property \craft\app\services\Localization     $localization     The localization service.
  * @property \craft\app\services\Matrix           $matrix           The matrix service.
  * @property \craft\app\services\Migrations       $migrations       The migrations service.
  * @property \craft\app\services\Path             $path             The path service.
@@ -76,7 +75,7 @@ use yii\web\NotFoundHttpException;
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
  * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
- * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
+ * @method \craft\app\i18n\I18N                   getI18n()         Returns the internationalization (i18n) component.
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\app\services\Security           getSecurity()     Returns the security component.
  * @method Session                                getSession()      Returns the session component.
