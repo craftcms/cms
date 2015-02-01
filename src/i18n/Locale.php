@@ -177,8 +177,8 @@ class Locale extends Object
 		if (!$this->_intlLoaded)
 		{
 			// Load the locale data
-			$appDataPath = Craft::$app->path->getAppPath().'/config/locales/'.$this->id;
-			$customDataPath = Craft::$app->path->getConfigPath().'/locales/'.$this->id;
+			$appDataPath = Craft::$app->path->getAppPath().'/config/locales/'.$this->id.'.php';
+			$customDataPath = Craft::$app->path->getConfigPath().'/locales/'.$this->id.'.php';
 
 			if (IOHelper::fileExists($appDataPath))
 			{
