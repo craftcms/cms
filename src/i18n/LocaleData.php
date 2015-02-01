@@ -8,7 +8,6 @@
 namespace craft\app\i18n;
 
 use Craft;
-use craft\app\dates\DateFormatter;
 use craft\app\helpers\IOHelper;
 
 /**
@@ -78,19 +77,6 @@ class LocaleData extends \CLocale
 	{
 		$id = $this->getLanguageID($id);
 		return $this->getLocaleDisplayName($id, 'languages');
-	}
-
-	/**
-	 * @return DateFormatter
-	 */
-	public function getDateFormatter()
-	{
-		if ($this->_dateFormatter === null)
-		{
-			$this->_dateFormatter = new DateFormatter($this);
-		}
-
-		return $this->_dateFormatter;
 	}
 
 	/**
