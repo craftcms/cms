@@ -41,6 +41,7 @@ use yii\web\NotFoundHttpException;
  * @property \craft\app\services\Feeds            $feeds            The feeds service.
  * @property \craft\app\services\Fields           $fields           The fields service.
  * @property \craft\app\cache\FileCache           $fileCache        [[\craft\app\cache\FileCache File caching]].
+ * @property \craft\app\i18n\Formatter            $formatter        The formatter component.
  * @property \craft\app\services\Globals          $globals          The globals service.
  * @property \craft\app\services\Localization     $i18n             The internationalization (i18n) component.
  * @property \craft\app\services\Images           $images           The images service.
@@ -74,6 +75,7 @@ use yii\web\NotFoundHttpException;
  * @property User                                 $user             The user component.
  * @method \craft\app\db\Connection               getDb()           Returns the database connection component.
  * @method \craft\app\errors\ErrorHandler         getErrorHandler() Returns the error handler component.
+ * @method \craft\app\i18n\Formatter              getFormatter()    Returns the formatter component.
  * @method \craft\app\services\Localization       getI18n()         Returns the internationalization (i18n) component.
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\app\services\Security           getSecurity()     Returns the security component.

@@ -12,7 +12,6 @@ use IntlDateFormatter;
 use NumberFormatter;
 use yii\base\InvalidParamException;
 use yii\base\Object;
-use yii\i18n\Formatter;
 
 /**
  * Stores locale info.
@@ -309,6 +308,7 @@ class Locale extends Object
 				$config['datetimeFormat']    = 'php:'.$this->getDateTimeFormat();
 				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
 				$config['currencyCode']      = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
+				$config['currencySymbol']    = $this->getNumberSymbol(static::SYMBOL_CURRENCY);
 			}
 
 			$this->_formatter = new Formatter($config);
