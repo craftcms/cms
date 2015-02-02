@@ -459,10 +459,8 @@ class Locale extends Object
 		if ($this->_intlLoaded)
 		{
 			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
-			$formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 0);
-			$formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
-			$formattedCurrency = $formatter->formatCurrency(0, $currency);
-			return trim(str_replace('0', '', $formattedCurrency));
+			$value = $formatter->formatCurrency(1, $currency);
+			return trim($value, '1.0');
 		}
 		else if (isset($this->_data['currencySymbols'][$currency]))
 		{
