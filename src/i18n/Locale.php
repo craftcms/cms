@@ -8,6 +8,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\IOHelper;
+use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
 use yii\base\InvalidParamException;
@@ -200,7 +201,7 @@ class Locale extends Object
 	private $_data;
 
 	/**
-	 * @var The locale's formatter.
+	 * @var Formatter The locale's formatter.
 	 */
 	private $_formatter;
 
@@ -515,10 +516,10 @@ class Locale extends Object
 
 			switch ($length)
 			{
-				case static::FORMAT_SHORT:  return $this->_data['dateFormats']['short'][$which];
-				case static::FORMAT_MEDIUM: return $this->_data['dateFormats']['medium'][$which];
-				case static::FORMAT_LONG:   return $this->_data['dateFormats']['long'][$which];
-				case static::FORMAT_FULL:   return $this->_data['dateFormats']['full'][$which];
+				case static::FORMAT_SHORT:  return $this->_data['dateTimeFormats']['short'][$which]; break;
+				case static::FORMAT_MEDIUM: return $this->_data['dateTimeFormats']['medium'][$which]; break;
+				case static::FORMAT_LONG:   return $this->_data['dateTimeFormats']['long'][$which]; break;
+				case static::FORMAT_FULL:   return $this->_data['dateTimeFormats']['full'][$which]; break;
 			}
 		}
 	}

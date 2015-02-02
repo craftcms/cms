@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'dateFormats' => [
+	'dateTimeFormats' => [
 		'short' => [
 			'date' => 'n/j/y',
 			'time' => 'H:i',
