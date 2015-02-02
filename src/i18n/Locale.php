@@ -303,9 +303,7 @@ class Locale extends Object
 
 			if (!$this->_intlLoaded)
 			{
-				$config['dateFormat']        = 'php:'.$this->getDateFormat();
-				$config['timeFormat']        = 'php:'.$this->getTimeFormat();
-				$config['datetimeFormat']    = 'php:'.$this->getDateTimeFormat();
+				$config['dateTimeFormats']   = $this->_data['dateTimeFormats'];
 				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
 				$config['currencyCode']      = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
 				$config['currencySymbols']   = $this->_data['currencySymbols'];

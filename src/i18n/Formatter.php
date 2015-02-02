@@ -27,6 +27,11 @@ class Formatter extends \yii\i18n\Formatter
 	public $currencySymbols;
 
 	/**
+	 * @var array The locale’s date/time formats.
+	 */
+	public $dateTimeFormats;
+
+	/**
 	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
 	 */
 	private $_intlLoaded = false;
@@ -42,6 +47,78 @@ class Formatter extends \yii\i18n\Formatter
 		parent::init();
 
 		$this->_intlLoaded = extension_loaded('intl');
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param integer|string|DateTime $value
+	 * @param string $format
+	 * @return string
+	 * @throws InvalidParamException
+	 * @throws InvalidConfigException
+	 */
+	public function asDate($value, $format = null)
+	{
+		if ($format === null)
+		{
+			$format = $this->dateFormat;
+		}
+
+		if (isset($this->dateTimeFormats[$format]['date']))
+		{
+			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+		}
+
+		return parent::asDate($value, $format);
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param integer|string|DateTime $value
+	 * @param string $format
+	 * @return string
+	 * @throws InvalidParamException
+	 * @throws InvalidConfigException
+	 */
+	public function asTime($value, $format = null)
+	{
+		if ($format === null)
+		{
+			$format = $this->timeFormat;
+		}
+
+		if (isset($this->dateTimeFormats[$format]['time']))
+		{
+			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+		}
+
+		return parent::asTime($value, $format);
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param integer|string|DateTime $value
+	 * @param string $format
+	 * @return string
+	 * @throws InvalidParamException
+	 * @throws InvalidConfigException
+	 */
+	public function asDatetime($value, $format = null)
+	{
+		if ($format === null)
+		{
+			$format = $this->datetimeFormat;
+		}
+
+		if (isset($this->dateTimeFormats[$format]['datetime']))
+		{
+			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+		}
+
+		return parent::asDatetime($value, $format);
 	}
 
 	/**
