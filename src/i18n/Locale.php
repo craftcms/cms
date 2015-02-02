@@ -185,7 +185,7 @@ class Locale extends Object
 	// =========================================================================
 
 	/**
-	 * @var The locale ID.
+	 * @var string The locale ID.
 	 */
 	public $id;
 
@@ -210,8 +210,8 @@ class Locale extends Object
 	/**
 	 * Constructor.
 	 *
-	 * @param int   $id     The locale ID.
-	 * @param array $config Name-value pairs that will be used to initialize the object properties.
+	 * @param string $id     The locale ID.
+	 * @param array  $config Name-value pairs that will be used to initialize the object properties.
 	 */
 	public function __construct($id, $config = [])
 	{
