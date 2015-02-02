@@ -308,7 +308,7 @@ class Locale extends Object
 				$config['datetimeFormat']    = 'php:'.$this->getDateTimeFormat();
 				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
 				$config['currencyCode']      = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
-				$config['currencySymbol']    = $this->getNumberSymbol(static::SYMBOL_CURRENCY);
+				$config['currencySymbols']   = $this->_data['currencySymbols'];
 			}
 
 			$this->_formatter = new Formatter($config);
@@ -386,6 +386,32 @@ class Locale extends Object
 				case static::SYMBOL_SIGNIFICANT_DIGIT: return $this->_data['numberSymbols']['significantDigit'];
 				case static::SYMBOL_MONETARY_GROUPING_SEPARATOR: return $this->_data['numberSymbols']['monetaryGroupingSeparator'];
 			}
+		}
+	}
+
+	/**
+	 * Returns this locale’s symbol for a given currency.
+	 *
+	 * @param string $currency The 3-letter ISO 4217 currency code indicating the currency to use.
+	 * @return string The currency symbol.
+	 */
+	public function getCurrencySymbol($currency)
+	{
+		if ($this->_intlLoaded)
+		{
+			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
+			$formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 0);
+			$formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
+			$formattedCurrency = $formatter->formatCurrency(0, $currency);
+			return trim(str_replace('0', '', $formattedCurrency));
+		}
+		else if (isset($this->_data['currencySymbols'][$currency]))
+		{
+			return $this->_data['currencySymbols'][$currency];
+		}
+		else
+		{
+			return $currency;
 		}
 	}
 

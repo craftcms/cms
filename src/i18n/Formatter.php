@@ -22,12 +22,12 @@ class Formatter extends \yii\i18n\Formatter
 	// =========================================================================
 
 	/**
-     * @var string The locale's primary currency symbol.
+     * @var array The locale's currency symbols.
      */
-	public $currencySymbol;
+	public $currencySymbols;
 
 	/**
-	 * @var boolean whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
 	 */
 	private $_intlLoaded = false;
 
@@ -94,10 +94,10 @@ class Formatter extends \yii\i18n\Formatter
 				$currency = $this->currencyCode;
 			}
 
-			// Use the currency symbol if the currency is the same as the locale's
-			if ($currency === $this->currencyCode && $this->currencySymbol)
+			// Do we have a localized symbol for this currency?
+			if (isset($this->currencySymbols[$currency]))
 			{
-				$currency = $this->currencySymbol;
+				$currency = $this->currencySymbols[$currency];
 			}
 
 			$decimals = $omitDecimals ? 0 : 2;
