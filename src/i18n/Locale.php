@@ -165,6 +165,11 @@ class Locale extends Object
 	/**
 	 * @var int The short date/time format.
 	 */
+	const FORMAT_ABBREVIATED = 4;
+
+	/**
+	 * @var int The short date/time format.
+	 */
 	const FORMAT_SHORT = 3;
 
 	/**
@@ -351,6 +356,77 @@ class Locale extends Object
 	public function getDateTimeFormat($length = null)
 	{
 		return $this->_getDateTimeFormat($length, true, true);
+	}
+
+	/**
+	 * Returns a localized month name.
+	 *
+	 * @param int $month  The month to return (1-12).
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return string The localized month name.
+	 */
+	public function getMonthName($month, $length)
+	{
+		if ($this->_intlLoaded)
+		{
+			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern('LLLLL'); break; // S
+				case static::FORMAT_SHORT:
+				case static::FORMAT_MEDIUM:      $formatter->setPattern('LLL'); break;   // Sep
+				default:                         $formatter->setPattern('LLLL'); break;  // September
+			}
+
+			return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
+		}
+		else
+		{
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: return $this->_data['monthNames']['abbreviated'][$month-1]; break; // S
+				case static::FORMAT_SHORT:
+				case static::FORMAT_MEDIUM:      return $this->_data['monthNames']['medium'][$month-1]; break;      // Sep
+				default:                         return $this->_data['monthNames']['full'][$month-1]; break;        // September
+			}
+		}
+	}
+
+	/**
+	 * Returns a localized weekday name.
+	 *
+	 * @param int $day    The weekday to return (1-7), where 1 stands for Sunday.
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+	 * @return string The localized weekday name.
+	 */
+	public function getWeekdayName($day, $length)
+	{
+		if ($this->_intlLoaded)
+		{
+			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern('ccccc'); break;  // T
+				case static::FORMAT_SHORT:       $formatter->setPattern('cccccc'); break; // Tu
+				case static::FORMAT_MEDIUM:      $formatter->setPattern('ccc'); break;    // Tue
+				default:                         $formatter->setPattern('cccc'); break;   // Tuesday
+			}
+
+			// Jan 1, 1970 was a Thursday
+			return $formatter->format(new DateTime('1970-01-'.sprintf("%02d", $day+3)));
+		}
+		else
+		{
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: return $this->_data['monthNames']['abbreviated'][$day-1]; break; // T
+				case static::FORMAT_SHORT:       return $this->_data['monthNames']['short'][$day-1]; break; // Tu
+				case static::FORMAT_MEDIUM:      return $this->_data['monthNames']['medium'][$day-1]; break;      // Tue
+				default:                         return $this->_data['monthNames']['full'][$day-1]; break;        // Tuesday
+			}
+		}
 	}
 
 	/**
