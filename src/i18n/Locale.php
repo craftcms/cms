@@ -365,8 +365,13 @@ class Locale extends Object
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
 	 * @return string The localized month name.
 	 */
-	public function getMonthName($month, $length)
+	public function getMonthName($month, $length = null)
 	{
+		if ($length === null)
+		{
+			$length = static::FORMAT_FULL;
+		}
+
 		if ($this->_intlLoaded)
 		{
 			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
@@ -400,8 +405,13 @@ class Locale extends Object
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
 	 * @return string The localized weekday name.
 	 */
-	public function getWeekdayName($day, $length)
+	public function getWeekdayName($day, $length = null)
 	{
+		if ($length === null)
+		{
+			$length = static::FORMAT_FULL;
+		}
+
 		if ($this->_intlLoaded)
 		{
 			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
