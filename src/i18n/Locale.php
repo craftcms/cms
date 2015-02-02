@@ -495,7 +495,7 @@ class Locale extends Object
 		{
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
-			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType, Craft::$app->timeZone);
+			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
 			return $formatter->getPattern();
 		}
 		else
