@@ -14,6 +14,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\variables\Craft as CraftVariable;
+use yii\helpers\Markdown;
 
 /**
  * Class CraftTwigExtension
@@ -339,7 +340,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 */
 	public function markdownFilter($str)
 	{
-		$html = StringHelper::parseMarkdown($str);
+		$html = Markdown::process($str);
 		return TemplateHelper::getRaw($html);
 	}
 

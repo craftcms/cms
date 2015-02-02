@@ -732,18 +732,6 @@ class StringHelper extends \yii\helpers\StringHelper
 		return StaticStringy::toAscii($str);
 	}
 
-	/**
-	 * Runs a string through Markdown.
-	 *
-	 * @param string $str
-	 *
-	 * @return string
-	 */
-	public static function parseMarkdown($str)
-	{
-		return (new \Parsedown())->text($str);
-	}
-
 	// Encodings
 	// -----------------------------------------------------------------------
 
