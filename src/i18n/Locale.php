@@ -304,10 +304,10 @@ class Locale extends Object
 			if (!$this->_intlLoaded)
 			{
 				$config['dateTimeFormats']   = $this->_data['dateTimeFormats'];
+				$config['currencySymbols']   = $this->_data['currencySymbols'];
 				$config['decimalSeparator']  = $this->getNumberSymbol(static::SYMBOL_DECIMAL_SEPARATOR);
 				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
 				$config['currencyCode']      = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
-				$config['currencySymbols']   = $this->_data['currencySymbols'];
 			}
 
 			$this->_formatter = new Formatter($config);
@@ -315,6 +315,65 @@ class Locale extends Object
 
 		return $this->_formatter;
 	}
+
+	// Date/Time Formatting
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the localized PHP date format.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+	 * @return string The localized PHP date format.
+	 */
+	public function getDateFormat($length = null)
+	{
+		return $this->_getDateTimeFormat($length, true, false);
+	}
+
+	/**
+	 * Returns the localized PHP time format.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+	 * @return string The localized PHP time format.
+	 */
+	public function getTimeFormat($length = null)
+	{
+		return $this->_getDateTimeFormat($length, false, true);
+	}
+
+	/**
+	 * Returns the localized PHP date + time format.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
+	 * @return string The localized PHP date + time format.
+	 */
+	public function getDateTimeFormat($length = null)
+	{
+		return $this->_getDateTimeFormat($length, true, true);
+	}
+
+	/**
+	 * Returns the "AM" name for this locale.
+	 *
+	 * @return string The "AM" name.
+	 */
+	public function getAMName()
+	{
+		return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+	}
+
+	/**
+	 * Returns the "PM" name for this locale.
+	 *
+	 * @return string The "PM" name.
+	 */
+	public function getPMName()
+	{
+		return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+	}
+
+	// Text Attributes and Symbols
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a text attribute used by this locale.
@@ -414,58 +473,8 @@ class Locale extends Object
 		}
 	}
 
-	/**
-	 * Returns the localized PHP date format.
-	 *
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP date format.
-	 */
-	public function getDateFormat($length = null)
-	{
-		return $this->_getDateTimeFormat($length, true, false);
-	}
-
-	/**
-	 * Returns the localized PHP time format.
-	 *
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP time format.
-	 */
-	public function getTimeFormat($length = null)
-	{
-		return $this->_getDateTimeFormat($length, false, true);
-	}
-
-	/**
-	 * Returns the localized PHP date + time format.
-	 *
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP date + time format.
-	 */
-	public function getDateTimeFormat($length = null)
-	{
-		return $this->_getDateTimeFormat($length, true, true);
-	}
-
-	/**
-	 * Returns the "AM" name for this locale.
-	 *
-	 * @return string The "AM" name.
-	 */
-	public function getAMName()
-	{
-		return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
-	}
-
-	/**
-	 * Returns the "PM" name for this locale.
-	 *
-	 * @return string The "PM" name.
-	 */
-	public function getPMName()
-	{
-		return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
-	}
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a localized PHP date/time format.

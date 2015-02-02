@@ -22,14 +22,14 @@ class Formatter extends \yii\i18n\Formatter
 	// =========================================================================
 
 	/**
-     * @var array The locale's currency symbols.
-     */
-	public $currencySymbols;
-
-	/**
 	 * @var array The locale’s date/time formats.
 	 */
 	public $dateTimeFormats;
+
+	/**
+     * @var array The locale's currency symbols.
+     */
+	public $currencySymbols;
 
 	/**
 	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
