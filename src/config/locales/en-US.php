@@ -4,23 +4,23 @@ return [
 	'dateTimeFormats' => [
 		'short' => [
 			'date' => 'n/j/y',
-			'time' => 'H:i',
-			'datetime' => 'n/j/y H:i',
+			'time' => 'g:i a',
+			'datetime' => 'n/j/y, g:i a',
 		],
 		'medium' => [
 			'date' => 'M j, Y',
-			'time' => 'g:i:s A',
-			'datetime' => 'M j, Y g:i:s A',
+			'time' => 'g:i:s a',
+			'datetime' => 'M j, Y, g:i:s a',
 		],
 		'long' => [
 			'date' => 'F j, Y',
-			'time' => 'g:i:sA',
-			'datetime' => 'F j, Y g:i:sA',
+			'time' => 'g:i:s a T',
+			'datetime' => 'F j, Y \'at\' g:i:s a T',
 		],
 		'full' => [
 			'date' => 'l, F j, Y',
-			'time' => 'g:i:sA T',
-			'datetime' => 'l, F j, Y g:i:sA T',
+			'time' => 'g:i:s a T',
+			'datetime' => 'l, F j, Y \'at\' g:i:s a T',
 		],
 	],
 	'textAttributes' => [
@@ -54,7 +54,7 @@ return [
 		'monetaryGroupingSeparator' => ',',
 	],
 	'currencySymbols' => [
-		'AUD' => 'AU$',
+		'AUD' => 'A$',
 		'BRL' => 'R$',
 		'CAD' => 'CA$',
 		'CNY' => 'CN¥',
