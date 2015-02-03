@@ -23,6 +23,8 @@ return [
 			'datetime' => 'l, F j, Y \'at\' g:i:s a T',
 		],
 	],
+	'amName' => 'AM',
+	'pmName' => 'PM',
 	'textAttributes' => [
 		'positivePrefix' => '',
 		'positiveSuffix' => '',

@@ -482,7 +482,14 @@ class Locale extends Object
 	 */
 	public function getAMName()
 	{
-		return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+		if ($this->_intlLoaded)
+		{
+			return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+		}
+		else
+		{
+			return $this->_data['amName'];
+		}
 	}
 
 	/**
@@ -492,7 +499,14 @@ class Locale extends Object
 	 */
 	public function getPMName()
 	{
-		return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+		if ($this->_intlLoaded)
+		{
+			return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+		}
+		else
+		{
+			return $this->_data['pmName'];
+		}
 	}
 
 	// Text Attributes and Symbols
