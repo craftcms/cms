@@ -429,10 +429,10 @@ class Locale extends Object
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Returns the localized PHP date format.
+	 * Returns the localized ICU date format.
 	 *
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP date format.
+	 * @return string The localized ICU date format.
 	 */
 	public function getDateFormat($length = null)
 	{
@@ -440,10 +440,10 @@ class Locale extends Object
 	}
 
 	/**
-	 * Returns the localized PHP time format.
+	 * Returns the localized ICU time format.
 	 *
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP time format.
+	 * @return string The localized ICU time format.
 	 */
 	public function getTimeFormat($length = null)
 	{
@@ -451,10 +451,10 @@ class Locale extends Object
 	}
 
 	/**
-	 * Returns the localized PHP date + time format.
+	 * Returns the localized ICU date + time format.
 	 *
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
-	 * @return string The localized PHP date + time format.
+	 * @return string The localized ICU date + time format.
 	 */
 	public function getDateTimeFormat($length = null)
 	{
@@ -726,12 +726,12 @@ class Locale extends Object
 	// =========================================================================
 
 	/**
-	 * Returns a localized PHP date/time format.
+	 * Returns a localized ICU date/time format.
 	 *
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_SHORT, ::MEDIUM, ::LONG, ::FULL
 	 * @param boolean $withDate Whether the date should be included in the format.
 	 * @param boolean $withTime Whether the time should be included in the format.
-	 * @return string The PHP date/time format
+	 * @return string The ICU date/time format
 	 */
 	private function _getDateTimeFormat($length, $withDate, $withTime)
 	{
@@ -745,8 +745,7 @@ class Locale extends Object
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
 			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
-			$pattern = $formatter->getPattern();
-			return FormatConverter::convertDateIcuToPhp($pattern);
+			return $formatter->getPattern();
 		}
 		else
 		{

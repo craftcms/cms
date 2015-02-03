@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'j‏/n‏/Y',
-			'time' => 'g:i a',
-			'datetime' => 'j‏/n‏/Y g:i a',
+			'date' => 'd‏/M‏/y',
+			'time' => 'h:mm a',
+			'datetime' => 'd‏/M‏/y h:mm a',
 		],
 		'medium' => [
-			'date' => 'd‏/m‏/Y',
-			'time' => 'g:i:s a',
-			'datetime' => 'd‏/m‏/Y g:i:s a',
+			'date' => 'dd‏/MM‏/y',
+			'time' => 'h:mm:ss a',
+			'datetime' => 'dd‏/MM‏/y h:mm:ss a',
 		],
 		'long' => [
-			'date' => 'j F، Y',
-			'time' => 'g:i:s a T',
-			'datetime' => 'j F، Y g:i:s a T',
+			'date' => 'd MMMM، y',
+			'time' => 'h:mm:ss a z',
+			'datetime' => 'd MMMM، y h:mm:ss a z',
 		],
 		'full' => [
-			'date' => 'l، j F، Y',
-			'time' => 'g:i:s a T',
-			'datetime' => 'l، j F، Y g:i:s a T',
+			'date' => 'EEEE، d MMMM، y',
+			'time' => 'h:mm:ss a zzzz',
+			'datetime' => 'EEEE، d MMMM، y h:mm:ss a zzzz',
 		],
 	],
 	'amName' => 'ص',

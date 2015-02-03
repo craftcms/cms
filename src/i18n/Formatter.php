@@ -91,7 +91,7 @@ class Formatter extends \yii\i18n\Formatter
 
 		if (isset($this->dateTimeFormats[$format]['date']))
 		{
-			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+			$format = $this->dateTimeFormats[$format]['date'];
 		}
 
 		if ($this->_intlLoaded)
@@ -122,7 +122,7 @@ class Formatter extends \yii\i18n\Formatter
 
 		if (isset($this->dateTimeFormats[$format]['time']))
 		{
-			$format = 'php:'.$this->dateTimeFormats[$format]['time'];
+			$format = $this->dateTimeFormats[$format]['time'];
 		}
 
 		if ($this->_intlLoaded)
@@ -153,7 +153,7 @@ class Formatter extends \yii\i18n\Formatter
 
 		if (isset($this->dateTimeFormats[$format]['datetime']))
 		{
-			$format = 'php:'.$this->dateTimeFormats[$format]['datetime'];
+			$format = $this->dateTimeFormats[$format]['datetime'];
 		}
 
 		if ($this->_intlLoaded)

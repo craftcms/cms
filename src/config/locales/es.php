@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'j/n/y',
-			'time' => 'G:i',
-			'datetime' => 'j/n/y G:i',
+			'date' => 'd/M/yy',
+			'time' => 'H:mm',
+			'datetime' => 'd/M/yy H:mm',
 		],
 		'medium' => [
-			'date' => 'j/n/Y',
-			'time' => 'G:i:s',
-			'datetime' => 'j/n/Y G:i:s',
+			'date' => 'd/M/y',
+			'time' => 'H:mm:ss',
+			'datetime' => 'd/M/y H:mm:ss',
 		],
 		'long' => [
-			'date' => 'j \d\e F \d\e Y',
-			'time' => 'G:i:s T',
-			'datetime' => 'j \d\e F \d\e Y, G:i:s T',
+			'date' => 'd \'de\' MMMM \'de\' y',
+			'time' => 'H:mm:ss z',
+			'datetime' => 'd \'de\' MMMM \'de\' y, H:mm:ss z',
 		],
 		'full' => [
-			'date' => 'l, j \d\e F \d\e Y',
-			'time' => 'G:i:s (T)',
-			'datetime' => 'l, j \d\e F \d\e Y, G:i:s (T)',
+			'date' => 'EEEE, d \'de\' MMMM \'de\' y',
+			'time' => 'H:mm:ss (zzzz)',
+			'datetime' => 'EEEE, d \'de\' MMMM \'de\' y, H:mm:ss (zzzz)',
 		],
 	],
 	'amName' => 'a. m.',

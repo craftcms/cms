@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'd.m.y',
-			'time' => 'G:i',
-			'datetime' => 'd.m.y, G:i',
+			'date' => 'dd.MM.yy',
+			'time' => 'H:mm',
+			'datetime' => 'dd.MM.yy, H:mm',
 		],
 		'medium' => [
-			'date' => 'd M Y \–\≥.',
-			'time' => 'G:i:s',
-			'datetime' => 'd M Y \–\≥., G:i:s',
+			'date' => 'dd MMM y \'–≥\'.',
+			'time' => 'H:mm:ss',
+			'datetime' => 'dd MMM y \'–≥\'., H:mm:ss',
 		],
 		'long' => [
-			'date' => 'j F Y \–\≥.',
-			'time' => 'G:i:s T',
-			'datetime' => 'j F Y \–\≥., G:i:s T',
+			'date' => 'd MMMM y \'–≥\'.',
+			'time' => 'H:mm:ss z',
+			'datetime' => 'd MMMM y \'–≥\'., H:mm:ss z',
 		],
 		'full' => [
-			'date' => 'l, j F Y \–\≥.',
-			'time' => 'G:i:s T',
-			'datetime' => 'l, j F Y \–\≥., G:i:s T',
+			'date' => 'EEEE, d MMMM y \'–≥\'.',
+			'time' => 'H:mm:ss zzzz',
+			'datetime' => 'EEEE, d MMMM y \'–≥\'., H:mm:ss zzzz',
 		],
 	],
 	'amName' => '–¥–æ –ø–æ–ª—É–¥–Ω—è',

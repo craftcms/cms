@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'Y/m/d',
-			'time' => 'G:i',
-			'datetime' => 'Y/m/d G:i',
+			'date' => 'y/MM/dd',
+			'time' => 'H:mm',
+			'datetime' => 'y/MM/dd H:mm',
 		],
 		'medium' => [
-			'date' => 'Y/m/d',
-			'time' => 'G:i:s',
-			'datetime' => 'Y/m/d G:i:s',
+			'date' => 'y/MM/dd',
+			'time' => 'H:mm:ss',
+			'datetime' => 'y/MM/dd H:mm:ss',
 		],
 		'long' => [
-			'date' => 'Y年n月j日',
-			'time' => 'G:i:s T',
-			'datetime' => 'Y年n月j日 G:i:s T',
+			'date' => 'y年M月d日',
+			'time' => 'H:mm:ss z',
+			'datetime' => 'y年M月d日 H:mm:ss z',
 		],
 		'full' => [
-			'date' => 'Y年n月j日l',
-			'time' => 'G時i分s秒 T',
-			'datetime' => 'Y年n月j日l G時i分s秒 T',
+			'date' => 'y年M月d日EEEE',
+			'time' => 'H時mm分ss秒 zzzz',
+			'datetime' => 'y年M月d日EEEE H時mm分ss秒 zzzz',
 		],
 	],
 	'amName' => '午前',

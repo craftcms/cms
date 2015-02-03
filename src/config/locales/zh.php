@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'y/n/j',
-			'time' => 'ag:i',
-			'datetime' => 'y/n/j ag:i',
+			'date' => 'yy/M/d',
+			'time' => 'ah:mm',
+			'datetime' => 'yy/M/d ah:mm',
 		],
 		'medium' => [
-			'date' => 'Y年n月j日',
-			'time' => 'ag:i:s',
-			'datetime' => 'Y年n月j日 ag:i:s',
+			'date' => 'y年M月d日',
+			'time' => 'ah:mm:ss',
+			'datetime' => 'y年M月d日 ah:mm:ss',
 		],
 		'long' => [
-			'date' => 'Y年n月j日',
-			'time' => 'Tag:i:s',
-			'datetime' => 'Y年n月j日 Tag:i:s',
+			'date' => 'y年M月d日',
+			'time' => 'zah:mm:ss',
+			'datetime' => 'y年M月d日 zah:mm:ss',
 		],
 		'full' => [
-			'date' => 'Y年n月j日l',
-			'time' => 'Tag:i:s',
-			'datetime' => 'Y年n月j日l Tag:i:s',
+			'date' => 'y年M月d日EEEE',
+			'time' => 'zzzzah:mm:ss',
+			'datetime' => 'y年M月d日EEEE zzzzah:mm:ss',
 		],
 	],
 	'amName' => '上午',

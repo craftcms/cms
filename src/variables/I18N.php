@@ -142,7 +142,7 @@ class I18N
 	{
 		$locale = \Craft::$app->getLocale();
 		$format = $locale->getDateFormat(Locale::FORMAT_SHORT);
-		return FormatConverter::convertDatePhpToJui($format);
+		return FormatConverter::convertDateIcuToJui($format);
 	}
 
 	/**
@@ -154,6 +154,6 @@ class I18N
 	{
 		$locale = \Craft::$app->getLocale();
 		$format = $locale->getTimeFormat(Locale::FORMAT_SHORT);
-		return FormatConverter::convertDatePhpToJui($format);
+		return FormatConverter::convertDateIcuToJui($format);
 	}
 }

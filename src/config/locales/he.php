@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'd/m/y',
-			'time' => 'H:i',
-			'datetime' => 'd/m/y, H:i',
+			'date' => 'dd/MM/yy',
+			'time' => 'HH:mm',
+			'datetime' => 'dd/MM/yy, HH:mm',
 		],
 		'medium' => [
-			'date' => 'j בM Y',
-			'time' => 'H:i:s',
-			'datetime' => 'j בM Y, H:i:s',
+			'date' => 'd בMMM y',
+			'time' => 'HH:mm:ss',
+			'datetime' => 'd בMMM y, HH:mm:ss',
 		],
 		'long' => [
-			'date' => 'j בF Y',
-			'time' => 'H:i:s T',
-			'datetime' => 'j בF Y בשעה H:i:s T',
+			'date' => 'd בMMMM y',
+			'time' => 'HH:mm:ss z',
+			'datetime' => 'd בMMMM y בשעה HH:mm:ss z',
 		],
 		'full' => [
-			'date' => 'l, j בF Y',
-			'time' => 'H:i:s T',
-			'datetime' => 'l, j בF Y בשעה H:i:s T',
+			'date' => 'EEEE, d בMMMM y',
+			'time' => 'HH:mm:ss zzzz',
+			'datetime' => 'EEEE, d בMMMM y בשעה HH:mm:ss zzzz',
 		],
 	],
 	'amName' => 'לפנה״צ',

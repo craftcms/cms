@@ -3,24 +3,24 @@
 return [
 	'dateTimeFormats' => [
 		'short' => [
-			'date' => 'y. n. j.',
-			'time' => 'a g:i',
-			'datetime' => 'y. n. j. a g:i',
+			'date' => 'yy. M. d.',
+			'time' => 'a h:mm',
+			'datetime' => 'yy. M. d. a h:mm',
 		],
 		'medium' => [
-			'date' => 'Y. n. j.',
-			'time' => 'a g:i:s',
-			'datetime' => 'Y. n. j. a g:i:s',
+			'date' => 'y. M. d.',
+			'time' => 'a h:mm:ss',
+			'datetime' => 'y. M. d. a h:mm:ss',
 		],
 		'long' => [
-			'date' => 'Y년 n월 j일',
-			'time' => 'a g시 i분 s초 T',
-			'datetime' => 'Y년 n월 j일 a g시 i분 s초 T',
+			'date' => 'y년 M월 d일',
+			'time' => 'a h시 m분 s초 z',
+			'datetime' => 'y년 M월 d일 a h시 m분 s초 z',
 		],
 		'full' => [
-			'date' => 'Y년 n월 j일 l',
-			'time' => 'a g시 i분 s초 T',
-			'datetime' => 'Y년 n월 j일 l a g시 i분 s초 T',
+			'date' => 'y년 M월 d일 EEEE',
+			'time' => 'a h시 m분 s초 zzzz',
+			'datetime' => 'y년 M월 d일 EEEE a h시 m분 s초 zzzz',
 		],
 	],
 	'amName' => '오전',
