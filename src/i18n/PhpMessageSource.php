@@ -165,12 +165,12 @@ class PhpMessageSource extends \CPhpMessageSource
 		$abbreviatedWeekdayNameKeys = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 		$formattedFrameworkData = [];
-		$locale = \CLocale::getInstance($localeId);
+		$locale = new Locale($localeId);
 
-		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideMonthKeys, $locale->getMonthNames()));
-		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedMonthKeys, $locale->getMonthNames('abbreviated')));
-		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideWeekdayNameKeys, $locale->getWeekDayNames()));
-		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedWeekdayNameKeys, $locale->getWeekDayNames('abbreviated')));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideMonthKeys, $locale->getMonthNames(Locale::FORMAT_FULL)));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedMonthKeys, $locale->getMonthNames(Locale::FORMAT_MEDIUM)));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($wideWeekdayNameKeys, $locale->getWeekDayNames(Locale::FORMAT_FULL)));
+		$formattedFrameworkData = array_merge($formattedFrameworkData, array_combine($abbreviatedWeekdayNameKeys, $locale->getWeekDayNames(Locale::FORMAT_MEDIUM)));
 
 		// Because sometimes Twig (ultimately PHP) will return 'pm' or 'am' and sometimes it will return 'PM' or 'AM'
 		// and array indexes are case sensitive.

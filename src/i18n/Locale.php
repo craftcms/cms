@@ -8,6 +8,7 @@ namespace craft\app\i18n;
 use Craft;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\IOHelper;
+use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
 use yii\base\InvalidParamException;
@@ -164,6 +165,11 @@ class Locale extends Object
 	/**
 	 * @var int The short date/time format.
 	 */
+	const FORMAT_ABBREVIATED = 4;
+
+	/**
+	 * @var int The short date/time format.
+	 */
 	const FORMAT_SHORT = 3;
 
 	/**
@@ -200,7 +206,7 @@ class Locale extends Object
 	private $_data;
 
 	/**
-	 * @var The locale's formatter.
+	 * @var Formatter The locale's formatter.
 	 */
 	private $_formatter;
 
@@ -215,7 +221,7 @@ class Locale extends Object
 	 */
 	public function __construct($id, $config = [])
 	{
-		$this->id = $id;
+		$this->id = str_replace('_', '-', $id);
 		$this->_intlLoaded = extension_loaded('intl');
 
 		if (!$this->_intlLoaded)
@@ -258,6 +264,69 @@ class Locale extends Object
 	public function __toString()
 	{
 		return $this->id;
+	}
+
+	/**
+	 * Returns this locale’s language ID.
+	 *
+	 * @return string This locale’s language ID.
+	 */
+	public function getLanguageID()
+	{
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			return substr($this->id, 0, $pos);
+		}
+
+		return $this->id;
+	}
+
+	/**
+	 * Returns this locale’s script ID.
+	 *
+	 * A script ID consists of only the last four characters after a dash in the locale ID.
+	 *
+	 * @return string|null The locale’s script ID, if it has one.
+	 */
+	public function getScriptID()
+	{
+		// Find sub tags
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			$subTag = explode('-', $this->id);
+
+			// Script sub tags can be distinguished from territory sub tags by length
+			if (strlen($subTag[1]) === 4)
+			{
+				return $subTag[1];
+			}
+		}
+	}
+
+	/**
+	 * Returns this locale’s territory ID.
+	 *
+	 * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
+	 *
+	 * @return string|null The locale’s territory ID, if it has one.
+	 */
+	public function getTerritoryID()
+	{
+		// Find sub tags
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			$subTag = explode('-', $this->id);
+
+			// Territory sub tags can be distinguished from script sub tags by length
+			if (isset($subTag[2]) && strlen($subTag[2]) < 4)
+			{
+				return $subTag[2];
+			}
+			else if (strlen($subTag[1]) < 4)
+			{
+				return $subTag[1];
+			}
+		}
 	}
 
 	/**
@@ -353,13 +422,137 @@ class Locale extends Object
 	}
 
 	/**
+	 * Returns a localized month name.
+	 *
+	 * @param int $month  The month to return (1-12).
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return string The localized month name.
+	 */
+	public function getMonthName($month, $length = null)
+	{
+		if ($length === null)
+		{
+			$length = static::FORMAT_FULL;
+		}
+
+		if ($this->_intlLoaded)
+		{
+			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern('LLLLL'); break; // S
+				case static::FORMAT_SHORT:
+				case static::FORMAT_MEDIUM:      $formatter->setPattern('LLL'); break;   // Sep
+				default:                         $formatter->setPattern('LLLL'); break;  // September
+			}
+
+			return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
+		}
+		else
+		{
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: return $this->_data['monthNames']['abbreviated'][$month-1]; break; // S
+				case static::FORMAT_SHORT:
+				case static::FORMAT_MEDIUM:      return $this->_data['monthNames']['medium'][$month-1]; break;      // Sep
+				default:                         return $this->_data['monthNames']['full'][$month-1]; break;        // September
+			}
+		}
+	}
+
+	/**
+	 * Returns all of the localized month names.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return array The localized month names.
+	 */
+	public function getMonthNames($length = null)
+	{
+		$monthNames = [];
+
+		for ($month = 1; $month <= 12; $month++)
+		{
+			$monthNames[] = $this->getMonthName($month, $length);
+		}
+
+		return $monthNames;
+	}
+
+	/**
+	 * Returns a localized day of the week name.
+	 *
+	 * @param int $day    The day of the week to return (1-7), where 1 stands for Sunday.
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+	 * @return string The localized day of the week name.
+	 */
+	public function getWeekDayName($day, $length = null)
+	{
+		if ($length === null)
+		{
+			$length = static::FORMAT_FULL;
+		}
+
+		if ($this->_intlLoaded)
+		{
+			$formatter = new IntlDateFormatter($this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern('ccccc'); break;  // T
+				case static::FORMAT_SHORT:       $formatter->setPattern('cccccc'); break; // Tu
+				case static::FORMAT_MEDIUM:      $formatter->setPattern('ccc'); break;    // Tue
+				default:                         $formatter->setPattern('cccc'); break;   // Tuesday
+			}
+
+			// Jan 1, 1970 was a Thursday
+			return $formatter->format(new DateTime('1970-01-'.sprintf("%02d", $day+3)));
+		}
+		else
+		{
+			switch ($length)
+			{
+				case static::FORMAT_ABBREVIATED: return $this->_data['weekDayNames']['abbreviated'][$day-1]; break; // T
+				case static::FORMAT_SHORT:       return $this->_data['weekDayNames']['short'][$day-1]; break;       // Tu
+				case static::FORMAT_MEDIUM:      return $this->_data['weekDayNames']['medium'][$day-1]; break;      // Tue
+				default:                         return $this->_data['weekDayNames']['full'][$day-1]; break;        // Tuesday
+			}
+		}
+	}
+
+	/**
+	 * Returns all of the localized day of the week names.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return array The localized day of the week names.
+	 */
+	public function getWeekDayNames($length = null)
+	{
+		$weekDayNames = [];
+
+		for ($day = 1; $day <= 7; $day++)
+		{
+			$weekDayNames[] = $this->getWeekDayName($day, $length);
+		}
+
+		return $weekDayNames;
+	}
+
+	/**
 	 * Returns the "AM" name for this locale.
 	 *
 	 * @return string The "AM" name.
 	 */
 	public function getAMName()
 	{
-		return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+		if ($this->_intlLoaded)
+		{
+			return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
+		}
+		else
+		{
+			return $this->_data['amName'];
+		}
 	}
 
 	/**
@@ -369,7 +562,14 @@ class Locale extends Object
 	 */
 	public function getPMName()
 	{
-		return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+		if ($this->_intlLoaded)
+		{
+			return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
+		}
+		else
+		{
+			return $this->_data['pmName'];
+		}
 	}
 
 	// Text Attributes and Symbols
@@ -458,10 +658,8 @@ class Locale extends Object
 		if ($this->_intlLoaded)
 		{
 			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
-			$formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 0);
-			$formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
-			$formattedCurrency = $formatter->formatCurrency(0, $currency);
-			return trim(str_replace('0', '', $formattedCurrency));
+			$value = $formatter->formatCurrency(1, $currency);
+			return trim($value, '1.0');
 		}
 		else if (isset($this->_data['currencySymbols'][$currency]))
 		{
@@ -495,7 +693,7 @@ class Locale extends Object
 		{
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
-			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType, Craft::$app->timeZone);
+			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
 			return $formatter->getPattern();
 		}
 		else
@@ -515,10 +713,10 @@ class Locale extends Object
 
 			switch ($length)
 			{
-				case static::FORMAT_SHORT:  return $this->_data['dateFormats']['short'][$which];
-				case static::FORMAT_MEDIUM: return $this->_data['dateFormats']['medium'][$which];
-				case static::FORMAT_LONG:   return $this->_data['dateFormats']['long'][$which];
-				case static::FORMAT_FULL:   return $this->_data['dateFormats']['full'][$which];
+				case static::FORMAT_SHORT:  return $this->_data['dateTimeFormats']['short'][$which]; break;
+				case static::FORMAT_MEDIUM: return $this->_data['dateTimeFormats']['medium'][$which]; break;
+				case static::FORMAT_LONG:   return $this->_data['dateTimeFormats']['long'][$which]; break;
+				case static::FORMAT_FULL:   return $this->_data['dateTimeFormats']['full'][$which]; break;
 			}
 		}
 	}
