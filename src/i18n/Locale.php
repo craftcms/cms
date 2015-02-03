@@ -399,6 +399,24 @@ class Locale extends Object
 	}
 
 	/**
+	 * Returns all of the localized month names.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return array The localized month names.
+	 */
+	public function getMonthNames($length = null)
+	{
+		$monthNames = [];
+
+		for ($month = 1; $month <= 12; $month++)
+		{
+			$monthNames[] = $this->getMonthName($month, $length);
+		}
+
+		return $monthNames;
+	}
+
+	/**
 	 * Returns a localized weekday name.
 	 *
 	 * @param int $day    The weekday to return (1-7), where 1 stands for Sunday.
@@ -437,6 +455,24 @@ class Locale extends Object
 				default:                         return $this->_data['monthNames']['full'][$day-1]; break;        // Tuesday
 			}
 		}
+	}
+
+	/**
+	 * Returns all of the localized weekday names.
+	 *
+	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @return array The localized weekday names.
+	 */
+	public function getWeekdayNames($length = null)
+	{
+		$weekdayNames = [];
+
+		for ($day = 1; $day <= 7; $day++)
+		{
+			$weekdayNames[] = $this->getWeekdayName($day, $length);
+		}
+
+		return $weekdayNames;
 	}
 
 	/**
