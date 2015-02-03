@@ -13,7 +13,6 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\i18n\LocaleData;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
