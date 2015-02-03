@@ -693,8 +693,10 @@ class Locale extends Object
 		if ($this->_intlLoaded)
 		{
 			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
-			$value = $formatter->formatCurrency(1, $currency);
-			return trim($value, '1.0');
+			$withCurrency = $formatter->formatCurrency(0, $currency);
+			$formatter->setPattern(str_replace('¤', '', $formatter->getPattern()));
+			$withoutCurrency = $formatter->formatCurrency(0, $currency);
+			return str_replace($withoutCurrency, '', $withCurrency);
 		}
 		else if (isset($this->data['currencySymbols'][$currency]))
 		{
