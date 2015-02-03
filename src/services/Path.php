@@ -284,7 +284,7 @@ class Path extends Component
 	 */
 	public function getResourcesPath()
 	{
-		return $this->getAppPath().'resources';
+		return $this->getAppPath().'/resources';
 	}
 
 	/**
@@ -301,7 +301,7 @@ class Path extends Component
 			return $this->getPluginsPath().'/'.StringHelper::toLowerCase($pluginHandle).'/migrations';
 		}
 
-		return $this->getAppPath().'migrations';
+		return $this->getAppPath().'/migrations';
 	}
 
 	/**
@@ -311,7 +311,7 @@ class Path extends Component
 	 */
 	public function getCpTranslationsPath()
 	{
-		return $this->getAppPath().'translations';
+		return $this->getAppPath().'/translations';
 	}
 
 	/**
