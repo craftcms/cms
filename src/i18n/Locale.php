@@ -221,7 +221,7 @@ class Locale extends Object
 	 */
 	public function __construct($id, $config = [])
 	{
-		$this->id = $id;
+		$this->id = str_replace('_', '-', $id);
 		$this->_intlLoaded = extension_loaded('intl');
 
 		if (!$this->_intlLoaded)
