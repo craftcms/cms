@@ -409,8 +409,8 @@ class Locale extends Object
 			if (!$this->_intlLoaded)
 			{
 				$config['dateTimeFormats']   = $this->data['dateTimeFormats'];
-				$config['monthNames']        = $this->data['monthNames'];
-				$config['weekDayNames']      = $this->data['weekDayNames'];
+				$config['monthNames']        = $this->data['standAloneMonthNames'];
+				$config['weekDayNames']      = $this->data['standAloneWeekDayNames'];
 				$config['amName']            = $this->data['amName'];
 				$config['pmName']            = $this->data['pmName'];
 				$config['currencySymbols']   = $this->data['currencySymbols'];
@@ -464,11 +464,12 @@ class Locale extends Object
 	/**
 	 * Returns a localized month name.
 	 *
-	 * @param int $month  The month to return (1-12).
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param int     $month      The month to return (1-12).
+	 * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param boolean $standAlone Whether to return the "stand alone" month name.
 	 * @return string The localized month name.
 	 */
-	public function getMonthName($month, $length = null)
+	public function getMonthName($month, $length = null, $standAlone = true)
 	{
 		if ($length === null)
 		{
@@ -481,22 +482,24 @@ class Locale extends Object
 
 			switch ($length)
 			{
-				case static::FORMAT_ABBREVIATED: $formatter->setPattern('LLLLL'); break; // S
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM'); break; // S
 				case static::FORMAT_SHORT:
-				case static::FORMAT_MEDIUM:      $formatter->setPattern('LLL'); break;   // Sep
-				default:                         $formatter->setPattern('LLLL'); break;  // September
+				case static::FORMAT_MEDIUM:      $formatter->setPattern($standAlone ? 'LLL' : 'MMM'); break;   // Sep
+				default:                         $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM'); break;  // September
 			}
 
 			return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
 		}
 		else
 		{
+			$which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
+
 			switch ($length)
 			{
-				case static::FORMAT_ABBREVIATED: return $this->data['monthNames']['abbreviated'][$month-1]; break; // S
+				case static::FORMAT_ABBREVIATED: return $this->data[$which]['abbreviated'][$month-1]; break; // S
 				case static::FORMAT_SHORT:
-				case static::FORMAT_MEDIUM:      return $this->data['monthNames']['medium'][$month-1]; break;      // Sep
-				default:                         return $this->data['monthNames']['full'][$month-1]; break;        // September
+				case static::FORMAT_MEDIUM:      return $this->data[$which]['medium'][$month-1]; break;      // Sep
+				default:                         return $this->data[$which]['full'][$month-1]; break;        // September
 			}
 		}
 	}
@@ -504,16 +507,17 @@ class Locale extends Object
 	/**
 	 * Returns all of the localized month names.
 	 *
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param boolean $standAlone Whether to return the "stand alone" month names.
 	 * @return array The localized month names.
 	 */
-	public function getMonthNames($length = null)
+	public function getMonthNames($length = null, $standAlone = true)
 	{
 		$monthNames = [];
 
 		for ($month = 1; $month <= 12; $month++)
 		{
-			$monthNames[] = $this->getMonthName($month, $length);
+			$monthNames[] = $this->getMonthName($month, $length, $standAlone);
 		}
 
 		return $monthNames;
@@ -522,11 +526,12 @@ class Locale extends Object
 	/**
 	 * Returns a localized day of the week name.
 	 *
-	 * @param int $day    The day of the week to return (1-7), where 1 stands for Sunday.
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+	 * @param int     $day        The day of the week to return (1-7), where 1 stands for Sunday.
+	 * @param int     $length     The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+	 * @param boolean $standAlone Whether to return the "stand alone" day of the week name.
 	 * @return string The localized day of the week name.
 	 */
-	public function getWeekDayName($day, $length = null)
+	public function getWeekDayName($day, $length = null, $standAlone = true)
 	{
 		if ($length === null)
 		{
@@ -539,10 +544,10 @@ class Locale extends Object
 
 			switch ($length)
 			{
-				case static::FORMAT_ABBREVIATED: $formatter->setPattern('ccccc'); break;  // T
-				case static::FORMAT_SHORT:       $formatter->setPattern('cccccc'); break; // Tu
-				case static::FORMAT_MEDIUM:      $formatter->setPattern('ccc'); break;    // Tue
-				default:                         $formatter->setPattern('cccc'); break;   // Tuesday
+				case static::FORMAT_ABBREVIATED: $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee'); break;  // T
+				case static::FORMAT_SHORT:       $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee'); break; // Tu
+				case static::FORMAT_MEDIUM:      $formatter->setPattern($standAlone ? 'ccc' : 'eee'); break;    // Tue
+				default:                         $formatter->setPattern($standAlone ? 'cccc' : 'eeee'); break;   // Tuesday
 			}
 
 			// Jan 1, 1970 was a Thursday
@@ -550,12 +555,14 @@ class Locale extends Object
 		}
 		else
 		{
+			$which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
+
 			switch ($length)
 			{
-				case static::FORMAT_ABBREVIATED: return $this->data['weekDayNames']['abbreviated'][$day-1]; break; // T
-				case static::FORMAT_SHORT:       return $this->data['weekDayNames']['short'][$day-1]; break;       // Tu
-				case static::FORMAT_MEDIUM:      return $this->data['weekDayNames']['medium'][$day-1]; break;      // Tue
-				default:                         return $this->data['weekDayNames']['full'][$day-1]; break;        // Tuesday
+				case static::FORMAT_ABBREVIATED: return $this->data[$which]['abbreviated'][$day-1]; break; // T
+				case static::FORMAT_SHORT:       return $this->data[$which]['short'][$day-1]; break;       // Tu
+				case static::FORMAT_MEDIUM:      return $this->data[$which]['medium'][$day-1]; break;      // Tue
+				default:                         return $this->data[$which]['full'][$day-1]; break;        // Tuesday
 			}
 		}
 	}
@@ -563,16 +570,17 @@ class Locale extends Object
 	/**
 	 * Returns all of the localized day of the week names.
 	 *
-	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param int     $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
+	 * @param boolean $standAlone Whether to return the "stand alone" day of the week names.
 	 * @return array The localized day of the week names.
 	 */
-	public function getWeekDayNames($length = null)
+	public function getWeekDayNames($length = null, $standAlone = true)
 	{
 		$weekDayNames = [];
 
 		for ($day = 1; $day <= 7; $day++)
 		{
-			$weekDayNames[] = $this->getWeekDayName($day, $length);
+			$weekDayNames[] = $this->getWeekDayName($day, $length, $standAlone);
 		}
 
 		return $weekDayNames;
