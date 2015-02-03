@@ -8,7 +8,11 @@
 namespace craft\app\i18n;
 
 use Craft;
+use craft\app\helpers\StringHelper;
+use DateTimeZone;
 use NumberFormatter;
+use yii\base\InvalidConfigException;
+use yii\helpers\FormatConverter;
 
 /**
  * @inheritDoc \yii\i18n\Formatter
@@ -25,6 +29,26 @@ class Formatter extends \yii\i18n\Formatter
 	 * @var array The locale’s date/time formats.
 	 */
 	public $dateTimeFormats;
+
+	/**
+	 * @var array The localized month names.
+	 */
+	public $monthNames;
+
+	/**
+	 * @var array The localized day of the week names.
+	 */
+	public $weekDayNames;
+
+	/**
+	 * @var The localized AM name.
+	 */
+	public $amName;
+
+	/**
+	 * @var The localized PM name.
+	 */
+	public $pmName;
 
 	/**
      * @var array The locale's currency symbols.
@@ -70,7 +94,14 @@ class Formatter extends \yii\i18n\Formatter
 			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
 		}
 
-		return parent::asDate($value, $format);
+		if ($this->_intlLoaded)
+		{
+			return parent::asDate($value, $format);
+		}
+		else
+		{
+			return $this->_formatDateTimeValue($value, $format, 'date');
+		}
 	}
 
 	/**
@@ -91,10 +122,17 @@ class Formatter extends \yii\i18n\Formatter
 
 		if (isset($this->dateTimeFormats[$format]['time']))
 		{
-			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+			$format = 'php:'.$this->dateTimeFormats[$format]['time'];
 		}
 
-		return parent::asTime($value, $format);
+		if ($this->_intlLoaded)
+		{
+			return parent::asTime($value, $format);
+		}
+		else
+		{
+			return $this->_formatDateTimeValue($value, $format, 'time');
+		}
 	}
 
 	/**
@@ -115,10 +153,17 @@ class Formatter extends \yii\i18n\Formatter
 
 		if (isset($this->dateTimeFormats[$format]['datetime']))
 		{
-			$format = 'php:'.$this->dateTimeFormats[$format]['date'];
+			$format = 'php:'.$this->dateTimeFormats[$format]['datetime'];
 		}
 
-		return parent::asDatetime($value, $format);
+		if ($this->_intlLoaded)
+		{
+			return parent::asDatetime($value, $format);
+		}
+		else
+		{
+			return $this->_formatDateTimeValue($value, $format, 'datetime');
+		}
 	}
 
 	/**
@@ -180,5 +225,154 @@ class Formatter extends \yii\i18n\Formatter
 			$decimals = $omitDecimals ? 0 : 2;
 			return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
 		}
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Formats a given date/time.
+	 *
+	 * Code mostly copied from [[parent::formatDateTimeValue()]], with the exception that translatable strings
+	 * in the date/time format will be returned in the correct locale.
+	 *
+	 * @param integer|string|DateTime $value The value to be formatted. The following
+	 * types of value are supported:
+	 *
+	 * - an integer representing a UNIX timestamp
+	 * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
+	 *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
+	 * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
+	 *
+	 * @param string $format The format used to convert the value into a date string.
+	 * @param string $type 'date', 'time', or 'datetime'.
+	 * @throws InvalidConfigException if the date format is invalid.
+	 * @return string the formatted result.
+	 */
+	private function _formatDateTimeValue($value, $format, $type)
+	{
+		$timeZone = $this->timeZone;
+
+		// Avoid time zone conversion for date-only values
+		if ($type === 'date')
+		{
+			list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+
+			if (!$hasTimeInfo)
+			{
+				$timeZone = $this->defaultTimeZone;
+			}
+		}
+		else
+		{
+			$timestamp = $this->normalizeDatetimeValue($value);
+		}
+
+		if ($timestamp === null)
+		{
+			return $this->nullDisplay;
+		}
+
+		if (strncmp($format, 'php:', 4) === 0)
+		{
+			$format = substr($format, 4);
+		}
+		else
+		{
+			$format = FormatConverter::convertDateIcuToPhp($format, $type, $this->locale);
+		}
+
+		if ($timeZone != null)
+		{
+			if ($timestamp instanceof \DateTimeImmutable)
+			{
+				$timestamp = $timestamp->setTimezone(new DateTimeZone($timeZone));
+			}
+			else
+			{
+				$timestamp->setTimezone(new DateTimeZone($timeZone));
+			}
+		}
+
+		$parts = preg_split('/(?<!\\\)([DlFMaAd])/', $format, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+		$format = '';
+
+		foreach ($parts as $part)
+		{
+			switch ($part)
+			{
+				case 'D': // Mon
+				case 'l': // Monday
+				{
+					$day = $timestamp->format('w');
+					$length = $part == 'D' ? 'medium' : 'full';
+
+					if (isset($this->weekDayNames[$length][$day]))
+					{
+						$format .= $this->_escapeForDateTimeFormat($this->weekDayNames[$length][$day]);
+					}
+					else
+					{
+						$format .= $part;
+					}
+
+					break;
+				}
+
+				case 'F': // January
+				case 'M': // Jan
+				{
+					$month = $timestamp->format('n') - 1;
+					$length = $part == 'F' ? 'full' : 'medium';
+
+					if (isset($this->monthNames[$length][$month]))
+					{
+						$format .= $this->_escapeForDateTimeFormat($this->monthNames[$length][$month]);
+					}
+					else
+					{
+						$format .= $part;
+					}
+
+					break;
+				}
+
+				case 'a': // am or pm
+				case 'A': // AM or PM
+				{
+					$which = $timestamp->format('a').'Name';
+
+					if ($this->$which !== null)
+					{
+						$name = $part == 'a' ? StringHelper::toLowerCase($this->$which) : StringHelper::toUpperCase($this->$which);
+						$format .= $this->_escapeForDateTimeFormat($name);
+					}
+					else
+					{
+						$format .= $part;
+					}
+
+					break;
+				}
+
+				default:
+				{
+					$format .= $part;
+				}
+			}
+		}
+
+		return $timestamp->format($format);
+	}
+
+	/**
+	 * Escapes a given string for a PHP date format.
+	 *
+	 * @param string $str
+	 * @return string The escaped string
+	 */
+	private function _escapeForDateTimeFormat($str)
+	{
+		return '\\'.implode('\\', str_split($str));
 	}
 }

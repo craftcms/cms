@@ -409,6 +409,10 @@ class Locale extends Object
 			if (!$this->_intlLoaded)
 			{
 				$config['dateTimeFormats']   = $this->data['dateTimeFormats'];
+				$config['monthNames']        = $this->data['monthNames'];
+				$config['weekDayNames']      = $this->data['weekDayNames'];
+				$config['amName']            = $this->data['amName'];
+				$config['pmName']            = $this->data['pmName'];
 				$config['currencySymbols']   = $this->data['currencySymbols'];
 				$config['decimalSeparator']  = $this->getNumberSymbol(static::SYMBOL_DECIMAL_SEPARATOR);
 				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
