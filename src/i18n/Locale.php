@@ -14,6 +14,7 @@ use NumberFormatter;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
+use yii\helpers\FormatConverter;
 
 /**
  * Stores locale info.
@@ -692,6 +693,7 @@ class Locale extends Object
 	{
 		if ($this->_intlLoaded)
 		{
+			// This is way harder than it should be - http://stackoverflow.com/a/28307228/1688568
 			$formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
 			$withCurrency = $formatter->formatCurrency(0, $currency);
 			$formatter->setPattern(str_replace('¤', '', $formatter->getPattern()));
@@ -731,7 +733,8 @@ class Locale extends Object
 			$dateType = ($withDate ? $length : IntlDateFormatter::NONE);
 			$timeType = ($withTime ? $length : IntlDateFormatter::NONE);
 			$formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
-			return $formatter->getPattern();
+			$pattern = $formatter->getPattern();
+			return FormatConverter::convertDateIcuToPhp($pattern);
 		}
 		else
 		{
