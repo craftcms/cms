@@ -15,12 +15,12 @@ return [
 		'long' => [
 			'date' => 'F j, Y',
 			'time' => 'g:i:s a T',
-			'datetime' => 'F j, Y \'at\' g:i:s a T',
+			'datetime' => 'F j, Y \a\t g:i:s a T',
 		],
 		'full' => [
 			'date' => 'l, F j, Y',
 			'time' => 'g:i:s a T',
-			'datetime' => 'l, F j, Y \'at\' g:i:s a T',
+			'datetime' => 'l, F j, Y \a\t g:i:s a T',
 		],
 	],
 	'amName' => 'AM',
