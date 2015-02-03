@@ -267,6 +267,69 @@ class Locale extends Object
 	}
 
 	/**
+	 * Returns this locale’s language ID.
+	 *
+	 * @return string This locale’s language ID.
+	 */
+	public function getLanguageID()
+	{
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			return substr($this->id, 0, $pos);
+		}
+
+		return $this->id;
+	}
+
+	/**
+	 * Returns this locale’s script ID.
+	 *
+	 * A script ID consists of only the last four characters after a dash in the locale ID.
+	 *
+	 * @return string|null The locale’s script ID, if it has one.
+	 */
+	public function getScriptID()
+	{
+		// Find sub tags
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			$subTag = explode('-', $this->id);
+
+			// Script sub tags can be distinguished from territory sub tags by length
+			if (strlen($subTag[1]) === 4)
+			{
+				return $subTag[1];
+			}
+		}
+	}
+
+	/**
+	 * Returns this locale’s territory ID.
+	 *
+	 * A territory ID consists of only the last two to three letter or digits after a dash in the locale ID.
+	 *
+	 * @return string|null The locale’s territory ID, if it has one.
+	 */
+	public function getTerritoryID()
+	{
+		// Find sub tags
+		if (($pos = strpos($this->id, '-')) !== false)
+		{
+			$subTag = explode('-', $this->id);
+
+			// Territory sub tags can be distinguished from script sub tags by length
+			if (isset($subTag[2]) && strlen($subTag[2]) < 4)
+			{
+				return $subTag[2];
+			}
+			else if (strlen($subTag[1]) < 4)
+			{
+				return $subTag[1];
+			}
+		}
+	}
+
+	/**
 	 * Returns the locale name in a given language.
 	 *
 	 * @param string|null $inLocale

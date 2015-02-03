@@ -369,7 +369,7 @@ class RichText extends BaseFieldType
 			if (!$this->_includeRedactorLangFile(Craft::$app->language))
 			{
 				// Otherwise try to load the language (without the territory half)
-				$languageId = Craft::$app->locale->getLanguageID(Craft::$app->language);
+				$languageId = Craft::$app->getLocale()->getLanguageID();
 				$this->_includeRedactorLangFile($languageId);
 			}
 		}
