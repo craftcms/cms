@@ -120,7 +120,7 @@ return [
 			'December',
 		],
 	],
-	'weekdayNames' => [
+	'weekDayNames' => [
 		'abbreviated' => [
 			'S',
 			'M',

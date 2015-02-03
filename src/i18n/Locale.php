@@ -417,13 +417,13 @@ class Locale extends Object
 	}
 
 	/**
-	 * Returns a localized weekday name.
+	 * Returns a localized day of the week name.
 	 *
-	 * @param int $day    The weekday to return (1-7), where 1 stands for Sunday.
+	 * @param int $day    The day of the week to return (1-7), where 1 stands for Sunday.
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
-	 * @return string The localized weekday name.
+	 * @return string The localized day of the week name.
 	 */
-	public function getWeekdayName($day, $length = null)
+	public function getWeekDayName($day, $length = null)
 	{
 		if ($length === null)
 		{
@@ -449,30 +449,30 @@ class Locale extends Object
 		{
 			switch ($length)
 			{
-				case static::FORMAT_ABBREVIATED: return $this->_data['monthNames']['abbreviated'][$day-1]; break; // T
-				case static::FORMAT_SHORT:       return $this->_data['monthNames']['short'][$day-1]; break; // Tu
-				case static::FORMAT_MEDIUM:      return $this->_data['monthNames']['medium'][$day-1]; break;      // Tue
-				default:                         return $this->_data['monthNames']['full'][$day-1]; break;        // Tuesday
+				case static::FORMAT_ABBREVIATED: return $this->_data['weekDayNames']['abbreviated'][$day-1]; break; // T
+				case static::FORMAT_SHORT:       return $this->_data['weekDayNames']['short'][$day-1]; break;       // Tu
+				case static::FORMAT_MEDIUM:      return $this->_data['weekDayNames']['medium'][$day-1]; break;      // Tue
+				default:                         return $this->_data['weekDayNames']['full'][$day-1]; break;        // Tuesday
 			}
 		}
 	}
 
 	/**
-	 * Returns all of the localized weekday names.
+	 * Returns all of the localized day of the week names.
 	 *
 	 * @param int $length The format length that should be returned. Values: Locale::FORMAT_ABBREVIATED, ::MEDIUM, ::FULL
-	 * @return array The localized weekday names.
+	 * @return array The localized day of the week names.
 	 */
-	public function getWeekdayNames($length = null)
+	public function getWeekDayNames($length = null)
 	{
-		$weekdayNames = [];
+		$weekDayNames = [];
 
 		for ($day = 1; $day <= 7; $day++)
 		{
-			$weekdayNames[] = $this->getWeekdayName($day, $length);
+			$weekDayNames[] = $this->getWeekDayName($day, $length);
 		}
 
-		return $weekdayNames;
+		return $weekDayNames;
 	}
 
 	/**
