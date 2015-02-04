@@ -14,7 +14,6 @@ use NumberFormatter;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
-use yii\helpers\FormatConverter;
 
 /**
  * Stores locale info.
@@ -28,7 +27,6 @@ class Locale extends Object
 {
 	// Constants
 	// =========================================================================
-
 
 	/**
 	 * @var int Positive prefix.
@@ -191,6 +189,11 @@ class Locale extends Object
 
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var array The languages that use RTL orientation.
+	 */
+	private static $_rtlLanguages = ['ar', 'he', 'ur'];
 
 	/**
 	 * @var string The locale ID.
@@ -391,6 +394,23 @@ class Locale extends Object
 		}
 
 		return $this->id;
+	}
+
+	/**
+	 * Returns the language’s orientation (ltr or rtl).
+	 *
+	 * @return string The language’s orientation.
+	 */
+	public function getOrientation()
+	{
+		if (in_array($this->getLanguageID(), static::$_rtlLanguages))
+		{
+			return 'rtl';
+		}
+		else
+		{
+			return 'ltr';
+		}
 	}
 
 	/**
