@@ -7,8 +7,6 @@
 
 namespace craft\app\variables;
 
-use Craft;
-
 \Craft::$app->requireEdition(\Craft::Pro);
 
 /**

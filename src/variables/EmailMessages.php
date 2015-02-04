@@ -7,7 +7,6 @@
 
 namespace craft\app\variables;
 
-use Craft;
 use craft\app\models\RebrandEmail as RebrandEmailModel;
 
 \Craft::$app->requireEdition(\Craft::Client);

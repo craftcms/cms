@@ -7,7 +7,6 @@
 
 namespace craft\app\variables;
 
-use Craft;
 use craft\app\models\UserGroup as UserGroupModel;
 
 \Craft::$app->requireEdition(\Craft::Pro);

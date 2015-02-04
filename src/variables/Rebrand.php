@@ -7,7 +7,6 @@
 
 namespace craft\app\variables;
 
-use Craft;
 use craft\app\helpers\IOHelper;
 
 \Craft::$app->requireEdition(\Craft::Client);

@@ -7,7 +7,6 @@
 
 namespace craft\app\variables;
 
-use Craft;
 use craft\app\helpers\UrlHelper;
 use yii\web\Cookie;
 
