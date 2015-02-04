@@ -160,18 +160,28 @@ class TemplatesController extends Controller
 	 */
 	public function actionRenderError()
 	{
-		$error = Craft::$app->getErrorHandler()->getError();
-		$code = (string) $error['code'];
+		/* @var $errorHandler \yii\web\ErrorHandler */
+		$errorHandler = Craft::$app->getErrorHandler();
+		$exception = $errorHandler->exception;
+
+		if ($exception instanceof \yii\web\HttpException && $exception->statusCode)
+		{
+			$statusCode = (string)$exception->statusCode;
+		}
+		else
+		{
+			$statusCode = '500';
+		}
 
 		if (Craft::$app->getRequest()->getIsSiteRequest())
 		{
 			$prefix = Craft::$app->config->get('errorTemplatePrefix');
 
-			if (Craft::$app->templates->doesTemplateExist($prefix.$code))
+			if (Craft::$app->templates->doesTemplateExist($prefix.$statusCode))
 			{
-				$template = $prefix.$code;
+				$template = $prefix.$statusCode;
 			}
-			else if ($code == 503 && Craft::$app->templates->doesTemplateExist($prefix.'offline'))
+			else if ($statusCode == 503 && Craft::$app->templates->doesTemplateExist($prefix.'offline'))
 			{
 				$template = $prefix.'offline';
 			}
@@ -185,9 +195,9 @@ class TemplatesController extends Controller
 		{
 			Craft::$app->path->setTemplatesPath(Craft::$app->path->getCpTemplatesPath());
 
-			if (Craft::$app->templates->doesTemplateExist($code))
+			if (Craft::$app->templates->doesTemplateExist($statusCode))
 			{
-				$template = $code;
+				$template = $statusCode;
 			}
 			else
 			{
@@ -195,7 +205,7 @@ class TemplatesController extends Controller
 			}
 		}
 
-		$variables = array_merge($error);
+		$variables = (array)$exception;
 
 		// Escape any inner-word underscores, which Markdown mistakes for italics
 		// TODO: This won't be necessary once we swap to Parsedown

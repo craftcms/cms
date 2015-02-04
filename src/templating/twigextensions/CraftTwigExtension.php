@@ -14,6 +14,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\variables\Craft as CraftVariable;
+use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
 /**
@@ -123,7 +124,14 @@ class CraftTwigExtension extends \Twig_Extension
 			}
 		}
 
-		return Craft::t($category, $message, $params, $language);
+		try
+		{
+			return Craft::t($category, $message, $params, $language);
+		}
+		catch (InvalidConfigException $e)
+		{
+			return $message;
+		}
 	}
 
 	/**
