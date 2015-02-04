@@ -66,12 +66,15 @@ class UsersController extends Controller
 	 */
 	public function actionLogin()
 	{
-		$this->requirePostRequest();
-
 		if (!Craft::$app->getUser()->getIsGuest())
 		{
 			// Too easy.
 			$this->_handleSuccessfulLogin(false);
+		}
+
+		if (!Craft::$app->getRequest()->getIsPost())
+		{
+			return;
 		}
 
 		// First, a little house-cleaning for expired, pending users.
