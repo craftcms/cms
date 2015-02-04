@@ -9,9 +9,11 @@ namespace craft\app\i18n;
 
 use Craft;
 use craft\app\helpers\StringHelper;
+use DateTime;
 use DateTimeZone;
 use NumberFormatter;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\helpers\FormatConverter;
 
 /**
@@ -41,12 +43,12 @@ class Formatter extends \yii\i18n\Formatter
 	public $weekDayNames;
 
 	/**
-	 * @var The localized AM name.
+	 * @var string The localized AM name.
 	 */
 	public $amName;
 
 	/**
-	 * @var The localized PM name.
+	 * @var string The localized PM name.
 	 */
 	public $pmName;
 
