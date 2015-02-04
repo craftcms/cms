@@ -113,7 +113,7 @@ class Routes extends Component
 	{
 		if ($routeId !== null)
 		{
-			$routeRecord = RouteRecord::model()->findById($routeId);
+			$routeRecord = RouteRecord::findOne($routeId);
 
 			if (!$routeRecord)
 			{

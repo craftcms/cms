@@ -21,13 +21,13 @@ class AssetSource extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'assetsources';
+		return '{{%assetsources}}';
 	}
 
 	/**

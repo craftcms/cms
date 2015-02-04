@@ -75,7 +75,7 @@ class EntryRevisions extends Component
 	 */
 	public function getDraftById($draftId)
 	{
-		$draftRecord = EntryDraftRecord::model()->findById($draftId);
+		$draftRecord = EntryDraftRecord::findOne($draftId);
 
 		if ($draftRecord)
 		{
@@ -311,7 +311,7 @@ class EntryRevisions extends Component
 	 */
 	public function getVersionById($versionId)
 	{
-		$versionRecord = EntryVersionRecord::model()->findById($versionId);
+		$versionRecord = EntryVersionRecord::findOne($versionId);
 
 		if ($versionRecord)
 		{
@@ -437,7 +437,7 @@ class EntryRevisions extends Component
 	{
 		if ($draft->draftId)
 		{
-			$draftRecord = EntryDraftRecord::model()->findById($draft->draftId);
+			$draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
 			if (!$draftRecord)
 			{

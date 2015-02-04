@@ -145,7 +145,7 @@ class AssetTransforms extends Component
 	{
 		if ($transform->id)
 		{
-			$transformRecord = AssetTransformRecord::model()->findById($transform->id);
+			$transformRecord = AssetTransformRecord::findOne($transform->id);
 
 			if (!$transformRecord)
 			{

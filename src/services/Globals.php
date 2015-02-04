@@ -282,7 +282,7 @@ class Globals extends Component
 
 		if (!$isNewSet)
 		{
-			$globalSetRecord = GlobalSetRecord::model()->findById($globalSet->id);
+			$globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
 
 			if (!$globalSetRecord)
 			{

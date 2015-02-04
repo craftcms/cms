@@ -335,7 +335,7 @@ class AssetSources extends Component
 	{
 		$sourceRecord = $this->_getSourceRecordById($source->id);
 
-		$isNewSource = $sourceRecord->isNewRecord();
+		$isNewSource = $sourceRecord->getIsNewRecord();
 
 		if (!$isNewSource)
 		{
@@ -567,7 +567,7 @@ class AssetSources extends Component
 	{
 		if ($sourceId)
 		{
-			$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
+			$sourceRecord = AssetSourceRecord::findOne($sourceId);
 
 			if (!$sourceRecord)
 			{

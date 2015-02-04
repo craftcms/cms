@@ -131,7 +131,7 @@ class Entries extends Component
 		// Get the entry record
 		if (!$isNewEntry)
 		{
-			$entryRecord = EntryRecord::model()->findById($entry->id);
+			$entryRecord = EntryRecord::findOne($entry->id);
 
 			if (!$entryRecord)
 			{

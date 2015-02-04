@@ -298,7 +298,7 @@ class Categories extends Component
 	{
 		if ($group->id)
 		{
-			$groupRecord = CategoryGroupRecord::model()->findById($group->id);
+			$groupRecord = CategoryGroupRecord::findOne($group->id);
 
 			if (!$groupRecord)
 			{
@@ -689,7 +689,7 @@ class Categories extends Component
 		// Category data
 		if (!$isNewCategory)
 		{
-			$categoryRecord = CategoryRecord::model()->findById($category->id);
+			$categoryRecord = CategoryRecord::findOne($category->id);
 
 			if (!$categoryRecord)
 			{

@@ -66,7 +66,7 @@ class UserGroups extends Component
 	 */
 	public function getGroupById($groupId)
 	{
-		$groupRecord = UserGroupRecord::model()->findById($groupId);
+		$groupRecord = UserGroupRecord::findOne($groupId);
 
 		if ($groupRecord)
 		{
@@ -243,7 +243,7 @@ class UserGroups extends Component
 	{
 		if ($groupId)
 		{
-			$groupRecord = UserGroupRecord::model()->findById($groupId);
+			$groupRecord = UserGroupRecord::findOne($groupId);
 
 			if (!$groupRecord)
 			{

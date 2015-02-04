@@ -163,7 +163,7 @@ class Users extends Component
 	{
 		if (!isset($this->_usersById) || !array_key_exists($userId, $this->_usersById))
 		{
-			$userRecord = UserRecord::model()->findById($userId);
+			$userRecord = UserRecord::findOne($userId);
 
 			if ($userRecord)
 			{
@@ -656,7 +656,7 @@ class Users extends Component
 		if ($result)
 		{
 			IOHelper::changePermissions($targetPath, Craft::$app->config->get('defaultFilePermissions'));
-			$record = UserRecord::model()->findById($user->id);
+			$record = UserRecord::findOne($user->id);
 			$record->photo = $fileName;
 			$record->save();
 
@@ -684,7 +684,7 @@ class Users extends Component
 			IOHelper::deleteFolder($folder);
 		}
 
-		$record = UserRecord::model()->findById($user->id);
+		$record = UserRecord::findOne($user->id);
 		$record->photo = null;
 		$user->photo = null;
 		$record->save();
@@ -1334,7 +1334,7 @@ class Users extends Component
 	 */
 	private function _getUserRecordById($userId)
 	{
-		$userRecord = UserRecord::model()->findById($userId);
+		$userRecord = UserRecord::findOne($userId);
 
 		if (!$userRecord)
 		{

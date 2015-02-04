@@ -480,7 +480,7 @@ class Fields extends Component
 				$field->context = Craft::$app->content->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
-				$isNewField = $fieldRecord->isNewRecord();
+				$isNewField = $fieldRecord->getIsNewRecord();
 
 				$fieldRecord->groupId      = $field->groupId;
 				$fieldRecord->name         = $field->name;
@@ -602,7 +602,7 @@ class Fields extends Component
 	 */
 	public function deleteFieldById($fieldId)
 	{
-		$fieldRecord = FieldRecord::model()->findById($fieldId);
+		$fieldRecord = FieldRecord::findOne($fieldId);
 
 		if (!$fieldRecord)
 		{
@@ -1056,7 +1056,7 @@ class Fields extends Component
 	{
 		if ($group->id)
 		{
-			$groupRecord = FieldGroupRecord::model()->findById($group->id);
+			$groupRecord = FieldGroupRecord::findOne($group->id);
 
 			if (!$groupRecord)
 			{
@@ -1087,7 +1087,7 @@ class Fields extends Component
 
 			if (!isset($this->_fieldRecordsById) || !array_key_exists($fieldId, $this->_fieldRecordsById))
 			{
-				$this->_fieldRecordsById[$fieldId] = FieldRecord::model()->findById($fieldId);
+				$this->_fieldRecordsById[$fieldId] = FieldRecord::findOne($fieldId);
 
 				if (!$this->_fieldRecordsById[$fieldId])
 				{

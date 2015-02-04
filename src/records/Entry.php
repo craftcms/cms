@@ -22,13 +22,13 @@ class Entry extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'entries';
+		return '{{%entries}}';
 	}
 
 	/**

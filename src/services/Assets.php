@@ -195,7 +195,7 @@ class Assets extends Component
 
 		if (!$isNewFile)
 		{
-			$fileRecord = AssetFileRecord::model()->findById($file->id);
+			$fileRecord = AssetFileRecord::findOne($file->id);
 
 			if (!$fileRecord)
 			{
@@ -318,7 +318,7 @@ class Assets extends Component
 		}
 		else
 		{
-			$record = AssetFolderRecord::model()->findById($folder->id);
+			$record = AssetFolderRecord::findOne($folder->id);
 		}
 
 		$record->parentId = $folder->parentId;

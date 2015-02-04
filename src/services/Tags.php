@@ -150,7 +150,7 @@ class Tags extends Component
 	{
 		if (!isset($this->_tagGroupsById) || !array_key_exists($groupId, $this->_tagGroupsById))
 		{
-			$groupRecord = TagGroupRecord::model()->findById($groupId);
+			$groupRecord = TagGroupRecord::findOne($groupId);
 
 			if ($groupRecord)
 			{
@@ -197,7 +197,7 @@ class Tags extends Component
 	{
 		if ($tagGroup->id)
 		{
-			$tagGroupRecord = TagGroupRecord::model()->findById($tagGroup->id);
+			$tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
 
 			if (!$tagGroupRecord)
 			{
@@ -363,7 +363,7 @@ class Tags extends Component
 		// Tag data
 		if (!$isNewTag)
 		{
-			$tagRecord = TagRecord::model()->findById($tag->id);
+			$tagRecord = TagRecord::findOne($tag->id);
 
 			if (!$tagRecord)
 			{

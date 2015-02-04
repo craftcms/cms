@@ -957,7 +957,7 @@ class Sections extends Component
 	{
 		if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById))
 		{
-			$entryTypeRecord = EntryTypeRecord::model()->findById($entryTypeId);
+			$entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 
 			if ($entryTypeRecord)
 			{
@@ -1002,7 +1002,7 @@ class Sections extends Component
 	{
 		if ($entryType->id)
 		{
-			$entryTypeRecord = EntryTypeRecord::model()->findById($entryType->id);
+			$entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
 
 			if (!$entryTypeRecord)
 			{
@@ -1125,7 +1125,7 @@ class Sections extends Component
 		{
 			foreach ($entryTypeIds as $entryTypeOrder => $entryTypeId)
 			{
-				$entryTypeRecord = EntryTypeRecord::model()->findById($entryTypeId);
+				$entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 				$entryTypeRecord->sortOrder = $entryTypeOrder+1;
 				$entryTypeRecord->save();
 			}

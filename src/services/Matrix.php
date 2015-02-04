@@ -275,7 +275,7 @@ class Matrix extends Component
 				if (!$isNewBlockType)
 				{
 					// Get the old block type fields
-					$oldBlockTypeRecord = MatrixBlockTypeRecord::model()->findById($blockType->id);
+					$oldBlockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
 					$oldBlockType = MatrixBlockTypeModel::populateModel($oldBlockTypeRecord);
 
 					$contentService->fieldContext        = 'matrixBlockType:'.$blockType->id;
@@ -764,7 +764,7 @@ class Matrix extends Component
 		if (!$validate || $this->validateBlock($block))
 		{
 			$blockRecord = $this->_getBlockRecord($block);
-			$isNewBlock = $blockRecord->isNewRecord();
+			$isNewBlock = $blockRecord->getIsNewRecord();
 
 			$blockRecord->fieldId     = $block->fieldId;
 			$blockRecord->ownerId     = $block->ownerId;
@@ -1007,7 +1007,7 @@ class Matrix extends Component
 
 			if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockTypeId, $this->_blockTypeRecordsById))
 			{
-				$this->_blockTypeRecordsById[$blockTypeId] = MatrixBlockTypeRecord::model()->findById($blockTypeId);
+				$this->_blockTypeRecordsById[$blockTypeId] = MatrixBlockTypeRecord::findOne($blockTypeId);
 
 				if (!$this->_blockTypeRecordsById[$blockTypeId])
 				{

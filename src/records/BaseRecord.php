@@ -16,6 +16,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
+use yii\db\ActiveRecord;
 
 /**
  * Active Record base class.
@@ -23,7 +24,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseRecord extends \CActiveRecord
+abstract class BaseRecord extends ActiveRecord
 {
 	// Constants
 	// =========================================================================
@@ -77,13 +78,6 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Returns the name of the associated database table.
-	 *
-	 * @return string
-	 */
-	abstract public function getTableName();
-
-	/**
 	 * Returns an instance of the specified model
 	 *
 	 * @param string $class
@@ -96,13 +90,13 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Returns the table's primary key.
+	 * @inheritdoc
 	 *
-	 * @return mixed
+	 * @return string[]
 	 */
-	public function primaryKey()
+	public static function primaryKey()
 	{
-		return 'id';
+		return ['id'];
 	}
 
 	/**
@@ -123,16 +117,6 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		return $this->_attributeConfigs;
-	}
-
-	/**
-	 * Defines this model's relations to other models.
-	 *
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return [];
 	}
 
 	/**
@@ -173,7 +157,7 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Populate dateCreated and uid if this is a new record
-		if ($this->isNewRecord())
+		if ($this->getIsNewRecord())
 		{
 			$this->dateCreated = DateTimeHelper::currentTimeForDb();
 			$this->uid = StringHelper::UUID();
@@ -226,251 +210,15 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * @return array
+	 * @inheritdoc
+	 * @return ActiveQuery The newly created [[ActiveQuery]] instance.
 	 */
-	public function scopes()
+	public static function find()
 	{
-		$scopes = [];
-
-		// Add ordered() scope if this model has a sortOrder attribute
-		$attributes = $this->getAttributeConfigs();
-
-		if (isset($attributes['sortOrder']))
-		{
-			$scopes['ordered'] = ['order' => 'sortOrder'];
-		}
-
-		return $scopes;
+		return Craft::createObject(ActiveQuery::className(), [get_called_class()]);
 	}
 
-	/**
-	 * Creates the model's table.
-	 *
-	 * @return null
-	 */
-	public function createTable()
-	{
-		$table = $this->getTableName();
-		$indexes = $this->defineIndexes();
-		$attributes = $this->getAttributeConfigs();
-		$columns = [];
-
-		// Add any Foreign Key columns
-		foreach ($this->getBelongsToRelations() as $name => $config)
-		{
-			$columnName = $config[2];
-
-			// Is the record already defining this column?
-			if (isset($attributes[$columnName]))
-			{
-				continue;
-			}
-
-			$required = !empty($config['required']);
-			$columns[$columnName] = ['column' => ColumnType::Int, 'required' => $required];
-
-			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
-			if (!empty($config['unique']))
-			{
-				$indexes[] = ['columns' => [$columnName], 'unique' => true];
-			}
-		}
-
-		// Add all other columns
-		foreach ($attributes as $name => $config)
-		{
-			// Add (unique) index for this column?
-			$indexed = !empty($config['indexed']);
-			$unique = !empty($config['unique']);
-
-			if ($unique || $indexed)
-			{
-				$indexes[] = ['columns' => [$name], 'unique' => $unique];
-			}
-
-			$columns[$name] = $config;
-		}
-
-		$pk = $this->primaryKey();
-
-		if (isset($columns[$pk]))
-		{
-			$columns[$pk]['primaryKey'] = true;
-			$addIdColumn = false;
-		}
-		else
-		{
-			$addIdColumn = true;
-		}
-
-		// Create the table
-		$db = Craft::$app->getDb();
-		$db->createCommand()->createTable($table, $columns, null, $addIdColumn);
-
-		// Create the indexes
-		foreach ($indexes as $index)
-		{
-			$columns = ArrayHelper::toArray($index['columns']);
-			$unique = !empty($index['unique']);
-			$db->createCommand()->createIndex($db->getIndexName($table, $columns), $table, implode(',', $columns), $unique)->execute();
-		}
-	}
-
-	/**
-	 * Returns the BELONGS_TO relations.
-	 *
-	 * @return array
-	 */
-	public function getBelongsToRelations()
-	{
-		$belongsTo = [];
-
-		foreach ($this->defineRelations() as $name => $config)
-		{
-			if ($config[0] == static::BELONGS_TO)
-			{
-				$this->_normalizeRelation($name, $config);
-				$belongsTo[$name] = $config;
-			}
-		}
-
-		return $belongsTo;
-	}
-
-	/**
-	 * Drops the model's table.
-	 *
-	 * @return null
-	 */
-	public function dropTable()
-	{
-		$db = Craft::$app->getDb();
-		$table = $this->getTableName();
-
-		// Does the table exist?
-		if ($db->tableExists($table))
-		{
-			$db->createCommand()->dropTable($table);
-		}
-	}
-
-	/**
-	 * Adds foreign keys to the model's table.
-	 *
-	 * @return null
-	 */
-	public function addForeignKeys()
-	{
-		$table = $this->getTableName();
-
-		foreach ($this->getBelongsToRelations() as $name => $config)
-		{
-			$otherRecord = new $config[1];
-			$otherTable = $otherRecord->getTableName();
-			$otherPk = $otherRecord->primaryKey();
-
-			if (isset($config['onDelete']))
-			{
-				$onDelete = $config['onDelete'];
-			}
-			else
-			{
-				if (empty($config['required']))
-				{
-					$onDelete = static::SET_NULL;
-				}
-				else
-				{
-					$onDelete = null;
-				}
-			}
-
-			if (isset($config['onUpdate']))
-			{
-				$onUpdate = $config['onUpdate'];
-			}
-			else
-			{
-				$onUpdate = null;
-			}
-
-			$db = Craft::$app->getDb();
-			$db->createCommand()->addForeignKey($db->getForeignKeyName($table, $config[2]), $table, $config[2], $otherTable, $otherPk, $onDelete, $onUpdate)->execute();
-		}
-	}
-
-	/**
-	 * Drops the foreign keys from the model's table.
-	 *
-	 * @return null
-	 */
-	public function dropForeignKeys()
-	{
-		$db = Craft::$app->getDb();
-		$table = $this->getTableName();
-
-		// Does the table exist?
-		if ($db->tableExists($table, true))
-		{
-			foreach ($this->getBelongsToRelations() as $name => $config)
-			{
-				// Make sure the record's table exists
-				$otherRecord = new $config[1];
-
-				if ($db->tableExists($otherRecord->getTableName()))
-				{
-					$db->createCommand()->dropForeignKey($db->getForeignKeyName($table, $config[2]), $table)->execute();
-				}
-			}
-		}
-	}
-
-	// Rename a couple CActiveRecord functions
-
-	/**
-	 * @return bool
-	 */
-	public function isNewRecord()
-	{
-		return $this->getIsNewRecord();
-	}
-
-	/**
-	 * @param mixed $id
-	 * @param mixed $condition
-	 * @param array $params
-	 *
-	 * @return BaseRecord
-	 */
-	public function findById($id, $condition = '', $params = [])
-	{
-		return $this->findByPk($id, $condition, $params);
-	}
-
-	/**
-	 * @param mixed $id
-	 * @param mixed $condition
-	 * @param array $params
-	 *
-	 * @return BaseRecord[]
-	 */
-	public function findAllById($id, $condition = '', $params = [])
-	{
-		return $this->findAllByPk($id, $condition, $params);
-	}
-
-	// CModel and CActiveRecord methods
-
-	/**
-	 * Returns the name of the associated database table.
-	 *
-	 * @return string
-	 */
-	public function tableName()
-	{
-		return '{{%'.$this->getTableName().'}}';
-	}
+	// Model and ActiveRecord methods
 
 	/**
 	 * Returns this model's validation rules.
@@ -490,26 +238,6 @@ abstract class BaseRecord extends \CActiveRecord
 	public function attributeLabels()
 	{
 		return ModelHelper::getAttributeLabels($this);
-	}
-
-	/**
-	 * Declares the related models.
-	 *
-	 * @return array
-	 */
-	public function relations()
-	{
-		$relations = $this->defineRelations();
-
-		foreach ($relations as $name => &$config)
-		{
-			$this->_normalizeRelation($name, $config);
-
-			// Unset any keys that CActiveRecord isn't expecting
-			unset($config['required'], $config['unique'], $config['onDelete'], $config['onUpdate']);
-		}
-
-		return $relations;
 	}
 
 	/**
@@ -536,26 +264,6 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		return true;
-	}
-
-	/**
-	 * Adds search criteria based on this model's attributes.
-	 *
-	 * @return \CActiveDataProvider
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that should not be searched.
-		$criteria = new \CDbCriteria;
-
-		foreach (array_keys($this->getAttributeConfigs()) as $name)
-		{
-			$criteria->compare($name, $this->$name);
-		}
-
-		return new \CActiveDataProvider($this, [
-			'criteria' => $criteria
-		]);
 	}
 
 	// Protected Methods

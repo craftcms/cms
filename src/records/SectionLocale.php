@@ -21,13 +21,13 @@ class SectionLocale extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'sections_i18n';
+		return '{{%sections_i18n}}';
 	}
 
 	/**

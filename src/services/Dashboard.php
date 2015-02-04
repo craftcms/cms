@@ -161,7 +161,7 @@ class Dashboard extends Component
 
 		if ($recordValidates && $settingsValidate)
 		{
-			if ($widgetRecord->isNewRecord())
+			if ($widgetRecord->getIsNewRecord())
 			{
 				$maxSortOrder = (new Query())
 					->from('{{%widgets}}')

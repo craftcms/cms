@@ -21,13 +21,13 @@ class ElementLocale extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'elements_i18n';
+		return '{{%elements_i18n}}';
 	}
 
 	/**

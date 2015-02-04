@@ -583,7 +583,7 @@ class Tasks extends Component
 	{
 		if (!isset($this->_taskRecordsById[$taskId]))
 		{
-			$this->_taskRecordsById[$taskId] = TaskRecord::model()->findById($taskId);
+			$this->_taskRecordsById[$taskId] = TaskRecord::findOne($taskId);
 
 			if (!$this->_taskRecordsById[$taskId])
 			{

@@ -25,13 +25,13 @@ class EntryVersion extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'entryversions';
+		return '{{%entryversions}}';
 	}
 
 	/**

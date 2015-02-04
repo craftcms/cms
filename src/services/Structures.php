@@ -64,7 +64,7 @@ class Structures extends Component
 	 */
 	public function getStructureById($structureId)
 	{
-		$structureRecord = StructureRecord::model()->findById($structureId);
+		$structureRecord = StructureRecord::findOne($structureId);
 
 		if ($structureRecord)
 		{
@@ -84,7 +84,7 @@ class Structures extends Component
 	{
 		if ($structure->id)
 		{
-			$structureRecord = StructureRecord::model()->findById($structure->id);
+			$structureRecord = StructureRecord::findOne($structure->id);
 
 			if (!$structureRecord)
 			{

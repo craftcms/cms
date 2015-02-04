@@ -23,13 +23,13 @@ class UserPermission_User extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::getTableName()
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
-	public function getTableName()
+	public static function tableName()
 	{
-		return 'userpermissions_users';
+		return '{{%userpermissions_users}}';
 	}
 
 	/**
