@@ -405,7 +405,6 @@ class Resources extends Component
 		}
 
 		// You shall not pass.
-		$response->send();
 		Craft::$app->end();
 	}
 
