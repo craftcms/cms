@@ -213,7 +213,7 @@ abstract class Controller extends \yii\web\Controller
 	 */
 	public function requirePostRequest()
 	{
-		if (Craft::$app->getRequest()->getRequestType() !== 'POST')
+		if (!Craft::$app->getRequest()->getIsPost())
 		{
 			throw new HttpException(400);
 		}
