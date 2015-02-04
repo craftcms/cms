@@ -262,7 +262,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if (YII_DEBUG)
 		{
-			$version = '<a href="http://buildwithcraft.com/">Craft</a> '.CRAFT_VERSION.'.'.CRAFT_BUILD;
+			$version = '<a href="http://buildwithcraft.com/">Craft</a> '.Craft::$app->version.'.'.Craft::$app->build;
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

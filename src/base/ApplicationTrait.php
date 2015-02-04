@@ -747,7 +747,7 @@ trait ApplicationTrait
 
 			if (!Craft::$app->config->get('devMode') || !$this->_isCraftUpdating())
 			{
-				$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
+				//$fileTarget->setLevels(array(Logger::LEVEL_ERROR, Logger::LEVEL_WARNING));
 			}
 
 			$dispatcher->targets[] = $fileTarget;
@@ -863,7 +863,7 @@ trait ApplicationTrait
 
 		try
 		{
-			$db = Craft::createObject([
+			$config = [
 				'class' => 'craft\app\db\Connection',
 				'dsn' => $this->_processConnectionString(),
 				'emulatePrepare' => true,
@@ -874,8 +874,9 @@ trait ApplicationTrait
 				'schemaMap' => [
 					'mysql' => '\\craft\\app\\db\\mysql\\Schema',
 				],
-			]);
+			];
 
+			$db = Craft::createObject($config);
 			$db->open();
 		}
 		// Most likely missing PDO in general or the specific database PDO driver.

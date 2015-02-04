@@ -621,9 +621,9 @@ class Application extends \yii\web\Application
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
 					throw new HttpException(200, Craft::t('app', 'You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', [
-						'url'           => '<a href="'.CRAFT_MIN_BUILD_URL.'">build '.CRAFT_MIN_BUILD_REQUIRED.'</a>',
-						'targetVersion' => CRAFT_VERSION,
-						'targetBuild'   => CRAFT_BUILD
+						'url'           => '<a href="'.Craft::$app->minBuildUrl.'">build '.Craft::$app->minBuildRequired.'</a>',
+						'targetVersion' => Craft::$app->version,
+						'targetBuild'   => Craft::$app->build
 					]));
 				}
 				else

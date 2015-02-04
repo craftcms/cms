@@ -254,8 +254,8 @@ class Updates extends Component
 
 		$updateModel = new UpdateModel();
 		$updateModel->app = new AppUpdateModel();
-		$updateModel->app->localBuild   = CRAFT_BUILD;
-		$updateModel->app->localVersion = CRAFT_VERSION;
+		$updateModel->app->localVersion = Craft::$app->version;
+		$updateModel->app->localBuild   = Craft::$app->build;
 
 		$plugins = Craft::$app->plugins->getPlugins();
 
@@ -635,11 +635,11 @@ class Updates extends Component
 	public function updateCraftVersionInfo()
 	{
 		$info = Craft::$app->getInfo();
-		$info->version = CRAFT_VERSION;
-		$info->build = CRAFT_BUILD;
-		$info->schemaVersion = CRAFT_SCHEMA_VERSION;
-		$info->track = CRAFT_TRACK;
-		$info->releaseDate = CRAFT_RELEASE_DATE;
+		$info->version       = Craft::$app->version;
+		$info->build         = Craft::$app->build;
+		$info->schemaVersion = Craft::$app->schemaVersion;
+		$info->track         = Craft::$app->track;
+		$info->releaseDate   = Craft::$app->releaseDate;
 
 		return Craft::$app->saveInfo($info);
 	}

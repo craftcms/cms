@@ -400,16 +400,16 @@ class Install extends Component
 		Craft::log('Populating the info table.');
 
 		$info = new InfoModel([
-			'version'       => CRAFT_VERSION,
-			'build'         => CRAFT_BUILD,
-			'schemaVersion' => CRAFT_SCHEMA_VERSION,
-			'releaseDate'   => CRAFT_RELEASE_DATE,
+			'version'       => Craft::$app->version,
+			'build'         => Craft::$app->build,
+			'schemaVersion' => Craft::$app->schemaVersion,
+			'releaseDate'   => Craft::$app->releaseDate,
 			'edition'       => 0,
 			'siteName'      => $inputs['siteName'],
 			'siteUrl'       => $inputs['siteUrl'],
 			'on'            => 1,
 			'maintenance'   => 0,
-			'track'         => '@@@track@@@',
+			'track'         => Craft::$app->track,
 		]);
 
 		if (Craft::$app->saveInfo($info))
