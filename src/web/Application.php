@@ -505,7 +505,7 @@ class Application extends \yii\web\Application
 			if ($isCpRequest)
 			{
 				$url = UrlHelper::getUrl('install');
-				$request->redirect($url);
+				$this->getResponse()->redirect($url);
 			}
 			// Otherwise return a 404
 			else
