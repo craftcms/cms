@@ -18,6 +18,7 @@ use craft\app\helpers\PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use yii\base\Component;
+use yii\helpers\FileHelper;
 
 /**
  * Class Resources service.
@@ -374,35 +375,37 @@ class Resources extends Component
 			}
 		}
 
-		// Note that $content may be empty -- they could be requesting a blank text file or something. It doens't matter.
-		// No need to throw a 404.
-		$content = IOHelper::getFileContents($realPath);
+		$fileName = IOHelper::getFileName($realPath);
+		$mimeType = FileHelper::getMimeTypeByExtension($realPath);
+		$response = Craft::$app->getResponse();
 
-		// Normalize URLs in CSS files
-		$mimeType = IOHelper::getMimeTypeByExtension($realPath);
+		$options = [
+			'mimeType' => $mimeType,
+			'inline' => true,
+		];
 
-		if (strpos($mimeType, 'css') !== false)
+		if (Craft::$app->getRequest()->getQueryParam($this->dateParam))
 		{
-			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $content);
+			$response->setCacheHeaders();
+			$response->setLastModifiedHeader($realPath);
 		}
 
-		if (!Craft::$app->config->get('useXSendFile'))
+		// Is this a CSS file?
+		if ($mimeType == 'text/css')
 		{
-			$options['forceDownload'] = false;
+			// Normalize the URLs
+			$contents = IOHelper::getFileContents($realPath);
+			$contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);
 
-			if (Craft::$app->getRequest()->getQueryParam($this->dateParam))
-			{
-				$options['cache'] = true;
-			}
-
-			Craft::$app->getRequest()->sendFile($realPath, $content, $options);
+			$response->sendContentAsFile($contents, $fileName, $options);
 		}
 		else
 		{
-			Craft::$app->getRequest()->xSendFile($realPath);
+			$response->sendFile($realPath, $fileName, $options);
 		}
 
 		// You shall not pass.
+		$response->send();
 		Craft::$app->end();
 	}
 
