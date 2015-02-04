@@ -408,15 +408,17 @@ class Locale extends Object
 
 			if (!$this->_intlLoaded)
 			{
-				$config['dateTimeFormats']   = $this->data['dateTimeFormats'];
-				$config['monthNames']        = $this->data['standAloneMonthNames'];
-				$config['weekDayNames']      = $this->data['standAloneWeekDayNames'];
-				$config['amName']            = $this->data['amName'];
-				$config['pmName']            = $this->data['pmName'];
-				$config['currencySymbols']   = $this->data['currencySymbols'];
-				$config['decimalSeparator']  = $this->getNumberSymbol(static::SYMBOL_DECIMAL_SEPARATOR);
-				$config['thousandSeparator'] = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
-				$config['currencyCode']      = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
+				$config['dateTimeFormats']        = $this->data['dateTimeFormats'];
+				$config['standAloneMonthNames']   = $this->data['standAloneMonthNames'];
+				$config['monthNames']             = $this->data['monthNames'];
+				$config['standAloneWeekDayNames'] = $this->data['standAloneWeekDayNames'];
+				$config['weekDayNames']           = $this->data['weekDayNames'];
+				$config['amName']                 = $this->data['amName'];
+				$config['pmName']                 = $this->data['pmName'];
+				$config['currencySymbols']        = $this->data['currencySymbols'];
+				$config['decimalSeparator']       = $this->getNumberSymbol(static::SYMBOL_DECIMAL_SEPARATOR);
+				$config['thousandSeparator']      = $this->getNumberSymbol(static::SYMBOL_GROUPING_SEPARATOR);
+				$config['currencyCode']           = $this->getNumberSymbol(static::SYMBOL_INTL_CURRENCY);
 			}
 
 			$this->_formatter = new Formatter($config);

@@ -8,7 +8,6 @@
 namespace craft\app\i18n;
 
 use Craft;
-use craft\app\helpers\StringHelper;
 use DateTime;
 use DateTimeZone;
 use NumberFormatter;
@@ -33,9 +32,19 @@ class Formatter extends \yii\i18n\Formatter
 	public $dateTimeFormats;
 
 	/**
+	 * @var array The localized "stand alone" month names.
+	 */
+	public $standAloneMonthNames;
+
+	/**
 	 * @var array The localized month names.
 	 */
 	public $monthNames;
+
+	/**
+	 * @var array The localized "stand alone" day of the week names.
+	 */
+	public $standAloneWeekDayNames;
 
 	/**
 	 * @var array The localized day of the week names.
@@ -278,10 +287,7 @@ class Formatter extends \yii\i18n\Formatter
 		if (strncmp($format, 'php:', 4) === 0)
 		{
 			$format = substr($format, 4);
-		}
-		else
-		{
-			$format = FormatConverter::convertDateIcuToPhp($format, $type, $this->locale);
+			$format = FormatConverter::convertDatePhpToIcu($format, $type, $this->locale);
 		}
 
 		if ($timeZone != null)
@@ -296,85 +302,77 @@ class Formatter extends \yii\i18n\Formatter
 			}
 		}
 
-		$parts = preg_split('/(?<!\\\)([DlFMaAd])/', $format, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-		$format = '';
+		// Parse things that we can translate before passing it off to DateTime::format()
+		$tr = [];
 
-		foreach ($parts as $part)
+		if (preg_match_all('/(?<!\')\'.*?[^\']\'(?!\')/', $format, $matches))
 		{
-			switch ($part)
+			foreach ($matches[0] as $match)
 			{
-				case 'D': // Mon
-				case 'l': // Monday
-				{
-					$day = $timestamp->format('w');
-					$length = $part == 'D' ? 'medium' : 'full';
-
-					if (isset($this->weekDayNames[$length][$day]))
-					{
-						$format .= $this->_escapeForDateTimeFormat($this->weekDayNames[$length][$day]);
-					}
-					else
-					{
-						$format .= $part;
-					}
-
-					break;
-				}
-
-				case 'F': // January
-				case 'M': // Jan
-				{
-					$month = $timestamp->format('n') - 1;
-					$length = $part == 'F' ? 'full' : 'medium';
-
-					if (isset($this->monthNames[$length][$month]))
-					{
-						$format .= $this->_escapeForDateTimeFormat($this->monthNames[$length][$month]);
-					}
-					else
-					{
-						$format .= $part;
-					}
-
-					break;
-				}
-
-				case 'a': // am or pm
-				case 'A': // AM or PM
-				{
-					$which = $timestamp->format('a').'Name';
-
-					if ($this->$which !== null)
-					{
-						$name = $part == 'a' ? StringHelper::toLowerCase($this->$which) : StringHelper::toUpperCase($this->$which);
-						$format .= $this->_escapeForDateTimeFormat($name);
-					}
-					else
-					{
-						$format .= $part;
-					}
-
-					break;
-				}
-
-				default:
-				{
-					$format .= $part;
-				}
+				$tr[$match] = $match;
 			}
 		}
 
-		return $timestamp->format($format);
-	}
+		if ($this->standAloneMonthNames !== null || $this->monthNames !== null)
+		{
+			$month = $timestamp->format('n') - 1;
 
-	/**
-	 * Escapes a given string for a PHP date format.
-	 *
-	 * @param string $str
-	 * @return string The escaped string
-	 */
-	private function _escapeForDateTimeFormat($str)
-	{
-		return '\\'.implode('\\', str_split($str));
+			if ($this->standAloneMonthNames !== null)
+			{
+				$tr['LLLLL'] = '\''.$this->standAloneMonthNames['abbreviation'][$month].'\'';
+				$tr['LLLL']  = '\''.$this->standAloneMonthNames['full'][$month].'\'';
+				$tr['LLL']   = '\''.$this->standAloneMonthNames['medium'][$month].'\'';
+			}
+
+			if ($this->monthNames !== null)
+			{
+				$tr['MMMMM'] = '\''.$this->monthNames['abbreviation'][$month].'\'';
+				$tr['MMMM']  = '\''.$this->monthNames['full'][$month].'\'';
+				$tr['MMM']   = '\''.$this->monthNames['medium'][$month].'\'';
+			}
+		}
+
+		if ($this->standAloneWeekDayNames !== null || $this->weekDayNames !== null)
+		{
+			$day = $timestamp->format('w');
+
+			if ($this->standAloneWeekDayNames !== null)
+			{
+				$tr['cccccc'] = '\''.$this->standAloneWeekDayNames['short'][$day].'\'';
+				$tr['ccccc']  = '\''.$this->standAloneWeekDayNames['abbreviation'][$day].'\'';
+				$tr['cccc']   = '\''.$this->standAloneWeekDayNames['full'][$day].'\'';
+				$tr['ccc']    = '\''.$this->standAloneWeekDayNames['medium'][$day].'\'';
+			}
+
+			if ($this->weekDayNames !== null)
+			{
+				$tr['EEEEEE'] = '\''.$this->weekDayNames['short'][$day].'\'';
+				$tr['EEEEE']  = '\''.$this->weekDayNames['abbreviation'][$day].'\'';
+				$tr['EEEE']   = '\''.$this->weekDayNames['full'][$day].'\'';
+				$tr['EEE']    = '\''.$this->weekDayNames['medium'][$day].'\'';
+				$tr['EE']     = '\''.$this->weekDayNames['medium'][$day].'\'';
+				$tr['E']      = '\''.$this->weekDayNames['medium'][$day].'\'';
+
+				$tr['eeeeee'] = '\''.$this->weekDayNames['short'][$day].'\'';
+				$tr['eeeee']  = '\''.$this->weekDayNames['abbreviation'][$day].'\'';
+				$tr['eeee']   = '\''.$this->weekDayNames['full'][$day].'\'';
+				$tr['eee']    = '\''.$this->weekDayNames['medium'][$day].'\'';
+			}
+		}
+
+		$amPmName = $timestamp->format('a').'Name';
+
+		if ($this->$amPmName !== null)
+		{
+			$tr['a'] = '\''.$this->$amPmName.'\'';
+		}
+
+		if ($tr)
+		{
+			$format = strtr($format, $tr);
+		}
+
+		$format = FormatConverter::convertDateIcuToPhp($format, $type, $this->locale);
+		return $timestamp->format($format);
 	}
 }
