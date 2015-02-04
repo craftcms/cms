@@ -370,7 +370,7 @@ class Resources extends Component
 			if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate)
 			{
 				// Let the browser serve it from cache.
-				HeaderHelper::setHeader('HTTP/1.1 304 Not Modified');
+				Craft::$app->getResponse()->setStatusCode(304);
 				Craft::$app->end();
 			}
 		}
