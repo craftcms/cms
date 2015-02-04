@@ -13,23 +13,71 @@
 		{%- endif %}
 {%- endswitch %}
 
-{# Load scripts in reverse order #}
+{% set useCompressedJs = craft.config.useCompressedJs %}
+{% set jsResources = [
+	'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js',
+	'lib/jquery-2.1.1'~(useCompressedJs ? '.min')~'.js',
+	'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js',
+	'lib/velocity'~(useCompressedJs ? '.min')~'.js',
+	'lib/jquery.placeholder'~(useCompressedJs ? '.min')~'.js',
+	'lib/fileupload/jquery.ui.widget.js',
+	'lib/fileupload/jquery.fileupload.js',
+	'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js',
+	'js/craft.js'
+] %}
 
-{%- if datepickerLocale is defined %}
-	{%- includeJsResource 'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js' first %}
-{%- endif %}
+{# HIDE #}
+{% set jsResources = jsResources|merge([
+	'js/classes/BaseElementIndex.js',
+	'js/classes/BaseElementSelectInput.js',
+	'js/classes/BaseElementSelectorModal.js',
+	'js/classes/BaseInputGenerator.js',
 
-{%- set useCompressedJs = craft.config.useCompressedJs %}
-{%- includeJsResource "js/cp.js" first -%}
-{%- includeJsResource "js/craft.js" first -%}
-{%- includeJsResource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.fileupload.js' first %}
-{%- includeJsResource 'lib/fileupload/jquery.ui.widget.js' first %}
-{%- includeJsResource 'lib/jquery.placeholder.js' first %}
-{%- includeJsResource 'lib/velocity'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-ui'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/jquery-2.1.1'~(useCompressedJs ? '.min')~'.js' first %}
-{%- includeJsResource 'lib/xregexp-all'~(useCompressedJs ? '-min')~'.js' first %}
+	'js/classes/AdminTable.js',
+	'js/classes/AssetIndex.js',
+	'js/classes/AssetSelectInput.js',
+	'js/classes/AssetSelectorModal.js',
+	'js/classes/CategoryIndex.js',
+	'js/classes/CategorySelectInput.js',
+	'js/classes/DataTableSorter.js',
+	'js/classes/EditableTable.js',
+	'js/classes/ElementEditor.js',
+	'js/classes/EntryIndex.js',
+	'js/classes/EntryUrlFormatGenerator.js',
+	'js/classes/FieldLayoutDesigner.js',
+	'js/classes/FieldToggle.js',
+	'js/classes/Grid.js',
+	'js/classes/HandleGenerator.js',
+	'js/classes/ImageUpload.js',
+	'js/classes/InfoIcon.js',
+	'js/classes/LightSwitch.js',
+	'js/classes/Pane.js',
+	'js/classes/PasswordInput.js',
+	'js/classes/ProgressBar.js',
+	'js/classes/PromptHandler.js',
+	'js/classes/SlugGenerator.js',
+	'js/classes/Structure.js',
+	'js/classes/StructureDrag.js',
+	'js/classes/TagSelectInput.js',
+	'js/classes/UpgradeModal.js',
+	'js/classes/Uploader.js',
+	'js/classes/WrongEditionModal.js',
+]) %}
+{# end HIDE #}
+
+{% if datepickerLocale is defined %}
+	{% set jsResources = jsResources|merge([
+		'lib/datepicker-i18n/datepicker-'~datepickerLocale~'.js'
+	]) %}
+{% endif %}
+
+{% set jsResources = jsResources|merge([
+	'js/cp.js',
+]) %}
+
+{% for jsResource in jsResources|reverse %}
+	{% includeJsResource jsResource first %}
+{% endfor %}
 
 {%- includeTranslations "Show", "Hide" %}
 
