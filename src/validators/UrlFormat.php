@@ -9,6 +9,7 @@ namespace craft\app\validators;
 
 use Craft;
 use craft\app\helpers\ElementHelper;
+use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid URL format.
@@ -16,7 +17,7 @@ use craft\app\helpers\ElementHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UrlFormat extends \CValidator
+class UrlFormat extends Validator
 {
 	// Properties
 	// =========================================================================
@@ -37,7 +38,7 @@ class UrlFormat extends \CValidator
 	 *
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$urlFormat = $object->$attribute;
 

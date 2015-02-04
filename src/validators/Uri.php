@@ -8,6 +8,7 @@
 namespace craft\app\validators;
 
 use Craft;
+use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid URI.
@@ -15,7 +16,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Uri extends \CValidator
+class Uri extends Validator
 {
 	// Properties
 	// =========================================================================
@@ -34,7 +35,7 @@ class Uri extends \CValidator
 	 *
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$uri = $object->$attribute;
 

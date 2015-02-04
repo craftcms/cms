@@ -223,13 +223,13 @@ class ModelHelper
 	}
 
 	/**
-	 * Returns the rules array used by CModel.
+	 * Returns the rules array used by [[\yii\base\Model]].
 	 *
-	 * @param \CModel $model
+	 * @param Model $model
 	 *
 	 * @return array
 	 */
-	public static function getRules(\CModel $model)
+	public static function getRules(Model $model)
 	{
 		$rules                    = [];
 		$uniqueAttributes         = [];
@@ -251,7 +251,7 @@ class ModelHelper
 			{
 				case AttributeType::DateTime:
 				{
-					$rules[] = [$name, 'Craft\DateTimeValidator'];
+					$rules[] = [$name, 'craft\app\validators\DateTime'];
 					break;
 				}
 
@@ -269,19 +269,19 @@ class ModelHelper
 
 				case AttributeType::Handle:
 				{
-					$rules[] = [$name, 'Craft\HandleValidator', 'reservedWords' => ArrayHelper::toArray($config['reservedWords'])];
+					$rules[] = [$name, 'craft\app\validators\Handle', 'reservedWords' => ArrayHelper::toArray($config['reservedWords'])];
 					break;
 				}
 
 				case AttributeType::Locale:
 				{
-					$rules[] = [$name, 'Craft\LocaleValidator'];
+					$rules[] = [$name, 'craft\app\validators\Locale'];
 					break;
 				}
 
 				case AttributeType::Number:
 				{
-					$rule = [$name, 'numerical'];
+					$rule = [$name, 'number'];
 
 					if ($config['min'] !== null)
 					{
@@ -412,7 +412,7 @@ class ModelHelper
 						else
 						{
 							$initialColumn = array_shift($columns);
-							$rules[] = [$initialColumn, 'Craft\CompositeUniqueValidator', 'with' => implode(',', $columns)];
+							$rules[] = [$initialColumn, 'craft\app\validators\CompositeUnique', 'with' => implode(',', $columns)];
 						}
 					}
 
@@ -426,44 +426,44 @@ class ModelHelper
 
 		if ($uniqueAttributes)
 		{
-			$rules[] = [implode(',', $uniqueAttributes), 'unique'];
+			$rules[] = [$uniqueAttributes, 'unique'];
 		}
 
 		if ($uniqueRequiredAttributes)
 		{
-			$rules[] = [implode(',', $uniqueRequiredAttributes), 'unique', 'allowEmpty' => false];
+			$rules[] = [$uniqueRequiredAttributes, 'unique', 'allowEmpty' => false];
 		}
 
 		if ($requiredAttributes)
 		{
-			$rules[] = [implode(',', $requiredAttributes), 'required'];
+			$rules[] = [$requiredAttributes, 'required'];
 		}
 
 		if ($emailAttributes)
 		{
-			$rules[] = [implode(',', $emailAttributes), 'email'];
+			$rules[] = [$emailAttributes, 'email'];
 		}
 
 		if ($urlAttributes)
 		{
-			$rules[] = [implode(',', $urlAttributes), 'Craft\UrlValidator', 'defaultScheme' => 'http'];
+			$rules[] = [$urlAttributes, 'craft\app\validators\Url', 'defaultScheme' => 'http'];
 		}
 
 		if ($urlFormatAttributes)
 		{
-			$rules[] = [implode(',', $urlFormatAttributes), 'Craft\UrlFormatValidator'];
+			$rules[] = [$urlFormatAttributes, 'craft\app\validators\UrlFormat'];
 		}
 
 		if ($uriAttributes)
 		{
-			$rules[] = [implode(',', $uriAttributes), 'Craft\UriValidator'];
+			$rules[] = [$uriAttributes, 'craft\app\validators\Uri'];
 		}
 
 		if ($strictLengthAttributes)
 		{
 			foreach ($strictLengthAttributes as $strictLength => $attributeNames)
 			{
-				$rules[] = [implode(',', $attributeNames), 'length', 'is' => (int)$strictLength];
+				$rules[] = [$attributeNames, 'string', 'length' => (int)$strictLength];
 			}
 		}
 
@@ -471,7 +471,7 @@ class ModelHelper
 		{
 			foreach ($minLengthAttributes as $minLength => $attributeNames)
 			{
-				$rules[] = [implode(',', $attributeNames), 'length', 'min' => (int)$minLength];
+				$rules[] = [$attributeNames, 'string', 'min' => (int)$minLength];
 			}
 		}
 
@@ -479,11 +479,11 @@ class ModelHelper
 		{
 			foreach ($maxLengthAttributes as $maxLength => $attributeNames)
 			{
-				$rules[] = [implode(',', $attributeNames), 'length', 'max' => (int)$maxLength];
+				$rules[] = [$attributeNames, 'string', 'max' => (int)$maxLength];
 			}
 		}
 
-		$rules[] = [implode(',', array_keys($attributes)), 'safe', 'on' => 'search'];
+		$rules[] = [array_keys($attributes), 'safe', 'on' => 'search'];
 
 		return $rules;
 	}
@@ -491,11 +491,11 @@ class ModelHelper
 	/**
 	 * Returns the attribute labels.
 	 *
-	 * @param \CModel $model
+	 * @param Model $model
 	 *
 	 * @return array
 	 */
-	public static function getAttributeLabels(\CModel $model)
+	public static function getAttributeLabels(Model $model)
 	{
 		$labels = [];
 

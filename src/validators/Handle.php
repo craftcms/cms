@@ -9,6 +9,7 @@ namespace craft\app\validators;
 
 use Craft;
 use craft\app\helpers\StringHelper;
+use yii\validators\Validator;
 
 /**
  * Class Handle validator.
@@ -16,7 +17,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Handle extends \CValidator
+class Handle extends Validator
 {
 	// Properties
 	// =========================================================================
@@ -45,7 +46,7 @@ class Handle extends \CValidator
 	 *
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$handle = $object->$attribute;
 

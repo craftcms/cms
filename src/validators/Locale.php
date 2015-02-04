@@ -8,6 +8,7 @@
 namespace craft\app\validators;
 
 use Craft;
+use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid site locale ID.
@@ -15,7 +16,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Locale extends \CValidator
+class Locale extends Validator
 {
 	// Protected Methods
 	// =========================================================================
@@ -26,7 +27,7 @@ class Locale extends \CValidator
 	 *
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$locale = $object->$attribute;
 

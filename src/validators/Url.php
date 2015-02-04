@@ -7,6 +7,7 @@
 
 namespace craft\app\validators;
 use craft\app\helpers\StringHelper;
+use yii\validators\UrlValidator;
 
 /**
  * Class Url validator.
@@ -14,7 +15,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Url extends \CUrlValidator
+class Url extends UrlValidator
 {
 	// Properties
 	// =========================================================================

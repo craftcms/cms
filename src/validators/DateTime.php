@@ -9,6 +9,7 @@ namespace craft\app\validators;
 
 use Craft;
 use craft\app\helpers\DateTimeHelper;
+use yii\validators\Validator;
 
 /**
  * Class DateTime validator.
@@ -16,7 +17,7 @@ use craft\app\helpers\DateTimeHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DateTimeF extends \CValidator
+class DateTime extends Validator
 {
 	// Protected Methods
 	// =========================================================================
@@ -27,7 +28,7 @@ class DateTimeF extends \CValidator
 	 *
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$value = $object->$attribute;
 

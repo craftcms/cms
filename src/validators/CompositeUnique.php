@@ -9,6 +9,7 @@ namespace craft\app\validators;
 
 use Craft;
 use craft\app\errors\Exception;
+use yii\validators\Validator;
 
 /**
  * Class CompositeUnique validator.
@@ -16,7 +17,7 @@ use craft\app\errors\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CompositeUnique extends \CValidator
+class CompositeUnique extends Validator
 {
 	// Properties
 	// =========================================================================
@@ -36,7 +37,7 @@ class CompositeUnique extends \CValidator
 	 * @throws Exception
 	 * @return null
 	 */
-	protected function validateAttribute($object, $attribute)
+	public function validateAttribute($object, $attribute)
 	{
 		$with = explode(',', $this->with);
 
