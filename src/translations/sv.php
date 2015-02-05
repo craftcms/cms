@@ -1086,7 +1086,6 @@ return array(
 	'Welcome to {siteName}!' => 'Välkommen till {siteName}!',
 	'What do you want the Title field to be called?' => 'Vad vill du kalla titelfältet?',
 	'What do you want to do with any content that is only available in {language}?' => 'Vad vill du göra med innehåll som bara finns på {language}?',
-	'What do you want to do with the their content?' => 'Vad vill du göra med innehållet?',
 	'What do you want to do with their content?' => 'Vad vill du göra med deras innehåll?',
 	'What do you want to do?' => 'Vad vill du göra?',
 	'What do you want to name your group?' => 'Vilket namn vill du ge din grupp?',
