@@ -17,11 +17,6 @@ class TasksService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * @var boolean Whether new tasks have been created in this request.
-	 */
-	public $createdNewTasks = false;
-
-	/**
 	 * @var
 	 */
 	private $_taskRecordsById;
@@ -35,6 +30,11 @@ class TasksService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_runningTask;
+
+	/**
+	 * @var
+	 */
+	private $_listeningForRequestEnd = false;
 
 	// Public Methods
 	// =========================================================================
@@ -59,7 +59,12 @@ class TasksService extends BaseApplicationComponent
 		$task->parentId = $parentId;
 		$this->saveTask($task);
 
-		$this->createdNewTasks = true;
+		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
+		{
+			// Turn this request into a runner once everything else is done
+			craft()->attachEventHandler('onEndRequest', array($this, 'handleRequestEnd'));
+			$this->_listeningForRequestEnd = true;
+		}
 
 		return $task;
 	}
@@ -548,6 +553,61 @@ class TasksService extends BaseApplicationComponent
 		unset($this->_taskRecordsById[$taskId]);
 
 		return $success;
+	}
+
+	/**
+	 * Figure out how to initiate a new task runner.
+	 */
+	public function handleRequestEnd()
+	{
+		// Make sure a future call to craft()->end() dosen't trigger this a second time
+		craft()->detachEventHandler('onEndRequest', array($this, '_onEndRequest'));
+
+		// Make sure nothing has been output to the browser yet, and there's no pending response body
+ 		if (!headers_sent() && !ob_get_length())
+ 		{
+ 			$this->closeAndRun();
+ 		}
+ 		// Is this a site request and are we responding with HTML or XHTML?
+ 		// (CP requests don't need to be told to run pending tasks)
+ 		else if (
+ 			craft()->request->isSiteRequest() &&
+ 			in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))
+ 		)
+ 		{
+ 			// Just output JS that tells the browser to fire an Ajax request to kick off task running
+			$url = JsonHelper::encode(UrlHelper::getActionUrl('tasks/runPendingTasks'));
+
+			// Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
+			echo <<<EOT
+<script type="text/javascript">
+/*<![CDATA[*/
+(function(){
+	var XMLHttpFactories = [
+		function () {return new XMLHttpRequest()},
+		function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+		function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+		function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+	];
+	var req = false;
+	for (var i = 0; i < XMLHttpFactories.length; i++) {
+		try {
+			req = XMLHttpFactories[i]();
+		}
+		catch (e) {
+			continue;
+		}
+		break;
+	}
+	if (!req) return;
+	req.open('GET', $url, true);
+	if (req.readyState == 4) return;
+	req.send();
+})();
+/*]]>*/
+</script>
+EOT;
+ 		}
 	}
 
 	// Private Methods
