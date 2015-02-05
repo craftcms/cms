@@ -16,6 +16,25 @@ namespace Craft;
  */
 class TasksController extends BaseController
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
+	 *
+	 * @var bool
+	 */
+	protected $allowAnonymous = array('actionRunPendingTasks');
+
 	// Public Methods
 	// =========================================================================
 
@@ -26,23 +45,20 @@ class TasksController extends BaseController
 	 */
 	public function actionRunPendingTasks()
 	{
-		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
-
-		// If there's already a running task, treat this like a getRunningTaskInfo request
-		$this->_returnRunningTaskInfo();
-
-		// Apparently not. Is there a pending task?
-		$task = craft()->tasks->getNextPendingTask();
-
-		if ($task)
+		// Make sure tasks aren't already running
+		if (!craft()->tasks->isTaskRunning())
 		{
-			// Return info about the next pending task without stopping PHP execution
-			JsonHelper::sendJsonHeaders();
-			craft()->request->close(JsonHelper::encode($task->getInfo()));
+			// Is there a pending task?
+			$task = craft()->tasks->getNextPendingTask();
 
-			// Start running tasks
-			craft()->tasks->runPendingTasks();
+			if ($task)
+			{
+				// Close the connection
+				craft()->request->close();
+
+				// Start running tasks
+				craft()->tasks->runPendingTasks();
+			}
 		}
 
 		craft()->end();
@@ -58,7 +74,10 @@ class TasksController extends BaseController
 		$this->requireAjaxRequest();
 		craft()->userSession->requirePermission('accessCp');
 
-		$this->_returnRunningTaskInfo();
+		if ($task = craft()->tasks->getRunningTask())
+		{
+			$this->returnJson($task->getInfo());
+		}
 
 		// No running tasks left? Check for a failed one
 		if (craft()->tasks->haveTasksFailed())
@@ -134,21 +153,5 @@ class TasksController extends BaseController
 		}
 
 		$this->returnJson($taskInfo);
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Returns info about the currently running task, if there is one.
-	 *
-	 * @return null
-	 */
-	private function _returnRunningTaskInfo()
-	{
-		if ($task = craft()->tasks->getRunningTask())
-		{
-			$this->returnJson($task->getInfo());
-		}
 	}
 }

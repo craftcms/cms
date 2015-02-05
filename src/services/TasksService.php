@@ -17,6 +17,11 @@ class TasksService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
+	 * @var boolean Whether new tasks have been created in this request.
+	 */
+	public $createdNewTasks = false;
+
+	/**
 	 * @var
 	 */
 	private $_taskRecordsById;
@@ -30,11 +35,6 @@ class TasksService extends BaseApplicationComponent
 	 * @var
 	 */
 	private $_runningTask;
-
-	/**
-	 * @var
-	 */
-	private $_listeningForRequestEnd = false;
 
 	// Public Methods
 	// =========================================================================
@@ -59,12 +59,7 @@ class TasksService extends BaseApplicationComponent
 		$task->parentId = $parentId;
 		$this->saveTask($task);
 
-		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
-		{
-			// Turn this request into a runner once everything else is done
-			craft()->attachEventHandler('onEndRequest', array($this, 'closeAndRun'));
-			$this->_listeningForRequestEnd = true;
-		}
+		$this->createdNewTasks = true;
 
 		return $task;
 	}
@@ -134,9 +129,6 @@ class TasksService extends BaseApplicationComponent
 	 */
 	public function closeAndRun()
 	{
-		// Make sure a future call to craft()->end() dosen't trigger this a second time
-		craft()->detachEventHandler('onEndRequest', array($this, 'closeAndRun'));
-
 		// Make sure nothing has been output to the browser yet
 		if (!headers_sent())
 		{
