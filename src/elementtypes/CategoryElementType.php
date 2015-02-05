@@ -100,6 +100,9 @@ class CategoryElementType extends BaseElementType
 			);
 		}
 
+		// Allow plugins to modify the sources
+		craft()->plugins->call('modifyCategorySources', array(&$sources, $context));
+
 		return $sources;
 	}
 

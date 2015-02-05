@@ -1086,7 +1086,6 @@ return array(
 	'Welcome to {siteName}!' => '欢迎浏览 {siteName}！',
 	'What do you want the Title field to be called?' => '您想怎样称呼标题字段？',
 	'What do you want to do with any content that is only available in {language}?' => '您想用只以 {language} 提供的内容做什么？',
-	'What do you want to do with the their content?' => '你想要用他们的内容做什么？',
 	'What do you want to do with their content?' => '您想用他们的内容做什么？',
 	'What do you want to do?' => '您想要做什么？',
 	'What do you want to name your group?' => '您想给群组取什么名称？',

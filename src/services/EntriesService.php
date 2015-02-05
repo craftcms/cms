@@ -302,28 +302,40 @@ class EntriesService extends BaseApplicationComponent
 			foreach ($entries as $entry)
 			{
 				// Fire an 'onBeforeDeleteEntry' event
-				$this->onBeforeDeleteEntry(new Event($this, array(
+				$event = new Event($this, array(
 					'entry' => $entry
-				)));
+				));
 
-				$section = $entry->getSection();
+				$this->onBeforeDeleteEntry($event);
 
-				if ($section->type == SectionType::Structure)
+				if ($event->performAction)
 				{
-					// First let's move the entry's children up a level, so this doesn't mess up the structure
-					$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
+					$section = $entry->getSection();
 
-					foreach ($children as $child)
+					if ($section->type == SectionType::Structure)
 					{
-						craft()->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
-					}
-				}
+						// First let's move the entry's children up a level, so this doesn't mess up the structure
+						$children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
 
-				$entryIds[] = $entry->id;
+						foreach ($children as $child)
+						{
+							craft()->structures->moveBefore($section->structureId, $child, $entry, 'update', true);
+						}
+					}
+
+					$entryIds[] = $entry->id;
+				}
 			}
 
-			// Delete 'em
-			$success = craft()->elements->deleteElementById($entryIds);
+			if ($entryIds)
+			{
+				// Delete 'em
+				$success = craft()->elements->deleteElementById($entryIds);
+			}
+			else
+			{
+				$success = false;
+			}
 
 			if ($transaction !== null)
 			{

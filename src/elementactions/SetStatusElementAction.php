@@ -68,7 +68,7 @@ class SetStatusElementAction extends BaseElementAction
 		}
 
 		// Clear their template caches
-		craft()->templateCache->deleteCacheById($elementIds);
+		craft()->templateCache->deleteCachesByElementId($elementIds);
 
 		// Fire an 'onSetStatus' event
 		$this->onSetStatus(new Event($this, array(

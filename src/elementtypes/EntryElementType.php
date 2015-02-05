@@ -164,6 +164,9 @@ class EntryElementType extends BaseElementType
 			}
 		}
 
+		// Allow plugins to modify the sources
+		craft()->plugins->call('modifyEntrySources', array(&$sources, $context));
+
 		return $sources;
 	}
 

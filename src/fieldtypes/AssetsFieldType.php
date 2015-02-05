@@ -175,14 +175,13 @@ class AssetsFieldType extends BaseElementFieldType
 		$handle = $this->model->handle;
 		$elementFiles = $this->element->{$handle};
 
-		if (is_object($elementFiles))
+		if ($elementFiles instanceof ElementCriteriaModel)
 		{
 			$elementFiles = $elementFiles->find();
 		}
 
 		if (is_array($elementFiles) && count($elementFiles))
 		{
-
 			$fileIds = array();
 
 			foreach ($elementFiles as $elementFile)

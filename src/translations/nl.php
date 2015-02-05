@@ -1088,7 +1088,6 @@ return array(
 	'Welcome to {siteName}!' => 'Welkom bij {siteName}!',
 	'What do you want the Title field to be called?' => 'Hoe wil je dat het Titelveld genoemd wordt?',
 	'What do you want to do with any content that is only available in {language}?' => 'Wat wilt u doen met materiaal dat alleen beschikbaar is in {language}?',
-	'What do you want to do with the their content?' => 'Wat wil je doen met de inhoud?',
 	'What do you want to do with their content?' => 'Wat wilt u doen met het bijbehorende materiaal?',
 	'What do you want to do?' => 'Wat wil je doen?',
 	'What do you want to name your group?' => 'Hoe wil je je groep noemen?',

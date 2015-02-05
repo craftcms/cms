@@ -793,7 +793,9 @@ class UsersController extends BaseController
 			$user = new UserModel();
 		}
 
-		if ($user->isCurrent())
+		$isCurrentUser = $user->isCurrent();
+
+		if ($isCurrentUser)
 		{
 			// Remember the old username in case it changes
 			$oldUsername = $user->username;
@@ -805,12 +807,17 @@ class UsersController extends BaseController
 		$verifyNewEmail = false;
 
 		// Are they allowed to set the email address?
-		if ($isNewUser || $user->isCurrent() || $currentUser->can('changeUserEmails'))
+		if ($isNewUser || $isCurrentUser || $currentUser->can('changeUserEmails'))
 		{
 			$newEmail = craft()->request->getPost('email');
 
 			// Did it just change?
-			if ($newEmail && $newEmail != $user->email)
+			if ($newEmail && $newEmail == $user->email)
+			{
+				$newEmail = null;
+			}
+
+			if ($newEmail)
 			{
 				// Does that email need to be verified?
 				if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || craft()->request->getPost('sendVerificationEmail')))
@@ -838,7 +845,7 @@ class UsersController extends BaseController
 		{
 			$user->newPassword = craft()->request->getPost('password', '');
 		}
-		else if ($user->isCurrent())
+		else if ($isCurrentUser)
 		{
 			// If there was a newPassword input but it was empty, pretend it didn't exist
 			$user->newPassword = (craft()->request->getPost('newPassword') ?: null);
@@ -899,7 +906,7 @@ class UsersController extends BaseController
 		if (craft()->users->saveUser($user))
 		{
 			// Is this the current user, and did their username just change?
-			if ($user->isCurrent() && $user->username !== $oldUsername)
+			if ($isCurrentUser && $user->username !== $oldUsername)
 			{
 				// Update the username cookie
 				craft()->userSession->processUsernameCookie($user->username);

@@ -75,6 +75,11 @@ class Et
 			'localEdition'      => craft()->getEdition(),
 			'userEmail'         => craft()->userSession->getUser()->email,
 			'track'             => CRAFT_TRACK,
+			'serverInfo'        => array(
+				'extensions'    => get_loaded_extensions(),
+				'phpVersion'    => PHP_VERSION,
+				'mySqlVersion'  => craft()->db->getServerVersion()
+			),
 		));
 
 		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
