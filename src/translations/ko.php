@@ -1086,7 +1086,6 @@ return array(
 	'Welcome to {siteName}!' => '{siteName}에 오신 것을 환영합니다!',
 	'What do you want the Title field to be called?' => '타이틀 필드 명을 지정하십시오.',
 	'What do you want to do with any content that is only available in {language}?' => '{language}로만 이용 가능한 콘텐츠를 갖고 무엇을 하길 원하십니까?',
-	'What do you want to do with the their content?' => '그들의 컨텐츠를 가지고 무엇을 하시겠습니까?',
 	'What do you want to do with their content?' => '그들의 콘텐츠로 무엇을 하길 원하십니까?',
 	'What do you want to do?' => '무엇을 하고 싶으세요?',
 	'What do you want to name your group?' => '그룹에 어떤 이름을 부여하고 싶으세요?',

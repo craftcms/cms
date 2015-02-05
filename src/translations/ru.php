@@ -1087,7 +1087,6 @@ return array(
 	'Welcome to {siteName}!' => 'Добро пожаловать на {siteName}!!',
 	'What do you want the Title field to be called?' => 'Как вы хотите назвать поле Заголовок?',
 	'What do you want to do with any content that is only available in {language}?' => 'Что вы хотите делать с контентом, который доступен только на {language}?',
-	'What do you want to do with the their content?' => 'Что вы хотите сделать с их содержимым?',
 	'What do you want to do with their content?' => 'Что вы хотите сделать с их содержимым?',
 	'What do you want to do?' => 'Что вы хотите сделать?',
 	'What do you want to name your group?' => 'Как вы хотите назвать свою группу?',
