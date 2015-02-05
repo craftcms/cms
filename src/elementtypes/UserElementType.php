@@ -58,7 +58,7 @@ class UserElementType extends BaseElementType
 			UserStatus::Pending   => Craft::t('Pending'),
 			UserStatus::Locked    => Craft::t('Locked'),
 			UserStatus::Suspended => Craft::t('Suspended'),
-			UserStatus::Archived  => Craft::t('Archived')
+			//UserStatus::Archived  => Craft::t('Archived')
 		);
 	}
 
