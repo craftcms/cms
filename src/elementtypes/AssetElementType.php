@@ -75,8 +75,12 @@ class AssetElementType extends BaseElementType
 		}
 
 		$tree = craft()->assets->getFolderTreeBySourceIds($sourceIds);
+		$sources = $this->_assembleSourceList($tree);
 
-		return $this->_assembleSourceList($tree);
+		// Allow plugins to modify the sources
+		craft()->plugins->call('modifyAssetSources', array(&$sources, $context));
+
+		return $sources;
 	}
 
 	/**

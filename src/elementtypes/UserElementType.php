@@ -92,6 +92,9 @@ class UserElementType extends BaseElementType
 			}
 		}
 
+		// Allow plugins to modify the sources
+		craft()->plugins->call('modifyUserSources', array(&$sources, $context));
+
 		return $sources;
 	}
 
