@@ -8,7 +8,7 @@ return [
 		],
 		'response' => 'craft\app\web\Response',
 		'errorHandler' => [
-			'errorAction' => 'templates/renderError'
+			'errorAction' => 'templates/render-error'
 		]
 	]
 ];
