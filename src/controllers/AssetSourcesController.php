@@ -136,13 +136,10 @@ class AssetSourcesController extends BaseController
 		}
 
 		$typeSettings = craft()->request->getPost('types');
+
 		if (isset($typeSettings[$source->type]))
 		{
-			if (!$source->settings)
-			{
-				$source->settings = array();
-			}
-
+			$source->settings = array();
 			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
 		}
 
