@@ -43,7 +43,14 @@ class DbBackup
 	 *
 	 * @var array
 	 */
-	private $_ignoreDataTables = array('assetindexdata', 'templatecaches', 'templatecachecriteria', 'templatecacheelements');
+	private $_ignoreDataTables = array(
+		'assetindexdata',
+		'assettransformindex',
+		'sessions',
+		'templatecaches',
+		'templatecachecriteria',
+		'templatecacheelements'
+	);
 
 	// Public Methods
 	// =========================================================================
