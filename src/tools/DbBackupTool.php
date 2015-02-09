@@ -61,7 +61,7 @@ class DbBackupTool extends BaseTool
 	{
 		// In addition to the default tables we want to ignore data in, we also don't care about data in the session
 		// table in this tools' case.
-		$file = craft()->db->backup(array('sessions'));
+		$file = craft()->db->backup();
 
 		if (IOHelper::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup'])
 		{
