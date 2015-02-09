@@ -580,10 +580,10 @@ class SearchService extends BaseApplicationComponent
 
 			// Make sure that it didn't result in an empty string (e.g. if they entered '&')
 			// unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
-			if ($keywords || $term->subLeft)
+			if ($keywords !== '' || $term->subLeft)
 			{
 				// Create fulltext clause from term
-				if ($keywords && $this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
+				if ($keywords !== '' && $this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
 				{
 					if ($term->subRight)
 					{
