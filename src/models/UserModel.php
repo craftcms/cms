@@ -456,7 +456,7 @@ class UserModel extends BaseElementModel
 
 		return array_merge(parent::defineAttributes(), array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
+			'photo'                      => AttributeType::String,
 			'firstName'                  => AttributeType::String,
 			'lastName'                   => AttributeType::String,
 			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
