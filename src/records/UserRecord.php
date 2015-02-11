@@ -88,8 +88,6 @@ class UserRecord extends BaseRecord
 	public function setActive()
 	{
 		$this->pending = false;
-		$this->locked = false;
-		$this->suspended = false;
 		$this->archived = false;
 	}
 
