@@ -105,7 +105,7 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true),
-			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
+			'photo'                      => array(AttributeType::String, 'maxLength' => 100),
 			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
 			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
 			'email'                      => array(AttributeType::Email, 'required' => true),
