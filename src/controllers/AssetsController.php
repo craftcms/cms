@@ -185,7 +185,7 @@ class AssetsController extends BaseController
 				throw new Exception(Craft::t('The file could not be replaced.'));
 			}
 
-			$fileName = $_FILES['replaceFile']['name'];
+			$fileName = AssetsHelper::cleanAssetName($_FILES['replaceFile']['name']);
 			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
 			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
 
