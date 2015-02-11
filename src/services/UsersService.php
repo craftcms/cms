@@ -395,9 +395,8 @@ class UsersService extends BaseApplicationComponent
 			{
 				$this->unsuspendUser($user);
 			}
-
 			// They got suspended
-			if ($userRecord->suspended == false && $user->suspended == true)
+			else if ($userRecord->suspended == false && $user->suspended == true)
 			{
 				$this->suspendUser($user);
 			}
