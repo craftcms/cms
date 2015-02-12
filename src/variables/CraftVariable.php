@@ -21,6 +21,11 @@ class CraftVariable
 	 */
 	private $_rebrandVariable;
 
+	/**
+	 * @var array
+	 */
+	private $_pluginVariableInstances;
+
 	// Public Methods
 	// =========================================================================
 
