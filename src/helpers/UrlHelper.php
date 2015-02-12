@@ -298,6 +298,30 @@ class UrlHelper
 		return static::getUrl($path, $params, $protocol, true);
 	}
 
+	/**
+	 * Will remove any querystring related information from a URL.
+	 *
+	 * @param $url The URL to check.
+	 *
+	 * @return string The URL with all querystring information (? and &) removed.
+	 */
+	public static function stripAllQueryStrings($url)
+	{
+		// For the simple case of test.jpg?key=value
+		if (($qIndex = mb_strpos($url, '?')) !== false)
+		{
+			$url = mb_substr($url, 0, mb_strpos($url, '?'));
+		}
+
+		// For the case of test.jpg&key=value
+		if (($qIndex = mb_strpos($url, '&')) !== false)
+		{
+			$url = mb_substr($url, 0, mb_strpos($url, '&'));
+		}
+
+		return $url;
+	}
+
 	// Private Methods
 	// =========================================================================
 

@@ -255,6 +255,7 @@ class UsersService extends BaseApplicationComponent
 		else
 		{
 			$userRecord = new UserRecord();
+			$userRecord->pending = true;
 		}
 
 		// Set the user record attributes
@@ -269,8 +270,6 @@ class UsersService extends BaseApplicationComponent
 		$userRecord->preferredLocale       = $user->preferredLocale;
 		$userRecord->weekStartDay          = $user->weekStartDay;
 		$userRecord->unverifiedEmail       = $user->unverifiedEmail;
-
-		$this->_processSaveUserStatus($userRecord, $user->status);
 
 		$userRecord->validate();
 		$user->addErrors($userRecord->getErrors());
@@ -299,12 +298,6 @@ class UsersService extends BaseApplicationComponent
 
 		try
 		{
-			// Set a default status of pending, if one wasn't supplied.
-			if (!$user->status)
-			{
-				$user->pending = true;
-			}
-
 			// Fire an 'onBeforeSaveUser' event
 			$event = new Event($this, array(
 				'user'      => $user,
@@ -395,6 +388,23 @@ class UsersService extends BaseApplicationComponent
 				$this->onSaveProfile(new Event($this, array(
 					'user' => $user
 				)));
+			}
+
+			// They got unsuspended
+			if ($userRecord->suspended == true && $user->suspended == false)
+			{
+				$this->unsuspendUser($user);
+			}
+			// They got suspended
+			else if ($userRecord->suspended == false && $user->suspended == true)
+			{
+				$this->suspendUser($user);
+			}
+
+			// They got activated
+			if ($userRecord->pending == true && $user->pending == false)
+			{
+				$this->activateUser($user);
 			}
 		}
 
@@ -1654,49 +1664,5 @@ class UsersService extends BaseApplicationComponent
 		}
 
 		return $success;
-	}
-
-	/**
-	 * @param $userRecord
-	 * @param $status
-	 */
-	private function _processSaveUserStatus($userRecord, $status)
-	{
-		switch ($status)
-		{
-			case UserStatus::Active:
-			{
-				$userRecord->archived = false;
-				$userRecord->locked = false;
-				$userRecord->pending = false;
-				$userRecord->suspended = false;
-
-				break;
-			}
-
-			case UserStatus::Pending:
-			{
-				$userRecord->pending = true;
-				break;
-			}
-
-			case UserStatus::Locked:
-			{
-				$userRecord->locked = true;
-				break;
-			}
-
-			case UserStatus::Suspended:
-			{
-				$userRecord->suspended = true;
-				break;
-			}
-
-			case UserStatus::Archived:
-			{
-				$userRecord->archived = true;
-				break;
-			}
-		}
 	}
 }
