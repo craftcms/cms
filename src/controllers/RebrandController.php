@@ -106,7 +106,7 @@ class RebrandController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			$source = UrlHelper::stripAllQueryStrings($source);
+			$source = UrlHelper::stripQueryString($source);
 
 			$imagePath = craft()->path->getTempUploadsPath().$source;
 

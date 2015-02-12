@@ -299,24 +299,23 @@ class UrlHelper
 	}
 
 	/**
-	 * Will remove any querystring related information from a URL.
+	 * Removes the query string from a given URL.
 	 *
 	 * @param $url The URL to check.
 	 *
-	 * @return string The URL with all querystring information (? and &) removed.
+	 * @return string The URL without a query string.
 	 */
-	public static function stripAllQueryStrings($url)
+	public static function stripQueryString($url)
 	{
-		// For the simple case of test.jpg?key=value
 		if (($qIndex = mb_strpos($url, '?')) !== false)
 		{
-			$url = mb_substr($url, 0, mb_strpos($url, '?'));
+			$url = mb_substr($url, 0, $qIndex);
 		}
 
-		// For the case of test.jpg&key=value
+		// Just in case the URL had an invalid query string
 		if (($qIndex = mb_strpos($url, '&')) !== false)
 		{
-			$url = mb_substr($url, 0, mb_strpos($url, '&'));
+			$url = mb_substr($url, 0, $qIndex);
 		}
 
 		return $url;
