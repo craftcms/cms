@@ -426,7 +426,7 @@ return array(
 	 * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
 	 * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
 	 *
-	 * If disabled, an alternate task runing trigger *must* be set up separately.
+	 * If disabled, an alternate task running trigger *must* be set up separately.
 	 */
 	'runTasksAutomatically' => true,
 
