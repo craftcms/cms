@@ -420,6 +420,17 @@ return array(
 	'rotateImagesOnUploadByExifData' => true,
 
 	/**
+	 * Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
+	 * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+	 *
+	 * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
+	 * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
+	 *
+	 * If disabled, an alternate task runing trigger *must* be set up separately.
+	 */
+	'runTasksAutomatically' => true,
+
+	/**
 	 * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
 	 * keyword index.
 	 */

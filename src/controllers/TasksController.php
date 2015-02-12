@@ -53,8 +53,11 @@ class TasksController extends BaseController
 
 			if ($task)
 			{
-				// Close the connection
-				craft()->request->close();
+				// Attempt to close the connection if this is an Ajax request
+				if (craft()->request->isAjaxRequest())
+				{
+					craft()->request->close();
+				}
 
 				// Start running tasks
 				craft()->tasks->runPendingTasks();
@@ -83,6 +86,12 @@ class TasksController extends BaseController
 		if (craft()->tasks->haveTasksFailed())
 		{
 			$this->returnJson(array('status' => 'error'));
+		}
+
+		// Any pending tasks?
+		if ($task = craft()->tasks->getNextPendingTask())
+		{
+			$this->returnJson($task->getInfo());
 		}
 
 		craft()->end();

@@ -557,16 +557,23 @@ var CP = Garnish.Base.extend(
 
 	runPendingTasks: function()
 	{
-		Craft.queueActionRequest('tasks/runPendingTasks', $.proxy(function(taskInfo, textStatus)
+		if (Craft.runTasksAutomatically)
 		{
-			if (textStatus == 'success')
+			Craft.queueActionRequest('tasks/runPendingTasks', $.proxy(function(taskInfo, textStatus)
 			{
-				this.trackTaskProgress(true);
-			}
-		}, this));
+				if (textStatus == 'success')
+				{
+					this.trackTaskProgress(0);
+				}
+			}, this));
+		}
+		else
+		{
+			this.trackTaskProgress(0);
+		}
 	},
 
-	trackTaskProgress: function(immediate)
+	trackTaskProgress: function(delay)
 	{
 		// Ignore if we're already tracking tasks
 		if (this.trackTaskProgressTimeout)
@@ -586,12 +593,17 @@ var CP = Garnish.Base.extend(
 
 					if (taskInfo.status == 'running')
 					{
-						// Keep checking
+						// Check again in one second
 						this.trackTaskProgress();
+					}
+					else if (taskInfo.status == 'pending')
+					{
+						// Check again in 30 seconds
+						this.trackTaskProgress(30000);
 					}
 				}
 			}, this));
-		}, this), (immediate ? 1 : 1000));
+		}, this), (typeof delay != typeof undefined ? delay : 1000));
 	},
 
 	stopTrackingTaskProgress: function()
@@ -614,7 +626,7 @@ var CP = Garnish.Base.extend(
 				this.taskProgressIcon = new TaskProgressIcon();
 			}
 
-			if (taskInfo.status == 'running')
+			if (taskInfo.status == 'running' || taskInfo.status == 'pending')
 			{
 				this.taskProgressIcon.hideFailMode();
 				this.taskProgressIcon.setDescription(taskInfo.description);
