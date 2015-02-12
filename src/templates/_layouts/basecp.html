@@ -76,6 +76,7 @@
 				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
 				csrfTokenName:         "{{ craft.config.csrfTokenName|e('js') }}",
 			{% endif %}
+			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
 			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
 			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
 		};

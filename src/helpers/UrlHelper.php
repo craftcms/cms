@@ -298,6 +298,29 @@ class UrlHelper
 		return static::getUrl($path, $params, $protocol, true);
 	}
 
+	/**
+	 * Removes the query string from a given URL.
+	 *
+	 * @param $url The URL to check.
+	 *
+	 * @return string The URL without a query string.
+	 */
+	public static function stripQueryString($url)
+	{
+		if (($qIndex = mb_strpos($url, '?')) !== false)
+		{
+			$url = mb_substr($url, 0, $qIndex);
+		}
+
+		// Just in case the URL had an invalid query string
+		if (($qIndex = mb_strpos($url, '&')) !== false)
+		{
+			$url = mb_substr($url, 0, $qIndex);
+		}
+
+		return $url;
+	}
+
 	// Private Methods
 	// =========================================================================
 

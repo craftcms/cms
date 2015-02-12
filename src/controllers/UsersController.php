@@ -1102,10 +1102,7 @@ class UsersController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = mb_strpos($source, '?')) !== false)
-			{
-				$source = mb_substr($source, 0, mb_strpos($source, '?'));
-			}
+			$source = UrlHelper::stripQueryString($source);
 
 			$user = craft()->users->getUserById($userId);
 			$userName = AssetsHelper::cleanAssetName($user->username, false);

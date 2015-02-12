@@ -814,6 +814,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 					{
 						Craft.cp.displayNotice(response.message);
 					}
+
+					// There may be a new background task that needs to be run
+					Craft.cp.runPendingTasks();
 				}
 				else
 				{
@@ -1259,21 +1262,37 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	setStoredSortOptionsForSource: function()
 	{
 		// Default to whatever's first
-		this.setSortAttribute(this.$sortAttributesList.find('a:first').data('attr'));
+		this.setSortAttribute();
 		this.setSortDirection('asc');
 
-		var storedSortAttr = this.getSelectedSourceState('order'),
-			storedSortDir = this.getSelectedSourceState('sort');
+		var sortAttr = this.getSelectedSourceState('order'),
+			sortDir = this.getSelectedSourceState('sort');
 
-		if (storedSortAttr)
+		if (!sortAttr)
 		{
-			this.setSortAttribute(storedSortAttr);
+			// Get the default
+			sortAttr = this.getDefaultSort();
+
+			if (Garnish.isArray(sortAttr))
+			{
+				sortDir = sortAttr[1];
+				sortAttr = sortAttr[0];
+			}
 		}
 
-		if (storedSortDir)
+		if (sortDir != 'asc' && sortDir != 'desc')
 		{
-			this.setSortDirection(storedSortDir);
+			sortDir = 'asc';
 		}
+
+		this.setSortAttribute(sortAttr);
+		this.setSortDirection(sortDir);
+	},
+
+	getDefaultSort: function()
+	{
+		// Default to whatever's first
+		return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
 	},
 
 	getViewModesForSource: function()

@@ -215,8 +215,6 @@ class UserModel extends BaseElementModel
 	public function setActive()
 	{
 		$this->pending = false;
-		$this->locked = false;
-		$this->suspended = false;
 		$this->archived = false;
 	}
 
@@ -456,7 +454,7 @@ class UserModel extends BaseElementModel
 
 		return array_merge(parent::defineAttributes(), array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'photo'                      => AttributeType::String,
+			'photo'                      => array(AttributeType::String, 'maxLength' => 100),
 			'firstName'                  => AttributeType::String,
 			'lastName'                   => AttributeType::String,
 			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),

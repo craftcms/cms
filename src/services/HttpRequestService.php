@@ -1132,9 +1132,12 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Closes the current HTTP connection with the browser, without ending PHP script execution.
+	 * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
 	 *
-	 * @param string|null $content
+	 * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
+	 * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
+	 *
+	 * @param string|null $content Any content that should be included in the response body.
 	 *
 	 * @see http://stackoverflow.com/a/141026
 	 * @throws Exception An exception will be thrown if content has already been output.

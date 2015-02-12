@@ -106,18 +106,7 @@ class RebrandController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = mb_strpos($source, '?')) !== false)
-			{
-				$source = mb_substr($source, 0, mb_strpos($source, '?'));
-			}
-
-			// It's possible there are & in the case of a site that isn't using rewriting the URL and the resource is
-			// being cached.  I.E. http://craft.dev/index.php?p=admin/resources/temp/logo.png&x=H1UP9g5TO
-			// In this case, $source is logo.png&x=H1UP9g5TO
-			if (($qIndex = mb_strpos($source, '&')) !== false)
-			{
-				$source = mb_substr($source, 0, mb_strpos($source, '&'));
-			}
+			$source = UrlHelper::stripQueryString($source);
 
 			$imagePath = craft()->path->getTempUploadsPath().$source;
 

@@ -370,8 +370,14 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	public function copy()
 	{
 		$class = get_class($this);
+		$copy = new $class($this->getAttributes(), $this->_elementType);
 
-		return new $class($this->getAttributes(), $this->_elementType);
+		if ($this->_matchedElements !== null)
+		{
+			$copy->setMatchedElements($this->_matchedElements);
+		}
+
+		return $copy;
 	}
 
 	/**
