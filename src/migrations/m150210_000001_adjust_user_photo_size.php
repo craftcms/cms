@@ -15,8 +15,8 @@ class m150210_000001_adjust_user_photo_size extends BaseMigration
 	{
 		Craft::log('Altering craft_users photo column to be varchar(100)...', LogLevel::Info, true);
 
-		$column = array(AttributeType::String, 'maxLength' => 100);
-		$this->alterColumn('users', 'weekStartDay', $column);
+		$this->alterColumn('users', 'photo', array(AttributeType::String, 'maxLength' => 100));
+		$this->alterColumn('users', 'weekStartDay', array(ColumnType::TinyInt, 'unsigned', 'required' => true, 'default' => '0'));
 
 		Craft::log('Done altering craft_users photo column to be varchar(100)...', LogLevel::Info, true);
 
