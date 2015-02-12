@@ -1958,6 +1958,11 @@ final class GCRequest
 	 */
 	private function __responseWriteCallback(&$curl, &$data)
 	{
+		if (!isset($this->response->body))
+		{
+			$this->response->body = "";
+		}
+
 		if (in_array($this->response->code, array(200, 206)) && $this->fp !== false)
 			return fwrite($this->fp, $data);
 		else
