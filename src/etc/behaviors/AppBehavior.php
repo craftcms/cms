@@ -562,10 +562,19 @@ class AppBehavior extends BaseBehavior
 			}
 			else
 			{
-				// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
-				$fallbackLanguage = $this->_getFallbackLanguage();
-				$this->setLanguage($fallbackLanguage);
-				$this->_gettingLanguage = false;
+				if (craft()->getComponent('request', false))
+				{
+					// We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
+					$fallbackLanguage = $this->_getFallbackLanguage();
+					$this->setLanguage($fallbackLanguage);
+					$this->_gettingLanguage = false;
+				}
+				else
+				{
+					// Seriously?
+					$this->setLanguage('en_us');
+					$this->_gettingLanguage = false;
+				}
 			}
 		}
 
