@@ -169,7 +169,7 @@ class DbBackup
 	 */
 	public function onCreateDbBackup(Event $event)
 	{
-		$this->raiseEvent('onCreateDbBackup', $event);
+		craft()->raiseEvent('onCreateDbBackup', $event);
 	}
 
 	// Private Methods
