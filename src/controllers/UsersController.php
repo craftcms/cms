@@ -1192,7 +1192,7 @@ class UsersController extends BaseController
 
 		if (craft()->request->isAjaxRequest())
 		{
-			die('great!');
+			$this->returnJson(array('success' => true));
 		}
 		else
 		{

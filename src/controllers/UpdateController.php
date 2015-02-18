@@ -66,7 +66,10 @@ class UpdateController extends BaseController
 
 		if ($updates)
 		{
-			$this->returnJson($updates);
+			$response = $updates->getAttributes();
+			$response['allowAutoUpdates'] = craft()->config->allowAutoUpdates();
+
+			$this->returnJson($response);
 		}
 		else
 		{
@@ -172,7 +175,7 @@ class UpdateController extends BaseController
 			// If it's not a manual update, make sure they have auto-update permissions.
 			craft()->userSession->requirePermission('performUpdates');
 
-			if (!craft()->config->get('allowAutoUpdates'))
+			if (!craft()->config->allowAutoUpdates())
 			{
 				$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 			}
@@ -214,7 +217,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!craft()->config->allowAutoUpdates())
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}
@@ -245,7 +248,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!craft()->config->allowAutoUpdates())
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}
@@ -274,7 +277,7 @@ class UpdateController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		if (!craft()->config->get('allowAutoUpdates'))
+		if (!craft()->config->allowAutoUpdates())
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => Craft::t('Auto-updating is disabled on this system.'), 'finished' => true));
 		}

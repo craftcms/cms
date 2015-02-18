@@ -32,6 +32,13 @@ return array(
 
 	/**
 	 * Whether or not to allow auto-updating in Craft. Does not affect manual updates.
+	 *
+	 * Possible values are:
+	 *
+	 * - `true` (all updates are allowed)
+	 * - `'minor-only'` (only minor and build updates are allowed)
+	 * - `'build-only'` (only build updates are allowed)
+	 * - `false` (no updates are allowed)
 	 */
 	'allowAutoUpdates' => true,
 
