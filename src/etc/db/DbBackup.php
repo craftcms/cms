@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.etc.db
  * @since     1.0
  */
-class DbBackup
+class DbBackup extends \CComponent
 {
 	// Properties
 	// =========================================================================
@@ -169,7 +169,7 @@ class DbBackup
 	 */
 	public function onCreateDbBackup(Event $event)
 	{
-		craft()->raiseEvent('onCreateDbBackup', $event);
+		$this->raiseEvent('onCreateDbBackup', $event);
 	}
 
 	// Private Methods
