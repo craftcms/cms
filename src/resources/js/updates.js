@@ -14,10 +14,8 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 	allowAutoUpdates: null,
 
-	init: function(allowAutoUpdates)
+	init: function()
 	{
-		this.allowAutoUpdates = allowAutoUpdates;
-
 		var $graphic = $('#graphic'),
 			$status = $('#status');
 
@@ -60,6 +58,8 @@ Craft.UpdateInfo = Garnish.Base.extend(
 						$status.remove();
 
 						this.appUpdateInfo = response.app;
+						this.allowAutoUpdates = response.allowAutoUpdates;
+
 						this.showAvailableUpdates();
 					}, this));
 				}
