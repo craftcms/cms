@@ -830,6 +830,18 @@ class AssetsService extends BaseApplicationComponent
 
 		$response = new AssetOperationResponseModel();
 
+		// Make sure the filename is allowed
+		if ($filename)
+		{
+			$extension = IOHelper::getExtension($filename);
+
+			if (!IOHelper::isExtensionAllowed($extension))
+			{
+				$response->setError(Craft::t('This file type is not allowed'));
+				return $response;
+			}
+		}
+
 		$folder = $this->getFolderById($folderId);
 		$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
 
