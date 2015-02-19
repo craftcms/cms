@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.etc.db
  * @since     1.0
  */
-class DbBackup extends \CComponent
+class DbBackup
 {
 	// Properties
 	// =========================================================================
@@ -106,11 +106,6 @@ class DbBackup extends \CComponent
 		$this->_processConstraints();
 		$this->_processFooter();
 
-		// Fire an 'onCreateDbBackup' event
-		$this->onCreateDbBackup(new Event($this, array(
-			'filePath' => $this->_filePath,
-		)));
-
 		return $this->_filePath;
 	}
 
@@ -158,18 +153,6 @@ class DbBackup extends \CComponent
 	public function trimValue(&$value)
 	{
 		$value = trim($value);
-	}
-
-	/**
-	 * Fires an 'onCreateDbBackup' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onCreateDbBackup(Event $event)
-	{
-		$this->raiseEvent('onCreateDbBackup', $event);
 	}
 
 	// Private Methods
