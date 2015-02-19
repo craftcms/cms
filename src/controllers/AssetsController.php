@@ -364,13 +364,6 @@ class AssetsController extends BaseController
 			$this->returnErrorJson($e->getMessage());
 		}
 
-		// Make sure that they're renaming to an allowed file extension
-		$extension = IOHelper::getExtension($fileName);
-		if (!IOHelper::isExtensionAllowed($extension))
-		{
-			$this->returnErrorJson(Craft::t('This file type is not allowed'));
-		}
-
 		$response = craft()->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
 		$this->returnJson($response->getResponseData());
 	}
