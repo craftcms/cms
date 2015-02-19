@@ -15,6 +15,7 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\requirements\RequirementsChecker;
 use craft\app\web\Controller;
+use yii\helpers\Markdown;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
@@ -207,8 +208,7 @@ class TemplatesController extends Controller
 
 		$variables = (array)$exception;
 
-		// Escape any inner-word underscores, which Markdown mistakes for italics
-		// TODO: This won't be necessary once we swap to Parsedown
+		$variables['message'] = Markdown::process($variables['messages']);
 		$variables['message'] = preg_replace('/(?<=[a-zA-Z])_(?=[a-zA-Z])/', '\_', $variables['message']);
 
 		// If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
