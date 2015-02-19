@@ -1154,6 +1154,7 @@ class Templates extends Component
 				'base_template_class' => '\\craft\\app\\templating\\BaseTemplate',
 				'cache'               => Craft::$app->path->getCompiledTemplatesPath(),
 				'auto_reload'         => true,
+				'charset'             => Craft::$app->charset,
 			];
 
 			if (Craft::$app->config->get('devMode'))
