@@ -15,7 +15,7 @@ use craft\app\models\BaseElementModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseTemplate extends \Twig_Template
+abstract class BaseTemplate extends \yii\twig\Template
 {
 	// Protected Methods
 	// =========================================================================
