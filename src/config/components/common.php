@@ -46,13 +46,13 @@ return [
 	'components' => [
 		'class' => 'craft\app\services\Components',
 		'types' => [
-			'assetSource'   => ['subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType',    'enableForPlugins' => false],
-			'element'       => ['subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'ElementTypeInterface',   'enableForPlugins' => true],
-			'elementAction' => ['subfolder' => 'elementactions',   'suffix' => 'ElementAction',   'instanceof' => 'ElementActionInterface', 'enableForPlugins' => true],
-			'field'         => ['subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'FieldTypeInterface',     'enableForPlugins' => true],
-			'tool'          => ['subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ToolInterface',          'enableForPlugins' => false],
-			'task'          => ['subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'TaskInterface',          'enableForPlugins' => true],
-			'widget'        => ['subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'WidgetInterface',        'enableForPlugins' => true],
+			'assetSource'   => ['subfolder' => 'assetsourcetypes', 'namespace' => '\craft\app\assetsourcetypes', 'instanceof' => '\craft\app\assetsourcetypes\BaseAssetSourceType',  'enableForPlugins' => false],
+			'element'       => ['subfolder' => 'elementtypes',     'namespace' => '\craft\app\elementtypes',     'instanceof' => '\craft\app\elementtypes\ElementTypeInterface',     'enableForPlugins' => true],
+			'elementAction' => ['subfolder' => 'elementactions',   'namespace' => '\craft\app\elementactions',   'instanceof' => '\craft\app\elementactions\ElementActionInterface', 'enableForPlugins' => true],
+			'field'         => ['subfolder' => 'fieldtypes',       'namespace' => '\craft\app\fieldtypes',       'instanceof' => '\craft\app\fieldtypes\FieldTypeInterface',         'enableForPlugins' => true],
+			'tool'          => ['subfolder' => 'tools',            'namespace' => '\craft\app\tools',            'instanceof' => '\craft\app\tools\ToolInterface',                   'enableForPlugins' => false],
+			'task'          => ['subfolder' => 'tasks',            'namespace' => '\craft\app\tasks',            'instanceof' => '\craft\app\tasks\TaskInterface',                   'enableForPlugins' => true],
+			'widget'        => ['subfolder' => 'widgets',          'namespace' => '\craft\app\widgets',          'instanceof' => '\craft\app\widgets\WidgetInterface',               'enableForPlugins' => true],
 		]
 	],
 	'resources' => [

@@ -77,11 +77,10 @@ class Components extends Component
 			$this->_noComponentTypeExists($type);
 		}
 
-		// Add the class suffix, initialize, and return
-		$fullClass = $class.$this->types[$type]['suffix'];
-		$nsClass = __NAMESPACE__.'\\'.$fullClass;
+		// Add the namespace, initialize, and return
+		$fullClass = $this->types[$type]['namespace'].'\\'.$class;
 
-		if (!class_exists($nsClass))
+		if (!class_exists($fullClass))
 		{
 			// Maybe it's a plugin component?
 			//if ($this->types[$type]['enableForPlugins'])
@@ -150,9 +149,6 @@ class Components extends Component
 	 */
 	public function validateClass($class)
 	{
-		// Add the namespace
-		$class = __NAMESPACE__.'\\'.$class;
-
 		// Make sure the class exists
 		if (!class_exists($class))
 		{
@@ -187,19 +183,12 @@ class Components extends Component
 		}
 
 		// Instantiate it
-		$class = __NAMESPACE__.'\\'.$class;
 		$component = new $class;
 
 		// Make sure it extends the right base class or implements the correct interface
-		if ($instanceOf)
+		if ($instanceOf && !($component instanceof $instanceOf))
 		{
-			// Add the namespace
-			$instanceOf = __NAMESPACE__.'\\'.$instanceOf;
-
-			if (!($component instanceof $instanceOf))
-			{
-				return;
-			}
+			return null;
 		}
 
 		// All good. Call the component's init() method and return it.
@@ -234,7 +223,7 @@ class Components extends Component
 		{
 			foreach ($files as $file)
 			{
-				$componentClasses[] = IOHelper::getFileName($file, false);
+				$componentClasses[] = $this->types[$type]['namespace'].'\\'.IOHelper::getFileName($file, false);
 			}
 		}
 
