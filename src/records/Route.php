@@ -31,15 +31,13 @@ class Route extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the route’s locale.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getLocale()
 	{
-		return [
-			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

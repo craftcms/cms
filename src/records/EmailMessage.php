@@ -35,15 +35,13 @@ class EmailMessage extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the email message’s locale.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getLocale()
 	{
-		return [
-			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

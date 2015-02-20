@@ -31,16 +31,23 @@ class FieldLayout extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the field layout’s tabs.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getTabs()
 	{
-		return [
-			'tabs'   => [static::HAS_MANY, 'FieldLayoutTab', 'layoutId', 'order' => 'tabs.sortOrder'],
-			'fields' => [static::HAS_MANY, 'FieldLayoutField', 'layoutId', 'order' => 'fields.sortOrder'],
-		];
+		return $this->hasMany(FieldLayoutTab::className(), ['layoutId' => 'id']);
+	}
+
+	/**
+	 * Returns the field layout’s fields.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFields()
+	{
+		return $this->hasMany(FieldLayoutField::className(), ['layoutId' => 'id']);
 	}
 
 	/**

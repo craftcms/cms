@@ -29,15 +29,22 @@ class Category extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the category’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'group'   => [static::BELONGS_TO, 'CategoryGroup', 'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
+
+	/**
+	 * Returns the category’s group.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getGroup()
+	{
+		return $this->hasOne(CategoryGroup::className(), ['id' => 'groupId']);
 	}
 }

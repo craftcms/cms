@@ -31,15 +31,13 @@ class Widget extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the widget’s user.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getUser()
 	{
-		return [
-			'user' => [static::BELONGS_TO, 'User', 'userId', 'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
 	// Protected Methods

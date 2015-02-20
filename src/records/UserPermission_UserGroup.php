@@ -33,16 +33,23 @@ class UserPermission_UserGroup extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the user permission user group’s permission.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getPermission()
 	{
-		return [
-			'permission' => [static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE],
-			'group'      => [static::BELONGS_TO, 'UserGroup',      'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(UserPermission::className(), ['id' => 'permissionId']);
+	}
+
+	/**
+	 * Returns the user permission user group’s group.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getGroup()
+	{
+		return $this->hasOne(UserGroup::className(), ['id' => 'groupId']);
 	}
 
 	/**

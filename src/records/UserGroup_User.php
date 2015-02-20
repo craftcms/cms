@@ -33,16 +33,23 @@ class UserGroup_User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the user group user’s group.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getGroup()
 	{
-		return [
-			'group' => [static::BELONGS_TO, 'UserGroup', 'required' => true, 'onDelete' => static::CASCADE],
-			'user'  => [static::BELONGS_TO, 'User',      'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(UserGroup::className(), ['id' => 'groupId']);
+	}
+
+	/**
+	 * Returns the user group user’s user.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getUser()
+	{
+		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
 	/**

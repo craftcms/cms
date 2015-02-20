@@ -31,15 +31,13 @@ class AssetSource extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the asset source’s fieldLayout.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getFieldLayout()
 	{
-		return [
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-		];
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
 	}
 
 	/**

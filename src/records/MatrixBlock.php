@@ -31,19 +31,53 @@ class MatrixBlock extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the matrix block’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element'     => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'owner'       => [static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE],
-			'ownerLocale' => [static::BELONGS_TO, 'Locale', 'ownerLocale', 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-			'field'       => [static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE],
-			'type'        => [static::BELONGS_TO, 'MatrixBlockType', 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
+
+	/**
+	 * Returns the matrix block’s owner.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getOwner()
+	{
+		return $this->hasOne(Element::className(), ['id' => 'ownerId']);
+	}
+
+	/**
+	 * Returns the matrix block’s ownerLocale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getOwnerLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'ownerLocale']);
+	}
+
+	/**
+	 * Returns the matrix block’s field.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getField()
+	{
+		return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+	}
+
+	/**
+	 * Returns the matrix block’s type.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getType()
+	{
+		return $this->hasOne(MatrixBlockType::className(), ['id' => 'typeId']);
 	}
 
 	/**

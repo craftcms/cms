@@ -34,17 +34,33 @@ class AssetFile extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the asset file’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'source'  => [static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE],
-			'folder'  => [static::BELONGS_TO, 'AssetFolder', 'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
+
+	/**
+	 * Returns the asset file’s source.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getSource()
+	{
+		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
+	}
+
+	/**
+	 * Returns the asset file’s folder.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFolder()
+	{
+		return $this->hasOne(AssetFolder::className(), ['id' => 'folderId']);
 	}
 
 	/**

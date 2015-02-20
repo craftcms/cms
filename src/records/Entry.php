@@ -32,25 +32,53 @@ class Entry extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the entry’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		$relations = [
-			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
-			'type'    => [static::BELONGS_TO, 'EntryType', 'onDelete' => static::CASCADE],
-			'author'  => [static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
 
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			$relations['versions'] = [static::HAS_MANY, 'EntryVersion', 'elementId'];
-		}
+	/**
+	 * Returns the entry’s section.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getSection()
+	{
+		return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+	}
 
-		return $relations;
+	/**
+	 * Returns the entry’s type.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getType()
+	{
+		return $this->hasOne(EntryType::className(), ['id' => 'typeId']);
+	}
+
+	/**
+	 * Returns the entry’s author.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getAuthor()
+	{
+		return $this->hasOne(User::className(), ['id' => 'authorId']);
+	}
+
+	/**
+	 * Returns the entry’s versions.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getVersions()
+	{
+		return $this->hasMany(EntryVersion::className(), ['elementId' => 'id']);
 	}
 
 	/**

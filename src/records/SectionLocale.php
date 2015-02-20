@@ -31,16 +31,23 @@ class SectionLocale extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the section locale’s section.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getSection()
 	{
-		return [
-			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
-			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+	}
+
+	/**
+	 * Returns the section locale’s locale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

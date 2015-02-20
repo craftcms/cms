@@ -33,16 +33,23 @@ class UserPermission_User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the user permission user’s permission.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getPermission()
 	{
-		return [
-			'permission' => [static::BELONGS_TO, 'UserPermission', 'required' => true, 'onDelete' => static::CASCADE],
-			'user'       => [static::BELONGS_TO, 'User',           'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(UserPermission::className(), ['id' => 'permissionId']);
+	}
+
+	/**
+	 * Returns the user permission user’s user.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getUser()
+	{
+		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
 	/**

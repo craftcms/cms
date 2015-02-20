@@ -30,18 +30,43 @@ class CategoryGroup extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the category group’s structure.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getStructure()
 	{
-		return [
-			'structure'   => [static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE],
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-			'locales'     => [static::HAS_MANY, 'CategoryGroupLocale', 'groupId'],
-			'categories'  => [static::HAS_MANY, 'Category', 'groupId'],
-		];
+		return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+	}
+
+	/**
+	 * Returns the category group’s fieldLayout.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFieldLayout()
+	{
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+	}
+
+	/**
+	 * Returns the category group’s locales.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getLocales()
+	{
+		return $this->hasMany(CategoryGroupLocale::className(), ['groupId' => 'id']);
+	}
+
+	/**
+	 * Returns the category group’s categories.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getCategories()
+	{
+		return $this->hasMany(Category::className(), ['groupId' => 'id']);
 	}
 
 	/**

@@ -31,16 +31,23 @@ class ElementLocale extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the element locale’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element' => [static::BELONGS_TO, 'Element', 'required' => true, 'onDelete' => static::CASCADE],
-			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'elementId']);
+	}
+
+	/**
+	 * Returns the element locale’s locale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

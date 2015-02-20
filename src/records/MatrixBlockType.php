@@ -40,16 +40,23 @@ class MatrixBlockType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the matrix block type’s field.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getField()
 	{
-		return [
-			'field'       => [static::BELONGS_TO, 'Field', 'required' => true, 'onDelete' => static::CASCADE],
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-		];
+		return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+	}
+
+	/**
+	 * Returns the matrix block type’s fieldLayout.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFieldLayout()
+	{
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
 	}
 
 	/**

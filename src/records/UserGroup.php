@@ -34,15 +34,14 @@ class UserGroup extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the group’s users.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface
 	 */
-	public function defineRelations()
+	public function getUsers()
 	{
-		return [
-			'users' => [static::MANY_MANY, 'User', 'usergroups_users(groupId, userId)'],
-		];
+		return $this->hasMany(User::className(), ['id' => 'userId'])
+			->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);
 	}
 
 	/**

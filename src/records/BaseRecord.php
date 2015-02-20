@@ -9,9 +9,9 @@ namespace craft\app\records;
 
 use Craft;
 use craft\app\dates\DateTime;
+use craft\app\db\ActiveQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
-use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
@@ -45,23 +45,6 @@ abstract class BaseRecord extends ActiveRecord
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Constructor
-	 *
-	 * @param string $scenario
-	 *
-	 * @return BaseRecord
-	 */
-	public function __construct($scenario = 'insert')
-	{
-		// If Craft isn't installed, this model's table won't exist yet, so just create an instance of the class,
-		// for use by the installer
-		if ($scenario !== 'install')
-		{
-			parent::__construct($scenario);
-		}
-	}
 
 	/**
 	 * Initializes the application component.
@@ -277,44 +260,5 @@ abstract class BaseRecord extends ActiveRecord
 	protected function defineAttributes()
 	{
 		return [];
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Normalizes a relation's config
-	 *
-	 * @param string $name
-	 * @param array  &$config
-	 *
-	 * @return null
-	 */
-	private function _normalizeRelation($name, &$config)
-	{
-		// Add the namespace to the class name
-		if (!StringHelper::contains($config[1], '\\'))
-		{
-			$config[1] = __NAMESPACE__.'\\'.$config[1];
-		}
-
-		switch ($config[0])
-		{
-			case static::BELONGS_TO:
-			{
-				// Add the foreign key
-				if (empty($config[2]))
-				{
-					array_splice($config, 2, 0, $name.'Id');
-				}
-				break;
-			}
-
-			case static::MANY_MANY:
-			{
-				$config[2] = Craft::$app->getDb()->tablePrefix.$config[2];
-				break;
-			}
-		}
 	}
 }

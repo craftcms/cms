@@ -31,16 +31,23 @@ class GlobalSet extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the global set’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element'     => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
+
+	/**
+	 * Returns the global set’s fieldLayout.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFieldLayout()
+	{
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
 	}
 
 	/**

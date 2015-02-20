@@ -33,25 +33,44 @@ class User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the user’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		$relations = [
-			'element'         => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'preferredLocale' => [static::BELONGS_TO, 'Locale', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
 
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			$relations['groups'] = [static::MANY_MANY, 'UserGroup', 'usergroups_users(userId, groupId)'];
-		}
+	/**
+	 * Returns the user’s preferredLocale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getPreferredLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'preferredLocale']);
+	}
 
-		$relations['sessions'] = [static::HAS_MANY, 'Session', 'userId'];
+	/**
+	 * Returns the user’s sessions.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getSessions()
+	{
+		return $this->hasMany(Session::className(), ['userId' => 'id']);
+	}
 
-		return $relations;
+	/**
+	 * Returns the user’s groups.
+	 *
+	 * @return \yii\db\ActiveQueryInterface
+	 */
+	public function getGroups()
+	{
+		return $this->hasMany(UserGroup::className(), ['id' => 'groupId'])
+			->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
 	}
 
 	/**

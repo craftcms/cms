@@ -35,18 +35,43 @@ class EntryVersion extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the entry version’s entry.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getEntry()
 	{
-		return [
-			'entry'   => [static::BELONGS_TO, 'Entry', 'required' => true, 'onDelete' => static::CASCADE],
-			'section' => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
-			'creator' => [static::BELONGS_TO, 'User', 'required' => false, 'onDelete' => static::SET_NULL],
-			'locale'  => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(Entry::className(), ['id' => 'entryId']);
+	}
+
+	/**
+	 * Returns the entry version’s section.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getSection()
+	{
+		return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+	}
+
+	/**
+	 * Returns the entry version’s creator.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getCreator()
+	{
+		return $this->hasOne(User::className(), ['id' => 'creatorId']);
+	}
+
+	/**
+	 * Returns the entry version’s locale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

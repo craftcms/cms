@@ -62,7 +62,7 @@ class Field extends BaseRecord
 		parent::init();
 
 		// Store the old handle in case it's ever requested.
-		$this->attachEventHandler('onAfterFind', [$this, 'storeOldHandle']);
+		//$this->attachEventHandler('onAfterFind', [$this, 'storeOldHandle']);
 	}
 
 	/**
@@ -96,15 +96,13 @@ class Field extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the field’s group.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getGroup()
 	{
-		return [
-			'group' => [static::BELONGS_TO, 'FieldGroup', 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(FieldGroup::className(), ['id' => 'groupId']);
 	}
 
 	/**

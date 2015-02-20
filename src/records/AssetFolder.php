@@ -31,16 +31,23 @@ class AssetFolder extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the asset folder’s parent.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getParent()
 	{
-		return [
-			'parent' => [static::BELONGS_TO, 'AssetFolder', 'onDelete' => static::CASCADE],
-			'source' => [static::BELONGS_TO, 'AssetSource', 'required' => false, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(AssetFolder::className(), ['id' => 'parentId']);
+	}
+
+	/**
+	 * Returns the asset folder’s source.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getSource()
+	{
+		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
 	}
 
 	/**

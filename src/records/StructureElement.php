@@ -31,16 +31,23 @@ class StructureElement extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the structure element’s structure.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getStructure()
 	{
-		return [
-			'structure' => [static::BELONGS_TO, 'Structure', 'required' => true, 'onDelete' => static::CASCADE],
-			'element'   => [static::BELONGS_TO, 'Element', 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+	}
+
+	/**
+	 * Returns the structure element’s element.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getElement()
+	{
+		return $this->hasOne(Element::className(), ['id' => 'elementId']);
 	}
 
 	/**

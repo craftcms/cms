@@ -32,15 +32,13 @@ class Session extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the session’s user.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getUser()
 	{
-		return [
-			'user' => [static::BELONGS_TO, 'User', 'onDelete' => static::CASCADE, 'required' => true],
-		];
+		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
 	/**

@@ -32,15 +32,13 @@ class AssetIndexData extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the asset index data’s source.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getSource()
 	{
-		return [
-			'source' => [static::BELONGS_TO, 'AssetSource', 'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(AssetSource::className(), ['id' => 'sourceId']);
 	}
 
 	/**

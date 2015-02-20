@@ -31,15 +31,13 @@ class FieldGroup extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the field group’s fields.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getFields()
 	{
-		return [
-			'fields' => [static::HAS_MANY, 'Field', 'groupId'],
-		];
+		return $this->hasMany(Field::className(), ['groupId' => 'id']);
 	}
 
 	/**

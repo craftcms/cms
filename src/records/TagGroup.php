@@ -31,16 +31,23 @@ class TagGroup extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the tag group’s fieldLayout.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getFieldLayout()
 	{
-		return [
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-			'tags'        => [static::HAS_MANY, 'Tag', 'tagId'],
-		];
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+	}
+
+	/**
+	 * Returns the tag group’s tags.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getTags()
+	{
+		return $this->hasMany(Tag::className(), ['tagId' => 'id']);
 	}
 
 	/**

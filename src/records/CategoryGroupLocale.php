@@ -31,16 +31,23 @@ class CategoryGroupLocale extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the category group locale’s group.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getGroup()
 	{
-		return [
-			'group'  => [static::BELONGS_TO, 'CategoryGroup', 'required' => true, 'onDelete' => static::CASCADE],
-			'locale' => [static::BELONGS_TO, 'Locale', 'locale', 'required' => true, 'onDelete' => static::CASCADE, 'onUpdate' => static::CASCADE],
-		];
+		return $this->hasOne(CategoryGroup::className(), ['id' => 'groupId']);
+	}
+
+	/**
+	 * Returns the category group locale’s locale.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getLocale()
+	{
+		return $this->hasOne(Locale::className(), ['id' => 'locale']);
 	}
 
 	/**

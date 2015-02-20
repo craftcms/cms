@@ -30,16 +30,23 @@ class EntryType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the entry type’s section.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getSection()
 	{
-		return [
-			'section'     => [static::BELONGS_TO, 'Section', 'required' => true, 'onDelete' => static::CASCADE],
-			'fieldLayout' => [static::BELONGS_TO, 'FieldLayout', 'onDelete' => static::SET_NULL],
-		];
+		return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+	}
+
+	/**
+	 * Returns the entry type’s fieldLayout.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getFieldLayout()
+	{
+		return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
 	}
 
 	/**

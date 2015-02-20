@@ -32,15 +32,13 @@ class Migration extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the migration’s plugin.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getPlugin()
 	{
-		return [
-			'plugin' => [static::BELONGS_TO, 'Plugin', 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Plugin::className(), ['id' => 'pluginId']);
 	}
 
 	/**

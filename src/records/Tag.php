@@ -29,15 +29,22 @@ class Tag extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the tag’s element.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElement()
 	{
-		return [
-			'element' => [static::BELONGS_TO, 'Element', 'id', 'required' => true, 'onDelete' => static::CASCADE],
-			'group'   => [static::BELONGS_TO, 'TagGroup', 'required' => true, 'onDelete' => static::CASCADE],
-		];
+		return $this->hasOne(Element::className(), ['id' => 'id']);
+	}
+
+	/**
+	 * Returns the tag’s group.
+	 *
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
+	 */
+	public function getGroup()
+	{
+		return $this->hasOne(TagGroup::className(), ['id' => 'groupId']);
 	}
 }

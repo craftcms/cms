@@ -32,15 +32,13 @@ class Structure extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineRelations()
+	 * Returns the structure’s elements.
 	 *
-	 * @return array
+	 * @return \yii\db\ActiveQueryInterface The relational query object.
 	 */
-	public function defineRelations()
+	public function getElements()
 	{
-		return [
-			'elements' => [static::HAS_MANY, 'StructureElement', 'structureId'],
-		];
+		return $this->hasMany(StructureElement::className(), ['structureId' => 'id']);
 	}
 
 	// Protected Methods
