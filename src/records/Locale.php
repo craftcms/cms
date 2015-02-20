@@ -33,9 +33,9 @@ class Locale extends BaseRecord
 	/**
 	 * @return string
 	 */
-	public function primaryKey()
+	public static function primaryKey()
 	{
-		return 'locale';
+		return ['locale'];
 	}
 
 	/**
