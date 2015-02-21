@@ -981,7 +981,7 @@ class Assets extends Component
 	 */
 	public function deleteFolderRecord($folderId)
 	{
-		return (bool) AssetFolderRecord::model()->deleteAll('id = :folderId', [':folderId' => $folderId]);
+		return (bool) AssetFolderRecord::deleteAll('id = :folderId', [':folderId' => $folderId]);
 	}
 
 	/**
