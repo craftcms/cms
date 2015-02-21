@@ -1195,7 +1195,7 @@ class Elements extends Component
 
 					if (!$isNewElement)
 					{
-						$existingLocaleRecords = ElementLocaleRecord::model()->findAllByAttributes([
+						$existingLocaleRecords = ElementLocaleRecord::findAll([
 							'elementId' => $element->id
 						]);
 
@@ -1673,7 +1673,7 @@ class Elements extends Component
 			// go one-by-one in case one of theme deletes the record of another in the process.
 			foreach ($elementIds as $elementId)
 			{
-				$records = StructureElementRecord::model()->findAllByAttributes([
+				$records = StructureElementRecord::findAll([
 					'elementId' => $elementId
 				]);
 

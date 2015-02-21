@@ -278,7 +278,7 @@ class Categories extends Component
 	 */
 	public function getGroupLocales($groupId, $indexBy = null)
 	{
-		$records = CategoryGroupLocaleRecord::model()->findAllByAttributes([
+		$records = CategoryGroupLocaleRecord::findAll([
 			'groupId' => $groupId
 		]);
 
@@ -417,7 +417,7 @@ class Categories extends Component
 				if (!$isNewCategoryGroup)
 				{
 					// Get the old category group locales
-					$oldLocaleRecords = CategoryGroupLocaleRecord::model()->findAllByAttributes([
+					$oldLocaleRecords = CategoryGroupLocaleRecord::findAll([
 						'groupId' => $group->id
 					]);
 					$oldLocales = CategoryGroupLocaleModel::populateModels($oldLocaleRecords, 'locale');

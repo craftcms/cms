@@ -553,7 +553,7 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						// Get the old section locales
-						$oldSectionLocaleRecords = SectionLocaleRecord::model()->findAllByAttributes([
+						$oldSectionLocaleRecords = SectionLocaleRecord::findAll([
 							'sectionId' => $section->id
 						]);
 
@@ -981,7 +981,7 @@ class Sections extends Component
 	 */
 	public function getEntryTypesByHandle($entryTypeHandle)
 	{
-		$entryTypeRecords = EntryTypeRecord::model()->findAllByAttributes([
+		$entryTypeRecords = EntryTypeRecord::findAll([
 			'handle' => $entryTypeHandle
 		]);
 
