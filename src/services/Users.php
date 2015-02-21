@@ -243,7 +243,7 @@ class Users extends Component
 	 */
 	public function getUserByUid($uid)
 	{
-		$userRecord = UserRecord::model()->findByAttributes([
+		$userRecord = UserRecord::findOne([
 			'uid' => $uid
 		]);
 

@@ -248,7 +248,7 @@ class EmailMessages extends Component
 			$localeId = Craft::$app->language;
 		}
 
-		$record = EmailMessageRecord::model()->findByAttributes([
+		$record = EmailMessageRecord::findOne([
 			'key'    => $key,
 			'locale' => $localeId,
 		]);

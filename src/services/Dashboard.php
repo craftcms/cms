@@ -128,7 +128,7 @@ class Dashboard extends Component
 	 */
 	public function getUserWidgetById($id)
 	{
-		$widgetRecord = WidgetRecord::model()->findByAttributes([
+		$widgetRecord = WidgetRecord::findOne([
 			'id' => $id,
 			'userId' => Craft::$app->getUser()->getIdentity()->id
 		]);
@@ -302,7 +302,7 @@ class Dashboard extends Component
 
 		if ($widgetId)
 		{
-			$widgetRecord = WidgetRecord::model()->findByAttributes([
+			$widgetRecord = WidgetRecord::findOne([
 				'id'     => $widgetId,
 				'userId' => $userId
 			]);

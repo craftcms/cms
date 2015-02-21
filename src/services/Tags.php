@@ -174,7 +174,7 @@ class Tags extends Component
 	 */
 	public function getTagGroupByHandle($groupHandle)
 	{
-		$groupRecord = TagGroupRecord::model()->findByAttributes([
+		$groupRecord = TagGroupRecord::findOne([
 			'handle' => $groupHandle
 		]);
 

@@ -83,7 +83,7 @@ class UserGroups extends Component
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		$groupRecord = UserGroupRecord::model()->findByAttributes([
+		$groupRecord = UserGroupRecord::findOne([
 			'handle' => $groupHandle
 		]);
 

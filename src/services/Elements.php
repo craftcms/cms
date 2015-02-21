@@ -1127,7 +1127,7 @@ class Elements extends Component
 		// Get the element record
 		if (!$isNewElement)
 		{
-			$elementRecord = ElementRecord::model()->findByAttributes([
+			$elementRecord = ElementRecord::findOne([
 				'id'   => $element->id,
 				'type' => $element->getElementType()
 			]);

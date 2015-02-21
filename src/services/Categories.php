@@ -255,7 +255,7 @@ class Categories extends Component
 	 */
 	public function getGroupByHandle($groupHandle)
 	{
-		$groupRecord = CategoryGroupRecord::model()->findByAttributes([
+		$groupRecord = CategoryGroupRecord::findOne([
 			'handle' => $groupHandle
 		]);
 

@@ -279,7 +279,7 @@ class Structures extends Component
 
 		if ($elementId)
 		{
-			return StructureElementRecord::model()->findByAttributes([
+			return StructureElementRecord::findOne([
 				'structureId' => $structureId,
 				'elementId'   => $elementId
 			]);

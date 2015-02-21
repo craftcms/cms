@@ -162,7 +162,7 @@ class SystemSettings extends Component
 	{
 		if (!isset($this->_settingsRecords[$category]))
 		{
-			$record = SystemSettingsRecord::model()->findByAttributes([
+			$record = SystemSettingsRecord::findOne([
 				'category' => $category
 			]);
 

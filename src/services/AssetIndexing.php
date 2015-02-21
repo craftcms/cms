@@ -74,12 +74,10 @@ class AssetIndexing extends Component
 	 */
 	public function ensureTopFolder(AssetSourceModel $model)
 	{
-		$folder = AssetFolderRecord::model()->findByAttributes(
-			[
-				'name' => $model->name,
-				'sourceId' => $model->id
-			]
-		);
+		$folder = AssetFolderRecord::findOne([
+			'name' => $model->name,
+			'sourceId' => $model->id
+		]);
 
 		if (empty($folder))
 		{
@@ -122,13 +120,11 @@ class AssetIndexing extends Component
 	 */
 	public function getIndexEntry($sourceId, $sessionId, $offset)
 	{
-		$record = AssetIndexDataRecord::model()->findByAttributes(
-			[
-				'sourceId' => $sourceId,
-				'sessionId' => $sessionId,
-				'offset' => $offset
-			]
-		);
+		$record = AssetIndexDataRecord::findOne([
+			'sourceId' => $sourceId,
+			'sessionId' => $sessionId,
+			'offset' => $offset
+		]);
 
 		if ($record)
 		{

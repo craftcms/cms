@@ -587,7 +587,7 @@ class UserPermissions extends Component
 		// Permission names are always stored in lowercase
 		$permissionName = strtolower($permissionName);
 
-		$permissionRecord = UserPermissionRecord::model()->findByAttributes([
+		$permissionRecord = UserPermissionRecord::findOne([
 			'name' => $permissionName
 		]);
 
