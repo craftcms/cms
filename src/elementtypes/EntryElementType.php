@@ -197,120 +197,122 @@ class EntryElementType extends BaseElementType
 				if (preg_match('/^section:(\d+)$/', $source, $matches))
 				{
 					$section = craft()->sections->getSectionById($matches[1]);
-				}
 
-				if (empty($section))
-				{
-					return;
+					if ($section)
+					{
+						$sections = array($section);
+					}
 				}
-
-				$sections = array($section);
 			}
 		}
 
 		// Now figure out what we can do with these
 		$actions = array();
-		$userSessionService = craft()->userSession;
-		$canSetStatus = true;
-		$canEdit = false;
 
-		foreach ($sections as $section)
+		if (!empty($sections))
 		{
-			$canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
+			$userSessionService = craft()->userSession;
+			$canSetStatus = true;
+			$canEdit = false;
 
-			// Only show the Set Status action if we're sure they can make changes in all the sections
-			if (!(
-				$canPublishEntries &&
-				($section->type == SectionType::Single || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
-			))
+			foreach ($sections as $section)
 			{
-				$canSetStatus = false;
-			}
+				$canPublishEntries = $userSessionService->checkPermission('publishEntries:'.$section->id);
 
-			// Show the Edit action if they can publish changes to *any* of the sections
-			// (the trigger will disable itself for entries that aren't editable)
-			if ($canPublishEntries)
-			{
-				$canEdit = true;
-			}
-		}
-
-		// Set Status
-		if ($canSetStatus)
-		{
-			$setStatusAction = craft()->elements->getAction('SetStatus');
-			$setStatusAction->onSetStatus = function(Event $event)
-			{
-				if ($event->params['status'] == BaseElementModel::ENABLED)
+				// Only show the Set Status action if we're sure they can make changes in all the sections
+				if (!(
+					$canPublishEntries &&
+					($section->type == SectionType::Single || $userSessionService->checkPermission('publishPeerEntries:'.$section->id))
+				))
 				{
-					// Set a Post Date as well
-					craft()->db->createCommand()->update(
-						'entries',
-						array('postDate' => DateTimeHelper::currentTimeForDb()),
-						array('and', array('in', 'id', $event->params['elementIds']), 'postDate is null')
-					);
+					$canSetStatus = false;
 				}
-			};
-			$actions[] = $setStatusAction;
-		}
 
-		// Edit
-		if ($canEdit)
-		{
-			$editAction = craft()->elements->getAction('Edit');
-			$editAction->setParams(array(
-				'label' => Craft::t('Edit entry'),
-			));
-			$actions[] = $editAction;
-		}
-
-		if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
-		{
-			// View
-			$viewAction = craft()->elements->getAction('View');
-			$viewAction->setParams(array(
-				'label' => Craft::t('View entry'),
-			));
-			$actions[] = $viewAction;
-		}
-
-		// Channel/Structure-only actions
-		if ($source != '*' && $source != 'singles')
-		{
-			$section = $sections[0];
-
-			// New child?
-			if (
-				$section->type == SectionType::Structure &&
-				$userSessionService->checkPermission('createEntries:'.$section->id)
-			)
-			{
-				$structure = craft()->structures->getStructureById($section->structureId);
-
-				if ($structure)
+				// Show the Edit action if they can publish changes to *any* of the sections
+				// (the trigger will disable itself for entries that aren't editable)
+				if ($canPublishEntries)
 				{
-					$newChildAction = craft()->elements->getAction('NewChild');
-					$newChildAction->setParams(array(
-						'label'       => Craft::t('Create a new child entry'),
-						'maxLevels'   => $structure->maxLevels,
-						'newChildUrl' => 'entries/'.$section->handle.'/new',
-					));
-					$actions[] = $newChildAction;
+					$canEdit = true;
 				}
 			}
 
-			// Delete?
-			if (
-				$userSessionService->checkPermission('deleteEntries:'.$section->id) &&
-				$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
-			)
+			// Set Status
+			if ($canSetStatus)
 			{
-				$deleteAction = craft()->elements->getAction('Delete');
-				$deleteAction->setParams(array(
-					'confirmationMessage' => Craft::t('Are you sure you want to delete the selected entries?'),
-					'successMessage'      => Craft::t('Entries deleted.'),
+				$setStatusAction = craft()->elements->getAction('SetStatus');
+				$setStatusAction->onSetStatus = function(Event $event)
+				{
+					if ($event->params['status'] == BaseElementModel::ENABLED)
+					{
+						// Set a Post Date as well
+						craft()->db->createCommand()->update(
+							'entries',
+							array('postDate' => DateTimeHelper::currentTimeForDb()),
+							array('and', array('in', 'id', $event->params['elementIds']), 'postDate is null')
+						);
+					}
+				};
+				$actions[] = $setStatusAction;
+			}
+
+			// Edit
+			if ($canEdit)
+			{
+				$editAction = craft()->elements->getAction('Edit');
+				$editAction->setParams(array(
+					'label' => Craft::t('Edit entry'),
 				));
-				$actions[] = $deleteAction;
+				$actions[] = $editAction;
+			}
+
+			if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
+			{
+				// View
+				$viewAction = craft()->elements->getAction('View');
+				$viewAction->setParams(array(
+					'label' => Craft::t('View entry'),
+				));
+				$actions[] = $viewAction;
+			}
+
+			// Channel/Structure-only actions
+			if ($source != '*' && $source != 'singles')
+			{
+				$section = $sections[0];
+
+				// New child?
+				if (
+					$section->type == SectionType::Structure &&
+					$userSessionService->checkPermission('createEntries:'.$section->id)
+				)
+				{
+					$structure = craft()->structures->getStructureById($section->structureId);
+
+					if ($structure)
+					{
+						$newChildAction = craft()->elements->getAction('NewChild');
+						$newChildAction->setParams(array(
+							'label'       => Craft::t('Create a new child entry'),
+							'maxLevels'   => $structure->maxLevels,
+							'newChildUrl' => 'entries/'.$section->handle.'/new',
+						));
+						$actions[] = $newChildAction;
+					}
+				}
+
+				// Delete?
+				if (
+					$userSessionService->checkPermission('deleteEntries:'.$section->id) &&
+					$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
+				)
+				{
+					$deleteAction = craft()->elements->getAction('Delete');
+					$deleteAction->setParams(array(
+						'confirmationMessage' => Craft::t('Are you sure you want to delete the selected entries?'),
+						'successMessage'      => Craft::t('Entries deleted.'),
+					));
+					$actions[] = $deleteAction;
+				}
 			}
 		}
 

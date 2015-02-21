@@ -115,59 +115,59 @@ class CategoryElementType extends BaseElementType
 	 */
 	public function getAvailableActions($source = null)
 	{
+		// Get the group we need to check permissions on
 		if (preg_match('/^group:(\d+)$/', $source, $matches))
 		{
 			$group = craft()->categories->getGroupById($matches[1]);
 		}
 
-		if (empty($group))
-		{
-			return;
-		}
-
+		// Now figure out what we can do with it
 		$actions = array();
 
-		// Set Status
-		$actions[] = 'SetStatus';
-
-		if ($group->hasUrls)
+		if (!empty($group))
 		{
-			// View
-			$viewAction = craft()->elements->getAction('View');
-			$viewAction->setParams(array(
-				'label' => Craft::t('View category'),
+			// Set Status
+			$actions[] = 'SetStatus';
+
+			if ($group->hasUrls)
+			{
+				// View
+				$viewAction = craft()->elements->getAction('View');
+				$viewAction->setParams(array(
+					'label' => Craft::t('View category'),
+				));
+				$actions[] = $viewAction;
+			}
+
+			// Edit
+			$editAction = craft()->elements->getAction('Edit');
+			$editAction->setParams(array(
+				'label' => Craft::t('Edit category'),
 			));
-			$actions[] = $viewAction;
-		}
+			$actions[] = $editAction;
 
-		// Edit
-		$editAction = craft()->elements->getAction('Edit');
-		$editAction->setParams(array(
-			'label' => Craft::t('Edit category'),
-		));
-		$actions[] = $editAction;
+			// New Child
+			$structure = craft()->structures->getStructureById($group->structureId);
 
-		// New Child
-		$structure = craft()->structures->getStructureById($group->structureId);
+			if ($structure)
+			{
+				$newChildAction = craft()->elements->getAction('NewChild');
+				$newChildAction->setParams(array(
+					'label'       => Craft::t('Create a new child category'),
+					'maxLevels'   => $structure->maxLevels,
+					'newChildUrl' => 'categories/'.$group->handle.'/new',
+				));
+				$actions[] = $newChildAction;
+			}
 
-		if ($structure)
-		{
-			$newChildAction = craft()->elements->getAction('NewChild');
-			$newChildAction->setParams(array(
-				'label'       => Craft::t('Create a new child category'),
-				'maxLevels'   => $structure->maxLevels,
-				'newChildUrl' => 'categories/'.$group->handle.'/new',
+			// Delete
+			$deleteAction = craft()->elements->getAction('Delete');
+			$deleteAction->setParams(array(
+				'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
+				'successMessage'      => Craft::t('Categories deleted.'),
 			));
-			$actions[] = $newChildAction;
+			$actions[] = $deleteAction;
 		}
-
-		// Delete
-		$deleteAction = craft()->elements->getAction('Delete');
-		$deleteAction->setParams(array(
-			'confirmationMessage' => Craft::t('Are you sure you want to delete the selected categories?'),
-			'successMessage'      => Craft::t('Categories deleted.'),
-		));
-		$actions[] = $deleteAction;
 
 		// Allow plugins to add additional actions
 		$allPluginActions = craft()->plugins->call('addCategoryActions', array($source), true);
