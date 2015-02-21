@@ -9,9 +9,9 @@ namespace craft\app\fieldtypes;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\db\Command;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
+use yii\db\Query;
 
 /**
  * Date fieldtype
@@ -149,12 +149,12 @@ class Date extends BaseFieldType
 	/**
 	 * @inheritDoc FieldTypeInterface::modifyElementsQuery()
 	 *
-	 * @param Command $query
-	 * @param mixed     $value
+	 * @param Query $query
+	 * @param mixed $value
 	 *
 	 * @return null|false
 	 */
-	public function modifyElementsQuery(Command $query, $value)
+	public function modifyElementsQuery(Query $query, $value)
 	{
 		if ($value !== null)
 		{

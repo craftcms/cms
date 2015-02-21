@@ -8,8 +8,8 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\SavableComponentTypeInterface;
-use craft\app\db\Command;
 use craft\app\models\BaseElementModel;
+use yii\db\Query;
 
 /**
  * Interface FieldTypeInterface
@@ -259,11 +259,11 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	 *
 	 * If the method returns `false`, the query will be stopped before it ever gets a chance to execute.
 	 *
-	 * @param Command $query The database query currently being built to find the elements.
-	 * @param mixed     $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
+	 * @param Query $query The database query currently being built to find the elements.
+	 * @param mixed $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
 	 *                         if any.
 	 *
 	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.
 	 */
-	public function modifyElementsQuery(Command $query, $value);
+	public function modifyElementsQuery(Query $query, $value);
 }
