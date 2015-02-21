@@ -15,6 +15,7 @@ use craft\app\helpers\AppHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\requirements\RequirementsChecker;
 use craft\app\web\Controller;
+use ErrorException;
 use yii\helpers\Markdown;
 
 /**
@@ -206,14 +207,16 @@ class TemplatesController extends Controller
 			}
 		}
 
-		$variables = (array)$exception;
-
-		$variables['message'] = Markdown::process($variables['messages']);
-		$variables['message'] = preg_replace('/(?<=[a-zA-Z])_(?=[a-zA-Z])/', '\_', $variables['message']);
+		$variables = array_merge([
+			'message' => $exception->getMessage(),
+			'code'    => $exception->getCode(),
+			'file'    => $exception->getFile(),
+			'line'    => $exception->getLine(),
+		], get_object_vars($exception));
 
 		// If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
 		// is enabled, then allow the HTML not get encoded
-		if (strncmp($variables['type'], 'PHP ', 4) === 0 && AppHelper::getPhpConfigValueAsBool('html_errors'))
+		if ($exception instanceof ErrorException && AppHelper::getPhpConfigValueAsBool('html_errors'))
 		{
 			$variables['message'] = TemplateHelper::getRaw($variables['message']);
 		}
