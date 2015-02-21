@@ -531,9 +531,11 @@ class Tasks extends Component
 		{
 			if (!isset($this->_nextPendingTask))
 			{
-				$taskRecord = TaskRecord::model()->roots()->ordered()->findByAttributes([
-					'status' => TaskStatus::Pending
-				]);
+				$taskRecord = TaskRecord::find()
+					->where(['status' => TaskStatus::Pending])
+					->roots()
+					->ordered()
+					->one();
 
 				if ($taskRecord)
 				{

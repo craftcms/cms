@@ -144,7 +144,10 @@ class Categories extends Component
 	{
 		if (!$this->_fetchedAllCategoryGroups)
 		{
-			$groupRecords = CategoryGroupRecord::model()->with('structure')->ordered()->findAll();
+			$groupRecords = CategoryGroupRecord::find()
+				->ordered()
+				->with('structure')
+				->all();
 
 			if (!isset($this->_categoryGroupsById))
 			{
@@ -231,7 +234,10 @@ class Categories extends Component
 	{
 		if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId, $this->_categoryGroupsById))
 		{
-			$groupRecord = CategoryGroupRecord::model()->with('structure')->findById($groupId);
+			$groupRecord = CategoryGroupRecord::find()
+				->where(['id' => $groupId])
+				->with('structure')
+				->one();
 
 			if ($groupRecord)
 			{

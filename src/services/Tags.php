@@ -103,7 +103,7 @@ class Tags extends Component
 	{
 		if (!$this->_fetchedAllTagGroups)
 		{
-			$tagGroupRecords = TagGroupRecord::model()->ordered()->findAll();
+			$tagGroupRecords = TagGroupRecord::find()->ordered()->all();
 			$this->_tagGroupsById = TagGroupModel::populateModels($tagGroupRecords, 'id');
 			$this->_fetchedAllTagGroups = true;
 		}

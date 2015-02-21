@@ -222,7 +222,10 @@ class Fields extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
-		$groupRecord = FieldGroupRecord::model()->with('fields')->findById($groupId);
+		$groupRecord = FieldGroupRecord::find()
+			->where(['id' => $groupId])
+			->with('fields')
+			->one();
 
 		if (!$groupRecord)
 		{

@@ -367,7 +367,10 @@ class Sections extends Component
 	{
 		if ($section->id)
 		{
-			$sectionRecord = SectionRecord::model()->with('structure')->findById($section->id);
+			$sectionRecord = SectionRecord::find()
+				->where(['id' => $section->id])
+				->with('structure')
+				->one();
 
 			if (!$sectionRecord)
 			{
@@ -939,9 +942,10 @@ class Sections extends Component
 	 */
 	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
 	{
-		$records = EntryTypeRecord::model()->ordered()->findAllByAttributes([
-			'sectionId' => $sectionId
-		]);
+		$records = EntryTypeRecord::find()
+			->where(['sectionId' => $sectionId])
+			->ordered()
+			->all();
 
 		return EntryTypeModel::populateModels($records, $indexBy);
 	}

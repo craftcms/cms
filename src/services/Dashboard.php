@@ -110,11 +110,13 @@ class Dashboard extends Component
 	 */
 	public function doesUserHaveWidget($type)
 	{
-		$count = WidgetRecord::model()->countByAttributes([
-			'userId'  => Craft::$app->getUser()->getIdentity()->id,
-			'type'    => $type,
-			'enabled' => true
-		]);
+		$count = WidgetRecord::find()
+			->where([
+				'userId'  => Craft::$app->getUser()->getIdentity()->id,
+				'type'    => $type,
+				'enabled' => true
+			])
+			->count();
 
 		return (bool)$count;
 	}
@@ -341,8 +343,9 @@ class Dashboard extends Component
 	 */
 	private function _getUserWidgetRecords()
 	{
-		return WidgetRecord::model()->ordered()->findAllByAttributes([
-			'userId' => Craft::$app->getUser()->getIdentity()->id
-		]);
+		return WidgetRecord::find()
+			->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
+			->ordered()
+			->all();
 	}
 }

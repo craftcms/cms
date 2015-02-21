@@ -297,9 +297,10 @@ class Structures extends Component
 	{
 		if (!isset($this->_rootElementRecordsByStructureId[$structureId]))
 		{
-			$elementRecord = StructureElementRecord::model()->roots()->findByAttributes([
-				'structureId' => $structureId
-			]);
+			$elementRecord = StructureElementRecord::find()
+				->where(['structureId' => $structureId])
+				->roots()
+				->one();
 
 			if (!$elementRecord)
 			{

@@ -191,10 +191,12 @@ class Users extends Component
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
-		$userRecord = UserRecord::model()->find([
-			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
-			'params' => [':usernameOrEmail' => $usernameOrEmail],
-		]);
+		$userRecord = UserRecord::find()
+			->where(
+				['or', 'username=:usernameOrEmail', 'email=:usernameOrEmail'],
+				[':usernameOrEmail' => $usernameOrEmail]
+			)
+			->one();
 
 		if ($userRecord)
 		{
@@ -217,10 +219,7 @@ class Users extends Component
 	 */
 	public function getUserByEmail($email)
 	{
-		$userRecord = UserRecord::model()->find([
-			'condition' => 'email=:email',
-			'params' => [':email' => $email],
-		]);
+		$userRecord = UserRecord::findOne(['email' => $email]);
 
 		if ($userRecord)
 		{

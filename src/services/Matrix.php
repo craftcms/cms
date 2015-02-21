@@ -1039,7 +1039,10 @@ class Matrix extends Component
 		{
 			if (!isset($this->_blockRecordsById) || !array_key_exists($blockId, $this->_blockRecordsById))
 			{
-				$this->_blockRecordsById[$blockId] = MatrixBlockRecord::model()->with('element')->findById($blockId);
+				$this->_blockRecordsById[$blockId] = MatrixBlockRecord::find()
+					->where(['id' => $blockId])
+					->with('element')
+					->one();
 
 				if (!$this->_blockRecordsById[$blockId])
 				{

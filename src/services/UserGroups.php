@@ -53,7 +53,7 @@ class UserGroups extends Component
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		$groupRecords = UserGroupRecord::model()->ordered()->findAll();
+		$groupRecords = UserGroupRecord::find()->ordered()->all();
 		return UserGroupModel::populateModels($groupRecords, $indexBy);
 	}
 
