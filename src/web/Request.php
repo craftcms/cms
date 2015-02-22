@@ -480,7 +480,7 @@ class Request extends \yii\web\Request
 			$this->_bodyParams = $this->_utf8AllTheThings(parent::getBodyParams());
 		}
 
-		return $this->_queryParams;
+		return $this->_bodyParams;
 	}
 
 	/**
