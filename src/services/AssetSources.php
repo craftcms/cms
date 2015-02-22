@@ -136,10 +136,10 @@ class AssetSources extends Component
 			}
 			else
 			{
-				$this->_allSourceIds = Craft::$app->getDb()->createCommand()
+				$this->_allSourceIds = (new Query())
 					->select('id')
 					->from('{{%assetsources}}')
-					->queryColumn();
+					->column();
 			}
 		}
 

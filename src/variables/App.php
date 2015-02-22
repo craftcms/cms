@@ -120,7 +120,7 @@ class App
 	 */
 	public function getReleaseDate()
 	{
-		return \Craft::$app->getReleaseDate();
+		return \Craft::$app->releaseDate;
 	}
 
 	/**

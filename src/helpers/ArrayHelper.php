@@ -133,7 +133,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 			}
 			else
 			{
-				return $arr[array_shift(array_keys($arr))];
+				$keys = array_keys($arr);
+				return $arr[$keys[0]];
 			}
 		}
 	}

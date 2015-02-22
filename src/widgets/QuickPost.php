@@ -10,6 +10,7 @@ namespace craft\app\widgets;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\models\Section as SectionModel;
 
@@ -148,7 +149,7 @@ class QuickPost extends BaseWidget
 		}
 		else
 		{
-			$entryTypeId = array_shift(array_keys($entryTypes));
+			$entryTypeId = ArrayHelper::getFirstValue(array_keys($entryTypes));
 		}
 
 		$entryType = $entryTypes[$entryTypeId];
