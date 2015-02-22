@@ -698,10 +698,10 @@ class User extends BaseElementModel implements IdentityInterface
 	 *
 	 * @return string The new session row's UID.
 	 */
-	private function _storeSessionToken(UserModel $user, $sessionToken)
+	private function _storeSessionToken($sessionToken)
 	{
 		$sessionRecord = new SessionRecord();
-		$sessionRecord->userId = $user->id;
+		$sessionRecord->userId = $this->id;
 		$sessionRecord->token = $sessionToken;
 		$sessionRecord->save();
 		return $sessionRecord->uid;
