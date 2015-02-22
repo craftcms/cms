@@ -1462,6 +1462,10 @@ class UsersController extends Controller
 				$message = Craft::t('app', 'You cannot access the CP while the system is offline with that account.');
 				break;
 			}
+			default:
+			{
+				$message = Craft::t('app', 'Invalid username or password.');
+			}
 		}
 
 		if (Craft::$app->getRequest()->getIsAjax())
