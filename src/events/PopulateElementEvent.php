@@ -8,23 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Merged elements event class.
+ * Element event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MergeElementsEvent extends Event
+class PopulateElementEvent extends ElementEvent
 {
 	// Properties
 	// =========================================================================
 
 	/**
-	 * @var int The ID of the element that just got merged into the other.
+	 * @var array The element query’s result for this element.
 	 */
-	public $mergedElementId;
-
-	/**
-	 * @var int The ID of the element that prevailed in the merge.
-	 */
-	public $prevailingElementId;
+	public $result;
 }

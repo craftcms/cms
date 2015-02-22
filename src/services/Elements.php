@@ -18,6 +18,7 @@ use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ElementHelper;
@@ -43,7 +44,7 @@ class Elements extends Component
 	// =========================================================================
 
 	/**
-     * @event ElementEvent The event that is triggered after an element is populated.
+     * @event PopulateElementEvent The event that is triggered after an element is populated.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
@@ -379,7 +380,7 @@ class Elements extends Component
 							}
 
 							// Fire an 'afterPopulateElement' event
-							$this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new ElementEvent([
+							$this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
 								'element' => $element,
 								'result'  => $originalResult
 							]));
@@ -1413,8 +1414,7 @@ class Elements extends Component
 		{
 			// Fire an 'afterSaveElement' event
 			$this->trigger(static::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-				'element'      => $element,
-				'isNewElement' => $isNewElement
+				'element' => $element
 			]));
 		}
 		else
@@ -1613,7 +1613,7 @@ class Elements extends Component
 			}
 
 			// Fire an 'afterMergeElements' event
-			$this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementEvent([
+			$this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
 				'mergedElementId'     => $mergedElementId,
 				'prevailingElementId' => $prevailingElementId
 			]));
