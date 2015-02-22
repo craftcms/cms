@@ -7,6 +7,7 @@
 
 namespace craft\app\templating;
 
+use Craft;
 use craft\app\models\BaseElementModel;
 
 /**
