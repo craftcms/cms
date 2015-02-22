@@ -8,8 +8,8 @@
 namespace craft\app\fieldtypes;
 
 use craft\app\components\SavableComponentTypeInterface;
+use craft\app\db\Query;
 use craft\app\models\BaseElementModel;
-use yii\db\Query;
 
 /**
  * Interface FieldTypeInterface

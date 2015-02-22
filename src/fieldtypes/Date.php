@@ -9,9 +9,9 @@ namespace craft\app\fieldtypes;
 
 use Craft;
 use craft\app\dates\DateTime;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
-use yii\db\Query;
 
 /**
  * Date fieldtype
