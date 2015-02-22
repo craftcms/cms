@@ -7,6 +7,7 @@
  * @license http://buildwithcraft.com/license
  */
 
+use craft\app\dates\DateTime;
 use craft\app\helpers\ArrayHelper;
 
 // Setup
@@ -219,6 +220,8 @@ $config = ArrayHelper::merge(
 	require $appPath.'/config/common.php',
 	require $appPath.'/config/'.$appType.'.php'
 );
+
+$config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
 if ($devMode)
 {
