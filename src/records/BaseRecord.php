@@ -54,22 +54,6 @@ abstract class BaseRecord extends ActiveRecord
 	public function init()
 	{
 		ModelHelper::populateAttributeDefaults($this);
-
-		$this->attachEventHandler('onAfterFind', [$this, 'prepAttributesForUse']);
-		$this->attachEventHandler('onBeforeSave', [$this, 'prepAttributesForSave']);
-		$this->attachEventHandler('onAfterSave', [$this, 'prepAttributesForUse']);
-	}
-
-	/**
-	 * Returns an instance of the specified model
-	 *
-	 * @param string $class
-	 *
-	 * @return BaseRecord|object The model instance
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model(get_called_class());
 	}
 
 	/**
@@ -110,6 +94,33 @@ abstract class BaseRecord extends ActiveRecord
 	public function defineIndexes()
 	{
 		return [];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function afterFind()
+	{
+		$this->prepAttributesForUse();
+		parent::afterFind();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function beforeSave($insert)
+	{
+		$this->prepAttributesForSave();
+		parent::beforeSave($insert);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function afterSave($insert, $changedAttributes)
+	{
+		$this->prepAttributesForUse();
+		parent::afterSave($insert, $changedAttributes);
 	}
 
 	/**
@@ -221,32 +232,6 @@ abstract class BaseRecord extends ActiveRecord
 	public function attributeLabels()
 	{
 		return ModelHelper::getAttributeLabels($this);
-	}
-
-	/**
-	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
-	 *
-	 * @param string $name  The attribute name.
-	 * @param mixed  $value The attribute value.
-	 *
-	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
-	 */
-	public function setAttribute($name, $value)
-	{
-		if (property_exists($this, $name))
-		{
-			$this->$name = $value;
-		}
-		else if (isset($this->getMetaData()->columns[$name]))
-		{
-			$this->_attributes[$name] = $value;
-		}
-		else
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	// Protected Methods
