@@ -10,7 +10,7 @@ namespace craft\app\elementtypes;
 use Craft;
 use craft\app\components\BaseComponentType;
 use craft\app\dates\DateTime;
-use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\helpers\HtmlHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -382,24 +382,24 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	/**
 	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
 	 *
-	 * @param Command $query
-	 * @param string    $status
+	 * @param Query  $query
+	 * @param string $status
 	 *
 	 * @return false|string|void
 	 */
-	public function getElementQueryStatusCondition(Command $query, $status)
+	public function getElementQueryStatusCondition(Query $query, $status)
 	{
 	}
 
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param Command            $query
+	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return false|null|void
 	 */
-	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 	}
 

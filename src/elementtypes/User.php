@@ -8,7 +8,6 @@
 namespace craft\app\elementtypes;
 
 use Craft;
-use craft\app\db\Command;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\enums\UserStatus;
@@ -301,12 +300,12 @@ class User extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
 	 *
-	 * @param Command $query
-	 * @param string    $status
+	 * @param Query  $query
+	 * @param string $status
 	 *
 	 * @return string|false
 	 */
-	public function getElementQueryStatusCondition(Command $query, $status)
+	public function getElementQueryStatusCondition(Query $query, $status)
 	{
 		switch ($status)
 		{
@@ -340,12 +339,12 @@ class User extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param Command            $query
+	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')

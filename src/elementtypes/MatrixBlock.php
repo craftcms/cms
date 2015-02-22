@@ -8,7 +8,6 @@
 namespace craft\app\elementtypes;
 
 use Craft;
-use craft\app\db\Command;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
@@ -131,12 +130,12 @@ class MatrixBlock extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param Command            $query
+	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.ownerLocale, matrixblocks.typeId, matrixblocks.sortOrder')

@@ -8,7 +8,7 @@
 namespace craft\app\elementtypes;
 
 use Craft;
-use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
@@ -124,12 +124,12 @@ class Tag extends BaseElementType
 	/**
 	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
 	 *
-	 * @param Command            $query
+	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Command $query, ElementCriteriaModel $criteria)
+	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('tags.groupId')
