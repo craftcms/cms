@@ -353,7 +353,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 */
 	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		return 'content';
+		return '{{%content}}';
 	}
 
 	/**
