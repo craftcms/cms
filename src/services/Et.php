@@ -43,7 +43,7 @@ class Et extends Component
 	 */
 	public function ping()
 	{
-		$et = new Et(static::Ping);
+		$et = new \craft\app\et\Et(static::Ping);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -57,7 +57,7 @@ class Et extends Component
 	 */
 	public function checkForUpdates($updateInfo)
 	{
-		$et = new Et(static::CheckForUpdates);
+		$et = new \craft\app\et\Et(static::CheckForUpdates);
 		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
@@ -73,7 +73,7 @@ class Et extends Component
 	 */
 	public function getUpdateFileInfo()
 	{
-		$et = new Et(static::GetUpdateFileInfo);
+		$et = new \craft\app\et\Et(static::GetUpdateFileInfo);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -100,7 +100,7 @@ class Et extends Component
 
 		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
 
-		$et = new Et($path, 240);
+		$et = new \craft\app\et\Et($path, 240);
 		$et->setDestinationFileName($downloadPath);
 
 		if (($fileName = $et->phoneHome()) !== null)
@@ -118,7 +118,7 @@ class Et extends Component
 	 */
 	public function transferLicenseToCurrentDomain()
 	{
-		$et = new Et(static::TransferLicense);
+		$et = new \craft\app\et\Et(static::TransferLicense);
 		$etResponse = $et->phoneHome();
 
 		if (!empty($etResponse->data['success']))
@@ -161,7 +161,7 @@ class Et extends Component
 	 */
 	public function fetchEditionInfo()
 	{
-		$et = new Et(static::GetEditionInfo);
+		$et = new \craft\app\et\Et(static::GetEditionInfo);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -177,7 +177,7 @@ class Et extends Component
 	{
 		if ($model->validate())
 		{
-			$et = new Et(static::PurchaseUpgrade);
+			$et = new \craft\app\et\Et(static::PurchaseUpgrade);
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
