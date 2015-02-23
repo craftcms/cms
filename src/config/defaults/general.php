@@ -182,12 +182,11 @@ return [
 	'devMode' => false,
 
 	/**
-	 * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to false,
-	 * for now, for backwards compatibility, but will eventually default to true.
+	 * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to true.
 	 *
 	 * Also, see the 'csrfTokenName' config setting.
 	 */
-	'enableCsrfProtection' => false,
+	'enableCsrfProtection' => true,
 
 	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
