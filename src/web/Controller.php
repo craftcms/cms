@@ -12,7 +12,6 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -351,27 +350,5 @@ abstract class Controller extends \yii\web\Controller
 		}
 
 		return true;
-	}
-
-	public function createAction($id)
-	{
-		if (StringHelper::hasUpperCase($id))
-		{
-			// Split on any uppercase letters.
-			$parts = preg_split('/(?=[\p{Lu}])+/u', $id);
-
-			if (count($parts) > 1)
-			{
-				// Old school Yii 1 format. Log it and normalize to Yii 2 format.
-
-				$originalId = $id;
-				$id = StringHelper::toLowerCase(implode('-', $parts));
-				Craft::$app->deprecator->log('createAction', 'Controller->createAction was called with a Yii 1 format action: '.$originalId.'. It should be changed to: '.$id.'.');
-			}
-
-			$id = StringHelper::toLowerCase($id);
-		}
-
-		return parent::createAction($id);
 	}
 }

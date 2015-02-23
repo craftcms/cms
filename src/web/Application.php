@@ -12,6 +12,7 @@ use craft\app\base\ApplicationTrait;
 use craft\app\errors\HttpException;
 use craft\app\helpers\HeaderHelper;
 use craft\app\helpers\JsonHelper;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -444,6 +445,27 @@ class Application extends \yii\web\Application
 		}
 
 		return false;
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param string $route
+	 * @return array|boolean
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function createController($route)
+	{
+		// Convert Yii 1-styled routes to Yii 2, and log them as deprecation errors
+		if (StringHelper::hasUpperCase($route))
+		{
+			$requestedRoute = $route;
+			$parts = preg_split('/(?=[\p{Lu}])+/u', $route);
+			$route = StringHelper::toLowerCase(implode('-', $parts));
+			$this->deprecator->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
+		}
+
+		return parent::createController($route);
 	}
 
 	// Private Methods
