@@ -1,0 +1,35 @@
+/* RTL stuff */
+#main #graphic { display: block; margin: 200px auto 0; }
+
+#main #graphic.error { background-image: url(../images/error.png); }
+
+#main #graphic.success { background-image: url(../images/success.png); }
+
+#main #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
+
+#main h2.heading { margin: 0; padding: 6px 0; }
+body.ltr #main h2.heading { float: left; }
+body.rtl #main h2.heading { float: right; }
+
+#main .buttons { margin: 0; }
+body.ltr #main .buttons { float: right; }
+body.rtl #main .buttons { float: left; }
+
+#main hr { clear: both; margin: 30px -30px; }
+
+#main .critical { border-radius: 2px; padding: 2px 5px; font-weight: normal; color: #fff; background: #d6301a; }
+body.ltr #main .critical { margin-left: 5px; }
+body.rtl #main .critical { margin-right: 5px; }
+
+#main .release { direction: ltr; }
+
+/* Keep this LTR since the actual release notes are only LTR */
+#main .release ul li { padding: 3px 0 3px 25px; }
+
+#main .release ul li:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
+
+#main .release ul li.added:before { content: 'wand'; color: #5286d9; }
+
+#main .release ul li.improved:before { content: 'brush'; }
+
+#main .release ul li.fixed:before { content: 'screwdriver'; color: #da5a47; }

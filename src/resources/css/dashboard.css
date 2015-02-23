@@ -1,0 +1,23 @@
+/* RTL stuff */
+#deprecationnotice { text-align: center; }
+
+#deprecationnotice:before { color: #8f98a3; }
+body.ltr #deprecationnotice:before { margin-right: 5px; }
+body.rtl #deprecationnotice:before { margin-left: 5px; }
+
+.widget.quickpost { overflow: visible; }
+
+.widget .spinner.body-loading { display: none; }
+
+.widget.loading .spinner.body-loading { display: block; }
+body.ltr .widget.loading .spinner.body-loading { float: right; }
+body.rtl .widget.loading .spinner.body-loading { float: left; }
+body.ltr .widget.loading .spinner.body-loading { margin-left: 10px; }
+body.rtl .widget.loading .spinner.body-loading { margin-right: 10px; }
+
+.widget h2 { margin-top: 0; }
+
+.widget form + .errors { margin-top: 15px; }
+
+/* Recent Entries widget */
+.recententries .body { overflow: hidden; }

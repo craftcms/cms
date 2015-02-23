@@ -11,10 +11,6 @@ Craft has a custom build script that does the following:
 * Optionally runs any unit tests found in Source/craft/app/tests/
 * Copies all files from Source/ into a build directory
 * Deletes some unneeded files and folders from the build directory
-* Compiles all Sass files within craft/app/resources/css/ and deletes them
-* Merges all Javascript files within craft/app/resources/js/classes/ into craft.js and deletes the classes/ folder
-* Optionally creates compressed versions of all Javascript files within craft/app/resources/js/ within a new js/compressed/ folder
-* Prepends header comments onto all Craft PHP and JS files
 * Parses all Craft PHP files for a few tokens (e.g. “@@@version@@@”)
 * Creates a list of all Craft classes that should be autoload-able, and saves it in craft/app/etc/config/common.php
 * Optionally copies the final craft/app/ folder to a destination of your choosing, and sets app/etc/console/yiic.php’s permissions to 777
@@ -24,27 +20,22 @@ Craft has a custom build script that does the following:
 
 To set up your OS X environment to build Craft, follow these instructions:
 
-1. Install [Sass](http://sass-lang.com/) by opening Terminal and entering:
-
-        gem install sass
-
-2. Open ~/.bash_profile in a text editor and add the following:
+1. Open ~/.bash_profile in a text editor and add the following:
 
         # Craft Utils environment variables
         export CRAFT_REPO_PATH=/path/to/Craft
         export CRAFT_PHP_PATH=/Applications/MAMP/bin/php/php5.3.20/bin/php
         export CRAFT_PHPINI_PATH=/Applications/MAMP/bin/php/php5.3.20/conf/php.ini
-        export CRAFT_SASS_PATH=/usr/bin/sass
         export PATH=$CRAFT_REPO_PATH/Utils:$PATH
 
-    (Set `CRAFT_REPO_PATH`, `CRAFT_PHP_PATH`, and `CRAFT_SASS_PATH` to the actual paths of your Craft repo, PHP executable, and Sass executable.)
+    (Set `CRAFT_REPO_PATH`, `CRAFT_PHP_PATH` to the actual paths of your Craft repo and PHP executable.)
 
-3. Give the build script executable permissions by entering the following in Terminal:
+2. Give the build script executable permissions by entering the following in Terminal:
 
         cd /path/to/Craft/Utils
         chmod 777 buildcraft
 
-4. Restart Terminal, and try entering:
+3. Restart Terminal, and try entering:
 
         buildcraft
 

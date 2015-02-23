@@ -1,0 +1,18 @@
+/* RTL stuff */
+.toolhud { width: 200px; }
+
+.toolhud form { display: block; position: relative; }
+
+.toolhud form .buttons { text-align: center; }
+
+.toolhud form .buttons .btn { float: none; display: inline-block; }
+
+.toolhud .progressbar { position: absolute; width: 132px; }
+body.ltr .toolhud .progressbar { left: 230px; }
+body.rtl .toolhud .progressbar { right: 230px; }
+
+.toolhud .alldone { position: absolute; width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
+body.ltr .toolhud .alldone { left: 230px; }
+body.rtl .toolhud .alldone { right: 230px; }
+
+.confirmmodal .body { max-height: 200px; overflow: auto; }

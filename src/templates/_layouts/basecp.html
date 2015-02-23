@@ -23,47 +23,8 @@
 	'lib/fileupload/jquery.ui.widget.js',
 	'lib/fileupload/jquery.fileupload.js',
 	'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js',
-	'js/craft.js'
+	'js/Craft.js'
 ] %}
-
-{# HIDE #}
-{% set jsResources = jsResources|merge([
-	'js/classes/BaseElementIndex.js',
-	'js/classes/BaseElementSelectInput.js',
-	'js/classes/BaseElementSelectorModal.js',
-	'js/classes/BaseInputGenerator.js',
-
-	'js/classes/AdminTable.js',
-	'js/classes/AssetIndex.js',
-	'js/classes/AssetSelectInput.js',
-	'js/classes/AssetSelectorModal.js',
-	'js/classes/CategoryIndex.js',
-	'js/classes/CategorySelectInput.js',
-	'js/classes/DataTableSorter.js',
-	'js/classes/EditableTable.js',
-	'js/classes/ElementEditor.js',
-	'js/classes/EntryIndex.js',
-	'js/classes/EntryUrlFormatGenerator.js',
-	'js/classes/FieldLayoutDesigner.js',
-	'js/classes/FieldToggle.js',
-	'js/classes/Grid.js',
-	'js/classes/HandleGenerator.js',
-	'js/classes/ImageUpload.js',
-	'js/classes/InfoIcon.js',
-	'js/classes/LightSwitch.js',
-	'js/classes/Pane.js',
-	'js/classes/PasswordInput.js',
-	'js/classes/ProgressBar.js',
-	'js/classes/PromptHandler.js',
-	'js/classes/SlugGenerator.js',
-	'js/classes/Structure.js',
-	'js/classes/StructureDrag.js',
-	'js/classes/TagSelectInput.js',
-	'js/classes/UpgradeModal.js',
-	'js/classes/Uploader.js',
-	'js/classes/WrongEditionModal.js',
-]) %}
-{# end HIDE #}
 
 {% if datepickerLocale is defined %}
 	{% set jsResources = jsResources|merge([

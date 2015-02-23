@@ -1,0 +1,13 @@
+{
+	"name": "Craft",
+	"version": "3.0.0",
+	"private": true,
+	"devDependencies": {
+		"grunt": "latest",
+		"grunt-contrib-sass": "latest",
+		"grunt-contrib-jshint": "latest",
+		"grunt-contrib-concat": "latest",
+		"grunt-contrib-uglify": "latest",
+		"grunt-contrib-watch": "latest"
+	}
+}
