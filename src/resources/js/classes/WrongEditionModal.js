@@ -33,7 +33,7 @@ Craft.WrongEditionModal = Garnish.Modal.extend(
 		Craft.postActionRequest('app/switchToLicensedEdition', $.proxy(function(response, textStatus)
 		{
 			location.reload();
-		}, this))
+		}, this));
 	},
 
 	showUpgradeModal: function()

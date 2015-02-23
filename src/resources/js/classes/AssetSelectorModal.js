@@ -85,10 +85,13 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	onSelectionChange: function(ev)
 	{
+		var allowTransforms,
+			MenuBtn;
+
 		if (this.elementIndex.elementSelect.totalSelected && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
 		{
-			var allowTransforms = true,
-				$selectedItems = this.elementIndex.elementSelect.getSelectedItems();
+			allowTransforms = true;
+			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems();
 
 			for (var i = 0; i < $selectedItems.length; i++)
 			{
@@ -101,16 +104,16 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		}
 		else
 		{
-			var allowTransforms = false;
+			allowTransforms = false;
 		}
 
 		if (this.$selectTransformBtn)
 		{
-			var MenuBtn = this.$selectTransformBtn.data('menuButton');
+			MenuBtn = this.$selectTransformBtn.data('menuButton');
 		}
 		else
 		{
-			var MenuBtn = null;
+			MenuBtn = null;
 		}
 
 		if (allowTransforms)
@@ -119,6 +122,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			{
 				MenuBtn.enable();
 			}
+
 			this.$selectTransformBtn.removeClass('disabled');
 		}
 		else if (this.$selectTransformBtn)
@@ -127,6 +131,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			{
 				MenuBtn.disable();
 			}
+
 			this.$selectTransformBtn.addClass('disabled');
 		}
 

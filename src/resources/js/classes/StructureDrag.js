@@ -289,14 +289,13 @@ Craft.StructureDrag = Garnish.Drag.extend(
 		// Are we repositioning the draggee?
 		if (this._.$closestTarget && (this.$insertion.parent().length || this._.$closestTarget.hasClass('draghover')))
 		{
+			var $draggeeParent,
+				moved;
+
 			// Are we about to leave the draggee's original parent childless?
 			if (!this.$draggee.siblings().length)
 			{
-				var $draggeeParent = this.$draggee.parent();
-			}
-			else
-			{
-				var $draggeeParent = null;
+				$draggeeParent = this.$draggee.parent();
 			}
 
 			if (this.$insertion.parent().length)
@@ -307,12 +306,12 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				if ($.inArray(this.$draggee[0], $closestSiblings) == -1)
 				{
 					this.$insertion.replaceWith(this.$draggee);
-					var moved = true;
+					moved = true;
 				}
 				else
 				{
 					this.$insertion.remove();
-					var moved = false;
+					moved = false;
 				}
 			}
 			else
@@ -335,11 +334,11 @@ Craft.StructureDrag = Garnish.Drag.extend(
 					}
 
 					this.$draggee.appendTo($ul);
-					var moved = true;
+					moved = true;
 				}
 				else
 				{
-					var moved = false;
+					moved = false;
 				}
 			}
 

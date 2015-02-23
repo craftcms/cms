@@ -62,7 +62,7 @@ Craft.TableFieldSettings = Garnish.Base.extend(
 	initColumnSettingInputs: function($container)
 	{
 		var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea'),
-			$typeSelect = $container.find('td:nth-child(4) select')
+			$typeSelect = $container.find('td:nth-child(4) select');
 
 		this.addListener($textareas, 'textchange', 'reconstructDefaultsTable');
 		this.addListener($typeSelect, 'change', 'reconstructDefaultsTable');

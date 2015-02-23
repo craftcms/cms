@@ -32,7 +32,7 @@ Craft.Pane = Garnish.Base.extend(
 
 		// Initialize the tabs
 		var $tabsContainer = this.$pane.children('.tabs'),
-			$tabs = $tabsContainer.find('a')
+			$tabs = $tabsContainer.find('a');
 
 		if ($tabs.length)
 		{
@@ -212,7 +212,7 @@ Craft.Pane = Garnish.Base.extend(
 			{
 				this.togglePeekingSidebar();
 			}
-		}, this))
+		}, this));
 	},
 
 	stopPeeking: function()

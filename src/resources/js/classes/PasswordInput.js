@@ -145,13 +145,13 @@ Craft.PasswordInput = Garnish.Base.extend(
 		{
 			var selectionStart = this.$currentInput[0].selectionStart,
 				selectionEnd   = this.$currentInput[0].selectionEnd;
-		}
 
-		this.togglePassword();
-
-		if (this.$currentInput[0].setSelectionRange)
-		{
+			this.togglePassword();
 			this.$currentInput[0].setSelectionRange(selectionStart, selectionEnd);
+		}
+		else
+		{
+			this.togglePassword();
 		}
 	}
 },

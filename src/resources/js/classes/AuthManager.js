@@ -127,14 +127,16 @@ Craft.AuthManager = Garnish.Base.extend(
 	 */
 	showLogoutWarningModal: function()
 	{
+		var quickShow;
+
 		if (this.showingLoginModal)
 		{
 			this.hideLoginModal(true);
-			var quickShow = true;
+			quickShow = true;
 		}
 		else
 		{
-			var quickShow = false;
+			quickShow = false;
 		}
 
 		this.showingLogoutWarningModal = true;
@@ -241,14 +243,16 @@ Craft.AuthManager = Garnish.Base.extend(
 	 */
 	showLoginModal: function()
 	{
+		var quickShow;
+
 		if (this.showingLogoutWarningModal)
 		{
 			this.hideLogoutWarningModal(true);
-			var quickShow = true;
+			quickShow = true;
 		}
 		else
 		{
-			var quickShow = false;
+			quickShow = false;
 		}
 
 		this.showingLoginModal = true;
@@ -348,7 +352,7 @@ Craft.AuthManager = Garnish.Base.extend(
 			ev.preventDefault();
 		}
 
-		this.hideLogoutWarningModal()
+		this.hideLogoutWarningModal();
 		this.checkRemainingSessionTime(true);
 	},
 

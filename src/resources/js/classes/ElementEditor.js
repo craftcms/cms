@@ -87,7 +87,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			this.addListener(this.$form, 'submit', 'saveElement');
 			this.addListener(this.$cancelBtn, 'click', function() {
-				this.hud.hide()
+				this.hud.hide();
 			});
 		}
 	},

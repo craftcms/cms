@@ -1,6 +1,6 @@
-if (typeof Craft == 'undefined')
+if (typeof window.Craft == 'undefined')
 {
-	Craft = {};
+	window.Craft = {};
 }
 
 $.extend(Craft,
@@ -37,7 +37,7 @@ $.extend(Craft,
 		{
 			for (var key in params)
 			{
-				message = message.replace('{'+key+'}', params[key])
+				message = message.replace('{'+key+'}', params[key]);
 			}
 		}
 
@@ -167,9 +167,11 @@ $.extend(Craft,
 		}
 
 		// Put it all together
+		var url;
+
 		if (baseUrl)
 		{
-			var url = baseUrl;
+			url = baseUrl;
 
 			if (path)
 			{
@@ -184,7 +186,7 @@ $.extend(Craft,
 		}
 		else
 		{
-			var url = Craft.baseUrl;
+			url = Craft.baseUrl;
 		}
 
 		// Does the base URL already have a query string?
@@ -212,15 +214,17 @@ $.extend(Craft,
 				// Is the p= param already set?
 				if (params && params.substr(0, 2) == 'p=')
 				{
-					var endPath = params.indexOf('&');
+					var basePath,
+						endPath = params.indexOf('&');
+
 					if (endPath != -1)
 					{
-						var basePath = params.substring(2, endPath);
+						basePath = params.substring(2, endPath);
 						params = params.substr(endPath+1);
 					}
 					else
 					{
-						var basePath = params.substr(2);
+						basePath = params.substr(2);
 						params = null;
 					}
 
@@ -261,7 +265,7 @@ $.extend(Craft,
 	 */
 	getCpUrl: function(path, params)
 	{
-		return this.getUrl(path, params, Craft.baseCpUrl)
+		return this.getUrl(path, params, Craft.baseCpUrl);
 	},
 
 	/**
@@ -271,7 +275,7 @@ $.extend(Craft,
 	 */
 	getSiteUrl: function(path, params)
 	{
-		return this.getUrl(path, params, Craft.baseSiteUrl)
+		return this.getUrl(path, params, Craft.baseSiteUrl);
 	},
 
 	/**
@@ -348,8 +352,12 @@ $.extend(Craft,
 		{
 			if (typeof data == 'string')
 			{
-				if (data) { data += '&' }
-				data += Craft.csrfTokenName + '=' + Craft.csrfTokenValue
+				if (data)
+				{
+					data += '&';
+				}
+
+				data += Craft.csrfTokenName + '=' + Craft.csrfTokenValue;
 			}
 			else
 			{
@@ -479,12 +487,13 @@ $.extend(Craft,
 		for (var key in arr)
 		{
 			var value = arr[key],
-				m = key.match(/^(\w+)(\[.*)?/);
+				m = key.match(/^(\w+)(\[.*)?/),
+				keys;
 
 			if (m[2])
 			{
 				// Get all of the nested keys
-				var keys = m[2].match(/\[[^\[\]]*\]/g);
+				keys = m[2].match(/\[[^\[\]]*\]/g);
 
 				// Chop off the brackets
 				for (var i = 0; i < keys.length; i++)
@@ -494,7 +503,7 @@ $.extend(Craft,
 			}
 			else
 			{
-				var keys = [];
+				keys = [];
 			}
 
 			keys.unshift(m[1]);
@@ -693,13 +702,15 @@ $.extend(Craft,
 
 		for (var i = 0; i < arr.length; i++)
 		{
+			var include;
+
 			if (typeof callback == 'function')
 			{
-				var include = callback(arr[i], i);
+				include = callback(arr[i], i);
 			}
 			else
 			{
-				var include = arr[i];
+				include = arr[i];
 			}
 
 			if (include)
@@ -804,14 +815,16 @@ $.extend(Craft,
 		var hours = Math.floor(seconds / secondsInHour);
 		seconds = seconds % secondsInHour;
 
+		var minutes;
+
 		if (showSeconds)
 		{
-			var minutes = Math.floor(seconds / secondsInMinute);
+			minutes = Math.floor(seconds / secondsInMinute);
 			seconds = seconds % secondsInMinute;
 		}
 		else
 		{
-			var minutes = Math.round(seconds / secondsInMinute);
+			minutes = Math.round(seconds / secondsInMinute);
 			seconds = 0;
 		}
 
@@ -1036,13 +1049,15 @@ $.extend(Craft,
 	 */
 	createElementIndex: function(elementType, $container, settings)
 	{
+		var func;
+
 		if (typeof this._elementIndexClasses[elementType] != 'undefined')
 		{
-			var func = this._elementIndexClasses[elementType];
+			func = this._elementIndexClasses[elementType];
 		}
 		else
 		{
-			var func = Craft.BaseElementIndex;
+			func = Craft.BaseElementIndex;
 		}
 
 		return new func(elementType, $container, settings);
@@ -1056,13 +1071,15 @@ $.extend(Craft,
 	 */
 	createElementSelectorModal: function(elementType, settings)
 	{
+		var func;
+
 		if (typeof this._elementSelectorModalClasses[elementType] != 'undefined')
 		{
-			var func = this._elementSelectorModalClasses[elementType];
+			func = this._elementSelectorModalClasses[elementType];
 		}
 		else
 		{
-			var func = Craft.BaseElementSelectorModal;
+			func = Craft.BaseElementSelectorModal;
 		}
 
 		return new func(elementType, settings);
@@ -1355,14 +1372,16 @@ $.extend($.fn,
 				}
 			}
 
+			var $form;
+
 			// Is this a menu item?
 			if ($btn.data('menu'))
 			{
-				var $form = $btn.data('menu').$trigger.closest('form');
+				$form = $btn.data('menu').$trigger.closest('form');
 			}
 			else
 			{
-				var $form = $btn.closest('form');
+				$form = $btn.closest('form');
 			}
 
 			if ($btn.attr('data-action'))

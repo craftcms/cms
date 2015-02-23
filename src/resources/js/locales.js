@@ -218,9 +218,11 @@ Craft.Locales = Garnish.Base.extend(
 
 	addSelectedLocale: function(ev)
 	{
+		var $activeLocale;
+
 		if (ev)
 		{
-			var $activeLocale = $(ev.target);
+			$activeLocale = $(ev.target);
 		}
 		else
 		{
@@ -229,7 +231,7 @@ Craft.Locales = Garnish.Base.extend(
 				return;
 			}
 
-			var $activeLocale = this.$activeLocale;
+			$activeLocale = this.$activeLocale;
 		}
 
 		this.hideResultsSheet();
@@ -269,8 +271,7 @@ Craft.Locales = Garnish.Base.extend(
 					Craft.cp.displayError(Craft.t('Unable to add the new locale.'));
 				}
 			}
-
-		}, this))
+		}, this));
 	}
 
 }, {
@@ -345,11 +346,11 @@ var LocalesTable = Craft.AdminTable.extend(
 
 		if (validates)
 		{
-			this.$deleteSubmitBtn.removeClass('disabled')
+			this.$deleteSubmitBtn.removeClass('disabled');
 		}
 		else
 		{
-			this.$deleteSubmitBtn.addClass('disabled')
+			this.$deleteSubmitBtn.addClass('disabled');
 		}
 
 		return validates;

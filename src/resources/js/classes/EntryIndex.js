@@ -51,14 +51,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 	{
 		if (this.settings.context == 'index')
 		{
+			var handle;
+
 			// Get the handle of the selected source
 			if (this.$source.data('key') == 'singles')
 			{
-				var handle = 'singles';
+				handle = 'singles';
 			}
 			else
 			{
-				var handle = this.$source.data('handle');
+				handle = this.$source.data('handle');
 			}
 
 			// Update the URL

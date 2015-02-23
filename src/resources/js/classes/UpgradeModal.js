@@ -76,13 +76,15 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 				}
 				else
 				{
+					var error;
+
 					if (response.error)
 					{
-						var error = response.error;
+						error = response.error;
 					}
 					else
 					{
-						var error = Craft.t('An unknown error occurred.');
+						error = Craft.t('An unknown error occurred.');
 					}
 
 					this.$container.append('<div class="body">'+error+'</div>');
@@ -174,7 +176,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 		this.$checkoutScreen.velocity('stop').animateLeft(width, 'fast', $.proxy(function()
 		{
 			this.$checkoutScreen.addClass('hidden');
-		}, this))
+		}, this));
 
 		this.clearCheckoutFormInABit();
 	},

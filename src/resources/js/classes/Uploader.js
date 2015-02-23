@@ -166,13 +166,15 @@ Craft.Uploader = Garnish.Base.extend(
 	{
 		if (this._rejectedFiles.type.length)
 		{
+			var str;
+
 			if (this._rejectedFiles.type.length == 1)
 			{
-				var str = "The file {files} could not be uploaded. The allowed file kinds are: {kinds}.";
+				str = "The file {files} could not be uploaded. The allowed file kinds are: {kinds}.";
 			}
 			else
 			{
-				var str = "The files {files} could not be uploaded. The allowed file kinds are: {kinds}.";
+				str = "The files {files} could not be uploaded. The allowed file kinds are: {kinds}.";
 			}
 
 			str = Craft.t(str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
@@ -182,13 +184,15 @@ Craft.Uploader = Garnish.Base.extend(
 
 		if (this._rejectedFiles.size.length)
 		{
+			var str;
+
 			if (this._rejectedFiles.size.length == 1)
 			{
-				var str = "The file {files} could not be uploaded, because it exceeds the maximum upload size of {size}.";
+				str = "The file {files} could not be uploaded, because it exceeds the maximum upload size of {size}.";
 			}
 			else
 			{
-				var str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
+				str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
 			}
 
 			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
@@ -198,13 +202,15 @@ Craft.Uploader = Garnish.Base.extend(
 
 		if (this._rejectedFiles.limit.length)
 		{
+			var str;
+
 			if (this._rejectedFiles.limit.length == 1)
 			{
-				var str = "The file {files} could not be uploaded, because the field limit has been reached.";
+				str = "The file {files} could not be uploaded, because the field limit has been reached.";
 			}
 			else
 			{
-				var str = "The files {files} could not be uploaded, because the field limit has been reached.";
+				str = "The files {files} could not be uploaded, because the field limit has been reached.";
 			}
 
 			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", ")});
@@ -217,7 +223,7 @@ Craft.Uploader = Garnish.Base.extend(
 	{
 		var threshold = 1024;
 
-		if(bytes < threshold)
+		if (bytes < threshold)
 		{
 			return bytes + ' B';
 		}

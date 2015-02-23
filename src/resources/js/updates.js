@@ -76,7 +76,8 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 		var $headerPane = $('<div class="pane clearafter"/>').appendTo(this.$container),
 			$heading = $('<h2 class="heading">'+Craft.t('You’ve got updates!')+'</h2>').appendTo($headerPane),
-			$buttonContainer = $('<div class="buttons"/>').appendTo($headerPane);
+			$buttonContainer = $('<div class="buttons"/>').appendTo($headerPane),
+			$updateBtn;
 
 		// Is a manual update required?
 		if (!this.allowAutoUpdates || this.appUpdateInfo.manualUpdateRequired)
@@ -85,9 +86,11 @@ Craft.UpdateInfo = Garnish.Base.extend(
 		}
 		else
 		{
-			var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer),
-				$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
-				$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
+			var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer);
+
+			$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup);
+
+			var $menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 				$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 				$menuUl = $('<ul/>').appendTo($menu),
 				$downloadLi = $('<li/>').appendTo($menuUl);
@@ -189,7 +192,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 			if (release.critical)
 			{
-				heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
+				heading += ' <span class="critical">'+Craft.t('Critical')+'</span>';
 			}
 
 			$('<h2>'+heading+'</h2>').appendTo($releasePane);

@@ -270,7 +270,7 @@ var BlockTypeSettingsModal = Garnish.Modal.extend(
 		if (!Garnish.isMobileBrowser())
 		{
 			setTimeout($.proxy(function() {
-				this.$nameInput.focus()
+				this.$nameInput.focus();
 			}, this), 100);
 		}
 
@@ -593,7 +593,7 @@ Field = Garnish.Base.extend(
 		if (!Garnish.isMobileBrowser())
 		{
 			setTimeout($.proxy(function() {
-				this.$nameInput.focus()
+				this.$nameInput.focus();
 			}, this), 100);
 		}
 	},
@@ -645,20 +645,23 @@ Field = Garnish.Base.extend(
 		this.selectedFieldType = type;
 		this.$typeSelect.val(type);
 
-		var firstTime = (typeof this.initializedFieldTypeSettings[type] == 'undefined');
+		var firstTime = (typeof this.initializedFieldTypeSettings[type] == 'undefined'),
+			$body,
+			footHtml;
 
 		if (firstTime)
 		{
 			var info = this.configurator.getFieldTypeInfo(type),
-				bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml),
-				footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml),
-				$body = $('<div>'+bodyHtml+'</div>');
+				bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml);
+
+			footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml);
+			$body = $('<div>'+bodyHtml+'</div>');
 
 			this.initializedFieldTypeSettings[type] = $body;
 		}
 		else
 		{
-			var $body = this.initializedFieldTypeSettings[type];
+			$body = this.initializedFieldTypeSettings[type];
 		}
 
 		$body.appendTo(this.$typeSettingsContainer);

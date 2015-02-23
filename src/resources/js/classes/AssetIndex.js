@@ -92,7 +92,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.settings.selectable = true;
 		this.settings.multiSelect = true;
 
-		var onDragStartProxy = $.proxy(this, '_onDragStart')
+		var onDragStartProxy = $.proxy(this, '_onDragStart'),
 			onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
 
 		// File dragging
@@ -752,7 +752,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				$parentSource.children('.toggle').click();
 			}
-		};
+		}
 
 		this.sourceSelect.selectItem($targetSource);
 
@@ -1010,7 +1010,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this._uploadedFileIds = [];
 		}
 
-		this.base(append, $newElements)
+		this.base(append, $newElements);
 	},
 
 	/**
@@ -1124,9 +1124,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		clearTimeout(this._expandDropTargetFolderTimeout);
 
 		// If a source ID is passed in, exclude its parents
+		var excluded;
+
 		if (dropTargetFolderId)
 		{
-			var excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+			excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
 		}
 
 		for (var i = this._tempExpandedFolders.length-1; i >= 0; i--)
@@ -1134,7 +1136,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			var $source = this._tempExpandedFolders[i];
 
 			// Check the parent list, if a source id is passed in
-			if (! dropTargetFolderId || excluded.filter('[data-key="' + $source.data('key') + '"]').length == 0)
+			if (!dropTargetFolderId || excluded.filter('[data-key="' + $source.data('key') + '"]').length == 0)
 			{
 				this._collapseFolder($source);
 				this._tempExpandedFolders.splice(i, 1);
@@ -1241,7 +1243,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			var params = {
 				folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
-			}
+			};
 
 			this.setIndexBusy();
 
@@ -1344,7 +1346,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				folderInserted = true;
 				break;
 			}
-		};
+		}
 
 		if (!folderInserted)
 		{

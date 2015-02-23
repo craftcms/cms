@@ -102,7 +102,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 	_onMouseDown: function()
 	{
-		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp')
+		this.addListener(Garnish.$doc, 'mouseup', '_onMouseUp');
 	},
 
 	_onMouseUp: function()
@@ -159,7 +159,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 	_getMargin: function()
 	{
-		return parseInt(this.$innerContainer.css('margin-'+Craft.left))
+		return parseInt(this.$innerContainer.css('margin-'+Craft.left));
 	},
 
 	_onDragStart: function()
@@ -170,13 +170,15 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 	_onDrag: function()
 	{
+		var margin;
+
 		if (Craft.orientation == 'ltr')
 		{
-			var margin = this.dragStartMargin + this.dragger.mouseDistX;
+			margin = this.dragStartMargin + this.dragger.mouseDistX;
 		}
 		else
 		{
-			var margin = this.dragStartMargin - this.dragger.mouseDistX;
+			margin = this.dragStartMargin - this.dragger.mouseDistX;
 		}
 
 		if (margin < this._getOffMargin())

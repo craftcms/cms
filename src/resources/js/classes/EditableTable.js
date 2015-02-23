@@ -75,7 +75,7 @@ Craft.EditableTable = Garnish.Base.extend(
 				textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
 
 			rowHtml += '<td class="'+(textual ? 'textual' : '')+' '+(typeof col['class'] != 'undefined' ? col['class'] : '')+'"' +
-			              (typeof col['width'] != 'undefined' ? ' width="'+col['width']+'"' : '') +
+			              (typeof col.width != 'undefined' ? ' width="'+col.width+'"' : '') +
 			              '>';
 
 			switch (col.type)

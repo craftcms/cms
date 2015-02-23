@@ -1,6 +1,3 @@
-(function($) {
-
-
 Craft.ElementActionTrigger = Garnish.Base.extend(
 {
 	maxLevels: null,
@@ -117,6 +114,3 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 		activate: null
 	}
 });
-
-
-})(jQuery)
