@@ -87,7 +87,7 @@ Craft.Installer = Garnish.Base.extend(
 			this.$currentScreen.find('h1:first').text(Craft.t('All done!'));
 
 			var $buttons = $('<div class="buttons"/>'),
-				$go = $('<div class="btn big submit">'+Craft.t('Go to @@@appName@@@')+'</div>').appendTo($buttons);
+				$go = $('<div class="btn big submit">'+Craft.t('Go to Craft')+'</div>').appendTo($buttons);
 
 			$('#spinner').replaceWith($buttons);
 

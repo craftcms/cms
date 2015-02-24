@@ -63,7 +63,7 @@ class Install extends Component
 
 		if (Craft::$app->isInstalled())
 		{
-			throw new Exception(Craft::t('app', '@@@appName@@@ is already installed.'));
+			throw new Exception(Craft::t('app', 'Craft is already installed.'));
 		}
 
 		// Set the language to the desired locale

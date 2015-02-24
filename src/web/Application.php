@@ -197,7 +197,7 @@ class Application extends \yii\web\Application
 				$build = $this->getInfo('build');
 				$url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-				throw new HttpException(200, Craft::t('app', '@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', [
+				throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.', [
 					'url' => '['.$build.']('.$url.')',
 				]));
 			}
@@ -642,7 +642,7 @@ class Application extends \yii\web\Application
 			{
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
-					throw new HttpException(200, Craft::t('app', 'You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', [
+					throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.', [
 						'url'           => '<a href="'.Craft::$app->minBuildUrl.'">build '.Craft::$app->minBuildRequired.'</a>',
 						'targetVersion' => Craft::$app->version,
 						'targetBuild'   => Craft::$app->build

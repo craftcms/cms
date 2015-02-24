@@ -47,7 +47,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getTitle()
 	{
-		return Craft::t('app', 'Send a message to @@@appName@@@ Support');
+		return Craft::t('app', 'Send a message to Craft Support');
 	}
 
 	/**

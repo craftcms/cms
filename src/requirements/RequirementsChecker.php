@@ -100,7 +100,7 @@ class RequirementsChecker extends Object
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://buildwithcraft.com/">@@@appName@@@</a> ' .
+		$info[] = '<a href="http://buildwithcraft.com/">Craft</a> ' .
 			Craft::t('app', '{version} build {build}', [
 				'version' => Craft::$app->version,
 				'build'   => Craft::$app->build

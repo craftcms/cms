@@ -99,7 +99,7 @@ class Migrate extends \MigrateCommand
 		}
 
 		$yiiVersion = Craft::$app->getYiiVersion();
-		echo "\n@@@appName@@@ Migration Tool (based on Yii v{$yiiVersion})\n\n";
+		echo "\nCraft Migration Tool (based on Yii v{$yiiVersion})\n\n";
 
 		return true;
 	}
@@ -262,12 +262,12 @@ class Migrate extends \MigrateCommand
 
 		if (Craft::$app->migrations->runToTop())
 		{
-			echo "Migrated @@@appName@@@ to top successfully.\n";
+			echo "Migrated Craft to top successfully.\n";
 			return 0;
 		}
 		else
 		{
-			echo "There was a problem migrating @@@appName@@@ to top. Check the logs.\n";
+			echo "There was a problem migrating Craft to top. Check the logs.\n";
 		}
 
 		return 1;
@@ -308,7 +308,7 @@ class Migrate extends \MigrateCommand
 		{
 			if ($plugin === 'all')
 			{
-				echo "No migration has been ran for @@@appName@@@ or any plugins.\n";
+				echo "No migration has been ran for Craft or any plugins.\n";
 			}
 			else if ($plugin)
 			{
@@ -326,7 +326,7 @@ class Migrate extends \MigrateCommand
 
 			if ($plugin === 'all')
 			{
-				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for @@@appName@@@ and all plugins:\n";
+				echo "A total of $n ".($n === 1 ? 'migration has' : 'migrations have')." been applied before for Craft and all plugins:\n";
 			}
 			else if ($plugin)
 			{
@@ -387,7 +387,7 @@ class Migrate extends \MigrateCommand
 			}
 			else
 			{
-				echo "No new migrations found. @@@appName@@@ is up-to-date.\n";
+				echo "No new migrations found. Craft is up-to-date.\n";
 			}
 
 		}
