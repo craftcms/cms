@@ -7,6 +7,7 @@
 
 namespace craft\app\components;
 
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\Component;
 
@@ -57,18 +58,8 @@ abstract class BaseComponentType extends Component implements ComponentTypeInter
 	{
 		if (!isset($this->_classHandle))
 		{
-			// Chop off the namespace
-			$classHandle = mb_substr(get_class($this), StringHelper::length(__NAMESPACE__) + 1);
-
-			// Chop off the class suffix
-			$suffixLength = StringHelper::length($this->componentType);
-
-			if (mb_substr($classHandle, -$suffixLength) == $this->componentType)
-			{
-				$classHandle = mb_substr($classHandle, 0, -$suffixLength);
-			}
-
-			$this->_classHandle = $classHandle;
+			$parts = explode('\\', $this->className());
+			$this->_classHandle = array_pop($parts);
 		}
 
 		return $this->_classHandle;
