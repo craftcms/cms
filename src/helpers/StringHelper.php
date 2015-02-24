@@ -9,7 +9,6 @@ namespace craft\app\helpers;
 
 use Craft;
 use Stringy\StaticStringy;
-use Stringy\Stringy;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -708,7 +707,7 @@ class StringHelper extends \yii\helpers\StringHelper
 		if (!isset(static::$_asciiCharMap))
 		{
 			// Get the map from Stringy.
-			static::$_asciiCharMap = (new Stringy())->getAsciiCharMap();
+			static::$_asciiCharMap = (new Stringy(''))->getAsciiCharMap();
 
 			foreach (Craft::$app->config->get('customAsciiCharMappings') as $asciiChar => $values)
 			{

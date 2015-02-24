@@ -145,9 +145,12 @@ class SearchHelper
 		if (empty($map))
 		{
 			// This will replace accented chars with non-accented chars
-			foreach (StringHelper::getAsciiCharMap() as $asciiChar => $value)
+			foreach (StringHelper::getAsciiCharMap() as $asciiChar => $charsArray)
 			{
-				$map[$asciiChar] = $value;
+				foreach ($charsArray as $char)
+				{
+					$map[$char] = $asciiChar;
+				}
 			}
 
 			// Replace punctuation with a space
