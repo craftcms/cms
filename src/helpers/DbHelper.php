@@ -271,7 +271,7 @@ class DbHelper
 	/**
 	 * Returns the maximum number of bytes a given textual column type can hold for a given database.
 	 *
-	 * @param        $columnType The textual column type to check.
+	 * @param string $columnType The textual column type to check.
 	 * @param string $database   The type of database to use.
 	 *
 	 * @return int The storage capacity of the column type in bytes.

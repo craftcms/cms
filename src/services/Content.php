@@ -262,13 +262,18 @@ class Content extends Component
 		$excludeColumns = array_keys($values);
 		$excludeColumns = array_merge($excludeColumns, array_keys(DbHelper::getAuditColumnConfig()));
 
-		$contentTableSchema = Craft::$app->getDb()->getSchema()->getTable($this->contentTable);
+		$contentTableSchema = Craft::$app->getDb()->getTableSchema($this->contentTable);
 
-		foreach ($contentTableSchema->columns as $columnSchema)
+		foreach ($contentTableSchema->getColumnNames() as $columnName)
 		{
-			if ($columnSchema->allowNull && !in_array($columnSchema->name, $excludeColumns))
+			if (!in_array($columnName, $excludeColumns))
 			{
-				$values[$columnSchema->name] = null;
+				$columnSchema = $contentTableSchema->getColumn($columnName);
+
+				if ($columnSchema->allowNull)
+				{
+					$values[$columnName] = null;
+				}
 			}
 		}
 
