@@ -8,7 +8,7 @@
 namespace craft\app\elements;
 
 use Craft;
-use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
@@ -70,12 +70,12 @@ class ElementRelationParamParser
 	/**
 	 * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
 	 *
-	 * @param mixed     $relatedTo
-	 * @param Command $query
+	 * @param mixed $relatedTo
+	 * @param Query $query
 	 *
 	 * @return mixed
 	 */
-	public function parseRelationParam($relatedTo, Command $query)
+	public function parseRelationParam($relatedTo, Query $query)
 	{
 		// Ensure the criteria is an array
 		$relatedTo = ArrayHelper::toArray($relatedTo);
@@ -173,12 +173,12 @@ class ElementRelationParamParser
 	/**
 	 * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
 	 *
-	 * @param mixed     $relCriteria
-	 * @param Command $query
+	 * @param mixed $relCriteria
+	 * @param Query $query
 	 *
 	 * @return mixed
 	 */
-	private function _subparseRelationParam($relCriteria, Command $query)
+	private function _subparseRelationParam($relCriteria, Query $query)
 	{
 		if (!is_array($relCriteria))
 		{
@@ -312,8 +312,8 @@ class ElementRelationParamParser
 							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 						}
 
-						$query->leftJoin('relations '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
-						$query->leftJoin('matrixblocks '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
+						$query->leftJoin('{{%relations}} '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
+						$query->leftJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
 
 						$condition = ['and',
 							DbHelper::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
@@ -343,8 +343,8 @@ class ElementRelationParamParser
 							$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 						}
 
-						$query->leftJoin('matrixblocks '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-						$query->leftJoin('relations '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
+						$query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
+						$query->leftJoin('{{%relations}} '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
 
 						$condition = ['and',
 							DbHelper::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
@@ -397,7 +397,7 @@ class ElementRelationParamParser
 				$relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
 			}
 
-			$query->leftJoin('relations '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
+			$query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
 			$condition = DbHelper::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
 
 			if ($normalFieldIds)

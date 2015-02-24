@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
-use craft\app\db\Command;
+use craft\app\db\Query;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
@@ -115,13 +115,13 @@ class Assets extends Component
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$files = Craft::$app->getDb()->createCommand()
+		$files = (new Query())
 			->select('fi.*')
 			->from('{{%assetfiles}} fi')
 			->innerJoin('{{%assetfolders}} fo', 'fo.id = fi.folderId')
 			->where('fo.sourceId = :sourceId', [':sourceId' => $sourceId])
 			->orderBy('fi.filename')
-			->queryAll();
+			->all();
 
 		return AssetFileModel::populateModels($files, $indexBy);
 	}
@@ -570,7 +570,7 @@ class Assets extends Component
 		{
 			$result = $this->_createFolderQuery()
 				->where('id = :id', [':id' => $folderId])
-				->queryRow();
+				->one();
 
 			if ($result)
 			{
@@ -601,7 +601,7 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->select('f.*')
 			->from('{{%assetfolders}} f');
 
@@ -622,7 +622,7 @@ class Assets extends Component
 			$query->limit($criteria->limit);
 		}
 
-		$results = $query->queryAll();
+		$results = $query->all();
 		$folders = [];
 
 		foreach ($results as $result)
@@ -644,13 +644,13 @@ class Assets extends Component
 	 */
 	public function getAllDescendantFolders(AssetFolderModel $parentFolder)
 	{
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->select('f.*')
 			->from('{{%assetfolders}} f')
 			->where(['like', 'path', $parentFolder->path.'%'])
 			->andWhere('sourceId = :sourceId', [':sourceId' => $parentFolder->sourceId]);
 
-		$results = $query->queryAll();
+		$results = $query->all();
 		$descendantFolders = [];
 
 		foreach ($results as $result)
@@ -702,13 +702,13 @@ class Assets extends Component
 			$criteria = new FolderCriteriaModel($criteria);
 		}
 
-		$query = Craft::$app->getDb()->createCommand()
+		$query = (new Query())
 			->select('count(id)')
 			->from('{{%assetfolders}} f');
 
 		$this->_applyFolderConditions($query, $criteria);
 
-		return (int)$query->queryScalar();
+		return (int) $query->scalar();
 	}
 
 	// File and folder managing
@@ -1133,13 +1133,13 @@ class Assets extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving assets.
+	 * Returns a Query object prepped for retrieving assets.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createFolderQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select(['id', 'parentId', 'sourceId', 'name', 'path'])
 			->from('{{%assetfolders}}');
 	}
@@ -1183,9 +1183,9 @@ class Assets extends Component
 	}
 
 	/**
-	 * Applies WHERE conditions to a Command query for folders.
+	 * Applies WHERE conditions to a Query query for folders.
 	 *
-	 * @param Command           $query
+	 * @param Query               $query
 	 * @param FolderCriteriaModel $criteria
 	 *
 	 * @return null

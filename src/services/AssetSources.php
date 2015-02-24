@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
-use craft\app\db\Command;
 use craft\app\db\Query;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
@@ -241,7 +240,7 @@ class AssetSources extends Component
 		{
 			$this->_sourcesById = [];
 
-			$results = $this->_createSourceQuery()->queryAll();
+			$results = $this->_createSourceQuery()->all();
 
 			foreach ($results as $result)
 			{
@@ -302,7 +301,7 @@ class AssetSources extends Component
 			{
 				$result = $this->_createSourceQuery()
 					->where('id = :id', [':id' => $sourceId])
-					->queryRow();
+					->one();
 
 				if ($result)
 				{
@@ -493,16 +492,16 @@ class AssetSources extends Component
 		try
 		{
 			// Grab the asset file ids so we can clean the elements table.
-			$assetFileIds = Craft::$app->getDb()->createCommand()
+			$assetFileIds = (new Query())
 				->select('id')
 				->from('{{%assetfiles}}')
 				->where(['sourceId' => $sourceId])
-				->queryColumn();
+				->column();
 
 			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%assetsources}}', ['id' => $sourceId]);
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%assetsources}}', ['id' => $sourceId])->execute();
 
 			if ($transaction !== null)
 			{
@@ -526,13 +525,13 @@ class AssetSources extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Command object prepped for retrieving sources.
+	 * Returns a Query object prepped for retrieving sources.
 	 *
-	 * @return Command
+	 * @return Query
 	 */
 	private function _createSourceQuery()
 	{
-		return Craft::$app->getDb()->createCommand()
+		return (new Query())
 			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
 			->from('{{%assetsources}}')
 			->orderBy('sortOrder');
