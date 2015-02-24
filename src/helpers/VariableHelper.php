@@ -32,12 +32,6 @@ class VariableHelper
 
 		if (is_array($instances))
 		{
-			$namespace = __NAMESPACE__.'\\';
-			if (strncmp($class, $namespace, StringHelper::length($namespace)) != 0)
-			{
-				$class = $namespace.$class;
-			}
-
 			foreach ($instances as $key => $instance)
 			{
 				$variables[$key] = new $class($instance);

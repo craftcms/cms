@@ -216,8 +216,7 @@ class Components extends Component
 		$componentClasses = [];
 
 		// Find all of the built-in components
-		$filter = $this->types[$type]['suffix'].'\.php$';
-		$files = IOHelper::getFolderContents(Craft::$app->path->getAppPath().'/'.$this->types[$type]['subfolder'], false, $filter);
+		$files = IOHelper::getFolderContents(Craft::$app->path->getAppPath().'/'.$this->types[$type]['subfolder'], false, '\.php$');
 
 		if ($files)
 		{
