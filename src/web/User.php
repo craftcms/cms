@@ -43,9 +43,6 @@ class User extends \yii\web\User
 	 */
 	public function __construct($config = [])
 	{
-		// Should the session be enabled on this request?
-		$config['enableSession'] = $this->_shouldEnableSession();
-
 		// Set the configurable properties
 		$configService = Craft::$app->config;
 		$config['loginUrl']    = (array) $configService->getLoginPath();
@@ -62,6 +59,15 @@ class User extends \yii\web\User
 		$config['returnUrlParam']           = $stateKeyPrefix.'__returnUrl';
 
 		parent::__construct($config);
+	}
+
+	/**
+	 * Initializes the application component.
+	 */
+	public function init()
+	{
+		parent::init();
+		$this->_setStaticIdentity();
 	}
 
 	// Authentication
@@ -283,20 +289,41 @@ class User extends \yii\web\User
 	// =========================================================================
 
 	/**
-	 * Determines whether the session should be enabled for this request.
+	 * Statically sets the identity in the event that this request should not be extending it.
 	 *
 	 * @return bool
 	 */
-	private function _shouldEnableSession()
+	private function _setStaticIdentity()
 	{
-		// See if these are the exact conditions we support for disabling the session on the current request
+		// Is the request specifying that the session should not be extended?
 		$request = Craft::$app->getRequest();
 
-		return !(
+		if (
 			$request->getIsGet() &&
 			$request->getIsCpRequest() &&
-			$request->getParam('dontEnableSession')
-		);
+			$request->getParam('dontExtendSession')
+		)
+		{
+			// Prevent getIdentity() from automatically fetching the identity from session
+			$this->enableSession = false;
+
+			// Code adapted from \yii\web\User::renewAuthStatus()
+			$session = Craft::$app->getSession();
+			$id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
+
+			if ($id === null)
+			{
+				$identity = null;
+			}
+			else
+			{
+				/* @var $class IdentityInterface */
+				$class = $this->identityClass;
+				$identity = $class::findIdentity($id);
+			}
+
+			$this->setIdentity($identity);
+		}
 	}
 
 	/**
