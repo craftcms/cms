@@ -755,7 +755,6 @@ class UsersService extends BaseApplicationComponent
 				$user->setActive();
 				$userRecord->verificationCode = null;
 				$userRecord->verificationCodeIssuedDate = null;
-				$userRecord->lockoutDate = null;
 				$userRecord->save();
 
 				// If they have an unverified email address, now is the time to set it to their primary email address
@@ -858,6 +857,7 @@ class UsersService extends BaseApplicationComponent
 
 				$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
 				$userRecord->invalidLoginWindowStart = null;
+				$userRecord->lockoutDate = $user->lockoutDate = null;
 
 				$userRecord->save();
 				$success = true;
