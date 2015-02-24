@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\events\ElementEvent;
+use craft\app\events\ContentEvent;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\models\BaseElementModel;
@@ -32,7 +32,7 @@ class Content extends Component
 	// =========================================================================
 
 	/**
-     * @event ElementEvent The event that is triggered after an element's content is saved.
+     * @event ContentEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
@@ -306,7 +306,7 @@ class Content extends Component
 			}
 
 			// Fire an 'afterSaveContent' event
-			$this->trigger(static::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
+			$this->trigger(static::EVENT_AFTER_SAVE_CONTENT, new ContentEvent([
 				'content' => $content
 			]));
 
