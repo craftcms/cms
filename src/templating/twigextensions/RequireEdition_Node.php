@@ -29,12 +29,12 @@ class RequireEdition_Node extends \Twig_Node
 	{
 		$compiler
 			->addDebugInfo($this)
-			->write('if (\\Craft::\$app->getEdition() < ')
+			->write('if (\Craft::$app->getEdition() < ')
 			->subcompile($this->getNode('editionName'))
 			->raw(")\n")
 			->write("{\n")
 			->indent()
-			->write("throw new \craft\app\errors\HttpException(404);\n")
+			->write("throw new \\Craft\\app\\errors\\HttpException(404);\n")
 			->outdent()
 			->write("}\n");
 	}

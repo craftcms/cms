@@ -7,13 +7,15 @@
 
 namespace craft\app\helpers;
 
+use yii\helpers\Html;
+
 /**
  * Class HtmlHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class HtmlHelper extends \CHtml
+class HtmlHelper extends Html
 {
 
 }
