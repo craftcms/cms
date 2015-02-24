@@ -526,7 +526,7 @@ class Resources extends Component
 			{
 				$color = imagecolorallocate($image, 153, 153, 153);
 				$text = StringHelper::toUpperCase($ext);
-				$font = Craft::$app->path->getAppPath().'/resources/helveticaneue-webfont.ttf';
+				$font = Craft::$app->path->getResourcesPath().'/fonts/helveticaneue-webfont.ttf';
 
 				// Get the bounding box so we can calculate the position
 				$box = imagettfbbox($sourceSize['extSize'], 0, $font, $text);
