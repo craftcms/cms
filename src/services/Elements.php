@@ -1788,7 +1788,7 @@ class Elements extends Component
 	 *
 	 * @param string $class The element type class handle.
 	 *
-	 * @return ElementTypeInterface|null The element type, or `null`.
+	 * @return ElementTypeInterface The element type, or `null`.
 	 */
 	public function getElementType($class)
 	{

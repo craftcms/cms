@@ -8,6 +8,7 @@
 namespace craft\app\variables;
 
 use craft\app\components\BaseComponentType;
+use craft\app\components\ComponentTypeInterface;
 use craft\app\helpers\VariableHelper;
 
 /**
@@ -32,11 +33,11 @@ abstract class BaseComponentTypeVariable
 	/**
 	 * Constructor
 	 *
-	 * @param BaseComponentType $component
+	 * @param ComponentTypeInterface $component
 	 *
 	 * @return BaseComponentTypeVariable
 	 */
-	public function __construct($component)
+	public function __construct(ComponentTypeInterface $component)
 	{
 		$this->component = $component;
 	}
