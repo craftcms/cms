@@ -85,7 +85,7 @@ class MatrixBlockType extends BaseRecord
 		{
 			foreach ($rules as $i => $rule)
 			{
-				if ($rule[1] == 'Craft\CompositeUniqueValidator')
+				if ($rule[1] == 'unique' && isset($rule['targetAttribute']) && is_array($rule['targetAttribute']) && count($rule['targetAttribute']) > 1)
 				{
 					unset($rules[$i]);
 				}

@@ -411,8 +411,8 @@ class ModelHelper
 						}
 						else
 						{
-							$initialColumn = array_shift($columns);
-							$rules[] = [$initialColumn, 'craft\app\validators\CompositeUnique', 'with' => implode(',', $columns)];
+							$initialColumn = ArrayHelper::getFirstValue($columns);
+							$rules[] = [$initialColumn, 'unique', 'targetAttribute' => $columns];
 						}
 					}
 
