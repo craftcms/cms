@@ -185,7 +185,7 @@ class TagsController extends Controller
 		$tagTitleLengths = [];
 		$exactMatch      = false;
 
-		$normalizedSearch = StringHelper::normalizeKeywords($search);
+		$normalizedSearch = SearchHelper::normalizeKeywords($search);
 
 		foreach ($tags as $tag)
 		{
@@ -196,7 +196,7 @@ class TagsController extends Controller
 
 			$tagTitleLengths[] = StringHelper::length($tag->getContent()->title);
 
-			$normalizedTitle = StringHelper::normalizeKeywords($tag->getContent()->title);
+			$normalizedTitle = SearchHelper::normalizeKeywords($tag->getContent()->title);
 
 			if ($normalizedTitle == $normalizedSearch)
 			{
