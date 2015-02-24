@@ -7,10 +7,10 @@
 
 namespace craft\app\models;
 
+use craft\app\base\FieldLayoutTrait;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
  * GlobalSet model class.
@@ -23,7 +23,7 @@ class GlobalSet extends BaseElementModel
 	// Traits
 	// =========================================================================
 
-	use \craft\app\base\FieldLayoutTrait;
+	use FieldLayoutTrait;
 
 	// Properties
 	// =========================================================================
@@ -49,16 +49,6 @@ class GlobalSet extends BaseElementModel
 	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
-	 *
-	 * @return FieldLayoutModel|null
-	 */
-	public function getFieldLayout()
-	{
-		return $this->asa('fieldLayout')->getFieldLayout();
 	}
 
 	/**
