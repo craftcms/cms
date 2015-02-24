@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\enums\ElementType;
+use craft\app\enums\ElementType as ElementTypeEnum;
 use craft\app\helpers\StringHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use yii\base\Object;
@@ -112,7 +112,7 @@ class Craft extends Object
 	 */
 	public function assets($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Asset, $criteria);
 	}
 
 	/**
@@ -122,7 +122,7 @@ class Craft extends Object
 	 */
 	public function categories($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementType::Category, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Category, $criteria);
 	}
 
 	/**
@@ -183,7 +183,7 @@ class Craft extends Object
 	 */
 	public function entries($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementType::Entry, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Entry, $criteria);
 	}
 
 	/**
@@ -284,7 +284,7 @@ class Craft extends Object
 	 */
 	public function tags($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementType::Tag, $criteria);
+		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Tag, $criteria);
 	}
 
 	/**
@@ -312,7 +312,7 @@ class Craft extends Object
 	{
 		if (\Craft::$app->getEdition() == \Craft::Pro)
 		{
-			return \Craft::$app->elements->getCriteria(ElementType::User, $criteria);
+			return \Craft::$app->elements->getCriteria(ElementTypeEnum::User, $criteria);
 		}
 	}
 
