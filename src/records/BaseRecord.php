@@ -111,7 +111,7 @@ abstract class BaseRecord extends ActiveRecord
 	public function beforeSave($insert)
 	{
 		$this->prepAttributesForSave();
-		parent::beforeSave($insert);
+		return parent::beforeSave($insert);
 	}
 
 	/**
