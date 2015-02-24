@@ -425,7 +425,7 @@ class EntriesController extends BaseEntriesController
 		// Permission enforcement
 		$this->enforceEditEntryPermissions($entry);
 		$userSessionService = Craft::$app->getUser();
-		$currentUser = $userSessionService->getUser();
+		$currentUser = $userSessionService->getIdentity();
 
 		if ($entry->id)
 		{

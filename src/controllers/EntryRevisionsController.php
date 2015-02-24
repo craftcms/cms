@@ -206,7 +206,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
-			$entry->authorId != $userSessionService->getUser()->id &&
+			$entry->authorId != $userSessionService->getIdentity()->id &&
 			$entry->getSection()->type != SectionType::Single
 		)
 		{
@@ -284,7 +284,7 @@ class EntryRevisionsController extends BaseEntriesController
 
 		// Is this another user's entry (and it's not a Single)?
 		if (
-			$entry->authorId != $userSessionService->getUser()->id &&
+			$entry->authorId != $userSessionService->getIdentity()->id &&
 			$entry->getSection()->type != SectionType::Single
 		)
 		{
