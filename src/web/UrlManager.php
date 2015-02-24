@@ -240,7 +240,7 @@ class UrlManager extends \yii\web\UrlManager
 			$rules = array_merge($rules, $pluginRules);
 		}
 
-		return $rules;
+		return array_filter($rules);
 	}
 
 	/**
