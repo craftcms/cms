@@ -49,7 +49,7 @@ class CpHelper
 				{
 					if (Craft::$app->updates->criticalCraftUpdateAvailable($updateModel->app->releases))
 					{
-						$alerts[] = Craft::t('app', 'There’s a critical @@@appName@@@ update available.') .
+						$alerts[] = Craft::t('app', 'There’s a critical Craft update available.') .
 							' <a class="go nowrap" href="'.UrlHelper::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
 					}
 				}

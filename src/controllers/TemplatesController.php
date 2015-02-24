@@ -16,7 +16,6 @@ use craft\app\helpers\TemplateHelper;
 use craft\app\requirements\RequirementsChecker;
 use craft\app\web\Controller;
 use ErrorException;
-use yii\helpers\Markdown;
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the

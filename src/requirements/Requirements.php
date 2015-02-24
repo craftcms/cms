@@ -35,28 +35,28 @@ class Requirements
 				Craft::t('app', '$_SERVER Variable'),
 				($message = static::_checkServerVar()) === '',
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				$message
 			),
 			new Requirement(
 				Craft::t('app', 'Reflection extension'),
 				class_exists('Reflection', false),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				'The <a href="http://php.net/manual/en/class.reflectionextension.php">ReflectionExtension</a> is required.'
 			),
 			new Requirement(
 				Craft::t('app', 'PCRE extension'),
 				extension_loaded("pcre"),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> is required.'
 			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded("SPL"),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				'<a href="http://php.net/manual/en/book.spl.php">SPL</a> is required.'
 			),
 			new Requirement(
@@ -84,64 +84,64 @@ class Requirements
 				Craft::t('app', 'GD extension with FreeType support'),
 				extension_loaded('gd'),
 				(!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
 				Craft::t('app', 'ImageMagick extension'),
 				extension_loaded('imagick'),
 				(!extension_loaded('gd')), // Only required if GD isn't installed
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
 				Craft::t('app', 'MySQL version'),
 				version_compare(Craft::$app->getDb()->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION), $requiredMysqlVersion, ">="),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('app', 'MySQL {version} or higher is required to run @@@appName@@@.', ['version' => $requiredMysqlVersion])
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				Craft::t('app', 'MySQL {version} or higher is required to run Craft.', ['version' => $requiredMysqlVersion])
 			),
 			new Requirement(
 				Craft::t('app', 'MySQL InnoDB support'),
 				static::_isInnoDbEnabled(),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('app', '@@@appName@@@ requires the MySQL InnoDB storage engine to run.')
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				Craft::t('app', 'Craft requires the MySQL InnoDB storage engine to run.')
 			),
 			new Requirement(
 				Craft::t('app', 'SSL support'),
 				extension_loaded('openssl'),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('app', '@@@appName@@@ requires <a href="http://php.net/manual/en/book.openssl.php">OpenSSL</a> in order to run.')
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				Craft::t('app', 'Craft requires <a href="http://php.net/manual/en/book.openssl.php">OpenSSL</a> in order to run.')
 			),
 			new Requirement(
 				Craft::t('app', 'cURL support'),
 				extension_loaded('curl'),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('app', '@@@appName@@@ requires <a href="http://php.net/manual/en/book.curl.php">cURL</a> in order to run.')
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				Craft::t('app', 'Craft requires <a href="http://php.net/manual/en/book.curl.php">cURL</a> in order to run.')
 			),
 			new Requirement(
 				Craft::t('app', 'crypt() with CRYPT_BLOWFISH enabled'),
 				true,
 				function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH,
 				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
-				Craft::t('app', '@@@appName@@@ requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
+				Craft::t('app', 'Craft requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
 			),
 			new Requirement(
 				Craft::t('app', 'PCRE UTF-8 support'),
 				preg_match('/./u', 'Ü') === 1,
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
+				'<a href="http://buildwithcraft.com">Craft</a>',
 				Craft::t('app', '<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.')
 			),
 			new Requirement(
 				Craft::t('app', 'Multibyte String support'),
 				(extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
 				true,
-				'<a href="http://buildwithcraft.com">@@@appName@@@</a>',
-				Craft::t('app', '@@@appName@@@ requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				Craft::t('app', 'Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
 			new IconvRequirement(),
 		];
@@ -363,7 +363,7 @@ class PhpVersionRequirement extends Requirement
 			Craft::t('app', 'PHP Version'),
 			null,
 			true,
-			'<a href="http://buildwithcraft.com">@@@appName@@@</a>'
+			'<a href="http://buildwithcraft.com">Craft</a>'
 		);
 	}
 
@@ -459,7 +459,7 @@ class IconvRequirement extends Requirement
 			Craft::t('app', 'iconv support'),
 			null,
 			false,
-			'<a href="http://buildwithcraft.com">@@@appName@@@</a>'
+			'<a href="http://buildwithcraft.com">Craft</a>'
 		);
 	}
 

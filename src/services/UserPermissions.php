@@ -63,7 +63,7 @@ class UserPermissions extends Component
 						'label' => Craft::t('app', 'Access the CP when the system is off')
 					],
 					'performUpdates' => [
-						'label' => Craft::t('app', 'Perform @@@appName@@@ and plugin updates')
+						'label' => Craft::t('app', 'Perform Craft and plugin updates')
 					],
 				]
 			],
