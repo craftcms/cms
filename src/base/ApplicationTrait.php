@@ -1079,13 +1079,13 @@ trait ApplicationTrait
 		// Set the appropriate edition components
 		$edition = $this->getEdition();
 
-		if ($edition === Craft::Client || $edition === Craft::Pro)
+		if ($edition == Craft::Client || $edition == Craft::Pro)
 		{
 			$pathService = $this->path;
 
 			$this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
 
-			if ($edition === Craft::Pro)
+			if ($edition == Craft::Pro)
 			{
 				$this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
 			}

@@ -214,11 +214,11 @@ class UrlManager extends \yii\web\UrlManager
 			$baseCpRoutesPath = Craft::$app->path->getAppPath().'/config/cproutes';
 			$rules = require($baseCpRoutesPath.'/common.php');
 
-			if (Craft::$app->getEdition() <= Craft::Client)
+			if (Craft::$app->getEdition() >= Craft::Client)
 			{
 				$rules = array_merge($rules, require($baseCpRoutesPath.'/client.php'));
 
-				if (Craft::$app->getEdition() === Craft::Pro)
+				if (Craft::$app->getEdition() == Craft::Pro)
 				{
 					$rules = array_merge($rules, require($baseCpRoutesPath.'/pro.php'));
 				}
