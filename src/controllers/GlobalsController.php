@@ -11,7 +11,7 @@ use Craft;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\models\GlobalSet;
 use craft\app\web\Controller;
 
 /**
@@ -38,7 +38,7 @@ class GlobalsController extends Controller
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$globalSet = new GlobalSetModel();
+		$globalSet = new GlobalSet();
 
 		// Set the simple stuff
 		$globalSet->id     = Craft::$app->getRequest()->getBodyParam('setId');
