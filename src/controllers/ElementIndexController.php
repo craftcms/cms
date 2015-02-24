@@ -92,7 +92,7 @@ class ElementIndexController extends BaseElementsController
 	 * Other components can fetch this like so:
 	 *
 	 * ```php
-	 * $criteria = Craft::$app->getController()->getElementCriteria();
+	 * $criteria = Craft::$app->controller->getElementCriteria();
 	 * ```
 	 *
 	 * @return ElementCriteriaModel
