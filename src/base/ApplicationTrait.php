@@ -19,9 +19,8 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\Locale;
 use craft\app\log\FileTarget;
-use craft\app\models\Info as InfoModel;
+use craft\app\models\Info;
 use yii\base\InvalidConfigException;
-use yii\log\Logger;
 
 /**
  * ApplicationTrait
@@ -559,7 +558,7 @@ trait ApplicationTrait
 	 * @param string|null $attribute
 	 *
 	 * @throws Exception
-	 * @return mixed
+	 * @return Info|string
 	 */
 	public function getInfo($attribute = null)
 	{
@@ -577,11 +576,11 @@ trait ApplicationTrait
 					throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
 				}
 
-				$this->_info = new InfoModel($row);
+				$this->_info = new Info($row);
 			}
 			else
 			{
-				$this->_info = new InfoModel();
+				$this->_info = new Info();
 			}
 		}
 
@@ -598,11 +597,11 @@ trait ApplicationTrait
 	/**
 	 * Updates the info row.
 	 *
-	 * @param InfoModel $info
+	 * @param Info $info
 	 *
 	 * @return bool
 	 */
-	public function saveInfo(InfoModel $info)
+	public function saveInfo(Info $info)
 	{
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		if ($info->validate())
@@ -621,7 +620,7 @@ trait ApplicationTrait
 				$info->id = $this->getDb()->getLastInsertID();
 			}
 
-			// Use this as the new cached InfoModel
+			// Use this as the new cached Info
 			$this->_info = $info;
 
 			return true;
