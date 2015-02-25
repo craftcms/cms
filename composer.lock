@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "78841766bf0c6867e7e62dd60bc53885",
+    "hash": "f4af065fd98dd6f2752603bb181b7f2d",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -102,16 +102,16 @@
         },
         {
             "name": "bower-asset/jquery.inputmask",
-            "version": "3.1.59",
+            "version": "3.1.61",
             "source": {
                 "type": "git",
                 "url": "https://github.com/RobinHerbots/jquery.inputmask.git",
-                "reference": "6fcd2cf28ee111f8aadcd42a1b8d43d6f7a5c0ba"
+                "reference": "f2c086411d2557fc485c47afb3cecfa6c1de9ee2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/RobinHerbots/jquery.inputmask/zipball/6fcd2cf28ee111f8aadcd42a1b8d43d6f7a5c0ba",
-                "reference": "6fcd2cf28ee111f8aadcd42a1b8d43d6f7a5c0ba",
+                "url": "https://api.github.com/repos/RobinHerbots/jquery.inputmask/zipball/f2c086411d2557fc485c47afb3cecfa6c1de9ee2",
+                "reference": "f2c086411d2557fc485c47afb3cecfa6c1de9ee2",
                 "shasum": ""
             },
             "require": {
@@ -271,17 +271,57 @@
             "time": "2014-10-25 16:16:49"
         },
         {
+            "name": "creocoder/yii2-nested-sets",
+            "version": "0.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/creocoder/yii2-nested-sets.git",
+                "reference": "cb8635a459b6246e5a144f096b992dcc30cf9954"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/creocoder/yii2-nested-sets/zipball/cb8635a459b6246e5a144f096b992dcc30cf9954",
+                "reference": "cb8635a459b6246e5a144f096b992dcc30cf9954",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "*"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "creocoder\\nestedsets\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Kochetov",
+                    "email": "creocoder@gmail.com"
+                }
+            ],
+            "description": "The nested sets behavior for the Yii framework",
+            "keywords": [
+                "nested sets",
+                "yii2"
+            ],
+            "time": "2015-01-27 10:53:51"
+        },
+        {
             "name": "danielstjules/stringy",
             "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/danielstjules/Stringy.git",
-                "reference": "9a0f0e16cbf84111798950a56fd0b8dfe446d6fa"
+                "reference": "3cf18e9e424a6dedc38b7eb7ef580edb0929461b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/danielstjules/Stringy/zipball/9a0f0e16cbf84111798950a56fd0b8dfe446d6fa",
-                "reference": "9a0f0e16cbf84111798950a56fd0b8dfe446d6fa",
+                "url": "https://api.github.com/repos/danielstjules/Stringy/zipball/3cf18e9e424a6dedc38b7eb7ef580edb0929461b",
+                "reference": "3cf18e9e424a6dedc38b7eb7ef580edb0929461b",
                 "shasum": ""
             },
             "require": {
@@ -324,7 +364,7 @@
                 "utility",
                 "utils"
             ],
-            "time": "2015-02-02 06:09:48"
+            "time": "2015-02-10 06:19:18"
         },
         {
             "name": "doctrine/instantiator",
@@ -697,16 +737,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lsolesen/pel.git",
-                "reference": "7c5e77aebaca6c3b4de69a0e8387abce59177e98"
+                "reference": "e09ec50668907c21d2be2fbc80fa5293450cad22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lsolesen/pel/zipball/7c5e77aebaca6c3b4de69a0e8387abce59177e98",
-                "reference": "7c5e77aebaca6c3b4de69a0e8387abce59177e98",
+                "url": "https://api.github.com/repos/lsolesen/pel/zipball/e09ec50668907c21d2be2fbc80fa5293450cad22",
+                "reference": "e09ec50668907c21d2be2fbc80fa5293450cad22",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.0.0"
+            },
+            "require-dev": {
+                "lastcraft/simpletest": ">=1.1"
             },
             "type": "library",
             "autoload": {
@@ -728,7 +771,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-01-06 21:50:50"
+            "time": "2015-02-20 10:42:17"
         },
         {
             "name": "mockery/mockery",
@@ -1742,17 +1785,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.3",
+            "version": "v2.6.4",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/82462a90848a52c2533aa6b598b107d68076b018",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/60ed7751671113cf1ee7d7778e691642c2e9acd8",
+                "reference": "60ed7751671113cf1ee7d7778e691642c2e9acd8",
                 "shasum": ""
             },
             "require": {
@@ -1785,7 +1828,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-03 15:33:07"
+            "time": "2015-01-25 04:39:26"
         },
         {
             "name": "twig/twig",
