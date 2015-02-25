@@ -248,11 +248,10 @@ var CP = Garnish.Base.extend(
 			else
 			{
 				// See if we can fit any more nav items in the main menu
-				do
+				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
 				{
 					this.addFirstOverflowNavItemToMainMenu();
 				}
-				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems));
 
 				// Now kick the last one back.
 				this.addLastVisibleNavItemToOverflowMenu();
