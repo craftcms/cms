@@ -10,6 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\models\EntryDraft as EntryDraftModel;
+use yii\base\Model;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -33,7 +34,7 @@ class EntryDraft extends BaseEntryRevisionModel
 	 */
 	public static function populateModel($attributes)
 	{
-		if ($attributes instanceof \CModel)
+		if ($attributes instanceof Model)
 		{
 			$attributes = $attributes->getAttributes();
 		}
