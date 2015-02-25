@@ -16,7 +16,8 @@
         "mockery/mockery": "0.9.3",
         "phpmailer/phpmailer": "v5.2.9",
         "danielstjules/stringy": "dev-master",
-        "fxp/composer-asset-plugin": "1.0.0-beta4"
+        "fxp/composer-asset-plugin": "1.0.0-beta4",
+        "creocoder/yii2-nested-sets": "0.9.*"
     },
     "extra": {
         "asset-installer-paths": {
