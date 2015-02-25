@@ -11,6 +11,7 @@ use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EntryType as EntryTypeModel;
@@ -148,7 +149,7 @@ class Entry extends BaseElementModel
 				else
 				{
 					// Just return the first one
-					return $sectionEntryTypes[array_shift(array_keys($sectionEntryTypes))];
+					return ArrayHelper::getFirstValue($sectionEntryTypes);
 				}
 			}
 		}
