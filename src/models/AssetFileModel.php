@@ -341,6 +341,11 @@ class AssetFileModel extends BaseElementModel
 
 	public function getHeight($transform = null)
 	{
+		if ($transform && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			return $this->_getDimension('height', null);
+		}
+
 		return $this->_getDimension('height', $transform);
 	}
 
@@ -353,6 +358,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getWidth($transform = null)
 	{
+		if ($transform && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			return $this->_getDimension('width', null);
+		}
+
 		return $this->_getDimension('width', $transform);
 	}
 
