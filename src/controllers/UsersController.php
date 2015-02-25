@@ -1260,12 +1260,6 @@ class UsersController extends Controller
 
 	/**
 	 * Deletes a user.
-	 *
-	 * @throws Exception
-	 * @throws HttpException
-	 * @throws \CDbException
-	 * @throws \Exception
-	 * @return null
 	 */
 	public function actionDeleteUser()
 	{

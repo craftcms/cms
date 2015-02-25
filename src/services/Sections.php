@@ -997,8 +997,6 @@ class Sections extends Component
 	 *
 	 * @param EntryTypeModel $entryType
 	 *
-	 * @throws Exception
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool
 	 */

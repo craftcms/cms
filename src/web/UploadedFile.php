@@ -19,7 +19,7 @@ namespace craft\app\web;
  *                                 will be automatically deleted by PHP after the current request is processed.
  * @property string $type          The MIME-type of the uploaded file (such as "image/gif"). Since this MIME type is not
  *                                 checked on the server side, do not take this value for granted. Instead, use
- *                                 [[\CFileHelper::getMimeType]] to determine the exact MIME type.
+ *                                 [[\yii\helpers\FileHelper::getMimeType()]] to determine the exact MIME type.
  * @property int    $size          The actual size of the uploaded file in bytes.
  * @property int    $error         The error code.
  * @property bool   $hasError      Whether there is an error with the uploaded file. Check [[error]] for the
@@ -31,7 +31,7 @@ namespace craft\app\web;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UploadedFile extends \CUploadedFile
+class UploadedFile extends \yii\web\UploadedFile
 {
 	// Public Methods
 	// =========================================================================

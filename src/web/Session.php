@@ -11,7 +11,7 @@ use Craft;
 use craft\app\helpers\StringHelper;
 
 /**
- * Extends \CHttpSession to add support for setting the session folder and creating it if it doesn't exist.
+ * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
  *
  * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `Craft::$app->getSession()`]].
  *

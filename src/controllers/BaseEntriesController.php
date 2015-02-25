@@ -13,10 +13,10 @@ use craft\app\models\Entry as EntryModel;
 use craft\app\web\Controller;
 
 /**
- * Controller is a base class that any entry related controllers, such as [[EntriesController]] and
- * [[EntryRevisionsController]] extend to share common functionality.
+ * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and
+ * [[EntryRevisionsController]], extend to share common functionality.
  *
- * It extend's Yii's [[\CController]] overwriting specific methods as required.
+ * It extends [[Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

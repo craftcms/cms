@@ -306,7 +306,7 @@ class Deprecator extends Component
 	/**
 	 * Converts an array of method arguments to a string.
 	 *
-	 * Adapted from [[\CErrorHandler::argumentsToString()]], but this one's less destructive
+	 * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
 	 *
 	 * @param $args array
 	 *

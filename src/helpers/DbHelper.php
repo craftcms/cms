@@ -355,7 +355,7 @@ class DbHelper
 	}
 
 	/**
-	 * Parses a query param value and returns a [[\CDbCommand::where()]]-compatible condition.
+	 * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
 	 *
 	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
 	 * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
@@ -372,7 +372,7 @@ class DbHelper
 	 *
 	 * @param string       $column  The database column that the param is targeting.
 	 * @param string|array $value   The param value(s).
-	 * @param array        &$params The [[\CDbCommand::$params]] array.
+	 * @param array        &$params The [[\yii\db\Query::$params]] array.
 	 *
 	 * @return mixed
 	 */

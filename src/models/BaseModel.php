@@ -14,6 +14,9 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
+use yii\base\Model;
+use yii\base\UnknownMethodException;
+use yii\db\ActiveRecord;
 
 /**
  * Model base class.
@@ -121,6 +124,7 @@ abstract class BaseModel extends \yii\base\Model
 	 * @param array  $arguments
 	 *
 	 * @return BaseModel
+	 * @throws UnknownMethodException when calling an unknown method, if [[$strictAttributes]] isn’t enabled.
 	 */
 	public function __call($name, $arguments)
 	{
@@ -128,7 +132,7 @@ abstract class BaseModel extends \yii\base\Model
 		{
 			return parent::__call($name, $arguments);
 		}
-		catch (\CException $e)
+		catch (UnknownMethodException $e)
 		{
 			// Is this one of our attributes?
 			if (!$this->strictAttributes || in_array($name, $this->attributeNames()))
@@ -449,18 +453,18 @@ abstract class BaseModel extends \yii\base\Model
 	public function setAttributes($values, $safeOnly = true)
 	{
 		// If this is a model, get the actual attributes on it
-		if ($values instanceof \CModel)
+		if ($values instanceof Model)
 		{
 			$model = $values;
 			$values = $model->getAttributes();
 
 			// Is this a record?
-			if ($model instanceof \CActiveRecord)
+			if ($model instanceof ActiveRecord)
 			{
-				// Set any eager-loaded relations' values
-				foreach (array_keys($model->getMetaData()->relations) as $name)
+				// See if any of this model's attributes map to eager-loaded relations on the record
+				foreach ($this->attributeNames() as $name)
 				{
-					if ($model->hasRelated($name))
+					if ($model->isRelationPopulated($name))
 					{
 						$this->setAttribute($name, $model->$name);
 					}

@@ -408,7 +408,6 @@ class Globals extends Component
 	 *
 	 * @param GlobalSetModel $globalSet
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool
 	 */

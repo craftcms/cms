@@ -786,7 +786,6 @@ class Users extends Component
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool Whether the user was activated successfully.
 	 */
@@ -857,8 +856,6 @@ class Users extends Component
 	 * and clear the unverified one.
 	 *
 	 * @param UserModel $user
-	 *
-	 * @throws Exception
 	 */
 	public function verifyEmailForUser(UserModel $user)
 	{
@@ -888,7 +885,6 @@ class Users extends Component
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool Whether the user was unlocked successfully.
 	 */
@@ -957,7 +953,6 @@ class Users extends Component
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool Whether the user was suspended successfully.
 	 */
@@ -1023,7 +1018,6 @@ class Users extends Component
 	 *
 	 * @param UserModel $user The user.
 	 *
-	 * @throws \CDbException
 	 * @throws \Exception
 	 * @return bool Whether the user was unsuspended successfully.
 	 */

@@ -17,7 +17,7 @@ use craft\app\helpers\UrlHelper;
 /**
  * Controller is a base class that all controllers in Craft extend.
  *
- * It extend's Yii's [[\CController]] overwriting specific methods as required.
+ * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
