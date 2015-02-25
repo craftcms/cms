@@ -222,7 +222,7 @@ class Entries extends Component
 					}
 
 					// If "title" has an error, check if they've defined a custom title label.
-					if ($entry->getError('title'))
+					if ($entry->getFirstError('title'))
 					{
 						// Grab all of the original errors.
 						$errors = $entry->getErrors();

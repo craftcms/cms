@@ -142,7 +142,7 @@ class EntryRevisionsController extends BaseEntriesController
 		}
 		else
 		{
-			$this->returnErrorJson($draft->getError('name'));
+			$this->returnErrorJson($draft->getFirstError('name'));
 		}
 	}
 

@@ -552,6 +552,23 @@ abstract class BaseModel extends \yii\base\Model
 		return new $class($this->getAttributes());
 	}
 
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the first error of the specified attribute.
+	 *
+	 * @param string $attribute The attribute name.
+	 * @return string The error message. Null is returned if no error.
+	 *
+	 * @deprecated in 3.0. Use [[getFirstError()]] instead.
+	 */
+	public function getError($attribute)
+	{
+		Craft::$app->deprecator->log('BaseModel::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
+		return $this->getFirstError($attribute);
+	}
+
 	// Protected Methods
 	// =========================================================================
 
