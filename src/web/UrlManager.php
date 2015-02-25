@@ -65,18 +65,6 @@ class UrlManager extends \yii\web\UrlManager
 	}
 
 	/**
-	 * Sets variables to be passed to the routed controller action's $variables argument.
-	 *
-	 * @param array $variables
-	 */
-	public function setRouteVariables($variables)
-	{
-		$this->setRouteParams([
-			'variables' => $variables
-		]);
-	}
-
-	/**
 	 * @inheritDoc \yii\web\UrlManager::parseRequest()
 	 *
 	 * @param Request $request

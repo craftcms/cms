@@ -17,9 +17,8 @@ use craft\app\events\UserEvent;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\User as UserModel;
+use craft\app\models\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -243,7 +242,7 @@ class UsersController extends Controller
 		else
 		{
 			// Send the data back to the template
-			Craft::$app->getUrlManager()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteParams([
 				'errors'    => $errors,
 				'loginName' => isset($loginName) ? $loginName : null,
 			]);
@@ -439,13 +438,13 @@ class UsersController extends Controller
 	/**
 	 * Edit a user account.
 	 *
-	 * @param array       $variables
-	 * @param string|null $account
+	 * @param int|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
+	 * @param User       $user   The user being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditUser(array $variables = [], $account = null)
+	public function actionEditUser($userId = null, User $user = null)
 	{
 		// Determine which user account we're editing
 		// ---------------------------------------------------------------------
@@ -453,52 +452,47 @@ class UsersController extends Controller
 		$isClientAccount = false;
 
 		// This will be set if there was a validation error.
-		if (empty($variables['account']))
+		if ($user === null)
 		{
 			// Are we editing a specific user account?
-			if ($account !== null)
+			if ($userId !== null)
 			{
-				switch ($account)
+				switch ($userId)
 				{
 					case 'current':
 					{
-						$variables['account'] = Craft::$app->getUser()->getIdentity();
-
+						$user = Craft::$app->getUser()->getIdentity();
 						break;
 					}
 					case 'client':
 					{
 						$isClientAccount = true;
-						$variables['account'] = Craft::$app->users->getClient();
+						$user = Craft::$app->users->getClient();
 
-						if (!$variables['account'])
+						if (!$user)
 						{
 							// Registering the Client
-							$variables['account'] = new UserModel();
-							$variables['account']->client = true;
+							$user = new User();
+							$user->client = true;
 						}
 
 						break;
 					}
 					default:
 					{
-						throw new HttpException(404);
-					}
-				}
-			}
-			else if (!empty($variables['userId']))
-			{
-				$variables['account'] = Craft::$app->users->getUserById($variables['userId']);
+						$user = Craft::$app->users->getUserById($userId);
 
-				if (!$variables['account'])
-				{
-					throw new HttpException(404);
+						if (!$user)
+						{
+							throw new HttpException(404);
+						}
+					}
 				}
 			}
 			else if (Craft::$app->getEdition() == Craft::Pro)
 			{
 				// Registering a new user
-				$variables['account'] = new UserModel();
+				$user = new User();
 			}
 			else
 			{
@@ -507,14 +501,14 @@ class UsersController extends Controller
 			}
 		}
 
-		$variables['isNewAccount'] = !$variables['account']->id;
+		$isNewAccount = !$user->id;
 
 		// Make sure they have permission to edit this user
 		// ---------------------------------------------------------------------
 
-		if (!$variables['account']->isCurrent())
+		if (!$user->isCurrent())
 		{
-			if ($variables['isNewAccount'])
+			if ($isNewAccount)
 			{
 				$this->requirePermission('registerUsers');
 			}
@@ -530,13 +524,13 @@ class UsersController extends Controller
 		$statusActions  = [];
 		$sketchyActions = [];
 
-		if (Craft::$app->getEdition() >= Craft::Client && !$variables['isNewAccount'])
+		if (Craft::$app->getEdition() >= Craft::Client && !$isNewAccount)
 		{
-			switch ($variables['account']->getStatus())
+			switch ($user->getStatus())
 			{
 				case UserStatus::Pending:
 				{
-					$variables['statusLabel'] = Craft::t('app', 'Unverified');
+					$statusLabel = Craft::t('app', 'Unverified');
 
 					$statusActions[] = ['action' => 'users/sendActivationEmail', 'label' => Craft::t('app', 'Send activation email')];
 
@@ -550,7 +544,7 @@ class UsersController extends Controller
 				}
 				case UserStatus::Locked:
 				{
-					$variables['statusLabel'] = Craft::t('app', 'Locked');
+					$statusLabel = Craft::t('app', 'Locked');
 
 					if (Craft::$app->getUser()->checkPermission('administrateUsers'))
 					{
@@ -561,7 +555,7 @@ class UsersController extends Controller
 				}
 				case UserStatus::Suspended:
 				{
-					$variables['statusLabel'] = Craft::t('app', 'Suspended');
+					$statusLabel = Craft::t('app', 'Suspended');
 
 					if (Craft::$app->getUser()->checkPermission('administrateUsers'))
 					{
@@ -572,9 +566,9 @@ class UsersController extends Controller
 				}
 				case UserStatus::Active:
 				{
-					$variables['statusLabel'] = Craft::t('app', 'Active');
+					$statusLabel = Craft::t('app', 'Active');
 
-					if (!$variables['account']->isCurrent())
+					if (!$user->isCurrent())
 					{
 						$statusActions[] = ['action' => 'users/sendPasswordResetEmail', 'label' => Craft::t('app', 'Send password reset email')];
 
@@ -588,9 +582,9 @@ class UsersController extends Controller
 				}
 			}
 
-			if (!$variables['account']->isCurrent())
+			if (!$user->isCurrent())
 			{
-				if (Craft::$app->getUser()->checkPermission('administrateUsers') && $variables['account']->getStatus() != UserStatus::Suspended)
+				if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != UserStatus::Suspended)
 				{
 					$sketchyActions[] = ['action' => 'users/suspendUser', 'label' => Craft::t('app', 'Suspend')];
 				}
@@ -602,47 +596,47 @@ class UsersController extends Controller
 			}
 		}
 
-		$variables['actions'] = [];
+		$actions = [];
 
 		if ($statusActions)
 		{
-			array_push($variables['actions'], $statusActions);
+			array_push($actions, $statusActions);
 		}
 
 		// Give plugins a chance to add more actions
-		$pluginActions = Craft::$app->plugins->call('addUserAdministrationOptions', [$variables['account']], true);
+		$pluginActions = Craft::$app->plugins->call('addUserAdministrationOptions', [$user], true);
 
 		if ($pluginActions)
 		{
-			$variables['actions'] = array_merge($variables['actions'], array_values($pluginActions));
+			$actions = array_merge($actions, array_values($pluginActions));
 		}
 
 		if ($sketchyActions)
 		{
-			array_push($variables['actions'], $sketchyActions);
+			array_push($actions, $sketchyActions);
 		}
 
 		// Set the appropriate page title
 		// ---------------------------------------------------------------------
 
-		if (!$variables['isNewAccount'])
+		if (!$isNewAccount)
 		{
-			if ($variables['account']->isCurrent())
+			if ($user->isCurrent())
 			{
-				$variables['title'] = Craft::t('app', 'My Account');
+				$title = Craft::t('app', 'My Account');
 			}
 			else
 			{
-				$variables['title'] = Craft::t('app', '{user}’s Account', ['user' => $variables['account']->name]);
+				$title = Craft::t('app', '{user}’s Account', ['user' => $user->name]);
 			}
 		}
 		else if ($isClientAccount)
 		{
-			$variables['title'] = Craft::t('app', 'Register the client’s account');
+			$title = Craft::t('app', 'Register the client’s account');
 		}
 		else
 		{
-			$variables['title'] = Craft::t('app', 'Register a new user');
+			$title = Craft::t('app', 'Register a new user');
 		}
 
 		// Show tabs if they have Craft Pro
@@ -650,9 +644,7 @@ class UsersController extends Controller
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			$variables['selectedTab'] = 'account';
-
-			$variables['tabs'] = [
+			$tabs = [
 				'account' => [
 					'label' => Craft::t('app', 'Account'),
 					'url'   => '#account',
@@ -660,9 +652,9 @@ class UsersController extends Controller
 			];
 
 			// No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-			if (!$variables['isNewAccount'] || $variables['account']->getFieldLayout()->getFields())
+			if (!$isNewAccount || $user->getFieldLayout()->getFields())
 			{
-				$variables['tabs']['profile'] = [
+				$tabs['profile'] = [
 					'label' => Craft::t('app', 'Profile'),
 					'url'   => '#profile',
 				];
@@ -671,33 +663,36 @@ class UsersController extends Controller
 			// If they can assign user groups and permissions, show the Permissions tab
 			if (Craft::$app->getUser()->getIdentity()->can('assignUserPermissions'))
 			{
-				$variables['tabs']['perms'] = [
+				$tabs['perms'] = [
 					'label' => Craft::t('app', 'Permissions'),
 					'url'   => '#perms',
 				];
 			}
+
+			$selectedTab = 'account';
 		}
 		else
 		{
-			$variables['tabs'] = [];
+			$tabs = [];
+			$selectedTab = null;
 		}
 
 		// Ugly.  But Users don't have a real fieldlayout/tabs.
 		$accountFields = ['username', 'firstName', 'lastName', 'email', 'password', 'newPassword', 'currentPassword', 'passwordResetRequired', 'preferredLocale'];
 
-		if (Craft::$app->getEdition() == Craft::Pro && $variables['account']->hasErrors())
+		if (Craft::$app->getEdition() == Craft::Pro && $user->hasErrors())
 		{
-			$errors = $variables['account']->getErrors();
+			$errors = $user->getErrors();
 
 			foreach ($errors as $attribute => $error)
 			{
 				if (in_array($attribute, $accountFields))
 				{
-					$variables['tabs']['account']['class'] = 'error';
+					$tabs['account']['class'] = 'error';
 				}
-				else if (isset($variables['tabs']['profile']))
+				else if (isset($tabs['profile']))
 				{
-					$variables['tabs']['profile']['class'] = 'error';
+					$tabs['profile']['class'] = 'error';
 				}
 			}
 		}
@@ -707,14 +702,22 @@ class UsersController extends Controller
 
 		Craft::$app->templates->includeCssResource('css/account.css');
 		Craft::$app->templates->includeJsResource('js/AccountSettingsForm.js');
-		Craft::$app->templates->includeJs('new Craft.AccountSettingsForm('.JsonHelper::encode($variables['account']->id).', '.($variables['account']->isCurrent() ? 'true' : 'false').');');
+		Craft::$app->templates->includeJs('new Craft.AccountSettingsForm('.JsonHelper::encode($user->id).', '.($user->isCurrent() ? 'true' : 'false').');');
 
 		Craft::$app->templates->includeTranslations(
 			'Please enter your current password.',
 			'Please enter your password.'
 		);
 
-		$this->renderTemplate('users/_edit', $variables);
+		$this->renderTemplate('users/_edit', [
+			'account' => $user,
+			'isNewAccount' => $isNewAccount,
+			'statusLabel' => (isset($statusLabel) ? $statusLabel : null),
+			'actions' => $actions,
+			'title' => $title,
+			'tabs' => $tabs,
+			'selectedTab' => $selectedTab
+		]);
 	}
 
 	/**
@@ -774,7 +777,7 @@ class UsersController extends Controller
 				throw new Exception(Craft::t('app', 'A client account already exists.'));
 			}
 
-			$user = new UserModel();
+			$user = new User();
 			$user->client = true;
 		}
 		else
@@ -799,7 +802,7 @@ class UsersController extends Controller
 				$thisIsPublicRegistration = true;
 			}
 
-			$user = new UserModel();
+			$user = new User();
 		}
 
 		if ($user->isCurrent())
@@ -930,7 +933,7 @@ class UsersController extends Controller
 			// Do we need to send a verification email out?
 			if ($verifyNewEmail)
 			{
-				// Temporarily set the unverified email on the UserModel so the verification email goes to the
+				// Temporarily set the unverified email on the User so the verification email goes to the
 				// right place
 				$originalEmail = $user->email;
 				$user->email = $user->unverifiedEmail;
@@ -977,8 +980,8 @@ class UsersController extends Controller
 		}
 
 		// Send the account back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
-			'account' => $user
+		Craft::$app->getUrlManager()->setRouteParams([
+			'user' => $user
 		]);
 	}
 
@@ -1403,11 +1406,11 @@ class UsersController extends Controller
 	 * Handles an invalid login attempt.
 	 *
 	 * @param string|null $authError
-	 * @param UserModel|null   $user
+	 * @param User|null   $user
 	 *
 	 * @return null
 	 */
-	private function _handleInvalidLogin($authError = null, UserModel $user = null)
+	private function _handleInvalidLogin($authError = null, User $user = null)
 	{
 		switch ($authError)
 		{
@@ -1479,7 +1482,7 @@ class UsersController extends Controller
 		{
 			Craft::$app->getSession()->setError($message);
 
-			Craft::$app->getUrlManager()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteParams([
 				'loginName'    => Craft::$app->getRequest()->getBodyParam('loginName'),
 				'rememberMe'   => (bool) Craft::$app->getRequest()->getBodyParam('rememberMe'),
 				'errorCode'    => $authError,
@@ -1707,7 +1710,7 @@ class UsersController extends Controller
 	}
 
 	/**
-	 * @param UserModel $user
+	 * @param User $user
 	 *
 	 * @throws HttpException
 	 */
@@ -1749,9 +1752,9 @@ class UsersController extends Controller
 	/**
 	 * Takes over after a user has been activated.
 	 *
-	 * @param UserModel $user
+	 * @param User $user
 	 */
-	private function _onAfterActivateUser(UserModel $user)
+	private function _onAfterActivateUser(User $user)
 	{
 		// Should we log them in?
 		$loggedIn = false;

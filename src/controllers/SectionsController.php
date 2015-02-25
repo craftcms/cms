@@ -14,9 +14,9 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\EntryType as EntryTypeModel;
-use craft\app\models\Section as SectionModel;
-use craft\app\models\SectionLocale as SectionLocaleModel;
+use craft\app\models\EntryType;
+use craft\app\models\Section;
+use craft\app\models\SectionLocale;
 use craft\app\web\Controller;
 
 /**
@@ -73,34 +73,38 @@ class SectionsController extends Controller
 	/**
 	 * Edit a section.
 	 *
-	 * @param array $variables
+	 * @param int     $sectionId The section’s id, if any.
+	 * @param Section $section   The section being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException|Exception
 	 * @return null
 	 */
-	public function actionEditSection(array $variables = [])
+	public function actionEditSection($sectionId = null, Section $section = null)
 	{
-		$variables['brandNewSection'] = false;
+		$variables = [
+			'sectionId' => $sectionId,
+			'brandNewSection' => false
+		];
 
-		if (!empty($variables['sectionId']))
+		if ($sectionId !== null)
 		{
-			if (empty($variables['section']))
+			if ($section === null)
 			{
-				$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
+				$section = Craft::$app->sections->getSectionById($sectionId);
 
-				if (!$variables['section'])
+				if (!$section)
 				{
 					throw new HttpException(404);
 				}
 			}
 
-			$variables['title'] = $variables['section']->name;
+			$variables['title'] = $section->name;
 		}
 		else
 		{
-			if (empty($variables['section']))
+			if ($section === null)
 			{
-				$variables['section'] = new SectionModel();
+				$section = new Section();
 				$variables['brandNewSection'] = true;
 			}
 
@@ -108,41 +112,44 @@ class SectionsController extends Controller
 		}
 
 		$types = [SectionType::Single, SectionType::Channel, SectionType::Structure];
-		$variables['typeOptions'] = [];
+		$typeOptions = [];
 
 		// Get these strings to be caught by our translation util:
 		// Craft::t('app', 'Channel') Craft::t('app', 'Structure') Craft::t('app', 'Single')
 
 		foreach ($types as $type)
 		{
-			$allowed = (($variables['section']->id && $variables['section']->type == $type) || Craft::$app->sections->canHaveMore($type));
+			$allowed = (($section->id && $section->type == $type) || Craft::$app->sections->canHaveMore($type));
 			$variables['canBe'.ucfirst($type)] = $allowed;
 
 			if ($allowed)
 			{
-				$variables['typeOptions'][$type] = Craft::t('app', ucfirst($type));
+				$typeOptions[$type] = Craft::t('app', ucfirst($type));
 			}
 		}
 
-		if (!$variables['typeOptions'])
+		if (!$typeOptions)
 		{
 			throw new Exception(Craft::t('app', 'Craft Client or Pro Edition is required to create any additional sections.'));
 		}
 
-		if (!$variables['section']->type)
+		if (!$section->type)
 		{
 			if ($variables['canBeChannel'])
 			{
-				$variables['section']->type = SectionType::Channel;
+				$section->type = SectionType::Channel;
 			}
 			else
 			{
-				$variables['section']->type = SectionType::Single;
+				$section->type = SectionType::Single;
 			}
 		}
 
-		$variables['canBeHomepage']  = (
-			($variables['section']->id && $variables['section']->isHomepage()) ||
+		$variables['section'] = $section;
+		$variables['typeOptions'] = $typeOptions;
+
+		$variables['canBeHomepage'] = (
+			($section->id && $section->isHomepage()) ||
 			($variables['canBeSingle'] && !Craft::$app->sections->doesHomepageExist())
 		);
 
@@ -163,7 +170,7 @@ class SectionsController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$section = new SectionModel();
+		$section = new Section();
 
 		// Shared attributes
 		$section->id               = Craft::$app->getRequest()->getBodyParam('sectionId');
@@ -205,7 +212,7 @@ class SectionsController extends Controller
 				$nestedUrlFormat = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
 			}
 
-			$locales[$localeId] = new SectionLocaleModel([
+			$locales[$localeId] = new SectionLocale([
 				'locale'           => $localeId,
 				'enabledByDefault' => (bool) Craft::$app->getRequest()->getBodyParam('defaultLocaleStatuses.'.$localeId),
 				'urlFormat'        => $urlFormat,
@@ -229,7 +236,7 @@ class SectionsController extends Controller
 		}
 
 		// Send the section back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'section' => $section
 		]);
 	}
@@ -288,58 +295,62 @@ class SectionsController extends Controller
 	/**
 	 * Edit an entry type
 	 *
-	 * @param array $variables
+	 * @param int       $sectionId   The section’s ID.
+	 * @param int       $entryTypeId The entry type’s ID, if any.
+	 * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditEntryType(array $variables = [])
+	public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
 	{
-		if (empty($variables['sectionId']))
-		{
-			throw new HttpException(400);
-		}
+		$section = Craft::$app->sections->getSectionById($sectionId);
 
-		$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
-
-		if (!$variables['section'])
+		if (!$section)
 		{
 			throw new HttpException(404);
 		}
 
-		if (!empty($variables['entryTypeId']))
+		if ($entryTypeId !== null)
 		{
-			if (empty($variables['entryType']))
+			if ($entryType === null)
 			{
-				$variables['entryType'] = Craft::$app->sections->getEntryTypeById($variables['entryTypeId']);
+				$entryType = Craft::$app->sections->getEntryTypeById($entryTypeId);
 
-				if (!$variables['entryType'] || $variables['entryType']->sectionId != $variables['section']->id)
+				if (!$entryType || $entryType->sectionId != $section->id)
 				{
 					throw new HttpException(404);
 				}
 			}
 
-			$variables['title'] = $variables['entryType']->name;
+			$title = $entryType->name;
 		}
 		else
 		{
-			if (empty($variables['entryType']))
+			if ($entryType === null)
 			{
-				$variables['entryType'] = new EntryTypeModel();
-				$variables['entryType']->sectionId = $variables['section']->id;
+				$entryType = new EntryType();
+				$entryType->sectionId = $section->id;
 			}
 
-			$variables['title'] = Craft::t('app', 'Create a new {section} entry type', ['section' => $variables['section']->name]);
+			$title = Craft::t('app', 'Create a new {section} entry type', ['section' => $section->name]);
 		}
 
-		$variables['crumbs'] = [
+		$crumbs = [
 			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
 			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
-			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
-			['label' => Craft::t('app', 'Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$variables['sectionId'].'/entrytypes')],
+			['label' => $section->name, 'url' => UrlHelper::getUrl('settings/sections/'.$section->id)],
+			['label' => Craft::t('app', 'Entry Types'), 'url' => UrlHelper::getUrl('settings/sections/'.$sectionId.'/entrytypes')],
 		];
 
-		$this->renderTemplate('settings/sections/_entrytypes/edit', $variables);
+		$this->renderTemplate('settings/sections/_entrytypes/edit', [
+			'sectionId' => $sectionId,
+			'section' => $section,
+			'entryTypeId' => $entryTypeId,
+			'entryType' => $entryType,
+			'title' => $title,
+			'crumbs' => $crumbs
+		]);
 	}
 
 	/**
@@ -367,7 +378,7 @@ class SectionsController extends Controller
 		}
 		else
 		{
-			$entryType = new EntryTypeModel();
+			$entryType = new EntryType();
 		}
 
 		// Set the simple stuff
@@ -395,7 +406,7 @@ class SectionsController extends Controller
 		}
 
 		// Send the entry type back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'entryType' => $entryType
 		]);
 	}

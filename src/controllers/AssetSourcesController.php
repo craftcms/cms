@@ -15,7 +15,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetSource as AssetSourceModel;
+use craft\app\models\AssetSource;
 use craft\app\variables\AssetSourceType;
 use craft\app\web\Controller;
 
@@ -59,65 +59,77 @@ class AssetSourcesController extends Controller
 	/**
 	 * Edit an asset source.
 	 *
-	 * @param array $variables
+	 * @param int         $sourceId       The source’s ID, if editing an existing source.
+	 * @param AssetSource $source         The source being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditSource(array $variables = [])
+	public function actionEditSource($sourceId = null, AssetSource $source = null)
 	{
-		if (empty($variables['source']))
+		if ($source === null)
 		{
-			if (!empty($variables['sourceId']))
+			if ($sourceId !== null)
 			{
-				$variables['source'] = Craft::$app->assetSources->getSourceById($variables['sourceId']);
-				if (!$variables['source'])
+				$source = Craft::$app->assetSources->getSourceById($sourceId);
+
+				if (!$source)
 				{
 					throw new HttpException(404);
 				}
-				$variables['sourceType'] = Craft::$app->assetSources->populateSourceType($variables['source']);
+
+				$sourceType = Craft::$app->assetSources->populateSourceType($source);
 			}
 			else
 			{
-				$variables['source'] = new AssetSourceModel();
-				$variables['sourceType'] = Craft::$app->assetSources->getSourceType('Local');
+				$source = new AssetSource();
+				$sourceType = Craft::$app->assetSources->getSourceType('Local');
 			}
 		}
 
-		if (empty($variables['sourceType']))
+		if (empty($sourceType))
 		{
-			$variables['sourceType'] = Craft::$app->assetSources->populateSourceType($variables['source']);
+			$sourceType = Craft::$app->assetSources->populateSourceType($source);
 		}
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
 			$sourceTypes = Craft::$app->assetSources->getAllSourceTypes();
-			$variables['sourceTypes'] = AssetSourceType::populateVariables($sourceTypes);
+			$sourceTypes = AssetSourceType::populateVariables($sourceTypes);
 		}
 
-		$variables['isNewSource'] = !$variables['source']->id;
+		$isNewSource = !$source->id;
 
-		if ($variables['isNewSource'])
+		if ($isNewSource)
 		{
-			$variables['title'] = Craft::t('app', 'Create a new asset source');
+			$title = Craft::t('app', 'Create a new asset source');
 		}
 		else
 		{
-			$variables['title'] = $variables['source']->name;
+			$title = $source->name;
 		}
 
-		$variables['crumbs'] = [
+		$crumbs = [
 			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
 			['label' => Craft::t('app', 'Assets'),   'url' => UrlHelper::getUrl('settings/assets')],
 			['label' => Craft::t('app', 'Sources'),  'url' => UrlHelper::getUrl('settings/assets')],
 		];
 
-		$variables['tabs'] = [
+		$tabs = [
 			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#assetsource-settings'],
 			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#assetsource-fieldlayout'],
 		];
 
-		$this->renderTemplate('settings/assets/sources/_edit', $variables);
+		$this->renderTemplate('settings/assets/sources/_edit', [
+			'sourceId' => $sourceId,
+			'source' => $source,
+			'isNewSource' => $isNewSource,
+			'sourceTypes' => $sourceTypes,
+			'sourceType' => $sourceType,
+			'title' => $title,
+			'crumbs' => $crumbs,
+			'tabs' => $tabs
+		]);
 	}
 
 	/**
@@ -137,7 +149,7 @@ class AssetSourcesController extends Controller
 		}
 		else
 		{
-			$source = new AssetSourceModel();
+			$source = new AssetSource();
 		}
 
 		$source->name   = Craft::$app->getRequest()->getBodyParam('name');
@@ -176,7 +188,7 @@ class AssetSourcesController extends Controller
 		}
 
 		// Send the source back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'source' => $source
 		]);
 	}
@@ -252,7 +264,7 @@ class AssetSourcesController extends Controller
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey]]);
+			$model = new AssetSource(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey]]);
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = Craft::$app->assetSources->populateSourceType($model);
@@ -281,7 +293,7 @@ class AssetSourcesController extends Controller
 		{
 			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
 			// to mock up a SourceType object here.
-			$model = new AssetSourceModel(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey, 'region' => $region]]);
+			$model = new AssetSource(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey, 'region' => $region]]);
 
 			/** @var \craft\app\assetsourcetypes\Rackspace $source */
 			$source = Craft::$app->assetSources->populateSourceType($model);

@@ -154,7 +154,7 @@ class PluginsController extends Controller
 		Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
 
 		// Send the plugin back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'plugin' => $plugin
 		]);
 	}

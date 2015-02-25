@@ -62,7 +62,7 @@ class GlobalsController extends Controller
 		}
 
 		// Send the global set back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'globalSet' => $globalSet
 		]);
 	}
@@ -87,27 +87,23 @@ class GlobalsController extends Controller
 	/**
 	 * Edits a global set's content.
 	 *
-	 * @param array $variables
+	 * @param string    $globalSetHandle The global set’s handle.
+	 * @param string    $localeId        The locale ID, if specified.
+	 * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditContent(array $variables = [])
+	public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
 	{
-		// Make sure a specific global set was requested
-		if (empty($variables['globalSetHandle']))
-		{
-			throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.', ['name' => 'globalSetHandle']));
-		}
-
 		// Get the locales the user is allowed to edit
 		$editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
 
 		// Editing a specific locale?
-		if (isset($variables['localeId']))
+		if ($localeId)
 		{
 			// Make sure the user has permission to edit that locale
-			if (!in_array($variables['localeId'], $editableLocaleIds))
+			if (!in_array($localeId, $editableLocaleIds))
 			{
 				throw new HttpException(404);
 			}
@@ -117,42 +113,47 @@ class GlobalsController extends Controller
 			// Are they allowed to edit the current app locale?
 			if (in_array(Craft::$app->language, $editableLocaleIds))
 			{
-				$variables['localeId'] = Craft::$app->language;
+				$localeId = Craft::$app->language;
 			}
 			else
 			{
 				// Just use the first locale they are allowed to edit
-				$variables['localeId'] = $editableLocaleIds[0];
+				$localeId = $editableLocaleIds[0];
 			}
 		}
 
 		// Get the global sets the user is allowed to edit, in the requested locale
-		$variables['globalSets'] = [];
+		$editableGlobalSets = [];
 
 		$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
-		$criteria->locale = $variables['localeId'];
+		$criteria->locale = $localeId;
 		$globalSets = $criteria->find();
 
 		foreach ($globalSets as $globalSet)
 		{
 			if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSet->id))
 			{
-				$variables['globalSets'][$globalSet->handle] = $globalSet;
+				$editableGlobalSets[$globalSet->handle] = $globalSet;
 			}
 		}
 
-		if (!$variables['globalSets'] || !isset($variables['globalSets'][$variables['globalSetHandle']]))
+		if (!$editableGlobalSets || !isset($editableGlobalSets[$globalSetHandle]))
 		{
 			throw new HttpException(404);
 		}
 
-		if (!isset($variables['globalSet']))
+		if ($globalSet === null)
 		{
-			$variables['globalSet'] = $variables['globalSets'][$variables['globalSetHandle']];
+			$globalSet = $editableGlobalSets[$globalSetHandle];
 		}
 
 		// Render the template!
-		$this->renderTemplate('globals/_edit', $variables);
+		$this->renderTemplate('globals/_edit', [
+			'globalSetHandle' => $globalSetHandle,
+			'localeId' => $localeId,
+			'globalSets' => $globalSets,
+			'globalSet' => $globalSet
+		]);
 	}
 
 	/**
@@ -196,7 +197,7 @@ class GlobalsController extends Controller
 		}
 
 		// Send the global set back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'globalSet' => $globalSet,
 		]);
 	}

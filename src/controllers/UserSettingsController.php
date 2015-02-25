@@ -70,7 +70,7 @@ class UserSettingsController extends Controller
 		}
 
 		// Send the group back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'group' => $group
 		]);
 	}
@@ -115,7 +115,7 @@ class UserSettingsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
 
 			// Send the settings back to the template
-			Craft::$app->getUrlManager()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteParams([
 				'settings' => $settings
 			]);
 		}

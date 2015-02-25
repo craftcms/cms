@@ -14,8 +14,8 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Category as CategoryModel;
-use craft\app\models\CategoryGroup as CategoryGroupModel;
+use craft\app\models\Category;
+use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\variables\ElementType as ElementTypeVariable;
 use craft\app\web\Controller;
@@ -56,12 +56,13 @@ class CategoriesController extends Controller
 	/**
 	 * Edit a category group.
 	 *
-	 * @param array $variables
+	 * @param int           $groupId       The category group’s ID, if editing an existing group.
+	 * @param CategoryGroup $categoryGroup The category group being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditCategoryGroup(array $variables = [])
+	public function actionEditCategoryGroup($groupId = null, CategoryGroup $categoryGroup = null)
 	{
 		$this->requireAdmin();
 
@@ -73,25 +74,25 @@ class CategoriesController extends Controller
 
 		$variables['brandNewGroup'] = false;
 
-		if (!empty($variables['groupId']))
+		if ($groupId !== null)
 		{
-			if (empty($variables['categoryGroup']))
+			if ($categoryGroup === null)
 			{
-				$variables['categoryGroup'] = Craft::$app->categories->getGroupById($variables['groupId']);
+				$categoryGroup = Craft::$app->categories->getGroupById($groupId);
 
-				if (!$variables['categoryGroup'])
+				if (!$categoryGroup)
 				{
 					throw new HttpException(404);
 				}
 			}
 
-			$variables['title'] = $variables['categoryGroup']->name;
+			$variables['title'] = $categoryGroup->name;
 		}
 		else
 		{
-			if (empty($variables['categoryGroup']))
+			if ($categoryGroup === null)
 			{
-				$variables['categoryGroup'] = new CategoryGroupModel();
+				$categoryGroup = new CategoryGroup();
 				$variables['brandNewGroup'] = true;
 			}
 
@@ -102,6 +103,9 @@ class CategoriesController extends Controller
 			'settings'    => ['label' => Craft::t('app', 'Settings'), 'url' => '#categorygroup-settings'],
 			'fieldLayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#categorygroup-fieldlayout']
 		];
+
+		$variables['groupId'] = $groupId;
+		$variables['categoryGroup'] = $categoryGroup;
 
 		$this->renderTemplate('settings/categories/_edit', $variables);
 	}
@@ -116,7 +120,7 @@ class CategoriesController extends Controller
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$group = new CategoryGroupModel();
+		$group = new CategoryGroup();
 
 		// Set the simple stuff
 		$group->id        = Craft::$app->getRequest()->getBodyParam('groupId');
@@ -157,7 +161,7 @@ class CategoriesController extends Controller
 		}
 
 		// Send the category group back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'categoryGroup' => $group
 		]);
 	}
@@ -185,33 +189,46 @@ class CategoriesController extends Controller
 	/**
 	 * Displays the category index page.
 	 *
-	 * @param array $variables The route variables.
+	 * @param string $groupHandle The category group’s handle.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionCategoryIndex(array $variables = [])
+	public function actionCategoryIndex($groupHandle = null)
 	{
-		$variables['groups'] = Craft::$app->categories->getEditableGroups();
+		$groups = Craft::$app->categories->getEditableGroups();
 
-		if (!$variables['groups'])
+		if (!$groups)
 		{
 			throw new HttpException(404);
 		}
 
-		$this->renderTemplate('categories/_index', $variables);
+		$this->renderTemplate('categories/_index', [
+			'groupHandle' => $groupHandle,
+			'groups' => $groups
+		]);
 	}
 
 	/**
 	 * Displays the category edit page.
 	 *
-	 * @param array $variables The route variables.
+	 * @param string   $groupHandle The category group’s handle.
+	 * @param int      $categoryId  The category’s ID, if editing an existing category.
+	 * @param int      $localeId    The locale ID, if specified.
+	 * @param Category $category    The category being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditCategory(array $variables = [])
+	public function actionEditCategory($groupHandle, $categoryId = null, $localeId = null, Category $category = null)
 	{
+		$variables = [
+			'groupHandle' => $groupHandle,
+			'categoryId' => $categoryId,
+			'localeId' => $localeId,
+			'category' => $category
+		];
+
 		$this->_prepEditCategoryVariables($variables);
 
 		$this->_enforceEditCategoryPermissions($variables['category']);
@@ -423,7 +440,7 @@ class CategoriesController extends Controller
 				$userSessionService->setError(Craft::t('app', 'Couldn’t save category.'));
 
 				// Send the category back to the template
-				Craft::$app->getUrlManager()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteParams([
 					'category' => $category
 				]);
 			}
@@ -475,7 +492,7 @@ class CategoriesController extends Controller
 				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
 
 				// Send the category back to the template
-				Craft::$app->getUrlManager()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteParams([
 					'category' => $category
 				]);
 			}
@@ -616,7 +633,7 @@ class CategoriesController extends Controller
 			}
 			else
 			{
-				$variables['category'] = new CategoryModel();
+				$variables['category'] = new Category();
 				$variables['category']->groupId = $variables['group']->id;
 				$variables['category']->enabled = true;
 
@@ -658,10 +675,10 @@ class CategoriesController extends Controller
 	}
 
 	/**
-	 * Fetches or creates a CategoryModel.
+	 * Fetches or creates a Category.
 	 *
 	 * @throws Exception
-	 * @return CategoryModel
+	 * @return Category
 	 */
 	private function _getCategoryModel()
 	{
@@ -679,7 +696,7 @@ class CategoriesController extends Controller
 		}
 		else
 		{
-			$category = new CategoryModel();
+			$category = new Category();
 			$category->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
 
 			if ($localeId)
@@ -694,11 +711,11 @@ class CategoriesController extends Controller
 	/**
 	 * Enforces all Edit Category permissions.
 	 *
-	 * @param CategoryModel $category
+	 * @param Category $category
 	 *
 	 * @return null
 	 */
-	private function _enforceEditCategoryPermissions(CategoryModel $category)
+	private function _enforceEditCategoryPermissions(Category $category)
 	{
 		$userSessionService = Craft::$app->getUser();
 
@@ -713,13 +730,13 @@ class CategoriesController extends Controller
 	}
 
 	/**
-	 * Populates an CategoryModel with post data.
+	 * Populates an Category with post data.
 	 *
-	 * @param CategoryModel $category
+	 * @param Category $category
 	 *
 	 * @return null
 	 */
-	private function _populateCategoryModel(CategoryModel $category)
+	private function _populateCategoryModel(Category $category)
 	{
 		// Set the category attributes, defaulting to the existing values for whatever is missing from the post data
 		$category->slug    = Craft::$app->getRequest()->getBodyParam('slug', $category->slug);
@@ -744,12 +761,12 @@ class CategoriesController extends Controller
 	/**
 	 * Displays a category.
 	 *
-	 * @param CategoryModel $category
+	 * @param Category $category
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	private function _showCategory(CategoryModel $category)
+	private function _showCategory(Category $category)
 	{
 		$group = $category->getGroup();
 

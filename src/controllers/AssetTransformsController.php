@@ -10,7 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\HttpException;
 use craft\app\helpers\ImageHelper;
-use craft\app\models\AssetTransform as AssetTransformModel;
+use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
 
 /**
@@ -45,7 +45,7 @@ class AssetTransformsController extends Controller
 	public function actionTransformIndex()
 	{
 		$variables['transforms'] = Craft::$app->assetTransforms->getAllTransforms();
-		$variables['transformModes'] = AssetTransformModel::getTransformModes();
+		$variables['transformModes'] = AssetTransform::getTransformModes();
 
 		$this->renderTemplate('settings/assets/transforms/_index', $variables);
 	}
@@ -53,29 +53,34 @@ class AssetTransformsController extends Controller
 	/**
 	 * Edit an asset transform.
 	 *
-	 * @param array $variables
+	 * @param string         $transformHandle The transform’s handle, if any.
+	 * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 */
-	public function actionEditTransform(array $variables = [])
+	public function actionEditTransform($transformHandle = null, AssetTransform $transform)
 	{
-		if (empty($variables['transform']))
+		if ($transform === null)
 		{
-			if (!empty($variables['handle']))
+			if ($transformHandle !== null)
 			{
-				$variables['transform'] = Craft::$app->assetTransforms->getTransformByHandle($variables['handle']);
-				if (!$variables['transform'])
+				$transform = Craft::$app->assetTransforms->getTransformByHandle($transformHandle);
+
+				if (!$transform)
 				{
 					throw new HttpException(404);
 				}
 			}
 			else
 			{
-				$variables['transform'] = new AssetTransformModel();
+				$transform = new AssetTransform();
 			}
 		}
 
-		$this->renderTemplate('settings/assets/transforms/_settings', $variables);
+		$this->renderTemplate('settings/assets/transforms/_settings', [
+			'handle' => $transformHandle,
+			'transform' => $transform
+		]);
 	}
 
 	/**
@@ -85,7 +90,7 @@ class AssetTransformsController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$transform = new AssetTransformModel();
+		$transform = new AssetTransform();
 		$transform->id = Craft::$app->getRequest()->getBodyParam('transformId');
 		$transform->name = Craft::$app->getRequest()->getBodyParam('name');
 		$transform->handle = Craft::$app->getRequest()->getBodyParam('handle');
@@ -136,7 +141,7 @@ class AssetTransformsController extends Controller
 		}
 
 		// Send the transform back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'transform' => $transform
 		]);
 	}

@@ -57,7 +57,7 @@ class DashboardController extends Controller
 		}
 
 		// Send the widget back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'widget' => $widget
 		]);
 	}

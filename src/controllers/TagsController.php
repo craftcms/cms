@@ -13,8 +13,8 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Tag as TagModel;
-use craft\app\models\TagGroup as TagGroupModel;
+use craft\app\models\Tag;
+use craft\app\models\TagGroup;
 use craft\app\web\Controller;
 
 /**
@@ -50,51 +50,59 @@ class TagsController extends Controller
 	/**
 	 * Edit a tag group.
 	 *
-	 * @param array $variables
+	 * @param int      $tagGroupId The tag group’s ID, if any.
+	 * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditTagGroup(array $variables = [])
+	public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
 	{
 		$this->requireAdmin();
 
-		// Breadcrumbs
-		$variables['crumbs'] = [
-			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('app', 'Tags'),  'url' => UrlHelper::getUrl('settings/tags')]
-		];
-
-		if (!empty($variables['tagGroupId']))
+		if ($tagGroupId !== null)
 		{
-			if (empty($variables['tagGroup']))
+			if ($tagGroup === null)
 			{
-				$variables['tagGroup'] = Craft::$app->tags->getTagGroupById($variables['tagGroupId']);
+				$tagGroup = Craft::$app->tags->getTagGroupById($tagGroupId);
 
-				if (!$variables['tagGroup'])
+				if (!$tagGroup)
 				{
 					throw new HttpException(404);
 				}
 			}
 
-			$variables['title'] = $variables['tagGroup']->name;
+			$title = $tagGroup->name;
 		}
 		else
 		{
-			if (empty($variables['tagGroup']))
+			if ($tagGroup === null)
 			{
-				$variables['tagGroup'] = new TagGroupModel();
+				$tagGroup = new TagGroup();
 			}
 
-			$variables['title'] = Craft::t('app', 'Create a new tag group');
+			$title = Craft::t('app', 'Create a new tag group');
 		}
 
-		$variables['tabs'] = [
+		// Breadcrumbs
+		$crumbs = [
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Tags'),  'url' => UrlHelper::getUrl('settings/tags')]
+		];
+
+		// Tabs
+		$tabs = [
 			'settings'    => ['label' => Craft::t('app', 'Settings'), 'url' => '#taggroup-settings'],
 			'fieldLayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#taggroup-fieldlayout']
 		];
 
-		$this->renderTemplate('settings/tags/_edit', $variables);
+		$this->renderTemplate('settings/tags/_edit', [
+			'tagGroupId' => $tagGroupId,
+			'tagGroup' => $tagGroup,
+			'title' => $title,
+			'crumbs' => $crumbs,
+			'tabs' => $tabs
+		]);
 	}
 
 	/**
@@ -107,7 +115,7 @@ class TagsController extends Controller
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$tagGroup = new TagGroupModel();
+		$tagGroup = new TagGroup();
 
 		// Set the simple stuff
 		$tagGroup->id     = Craft::$app->getRequest()->getBodyParam('tagGroupId');
@@ -131,7 +139,7 @@ class TagsController extends Controller
 		}
 
 		// Send the tag group back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRoute([
 			'tagGroup' => $tagGroup
 		]);
 	}
@@ -227,7 +235,7 @@ class TagsController extends Controller
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 
-		$tag = new TagModel();
+		$tag = new Tag();
 		$tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
 		$tag->getContent()->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
 

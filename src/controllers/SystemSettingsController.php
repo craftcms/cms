@@ -14,7 +14,8 @@ use craft\app\enums\EmailerType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings as EmailSettingsModel;
-use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\models\GlobalSet;
+use craft\app\models\Info;
 use craft\app\variables\Tool as ToolVariable;
 use craft\app\web\Controller;
 
@@ -69,19 +70,19 @@ class SystemSettingsController extends Controller
 	/**
 	 * Shows the general settings form.
 	 *
-	 * @param array $variables
+	 * @param Info $info The info being edited, if there were any validation errors.
 	 *
 	 * @return null
 	 */
-	public function actionGeneralSettings(array $variables = [])
+	public function actionGeneralSettings(Info $info = null)
 	{
-		if (empty($variables['info']))
+		if ($info === null)
 		{
-			$variables['info'] = Craft::$app->getInfo();
+			$info = Craft::$app->getInfo();
 		}
 
 		// Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
-		$variables['timezoneOptions'] = [];
+		$timezoneOptions = [];
 
 		$utc = new DateTime();
 		$offsets = [];
@@ -116,12 +117,15 @@ class SystemSettingsController extends Controller
 			$offsets[] = $offset;
 			$timezoneIds[] = $timezoneId;
 			$includedAbbrs[] = $abbr;
-			$variables['timezoneOptions'][$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' - '.$timezoneId : '');
+			$timezoneOptions[$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' - '.$timezoneId : '');
 		}
 
-		array_multisort($offsets, $timezoneIds, $variables['timezoneOptions']);
+		array_multisort($offsets, $timezoneIds, $timezoneOptions);
 
-		$this->renderTemplate('settings/general/_index', $variables);
+		$this->renderTemplate('settings/general/_index', [
+			'info' => $info,
+			'timezoneOptions' => $timezoneOptions
+		]);
 	}
 
 	/**
@@ -150,7 +154,7 @@ class SystemSettingsController extends Controller
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
 			// Send the info back to the template
-			Craft::$app->getUrlManager()->setRouteVariables([
+			Craft::$app->getUrlManager()->setRouteParams([
 				'info' => $info
 			]);
 		}
@@ -180,7 +184,7 @@ class SystemSettingsController extends Controller
 		Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
 
 		// Send the settings back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'settings' => $settings
 		]);
 	}
@@ -219,53 +223,60 @@ class SystemSettingsController extends Controller
 	/**
 	 * Global Set edit form.
 	 *
-	 * @param array $variables
+	 * @param int       $globalSetId The global set’s ID, if any.
+	 * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditGlobalSet(array $variables = [])
+	public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
 	{
-		// Breadcrumbs
-		$variables['crumbs'] = [
-			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
-			['label' => Craft::t('app', 'Globals'),  'url' => UrlHelper::getUrl('settings/globals')]
-		];
-
-		// Tabs
-		$variables['tabs'] = [
-			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#set-settings'],
-			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#set-fieldlayout']
-		];
-
-		if (empty($variables['globalSet']))
+		if ($globalSet === null)
 		{
-			if (!empty($variables['globalSetId']))
+			if ($globalSetId !== null)
 			{
-				$variables['globalSet'] = Craft::$app->globals->getSetById($variables['globalSetId']);
+				$globalSet = Craft::$app->globals->getSetById($globalSetId);
 
-				if (!$variables['globalSet'])
+				if (!$globalSet)
 				{
 					throw new HttpException(404);
 				}
 			}
 			else
 			{
-				$variables['globalSet'] = new GlobalSetModel();
+				$globalSet = new GlobalSet();
 			}
 		}
 
-		if ($variables['globalSet']->id)
+		if ($globalSet->id)
 		{
-			$variables['title'] = $variables['globalSet']->name;
+			$title = $globalSet->name;
 		}
 		else
 		{
-			$variables['title'] = Craft::t('app', 'Create a new global set');
+			$title = Craft::t('app', 'Create a new global set');
 		}
 
+		// Breadcrumbs
+		$crumbs = [
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
+			['label' => Craft::t('app', 'Globals'),  'url' => UrlHelper::getUrl('settings/globals')]
+		];
+
+		// Tabs
+		$tabs = [
+			'settings'    => ['label' => Craft::t('app', 'Settings'),     'url' => '#set-settings'],
+			'fieldlayout' => ['label' => Craft::t('app', 'Field Layout'), 'url' => '#set-fieldlayout']
+		];
+
 		// Render the template!
-		$this->renderTemplate('settings/globals/_edit', $variables);
+		$this->renderTemplate('settings/globals/_edit', [
+			'globalSetId' => $globalSetId,
+			'globalSet' => $globalSet,
+			'title' => $title,
+			'crumbs' => $crumbs,
+			'tabs' => $tabs
+		]);
 	}
 
 	// Private Methods

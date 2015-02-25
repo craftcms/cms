@@ -15,7 +15,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Entry as EntryModel;
+use craft\app\models\Entry;
 use craft\app\variables\ElementType as ElementTypeVariable;
 
 /**
@@ -54,13 +54,27 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Called when a user beings up an entry for editing before being displayed.
 	 *
-	 * @param array $variables
+	 * @param string $sectionHandle The section’s handle
+	 * @param int    $entryId       The entry’s ID, if editing an existing entry.
+	 * @param int    $draftId       The entry draft’s ID, if editing an existing draft.
+	 * @param int    $versionId     The entry version’s ID, if editing an existing version.
+	 * @param int    $localeId      The locale ID, if specified.
+	 * @param Entry  $entry         The entry being edited, if there were any validation errors.
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEditEntry(array $variables = [])
+	public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
 	{
+		$variables = [
+			'sectionHandle' => $sectionHandle,
+			'entryId' => $entryId,
+			'draftId' => $draftId,
+			'versionId' => $versionId,
+			'localeId' => $localeId,
+			'entry' => $entry
+		];
+
 		$this->_prepEditEntryVariables($variables);
 
 		// Make sure they have permission to edit this entry
@@ -285,7 +299,7 @@ class EntriesController extends BaseEntriesController
 
 				// If we're looking at the live version of an entry, just use
 				// the entry's main URL as its share URL
-				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
+				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == Entry::LIVE)
 				{
 					$variables['shareUrl'] = $variables['entry']->getUrl();
 				}
@@ -500,7 +514,7 @@ class EntriesController extends BaseEntriesController
 				$userSessionService->setError(Craft::t('app', 'Couldn’t save entry.'));
 
 				// Send the entry back to the template
-				Craft::$app->getUrlManager()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteParams([
 					'entry' => $entry
 				]);
 			}
@@ -562,7 +576,7 @@ class EntriesController extends BaseEntriesController
 				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
 				// Send the entry back to the template
-				Craft::$app->getUrlManager()->setRouteVariables([
+				Craft::$app->getUrlManager()->setRouteParams([
 					'entry' => $entry
 				]);
 			}
@@ -766,7 +780,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				$variables['entry'] = new EntryModel();
+				$variables['entry'] = new Entry();
 				$variables['entry']->sectionId = $variables['section']->id;
 				$variables['entry']->authorId = Craft::$app->getUser()->getIdentity()->id;
 				$variables['entry']->enabled = true;
@@ -827,10 +841,10 @@ class EntriesController extends BaseEntriesController
 	}
 
 	/**
-	 * Fetches or creates an EntryModel.
+	 * Fetches or creates an Entry.
 	 *
 	 * @throws Exception
-	 * @return EntryModel
+	 * @return Entry
 	 */
 	private function _getEntryModel()
 	{
@@ -848,7 +862,7 @@ class EntriesController extends BaseEntriesController
 		}
 		else
 		{
-			$entry = new EntryModel();
+			$entry = new Entry();
 			$entry->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
 
 			if ($localeId)
@@ -861,13 +875,13 @@ class EntriesController extends BaseEntriesController
 	}
 
 	/**
-	 * Populates an EntryModel with post data.
+	 * Populates an Entry with post data.
 	 *
-	 * @param EntryModel $entry
+	 * @param Entry $entry
 	 *
 	 * @return null
 	 */
-	private function _populateEntryModel(EntryModel $entry)
+	private function _populateEntryModel(Entry $entry)
 	{
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->typeId        = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
@@ -909,12 +923,12 @@ class EntriesController extends BaseEntriesController
 	/**
 	 * Displays an entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param Entry $entry
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	private function _showEntry(EntryModel $entry)
+	private function _showEntry(Entry $entry)
 	{
 		$section = $entry->getSection();
 		$type = $entry->getType();

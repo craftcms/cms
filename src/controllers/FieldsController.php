@@ -138,7 +138,7 @@ class FieldsController extends Controller
 		}
 
 		// Send the field back to the template
-		Craft::$app->getUrlManager()->setRouteVariables([
+		Craft::$app->getUrlManager()->setRouteParams([
 			'field' => $field
 		]);
 	}
