@@ -392,7 +392,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime)
 				{
 					$source->deleteTransform($file, new AssetTransformIndexModel($result));
-					$this->deleteTransform($result['id']);
+					$this->deleteTransformIndex($result['id']);
 				}
 				// Any other should do.
 				else
