@@ -410,7 +410,7 @@ class UserModel extends BaseElementModel
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					craft()->users->activateUser($user);
+					craft()->users->unlockUser($user);
 				}
 			}
 		}

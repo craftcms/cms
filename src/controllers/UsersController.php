@@ -853,7 +853,7 @@ class UsersController extends BaseController
 
 		// If editing an existing user and either of these properties are being changed,
 		// require the user's current password for additional security
-		if (!$isNewUser && ($newEmail || $user->newPassword))
+		if (!$isNewUser && (!empty($newEmail) || $user->newPassword))
 		{
 			if (!$this->_verifyExistingPassword())
 			{

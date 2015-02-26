@@ -23,7 +23,7 @@ abstract class BaseEnum
 	 *
 	 * @var array|null
 	 */
-	private static $_constants = null;
+	private static $_constants = array();
 
 	// Public Methods
 	// =========================================================================
@@ -63,9 +63,6 @@ abstract class BaseEnum
 		return in_array($value, $values, $strict);
 	}
 
-	// Private Methods
-	// =========================================================================
-
 	/**
 	 * @return array|null
 	 */
@@ -74,18 +71,23 @@ abstract class BaseEnum
 		return static::_getConstants();
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @return null
 	 */
 	private static function _getConstants()
 	{
+		$class = get_called_class();
+
 		// static:: chokes PHP here because PHP sucks.
-		if (self::$_constants === null)
+		if (!isset(self::$_constants[$class]))
 		{
-			$reflect = new \ReflectionClass(get_called_class());
-			self::$_constants = $reflect->getConstants();
+			$reflect = new \ReflectionClass($class);
+			self::$_constants[$class] = $reflect->getConstants();
 		}
 
-		return self::$_constants;
+		return self::$_constants[$class];
 	}
 } 
