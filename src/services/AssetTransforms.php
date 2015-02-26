@@ -18,6 +18,7 @@ use craft\app\models\AssetFile as AssetFileModel;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
 use craft\app\records\AssetTransform as AssetTransformRecord;
+use yii\base\Application;
 use yii\base\Component;
 
 /**
@@ -717,7 +718,7 @@ class AssetTransforms extends Component
 
 			if (count($this->_sourcesToBeDeleted) == 1)
 			{
-				Craft::$app->onEndRequest = [$this, 'deleteQueuedSourceFiles'];
+				Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'deleteQueuedSourceFiles']);
 			}
 		}
 	}
