@@ -77,7 +77,7 @@ class Install extends Component
 		$transaction = $db->getTransaction() === null ? $db->beginTransaction() : null;
 		try
 		{
-			Craft::log('Installing Craft.');
+			Craft::info('Installing Craft.');
 
 			// Create the tables
 			$this->_createTablesFromRecords($records);
@@ -96,7 +96,7 @@ class Install extends Component
 
 			$this->_populateMigrationTable();
 
-			Craft::log('Committing the transaction.');
+			Craft::info('Committing the transaction.');
 			if ($transaction !== null)
 			{
 				$transaction->commit();
@@ -126,7 +126,7 @@ class Install extends Component
 		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
 		$this->_createDefaultContent($inputs);
 
-		Craft::log('Finished installing Craft.');
+		Craft::info('Finished installing Craft.');
 	}
 
 	/**
@@ -189,7 +189,7 @@ class Install extends Component
 	{
 		foreach ($records as $record)
 		{
-			Craft::log('Creating table for record:'. get_class($record));
+			Craft::info('Creating table for record:'. get_class($record));
 			$record->createTable();
 		}
 	}
@@ -205,7 +205,7 @@ class Install extends Component
 	{
 		foreach ($records as $record)
 		{
-			Craft::log('Adding foreign keys for record:'. get_class($record));
+			Craft::info('Adding foreign keys for record:'. get_class($record));
 			$record->addForeignKeys();
 		}
 	}
@@ -218,7 +218,7 @@ class Install extends Component
 	 */
 	private function _createContentTable($db)
 	{
-		Craft::log('Creating the content table.');
+		Craft::info('Creating the content table.');
 
 		$db->createCommand()->createTable('{{%content}}', [
 			'elementId' => ['column' => ColumnType::Int, 'null' => false],
@@ -231,7 +231,7 @@ class Install extends Component
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('content', 'elementId'), '{{%content}}', 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('content', 'locale'), '{{%content}}', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 
-		Craft::log('Finished creating the content table.');
+		Craft::info('Finished creating the content table.');
 	}
 
 	/**
@@ -242,7 +242,7 @@ class Install extends Component
 	 */
 	private function _createRelationsTable($db)
 	{
-		Craft::log('Creating the relations table.');
+		Craft::info('Creating the relations table.');
 
 		$db->createCommand()->createTable('{{%relations}}', [
 			'fieldId'      => ['column' => ColumnType::Int, 'null' => false],
@@ -258,7 +258,7 @@ class Install extends Component
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'sourceLocale'), '{{%relations}}', 'sourceLocale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('relations', 'targetId'), '{{%relations}}', 'targetId', 'elements', 'id', 'CASCADE')->execute();
 
-		Craft::log('Finished creating the relations table.');
+		Craft::info('Finished creating the relations table.');
 	}
 
 	/**
@@ -269,7 +269,7 @@ class Install extends Component
 	 */
 	private function _createShunnedMessagesTable($db)
 	{
-		Craft::log('Creating the shunnedmessages table.');
+		Craft::info('Creating the shunnedmessages table.');
 
 		$db->createCommand()->createTable('{{%shunnedmessages}}', [
 			'userId'     => ['column' => ColumnType::Int, 'null' => false],
@@ -279,7 +279,7 @@ class Install extends Component
 		$db->createCommand()->createIndex($db->getIndexName('shunnedmessages', 'userId,message'), '{{%shunnedmessages}}', 'userId,message', true)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('shunnedmessages', 'userId'), '{{%shunnedmessages}}', 'userId', 'users', 'id', 'CASCADE')->execute();
 
-		Craft::log('Finished creating the shunnedmessages table.');
+		Craft::info('Finished creating the shunnedmessages table.');
 	}
 
 	/**
@@ -290,7 +290,7 @@ class Install extends Component
 	 */
 	private function _createSearchIndexTable($db)
 	{
-		Craft::log('Creating the searchindex table.');
+		Craft::info('Creating the searchindex table.');
 
 		// Taking the scenic route here so we can get to MysqlSchema's $engine argument
 		$table = '{{%searchindex}}';
@@ -317,7 +317,7 @@ class Install extends Component
 			'('.$db->quoteColumnName('keywords').')'
 		)->execute();
 
-		Craft::log('Finished creating the searchindex table.');
+		Craft::info('Finished creating the searchindex table.');
 	}
 
 	/**
@@ -328,7 +328,7 @@ class Install extends Component
 	 */
 	private function _createTemplateCacheTables($db)
 	{
-		Craft::log('Creating the templatecaches table.');
+		Craft::info('Creating the templatecaches table.');
 
 		$db->createCommand()->createTable('{{%templatecaches}}', [
 			'cacheKey'   => ['column' => ColumnType::Varchar, 'null' => false],
@@ -341,8 +341,8 @@ class Install extends Component
 		$db->createCommand()->createIndex($db->getIndexName('templatecaches', 'expiryDate,cacheKey,locale,path'), '{{%templatecaches}}', 'expiryDate,cacheKey,locale,path')->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecaches', 'locale'), '{{%templatecaches}}', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
 
-		Craft::log('Finished creating the templatecaches table.');
-		Craft::log('Creating the templatecacheelements table.');
+		Craft::info('Finished creating the templatecaches table.');
+		Craft::info('Creating the templatecacheelements table.');
 
 		$db->createCommand()->createTable('{{%templatecacheelements}}', [
 			'cacheId'   => ['column' => ColumnType::Int, 'null' => false],
@@ -352,8 +352,8 @@ class Install extends Component
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecacheelements', 'elementId'), '{{%templatecacheelements}}', 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
 
-		Craft::log('Finished creating the templatecacheelements table.');
-		Craft::log('Creating the templatecachecriteria table.');
+		Craft::info('Finished creating the templatecacheelements table.');
+		Craft::info('Creating the templatecachecriteria table.');
 
 		$db->createCommand()->createTable('{{%templatecachecriteria}}', [
 			'cacheId'  => ['column' => ColumnType::Int, 'null' => false],
@@ -364,7 +364,7 @@ class Install extends Component
 		$db->createCommand()->addForeignKey($db->getForeignKeyName('templatecachecriteria', 'cacheId'), '{{%templatecachecriteria}}', 'cacheId', 'templatecaches', 'id', 'CASCADE', null)->execute();
 		$db->createCommand()->createIndex($db->getIndexName('templatecachecriteria', 'type'), '{{%templatecachecriteria}}', 'type')->execute();
 
-		Craft::log('Finished creating the templatecachecriteria table.');
+		Craft::info('Finished creating the templatecachecriteria table.');
 	}
 
 	/**
@@ -379,7 +379,7 @@ class Install extends Component
 	 */
 	private function _createAndPopulateInfoTable($inputs, $db)
 	{
-		Craft::log('Creating the info table.');
+		Craft::info('Creating the info table.');
 
 		$db->createCommand()->createTable('{{%info}}', [
 			'version'       => ['column' => ColumnType::Varchar,  'length' => 15,    'null' => false],
@@ -395,9 +395,9 @@ class Install extends Component
 			'track'         => ['column' => ColumnType::Varchar,  'maxLength' => 40, 'required' => true],
 		])->execute();
 
-		Craft::log('Finished creating the info table.');
+		Craft::info('Finished creating the info table.');
 
-		Craft::log('Populating the info table.');
+		Craft::info('Populating the info table.');
 
 		$info = new InfoModel([
 			'version'       => Craft::$app->version,
@@ -414,7 +414,7 @@ class Install extends Component
 
 		if (Craft::$app->saveInfo($info))
 		{
-			Craft::log('Info table populated successfully.');
+			Craft::info('Info table populated successfully.');
 		}
 		else
 		{
@@ -431,7 +431,7 @@ class Install extends Component
 	 */
 	private function _createRackspaceAccessTable($db)
 	{
-		Craft::log('Creating the Rackspace access table.');
+		Craft::info('Creating the Rackspace access table.');
 
 		$db->createCommand()->createTable('{{%rackspaceaccess}}', [
 			'connectionKey'  => ['column' => ColumnType::Varchar, 'required' => true],
@@ -441,7 +441,7 @@ class Install extends Component
 		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('rackspaceaccess', 'connectionKey'), '{{%rackspaceaccess}}', 'connectionKey', true)->execute();
-		Craft::log('Finished creating the Rackspace access table.');
+		Craft::info('Finished creating the Rackspace access table.');
 	}
 
 	/**
@@ -452,7 +452,7 @@ class Install extends Component
 	 */
 	private function _createDeprecationErrorsTable($db)
 	{
-		Craft::log('Creating the deprecationerrors table.');
+		Craft::info('Creating the deprecationerrors table.');
 
 		$db->createCommand()->createTable('{{%deprecationerrors}}', [
 			'key'               => ['column' => ColumnType::Varchar, 'null' => false],
@@ -469,7 +469,7 @@ class Install extends Component
 		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('deprecationerrors', 'key,fingerprint'), '{{%deprecationerrors}}', 'key,fingerprint', true)->execute();
-		Craft::log('Finished creating the deprecationerrors table.');
+		Craft::info('Finished creating the deprecationerrors table.');
 	}
 
 	/**
@@ -480,7 +480,7 @@ class Install extends Component
 	 */
 	private function _createAssetTransformIndexTable($db)
 	{
-		Craft::log('Creating the Asset transform index table.');
+		Craft::info('Creating the Asset transform index table.');
 
 		$db->createCommand()->createTable('{{%assettransformindex}}', [
 			'fileId'       => ['maxLength' => 11, 'column' => ColumnType::Int, 'required' => true],
@@ -494,7 +494,7 @@ class Install extends Component
 		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName('assettransformindex', 'sourceId,fileId,location'), '{{%assettransformindex}}', 'sourceId,fileId,location')->execute();
-		Craft::log('Finished creating the Asset transform index table.');
+		Craft::info('Finished creating the Asset transform index table.');
 	}
 
 	/**
@@ -540,7 +540,7 @@ class Install extends Component
 			}
 		}
 
-		Craft::log('Migration table populated successfully.');
+		Craft::info('Migration table populated successfully.');
 	}
 
 	/**
@@ -553,9 +553,9 @@ class Install extends Component
 	 */
 	private function _addLocale($locale, $db)
 	{
-		Craft::log('Adding locale.');
+		Craft::info('Adding locale.');
 		$db->createCommand()->insert('{{%locales}}', ['locale' => $locale, 'sortOrder' => 1])->execute();
-		Craft::log('Locale added successfully.');
+		Craft::info('Locale added successfully.');
 	}
 
 	/**
@@ -568,7 +568,7 @@ class Install extends Component
 	 */
 	private function _addUser($inputs)
 	{
-		Craft::log('Creating user.');
+		Craft::info('Creating user.');
 
 		$this->_user = new UserModel();
 
@@ -579,7 +579,7 @@ class Install extends Component
 
 		if (Craft::$app->users->saveUser($this->_user))
 		{
-			Craft::log('User created successfully.');
+			Craft::info('User created successfully.');
 		}
 		else
 		{
@@ -597,11 +597,11 @@ class Install extends Component
 	 */
 	private function _logUserIn($inputs)
 	{
-		Craft::log('Logging in user.');
+		Craft::info('Logging in user.');
 
 		if (Craft::$app->getUser()->login($inputs['username'], $inputs['password']))
 		{
-			Craft::log('User logged in successfully.');
+			Craft::info('User logged in successfully.');
 		}
 		else
 		{
@@ -619,7 +619,7 @@ class Install extends Component
 	 */
 	private function _saveDefaultMailSettings($email, $siteName)
 	{
-		Craft::log('Saving default mail settings.');
+		Craft::info('Saving default mail settings.');
 
 		$settings = [
 			'protocol'     => EmailerType::Php,
@@ -629,7 +629,7 @@ class Install extends Component
 
 		if (Craft::$app->systemSettings->saveSettings('email', $settings))
 		{
-			Craft::log('Default mail settings saved successfully.');
+			Craft::info('Default mail settings saved successfully.');
 		}
 		else
 		{
@@ -648,7 +648,7 @@ class Install extends Component
 	{
 		// Default tag group
 
-		Craft::log('Creating the Default tag group.');
+		Craft::info('Creating the Default tag group.');
 
 		$tagGroup = new TagGroupModel();
 		$tagGroup->name   = Craft::t('app', 'Default');
@@ -657,7 +657,7 @@ class Install extends Component
 		// Save it
 		if (Craft::$app->tags->saveTagGroup($tagGroup))
 		{
-			Craft::log('Default tag group created successfully.');
+			Craft::info('Default tag group created successfully.');
 		}
 		else
 		{
@@ -666,14 +666,14 @@ class Install extends Component
 
 		// Default field group
 
-		Craft::log('Creating the Default field group.');
+		Craft::info('Creating the Default field group.');
 
 		$group = new FieldGroupModel();
 		$group->name = Craft::t('app', 'Default');
 
 		if (Craft::$app->fields->saveGroup($group))
 		{
-			Craft::log('Default field group created successfully.');
+			Craft::info('Default field group created successfully.');
 		}
 		else
 		{
@@ -682,7 +682,7 @@ class Install extends Component
 
 		// Body field
 
-		Craft::log('Creating the Body field.');
+		Craft::info('Creating the Body field.');
 
 		$bodyField = new FieldModel();
 		$bodyField->groupId      = $group->id;
@@ -697,7 +697,7 @@ class Install extends Component
 
 		if (Craft::$app->fields->saveField($bodyField))
 		{
-			Craft::log('Body field created successfully.');
+			Craft::info('Body field created successfully.');
 		}
 		else
 		{
@@ -706,7 +706,7 @@ class Install extends Component
 
 		// Tags field
 
-		Craft::log('Creating the Tags field.');
+		Craft::info('Creating the Tags field.');
 
 		$tagsField = new FieldModel();
 		$tagsField->groupId      = $group->id;
@@ -719,7 +719,7 @@ class Install extends Component
 
 		if (Craft::$app->fields->saveField($tagsField))
 		{
-			Craft::log('Tags field created successfully.');
+			Craft::info('Tags field created successfully.');
 		}
 		else
 		{
@@ -728,7 +728,7 @@ class Install extends Component
 
 		// Homepage single section
 
-		Craft::log('Creating the Homepage single section.');
+		Craft::info('Creating the Homepage single section.');
 
 		$homepageLayout = Craft::$app->fields->assembleLayout(
 			[
@@ -757,7 +757,7 @@ class Install extends Component
 		// Save it
 		if (Craft::$app->sections->saveSection($homepageSingleSection))
 		{
-			Craft::log('Homepage single section created successfully.');
+			Craft::info('Homepage single section created successfully.');
 		}
 		else
 		{
@@ -772,7 +772,7 @@ class Install extends Component
 
 		if (Craft::$app->sections->saveEntryType($homepageEntryType))
 		{
-			Craft::log('Homepage single section entry type saved successfully.');
+			Craft::info('Homepage single section entry type saved successfully.');
 		}
 		else
 		{
@@ -785,7 +785,7 @@ class Install extends Component
 			'siteName' => ucfirst(Craft::$app->getRequest()->getServerName())
 		];
 
-		Craft::log('Setting the Homepage content.');
+		Craft::info('Setting the Homepage content.');
 
 		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
 		$criteria->sectionId = $homepageSingleSection->id;
@@ -800,7 +800,7 @@ class Install extends Component
 		// Save the content
 		if (Craft::$app->entries->saveEntry($entryModel))
 		{
-			Craft::log('Homepage an entry to the Homepage single section.');
+			Craft::info('Homepage an entry to the Homepage single section.');
 		}
 		else
 		{
@@ -809,7 +809,7 @@ class Install extends Component
 
 		// News section
 
-		Craft::log('Creating the News section.');
+		Craft::info('Creating the News section.');
 
 		$newsSection = new SectionModel();
 		$newsSection->type     = SectionType::Channel;
@@ -827,14 +827,14 @@ class Install extends Component
 
 		if (Craft::$app->sections->saveSection($newsSection))
 		{
-			Craft::log('News section created successfully.');
+			Craft::info('News section created successfully.');
 		}
 		else
 		{
 			Craft::warning('Could not save the News section.', __METHOD__);
 		}
 
-		Craft::log('Saving the News entry type.');
+		Craft::info('Saving the News entry type.');
 
 		$newsLayout = Craft::$app->fields->assembleLayout(
 			[
@@ -851,7 +851,7 @@ class Install extends Component
 
 		if (Craft::$app->sections->saveEntryType($newsEntryType))
 		{
-			Craft::log('News entry type saved successfully.');
+			Craft::info('News entry type saved successfully.');
 		}
 		else
 		{
@@ -860,7 +860,7 @@ class Install extends Component
 
 		// News entry
 
-		Craft::log('Creating a News entry.');
+		Craft::info('Creating a News entry.');
 
 		$newsEntry = new EntryModel();
 		$newsEntry->sectionId  = $newsSection->id;
@@ -881,7 +881,7 @@ class Install extends Component
 
 		if (Craft::$app->entries->saveEntry($newsEntry))
 		{
-			Craft::log('News entry created successfully.');
+			Craft::info('News entry created successfully.');
 		}
 		else
 		{

@@ -506,7 +506,7 @@ class Updates extends Component
 		}
 		catch (\Exception $e)
 		{
-			Craft::log('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);
+			Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);
 		}
 
 		// Fire an 'afterUpdate' event

@@ -192,7 +192,7 @@ class Config extends Component
 	 * ```php
 	 * if (Craft::$app->config->exists('myConfigSetting', 'myplugin'))
 	 * {
-	 *     Craft::log('This site has some pretty useless config settings.');
+	 *     Craft::info('This site has some pretty useless config settings.');
 	 * }
 	 * ```
 	 *

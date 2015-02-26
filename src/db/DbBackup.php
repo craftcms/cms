@@ -138,7 +138,7 @@ class DbBackup
 
 		foreach ($statements as $key => $statement)
 		{
-			Craft::log('Executing SQL statement: '.$statement);
+			Craft::info('Executing SQL statement: '.$statement);
 			$command = Craft::$app->getDb()->createCommand($statement);
 			$command->execute();
 		}
@@ -201,7 +201,7 @@ class DbBackup
 	 */
 	private function _nukeDb()
 	{
-		Craft::log('Nuking DB');
+		Craft::info('Nuking DB');
 
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
@@ -217,7 +217,7 @@ class DbBackup
 		$command = Craft::$app->getDb()->createCommand($sql);
 		$command->execute();
 
-		Craft::log('Database nuked.');
+		Craft::info('Database nuked.');
 	}
 
 

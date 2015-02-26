@@ -118,7 +118,7 @@ class Updater
 			throw new Exception(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
 		}
 
-		Craft::log('Validating any new requirements from the patch file.');
+		Craft::info('Validating any new requirements from the patch file.');
 		$errors = $this->_validateNewRequirements($unzipFolder);
 
 		if (!empty($errors))

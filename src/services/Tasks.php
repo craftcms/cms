@@ -238,7 +238,7 @@ class Tasks extends Component
 				$task->totalSteps = $taskType->getTotalSteps();
 				$task->status = TaskStatus::Running;
 
-				Craft::log('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
+				Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
 
 				for ($step = 0; $step < $task->totalSteps; $step++)
 				{
@@ -246,7 +246,7 @@ class Tasks extends Component
 					$task->currentStep = $step+1;
 					$this->saveTask($task);
 
-					Craft::log('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.');
+					Craft::info('Starting step '.($step+1).' of '.$task->totalSteps.' total steps.');
 
 					// Run it.
 					if (($result = $taskType->runStep($step)) !== true)
