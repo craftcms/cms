@@ -176,7 +176,7 @@ class Structures extends Component
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
 	}
 
 	/**
@@ -193,7 +193,7 @@ class Structures extends Component
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
 	}
 
 	/**
@@ -209,7 +209,7 @@ class Structures extends Component
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', 'moveAsFirst', $mode);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
 	}
 
 	/**
@@ -225,7 +225,7 @@ class Structures extends Component
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
 
-		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', 'moveAsLast', $mode);
+		return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
 	}
 
 	/**
@@ -242,7 +242,7 @@ class Structures extends Component
 	{
 		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
-		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', 'moveBefore', $mode);
+		return $this->_doIt($structureId, $element, $nextElementRecord, 'insertBefore', $mode);
 	}
 
 	/**
@@ -259,7 +259,7 @@ class Structures extends Component
 	{
 		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
-		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', 'moveAfter', $mode);
+		return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
 	}
 
 	// Private Methods
@@ -307,7 +307,7 @@ class Structures extends Component
 				// Create it
 				$elementRecord = new StructureElementRecord();
 				$elementRecord->structureId = $structureId;
-				$elementRecord->saveNode();
+				$elementRecord->makeRoot();
 			}
 
 			$this->_rootElementRecordsByStructureId[$structureId] = $elementRecord;
@@ -322,14 +322,13 @@ class Structures extends Component
 	 * @param  int                    $structureId
 	 * @param  BaseElementModel       $element
 	 * @param  StructureElementRecord $targetElementRecord
-	 * @param  string                 $insertAction
-	 * @param  string                 $updateAction
+	 * @param  string                 $action
 	 * @param  string                 $mode
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $insertAction, $updateAction, $mode)
+	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $action, $mode)
 	{
 		// Figure out what we're doing
 		if ($mode != 'insert')
@@ -340,7 +339,6 @@ class Structures extends Component
 			if ($elementRecord)
 			{
 				$mode = 'update';
-				$action = $updateAction;
 			}
 		}
 
@@ -351,7 +349,6 @@ class Structures extends Component
 			$elementRecord->elementId   = $element->id;
 
 			$mode = 'insert';
-			$action = $insertAction;
 		}
 
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;

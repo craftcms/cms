@@ -6,8 +6,12 @@
  */
 
 namespace craft\app\records;
+
+use Craft;
+use craft\app\db\StructuredElementQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
+use creocoder\nestedsets\NestedSetsBehavior;
 
 /**
  * Class StructureElement record.
@@ -28,6 +32,14 @@ class StructureElement extends BaseRecord
 	public static function tableName()
 	{
 		return '{{%structureelements}}';
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function find()
+	{
+		return Craft::createObject(StructuredElementQuery::className(), [get_called_class()]);
 	}
 
 	/**
@@ -67,14 +79,28 @@ class StructureElement extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::behaviors()
-	 *
-	 * @return array
+	 * @inheritDoc
 	 */
 	public function behaviors()
 	{
 		return [
-			'nestedSet' => 'app.extensions.NestedSetBehavior',
+			'tree' => [
+				'class' => NestedSetsBehavior::className(),
+				'treeAttribute' => 'root',
+				'leftAttribute' => 'lft',
+				'rightAttribute' => 'rgt',
+				'depthAttribute' => 'level',
+			],
+		];
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function transactions()
+	{
+		return [
+			static::SCENARIO_DEFAULT => static::OP_ALL,
 		];
 	}
 
