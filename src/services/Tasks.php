@@ -185,7 +185,7 @@ class Tasks extends Component
 
 			foreach ($subtaskRecords as $subtaskRecord)
 			{
-				$subtaskRecord->deleteNode();
+				$subtaskRecord->deleteWithChildren();
 			}
 
 			return $task;

@@ -1683,11 +1683,11 @@ class Elements extends Component
 
 					foreach ($children as $child)
 					{
-						$child->moveBefore($record);
+						$child->insertBefore($record);
 					}
 
 					// Delete this element's node
-					$record->deleteNode();
+					$record->deleteWithChildren();
 				}
 			}
 
