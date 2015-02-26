@@ -732,7 +732,7 @@ class Elements extends Component
 		// Structure params
 		// ---------------------------------------------------------------------
 
-		if ($query->isJoined('structureelements'))
+		if ($query->isJoined('{{%structureelements}}'))
 		{
 			$query->addSelect('structureelements.root, structureelements.lft, structureelements.rgt, structureelements.level');
 
