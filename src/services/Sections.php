@@ -15,6 +15,7 @@ use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryType as EntryTypeModel;
 use craft\app\models\Section as SectionModel;
@@ -758,7 +759,7 @@ class Sections extends Component
 							{
 								// Add all of the entries to the structure
 								$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-								$criteria->locale = array_shift(array_keys($oldSectionLocales));
+								$criteria->locale = ArrayHelper::getFirstValue(array_keys($oldSectionLocales));
 								$criteria->sectionId = $section->id;
 								$criteria->status = null;
 								$criteria->localeEnabled = null;
@@ -788,7 +789,7 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-						$criteria->locale = array_shift(array_keys($oldSectionLocales));
+						$criteria->locale = ArrayHelper::getFirstValue(array_keys($oldSectionLocales));
 						$criteria->sectionId = $section->id;
 						$criteria->status = null;
 						$criteria->localeEnabled = null;
