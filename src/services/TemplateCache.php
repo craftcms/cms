@@ -36,21 +36,21 @@ class TemplateCache extends Component
 	 *
 	 * @var string
 	 */
-	private static $_templateCachesTable = 'templatecaches';
+	private static $_templateCachesTable = '{{%templatecaches}}';
 
 	/**
 	 * The table that template cache-element relations are stored in.
 	 *
 	 * @var string
 	 */
-	private static $_templateCacheElementsTable = 'templatecacheelements';
+	private static $_templateCacheElementsTable = '{{%templatecacheelements}}';
 
 	/**
 	 * The table that queries used within template caches are stored in.
 	 *
 	 * @var string
 	 */
-	private static $_templateCacheCriteriaTable = 'templatecachecriteria';
+	private static $_templateCacheCriteriaTable = '{{%templatecachecriteria}}';
 
 	/**
 	 * The duration (in seconds) between the times when Craft will delete any expired template caches.

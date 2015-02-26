@@ -6,9 +6,13 @@
  */
 
 namespace craft\app\records;
+
+use Craft;
+use craft\app\db\TaskQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\enums\TaskStatus;
+use creocoder\nestedsets\NestedSetsBehavior;
 
 /**
  * Class Task record.
@@ -32,6 +36,14 @@ class Task extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc
+	 */
+	public static function find()
+	{
+		return Craft::createObject(TaskQuery::className(), [get_called_class()]);
+	}
+
+	/**
 	 * @inheritDoc BaseRecord::defineIndexes()
 	 *
 	 * @return array
@@ -47,26 +59,28 @@ class Task extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::behaviors()
-	 *
-	 * @return array
+	 * @inheritDoc
 	 */
 	public function behaviors()
 	{
 		return [
-			'nestedSet' => 'app.extensions.NestedSetBehavior',
+			'tree' => [
+				'class' => NestedSetsBehavior::className(),
+				'treeAttribute' => 'root',
+				'leftAttribute' => 'lft',
+				'rightAttribute' => 'rgt',
+				'depthAttribute' => 'level',
+			],
 		];
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::scopes()
-	 *
-	 * @return array
+	 * @inheritDoc
 	 */
-	public function scopes()
+	public function transactions()
 	{
 		return [
-			'ordered' => ['order' => 'dateCreated'],
+			static::SCENARIO_DEFAULT => static::OP_ALL,
 		];
 	}
 

@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\enums\TaskStatus;
 use craft\app\models\Task as TaskModel;
 use craft\app\records\Task as TaskRecord;
+use yii\base\Application;
 use yii\base\Component;
 
 /**
@@ -73,7 +74,7 @@ class Tasks extends Component
 		if (!$this->_listeningForRequestEnd && !$this->isTaskRunning())
 		{
 			// Turn this request into a runner once everything else is done
-			Craft::$app->attachEventHandler('onEndRequest', [$this, 'closeAndRun']);
+			Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'closeAndRun']);
 			$this->_listeningForRequestEnd = true;
 		}
 
@@ -106,9 +107,13 @@ class Tasks extends Component
 		$taskRecord->totalSteps  = $task->totalSteps;
 		$taskRecord->currentStep = $task->currentStep;
 
-		if (!$task->parentId || !$task->isNew())
+		if (!$task->isNew())
 		{
-			$success = $taskRecord->saveNode($validate);
+			$success = $taskRecord->save($validate);
+		}
+		else if (!$task->parentId)
+		{
+			$success = $taskRecord->makeRoot($validate);
 		}
 		else
 		{
@@ -145,9 +150,6 @@ class Tasks extends Component
 	 */
 	public function closeAndRun()
 	{
-		// Make sure a future call to Craft::$app->end() dosen't trigger this a second time
-		Craft::$app->detachEventHandler('onEndRequest', [$this, 'closeAndRun']);
-
 		// Make sure nothing has been output to the browser yet
 		if (!headers_sent())
 		{
@@ -179,7 +181,7 @@ class Tasks extends Component
 
 			// Delete any of its subtasks
 			$taskRecord = $this->_getTaskRecordById($taskId);
-			$subtaskRecords = $taskRecord->descendants()->findAll();
+			$subtaskRecords = $taskRecord->children()->all();
 
 			foreach ($subtaskRecords as $subtaskRecord)
 			{
@@ -286,7 +288,7 @@ class Tasks extends Component
 			Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
 
 			// We're done with this task, nuke it.
-			$taskRecord->deleteNode();
+			$taskRecord->deleteWithChildren();
 
 			return true;
 		}
@@ -565,7 +567,7 @@ class Tasks extends Component
 	public function deleteTaskById($taskId)
 	{
 		$taskRecord = $this->_getTaskRecordById($taskId);
-		$success = $taskRecord->deleteNode();
+		$success = $taskRecord->deleteWithChildren();
 		unset($this->_taskRecordsById[$taskId]);
 
 		return $success;
