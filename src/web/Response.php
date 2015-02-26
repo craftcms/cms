@@ -86,6 +86,59 @@ class Response extends \yii\web\Response
 		return parent::sendContentAsFile($content, $attachmentName, $options);
 	}
 
+	/**
+	 * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
+	 *
+	 * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
+	 * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
+	 *
+	 * @see http://stackoverflow.com/a/141026
+	 * @throws Exception An exception will be thrown if content has already been output.
+	 * @return null
+	 */
+	public function sendAndClose()
+	{
+		// Make sure nothing has been output yet
+		if (headers_sent())
+		{
+			return;
+		}
+
+		// Prevent the script from ending when the browser closes the connection
+		ignore_user_abort(true);
+
+		// Prepend any current OB content
+		while (ob_get_length() !== false)
+		{
+			// If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+			// and return false.
+			$obContent = @ob_get_clean();
+
+			if ($obContent !== false)
+			{
+				$this->content = $obContent . $this->content;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// Tell the browser to close the connection
+		$length = $this->content !== null ? strlen($this->content) : 0;
+		$this->getHeaders()
+			->set('Connection', 'close')
+			->set('Content-Length', $length);
+
+		$this->send();
+
+		// Borrowed from CHttpSession->close() because session_write_close can cause PHP notices in some situations.
+		if (session_id() !== '')
+		{
+			@session_write_close();
+		}
+	}
+
 	// Private Methods
 	// =========================================================================
 

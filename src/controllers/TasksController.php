@@ -45,7 +45,9 @@ class TasksController extends Controller
 		{
 			// Return info about the next pending task without stopping PHP execution
 			JsonHelper::sendJsonHeaders();
-			Craft::$app->getRequest()->close(JsonHelper::encode($task->getInfo()));
+			$response = Craft::$app->getResponse();
+			$response->content = JsonHelper::encode($task->getInfo());
+			$response->sendAndClose();
 
 			// Start running tasks
 			Craft::$app->tasks->runPendingTasks();
@@ -92,7 +94,9 @@ class TasksController extends Controller
 		if (!Craft::$app->tasks->isTaskRunning())
 		{
 			JsonHelper::sendJsonHeaders();
-			Craft::$app->getRequest()->close(JsonHelper::encode($task->getInfo()));
+			$response = Craft::$app->getResponse();
+			$response->content = JsonHelper::encode($task->getInfo());
+			$response->sendAndClose();
 
 			Craft::$app->tasks->runPendingTasks();
 		}

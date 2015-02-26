@@ -152,7 +152,7 @@ class Tasks extends Component
 		if (!headers_sent())
 		{
 			// Close the client connection
-			Craft::$app->getRequest()->close();
+			Craft::$app->getResponse()->sendAndClose();
 
 			// Run any pending tasks
 			$this->runPendingTasks();
