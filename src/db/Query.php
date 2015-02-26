@@ -49,9 +49,11 @@ class Query extends \yii\db\Query
 	 */
 	public function isJoined($table)
 	{
+		$tableLength = strlen($table);
+
 		foreach ($this->join as $join)
 		{
-			if ($join[1] === $table)
+			if ($join[1] === $table || strncmp($join[1], $table, $tableLength) === 0)
 			{
 				return true;
 			}
