@@ -23,6 +23,13 @@ To create a dev server on your machine, follow these steps.
          > cd path/to/craft3.craft.dev/craft
          > ln -s path/to/git/Craft/Source/craft/app
 
+4. In your public/index.php file, add this line after setting the `$craftPath`
+   variable:
+
+   ```php
+   define('CRAFT_BASE_PATH', dirname(__DIR__).'/craft/');
+   ```
+
 ### PhpStorm Project Setup
 
 To create a PhpStorm project for your dev server, follow these steps:
