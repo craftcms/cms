@@ -25,6 +25,7 @@ use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\Field;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
 use craft\app\records\StructureElement as StructureElementRecord;
@@ -254,7 +255,8 @@ class Elements extends Component
 	public function findElements($criteria = null, $justIds = false)
 	{
 		$elements = [];
-		$query = $this->buildElementsQuery($criteria, $contentTable, $fieldColumns);
+		/** @var Field[] $fields */
+		$query = $this->buildElementsQuery($criteria, $contentTable, $fields);
 
 		if ($query)
 		{
@@ -278,14 +280,17 @@ class Elements extends Component
 			{
 				$order = $criteria->order;
 
-				if (is_array($fieldColumns))
+				if (is_array($fields))
 				{
 					// Add the field column prefixes
-					foreach ($fieldColumns as $column)
+					foreach ($fields as $field)
 					{
-						// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-						// "column_name desc"
-						$order = preg_replace('/(?<!\s)\b'.$column['handle'].'\b/', $column['column'].'$1', $order);
+						if ($field->hasContentColumn())
+						{
+							// Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+							// "column_name desc"
+							$order = preg_replace('/(?<!\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $order);
+						}
 					}
 				}
 
@@ -322,7 +327,7 @@ class Elements extends Component
 
 					foreach ($results as $result)
 					{
-						// Do we have a placeholder for this elmeent?
+						// Do we have a placeholder for this element?
 						if (isset($this->_placeholderElements[$result['id']][$locale]))
 						{
 							$element = $this->_placeholderElements[$result['id']][$locale];
@@ -344,23 +349,25 @@ class Elements extends Component
 
 								unset($result['title']);
 
-								if ($fieldColumns)
+								if ($fields)
 								{
-									foreach ($fieldColumns as $column)
+									foreach ($fields as $field)
 									{
-										// Account for results where multiple fields have the same handle, but from
-										// different columns e.g. two Matrix block types that each have a field with the
-										// same handle
-
-										$colName = $column['column'];
-										$fieldHandle = $column['handle'];
-
-										if (!isset($content[$fieldHandle]) || (empty($content[$fieldHandle]) && !empty($result[$colName])))
+										if ($field->hasContentColumn())
 										{
-											$content[$fieldHandle] = $result[$colName];
-										}
+											// Account for results where multiple fields have the same handle, but from
+											// different columns e.g. two Matrix block types that each have a field with the
+											// same handle
 
-										unset($result[$colName]);
+											$colName = $this->_getFieldContentColumnName($field);
+
+											if (!isset($content[$field->handle]) || (empty($content[$field->handle]) && !empty($result[$colName])))
+											{
+												$content[$field->handle] = $result[$colName];
+											}
+
+											unset($result[$colName]);
+										}
 									}
 								}
 							}
@@ -453,15 +460,14 @@ class Elements extends Component
 	 *                                            actually get defined by buildElementsQuery(), and is passed by
 	 *                                            reference so whatever’s calling the method will have access to its
 	 *                                            value.)
-	 * @param array                &$fieldColumns Info about the content field columns being selected. (This variable
-	 *                                            will actually get defined by buildElementsQuery(), and is passed by
-	 *                                            reference so whatever’s calling the method will have access to its
-	 *                                            value.)
+	 * @param Field[]              &$fields       The fields being selected. (This variable will actually get defined
+	 *                                            by buildElementsQuery(), and is passed by reference so whatever’s
+	 *                                            calling the method will have access to its value.)
 	 *
 	 * @return Query|false The query object, or `false` if the method was able to determine ahead of time that
 	 *                         there’s no chance any elements are going to be found with the given parameters.
 	 */
-	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fieldColumns = null)
+	public function buildElementsQuery(&$criteria = null, &$contentTable = null, &$fields = null)
 	{
 		if (!($criteria instanceof ElementCriteriaModel))
 		{
@@ -510,8 +516,7 @@ class Elements extends Component
 				{
 					if ($field->hasContentColumn())
 					{
-						$columnPrefix = $field->columnPrefix ? $field->columnPrefix : 'field_';
-						$contentCols .= ', content.'.$columnPrefix.$field->handle;
+						$contentCols .= ', content.'.$this->_getFieldContentColumnName($field);
 					}
 				}
 
@@ -1998,5 +2003,16 @@ class Elements extends Component
 
 		$elementIdsQuery->params = $query->params;
 		return $elementIdsQuery->column();
+	}
+
+	/**
+	 * Returns a field’s corresponding content column name.
+	 *
+	 * @param Field $field
+	 * @return string
+	 */
+	private function _getFieldContentColumnName(Field $field)
+	{
+		return ($field->columnPrefix ?: 'field_').$field->handle;
 	}
 }
