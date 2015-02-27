@@ -4,6 +4,59 @@ Craft is a CMS by Pixel & Tonic, built for people who like to take their time an
 
 This repo contains the source code, resources, a custom build script and other utilities.
 
+
+## Developing Locally
+
+Craft 3’s source code can be executed by PHP directly; there is no need to run
+Craft’s build script after making changes.
+
+### Dev Server Setup
+
+To create a dev server on your machine, follow these steps.
+
+1. Create a “craft3.craft.dev” virtual host, and install the latest public
+   version of Craft 2 on it. (Craft 3 is not yet capable of installing itself.)
+2. Delete the craft/app folder.
+3. Create a symlink at craft/app that points to the Source/craft/app folder
+   within the repo:
+
+         > cd path/to/craft3.craft.dev/craft
+         > ln -s path/to/git/Craft/Source/craft/app
+
+### PhpStorm Project Setup
+
+To create a PhpStorm project for your dev server, follow these steps:
+
+1. Create a new PhpStorm project in the folder containing the craft/ and
+   public/ folders for craft3.craft.dev.
+2. Go to Run > Edit Configurations…
+3. Create a new “PHP Web Application” and call it “craft3.craft.dev”.
+4. Create a new Server for your application, and call it “craft3.craft.dev”.
+   Configure it with the following options:
+
+   - Use path mappings: **Yes**
+   - **craft/** should map to path/to/craft3.craft.dev/craft
+   - **craft/app/** should map to path/to/git/Craft/Source/craft/app
+   - **public/** should map to path/to/craft3.craft.dev/public
+
+![PhpStorm server config](Resources/PhpStormServerConfig.png)
+
+### Grunt Setup
+
+If you are going to make any changes to Craft’s JavaScript or Sass files, you
+will need to install Grunt and its tasks.
+
+    > cd path/to/git/Craft
+    > sudo npm install
+
+Before making changes, start up the Grunt watcher task:
+
+    > cd path/to/git/Craft
+    > grunt watch
+
+If you forgot to start the `grunt watch` task before making changes, you can just call `grunt` for one-off JS/CSS builds.
+
+
 ## Building Craft
 
 Craft has a custom build script that does the following:
@@ -12,7 +65,7 @@ Craft has a custom build script that does the following:
 * Copies all files from Source/ into a build directory
 * Deletes some unneeded files and folders from the build directory
 * Parses all Craft PHP files for a few tokens (e.g. “@@@version@@@”)
-* Creates a list of all Craft classes that should be autoload-able, and saves it in craft/app/etc/config/common.php
+* Creates a list of all Craft classes that should be autoload-able, and saves it in craft/app/classes.php
 * Optionally copies the final craft/app/ folder to a destination of your choosing, and sets app/etc/console/yiic.php’s permissions to 777
 
 
