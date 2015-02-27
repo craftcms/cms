@@ -26,15 +26,4 @@ class TaskQuery extends \yii\db\ActiveQuery
 			NestedSetsQueryBehavior::className(),
 		];
 	}
-
-	/**
-	 * Sets the query to order by the `sortOrder` column.
-	 *
-	 * @return static The active query object itself.
-	 */
-	public function ordered()
-	{
-		$this->orderBy('dateCreated');
-		return $this;
-	}
 }

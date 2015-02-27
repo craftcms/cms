@@ -96,18 +96,6 @@ class Entry extends BaseRecord
 		];
 	}
 
-	/**
-	 * @inheritDoc BaseRecord::scopes()
-	 *
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return [
-			'ordered' => ['order' => 'postDate'],
-		];
-	}
-
 	// Protected Methods
 	// =========================================================================
 

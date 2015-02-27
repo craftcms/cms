@@ -9,7 +9,6 @@ namespace craft\app\records;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\db\ActiveQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DateTimeHelper;
@@ -201,15 +200,6 @@ abstract class BaseRecord extends ActiveRecord
 				}
 			}
 		}
-	}
-
-	/**
-	 * @inheritdoc
-	 * @return ActiveQuery The newly created [[ActiveQuery]] instance.
-	 */
-	public static function find()
-	{
-		return Craft::createObject(ActiveQuery::className(), [get_called_class()]);
 	}
 
 	// Model and ActiveRecord methods

@@ -44,18 +44,6 @@ class UserGroup extends BaseRecord
 			->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);
 	}
 
-	/**
-	 * @inheritDoc BaseRecord::scopes()
-	 *
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return [
-			'ordered' => ['order' => 'name'],
-		];
-	}
-
 	// Protected Methods
 	// =========================================================================
 

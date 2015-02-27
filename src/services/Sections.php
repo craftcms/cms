@@ -945,7 +945,7 @@ class Sections extends Component
 	{
 		$records = EntryTypeRecord::find()
 			->where(['sectionId' => $sectionId])
-			->ordered()
+			->orderBy('sortOrder')
 			->all();
 
 		return EntryTypeModel::populateModels($records, $indexBy);

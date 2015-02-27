@@ -535,8 +535,8 @@ class Tasks extends Component
 			{
 				$taskRecord = TaskRecord::find()
 					->where(['status' => TaskStatus::Pending])
+					->orderBy('dateCreated')
 					->roots()
-					->ordered()
 					->one();
 
 				if ($taskRecord)

@@ -119,18 +119,6 @@ class Field extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::scopes()
-	 *
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return [
-			'ordered' => ['order' => 'name'],
-		];
-	}
-
-	/**
 	 * Set the max field handle length based on the current field column prefix length.
 	 *
 	 * @return array

@@ -63,18 +63,6 @@ class TagGroup extends BaseRecord
 		];
 	}
 
-	/**
-	 * @inheritDoc BaseRecord::scopes()
-	 *
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return [
-			'ordered' => ['order' => 'name'],
-		];
-	}
-
 	// Protected Methods
 	// =========================================================================
 

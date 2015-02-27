@@ -345,7 +345,7 @@ class Dashboard extends Component
 	{
 		return WidgetRecord::find()
 			->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
-			->ordered()
+			->orderBy('sortOrder')
 			->all();
 	}
 }
