@@ -362,23 +362,25 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		if (!is_array($elements))
+		if (is_array($elements))
 		{
+			$firstElement = ArrayHelper::getFirstValue($elements);
+		}
+		else
+		{
+			$firstElement = $elements;
 			$elements = array($elements);
 		}
 
+		$deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement->getElementType()]);
 		$elementIds = array();
 
 		foreach ($elements as $element)
 		{
-			// Make sure we haven't just deleted all of the caches for this element type.
-			if (empty($this->_deletedCachesByElementType[$element->getElementType()]))
-			{
-				$elementIds[] = $element->id;
-			}
+			$elementIds[] = $element->id;
 		}
 
-		return $this->deleteCachesByElementId($elementIds);
+		return $this->deleteCachesByElementId($elementIds, $deleteQueryCaches);
 	}
 
 	/**
