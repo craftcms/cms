@@ -329,8 +329,18 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		$this->_deletedCachesByElementType[$elementType] = true;
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
-		return (bool) $affectedRows;
+		$cacheIds = craft()->db->createCommand()
+			->select('cacheId')
+			->from(static::$_templateCacheCriteriaTable)
+			->where(array('type' => $elementType))
+			->queryColumn();
+
+		if ($cacheIds)
+		{
+			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+		}
+
+		return true;
 	}
 
 	/**
