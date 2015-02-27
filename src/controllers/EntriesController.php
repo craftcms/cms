@@ -438,8 +438,7 @@ class EntriesController extends BaseEntriesController
 
 		// Permission enforcement
 		$this->enforceEditEntryPermissions($entry);
-		$userSessionService = Craft::$app->getUser();
-		$currentUser = $userSessionService->getIdentity();
+		$currentUser = Craft::$app->getUser()->getIdentity();
 
 		if ($entry->id)
 		{
@@ -497,7 +496,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				$userSessionService->setNotice(Craft::t('app', 'Entry saved.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 				$this->redirectToPostedUrl($entry);
 			}
 		}
@@ -511,7 +510,7 @@ class EntriesController extends BaseEntriesController
 			}
 			else
 			{
-				$userSessionService->setError(Craft::t('app', 'Couldn’t save entry.'));
+				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
 				// Send the entry back to the template
 				Craft::$app->getUrlManager()->setRouteParams([

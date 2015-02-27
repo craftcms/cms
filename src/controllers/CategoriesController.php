@@ -397,7 +397,6 @@ class CategoriesController extends Controller
 
 		// Permission enforcement
 		$this->_enforceEditCategoryPermissions($category);
-		$userSessionService = Craft::$app->getUser();
 
 		// Populate the category with post data
 		$this->_populateCategoryModel($category);
@@ -422,7 +421,7 @@ class CategoriesController extends Controller
 			}
 			else
 			{
-				$userSessionService->setNotice(Craft::t('app', 'Category saved.'));
+				Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
 				$this->redirectToPostedUrl($category);
 			}
 		}
@@ -437,7 +436,7 @@ class CategoriesController extends Controller
 			}
 			else
 			{
-				$userSessionService->setError(Craft::t('app', 'Couldn’t save category.'));
+				Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save category.'));
 
 				// Send the category back to the template
 				Craft::$app->getUrlManager()->setRouteParams([
@@ -717,8 +716,6 @@ class CategoriesController extends Controller
 	 */
 	private function _enforceEditCategoryPermissions(Category $category)
 	{
-		$userSessionService = Craft::$app->getUser();
-
 		if (Craft::$app->isLocalized())
 		{
 			// Make sure they have access to this locale
