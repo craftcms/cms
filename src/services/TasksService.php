@@ -544,15 +544,19 @@ class TasksService extends BaseApplicationComponent
 	 *
 	 * @param int $taskId
 	 *
-	 * @return bool
+	 * @return bool|null
 	 */
 	public function deleteTaskById($taskId)
 	{
 		$taskRecord = $this->_getTaskRecordById($taskId);
-		$success = $taskRecord->deleteNode();
-		unset($this->_taskRecordsById[$taskId]);
 
-		return $success;
+		if ($taskRecord)
+		{
+			$success = $taskRecord->deleteNode();
+			unset($this->_taskRecordsById[$taskId]);
+
+			return $success;
+		}
 	}
 
 	/**
