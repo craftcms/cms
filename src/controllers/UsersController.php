@@ -330,8 +330,8 @@ class UsersController extends BaseController
 				// Can they access the CP?
 				if ($userToProcess->can('accessCp'))
 				{
-					// Send them to the login page
-					$url = craft()->config->getLoginPath();
+					// Send them to the CP login page
+					$url = UrlHelper::getCpUrl(craft()->config->getCpLoginPath());
 				}
 				else
 				{
