@@ -541,18 +541,21 @@ class UsersService extends BaseApplicationComponent
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
 		$userRecord->save();
 
+		$path = craft()->config->get('actionTrigger').'/users/setpassword';
+		$params = array(
+			'code' => $unhashedVerificationCode,
+			'id' => $userRecord->uid
+		);
+		$scheme = craft()->request->isSecureConnection() ? 'https' : 'http';
+
 		if ($user->can('accessCp'))
 		{
-			$url = UrlHelper::getActionUrl('users/setpassword', array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+			return UrlHelper::getCpUrl($path, $params, $scheme);
 		}
 		else
 		{
-			// We want to hide the CP trigger if they don't have access to the CP.
-			$path = craft()->config->get('actionTrigger').'/users/setpassword';
-			$url = UrlHelper::getSiteUrl($path, array('code' => $unhashedVerificationCode, 'id' => $userRecord->uid), craft()->request->isSecureConnection() ? 'https' : 'http');
+			return UrlHelper::getSiteUrl($path, $params, $scheme);
 		}
-
-		return $url;
 	}
 
 	/**
