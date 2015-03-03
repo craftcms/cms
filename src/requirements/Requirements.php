@@ -43,7 +43,7 @@ $requirements = array(
 	array(
 		'name'      => 'MBString extension',
 		'mandatory' => true,
-		'condition' => (extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
+		'condition' => (extension_loaded('mbstring') && ini_get('mbstring.func_overload') == 0),
 		'memo'      => 'Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
 	),
 	array(
