@@ -301,9 +301,10 @@ class Et
 	 */
 	private function _getLicenseKey()
 	{
-		$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
+		$keyFile = Craft::$app->path->getLicenseKeyPath();
 
-		if (($keyFile = IOHelper::fileExists($licenseKeyPath)) !== false)
+		// Check to see if the key exists and it's not a temp one.
+		if (IOHelper::fileExists($keyFile) && IOHelper::getFileContents($keyFile) !== 'temp')
 		{
 			return trim(preg_replace('/[\r\n]+/', '', IOHelper::getFileContents($keyFile)));
 		}
@@ -319,11 +320,12 @@ class Et
 	 */
 	private function _setLicenseKey($key)
 	{
-		// Make sure the key file does not exist first. Et will never overwrite a license key.
-		if (($keyFile = IOHelper::fileExists(Craft::$app->path->getLicenseKeyPath())) == false)
-		{
-			$keyFile = Craft::$app->path->getLicenseKeyPath();
+		$keyFile = Craft::$app->path->getLicenseKeyPath();
 
+		// Make sure the key file does not exist first, or if it exists it is a temp key file.
+		// Et should never overwrite a valid license key.
+		if (!IOHelper::fileExists($keyFile) || (IOHelper::fileExists($keyFile) && IOHelper::getFileContents($keyFile) == 'temp'))
+		{
 			if ($this->_isConfigFolderWritable())
 			{
 				preg_match_all("/.{50}/", $key, $matches);
@@ -340,7 +342,7 @@ class Et
 			throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
 		}
 
-		throw new Exception(Craft::t('app', 'Cannot overwrite an existing license.key file.'));
+		throw new Exception(Craft::t('app', 'Cannot overwrite an existing valid license.key file.'));
 	}
 
 	/**
