@@ -11,13 +11,11 @@ use Craft;
 use craft\app\base\BasePlugin;
 use craft\app\enums\InstallStatus;
 use craft\app\enums\PatchManifestFileAction;
-use craft\app\enums\RequirementResult;
 use craft\app\errors\Exception;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UpdateHelper;
 use craft\app\io\Zip;
-use craft\app\requirements\RequirementsChecker;
 use yii\helpers\Markdown;
 
 /**
@@ -498,12 +496,12 @@ class Updater
 	private function _validateNewRequirements($unzipFolder)
 	{
 		$requirementsFolderPath = $unzipFolder.'/app/requirements';
-		$requirementsFile = $requirementsFolderPath.'/Requirements.php';
+		$requirementsFile = $requirementsFolderPath.'/requirements.php';
 		$errors = [];
 
 		if (!IOHelper::fileExists($requirementsFile))
 		{
-			throw new Exception(Craft::t('app', 'The Requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
+			throw new Exception(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
 		}
 
 		// Make sure we can write to craft/app/requirements
@@ -524,18 +522,20 @@ class Updater
 		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFileName, $newTempFilePath);
 
 		require_once($newTempFilePath);
+		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
 
-		$checker = new RequirementsChecker();
-		$checker->run();
+		// Run the requirements checker
+		$reqCheck = new \RequirementsChecker();
+		$reqCheck->checkCraft();
 
-		if ($checker->getResult() == RequirementResult::Failed)
+		if ($reqCheck->result['summary']['errors'] > 0)
 		{
-			foreach ($checker->getRequirements() as $requirement)
+			foreach ($reqCheck->getResult()['requirements'] as $req)
 			{
-				if ($requirement->getResult() == InstallStatus::Failed)
+				if ($req['failed'] === true)
 				{
-					Craft::error('Requirement "'.$requirement->getName().'" failed with the message: '.$requirement->getNotes(), __METHOD__);
-					$errors[] = $requirement->getNotes();
+					Craft::error('Requirement "'.$req['name'].'" failed with the message: '.$req['memo'], __METHOD__);
+					$errors[] = $req['memo'];
 				}
 			}
 		}

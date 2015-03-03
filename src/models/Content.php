@@ -81,7 +81,7 @@ class Content extends BaseModel
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-	 * logged to the `craft/storage/runtime/logs` folder as a warning.
+	 * logged to the `craft/storage/logs` folder as a warning.
 	 *
 	 * In addition we validates the custom fields on this model.
 	 *

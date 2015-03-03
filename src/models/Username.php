@@ -23,7 +23,7 @@ class Username extends BaseModel
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-	 * logged to the `craft/storage/runtime/logs` folder as a warning.
+	 * logged to the `craft/storage/logs` folder as a warning.
 	 *
 	 * In addition, we check that the username does not have any whitespace in it.
 	 *

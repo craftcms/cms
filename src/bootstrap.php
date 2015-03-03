@@ -121,13 +121,13 @@ $ensureFolderIsReadable($storagePath, true);
 $createFolder($storagePath.'/runtime');
 $ensureFolderIsReadable($storagePath.'/runtime', true);
 
-// Create the craft/storage/runtime/logs/ folder if it doesn't already exist
-$createFolder($storagePath.'/runtime/logs');
-$ensureFolderIsReadable($storagePath.'/runtime/logs', true);
+// Create the craft/storage/logs/ folder if it doesn't already exist
+$createFolder($storagePath.'/logs');
+$ensureFolderIsReadable($storagePath.'/logs', true);
 
-// Log errors to craft/storage/runtime/logs/phperrors.log
+// Log errors to craft/storage/logs/phperrors.log
 ini_set('log_errors', 1);
-ini_set('error_log', $storagePath.'/runtime/logs/phperrors.log');
+ini_set('error_log', $storagePath.'/logs/phperrors.log');
 
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------

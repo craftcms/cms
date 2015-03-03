@@ -266,13 +266,13 @@ class Path extends Component
 	}
 
 	/**
-	 * Returns the path to the craft/storage/runtime/logs/ folder.
+	 * Returns the path to the craft/storage/logs/ folder.
 	 *
-	 * @return string The path to the craft/storage/runtime/logs/ folder.
+	 * @return string The path to the craft/storage/logs/ folder.
 	 */
 	public function getLogPath()
 	{
-		$path = $this->getRuntimePath().'/logs';
+		$path = $this->getStoragePath().'/logs';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}

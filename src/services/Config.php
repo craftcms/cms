@@ -441,8 +441,15 @@ class Config extends Component
 	 */
 	public function maxPowerCaptain()
 	{
-		// I need more memory.
-		@ini_set('memory_limit', Craft::$app->config->get('phpMaxMemoryLimit'));
+		if (craft()->config->get('phpMaxMemoryLimit') !== '')
+		{
+			@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+		}
+		else
+		{
+			// Grab. It. All.
+			@ini_set('memory_limit', -1);
+		}
 
 		// I need more time.
 		@set_time_limit(0);

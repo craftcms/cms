@@ -4,13 +4,14 @@
 {% block message %}
 	<h2>{{ title }} :(</h2>
 
-	{% if reqCheck.result == 'failed' %}
+	{% if reqCheck.result['summary']['errors'] > 0 %}
 		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t }}</p>
 
 		<ul class="bullets">
-			{% for req in reqCheck.requirements %}
-				{% if req.result == 'failed' %}
-					<li>{{ req.notes|raw }}</li>
+			{% set results = reqCheck.getResult() %}
+			{% for req in results['requirements'] %}
+				{% if req['error'] == true %}
+					<li>{{ req['memo']|raw }}</li>
 				{% endif %}
 			{% endfor %}
 		</ul>

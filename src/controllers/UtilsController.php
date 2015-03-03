@@ -12,7 +12,6 @@ use craft\app\dates\DateTime;
 use craft\app\errors\HttpException;
 use craft\app\helpers\IOHelper;
 use craft\app\models\LogEntry as LogEntryModel;
-use craft\app\requirements\RequirementsChecker;
 use craft\app\web\Controller;
 
 /**
@@ -48,12 +47,14 @@ class UtilsController extends Controller
 	 */
 	public function actionServerInfo()
 	{
+		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
+
 		// Run the requirements checker
-		$reqCheck = new RequirementsChecker();
-		$reqCheck->run();
+		$reqCheck = new \RequirementsChecker();
+		$reqCheck->checkCraft();
 
 		$this->renderTemplate('utils/serverinfo', [
-			'requirements' => $reqCheck->getRequirements(),
+			'requirements' => $reqCheck->getResult()['requirements'],
 		]);
 	}
 

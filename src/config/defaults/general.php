@@ -340,9 +340,10 @@ return [
 
 	/**
 	 * The maximum amount of memory Craft will try to reserve during memory intensive operations such as zipping,
-	 * unzipping and updating.
+	 * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it possibly can.
+	 * See http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes for a list of acceptable values.
 	 */
-	'phpMaxMemoryLimit' => '256M',
+	'phpMaxMemoryLimit' => '',
 
 	/**
 	 * The path that users should be redirected to after logging in from the Control Panel.

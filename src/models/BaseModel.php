@@ -502,7 +502,7 @@ abstract class BaseModel extends \yii\base\Model
 
 	/**
 	 * Validates all of the attributes for the current model. Any attributes that fail validation will additionally get
-	 * logged to the `craft/storage/runtime/logs` folder as a warning.
+	 * logged to the `craft/storage/logs` folder as a warning.
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
