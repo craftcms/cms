@@ -15,7 +15,6 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\UnknownMethodException;
-use yii\db\ActiveRecord;
 
 /**
  * Model base class.
@@ -458,7 +457,7 @@ abstract class Model extends \yii\base\Model
 			$values = $model->getAttributes();
 
 			// Is this a record?
-			if ($model instanceof ActiveRecord)
+			if ($model instanceof \yii\db\ActiveRecord)
 			{
 				// See if any of this model's attributes map to eager-loaded relations on the record
 				foreach ($this->attributeNames() as $name)

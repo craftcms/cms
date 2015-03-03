@@ -15,7 +15,6 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
-use yii\db\ActiveRecord;
 
 /**
  * Active Record base class.
@@ -23,7 +22,7 @@ use yii\db\ActiveRecord;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseRecord extends ActiveRecord
+abstract class BaseRecord extends \yii\db\ActiveRecord
 {
 	// Constants
 	// =========================================================================
