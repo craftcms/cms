@@ -6,16 +6,15 @@
 		<tbody>
 			{% for requirement in requirements %}
 				<tr>
-					<td>{{ requirement.getName() }}{% if requirement.getNotes() %} <span class="info">{{ requirement.getNotes()|raw }}</span>{% endif %}</td>
+					<td>{{ requirement['name'] }}{% if requirement['memo'] %} <span class="info">{{ requirement['memo']|raw }}</span>{% endif %}</td>
 					<td class="centeralign">
-						{% switch requirement.getResult() %}
-							{% case 'success' %}
-								<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
-							{% case 'warning' %}
-								<span class="warning" title="{{ 'Passed with warning'|t }}" data-icon="alert"></span>
-							{% case 'failed' %}
-								<span class="error" title="{{ 'Failed'|t }}" data-icon="error"></span>
-						{% endswitch %}
+						{% if requirement['warning'] == true %}
+							<span class="warning" title="{{ 'Passed with warning'|t }}" data-icon="alert"></span>
+						{% elseif requirement['error'] == true %}
+							<span class="error" title="{{ 'Failed'|t }}" data-icon="error"></span>
+						{% else %}
+							<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
+						{% endif %}
 					</td>
 				</tr>
 			{% endfor %}

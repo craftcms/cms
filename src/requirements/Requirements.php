@@ -1,513 +1,149 @@
 <?php
 /**
- * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * These are the default Craft requirements for [RequirementsChecker]] to use.
  */
 
-namespace craft\app\requirements;
+$requirements = array(
+	array(
+		'name'      => 'PHP version',
+		'mandatory' => true,
+		'condition' => version_compare(PHP_VERSION, '5.4.0', '>='),
+		'memo'      => 'PHP 5.4.0 or higher is required.',
+	),
+	array(
+		'name'      => 'Reflection extension',
+		'mandatory' => true,
+		'condition' => class_exists('Reflection', false),
+		'memo'      => 'The <a href="http://php.net/manual/en/class.reflectionextension.php">Reflection extension</a> is required.',
+	),
+	array(
+		'name'      => 'PCRE extension with UTF-8 support',
+		'mandatory' => true,
+		'condition' => extension_loaded('pcre') && preg_match('/./u', 'Ü') === 1,
+		'memo'      => 'The <a href="http://php.net/manual/en/book.pcre.php">PCRE extension</a> is required and it must be compiled to support UTF-8.',
+	),
+	array(
+		'name'      => 'SPL extension',
+		'mandatory' => true,
+		'condition' => extension_loaded('SPL'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.spl.php">SPL extension</a> is required.'
+	),
+	array(
+		'name'      => 'PDO extension',
+		'mandatory' => true,
+		'condition' => extension_loaded('pdo'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.pdo.php">PDO extension</a> is required.'
+	),
+	array(
+		'name'      => 'PDO MySQL extension',
+		'mandatory' => true,
+		'condition' => extension_loaded('pdo_mysql'),
+		'memo'      => 'The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> extension is required.'
+	),
+	array(
+		'name'      => 'MBString extension',
+		'mandatory' => true,
+		'condition' => (extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
+		'memo'      => 'Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
+	),
+	array(
+		'name'      => 'Mcrypt extension',
+		'mandatory' => true,
+		'condition' => extension_loaded('mcrypt'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt extension</a> is required.',
+	),
+	array(
+		'name'      => 'GD extension with FreeType support',
+		'mandatory' => (!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
+		'condition' => extension_loaded('gd'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> extension is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
+	),
+	array(
+		'name'      => 'ImageMagick extension',
+		'mandatory' => (!extension_loaded('gd')), // Only required if GD isn't installed
+		'condition' => extension_loaded('imagick'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> extension is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
+	),
+	array(
+		'name'      => 'SSL support',
+		'mandatory' => true,
+		'condition' => extension_loaded('openssl'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.openssl.php">OpenSSL extension</a> is required.'
+	),
+	array(
+		'name'      => 'cURL extension',
+		'mandatory' => true,
+		'condition' => extension_loaded('curl'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.curl.php">cURL extension</a> is required.',
+	),
+	array(
+		'name'      => 'Intl extension',
+		'mandatory' => false,
+		'condition' => $this->checkPhpExtensionVersion('intl', '1.0.2', '>='),
+		'memo'      => 'The <a href="http://www.php.net/manual/en/book.intl.php">Intl extension</a> version 1.0.2 is highly
+		                recommended especially if you will be using any non-English locales for this Craft installation.'
+	),
+	array(
+		'name'      => 'Fileinfo extension',
+		'mandatory' => false,
+		'condition' => extension_loaded('fileinfo'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.fileinfo.php">Fileinfo extension</a> is recommended for more accurate
+                        mime-type detection for uploaded files. If it is not available a Craft will fall back to determining the mime-type
+                        by the file extension.'
+	),
+	array(
+		'name'      => 'DOM extension',
+		'mandatory' => false,
+		'condition' => extension_loaded('dom'),
+		'memo'      => 'The <a href="http://php.net/manual/en/book.dom.php">DOM extension</a> is required for parsing XML feeds as well as <code>yii\web\XmlResponseFormatter</code>.',
+	),
+	array(
+		'name'      => 'iconv support',
+		'mandatory' => false,
+		'condition' => $this->testIconvTruncateBug(),
+		'memo'      => $this->iconvMessage,
+	),
+	array(
+		'name'      => 'ini_set calls',
+		'mandatory' => true,
+		'condition' => $this->checkIniSet(),
+		'memo'      => $this->iniSetMessage,
+	),
+	array(
+		'name'      => 'Max Upload File Size',
+		'mandatory' => false,
+		'condition' => true,
+		'memo'      => 'upload_max_filesize is set to '.ini_get('upload_max_filesize').'.',
+	),
+	array(
+		'name'      => 'Max POST Size',
+		'mandatory' => false,
+		'condition' => true,
+		'memo'      => 'post_max_size is set to '.ini_get('post_max_size').'.',
+	),
+	array(
+		'name'      => 'Memory Limit',
+		'mandatory' => false,
+		'condition' => $this->checkMemory(),
+		'memo'      => $this->memoryMessage,
+	),
+);
 
-use Craft;
-use craft\app\enums\RequirementResult;
-use yii\base\Object;
-
-/**
- * Class Requirements
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- */
-class Requirements
+if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('pdo_mysql'))
 {
-	// Public Methods
-	// =========================================================================
+	$requirements[] = array(
+		'name'      => 'MySQL InnoDB support',
+		'mandatory' => true,
+		'condition' => $this->isInnoDbSupported(),
+		'memo'      => $this->dbConnectionError ? $this->dbConnectionError : 'Craft requires the MySQL InnoDB storage engine to run.',
+	);
 
-	/**
-	 * @return array
-	 */
-	public static function getRequirements()
-	{
-		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
-
-		return [
-			new PhpVersionRequirement(),
-			new Requirement(
-				Craft::t('app', '$_SERVER Variable'),
-				($message = static::_checkServerVar()) === '',
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				$message
-			),
-			new Requirement(
-				Craft::t('app', 'Reflection extension'),
-				class_exists('Reflection', false),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				'The <a href="http://php.net/manual/en/class.reflectionextension.php">ReflectionExtension</a> is required.'
-			),
-			new Requirement(
-				Craft::t('app', 'PCRE extension'),
-				extension_loaded("pcre"),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> is required.'
-			),
-			new Requirement(
-				'SPL extension',
-				extension_loaded("SPL"),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				'<a href="http://php.net/manual/en/book.spl.php">SPL</a> is required.'
-			),
-			new Requirement(
-				Craft::t('app', 'PDO extension'),
-				extension_loaded('pdo'),
-				true,
-				Craft::t('app', 'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				'<a href="http://php.net/manual/en/book.pdo.php">PDO</a> is required.'
-			),
-			new Requirement(
-				Craft::t('app', 'PDO MySQL extension'),
-				extension_loaded('pdo_mysql'),
-				true,
-				Craft::t('app', 'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Craft::t('app', 'The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> driver is required if you are using a MySQL database.')
-			),
-			new Requirement(
-				Craft::t('app', 'Mcrypt extension'),
-				extension_loaded('mcrypt'),
-				true,
-				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
-				Craft::t('app', '<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
-			),
-			new Requirement(
-				Craft::t('app', 'GD extension with FreeType support'),
-				extension_loaded('gd'),
-				(!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
-			),
-			new Requirement(
-				Craft::t('app', 'ImageMagick extension'),
-				extension_loaded('imagick'),
-				(!extension_loaded('gd')), // Only required if GD isn't installed
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
-			),
-			new Requirement(
-				Craft::t('app', 'MySQL version'),
-				version_compare(Craft::$app->getDb()->getMasterPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION), $requiredMysqlVersion, ">="),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', 'MySQL {version} or higher is required to run Craft.', ['version' => $requiredMysqlVersion])
-			),
-			new Requirement(
-				Craft::t('app', 'MySQL InnoDB support'),
-				static::_isInnoDbEnabled(),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', 'Craft requires the MySQL InnoDB storage engine to run.')
-			),
-			new Requirement(
-				Craft::t('app', 'SSL support'),
-				extension_loaded('openssl'),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', 'Craft requires <a href="http://php.net/manual/en/book.openssl.php">OpenSSL</a> in order to run.')
-			),
-			new Requirement(
-				Craft::t('app', 'cURL support'),
-				extension_loaded('curl'),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', 'Craft requires <a href="http://php.net/manual/en/book.curl.php">cURL</a> in order to run.')
-			),
-			new Requirement(
-				Craft::t('app', 'crypt() with CRYPT_BLOWFISH enabled'),
-				true,
-				function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH,
-				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
-				Craft::t('app', 'Craft requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
-			),
-			new Requirement(
-				Craft::t('app', 'PCRE UTF-8 support'),
-				preg_match('/./u', 'Ü') === 1,
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', '<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.')
-			),
-			new Requirement(
-				Craft::t('app', 'Multibyte String support'),
-				(extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
-				true,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('app', 'Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
-			),
-			new IconvRequirement(),
-		];
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * @return string
-	 */
-	private static function _checkServerVar()
-	{
-		$vars    = ['HTTP_HOST', 'SERVER_NAME', 'SERVER_PORT', 'SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF', 'HTTP_ACCEPT', 'HTTP_USER_AGENT'];
-		$missing = [];
-
-		foreach($vars as $var)
-		{
-			if (!isset($_SERVER[$var]))
-			{
-				$missing[] = $var;
-			}
-		}
-
-		if (!empty($missing))
-		{
-			return Craft::t('app', '$_SERVER does not have {messages}.', ['messages' => implode(', ', $missing)]);
-		}
-
-		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
-		{
-			return Craft::t('app', 'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.');
-		}
-
-		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
-		{
-			return Craft::t('app', 'Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
-		}
-
-		return '';
-	}
-
-	/**
-	 * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
-	 *
-	 * @return bool
-	 */
-	private static function _isInnoDbEnabled()
-	{
-		// TODO: MySQL specific
-		$results = Craft::$app->getDb()->createCommand('SHOW ENGINES')->queryAll();
-
-		foreach ($results as $result)
-		{
-			if (strtolower($result['Engine']) == 'innodb' && strtolower($result['Support']) != 'no')
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
+	$requirements[] = array(
+		'name'      => 'MySQL version',
+		'mandatory' => true,
+		'condition' => $this->checkMySqlServerVersion(),
+		'memo'      => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft.',
+	);
 }
 
-/**
- * Requirement class.
- *
- * @package craft.app.requirements
- */
-class Requirement extends Object
-{
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var null|string
-	 */
-	private $_name;
-
-	/**
-	 * @var bool|null
-	 */
-	private $_condition;
-
-	/**
-	 * @var null|string
-	 */
-	private $_requiredBy;
-
-	/**
-	 * @var null|string
-	 */
-	private $_notes;
-
-	/**
-	 * @var bool|null
-	 */
-	private $_required;
-
-	/**
-	 * @var
-	 */
-	private $_result;
-
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * Constructor
-	 *
-	 * @param string|null $name
-	 * @param bool|null   $condition
-	 * @param bool|null   $required
-	 * @param string|null $requiredBy
-	 * @param string|null $notes
-	 *
-	 * @return Requirement
-	 */
-	public function __construct($name = null, $condition = null, $required = true, $requiredBy = null, $notes = null)
-	{
-		$this->_name = $name;
-		$this->_condition = $condition;
-		$this->_required = $required;
-		$this->_requiredBy = $requiredBy;
-		$this->_notes = $notes;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getName()
-	{
-		return $this->_name;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getResult()
-	{
-		if (!isset($this->_result))
-		{
-			$this->_result = $this->calculateResult();
-		}
-
-		return $this->_result;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function getRequired()
-	{
-		return $this->_required;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getRequiredBy()
-	{
-		return $this->_requiredBy;
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getNotes()
-	{
-		return $this->_notes;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if ($this->_condition)
-		{
-			return RequirementResult::Success;
-		}
-		else if ($this->_required)
-		{
-			return RequirementResult::Failed;
-		}
-		else
-		{
-			return RequirementResult::Warning;
-		}
-	}
-}
-
-/**
- * PHP version requirement class.
- *
- * @package craft.app.requirements
- */
-class PhpVersionRequirement extends Requirement
-{
-	// Constants
-	// =========================================================================
-
-	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @return PhpVersionRequirement
-	 */
-	public function __construct()
-	{
-		parent::__construct(
-			Craft::t('app', 'PHP Version'),
-			null,
-			true,
-			'<a href="http://buildwithcraft.com">Craft</a>'
-		);
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getNotes()
-	{
-		if ($this->_isBadPhpVersion())
-		{
-			return Craft::t('PHP {version} has a known <a href="{url}">security vulnerability</a>. You should probably upgrade.', [
-				'version' => PHP_VERSION,
-				'url'     => 'http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on'
-			]);
-		}
-		else
-		{
-			return Craft::t('PHP {version} or higher is required.', [
-				'version' => static::REQUIRED_PHP_VERSION,
-			]);
-		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if ($this->_doesMinVersionPass())
-		{
-			// If it's < 5.4.2, still issue a warning, due to the PHP hijack bug:
-			// http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on/
-			if ($this->_isBadPhpVersion())
-			{
-				return RequirementResult::Warning;
-			}
-			else
-			{
-				return RequirementResult::Success;
-			}
-		}
-		else
-		{
-			return RequirementResult::Failed;
-		}
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Returns whether this is past the min PHP version.
-	 *
-	 * @return bool
-	 */
-	private function _doesMinVersionPass()
-	{
-		return version_compare(PHP_VERSION, static::REQUIRED_PHP_VERSION, '>=');
-	}
-
-	/**
-	 * Returns whether this is one of the bad PHP versions.
-	 *
-	 * @return bool
-	 */
-	private function _isBadPhpVersion()
-	{
-		return (PHP_VERSION_ID < 50402);
-	}
-}
-
-/**
- * Iconv requirement class.
- *
- * @package craft.app.requirements
- */
-class IconvRequirement extends Requirement
-{
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 *
-	 */
-	public function __construct()
-	{
-		parent::__construct(
-			Craft::t('app', 'iconv support'),
-			null,
-			false,
-			'<a href="http://buildwithcraft.com">Craft</a>'
-		);
-	}
-
-	/**
-	 * @return null
-	 */
-	public function getNotes()
-	{
-		if ($this->getResult() == RequirementResult::Warning)
-		{
-			return Craft::t('app', 'You have a buggy version of iconv installed. (See {url1} and {url2}.)', [
-				'url1' => '<a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a>',
-				'url2' => '<a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>',
-			]);
-		}
-		else
-		{
-			return Craft::t('app', '{url} is recommended.', [
-				'url' => '<a href="http://php.net/manual/en/book.iconv.php">iconv</a>',
-			]);
-		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * Calculates the result of this requirement.
-	 *
-	 * @return string
-	 */
-	protected function calculateResult()
-	{
-		if (function_exists('iconv'))
-		{
-			// See if it's the buggy version
-			if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
-			{
-				return RequirementResult::Warning;
-			}
-			else
-			{
-				return RequirementResult::Success;
-			}
-		}
-		else
-		{
-			return RequirementResult::Failed;
-		}
-	}
-}
+return $requirements;

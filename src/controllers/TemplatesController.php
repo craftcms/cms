@@ -8,12 +8,10 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\InstallStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\AppHelper;
 use craft\app\helpers\TemplateHelper;
-use craft\app\requirements\RequirementsChecker;
 use craft\app\web\Controller;
 use ErrorException;
 
@@ -117,22 +115,24 @@ class TemplatesController extends Controller
 	 */
 	public function actionRequirementsCheck()
 	{
-		// Run the requirements checker
-		$reqCheck = new RequirementsChecker();
-		$reqCheck->run();
+		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');
 
-		if ($reqCheck->getResult() == InstallStatus::Failed)
+		// Run the requirements checker
+		$reqCheck = new \RequirementsChecker();
+		$reqCheck->checkCraft();
+
+		if ($reqCheck->result['summary']['errors'] > 0)
 		{
 			// Coming from Updater.php
 			if (Craft::$app->getRequest()->getIsAjax())
 			{
 				$message = '<br /><br />';
 
-				foreach ($reqCheck->getRequirements() as $req)
+				foreach ($reqCheck->getResult()['requirements'] as $req)
 				{
-					if ($req->result == 'failed')
+					if ($req['failed'] === true)
 					{
-						$message .= $req->notes.'<br />';
+						$message .= $req['memo'].'<br />';
 					}
 				}
 
@@ -143,8 +143,6 @@ class TemplatesController extends Controller
 				$this->renderTemplate('_special/cantrun', ['reqCheck' => $reqCheck]);
 				Craft::$app->end();
 			}
-
-
 		}
 		else
 		{
