@@ -14,7 +14,6 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
-use yii\base\Model;
 use yii\base\UnknownMethodException;
 use yii\db\ActiveRecord;
 
@@ -453,7 +452,7 @@ abstract class BaseModel extends \yii\base\Model
 	public function setAttributes($values, $safeOnly = true)
 	{
 		// If this is a model, get the actual attributes on it
-		if ($values instanceof Model)
+		if ($values instanceof \yii\base\Model)
 		{
 			$model = $values;
 			$values = $model->getAttributes();
@@ -502,7 +501,7 @@ abstract class BaseModel extends \yii\base\Model
 	}
 
 	/**
-	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
+	 * Validates all of the attributes for the current model. Any attributes that fail validation will additionally get
 	 * logged to the `craft/storage/runtime/logs` folder as a warning.
 	 *
 	 * @param null $attributes
