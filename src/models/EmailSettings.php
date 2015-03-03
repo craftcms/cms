@@ -95,8 +95,43 @@ class EmailSettings extends Model
 	 */
 	public function rules()
 	{
-		return [
-			[['protocol, emailAddress, senderName'], 'required'],
+		$rules = [
+			[['protocol', 'emailAddress', 'senderName'], 'required'],
 		];
+
+		switch ($this->protocol)
+		{
+			case EmailerType::Smtp:
+			{
+				if ($this->smtpAuth)
+				{
+					$rules[] = ['username, password', 'required'];
+				}
+
+				$rules[] = ['port, host, timeout', 'required'];
+				break;
+			}
+
+			case EmailerType::Gmail:
+			{
+				$rules[] = ['username, password, timeout', 'required'];
+				$rules[] = ['username', 'email'];
+				break;
+			}
+
+			case EmailerType::Pop:
+			{
+				$rules[] = ['port, host, username, password, timeout', 'required'];
+				break;
+			}
+
+			case EmailerType::Php:
+			case EmailerType::Sendmail:
+			{
+				break;
+			}
+		}
+
+		return $rules;
 	}
 }

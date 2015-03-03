@@ -82,12 +82,24 @@ class SectionLocale extends Model
 	 */
 	public function rules()
 	{
-		return [
+		$rules = [
 			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['sectionId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['locale'], 'craft\\app\\validators\\Locale'],
 			[['urlFormat', 'nestedUrlFormat'], 'craft\\app\\validators\\UrlFormat'],
 			[['id', 'sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'], 'safe', 'on' => 'search'],
 		];
+
+		if ($this->urlFormatIsRequired)
+		{
+			$rules[] = ['urlFormat', 'required'];
+		}
+
+		if ($this->nestedUrlFormatIsRequired)
+		{
+			$rules[] = ['nestedUrlFormat', 'required'];
+		}
+
+		return $rules;
 	}
 }
