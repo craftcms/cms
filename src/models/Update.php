@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\models\PluginUpdate as PluginUpdateModel;
 
@@ -16,13 +17,13 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Update extends BaseModel
+class Update extends Model
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::setAttribute()
+	 * @inheritDoc Model::setAttribute()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -43,7 +44,7 @@ class Update extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\models;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
 /**
@@ -14,7 +15,7 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetOperationResponse extends BaseModel
+class AssetOperationResponse extends Model
 {
 	// Constants
 	// =========================================================================
@@ -177,7 +178,7 @@ class AssetOperationResponse extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

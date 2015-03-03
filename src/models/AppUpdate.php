@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\models\AppNewRelease as AppNewReleaseModel;
 
@@ -16,13 +17,13 @@ use craft\app\models\AppNewRelease as AppNewReleaseModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AppUpdate extends BaseModel
+class AppUpdate extends Model
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::setAttribute()
+	 * @inheritDoc Model::setAttribute()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -43,7 +44,7 @@ class AppUpdate extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

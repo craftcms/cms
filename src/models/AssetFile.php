@@ -97,7 +97,7 @@ class AssetFile extends BaseElementModel
 	 */
 	public function __get($name)
 	{
-		// Run through the BaseModel/CModel stuff first
+		// Run through the Model/CModel stuff first
 		try
 		{
 			return parent::__get($name);
@@ -129,7 +129,7 @@ class AssetFile extends BaseElementModel
 	}
 
 	/**
-	 * @inheritDoc BaseModel::getAttribute()
+	 * @inheritDoc Model::getAttribute()
 	 *
 	 * @param string $name
 	 * @param bool   $flattenValue
@@ -375,7 +375,7 @@ class AssetFile extends BaseElementModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

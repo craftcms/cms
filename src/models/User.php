@@ -598,7 +598,7 @@ class User extends BaseElementModel implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc BaseModel::populateModel()
+	 * @inheritDoc Model::populateModel()
 	 *
 	 * @param mixed $attributes
 	 *
@@ -651,7 +651,7 @@ class User extends BaseElementModel implements IdentityInterface
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

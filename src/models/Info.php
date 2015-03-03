@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 
@@ -16,13 +17,13 @@ use craft\app\enums\ColumnType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Info extends BaseModel
+class Info extends Model
 {
 	// Protected Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

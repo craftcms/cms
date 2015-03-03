@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 
@@ -16,7 +17,7 @@ use craft\app\enums\ElementType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlockType extends BaseModel
+class MatrixBlockType extends Model
 {
 	// Traits
 	// =========================================================================
@@ -104,7 +105,7 @@ class MatrixBlockType extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

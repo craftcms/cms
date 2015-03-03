@@ -8,7 +8,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\components\ComponentTypeInterface;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -29,17 +29,17 @@ interface ElementActionInterface extends ComponentTypeInterface
 	/**
 	 * Returns the action’s params model.
 	 *
-	 * @return BaseModel The action’s params model.
+	 * @return Model The action’s params model.
 	 */
 	public function getParams();
 
 	/**
 	 * Sets the param values.
 	 *
-	 * The values may come as a key/value array, or a [[BaseModel]] object. Either way, this method should store the
+	 * The values may come as a key/value array, or a [[Model]] object. Either way, this method should store the
 	 * values on the model that is returned by [[getParams()]].
 	 *
-	 * @param array|BaseModel $values The new param values.
+	 * @param array|Model $values The new param values.
 	 *
 	 * @return null
 	 */

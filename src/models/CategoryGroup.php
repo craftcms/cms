@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 
@@ -17,7 +18,7 @@ use craft\app\enums\ElementType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CategoryGroup extends BaseModel
+class CategoryGroup extends Model
 {
 	// Traits
 	// =========================================================================
@@ -88,7 +89,7 @@ class CategoryGroup extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

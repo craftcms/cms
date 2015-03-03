@@ -17,7 +17,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Entry as EntryModel;
 use craft\app\models\EntryType as EntryTypeModel;
@@ -696,7 +696,7 @@ class Entry extends BaseElementType
 	 *
 	 * @param array $row
 	 *
-	 * @return BaseElementModel|BaseModel|void
+	 * @return BaseElementModel|Model|void
 	 */
 	public function populateElementModel($row)
 	{

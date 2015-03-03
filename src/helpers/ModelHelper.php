@@ -10,7 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\records\BaseRecord;
 
@@ -206,7 +206,7 @@ class ModelHelper
 	/**
 	 * Populates any default values that are defined for a model.
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|BaseRecord $model
 	 *
 	 * @return null
 	 */
@@ -224,7 +224,7 @@ class ModelHelper
 	/**
 	 * Returns the rules array used by [[\yii\base\Model]].
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|BaseRecord $model
 	 *
 	 * @return array
 	 */
@@ -490,7 +490,7 @@ class ModelHelper
 	/**
 	 * Returns the attribute labels.
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|BaseRecord $model
 	 *
 	 * @return array
 	 */
@@ -525,7 +525,7 @@ class ModelHelper
 			return DateTimeHelper::formatTimeForDb($value->getTimestamp());
 		}
 
-		if ($value instanceof BaseModel)
+		if ($value instanceof Model)
 		{
 			$attributes = $value->getAttributes(null, true);
 
@@ -572,7 +572,7 @@ class ModelHelper
 	 *
 	 * @param array $arr
 	 *
-	 * @return array|BaseModel
+	 * @return array|Model
 	 */
 	public static function expandModelsInArray($arr)
 	{

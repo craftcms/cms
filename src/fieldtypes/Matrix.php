@@ -11,7 +11,7 @@ use Craft;
 use craft\app\enums\ElementType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\MatrixBlock as MatrixBlockModel;
@@ -524,7 +524,7 @@ class Matrix extends BaseFieldType
 	/**
 	 * @inheritDoc BaseSavableComponentType::getSettingsModel()
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	protected function getSettingsModel()
 	{

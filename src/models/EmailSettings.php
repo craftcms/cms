@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\enums\EmailerType;
 
@@ -16,13 +17,13 @@ use craft\app\enums\EmailerType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class EmailSettings extends BaseModel
+class EmailSettings extends Model
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::rules()
+	 * @inheritDoc Model::rules()
 	 *
 	 * @return array
 	 */
@@ -70,7 +71,7 @@ class EmailSettings extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

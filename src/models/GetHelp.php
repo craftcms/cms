@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
 /**
@@ -15,13 +16,13 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GetHelp extends BaseModel
+class GetHelp extends Model
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::rules()
+	 * @inheritDoc Model::rules()
 	 *
 	 * @return array
 	 */
@@ -37,7 +38,7 @@ class GetHelp extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

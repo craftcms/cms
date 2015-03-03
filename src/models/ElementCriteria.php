@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\elementtypes\BaseElementType;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -18,7 +19,7 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementCriteria extends BaseModel implements \Countable
+class ElementCriteria extends Model implements \Countable
 {
 	// Properties
 	// =========================================================================
@@ -372,7 +373,7 @@ class ElementCriteria extends BaseModel implements \Countable
 	/**
 	 * Returns a copy of this model.
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public function copy()
 	{
@@ -406,7 +407,7 @@ class ElementCriteria extends BaseModel implements \Countable
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

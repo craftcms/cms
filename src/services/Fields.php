@@ -17,7 +17,7 @@ use craft\app\fieldtypes\BaseFieldType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
@@ -503,7 +503,7 @@ class Fields extends Component
 				$fieldRecord->settings = $field->settings = $preppedSettings;
 				$fieldType->setSettings($preppedSettings);
 
-				if ($fieldRecord->settings instanceof BaseModel)
+				if ($fieldRecord->settings instanceof Model)
 				{
 					// Call getAttributes() without passing 'true' so the __model__ isn't saved
 					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
