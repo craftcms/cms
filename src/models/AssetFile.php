@@ -258,7 +258,7 @@ class AssetFile extends BaseElementModel
 				$model = new AssetFileModel();
 
 				// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
-				foreach ($this->attributeNames() as $attributeName)
+				foreach ($this->attributes() as $attributeName)
 				{
 					$model->setAttribute($attributeName, parent::getAttribute($attributeName));
 				}

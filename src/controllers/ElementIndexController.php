@@ -171,7 +171,7 @@ class ElementIndexController extends BaseElementsController
 		// Check for any params in the post data
 		$params = $action->getParams();
 
-		foreach ($params->attributeNames() as $paramName)
+		foreach ($params->attributes() as $paramName)
 		{
 			$paramValue = $requestService->getBodyParam($paramName);
 

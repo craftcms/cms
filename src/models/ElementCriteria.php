@@ -190,7 +190,7 @@ class ElementCriteria extends Model implements \Countable
 	{
 		// If this is an attribute, and the value is not actually changing, just return true so the matched elements
 		// don't get cleared.
-		if (in_array($name, $this->attributeNames()) && $this->getAttribute($name) === $value)
+		if (in_array($name, $this->attributes()) && $this->$name === $value)
 		{
 			return true;
 		}
