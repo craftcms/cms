@@ -251,7 +251,7 @@ class User extends BaseElementModel implements IdentityInterface
 	 */
 	public function rules()
 	{
-		return [
+		$rules = [
 			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['locale'], 'craft\\app\\validators\\Locale'],
 			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
@@ -268,13 +268,19 @@ class User extends BaseElementModel implements IdentityInterface
 			[['lockoutDate'], 'craft\\app\\validators\\DateTime'],
 			[['lastPasswordChangeDate'], 'craft\\app\\validators\\DateTime'],
 			[['verificationCodeIssuedDate'], 'craft\\app\\validators\\DateTime'],
-			[['username'], 'required'],
 			[['email', 'unverifiedEmail'], 'email'],
 			[['email', 'unverifiedEmail'], 'string', 'min' => 5],
 			[['username'], 'string', 'max' => 100],
 			[['email', 'unverifiedEmail'], 'string', 'max' => 255],
 			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'username', 'photo', 'firstName', 'lastName', 'email', 'password', 'preferredLocale', 'weekStartDay', 'admin', 'client', 'locked', 'suspended', 'pending', 'lastLoginDate', 'invalidLoginCount', 'lastInvalidLoginDate', 'lockoutDate', 'passwordResetRequired', 'lastPasswordChangeDate', 'unverifiedEmail', 'newPassword', 'currentPassword', 'verificationCodeIssuedDate', 'authError'], 'safe', 'on' => 'search'],
 		];
+
+		if (!Craft::$app->config->get('useEmailAsUsername'))
+		{
+			$rules[] = [['username'], 'required'];
+		}
+
+		return $rules;
 	}
 
 	/**
