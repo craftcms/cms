@@ -35,11 +35,17 @@ class Username extends Model
 	 */
 	public function rules()
 	{
-		return [
-			[['username'], 'required'],
+		$rules = [
 			[['username'], 'string', 'max' => 100],
 			[['username'], 'safe', 'on' => 'search'],
 		];
+
+		if (!Craft::$app->config->get('useEmailAsUsername'))
+		{
+			$rules[] = [['username'], 'required'];
+		}
+
+		return $rules;
 	}
 
 	/**
