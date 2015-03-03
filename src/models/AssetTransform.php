@@ -19,8 +19,78 @@ use craft\app\enums\AttributeType;
  */
 class AssetTransform extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var integer Width
+	 */
+	public $width;
+
+	/**
+	 * @var integer Height
+	 */
+	public $height;
+
+	/**
+	 * @var string Format
+	 */
+	public $format;
+
+	/**
+	 * @var \DateTime Dimension change time
+	 */
+	public $dimensionChangeTime;
+
+	/**
+	 * @var string Mode
+	 */
+	public $mode = 'crop';
+
+	/**
+	 * @var string Position
+	 */
+	public $position = 'center-center';
+
+	/**
+	 * @var integer Quality
+	 */
+	public $quality;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['width'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['height'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['dimensionChangeTime'], 'craft\\app\\validators\\DateTime'],
+			[['quality'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['handle'], 'string', 'max' => 255],
+			[['id', 'name', 'handle', 'width', 'height', 'format', 'dimensionChangeTime', 'mode', 'position', 'quality'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the folder name as the string representation.
@@ -53,30 +123,6 @@ class AssetTransform extends Model
 			'crop'    => Craft::t('app', 'Scale and crop'),
 			'fit'     => Craft::t('app', 'Scale to fit'),
 			'stretch' => Craft::t('app', 'Stretch to fit')
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'                  => AttributeType::Number,
-			'name'                => AttributeType::String,
-			'handle'              => AttributeType::Handle,
-			'width'               => AttributeType::Number,
-			'height'              => AttributeType::Number,
-			'format'              => AttributeType::String,
-			'dimensionChangeTime' => AttributeType::DateTime,
-			'mode'                => [AttributeType::String, 'default' => 'crop'],
-			'position'            => [AttributeType::String, 'default' => 'center-center'],
-			'quality'             => [AttributeType::Number],
 		];
 	}
 }

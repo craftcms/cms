@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use Craft;
 use craft\app\base\FieldLayoutTrait;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
@@ -29,6 +30,87 @@ class GlobalSet extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var boolean Enabled
+	 */
+	public $enabled = true;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Root
+	 */
+	public $root;
+
+	/**
+	 * @var integer Lft
+	 */
+	public $lft;
+
+	/**
+	 * @var integer Rgt
+	 */
+	public $rgt;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+
+	/**
 	 * @var The element type that global sets' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::GlobalSet;
@@ -40,6 +122,38 @@ class GlobalSet extends BaseElementModel
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'slug' => Craft::t('app', 'Slug'),
+			'uri' => Craft::t('app', 'URI'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
+			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
+			[['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['name', 'handle'], 'string', 'max' => 255],
+			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'name', 'handle', 'fieldLayoutId'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the global set's name as its string representation.
@@ -59,22 +173,5 @@ class GlobalSet extends BaseElementModel
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('globals/'.$this->handle);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'name'          => AttributeType::Name,
-			'handle'        => AttributeType::Handle,
-			'fieldLayoutId' => AttributeType::Number,
-		]);
 	}
 }

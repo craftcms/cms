@@ -29,12 +29,45 @@ class TagGroup extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+
+	/**
 	 * @var The element type that tag groups' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::Tag;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'name', 'handle', 'fieldLayoutId'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated tag group's name as the string representation.
@@ -44,23 +77,5 @@ class TagGroup extends Model
 	public function __toString()
 	{
 		return Craft::t('app', $this->name);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'            => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'fieldLayoutId' => AttributeType::Number,
-		];
 	}
 }

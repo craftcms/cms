@@ -18,25 +18,60 @@ use craft\app\enums\AttributeType;
  */
 class AppNewRelease extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Version
 	 */
-	protected function defineAttributes()
-	{
-		$attributes['version']       = AttributeType::String;
-		$attributes['build']         = AttributeType::String;
-		$attributes['date']          = AttributeType::DateTime;
-		$attributes['notes']         = AttributeType::String;
-		$attributes['type']          = AttributeType::String;
-		$attributes['critical']      = AttributeType::Bool;
-		$attributes['manual']        = AttributeType::Bool;
-		$attributes['breakpoint']    = AttributeType::Bool;
+	public $version;
 
-		return $attributes;
+	/**
+	 * @var string Build
+	 */
+	public $build;
+
+	/**
+	 * @var \DateTime Date
+	 */
+	public $date;
+
+	/**
+	 * @var string Notes
+	 */
+	public $notes;
+
+	/**
+	 * @var string Type
+	 */
+	public $type;
+
+	/**
+	 * @var boolean Critical
+	 */
+	public $critical = false;
+
+	/**
+	 * @var boolean Manual
+	 */
+	public $manual = false;
+
+	/**
+	 * @var boolean Breakpoint
+	 */
+	public $breakpoint = false;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['date'], 'craft\\app\\validators\\DateTime'],
+			[['version', 'build', 'date', 'notes', 'type', 'critical', 'manual', 'breakpoint'], 'safe', 'on' => 'search'],
+		];
 	}
 }

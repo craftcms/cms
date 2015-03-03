@@ -18,18 +18,27 @@ use craft\app\enums\AttributeType;
  */
 class Password extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Password
 	 */
-	protected function defineAttributes()
+	public $password;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'password' => [AttributeType::String, 'minLength' => 6, 'maxLength' => 160, 'required' => true]
+			[['password'], 'required'],
+			[['password'], 'string', 'min' => 6],
+			[['password'], 'string', 'max' => 160],
+			[['password'], 'safe', 'on' => 'search'],
 		];
 	}
 }

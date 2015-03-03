@@ -17,8 +17,61 @@ use craft\app\enums\AttributeType;
  */
 class AssetIndexData extends BaseComponentModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Source ID
+	 */
+	public $sourceId;
+
+	/**
+	 * @var string Session ID
+	 */
+	public $sessionId;
+
+	/**
+	 * @var integer Offset
+	 */
+	public $offset;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var integer Size
+	 */
+	public $size;
+
+	/**
+	 * @var integer Record ID
+	 */
+	public $recordId;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['offset'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['size'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['recordId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'sourceId', 'sessionId', 'offset', 'uri', 'size', 'recordId'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated source name as the string representation.
@@ -28,26 +81,5 @@ class AssetIndexData extends BaseComponentModel
 	public function __toString()
 	{
 		return $this->uri;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'		=> AttributeType::Number,
-			'sourceId'	=> AttributeType::Number,
-			'sessionId' => AttributeType::String,
-			'offset'	=> AttributeType::Number,
-			'uri'     	=> AttributeType::String,
-			'size' 		=> AttributeType::Number,
-			'recordId'	=> AttributeType::Number
-		];
 	}
 }

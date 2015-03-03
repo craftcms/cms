@@ -21,8 +21,37 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroup extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'name', 'handle'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated group name as the string representation.
@@ -51,22 +80,5 @@ class UserGroup extends Model
 		{
 			return false;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['id'] = AttributeType::Number;
-		$attributes['name'] = AttributeType::String;
-		$attributes['handle'] = AttributeType::String;
-
-		return $attributes;
 	}
 }

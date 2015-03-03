@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use Craft;
 use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
@@ -18,39 +19,64 @@ use craft\app\enums\AttributeType;
  */
 class GetHelp extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string From email
+	 */
+	public $fromEmail;
+
+	/**
+	 * @var string Message
+	 */
+	public $message;
+
+	/**
+	 * @var boolean Attach logs
+	 */
+	public $attachLogs = false;
+
+	/**
+	 * @var boolean Attach db backup
+	 */
+	public $attachDbBackup = false;
+
+	/**
+	 * @var boolean Attach templates
+	 */
+	public $attachTemplates = false;
+
+	/**
+	 * @var array Attachment
+	 */
+	public $attachment;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::rules()
-	 *
-	 * @return array
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'fromEmail' => Craft::t('app', 'Your Email'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function rules()
 	{
-		// maxSize is 3MB
-		return array_merge(parent::rules(), [
-			['attachment', 'file', 'maxSize' => 3145728, 'allowEmpty' => true],
-		]);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
 		return [
-			'fromEmail'        => [AttributeType::Email, 'required' => true, 'label' => 'Your Email'],
-			'message'          => [AttributeType::String, 'required' => true],
-			'attachLogs'       => AttributeType::Bool,
-			'attachDbBackup'   => AttributeType::Bool,
-			'attachTemplates'  => AttributeType::Bool,
-			'attachment'       => AttributeType::Mixed,
+			[['fromEmail', 'message'], 'required'],
+			[['fromEmail'], 'email'],
+			[['fromEmail'], 'string', 'min' => 5],
+			[['fromEmail'], 'string', 'max' => 255],
+			[['fromEmail', 'message', 'attachLogs', 'attachDbBackup', 'attachTemplates', 'attachment'], 'safe', 'on' => 'search'],
+			[['attachment'], 'file', 'maxSize' => 3145728, 'allowEmpty' => true],
 		];
 	}
 }

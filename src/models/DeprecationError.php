@@ -18,8 +18,85 @@ use craft\app\enums\AttributeType;
  */
 class DeprecationError extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Key
+	 */
+	public $key;
+
+	/**
+	 * @var string Fingerprint
+	 */
+	public $fingerprint;
+
+	/**
+	 * @var \DateTime Last occurrence
+	 */
+	public $lastOccurrence;
+
+	/**
+	 * @var string File
+	 */
+	public $file;
+
+	/**
+	 * @var integer Line
+	 */
+	public $line;
+
+	/**
+	 * @var string Class
+	 */
+	public $class;
+
+	/**
+	 * @var string Method
+	 */
+	public $method;
+
+	/**
+	 * @var string Template
+	 */
+	public $template;
+
+	/**
+	 * @var integer Template line
+	 */
+	public $templateLine;
+
+	/**
+	 * @var string Message
+	 */
+	public $message;
+
+	/**
+	 * @var array Traces
+	 */
+	public $traces;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lastOccurrence'], 'craft\\app\\validators\\DateTime'],
+			[['line'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['templateLine'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'key', 'fingerprint', 'lastOccurrence', 'file', 'line', 'class', 'method', 'template', 'templateLine', 'message', 'traces'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Returns a simple indication of the origin of the deprecation error.
@@ -49,31 +126,5 @@ class DeprecationError extends Model
 		}
 
 		return $file.($line ? " ({$line})" : '');
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'             => AttributeType::Number,
-			'key'            => AttributeType::String,
-			'fingerprint'    => AttributeType::String,
-			'lastOccurrence' => AttributeType::DateTime,
-			'file'           => AttributeType::String,
-			'line'           => AttributeType::Number,
-			'class'          => AttributeType::String,
-			'method'         => AttributeType::String,
-			'template'       => AttributeType::String,
-			'templateLine'   => AttributeType::Number,
-			'message'        => AttributeType::String,
-			'traces'         => AttributeType::Mixed,
-		];
 	}
 }

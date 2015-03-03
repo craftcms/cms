@@ -19,8 +19,62 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  */
 class PluginUpdate extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string Class
+	 */
+	public $class;
+
+	/**
+	 * @var string Local version
+	 */
+	public $localVersion;
+
+	/**
+	 * @var string Latest version
+	 */
+	public $latestVersion;
+
+	/**
+	 * @var \DateTime Latest date
+	 */
+	public $latestDate;
+
+	/**
+	 * @var boolean Status
+	 */
+	public $status = false;
+
+	/**
+	 * @var string Display name
+	 */
+	public $displayName;
+
+	/**
+	 * @var boolean Critical update available
+	 */
+	public $criticalUpdateAvailable = false;
+
+	/**
+	 * @var array Releases
+	 */
+	public $releases;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['latestDate'], 'craft\\app\\validators\\DateTime'],
+			[['class', 'localVersion', 'latestVersion', 'latestDate', 'status', 'displayName', 'criticalUpdateAvailable', 'releases'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * @inheritDoc Model::setAttribute()
@@ -38,27 +92,5 @@ class PluginUpdate extends Model
 		}
 
 		parent::setAttribute($name, $value);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['class']                   = AttributeType::String;
-		$attributes['localVersion']            = AttributeType::String;
-		$attributes['latestVersion']           = AttributeType::String;
-		$attributes['latestDate']              = AttributeType::DateTime;
-		$attributes['status']                  = AttributeType::Bool;
-		$attributes['displayName']             = AttributeType::String;
-		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
-		$attributes['releases']                = AttributeType::Mixed;;
-
-		return $attributes;
 	}
 }

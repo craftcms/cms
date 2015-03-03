@@ -28,6 +28,37 @@ class MatrixBlockType extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Field ID
+	 */
+	public $fieldId;
+
+	/**
+	 * @var string Field layout ID
+	 */
+	public $fieldLayoutId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var integer Sort order
+	 */
+	public $sortOrder;
+
+
+	/**
 	 * @var The element type that block types' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::MatrixBlock;
@@ -44,6 +75,19 @@ class MatrixBlockType extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sortOrder'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'fieldId', 'fieldLayoutId', 'name', 'handle', 'sortOrder'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the block type handle as the string representation.
@@ -99,25 +143,5 @@ class MatrixBlockType extends Model
 	public function setFields($fields)
 	{
 		$this->_fields = $fields;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'            => AttributeType::Number,
-			'fieldId'       => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::String,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'sortOrder'     => AttributeType::Number,
-		];
 	}
 }

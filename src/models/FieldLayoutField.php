@@ -25,12 +25,58 @@ class FieldLayoutField extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Layout ID
+	 */
+	public $layoutId;
+
+	/**
+	 * @var integer Tab ID
+	 */
+	public $tabId;
+
+	/**
+	 * @var string Field ID
+	 */
+	public $fieldId;
+
+	/**
+	 * @var boolean Required
+	 */
+	public $required = false;
+
+	/**
+	 * @var string Sort order
+	 */
+	public $sortOrder;
+
+
+	/**
 	 * @var
 	 */
 	private $_layout;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['layoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['tabId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldId'], 'string', 'max' => 255],
+			[['sortOrder'], 'string', 'max' => 4],
+			[['id', 'layoutId', 'tabId', 'fieldId', 'required', 'sortOrder'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Returns the field’s layout.
@@ -80,25 +126,5 @@ class FieldLayoutField extends Model
 		{
 			return Craft::$app->fields->getFieldById($this->fieldId);
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'tabId'     => AttributeType::Number,
-			'fieldId'   => AttributeType::Name,
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		];
 	}
 }

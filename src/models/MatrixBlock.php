@@ -26,6 +26,102 @@ class MatrixBlock extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var boolean Enabled
+	 */
+	public $enabled = true;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Root
+	 */
+	public $root;
+
+	/**
+	 * @var integer Lft
+	 */
+	public $lft;
+
+	/**
+	 * @var integer Rgt
+	 */
+	public $rgt;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var integer Field ID
+	 */
+	public $fieldId;
+
+	/**
+	 * @var integer Owner ID
+	 */
+	public $ownerId;
+
+	/**
+	 * @var string Owner locale
+	 */
+	public $ownerLocale;
+
+	/**
+	 * @var integer Type ID
+	 */
+	public $typeId;
+
+	/**
+	 * @var integer Sort order
+	 */
+	public $sortOrder;
+
+	/**
+	 * @var boolean Collapsed
+	 */
+	public $collapsed = false;
+
+
+	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::MatrixBlock;
@@ -37,6 +133,40 @@ class MatrixBlock extends BaseElementModel
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'slug' => Craft::t('app', 'Slug'),
+			'uri' => Craft::t('app', 'URI'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
+			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
+			[['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['ownerId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['ownerLocale'], 'craft\\app\\validators\\Locale'],
+			[['typeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sortOrder'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'fieldId', 'ownerId', 'ownerLocale', 'typeId', 'sortOrder', 'collapsed'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * @inheritDoc BaseElementModel::getFieldLayout()
@@ -171,27 +301,6 @@ class MatrixBlock extends BaseElementModel
 	public function getFieldContext()
 	{
 		return 'matrixBlockType:'.$this->typeId;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'fieldId'     => AttributeType::Number,
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number,
-
-			'collapsed'   => AttributeType::Bool,
-		]);
 	}
 
 	// Private Methods

@@ -26,6 +26,17 @@ class FieldLayout extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Type
+	 */
+	public $type;
+
+
+	/**
 	 * @var
 	 */
 	private $_tabs;
@@ -37,6 +48,18 @@ class FieldLayout extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['type'], 'string', 'max' => 150],
+			[['id', 'type'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Returns the layout’s tabs.
@@ -146,21 +169,5 @@ class FieldLayout extends Model
 			$field->setLayout($this);
 			$this->_fields[] = $field;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'   => AttributeType::Number,
-			'type' => AttributeType::ClassName,
-		];
 	}
 }

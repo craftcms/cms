@@ -18,21 +18,40 @@ use craft\app\enums\AttributeType;
  */
 class PluginNewRelease extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Version
 	 */
-	protected function defineAttributes()
-	{
-		$attributes['version']  = AttributeType::String;
-		$attributes['date']     = AttributeType::DateTime;
-		$attributes['notes']    = AttributeType::String;
-		$attributes['critical'] = AttributeType::Bool;
+	public $version;
 
-		return $attributes;
+	/**
+	 * @var \DateTime Date
+	 */
+	public $date;
+
+	/**
+	 * @var string Notes
+	 */
+	public $notes;
+
+	/**
+	 * @var boolean Critical
+	 */
+	public $critical = false;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['date'], 'craft\\app\\validators\\DateTime'],
+			[['version', 'date', 'notes', 'critical'], 'safe', 'on' => 'search'],
+		];
 	}
 }

@@ -31,12 +31,66 @@ class EntryType extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Section ID
+	 */
+	public $sectionId;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var boolean Has title field
+	 */
+	public $hasTitleField = true;
+
+	/**
+	 * @var string Title label
+	 */
+	public $titleLabel = 'Title';
+
+	/**
+	 * @var string Title format
+	 */
+	public $titleFormat;
+
+
+	/**
 	 * @var The element type that entry types' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::Entry;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sectionId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'sectionId', 'fieldLayoutId', 'name', 'handle', 'hasTitleField', 'titleLabel', 'titleFormat'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the handle as the string representation.
@@ -69,27 +123,5 @@ class EntryType extends Model
 		{
 			return Craft::$app->sections->getSectionById($this->sectionId);
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'            => AttributeType::Number,
-			'sectionId'     => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'hasTitleField' => [AttributeType::Bool, 'default' => true],
-			'titleLabel'    => [AttributeType::String, 'default' => Craft::t('app', 'Title')],
-			'titleFormat'   => AttributeType::String,
-		];
 	}
 }

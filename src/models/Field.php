@@ -24,12 +24,85 @@ class Field extends BaseComponentModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Type
+	 */
+	public $type;
+
+	/**
+	 * @var array Settings
+	 */
+	public $settings;
+
+	/**
+	 * @var integer Group ID
+	 */
+	public $groupId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var string Context
+	 */
+	public $context;
+
+	/**
+	 * @var string Instructions
+	 */
+	public $instructions;
+
+	/**
+	 * @var boolean Required
+	 */
+	public $required = false;
+
+	/**
+	 * @var boolean Translatable
+	 */
+	public $translatable = false;
+
+	/**
+	 * @var string Old handle
+	 */
+	public $oldHandle;
+
+	/**
+	 * @var string Column prefix
+	 */
+	public $columnPrefix;
+
+
+	/**
 	 * @var
 	 */
 	private $_fieldType;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['groupId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'type', 'settings', 'groupId', 'name', 'handle', 'context', 'instructions', 'required', 'translatable', 'oldHandle', 'columnPrefix'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated field name as the string representation.
@@ -86,29 +159,5 @@ class Field extends BaseComponentModel
 	public function getGroup()
 	{
 		return Craft::$app->fields->getGroupById($this->groupId);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'groupId'      => AttributeType::Number,
-			'name'         => AttributeType::String,
-			'handle'       => AttributeType::String,
-			'context'      => AttributeType::String,
-			'instructions' => AttributeType::String,
-			'required'     => AttributeType::Bool,
-			'translatable' => AttributeType::Bool,
-
-			'oldHandle'    => AttributeType::String,
-			'columnPrefix' => AttributeType::String,
-		]);
 	}
 }

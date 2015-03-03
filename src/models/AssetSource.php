@@ -29,6 +29,42 @@ class AssetSource extends BaseComponentModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Type
+	 */
+	public $type = 'Local';
+
+	/**
+	 * @var array Settings
+	 */
+	public $settings;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var string Sort order
+	 */
+	public $sortOrder;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+
+	/**
 	 * @var The element type that asset sources' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::Asset;
@@ -40,6 +76,20 @@ class AssetSource extends BaseComponentModel
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['handle'], 'string', 'max' => 255],
+			[['id', 'type', 'settings', 'name', 'handle', 'sortOrder', 'fieldLayoutId'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated source name as the string representation.
@@ -74,26 +124,5 @@ class AssetSource extends BaseComponentModel
 		{
 			return $this->_sourceType;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes = parent::defineAttributes();
-
-		$attributes['name']            = AttributeType::String;
-		$attributes['handle']          = AttributeType::Handle;
-		$attributes['type']['default'] = 'Local';
-		$attributes['sortOrder']       = AttributeType::String;
-		$attributes['fieldLayoutId']   = AttributeType::Number;
-
-		return $attributes;
 	}
 }

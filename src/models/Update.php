@@ -19,8 +19,36 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  */
 class Update extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var array App
+	 */
+	public $app;
+
+	/**
+	 * @var array Plugins
+	 */
+	public $plugins;
+
+	/**
+	 * @var array Errors
+	 */
+	public $errors;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['app', 'plugins', 'errors'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * @inheritDoc Model::setAttribute()
@@ -38,22 +66,5 @@ class Update extends Model
 		}
 
 		parent::setAttribute($name, $value);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['app']      = [AttributeType::Mixed, 'model' => '\craft\app\models\AppUpdate'];
-		$attributes['plugins']  = AttributeType::Mixed;
-		$attributes['errors']   = AttributeType::Mixed;
-
-		return $attributes;
 	}
 }

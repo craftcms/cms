@@ -24,6 +24,12 @@ class MatrixSettings extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer Max blocks
+	 */
+	public $maxBlocks;
+
+
+	/**
 	 * @var FieldModel|null
 	 */
 	private $_matrixField;
@@ -35,6 +41,17 @@ class MatrixSettings extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['maxBlocks'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['maxBlocks'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Constructor
@@ -114,20 +131,5 @@ class MatrixSettings extends Model
 		}
 
 		return $validates;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'maxBlocks' => AttributeType::Number,
-		];
 	}
 }

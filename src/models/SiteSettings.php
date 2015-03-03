@@ -18,19 +18,32 @@ use craft\app\enums\AttributeType;
  */
 class SiteSettings extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Site name
 	 */
-	protected function defineAttributes()
+	public $siteName;
+
+	/**
+	 * @var string Site URL
+	 */
+	public $siteUrl;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'siteName' => [AttributeType::Name, 'required' => true],
-			'siteUrl'  => [AttributeType::Url, 'required' => true]
+			[['siteName', 'siteUrl'], 'required'],
+			[['siteUrl'], 'craft\\app\\validators\\Url', 'defaultScheme' => 'http'],
+			[['siteName', 'siteUrl'], 'string', 'max' => 255],
+			[['siteName', 'siteUrl'], 'safe', 'on' => 'search'],
 		];
 	}
 }

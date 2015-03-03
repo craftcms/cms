@@ -25,12 +25,73 @@ class Task extends BaseComponentModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Type
+	 */
+	public $type;
+
+	/**
+	 * @var array Settings
+	 */
+	public $settings;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var string Description
+	 */
+	public $description;
+
+	/**
+	 * @var array Parent ID
+	 */
+	public $parentId;
+
+	/**
+	 * @var integer Total steps
+	 */
+	public $totalSteps;
+
+	/**
+	 * @var integer Current step
+	 */
+	public $currentStep;
+
+	/**
+	 * @var string Status
+	 */
+	public $status = 'pending';
+
+
+	/**
 	 * @var
 	 */
 	private $_taskType;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['totalSteps'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['currentStep'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['status'], 'in', 'range' => ['pending', 'error', 'running']],
+			[['id', 'type', 'settings', 'level', 'description', 'parentId', 'totalSteps', 'currentStep', 'status'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Returns the task's description.
@@ -116,25 +177,5 @@ class Task extends BaseComponentModel
 			'status'      => $this->status,
 			'progress'    => $this->getProgress(),
 		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'level'       => AttributeType::Number,
-			'description' => AttributeType::String,
-			'parentId'    => AttributeType::Mixed,
-			'totalSteps'  => AttributeType::Number,
-			'currentStep' => AttributeType::Number,
-			'status'      => [AttributeType::Enum, 'values' => [TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running], 'default' => TaskStatus::Pending],
-		]);
 	}
 }

@@ -19,30 +19,93 @@ use craft\app\enums\ColumnType;
  */
 class Info extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var integer ID
 	 */
-	protected function defineAttributes()
+	public $id;
+
+	/**
+	 * @var string Version
+	 */
+	public $version = '0';
+
+	/**
+	 * @var integer Build
+	 */
+	public $build = '0';
+
+	/**
+	 * @var string Schema version
+	 */
+	public $schemaVersion = '0';
+
+	/**
+	 * @var integer Edition
+	 */
+	public $edition = 0;
+
+	/**
+	 * @var \DateTime Release date
+	 */
+	public $releaseDate;
+
+	/**
+	 * @var string Site name
+	 */
+	public $siteName;
+
+	/**
+	 * @var string Site URL
+	 */
+	public $siteUrl;
+
+	/**
+	 * @var string Timezone
+	 */
+	public $timezone = 'America/Los_Angeles';
+
+	/**
+	 * @var boolean On
+	 */
+	public $on = false;
+
+	/**
+	 * @var boolean Maintenance
+	 */
+	public $maintenance = false;
+
+	/**
+	 * @var string Track
+	 */
+	public $track;
+
+	/**
+	 * @var string Uid
+	 */
+	public $uid;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'id'            => AttributeType::Number,
-			'version'       => [AttributeType::String, 'required' => true, 'default' => '0'],
-			'build'         => [AttributeType::Number, 'required' => true, 'default' => '0'],
-			'schemaVersion' => [AttributeType::String, 'required' => true, 'default' => '0'],
-			'edition'       => [AttributeType::Number, 'required' => true, 'default' => 0],
-			'releaseDate'   => [AttributeType::DateTime, 'required' => true],
-			'siteName'      => [AttributeType::Name, 'required' => true],
-			'siteUrl'       => [AttributeType::Url, 'required' => true],
-			'timezone'      => [AttributeType::String, 'maxLength' => 30, 'default' => date_default_timezone_get()],
-			'on'            => AttributeType::Bool,
-			'maintenance'   => AttributeType::Bool,
-			'track'         => [AttributeType::String, 'maxLength' => 40, 'column' => ColumnType::Varchar, 'required' => true],
-			'uid'           => AttributeType::String,
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['build'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['edition'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['releaseDate'], 'craft\\app\\validators\\DateTime'],
+			[['version', 'build', 'schemaVersion', 'edition', 'releaseDate', 'siteName', 'siteUrl', 'track'], 'required'],
+			[['siteUrl'], 'craft\\app\\validators\\Url', 'defaultScheme' => 'http'],
+			[['siteName', 'siteUrl'], 'string', 'max' => 255],
+			[['timezone'], 'string', 'max' => 30],
+			[['track'], 'string', 'max' => 40],
+			[['id', 'version', 'build', 'schemaVersion', 'edition', 'releaseDate', 'siteName', 'siteUrl', 'timezone', 'on', 'maintenance', 'track', 'uid'], 'safe', 'on' => 'search'],
 		];
 	}
 }

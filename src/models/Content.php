@@ -25,6 +25,72 @@ class Content extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Element ID
+	 */
+	public $elementId;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var string Title
+	 */
+	public $title;
+
+	/**
+	 * @var string Body
+	 */
+	public $body;
+
+	/**
+	 * @var string Description
+	 */
+	public $description;
+
+	/**
+	 * @var string Heading
+	 */
+	public $heading;
+
+	/**
+	 * @var array Ingredients
+	 */
+	public $ingredients;
+
+	/**
+	 * @var string Link color
+	 */
+	public $linkColor;
+
+	/**
+	 * @var string Meta description
+	 */
+	public $metaDescription;
+
+	/**
+	 * @var array Photos
+	 */
+	public $photos;
+
+	/**
+	 * @var string Site intro
+	 */
+	public $siteIntro;
+
+	/**
+	 * @var array Tags
+	 */
+	public $tags;
+
+
+	/**
 	 * @var
 	 */
 	private $_requiredFields;
@@ -36,6 +102,40 @@ class Content extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'title' => Craft::t('app', 'Title'),
+			'body' => Craft::t('app', 'Body'),
+			'description' => Craft::t('app', 'Description'),
+			'heading' => Craft::t('app', 'Heading'),
+			'ingredients' => Craft::t('app', 'Ingredients'),
+			'linkColor' => Craft::t('app', 'Link Color'),
+			'metaDescription' => Craft::t('app', 'Meta Description'),
+			'photos' => Craft::t('app', 'Photos'),
+			'siteIntro' => Craft::t('app', 'Site Intro'),
+			'tags' => Craft::t('app', 'Tags'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['elementId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['linkColor'], 'string', 'length' => 7],
+			[['title'], 'string', 'max' => 255],
+			[['id', 'elementId', 'locale', 'title', 'body', 'description', 'heading', 'ingredients', 'linkColor', 'metaDescription', 'photos', 'siteIntro', 'tags'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * @inheritDoc Model::getAttributeConfigs()
@@ -137,53 +237,5 @@ class Content extends Model
 		}
 
 		return $validates;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requiredTitle = (isset($this->_requiredFields) && in_array('title', $this->_requiredFields));
-
-		$attributes = [
-			'id'        => AttributeType::Number,
-			'elementId' => AttributeType::Number,
-			'locale'    => [AttributeType::Locale, 'default' => Craft::$app->getI18n()->getPrimarySiteLocaleId()],
-			'title'     => [AttributeType::String, 'required' => $requiredTitle, 'maxLength' => 255, 'label' => 'Title'],
-		];
-
-		foreach (Craft::$app->fields->getAllFields() as $field)
-		{
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$attributeConfig = $fieldType->defineContentAttribute();
-			}
-
-			// Default to Mixed
-			if (!$fieldType || !$attributeConfig)
-			{
-				$attributeConfig = AttributeType::Mixed;
-			}
-
-			$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
-			$attributeConfig['label'] = ($field->name != '__blank__' ? $field->name : StringHelper::uppercaseFirst($field->handle));
-
-			if (isset($this->_requiredFields) && in_array($field->id, $this->_requiredFields))
-			{
-				$attributeConfig['required'] = true;
-			}
-
-			$attributes[$field->handle] = $attributeConfig;
-		}
-
-		return $attributes;
 	}
 }

@@ -29,6 +29,47 @@ class CategoryGroup extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Structure ID
+	 */
+	public $structureId;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var boolean Has URLs
+	 */
+	public $hasUrls = true;
+
+	/**
+	 * @var string Template
+	 */
+	public $template;
+
+	/**
+	 * @var integer Max levels
+	 */
+	public $maxLevels;
+
+
+	/**
 	 * @var The element type that category groups' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::Category;
@@ -40,6 +81,20 @@ class CategoryGroup extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['structureId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['maxLevels'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'structureId', 'fieldLayoutId', 'name', 'handle', 'hasUrls', 'template', 'maxLevels'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated category group's name as the string representation.
@@ -83,27 +138,5 @@ class CategoryGroup extends Model
 	public function setLocales($locales)
 	{
 		$this->_locales = $locales;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'            => AttributeType::Number,
-			'structureId'   => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::Number,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'hasUrls'       => [AttributeType::Bool, 'default' => true],
-			'template'      => AttributeType::String,
-			'maxLevels'     => AttributeType::Number,
-		];
 	}
 }

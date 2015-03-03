@@ -31,6 +31,117 @@ class AssetFile extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var boolean Enabled
+	 */
+	public $enabled = true;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Root
+	 */
+	public $root;
+
+	/**
+	 * @var integer Lft
+	 */
+	public $lft;
+
+	/**
+	 * @var integer Rgt
+	 */
+	public $rgt;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var integer Source ID
+	 */
+	public $sourceId;
+
+	/**
+	 * @var integer Folder ID
+	 */
+	public $folderId;
+
+	/**
+	 * @var string Filename
+	 */
+	public $filename;
+
+	/**
+	 * @var string Original name
+	 */
+	public $originalName;
+
+	/**
+	 * @var string Kind
+	 */
+	public $kind;
+
+	/**
+	 * @var integer Width
+	 */
+	public $width;
+
+	/**
+	 * @var integer Height
+	 */
+	public $height;
+
+	/**
+	 * @var integer Size
+	 */
+	public $size;
+
+	/**
+	 * @var \DateTime Date modified
+	 */
+	public $dateModified;
+
+
+	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::Asset;
@@ -47,6 +158,41 @@ class AssetFile extends BaseElementModel
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'slug' => Craft::t('app', 'Slug'),
+			'uri' => Craft::t('app', 'URI'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
+			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
+			[['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['folderId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['width'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['height'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['size'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['dateModified'], 'craft\\app\\validators\\DateTime'],
+			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'sourceId', 'folderId', 'filename', 'originalName', 'kind', 'width', 'height', 'size', 'dateModified'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the entry's title as its string representation.
@@ -374,25 +520,6 @@ class AssetFile extends BaseElementModel
 	// Protected Methods
 	// =========================================================================
 
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'sourceId'		=> AttributeType::Number,
-			'folderId'		=> AttributeType::Number,
-			'filename'		=> AttributeType::String,
-			'originalName'	=> AttributeType::String,
-			'kind'			=> AttributeType::String,
-			'width'			=> AttributeType::Number,
-			'height'		=> AttributeType::Number,
-			'size'			=> AttributeType::Number,
-			'dateModified'  => AttributeType::DateTime
-		]);
-	}
 
 	/**
 	 * Set a source to use for transforms for this Assets File.

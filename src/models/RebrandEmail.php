@@ -21,22 +21,45 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class RebrandEmail extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Key
 	 */
-	protected function defineAttributes()
+	public $key;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale;
+
+	/**
+	 * @var string Subject
+	 */
+	public $subject;
+
+	/**
+	 * @var string Body
+	 */
+	public $body;
+
+	/**
+	 * @var string Html body
+	 */
+	public $htmlBody;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'key'      => AttributeType::String,
-			'locale'   => AttributeType::Locale,
-			'subject'  => AttributeType::String,
-			'body'     => AttributeType::String,
-			'htmlBody' => AttributeType::String,
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['key', 'locale', 'subject', 'body', 'htmlBody'], 'safe', 'on' => 'search'],
 		];
 	}
 }

@@ -28,12 +28,34 @@ class AssetOperationResponse extends Model
 	// =========================================================================
 
 	/**
+	 * @var string Status
+	 */
+	public $status;
+
+	/**
+	 * @var string Error message
+	 */
+	public $errorMessage;
+
+
+	/**
 	 * @var array
 	 */
 	private $_data = [];
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['status'], 'in', 'range' => ['error', 'success', 'conflict']],
+			[['status', 'errorMessage'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Set an error message.
@@ -172,21 +194,5 @@ class AssetOperationResponse extends Model
 		}
 
 		return [];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'status'		=> [AttributeType::Enum, 'values' => [static::StatusError, static::StatusSuccess, static::StatusConflict]],
-			'errorMessage'	=> AttributeType::String
-		];
 	}
 }

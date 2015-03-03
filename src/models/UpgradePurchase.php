@@ -18,21 +18,42 @@ use craft\app\enums\AttributeType;
  */
 class UpgradePurchase extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var string Cc token ID
 	 */
-	protected function defineAttributes()
+	public $ccTokenId;
+
+	/**
+	 * @var integer Edition
+	 */
+	public $edition;
+
+	/**
+	 * @var integer Expected price
+	 */
+	public $expectedPrice;
+
+	/**
+	 * @var boolean Success
+	 */
+	public $success = false;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'ccTokenId'     => [AttributeType::String, 'required' => true],
-			'edition'       => [AttributeType::Number, 'required' => true],
-			'expectedPrice' => [AttributeType::Number, 'required' => true],
-			'success'       => AttributeType::Bool,
+			[['edition'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['expectedPrice'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['ccTokenId', 'edition', 'expectedPrice'], 'required'],
+			[['ccTokenId', 'edition', 'expectedPrice', 'success'], 'safe', 'on' => 'search'],
 		];
 	}
 }

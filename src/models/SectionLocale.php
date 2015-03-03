@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use Craft;
 use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
@@ -22,6 +23,37 @@ class SectionLocale extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Section ID
+	 */
+	public $sectionId;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale;
+
+	/**
+	 * @var boolean Enabled by default
+	 */
+	public $enabledByDefault = true;
+
+	/**
+	 * @var string URL format
+	 */
+	public $urlFormat;
+
+	/**
+	 * @var string Nested URL format
+	 */
+	public $nestedUrlFormat;
+
+
+	/**
 	 * @var bool
 	 */
 	public $urlFormatIsRequired = false;
@@ -35,44 +67,27 @@ class SectionLocale extends Model
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::rules()
-	 *
-	 * @return array
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'urlFormat' => Craft::t('app', 'URL Format'),
+			'nestedUrlFormat' => Craft::t('app', 'URL Format'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function rules()
 	{
-		$rules = parent::rules();
-
-		if ($this->urlFormatIsRequired)
-		{
-			$rules[] = ['urlFormat', 'required'];
-		}
-
-		if ($this->nestedUrlFormatIsRequired)
-		{
-			$rules[] = ['nestedUrlFormat', 'required'];
-		}
-
-		return $rules;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
 		return [
-			'id'               => AttributeType::Number,
-			'sectionId'        => AttributeType::Number,
-			'locale'           => AttributeType::Locale,
-			'enabledByDefault' => [AttributeType::Bool, 'default' => true],
-			'urlFormat'        => [AttributeType::UrlFormat, 'label' => 'URL Format'],
-			'nestedUrlFormat'  => [AttributeType::UrlFormat, 'label' => 'URL Format'],
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sectionId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['urlFormat', 'nestedUrlFormat'], 'craft\\app\\validators\\UrlFormat'],
+			[['id', 'sectionId', 'locale', 'enabledByDefault', 'urlFormat', 'nestedUrlFormat'], 'safe', 'on' => 'search'],
 		];
 	}
 }

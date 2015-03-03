@@ -24,12 +24,113 @@ class Tag extends BaseElementModel
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var boolean Enabled
+	 */
+	public $enabled = true;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Root
+	 */
+	public $root;
+
+	/**
+	 * @var integer Lft
+	 */
+	public $lft;
+
+	/**
+	 * @var integer Rgt
+	 */
+	public $rgt;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var integer Group ID
+	 */
+	public $groupId;
+
+
+	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::Tag;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'slug' => Craft::t('app', 'Slug'),
+			'uri' => Craft::t('app', 'URI'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
+			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
+			[['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['groupId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'groupId'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the tag title as its string representation.
@@ -94,20 +195,5 @@ class Tag extends BaseElementModel
 	{
 		Craft::$app->deprecator->log('Tag::name', 'The TagModel ‘name’ property has been deprecated. Use ‘title’ instead.');
 		return $this->getContent()->title;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), [
-			'groupId' => AttributeType::Number,
-		]);
 	}
 }

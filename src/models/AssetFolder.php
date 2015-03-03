@@ -25,12 +25,51 @@ class AssetFolder extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Parent ID
+	 */
+	public $parentId;
+
+	/**
+	 * @var integer Source ID
+	 */
+	public $sourceId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Path
+	 */
+	public $path;
+
+
+	/**
 	 * @var array
 	 */
 	private $_children = null;
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['parentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'parentId', 'sourceId', 'name', 'path'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the folder name as the string representation.
@@ -130,24 +169,5 @@ class AssetFolder extends Model
 		}
 
 		return $value;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'       => AttributeType::Number,
-			'parentId' => AttributeType::Number,
-			'sourceId' => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'path'     => AttributeType::String,
-		];
 	}
 }

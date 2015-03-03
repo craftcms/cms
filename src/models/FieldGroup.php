@@ -19,8 +19,33 @@ use craft\app\enums\AttributeType;
  */
 class FieldGroup extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['name'], 'string', 'max' => 255],
+			[['id', 'name'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the group name as the string representation.
@@ -40,21 +65,5 @@ class FieldGroup extends Model
 	public function getFields()
 	{
 		return Craft::$app->fields->getFieldsByGroupId($this->id);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'   => AttributeType::Number,
-			'name' => AttributeType::Name,
-		];
 	}
 }

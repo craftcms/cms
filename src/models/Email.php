@@ -46,8 +46,100 @@ use craft\app\enums\AttributeType;
  */
 class Email extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string From email
+	 */
+	public $fromEmail = 'support@buildwithcraft.com';
+
+	/**
+	 * @var string From name
+	 */
+	public $fromName = 'Craft';
+
+	/**
+	 * @var string To email
+	 */
+	public $toEmail;
+
+	/**
+	 * @var string To first name
+	 */
+	public $toFirstName;
+
+	/**
+	 * @var string To last name
+	 */
+	public $toLastName;
+
+	/**
+	 * @var string Subject
+	 */
+	public $subject;
+
+	/**
+	 * @var string Body
+	 */
+	public $body;
+
+	/**
+	 * @var string Html body
+	 */
+	public $htmlBody;
+
+	/**
+	 * @var string Reply to
+	 */
+	public $replyTo;
+
+	/**
+	 * @var string Sender
+	 */
+	public $sender;
+
+	/**
+	 * @var array Cc
+	 */
+	public $cc;
+
+	/**
+	 * @var array Bcc
+	 */
+	public $bcc;
+
+	/**
+	 * @var array String attachments
+	 */
+	public $stringAttachments;
+
+	/**
+	 * @var array Attachments
+	 */
+	public $attachments;
+
+	/**
+	 * @var array Custom headers
+	 */
+	public $customHeaders;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['fromEmail', 'toEmail', 'subject', 'body'], 'required'],
+			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'email'],
+			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'string', 'min' => 5],
+			[['fromEmail', 'toEmail', 'replyTo', 'sender'], 'string', 'max' => 255],
+			[['fromEmail', 'fromName', 'toEmail', 'toFirstName', 'toLastName', 'subject', 'body', 'htmlBody', 'replyTo', 'sender', 'cc', 'bcc', 'stringAttachments', 'attachments', 'customHeaders'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Adds a string or binary attachment (non-filesystem) to the list. This method can be used to attach ascii or
@@ -82,39 +174,5 @@ class Email extends Model
 		$existingAttachments = $this->attachments;
 		$existingAttachments[] = ['path' => $path, 'name' => $name, 'encoding' => $encoding, 'type' => $type];
 		$this->attachments = $existingAttachments;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$settings = Craft::$app->email->getSettings();
-
-		$fromEmail = !empty($settings['emailAddress']) ? $settings['emailAddress'] : '';
-		$fromName =  !empty($settings['senderName']) ? $settings['senderName'] : '';
-
-		return [
-			'fromEmail'         => [AttributeType::Email, 'required' => true, 'default' => $fromEmail],
-			'fromName'          => [AttributeType::String, 'default' => $fromName],
-			'toEmail'           => [AttributeType::Email, 'required' => true],
-			'toFirstName'       => [AttributeType::String],
-			'toLastName'        => [AttributeType::String],
-			'subject'           => [AttributeType::String, 'required' => true],
-			'body'              => [AttributeType::String, 'required' => true],
-			'htmlBody'          => [AttributeType::String],
-			'replyTo'           => [AttributeType::Email],
-			'sender'            => [AttributeType::Email],
-			'cc'                => [AttributeType::Mixed],
-			'bcc'               => [AttributeType::Mixed],
-			'stringAttachments' => [AttributeType::Mixed],
-			'attachments'       => [AttributeType::Mixed],
-			'customHeaders'     => [AttributeType::Mixed],
-		];
 	}
 }

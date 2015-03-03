@@ -35,6 +35,192 @@ class User extends BaseElementModel implements IdentityInterface
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var boolean Enabled
+	 */
+	public $enabled = true;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale = 'en-US';
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Root
+	 */
+	public $root;
+
+	/**
+	 * @var integer Lft
+	 */
+	public $lft;
+
+	/**
+	 * @var integer Rgt
+	 */
+	public $rgt;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var string Username
+	 */
+	public $username;
+
+	/**
+	 * @var string Photo
+	 */
+	public $photo;
+
+	/**
+	 * @var string First name
+	 */
+	public $firstName;
+
+	/**
+	 * @var string Last name
+	 */
+	public $lastName;
+
+	/**
+	 * @var string Email
+	 */
+	public $email;
+
+	/**
+	 * @var string Password
+	 */
+	public $password;
+
+	/**
+	 * @var string Preferred locale
+	 */
+	public $preferredLocale;
+
+	/**
+	 * @var integer Week start day
+	 */
+	public $weekStartDay = 0;
+
+	/**
+	 * @var boolean Admin
+	 */
+	public $admin = false;
+
+	/**
+	 * @var boolean Client
+	 */
+	public $client = false;
+
+	/**
+	 * @var boolean Locked
+	 */
+	public $locked = false;
+
+	/**
+	 * @var boolean Suspended
+	 */
+	public $suspended = false;
+
+	/**
+	 * @var boolean Pending
+	 */
+	public $pending = false;
+
+	/**
+	 * @var \DateTime Last login date
+	 */
+	public $lastLoginDate;
+
+	/**
+	 * @var integer Invalid login count
+	 */
+	public $invalidLoginCount;
+
+	/**
+	 * @var \DateTime Last invalid login date
+	 */
+	public $lastInvalidLoginDate;
+
+	/**
+	 * @var \DateTime Lockout date
+	 */
+	public $lockoutDate;
+
+	/**
+	 * @var boolean Password reset required
+	 */
+	public $passwordResetRequired = false;
+
+	/**
+	 * @var \DateTime Last password change date
+	 */
+	public $lastPasswordChangeDate;
+
+	/**
+	 * @var string Unverified email
+	 */
+	public $unverifiedEmail;
+
+	/**
+	 * @var string New password
+	 */
+	public $newPassword;
+
+	/**
+	 * @var string Current password
+	 */
+	public $currentPassword;
+
+	/**
+	 * @var \DateTime Verification code issued date
+	 */
+	public $verificationCodeIssuedDate;
+
+	/**
+	 * @var string Auth error
+	 */
+	public $authError;
+
+
+	/**
 	 * @var string
 	 */
 	protected $elementType = ElementType::User;
@@ -48,6 +234,48 @@ class User extends BaseElementModel implements IdentityInterface
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'slug' => Craft::t('app', 'Slug'),
+			'uri' => Craft::t('app', 'URI'),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['dateCreated'], 'craft\\app\\validators\\DateTime'],
+			[['dateUpdated'], 'craft\\app\\validators\\DateTime'],
+			[['root'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lft'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['rgt'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['preferredLocale'], 'craft\\app\\validators\\Locale'],
+			[['weekStartDay'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lastLoginDate'], 'craft\\app\\validators\\DateTime'],
+			[['invalidLoginCount'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['lastInvalidLoginDate'], 'craft\\app\\validators\\DateTime'],
+			[['lockoutDate'], 'craft\\app\\validators\\DateTime'],
+			[['lastPasswordChangeDate'], 'craft\\app\\validators\\DateTime'],
+			[['verificationCodeIssuedDate'], 'craft\\app\\validators\\DateTime'],
+			[['username'], 'required'],
+			[['email', 'unverifiedEmail'], 'email'],
+			[['email', 'unverifiedEmail'], 'string', 'min' => 5],
+			[['username'], 'string', 'max' => 100],
+			[['email', 'unverifiedEmail'], 'string', 'max' => 255],
+			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'username', 'photo', 'firstName', 'lastName', 'email', 'password', 'preferredLocale', 'weekStartDay', 'admin', 'client', 'locked', 'suspended', 'pending', 'lastLoginDate', 'invalidLoginCount', 'lastInvalidLoginDate', 'lockoutDate', 'passwordResetRequired', 'lastPasswordChangeDate', 'unverifiedEmail', 'newPassword', 'currentPassword', 'verificationCodeIssuedDate', 'authError'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the full name or username as the string representation.
@@ -645,47 +873,6 @@ class User extends BaseElementModel implements IdentityInterface
 		}
 
 		return parent::validate($attributes, false);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
-
-		return array_merge(parent::defineAttributes(), [
-			'username'                   => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
-			'photo'                      => AttributeType::String,
-			'firstName'                  => AttributeType::String,
-			'lastName'                   => AttributeType::String,
-			'email'                      => [AttributeType::Email, 'required' => !$requireUsername],
-			'password'                   => AttributeType::String,
-			'preferredLocale'            => AttributeType::Locale,
-			'weekStartDay'               => [AttributeType::Number, 'default' => 0],
-			'admin'                      => AttributeType::Bool,
-			'client'                     => AttributeType::Bool,
-			'locked'                     => AttributeType::Bool,
-			'suspended'                  => AttributeType::Bool,
-			'pending'                    => AttributeType::Bool,
-			'archived'                   => AttributeType::Bool,
-			'lastLoginDate'              => AttributeType::DateTime,
-			'invalidLoginCount'          => AttributeType::Number,
-			'lastInvalidLoginDate'       => AttributeType::DateTime,
-			'lockoutDate'                => AttributeType::DateTime,
-			'passwordResetRequired'      => AttributeType::Bool,
-			'lastPasswordChangeDate'     => AttributeType::DateTime,
-			'unverifiedEmail'            => AttributeType::Email,
-			'newPassword'                => AttributeType::String,
-			'currentPassword'            => AttributeType::String,
-			'verificationCodeIssuedDate' => AttributeType::DateTime,
-			'authError'                  => AttributeType::String,
-		]);
 	}
 
 	// Private Methods

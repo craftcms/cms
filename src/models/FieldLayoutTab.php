@@ -25,6 +25,27 @@ class FieldLayoutTab extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Layout ID
+	 */
+	public $layoutId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Sort order
+	 */
+	public $sortOrder;
+
+
+	/**
 	 * @var
 	 */
 	private $_layout;
@@ -36,6 +57,20 @@ class FieldLayoutTab extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['layoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['name'], 'string', 'max' => 255],
+			[['sortOrder'], 'string', 'max' => 4],
+			[['id', 'layoutId', 'name', 'sortOrder'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Returns the tab’s layout.
@@ -124,23 +159,5 @@ class FieldLayoutTab extends Model
 
 			$this->_fields[] = $field;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'name'      => AttributeType::Name,
-			'sortOrder' => AttributeType::SortOrder,
-		];
 	}
 }

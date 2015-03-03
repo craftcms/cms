@@ -24,6 +24,52 @@ class Section extends Model
 	// =========================================================================
 
 	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var integer Structure ID
+	 */
+	public $structureId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var string Type
+	 */
+	public $type;
+
+	/**
+	 * @var boolean Has URLs
+	 */
+	public $hasUrls = true;
+
+	/**
+	 * @var string Template
+	 */
+	public $template;
+
+	/**
+	 * @var integer Max levels
+	 */
+	public $maxLevels;
+
+	/**
+	 * @var boolean Enable versioning
+	 */
+	public $enableVersioning = true;
+
+
+	/**
 	 * @var
 	 */
 	private $_locales;
@@ -35,6 +81,20 @@ class Section extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['structureId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['type'], 'in', 'range' => ['single', 'channel', 'structure']],
+			[['maxLevels'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'structureId', 'name', 'handle', 'type', 'hasUrls', 'template', 'maxLevels', 'enableVersioning'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Use the translated section name as the string representation.
@@ -173,28 +233,5 @@ class Section extends Model
 
 			return $locales[$localeId]->urlFormat;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'id'                        => AttributeType::Number,
-			'structureId'               => AttributeType::Number,
-			'name'                      => AttributeType::String,
-			'handle'                    => AttributeType::String,
-			'type'                      => [AttributeType::Enum, 'values' => [SectionType::Single, SectionType::Channel, SectionType::Structure]],
-			'hasUrls'                   => [AttributeType::Bool, 'default' => true],
-			'template'                  => AttributeType::String,
-			'maxLevels'                 => AttributeType::Number,
-			'enableVersioning'          => [AttributeType::Bool, 'default' => true],
-		];
 	}
 }

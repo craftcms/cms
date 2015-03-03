@@ -18,25 +18,64 @@ use craft\app\enums\AttributeType;
  */
 class FolderCriteria extends Model
 {
-	// Protected Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
+	 * @var integer ID
 	 */
-	protected function defineAttributes()
+	public $id;
+
+	/**
+	 * @var integer Parent ID
+	 */
+	public $parentId = false;
+
+	/**
+	 * @var integer Source ID
+	 */
+	public $sourceId;
+
+	/**
+	 * @var string Name
+	 */
+	public $name;
+
+	/**
+	 * @var string Path
+	 */
+	public $path;
+
+	/**
+	 * @var string Order
+	 */
+	public $order = 'name asc';
+
+	/**
+	 * @var integer Offset
+	 */
+	public $offset;
+
+	/**
+	 * @var integer Limit
+	 */
+	public $limit;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
 	{
 		return [
-			'id'       => AttributeType::Number,
-			'parentId' => [AttributeType::Number, 'default' => false],
-			'sourceId' => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'path'     => AttributeType::String,
-			'order'    => [AttributeType::String, 'default' => 'name asc'],
-			'offset'   => AttributeType::Number,
-			'limit'    => AttributeType::Number,
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['parentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['offset'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['limit'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id', 'parentId', 'sourceId', 'name', 'path', 'order', 'offset', 'limit'], 'safe', 'on' => 'search'],
 		];
 	}
 }

@@ -21,8 +21,105 @@ use craft\app\helpers\JsonHelper;
  */
 class Et extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string License key
+	 */
+	public $licenseKey;
+
+	/**
+	 * @var string License key status
+	 */
+	public $licenseKeyStatus;
+
+	/**
+	 * @var string Licensed edition
+	 */
+	public $licensedEdition;
+
+	/**
+	 * @var string Licensed domain
+	 */
+	public $licensedDomain;
+
+	/**
+	 * @var boolean Edition testable domain
+	 */
+	public $editionTestableDomain = false;
+
+	/**
+	 * @var array Data
+	 */
+	public $data;
+
+	/**
+	 * @var string Request URL
+	 */
+	public $requestUrl = '';
+
+	/**
+	 * @var string Request ip
+	 */
+	public $requestIp = '1.1.1.1';
+
+	/**
+	 * @var \DateTime Request time
+	 */
+	public $requestTime = '2015-03-03 22:09:04';
+
+	/**
+	 * @var string Request port
+	 */
+	public $requestPort;
+
+	/**
+	 * @var string Local version
+	 */
+	public $localVersion;
+
+	/**
+	 * @var integer Local build
+	 */
+	public $localBuild;
+
+	/**
+	 * @var string Local edition
+	 */
+	public $localEdition;
+
+	/**
+	 * @var string User email
+	 */
+	public $userEmail;
+
+	/**
+	 * @var string Track
+	 */
+	public $track;
+
+	/**
+	 * @var array Errors
+	 */
+	public $errors;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['licensedEdition'], 'in', 'range' => [0, 1, 2]],
+			[['requestTime'], 'craft\\app\\validators\\DateTime'],
+			[['localBuild'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['localVersion', 'localBuild', 'localEdition'], 'required'],
+			[['licenseKey', 'licenseKeyStatus', 'licensedEdition', 'licensedDomain', 'editionTestableDomain', 'data', 'requestUrl', 'requestIp', 'requestTime', 'requestPort', 'localVersion', 'localBuild', 'localEdition', 'userEmail', 'track', 'errors'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * @return null
@@ -30,66 +127,5 @@ class Et extends Model
 	public function decode()
 	{
 		echo JsonHelper::decode($this);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		// The client license key.
-		$attributes['licenseKey'] = AttributeType::String;
-
-		// The license key status.  Set by the server response.
-		$attributes['licenseKeyStatus']  = AttributeType::String;
-
-		// The edition that Craft is licensed to use
-		$attributes['licensedEdition'] = [AttributeType::Enum, 'values' => [Craft::Personal, Craft::Client, Craft::Pro]];
-
-		// The domain that the license is associated with
-		$attributes['licensedDomain'] = AttributeType::String;
-
-		// Whether Craft is running for a domain that's eligible to be used in Edition Test Mode
-		$attributes['editionTestableDomain'] = AttributeType::Bool;
-
-		// Extra arbitrary data to send to the server.
-		$attributes['data'] = AttributeType::Mixed;
-
-		// The url making the request.
-		$attributes['requestUrl'] = [AttributeType::String, 'default' => ''];
-
-		// The IP address making the request.
-		$attributes['requestIp'] = [AttributeType::String, 'default' => '1.1.1.1'];
-
-		// The time the request was made.
-		$attributes['requestTime'] = [AttributeType::DateTime, 'default' => DateTimeHelper::currentTimeForDb()];
-
-		// The port number the request comes from.
-		$attributes['requestPort'] = AttributeType::String;
-
-		// The local version number.
-		$attributes['localVersion'] = [AttributeType::String, 'required' => true];
-
-		// The local build number.
-		$attributes['localBuild'] = [AttributeType::Number, 'required' => true];
-
-		// The local edition.
-		$attributes['localEdition'] = [AttributeType::String, 'required' => true];
-
-		// The currently logged in user's email address.
-		$attributes['userEmail'] = AttributeType::String;
-
-		// The track this install is on.  Not required for backwards compatibility.
-		$attributes['track'] = [AttributeType::String];
-
-		// Any errors to return;
-		$attributes['errors'] = AttributeType::Mixed;
-
-		return $attributes;
 	}
 }

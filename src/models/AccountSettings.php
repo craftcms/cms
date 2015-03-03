@@ -19,8 +19,42 @@ use craft\app\enums\AttributeType;
  */
 class AccountSettings extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string Username
+	 */
+	public $username;
+
+	/**
+	 * @var string Email
+	 */
+	public $email;
+
+	/**
+	 * @var string Password
+	 */
+	public $password;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['username', 'email', 'password'], 'required'],
+			[['email'], 'email'],
+			[['email'], 'string', 'min' => 5],
+			[['password'], 'string', 'min' => 6],
+			[['username'], 'string', 'max' => 100],
+			[['email'], 'string', 'max' => 255],
+			[['username', 'email', 'password'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
@@ -42,24 +76,5 @@ class AccountSettings extends Model
 		}
 
 		return parent::validate($attributes, false);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
-
-		return [
-			'username' => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
-			'email'    => [AttributeType::Email, 'required' => true],
-			'password' => [AttributeType::String, 'minLength' => 6, 'required' => true]
-		];
 	}
 }

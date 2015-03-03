@@ -19,8 +19,28 @@ use craft\app\enums\AttributeType;
  */
 class Username extends Model
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string Username
+	 */
+	public $username;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['username'], 'required'],
+			[['username'], 'string', 'max' => 100],
+			[['username'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
@@ -42,22 +62,5 @@ class Username extends Model
 		}
 
 		return parent::validate($attributes, false);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$requireUsername = !Craft::$app->config->get('useEmailAsUsername');
-
-		return [
-			'username' => [AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername],
-		];
 	}
 }
