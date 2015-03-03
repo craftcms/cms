@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
 
@@ -16,7 +17,7 @@ use craft\app\enums\SectionType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Section extends BaseRecord
+class Section extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -52,7 +53,7 @@ class Section extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -68,7 +69,7 @@ class Section extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

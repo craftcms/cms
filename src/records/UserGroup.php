@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -18,7 +19,7 @@ Craft::$app->requireEdition(Craft::Pro);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UserGroup extends BaseRecord
+class UserGroup extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -48,7 +49,7 @@ class UserGroup extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 
@@ -17,7 +18,7 @@ use craft\app\enums\ColumnType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class User extends BaseRecord
+class User extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -74,7 +75,7 @@ class User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -89,7 +90,7 @@ class User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::validate()
+	 * @inheritDoc ActiveRecord::validate()
 	 *
 	 * @param null $attributes
 	 * @param bool $clearErrors
@@ -122,7 +123,7 @@ class User extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

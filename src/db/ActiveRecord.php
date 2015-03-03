@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\records;
+namespace craft\app\db;
 
 use Craft;
 use craft\app\dates\DateTime;
@@ -22,7 +22,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseRecord extends \yii\db\ActiveRecord
+abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
 	// Constants
 	// =========================================================================

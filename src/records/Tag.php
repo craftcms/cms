@@ -7,13 +7,15 @@
 
 namespace craft\app\records;
 
+use craft\app\db\ActiveRecord;
+
 /**
  * Class Tag record.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Tag extends BaseRecord
+class Tag extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================

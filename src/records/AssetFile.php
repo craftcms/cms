@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 
@@ -18,7 +19,7 @@ use craft\app\enums\ColumnType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFile extends BaseRecord
+class AssetFile extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -64,7 +65,7 @@ class AssetFile extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -79,7 +80,7 @@ class AssetFile extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

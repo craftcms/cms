@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 use craft\app\db\StructuredElementQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -19,7 +20,7 @@ use creocoder\nestedsets\NestedSetsBehavior;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class StructureElement extends BaseRecord
+class StructureElement extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -63,7 +64,7 @@ class StructureElement extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -108,7 +109,7 @@ class StructureElement extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

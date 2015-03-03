@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\records;
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
@@ -14,7 +15,7 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlockType extends BaseRecord
+class MatrixBlockType extends ActiveRecord
 {
 	// Properties
 	// =========================================================================
@@ -60,7 +61,7 @@ class MatrixBlockType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -73,7 +74,7 @@ class MatrixBlockType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::rules()
+	 * @inheritDoc ActiveRecord::rules()
 	 *
 	 * @return array
 	 */
@@ -99,7 +100,7 @@ class MatrixBlockType extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

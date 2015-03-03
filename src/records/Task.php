@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 use craft\app\db\TaskQuery;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
@@ -20,7 +21,7 @@ use creocoder\nestedsets\NestedSetsBehavior;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Task extends BaseRecord
+class Task extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -44,7 +45,7 @@ class Task extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -88,7 +89,7 @@ class Task extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */
