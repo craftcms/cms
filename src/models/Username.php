@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
 /**
@@ -16,7 +17,7 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Username extends BaseModel
+class Username extends Model
 {
 	// Public Methods
 	// =========================================================================
@@ -47,7 +48,7 @@ class Username extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

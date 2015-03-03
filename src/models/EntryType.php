@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
@@ -19,7 +20,7 @@ use craft\app\models\Section as SectionModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class EntryType extends BaseModel
+class EntryType extends Model
 {
 	// Traits
 	// =========================================================================
@@ -74,7 +75,7 @@ class EntryType extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

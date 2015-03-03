@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 
@@ -19,7 +20,7 @@ Craft::$app->requireEdition(Craft::Client);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class EntryDraft extends BaseRecord
+class EntryDraft extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -75,7 +76,7 @@ class EntryDraft extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -90,7 +91,7 @@ class EntryDraft extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

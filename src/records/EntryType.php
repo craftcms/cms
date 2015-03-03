@@ -6,6 +6,7 @@
  */
 
 namespace craft\app\records;
+use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
@@ -14,7 +15,7 @@ use craft\app\enums\AttributeType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class EntryType extends BaseRecord
+class EntryType extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -50,7 +51,7 @@ class EntryType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */
@@ -63,7 +64,7 @@ class EntryType extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::rules()
+	 * @inheritDoc ActiveRecord::rules()
 	 *
 	 * @return array
 	 */
@@ -83,7 +84,7 @@ class EntryType extends BaseRecord
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseRecord::defineAttributes()
+	 * @inheritDoc ActiveRecord::defineAttributes()
 	 *
 	 * @return array
 	 */

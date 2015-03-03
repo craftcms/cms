@@ -7,7 +7,7 @@
 
 namespace craft\app\components;
 
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\Params as ParamsModel;
 
 /**
@@ -24,7 +24,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	/**
 	 * The model instance associated with the current component instance.
 	 *
-	 * @var BaseModel
+	 * @var Model
 	 */
 	public $model;
 
@@ -39,7 +39,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	/**
 	 * @inheritDoc SavableComponentTypeInterface::getSettings()
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public function getSettings()
 	{
@@ -54,7 +54,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	/**
 	 * @inheritDoc SavableComponentTypeInterface::setSettings()
 	 *
-	 * @param array|BaseModel $values
+	 * @param array|Model $values
 	 *
 	 * @return null
 	 */
@@ -62,7 +62,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	{
 		if ($values)
 		{
-			if ($values instanceof BaseModel)
+			if ($values instanceof Model)
 			{
 				$this->_settings = $values;
 			}
@@ -101,7 +101,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements Sav
 	/**
 	 * Returns the settings model.
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	protected function getSettingsModel()
 	{

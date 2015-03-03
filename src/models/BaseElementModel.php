@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\HtmlHelper;
@@ -25,7 +26,7 @@ use craft\app\web\UploadedFile;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseElementModel extends BaseModel
+abstract class BaseElementModel extends Model
 {
 	// Constants
 	// =========================================================================
@@ -144,7 +145,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function __get($name)
 	{
-		// Run through the BaseModel/CModel stuff first
+		// Run through the Model/CModel stuff first
 		try
 		{
 			return parent::__get($name);
@@ -173,11 +174,11 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * @inheritDoc BaseModel::populateModel()
+	 * @inheritDoc Model::populateModel()
 	 *
 	 * @param mixed $values
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public static function populateModel($values)
 	{
@@ -780,7 +781,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * @inheritDoc BaseModel::getAttribute()
+	 * @inheritDoc Model::getAttribute()
 	 *
 	 * @param string $name
 	 * @param bool   $flattenValue
@@ -1049,7 +1050,7 @@ abstract class BaseElementModel extends BaseModel
 
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

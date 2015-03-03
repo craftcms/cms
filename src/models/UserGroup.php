@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -18,7 +19,7 @@ Craft::$app->requireEdition(Craft::Pro);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UserGroup extends BaseModel
+class UserGroup extends Model
 {
 	// Public Methods
 	// =========================================================================
@@ -56,7 +57,7 @@ class UserGroup extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

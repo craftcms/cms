@@ -9,7 +9,7 @@ namespace craft\app\consolecommands;
 
 use craft\app\enums\ColumnType;
 use craft\app\helpers\ArrayHelper;
-use craft\app\records\BaseRecord;
+use craft\app\db\ActiveRecord;
 
 /**
  * The query generator console command.
@@ -185,7 +185,7 @@ class Querygen extends BaseCommand
 				{
 					if (empty($config['required']))
 					{
-						$onDelete = BaseRecord::SET_NULL;
+						$onDelete = ActiveRecord::SET_NULL;
 					}
 					else
 					{
@@ -224,7 +224,7 @@ class Querygen extends BaseCommand
 	 *
 	 * @param string $class
 	 *
-	 * @return BaseRecord
+	 * @return ActiveRecord
 	 */
 	private function _getRecord($class)
 	{

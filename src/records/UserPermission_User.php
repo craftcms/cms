@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use Craft;
+use craft\app\db\ActiveRecord;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -17,7 +18,7 @@ Craft::$app->requireEdition(Craft::Pro);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UserPermission_User extends BaseRecord
+class UserPermission_User extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -53,7 +54,7 @@ class UserPermission_User extends BaseRecord
 	}
 
 	/**
-	 * @inheritDoc BaseRecord::defineIndexes()
+	 * @inheritDoc ActiveRecord::defineIndexes()
 	 *
 	 * @return array
 	 */

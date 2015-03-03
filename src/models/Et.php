@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
@@ -18,7 +19,7 @@ use craft\app\helpers\JsonHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Et extends BaseModel
+class Et extends Model
 {
 	// Public Methods
 	// =========================================================================
@@ -35,7 +36,7 @@ class Et extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

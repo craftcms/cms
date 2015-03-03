@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
@@ -18,7 +19,7 @@ use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FieldLayoutTab extends BaseModel
+class FieldLayoutTab extends Model
 {
 	// Properties
 	// =========================================================================
@@ -129,7 +130,7 @@ class FieldLayoutTab extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

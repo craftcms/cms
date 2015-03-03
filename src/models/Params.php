@@ -7,13 +7,15 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Model;
+
 /**
  * Params model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Params extends BaseModel
+class Params extends Model
 {
 	// Properties
 	// =========================================================================
@@ -43,7 +45,7 @@ class Params extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

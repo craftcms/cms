@@ -25,7 +25,7 @@ class EntryDraft extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::populateModel()
+	 * @inheritDoc Model::populateModel()
 	 *
 	 * @param mixed $attributes
 	 *
@@ -69,7 +69,7 @@ class EntryDraft extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

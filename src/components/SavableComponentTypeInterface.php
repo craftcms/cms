@@ -7,7 +7,7 @@
 
 namespace craft\app\components;
 
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 
 /**
  * SavableComponentTypeInterface.
@@ -23,17 +23,17 @@ interface SavableComponentTypeInterface extends ComponentTypeInterface
 	/**
 	 * Returns the component’s settings model.
 	 *
-	 * @return BaseModel The component’s settings model.
+	 * @return Model The component’s settings model.
 	 */
 	public function getSettings();
 
 	/**
 	 * Sets the setting values.
 	 *
-	 * The values may come as a key/value array, or a [[BaseModel]] object. Either way, this method should store the
+	 * The values may come as a key/value array, or a [[Model]] object. Either way, this method should store the
 	 * values on the model that is returned by [[getSettings()]].
 	 *
-	 * @param array|BaseModel $values The new setting values.
+	 * @param array|Model $values The new setting values.
 	 *
 	 * @return null
 	 */

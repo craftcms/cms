@@ -10,9 +10,9 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\records\BaseRecord;
+use craft\app\db\ActiveRecord;
 
 /**
  * Class ModelHelper
@@ -206,7 +206,7 @@ class ModelHelper
 	/**
 	 * Populates any default values that are defined for a model.
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|ActiveRecord $model
 	 *
 	 * @return null
 	 */
@@ -224,7 +224,7 @@ class ModelHelper
 	/**
 	 * Returns the rules array used by [[\yii\base\Model]].
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|ActiveRecord $model
 	 *
 	 * @return array
 	 */
@@ -382,9 +382,9 @@ class ModelHelper
 			}
 		}
 
-		// If this is a BaseRecord instance, catch any unique/required indexes. We don't validate required BELONGS_TO
+		// If this is a ActiveRecord instance, catch any unique/required indexes. We don't validate required BELONGS_TO
 		// relations because they mightnot get set until after validation.
-		if ($model instanceof BaseRecord)
+		if ($model instanceof ActiveRecord)
 		{
 			foreach ($model->defineIndexes() as $config)
 			{
@@ -490,7 +490,7 @@ class ModelHelper
 	/**
 	 * Returns the attribute labels.
 	 *
-	 * @param BaseModel|BaseRecord $model
+	 * @param Model|ActiveRecord $model
 	 *
 	 * @return array
 	 */
@@ -525,7 +525,7 @@ class ModelHelper
 			return DateTimeHelper::formatTimeForDb($value->getTimestamp());
 		}
 
-		if ($value instanceof BaseModel)
+		if ($value instanceof Model)
 		{
 			$attributes = $value->getAttributes(null, true);
 
@@ -572,7 +572,7 @@ class ModelHelper
 	 *
 	 * @param array $arr
 	 *
-	 * @return array|BaseModel
+	 * @return array|Model
 	 */
 	public static function expandModelsInArray($arr)
 	{

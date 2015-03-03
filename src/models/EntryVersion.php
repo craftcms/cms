@@ -25,7 +25,7 @@ class EntryVersion extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::populateModel()
+	 * @inheritDoc Model::populateModel()
 	 *
 	 * @param mixed $attributes
 	 *
@@ -65,7 +65,7 @@ class EntryVersion extends BaseEntryRevisionModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

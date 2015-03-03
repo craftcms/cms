@@ -8,7 +8,7 @@
 namespace craft\app\elementactions;
 
 use craft\app\components\BaseComponentType;
-use craft\app\models\BaseModel;
+use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Params as ParamsModel;
 
@@ -54,7 +54,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	/**
 	 * @inheritDoc ElementActionInterface::getParams()
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public function getParams()
 	{
@@ -69,7 +69,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	/**
 	 * @inheritDoc ElementActionInterface::setParams()
 	 *
-	 * @param array|BaseModel $values
+	 * @param array|Model $values
 	 *
 	 * @return null
 	 */
@@ -77,7 +77,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	{
 		if ($values)
 		{
-			if ($values instanceof BaseModel)
+			if ($values instanceof Model)
 			{
 				$this->_params = $values;
 			}
@@ -138,7 +138,7 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	/**
 	 * Returns the params model.
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	protected function getParamsModel()
 	{

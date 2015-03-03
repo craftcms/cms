@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetSource as AssetSourceModel;
@@ -18,7 +19,7 @@ use craft\app\models\AssetSource as AssetSourceModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFolder extends BaseModel
+class AssetFolder extends Model
 {
 	// Properties
 	// =========================================================================
@@ -95,7 +96,7 @@ class AssetFolder extends BaseModel
 	}
 
 	/**
-	 * @inheritDoc BaseModel::setAttribute()
+	 * @inheritDoc Model::setAttribute()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
@@ -112,7 +113,7 @@ class AssetFolder extends BaseModel
 	}
 
 	/**
-	 * @inheritDoc BaseModel::getAttribute()
+	 * @inheritDoc Model::getAttribute()
 	 *
 	 * @param string $name
 	 * @param bool   $flattenValue
@@ -135,7 +136,7 @@ class AssetFolder extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

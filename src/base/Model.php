@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\models;
+namespace craft\app\base;
 
 use Craft;
 use craft\app\dates\DateTime;
@@ -15,7 +15,6 @@ use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\UnknownMethodException;
-use yii\db\ActiveRecord;
 
 /**
  * Model base class.
@@ -23,7 +22,7 @@ use yii\db\ActiveRecord;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseModel extends \yii\base\Model
+abstract class Model extends \yii\base\Model
 {
 	// Properties
 	// =========================================================================
@@ -66,7 +65,7 @@ abstract class BaseModel extends \yii\base\Model
 	 *
 	 * @param mixed $attributes
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public function __construct($attributes = null)
 	{
@@ -122,7 +121,7 @@ abstract class BaseModel extends \yii\base\Model
 	 * @param string $name
 	 * @param array  $arguments
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 * @throws UnknownMethodException when calling an unknown method, if [[$strictAttributes]] isn’t enabled.
 	 */
 	public function __call($name, $arguments)
@@ -178,7 +177,7 @@ abstract class BaseModel extends \yii\base\Model
 	 *
 	 * @param mixed $values
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public static function populateModel($values)
 	{
@@ -458,7 +457,7 @@ abstract class BaseModel extends \yii\base\Model
 			$values = $model->getAttributes();
 
 			// Is this a record?
-			if ($model instanceof ActiveRecord)
+			if ($model instanceof \yii\db\ActiveRecord)
 			{
 				// See if any of this model's attributes map to eager-loaded relations on the record
 				foreach ($this->attributeNames() as $name)
@@ -547,7 +546,7 @@ abstract class BaseModel extends \yii\base\Model
 	/**
 	 * Returns a copy of this model.
 	 *
-	 * @return BaseModel
+	 * @return Model
 	 */
 	public function copy()
 	{
@@ -568,7 +567,7 @@ abstract class BaseModel extends \yii\base\Model
 	 */
 	public function getError($attribute)
 	{
-		Craft::$app->deprecator->log('BaseModel::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
+		Craft::$app->deprecator->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
 		return $this->getFirstError($attribute);
 	}
 

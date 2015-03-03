@@ -6,7 +6,9 @@
  */
 
 namespace craft\app\models;
+
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
@@ -17,7 +19,7 @@ use craft\app\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Content extends BaseModel
+class Content extends Model
 {
 	// Properties
 	// =========================================================================
@@ -36,7 +38,7 @@ class Content extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::getAttributeConfigs()
+	 * @inheritDoc Model::getAttributeConfigs()
 	 *
 	 * @return array
 	 */
@@ -141,7 +143,7 @@ class Content extends BaseModel
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

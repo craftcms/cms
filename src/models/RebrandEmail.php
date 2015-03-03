@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Model;
 use craft\app\enums\AttributeType;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -18,13 +19,13 @@ Craft::$app->requireEdition(Craft::Client);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RebrandEmail extends BaseModel
+class RebrandEmail extends Model
 {
 	// Protected Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseModel::defineAttributes()
+	 * @inheritDoc Model::defineAttributes()
 	 *
 	 * @return array
 	 */

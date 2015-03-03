@@ -7,13 +7,15 @@
 
 namespace craft\app\records;
 
+use craft\app\db\ActiveRecord;
+
 /**
  * Category record.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Category extends BaseRecord
+class Category extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
