@@ -740,7 +740,7 @@ trait ApplicationTrait
 		if ($this->getUser()->enableSession)
 		{
 			$fileTarget = new FileTarget();
-			$fileTarget->logFile = Craft::getAlias('@runtime/logs/craft.log');
+			$fileTarget->logFile = Craft::getAlias('@storage/logs/craft.log');
 			$fileTarget->fileMode = Craft::$app->config->get('defaultFilePermissions');
 			$fileTarget->dirMode = Craft::$app->config->get('defaultFolderPermissions');
 
