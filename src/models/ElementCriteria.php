@@ -25,6 +25,180 @@ class ElementCriteria extends Model implements \Countable
 	// =========================================================================
 
 	/**
+	 * @var integer Ancestor dist
+	 */
+	public $ancestorDist;
+
+	/**
+	 * @var array Ancestor of
+	 */
+	public $ancestorOf;
+
+	/**
+	 * @var boolean Archived
+	 */
+	public $archived = false;
+
+	/**
+	 * @var array Date created
+	 */
+	public $dateCreated;
+
+	/**
+	 * @var array Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var integer Descendant dist
+	 */
+	public $descendantDist;
+
+	/**
+	 * @var array Descendant of
+	 */
+	public $descendantOf;
+
+	/**
+	 * @var boolean Fixed order
+	 */
+	public $fixedOrder = false;
+
+	/**
+	 * @var integer ID
+	 */
+	public $id;
+
+	/**
+	 * @var string Index by
+	 */
+	public $indexBy;
+
+	/**
+	 * @var integer Level
+	 */
+	public $level;
+
+	/**
+	 * @var integer Limit
+	 */
+	public $limit = 100;
+
+	/**
+	 * @var string Locale
+	 */
+	public $locale;
+
+	/**
+	 * @var boolean Locale enabled
+	 */
+	public $localeEnabled = true;
+
+	/**
+	 * @var array Next sibling of
+	 */
+	public $nextSiblingOf;
+
+	/**
+	 * @var integer Offset
+	 */
+	public $offset = 0;
+
+	/**
+	 * @var string Order
+	 */
+	public $order = 'elements.dateCreated desc';
+
+	/**
+	 * @var array Positioned after
+	 */
+	public $positionedAfter;
+
+	/**
+	 * @var array Positioned before
+	 */
+	public $positionedBefore;
+
+	/**
+	 * @var array Prev sibling of
+	 */
+	public $prevSiblingOf;
+
+	/**
+	 * @var array Related to
+	 */
+	public $relatedTo;
+
+	/**
+	 * @var string Ref
+	 */
+	public $ref;
+
+	/**
+	 * @var string Search
+	 */
+	public $search;
+
+	/**
+	 * @var array Sibling of
+	 */
+	public $siblingOf;
+
+	/**
+	 * @var string Slug
+	 */
+	public $slug;
+
+	/**
+	 * @var string Status
+	 */
+	public $status = 'enabled';
+
+	/**
+	 * @var string Title
+	 */
+	public $title;
+
+	/**
+	 * @var string URI
+	 */
+	public $uri;
+
+	/**
+	 * @var array Kind
+	 */
+	public $kind;
+
+	// TODO: Deprecated. Remove these in Craft 4
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @var string Child field
+	 */
+	public $childField;
+
+	/**
+	 * @var array Child of
+	 */
+	public $childOf;
+
+	/**
+	 * @var integer Depth
+	 */
+	public $depth;
+
+	/**
+	 * @var string Parent field
+	 */
+	public $parentField;
+
+	/**
+	 * @var array Parent of
+	 */
+	public $parentOf;
+
+
+	/**
 	 * @var bool Whether this model should be strict about only allowing values to be set on defined attributes
 	 */
 	protected $strictAttributes = false;
@@ -61,6 +235,24 @@ class ElementCriteria extends Model implements \Countable
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['ancestorDist'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['descendantDist'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['level'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['limit'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['offset'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['depth'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['ancestorDist', 'ancestorOf', 'archived', 'dateCreated', 'dateUpdated', 'descendantDist', 'descendantOf', 'fixedOrder', 'id', 'indexBy', 'level', 'limit', 'locale', 'localeEnabled', 'nextSiblingOf', 'offset', 'order', 'positionedAfter', 'positionedBefore', 'prevSiblingOf', 'relatedTo', 'ref', 'search', 'siblingOf', 'slug', 'status', 'title', 'uri', 'kind', 'childField', 'childOf', 'depth', 'parentField', 'parentOf'], 'safe', 'on' => 'search'],
+		];
+	}
 
 	/**
 	 * Constructor
@@ -401,62 +593,6 @@ class ElementCriteria extends Model implements \Countable
 			$this->_matchedElementsAtOffsets[$offset] = $element;
 			$offset++;
 		}
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes = [
-			'ancestorDist'     => AttributeType::Number,
-			'ancestorOf'       => AttributeType::Mixed,
-			'archived'         => AttributeType::Bool,
-			'dateCreated'      => AttributeType::Mixed,
-			'dateUpdated'      => AttributeType::Mixed,
-			'descendantDist'   => AttributeType::Number,
-			'descendantOf'     => AttributeType::Mixed,
-			'fixedOrder'       => AttributeType::Bool,
-			'id'               => AttributeType::Number,
-			'indexBy'          => AttributeType::String,
-			'level'            => AttributeType::Number,
-			'limit'            => [AttributeType::Number, 'default' => 100],
-			'locale'           => AttributeType::Locale,
-			'localeEnabled'    => [AttributeType::Bool, 'default' => true],
-			'nextSiblingOf'    => AttributeType::Mixed,
-			'offset'           => [AttributeType::Number, 'default' => 0],
-			'order'            => [AttributeType::String, 'default' => 'elements.dateCreated desc'],
-			'positionedAfter'  => AttributeType::Mixed,
-			'positionedBefore' => AttributeType::Mixed,
-			'prevSiblingOf'    => AttributeType::Mixed,
-			'relatedTo'        => AttributeType::Mixed,
-			'ref'              => AttributeType::String,
-			'search'           => AttributeType::String,
-			'siblingOf'        => AttributeType::Mixed,
-			'slug'             => AttributeType::String,
-			'status'           => [AttributeType::String, 'default' => BaseElementModel::ENABLED],
-			'title'            => AttributeType::String,
-			'uri'              => AttributeType::String,
-			'kind'             => AttributeType::Mixed,
-
-			// TODO: Deprecated. Remove these in Craft 4
-			'childField'       => AttributeType::String,
-			'childOf'          => AttributeType::Mixed,
-			'depth'            => AttributeType::Number,
-			'parentField'      => AttributeType::String,
-			'parentOf'         => AttributeType::Mixed,
-		];
-
-		// Mix in any custom attributes defined by the element type
-		$elementTypeAttributes = $this->_elementType->defineCriteriaAttributes();
-		$attributes = array_merge($attributes, $elementTypeAttributes);
-
-		return $attributes;
 	}
 
 	// Private Methods
