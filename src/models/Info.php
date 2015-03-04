@@ -87,6 +87,16 @@ class Info extends Model
 	 */
 	public $uid;
 
+	/**
+	 * @var \DateTime Date updated
+	 */
+	public $dateUpdated;
+
+	/**
+	 * @var \DateTime Date created
+	 */
+	public $dateCreated;
+
 	// Public Methods
 	// =========================================================================
 
