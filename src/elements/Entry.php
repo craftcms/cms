@@ -46,7 +46,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -56,7 +56,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasTitles()
+	 * @inheritDoc ElementInterface::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -66,7 +66,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::isLocalized()
+	 * @inheritDoc ElementInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -76,7 +76,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasStatuses()
+	 * @inheritDoc ElementInterface::hasStatuses()
 	 *
 	 * @return bool
 	 */
@@ -86,7 +86,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getStatuses()
+	 * @inheritDoc ElementInterface::getStatuses()
 	 *
 	 * @return array|null
 	 */
@@ -101,7 +101,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getSources()
+	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param null $context
 	 *
@@ -187,7 +187,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getAvailableActions()
+	 * @inheritDoc ElementInterface::getAvailableActions()
 	 *
 	 * @param string|null $source
 	 *
@@ -342,7 +342,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSortableAttributes()
+	 * @inheritDoc ElementInterface::defineSortableAttributes()
 	 *
 	 * @retrun array
 	 */
@@ -362,7 +362,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
+	 * @inheritDoc ElementInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -393,7 +393,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getTableAttributeHtml()
+	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
 	 * @param string           $attribute
@@ -425,7 +425,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -449,7 +449,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
+	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
 	 *
 	 * @param Query  $query
 	 * @param string $status
@@ -494,7 +494,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -693,7 +693,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -705,7 +705,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getEditorHtml()
+	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -770,7 +770,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::onAfterMoveElementInStructure()
+	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
 	 *
 	 * @param BaseElementModel $element
 	 * @param int              $structureId

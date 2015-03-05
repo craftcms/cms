@@ -39,7 +39,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -49,7 +49,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::isLocalized()
+	 * @inheritDoc ElementInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -59,7 +59,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -75,7 +75,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getContentTableForElementsQuery()
+	 * @inheritDoc ElementInterface::getContentTableForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -104,7 +104,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getFieldsForElementsQuery()
+	 * @inheritDoc ElementInterface::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -129,7 +129,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -165,7 +165,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *

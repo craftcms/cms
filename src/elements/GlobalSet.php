@@ -38,7 +38,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::isLocalized()
+	 * @inheritDoc ElementInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -58,7 +58,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -71,7 +71,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -91,7 +91,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *

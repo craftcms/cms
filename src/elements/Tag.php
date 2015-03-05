@@ -38,7 +38,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -48,7 +48,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasTitles()
+	 * @inheritDoc ElementInterface::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -58,7 +58,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::isLocalized()
+	 * @inheritDoc ElementInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -68,7 +68,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getSources()
+	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param string|null $context
 	 *
@@ -92,7 +92,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
+	 * @inheritDoc ElementInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -106,7 +106,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -123,7 +123,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -168,7 +168,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -180,7 +180,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getEditorHtml()
+	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -208,7 +208,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::saveElement()
+	 * @inheritDoc ElementInterface::saveElement()
 	 *
 	 * @param BaseElementModel $element
 	 * @param array            $params

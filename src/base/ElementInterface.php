@@ -5,10 +5,11 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\app\base;
 
 use craft\app\components\ComponentTypeInterface;
 use craft\app\db\Query;
+use craft\app\elements\The;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
@@ -20,7 +21,7 @@ use craft\app\models\Field as FieldModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface ElementTypeInterface
+interface ElementInterface
 {
 	// Public Methods
 	// =========================================================================

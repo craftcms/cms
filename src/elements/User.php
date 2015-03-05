@@ -39,7 +39,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -75,7 +75,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getSources()
+	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param string|null $context
 	 *
@@ -108,7 +108,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getAvailableActions()
+	 * @inheritDoc ElementInterface::getAvailableActions()
 	 *
 	 * @param string|null $source
 	 *
@@ -152,7 +152,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
+	 * @inheritDoc ElementInterface::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -162,7 +162,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSortableAttributes()
+	 * @inheritDoc ElementInterface::defineSortableAttributes()
 	 *
 	 * @retrun array
 	 */
@@ -197,7 +197,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
+	 * @inheritDoc ElementInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -234,7 +234,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getTableAttributeHtml()
+	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
 	 * @param string           $attribute
@@ -275,7 +275,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -299,7 +299,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
+	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
 	 *
 	 * @param Query  $query
 	 * @param string $status
@@ -338,7 +338,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -490,7 +490,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -502,7 +502,7 @@ class User extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getEditorHtml()
+	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *

@@ -11,7 +11,6 @@ use Craft;
 use craft\app\components\BaseComponentType;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
-use craft\app\elements\ElementTypeInterface;
 use craft\app\helpers\HtmlHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -25,7 +24,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Element extends Component implements ElementTypeInterface
+abstract class Element extends Component implements ElementInterface
 {
 	// Properties
 	// =========================================================================
@@ -42,7 +41,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasContent()
+	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -52,7 +51,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasTitles()
+	 * @inheritDoc ElementInterface::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -62,7 +61,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::isLocalized()
+	 * @inheritDoc ElementInterface::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -72,7 +71,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::hasStatuses()
+	 * @inheritDoc ElementInterface::hasStatuses()
 	 *
 	 * @return bool
 	 */
@@ -82,7 +81,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getStatuses()
+	 * @inheritDoc ElementInterface::getStatuses()
 	 *
 	 * @return array|null
 	 */
@@ -95,7 +94,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getSources()
+	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param null $context
 	 *
@@ -107,7 +106,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getSource()
+	 * @inheritDoc ElementInterface::getSource()
 	 *
 	 * @param string $key
 	 * @param null   $context
@@ -127,7 +126,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getAvailableActions()
+	 * @inheritDoc ElementInterface::getAvailableActions()
 	 *
 	 * @param string|null $source
 	 *
@@ -139,7 +138,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSearchableAttributes()
+	 * @inheritDoc ElementInterface::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -152,7 +151,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getIndexHtml()
+	 * @inheritDoc ElementInterface::getIndexHtml()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 * @param array                $disabledElementIds
@@ -242,7 +241,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineSortableAttributes()
+	 * @inheritDoc ElementInterface::defineSortableAttributes()
 	 *
 	 * @retrun array
 	 */
@@ -252,7 +251,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineTableAttributes()
+	 * @inheritDoc ElementInterface::defineTableAttributes()
 	 *
 	 * @param string|null $source
 	 *
@@ -264,7 +263,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getTableAttributeHtml()
+	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
 	 * @param string           $attribute
@@ -327,7 +326,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::defineCriteriaAttributes()
+	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -340,7 +339,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	// -----------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getContentTableForElementsQuery()
+	 * @inheritDoc ElementInterface::getContentTableForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -352,7 +351,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getFieldsForElementsQuery()
+	 * @inheritDoc ElementInterface::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
@@ -375,7 +374,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getElementQueryStatusCondition()
+	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
 	 *
 	 * @param Query  $query
 	 * @param string $status
@@ -387,7 +386,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::modifyElementsQuery()
+	 * @inheritDoc ElementInterface::modifyElementsQuery()
 	 *
 	 * @param Query                $query
 	 * @param ElementCriteriaModel $criteria
@@ -401,7 +400,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	// Element methods
 
 	/**
-	 * @inheritDoc ElementTypeInterface::populateElementModel()
+	 * @inheritDoc ElementInterface::populateElementModel()
 	 *
 	 * @param array $row
 	 *
@@ -412,7 +411,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getEditorHtml()
+	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -448,7 +447,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::saveElement()
+	 * @inheritDoc ElementInterface::saveElement()
 	 *
 	 * @param BaseElementModel $element
 	 * @param array            $params
@@ -461,7 +460,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::getElementRoute()
+	 * @inheritDoc ElementInterface::getElementRoute()
 	 *
 	 * @param BaseElementModel $element
 	 *
@@ -473,7 +472,7 @@ abstract class Element extends Component implements ElementTypeInterface
 	}
 
 	/**
-	 * @inheritDoc ElementTypeInterface::onAfterMoveElementInStructure()
+	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
 	 *
 	 * @param BaseElementModel $element
 	 * @param int              $structureId

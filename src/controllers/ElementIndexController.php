@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\elementactions\ElementActionInterface;
-use craft\app\elements\ElementTypeInterface;
+use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
@@ -27,7 +27,7 @@ class ElementIndexController extends BaseElementsController
 	// =========================================================================
 
 	/**
-	 * @var ElementTypeInterface
+	 * @var ElementInterface
 	 */
 	private $_elementType;
 

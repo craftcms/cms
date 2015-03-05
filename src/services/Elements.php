@@ -13,7 +13,7 @@ use craft\app\db\FixedOrderExpression;
 use craft\app\db\Query;
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elements\db\ElementRelationParamParser;
-use craft\app\elements\ElementTypeInterface;
+use craft\app\base\ElementInterface;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
@@ -1782,7 +1782,7 @@ class Elements extends Component
 	/**
 	 * Returns all installed element types.
 	 *
-	 * @return ElementTypeInterface[] The installed element types.
+	 * @return ElementInterface[] The installed element types.
 	 */
 	public function getAllElementTypes()
 	{
@@ -1794,7 +1794,7 @@ class Elements extends Component
 	 *
 	 * @param string $class The element type class handle.
 	 *
-	 * @return ElementTypeInterface The element type, or `null`.
+	 * @return ElementInterface The element type, or `null`.
 	 */
 	public function getElementType($class)
 	{
@@ -1819,7 +1819,7 @@ class Elements extends Component
 	 *
 	 * @param string $class The element action class handle.
 	 *
-	 * @return ElementTypeInterface|null The element action, or `null`.
+	 * @return ElementInterface|null The element action, or `null`.
 	 */
 	public function getAction($class)
 	{
