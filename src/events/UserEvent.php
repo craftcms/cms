@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\User;
+
 /**
  * User event class.
  *
@@ -19,7 +21,7 @@ class UserEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\User The user model associated with the event.
+	 * @var User The user model associated with the event.
 	 */
 	public $user;
 }

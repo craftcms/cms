@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\User;
+
 /**
  * Delete user event class.
  *
@@ -19,7 +21,7 @@ class DeleteUserEvent extends UserEvent
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\User The user model that the deleted user's content is getting transfered to.
+	 * @var User The user model that the deleted user's content is getting transfered to.
 	 */
 	public $transferContentTo;
 }

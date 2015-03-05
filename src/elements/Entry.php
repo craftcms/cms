@@ -20,7 +20,6 @@ use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\Entry as EntryModel;
 use craft\app\models\EntryType as EntryTypeModel;
 use craft\app\models\Section as SectionModel;
 
@@ -32,18 +31,53 @@ use craft\app\models\Section as SectionModel;
  */
 class Entry extends Element
 {
-	// Public Methods
+	// Constants
+	// =========================================================================
+
+	const LIVE     = 'live';
+	const PENDING  = 'pending';
+	const EXPIRED  = 'expired';
+
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @var integer Section ID
 	 */
-	public static function getName()
-	{
-		return Craft::t('app', 'Entries');
-	}
+	public $sectionId;
+
+	/**
+	 * @var integer Type ID
+	 */
+	public $typeId;
+
+	/**
+	 * @var integer Author ID
+	 */
+	public $authorId;
+
+	/**
+	 * @var \DateTime Post date
+	 */
+	public $postDate;
+
+	/**
+	 * @var \DateTime Expiry date
+	 */
+	public $expiryDate;
+
+	/**
+	 * @var integer New parent ID
+	 */
+	public $newParentId;
+
+	/**
+	 * @var string Revision notes
+	 */
+	public $revisionNotes;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()
@@ -93,9 +127,9 @@ class Entry extends Element
 	public static function getStatuses()
 	{
 		return [
-			EntryModel::LIVE => Craft::t('app', 'Live'),
-			EntryModel::PENDING => Craft::t('app', 'Pending'),
-			EntryModel::EXPIRED => Craft::t('app', 'Expired'),
+			Entry::LIVE => Craft::t('app', 'Live'),
+			Entry::PENDING => Craft::t('app', 'Pending'),
+			Entry::EXPIRED => Craft::t('app', 'Expired'),
 			BaseElementModel::DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
@@ -443,7 +477,7 @@ class Entry extends Element
 			'postDate'        => AttributeType::Mixed,
 			'section'         => AttributeType::Mixed,
 			'sectionId'       => AttributeType::Number,
-			'status'          => [AttributeType::String, 'default' => EntryModel::LIVE],
+			'status'          => [AttributeType::String, 'default' => Entry::LIVE],
 			'type'            => AttributeType::Mixed,
 		];
 	}
@@ -462,7 +496,7 @@ class Entry extends Element
 
 		switch ($status)
 		{
-			case EntryModel::LIVE:
+			case Entry::LIVE:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -472,7 +506,7 @@ class Entry extends Element
 				];
 			}
 
-			case EntryModel::PENDING:
+			case Entry::PENDING:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -481,7 +515,7 @@ class Entry extends Element
 				];
 			}
 
-			case EntryModel::EXPIRED:
+			case Entry::EXPIRED:
 			{
 				return ['and',
 					'elements.enabled = 1',
@@ -701,7 +735,7 @@ class Entry extends Element
 	 */
 	public static function populateElementModel($row)
 	{
-		return EntryModel::populateModel($row);
+		return Entry::populateModel($row);
 	}
 
 	/**
@@ -750,7 +784,7 @@ class Entry extends Element
 	public static function getElementRoute(BaseElementModel $element)
 	{
 		// Make sure that the entry is actually live
-		if ($element->getStatus() == EntryModel::LIVE)
+		if ($element->getStatus() == Entry::LIVE)
 		{
 			$section = $element->getSection();
 
@@ -785,6 +819,220 @@ class Entry extends Element
 		if ($section->type == SectionType::Structure && $section->structureId == $structureId)
 		{
 			Craft::$app->elements->updateElementSlugAndUri($element);
+		}
+	}
+
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		$rules[] = [['sectionId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['typeId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['authorId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['postDate'], 'craft\\app\\validators\\DateTime'];
+		$rules[] = [['expiryDate'], 'craft\\app\\validators\\DateTime'];
+		$rules[] = [['newParentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+
+		return $rules;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$entryType = $this->getType();
+
+		if ($entryType)
+		{
+			return $entryType->getFieldLayout();
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getLocales()
+	 *
+	 * @return array
+	 */
+	public function getLocales()
+	{
+		$locales = [];
+
+		foreach ($this->getSection()->getLocales() as $locale)
+		{
+			$locales[$locale->locale] = ['enabledByDefault' => $locale->enabledByDefault];
+		}
+
+		return $locales;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getUrlFormat()
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
+		$section = $this->getSection();
+
+		if ($section && $section->hasUrls)
+		{
+			$sectionLocales = $section->getLocales();
+
+			if (isset($sectionLocales[$this->locale]))
+			{
+				if ($this->level > 1)
+				{
+					return $sectionLocales[$this->locale]->nestedUrlFormat;
+				}
+				else
+				{
+					return $sectionLocales[$this->locale]->urlFormat;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns the reference string to this element.
+	 *
+	 * @return string|null
+	 */
+	public function getRef()
+	{
+		return $this->getSection()->handle.'/'.$this->slug;
+	}
+
+	/**
+	 * Returns the entry's section.
+	 *
+	 * @return SectionModel|null
+	 */
+	public function getSection()
+	{
+		if ($this->sectionId)
+		{
+			return Craft::$app->sections->getSectionById($this->sectionId);
+		}
+	}
+
+	/**
+	 * Returns the type of entry.
+	 *
+	 * @return EntryTypeModel|null
+	 */
+	public function getType()
+	{
+		$section = $this->getSection();
+
+		if ($section)
+		{
+			$sectionEntryTypes = $section->getEntryTypes('id');
+
+			if ($sectionEntryTypes)
+			{
+				if ($this->typeId && isset($sectionEntryTypes[$this->typeId]))
+				{
+					return $sectionEntryTypes[$this->typeId];
+				}
+				else
+				{
+					// Just return the first one
+					return ArrayHelper::getFirstValue($sectionEntryTypes);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns the entry's author.
+	 *
+	 * @return UserModel|null
+	 */
+	public function getAuthor()
+	{
+		if ($this->authorId)
+		{
+			return Craft::$app->users->getUserById($this->authorId);
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getStatus()
+	 *
+	 * @return string|null
+	 */
+	public function getStatus()
+	{
+		$status = parent::getStatus();
+
+		if ($status == static::ENABLED && $this->postDate)
+		{
+			$currentTime = DateTimeHelper::currentTimeStamp();
+			$postDate    = $this->postDate->getTimestamp();
+			$expiryDate  = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+
+			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
+			{
+				return static::LIVE;
+			}
+			else if ($postDate > $currentTime)
+			{
+				return static::PENDING;
+			}
+			else
+			{
+				return static::EXPIRED;
+			}
+		}
+
+		return $status;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return (
+			Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
+				$this->authorId == Craft::$app->getUser()->getIdentity()->id ||
+				Craft::$app->getUser()->checkPermission('publishPeerEntries:'.$this->sectionId) ||
+				$this->getSection()->type == SectionType::Single
+			)
+		);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		$section = $this->getSection();
+
+		if ($section)
+		{
+			// The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
+			$url = UrlHelper::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+
+			if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language)
+			{
+				$url .= '/'.$this->locale;
+			}
+
+			return $url;
 		}
 	}
 }

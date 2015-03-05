@@ -15,7 +15,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\elements\Asset;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
@@ -86,12 +86,12 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @return mixed
 	 */
 
-	public function getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(Asset $file)
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 
@@ -288,12 +288,12 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * Get the timestamp of when a file transform was last modified.
 	 *
-	 * @param AssetFileModel $fileModel
-	 * @param string         $transformLocation
+	 * @param Asset  $fileModel
+	 * @param string $transformLocation
 	 *
 	 * @return mixed
 	 */
-	public function getTimeTransformModified(AssetFileModel $fileModel, $transformLocation)
+	public function getTimeTransformModified(Asset $fileModel, $transformLocation)
 	{
 		$folder = $fileModel->getFolder();
 		$path = $this->_getPathPrefix().$folder->path.$transformLocation.'/'.$fileModel->filename;
@@ -311,11 +311,11 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFileModel $file)
+	public function getImageSourcePath(Asset $file)
 	{
 		return Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
@@ -323,12 +323,12 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * Return true if a transform exists at the location for a file.
 	 *
-	 * @param AssetFileModel $file
-	 * @param                $location
+	 * @param Asset $file
+	 * @param       $location
 	 *
 	 * @return mixed
 	 */
-	public function transformExists(AssetFileModel $file, $location)
+	public function transformExists(Asset $file, $location)
 	{
 		$this->_prepareForRequests();
 		return (bool) @$this->_googleCloud->getObjectInfo($this->getSettings()->bucket, $this->_getPathPrefix().$file->getFolder()->path.$location.'/'.$file->filename);
@@ -396,7 +396,7 @@ class GoogleCloud extends BaseAssetSourceType
 	 * @param string           $fileName
 	 *
 	 * @throws Exception
-	 * @return AssetFileModel
+	 * @return Asset
 	 */
 	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
@@ -483,14 +483,14 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFileModel   $file
+	 * @param Asset            $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
 	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(Asset $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -643,13 +643,13 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFileModel           $file
+	 * @param Asset                    $file
 	 * @param AssetTransformIndexModel $index
 	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
-	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
+	public function putImageTransform(Asset $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$this->_prepareForRequests();
 		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
@@ -748,12 +748,12 @@ class GoogleCloud extends BaseAssetSourceType
 	/**
 	 * Get a file's S3 path.
 	 *
-	 * @param AssetFileModel $file
-	 * @param                $settings The source settings to use
+	 * @param Asset $file
+	 * @param       $settings The source settings to use
 	 *
 	 * @return string
 	 */
-	private function _getGCPath(AssetFileModel $file, $settings = null)
+	private function _getGCPath(Asset $file, $settings = null)
 	{
 		$folder = $file->getFolder();
 		return $this->_getPathPrefix($settings).$folder->path.$file->filename;

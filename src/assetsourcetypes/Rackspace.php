@@ -14,7 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\elements\Asset;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
@@ -290,11 +290,11 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getImageSourcePath()
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @return mixed
 	 */
-	public function getImageSourcePath(AssetFileModel $file)
+	public function getImageSourcePath(Asset $file)
 	{
 		return Craft::$app->path->getAssetsImageSourcePath().'/'.$file->id.'.'.IOHelper::getExtension($file->filename);
 	}
@@ -302,13 +302,13 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::putImageTransform()
 	 *
-	 * @param AssetFileModel           $file
+	 * @param Asset                    $file
 	 * @param AssetTransformIndexModel $index
 	 * @param string                   $sourceImage
 	 *
 	 * @return mixed
 	 */
-	public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage)
+	public function putImageTransform(Asset $file, AssetTransformIndexModel $index, $sourceImage)
 	{
 		$targetFile = $this->_getPathPrefix().$file->getFolder()->path.Craft::$app->assetTransforms->getTransformSubpath($file, $index);
 
@@ -327,12 +327,12 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::getLocalCopy()
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @return mixed
 	 */
 
-	public function getLocalCopy(AssetFileModel $file)
+	public function getLocalCopy(Asset $file)
 	{
 		$location = AssetsHelper::getTempFilePath($file->getExtension());
 		$this->_downloadFile($this->_getRackspacePath($file), $location);
@@ -440,7 +440,7 @@ class Rackspace extends BaseAssetSourceType
 	 * @param string      $fileName
 	 *
 	 * @throws Exception
-	 * @return AssetFileModel
+	 * @return Asset
 	 */
 	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
@@ -495,14 +495,14 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * @inheritDoc BaseAssetSourceType::moveSourceFile()
 	 *
-	 * @param AssetFileModel   $file
+	 * @param Asset            $file
 	 * @param AssetFolderModel $targetFolder
 	 * @param string           $fileName
 	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(Asset $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
 	{
 		if (empty($fileName))
 		{
@@ -1268,11 +1268,11 @@ class Rackspace extends BaseAssetSourceType
 	/**
 	 * Get a file's Rackspace path.
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @return string
 	 */
-	private function _getRackspacePath(AssetFileModel $file)
+	private function _getRackspacePath(Asset $file)
 	{
 		$folder = $file->getFolder();
 

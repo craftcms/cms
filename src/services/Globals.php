@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\GlobalSetEvent;
-use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\elements\GlobalSet;
 use craft\app\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
 
@@ -204,7 +204,7 @@ class Globals extends Component
 	 * @param int         $globalSetId
 	 * @param string|null $localeId
 	 *
-	 * @return GlobalSetModel|null
+	 * @return GlobalSet|null
 	 */
 	public function getSetById($globalSetId, $localeId = null)
 	{
@@ -237,7 +237,7 @@ class Globals extends Component
 	 * @param int         $globalSetHandle
 	 * @param string|null $localeId
 	 *
-	 * @return GlobalSetModel|null
+	 * @return GlobalSet|null
 	 */
 	public function getSetByHandle($globalSetHandle, $localeId = null)
 	{
@@ -270,13 +270,13 @@ class Globals extends Component
 	/**
 	 * Saves a global set.
 	 *
-	 * @param GlobalSetModel $globalSet
+	 * @param GlobalSet $globalSet
 	 *
 	 * @return bool
 	 * @throws Exception
 	 * @throws \Exception
 	 */
-	public function saveSet(GlobalSetModel $globalSet)
+	public function saveSet(GlobalSet $globalSet)
 	{
 		$isNewSet = !$globalSet->id;
 
@@ -289,7 +289,7 @@ class Globals extends Component
 				throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
 			}
 
-			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
+			$oldSet = GlobalSet::populateModel($globalSetRecord);
 		}
 		else
 		{
@@ -406,12 +406,12 @@ class Globals extends Component
 	/**
 	 * Saves a global set's content
 	 *
-	 * @param GlobalSetModel $globalSet
+	 * @param GlobalSet $globalSet
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveContent(GlobalSetModel $globalSet)
+	public function saveContent(GlobalSet $globalSet)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 

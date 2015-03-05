@@ -9,7 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\enums\SectionType;
-use craft\app\models\Entry as EntryModel;
+use craft\app\elements\Entry;
 use craft\app\web\Controller;
 
 /**
@@ -29,11 +29,11 @@ abstract class BaseEntriesController extends Controller
 	/**
 	 * Enforces all Edit Entry permissions.
 	 *
-	 * @param EntryModel $entry
+	 * @param Entry $entry
 	 *
 	 * @return null
 	 */
-	protected function enforceEditEntryPermissions(EntryModel $entry)
+	protected function enforceEditEntryPermissions(Entry $entry)
 	{
 		$userSessionService = Craft::$app->getUser();
 		$permissionSuffix = ':'.$entry->sectionId;

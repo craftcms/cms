@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\Entry;
+
 /**
  * Entry event class.
  *
@@ -19,7 +21,7 @@ class EntryEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\Entry The entry model associated with the event.
+	 * @var Entry The entry model associated with the event.
 	 */
 	public $entry;
 }

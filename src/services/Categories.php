@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\CategoryEvent;
-use craft\app\models\Category as CategoryModel;
+use craft\app\elements\Category;
 use craft\app\models\CategoryGroup as CategoryGroupModel;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\models\Structure as StructureModel;
@@ -652,7 +652,7 @@ class Categories extends Component
 	 * @param int      $categoryId
 	 * @param int|null $localeId
 	 *
-	 * @return CategoryModel|null
+	 * @return Category|null
 	 */
 	public function getCategoryById($categoryId, $localeId = null)
 	{
@@ -662,12 +662,12 @@ class Categories extends Component
 	/**
 	 * Saves a category.
 	 *
-	 * @param CategoryModel $category
+	 * @param Category $category
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
 	 */
-	public function saveCategory(CategoryModel $category)
+	public function saveCategory(Category $category)
 	{
 		$isNewCategory = !$category->id;
 
@@ -804,7 +804,7 @@ class Categories extends Component
 	/**
 	 * Deletes a category(s).
 	 *
-	 * @param CategoryModel|array $categories
+	 * @param Category|array $categories
 	 *
 	 * @throws \Exception
 	 * @return bool
@@ -964,11 +964,11 @@ class Categories extends Component
 	/**
 	 * Checks if an category was submitted with a new parent category selected.
 	 *
-	 * @param CategoryModel $category
+	 * @param Category $category
 	 *
 	 * @return bool
 	 */
-	private function _checkForNewParent(CategoryModel $category)
+	private function _checkForNewParent(Category $category)
 	{
 		// Is it a brand new category?
 		if (!$category->id)

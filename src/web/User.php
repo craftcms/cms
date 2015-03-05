@@ -10,7 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -79,10 +79,10 @@ class User extends \yii\web\User
 	 * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
 	 * so that login forms can remember the initial Username value on login forms.
 	 *
-	 * @param UserModel $user
+	 * @param User $user
 	 * @see afterLogin()
 	 */
-	public function sendUsernameCookie(UserModel $user)
+	public function sendUsernameCookie(User $user)
 	{
 		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
 
@@ -364,7 +364,7 @@ class User extends \yii\web\User
 
 			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]))
 			{
-				$authData = UserModel::getAuthData($identityData[1]);
+				$authData = User::getAuthData($identityData[1]);
 
 				if ($authData)
 				{

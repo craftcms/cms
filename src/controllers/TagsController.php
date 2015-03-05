@@ -13,7 +13,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Tag;
+use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
 use craft\app\web\Controller;
 

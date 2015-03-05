@@ -18,7 +18,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\User;
+use craft\app\elements\User;
 use craft\app\services\Users;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;

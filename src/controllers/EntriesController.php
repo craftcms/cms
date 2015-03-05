@@ -15,7 +15,7 @@ use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\Entry;
+use craft\app\elements\Entry;
 use craft\app\variables\ElementType as ElementTypeVariable;
 
 /**

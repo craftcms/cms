@@ -14,7 +14,7 @@ use craft\app\errors\Exception;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\JsonHelper;
-use craft\app\models\Entry as EntryModel;
+use craft\app\elements\Entry;
 use craft\app\models\EntryDraft as EntryDraftModel;
 use craft\app\models\EntryVersion as EntryVersionModel;
 use craft\app\records\EntryDraft as EntryDraftRecord;
@@ -362,11 +362,11 @@ class EntryRevisions extends Component
 	/**
 	 * Saves a new version.
 	 *
-	 * @param EntryModel $entry
+	 * @param Entry $entry
 	 *
 	 * @return bool
 	 */
-	public function saveVersion(EntryModel $entry)
+	public function saveVersion(Entry $entry)
 	{
 		// Get the total number of existing versions for this entry/locale
 		$totalVersions = (new Query())

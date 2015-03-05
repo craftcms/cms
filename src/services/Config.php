@@ -15,7 +15,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
@@ -546,7 +546,7 @@ class Config extends Component
 	 * variables will won't be used.
 	 *
 	 * @todo Create a new getActivateAccountUrl() method (probably elsewhere, such as UrlHelper) which handles
-	 * everything that setting $full to `true` currently does here. The function should accept an actual UserModel
+	 * everything that setting $full to `true` currently does here. The function should accept an actual User
 	 * rather than their UID, for consistency with [[getSetPasswordPath()]]. Let this function continue working as a
 	 * wrapper for getActivateAccountUrl() for the time being, with deprecation logs.
 	 */
@@ -577,20 +577,20 @@ class Config extends Component
 	/**
 	 * Returns a user’s Set Password path with a given activation code and user’s UID.
 	 *
-	 * @param string    $code    The activation code.
-	 * @param string    $uid     The user’s UID.
-	 * @param UserModel $user The user.
-	 * @param bool      $full Whether a full URL should be returned. Defaults to `false`.
+	 * @param string $code    The activation code.
+	 * @param string $uid     The user’s UID.
+	 * @param User   $user The user.
+	 * @param bool   $full Whether a full URL should be returned. Defaults to `false`.
 	 *
 	 * @return string The Set Password path.
 	 *
 	 * @internal This is a little awkward in that the method is called getActivateAccount**Path**, but it's also capable
-	 * of returning a full **URL**. And it requires you pass in both a user’s UID *and* the UserModel - presumably we
-	 * could get away with just the UserModel and get the UID from that.
+	 * of returning a full **URL**. And it requires you pass in both a user’s UID *and* the User - presumably we
+	 * could get away with just the User and get the UID from that.
 	 *
 	 * @todo Create a new getSetPasswordUrl() method (probably elsewhere, such as UrlHelper) which handles
 	 * everything that setting $full to `true` currently does here. The function should not accetp a UID since that's
-	 * already covered by the UserModel. Let this function continue working as a wrapper for getSetPasswordUrl() for the
+	 * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
 	 * time being, with deprecation logs.
 	 */
 	public function getSetPasswordPath($code, $uid, $user, $full = false)

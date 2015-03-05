@@ -14,7 +14,7 @@ use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Category;
+use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
 use craft\app\variables\ElementType as ElementTypeVariable;

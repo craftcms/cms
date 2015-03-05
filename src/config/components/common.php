@@ -98,7 +98,7 @@ return [
 	],
 	'user' => [
 		'class'                    => 'craft\app\web\User',
-		'identityClass'            => 'craft\app\models\User',
+		'identityClass'            => 'craft\app\elements\User',
 		'enableAutoLogin'          => true,
 		'autoRenewCookie'          => true,
 	],

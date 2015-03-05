@@ -17,14 +17,14 @@ use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\models\Entry as EntryModel;
+use craft\app\elements\Entry;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\Info as InfoModel;
 use craft\app\models\Section as SectionModel;
 use craft\app\models\SectionLocale as SectionLocaleModel;
 use craft\app\models\TagGroup as TagGroupModel;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use craft\app\records\Migration as MigrationRecord;
 use yii\base\Component;
 
@@ -564,13 +564,13 @@ class Install extends Component
 	 * @param $inputs
 	 *
 	 * @throws Exception
-	 * @return UserModel
+	 * @return User
 	 */
 	private function _addUser($inputs)
 	{
 		Craft::info('Creating user.');
 
-		$this->_user = new UserModel();
+		$this->_user = new User();
 
 		$this->_user->username = $inputs['username'];
 		$this->_user->newPassword = $inputs['password'];
@@ -862,7 +862,7 @@ class Install extends Component
 
 		Craft::info('Creating a News entry.');
 
-		$newsEntry = new EntryModel();
+		$newsEntry = new Entry();
 		$newsEntry->sectionId  = $newsSection->id;
 		$newsEntry->typeId     = $newsEntryType->id;
 		$newsEntry->locale     = $inputs['locale'];

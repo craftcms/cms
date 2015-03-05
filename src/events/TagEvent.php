@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\Tag;
+
 /**
  * Tag event class.
  *
@@ -19,7 +21,7 @@ class TagEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\Tag The tag model associated with the event.
+	 * @var Tag The tag model associated with the event.
 	 */
 	public $tag;
 }

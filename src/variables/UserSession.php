@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 
 /**
  * User session functions.
@@ -33,7 +33,7 @@ class UserSession
 	/**
 	 * Returns the currently logged in user.
 	 *
-	 * @return UserModel|null
+	 * @return User|null
 	 */
 	public function getUser()
 	{

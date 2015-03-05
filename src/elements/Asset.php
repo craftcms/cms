@@ -12,10 +12,13 @@ use craft\app\base\Element;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
-use craft\app\models\AssetFile as AssetFileModel;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use Exception;
+use yii\base\ErrorHandler;
+use yii\base\InvalidCallException;
+use yii\base\UnknownPropertyException;
 
 /**
  * The Asset class is responsible for implementing and defining assets as a native element type in Craft.
@@ -25,18 +28,66 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  */
 class Asset extends Element
 {
-	// Public Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @var integer Source ID
 	 */
-	public static function getName()
-	{
-		return Craft::t('app', 'Assets');
-	}
+	public $sourceId;
+
+	/**
+	 * @var integer Folder ID
+	 */
+	public $folderId;
+
+	/**
+	 * @var string Filename
+	 */
+	public $filename;
+
+	/**
+	 * @var string Original name
+	 */
+	public $originalName;
+
+	/**
+	 * @var string Kind
+	 */
+	public $kind;
+
+	/**
+	 * @var integer Width
+	 */
+	public $width;
+
+	/**
+	 * @var integer Height
+	 */
+	public $height;
+
+	/**
+	 * @var integer Size
+	 */
+	public $size;
+
+	/**
+	 * @var \DateTime Date modified
+	 */
+	public $dateModified;
+
+	/**
+	 * @var
+	 */
+	private $_transform;
+
+	/**
+	 * @var string
+	 */
+	private $_transformSource = '';
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()
@@ -378,7 +429,7 @@ class Asset extends Element
 	 */
 	public static function populateElementModel($row)
 	{
-		return AssetFileModel::populateModel($row);
+		return Asset::populateModel($row);
 	}
 
 	/**
@@ -473,6 +524,359 @@ class Asset extends Element
 		return $success;
 	}
 
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public function __toString()
+	{
+		try
+		{
+			if (isset($this->_transform))
+			{
+				return $this->getUrl();
+			}
+			else
+			{
+				return parent::__toString();
+			}
+		}
+		catch (Exception $e)
+		{
+			ErrorHandler::convertExceptionToError($e);
+		}
+	}
+
+	/**
+	 * Checks if a property is set.
+	 *
+	 * This method will check if $name is one of the following:
+	 *
+	 * - a magic property supported by [[Element::__isset()]]
+	 * - an image transform handle
+	 *
+	 * @param string $name The property name
+	 * @return boolean Whether the property is set
+	 */
+	public function __isset($name)
+	{
+		if (parent::__isset($name) || Craft::$app->assetTransforms->getTransformByHandle($name))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Returns a property value.
+	 *
+	 * This method will check if $name is one of the following:
+	 *
+	 * - a magic property supported by [[Element::__get()]]
+	 * - an image transform handle
+	 *
+	 * @param string $name The property name
+	 * @return mixed The property value
+	 * @throws UnknownPropertyException if the property is not defined
+	 * @throws InvalidCallException if the property is write-only.
+	 */
+	public function __get($name)
+	{
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (UnknownPropertyException $e)
+		{
+			// Is $name a transform handle?
+			$transform = Craft::$app->assetTransforms->getTransformByHandle($name);
+
+			if ($transform)
+			{
+				// Duplicate this model and set it to that transform
+				$model = new Asset();
+
+				// Can't just use attributes() here because we'll get thrown into an infinite loop.
+				foreach ($this->attributes() as $attributeName)
+				{
+					$model->$attributeName = $this->$attributeName;
+				}
+
+				$model->setContent($this->getContent());
+				$model->setTransform($transform);
+
+				return $model;
+			}
+			else
+			{
+				throw $e;
+			}
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		$rules[] = [['sourceId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['folderId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['width'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['height'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['size'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['dateModified'], 'craft\\app\\validators\\DateTime'];
+
+		return $rules;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$source = $this->getSource();
+
+		if ($source->id)
+		{
+			return $source->getFieldLayout();
+		}
+		else
+		{
+			$folder = $this->getFolder();
+
+			if (preg_match('/field_([0-9]+)/', $folder->name, $matches))
+			{
+				$fieldId = $matches[1];
+				$field = Craft::$app->fields->getFieldById($fieldId);
+				$settings = $field->settings;
+
+				if ($settings['useSingleFolder'])
+				{
+					$sourceId = $settings['singleUploadLocationSource'];
+				}
+				else
+				{
+					$sourceId = $settings['defaultUploadLocationSource'];
+				}
+
+				$source = Craft::$app->assetSources->getSourceById($sourceId);
+
+				if ($source)
+				{
+					return $source->getFieldLayout();
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return Craft::$app->getUser()->checkPermission('uploadToAssetSource:'.$this->sourceId);
+	}
+
+	/**
+	 * Returns an <img> tag based on this asset.
+	 *
+	 * @return \Twig_Markup|null
+	 */
+	public function getImg()
+	{
+		if ($this->kind == 'image')
+		{
+			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
+			return TemplateHelper::getRaw($img);
+		}
+	}
+
+	/**
+	 * @return AssetFolder|null
+	 */
+	public function getFolder()
+	{
+		return Craft::$app->assets->getFolderById($this->folderId);
+	}
+
+	/**
+	 * @return AssetSourceModel|null
+	 */
+	public function getSource()
+	{
+		return Craft::$app->assetSources->getSourceById($this->sourceId);
+	}
+
+	/**
+	 * Sets the transform.
+	 *
+	 * @param mixed $transform
+	 *
+	 * @return Asset
+	 */
+	public function setTransform($transform)
+	{
+		$this->_transform = Craft::$app->assetTransforms->normalizeTransform($transform);
+		return $this;
+	}
+
+	/**
+	 * Returns the URL to the file.
+	 *
+	 * @param string|null $transform
+	 *
+	 * @return mixed
+	 */
+	public function getUrl($transform = null)
+	{
+		if ($transform === null && isset($this->_transform))
+		{
+			$transform = $this->_transform;
+		}
+
+		return Craft::$app->assets->getUrlForFile($this, $transform);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getThumbUrl()
+	 *
+	 * @param int $size
+	 *
+	 * @return string
+	 */
+	public function getThumbUrl($size = 125)
+	{
+		if ($this->hasThumb())
+		{
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, [
+				Craft::$app->resources->dateParam => $this->dateModified->getTimestamp()
+			]);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getIconUrl()
+	 *
+	 * @param int $size
+	 *
+	 * @return string
+	 */
+	public function getIconUrl($size = 125)
+	{
+		if ($this->hasThumb())
+		{
+			return false;
+		}
+		else
+		{
+			return UrlHelper::getResourceUrl('icons/'.$this->getExtension().'/'.$size);
+		}
+	}
+
+	/**
+	 * Does this file have a thumbnail?
+	 *
+	 * @return bool
+	 */
+	public function hasThumb()
+	{
+		if ($this->kind == 'image' && $this->height && $this->width)
+		{
+			// Gd doesn't process bitmaps
+			if ($this->getExtension() == 'bmp' && Craft::$app->images->isGd())
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the file extension.
+	 *
+	 * @return mixed
+	 */
+	public function getExtension()
+	{
+		return IOHelper::getExtension($this->filename);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMimeType()
+	{
+		return IOHelper::getMimeType($this->filename);
+	}
+
+	/**
+	 * Get image height.
+	 *
+	 * @param string|null $transform The optional transform handle for which to get thumbnail.
+	 *
+	 * @return bool|float|mixed
+	 */
+
+	public function getHeight($transform = null)
+	{
+		return $this->_getDimension('height', $transform);
+	}
+
+	/**
+	 * Get image width.
+	 *
+	 * @param string|null $transform The optional transform handle for which to get thumbnail.
+	 *
+	 * @return bool|float|mixed
+	 */
+	public function getWidth($transform = null)
+	{
+		return $this->_getDimension('width', $transform);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTransformSource()
+	{
+		if (!$this->_transformSource)
+		{
+			Craft::$app->assetTransforms->getLocalImageSource($this);
+		}
+
+		return $this->_transformSource;
+	}
+
+	/**
+	 * Set a source to use for transforms for this Assets File.
+	 *
+	 * @param $uri
+	 */
+	public function setTransformSource($uri)
+	{
+		$this->_transformSource = $uri;
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -519,5 +923,54 @@ class Asset extends Element
 		}
 
 		return $source;
+	}
+
+	/**
+	 * Return a dimension of the image.
+	 *
+	 * @param $dimension 'height' or 'width'
+	 * @param $transform
+	 *
+	 * @return null|float|mixed
+	 */
+	private function _getDimension($dimension, $transform)
+	{
+		if ($this->kind != 'image')
+		{
+			return null;
+		}
+
+		if ($transform === null && isset($this->_transform))
+		{
+			$transform = $this->_transform;
+		}
+
+		if (!$transform)
+		{
+			return $this->$dimension;
+		}
+
+		$transform = Craft::$app->assetTransforms->normalizeTransform($transform);
+
+		$dimensions = [
+			'width' => $transform->width,
+			'height' => $transform->height
+		];
+
+		if (!$transform->width || !$transform->height)
+		{
+			// Fill in the blank
+			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
+		}
+
+		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
+		if ($transform->mode == 'fit')
+		{
+			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);
+			$dimensions['width']  = round($this->_getWidth() / $factor);
+			$dimensions['height'] = round($this->_getHeight() / $factor);
+		}
+
+		return $dimensions[$dimension];
 	}
 }

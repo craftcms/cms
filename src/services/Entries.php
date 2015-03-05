@@ -13,7 +13,7 @@ use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\Entry as EntryModel;
+use craft\app\elements\Entry;
 use craft\app\records\Entry as EntryRecord;
 use yii\base\Component;
 
@@ -66,7 +66,7 @@ class Entries extends Component
 	 * @param string $localeId The locale to fetch the entry in.
 	 *                         Defaults to [[Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 *
-	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
+	 * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
@@ -77,7 +77,7 @@ class Entries extends Component
 	 * Saves a new or existing entry.
 	 *
 	 * ```php
-	 * $entry = new EntryModel();
+	 * $entry = new Entry();
 	 * $entry->sectionId = 10;
 	 * $entry->typeId    = 1;
 	 * $entry->authorId  = 5;
@@ -97,13 +97,13 @@ class Entries extends Component
 	 * }
 	 * ```
 	 *
-	 * @param EntryModel $entry The entry to be saved.
+	 * @param Entry $entry The entry to be saved.
 	 *
 	 * @return bool
 	 * @throws Exception
 	 * @throws \Exception
 	 */
-	public function saveEntry(EntryModel $entry)
+	public function saveEntry(Entry $entry)
 	{
 		$isNewEntry = !$entry->id;
 
@@ -313,7 +313,7 @@ class Entries extends Component
 	/**
 	 * Deletes an entry(s).
 	 *
-	 * @param EntryModel|EntryModel[] $entries An entry, or an array of entries, to be deleted.
+	 * @param Entry|Entry[] $entries An entry, or an array of entries, to be deleted.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the entry deletion was successful.
@@ -432,11 +432,11 @@ class Entries extends Component
 	/**
 	 * Checks if an entry was submitted with a new parent entry selected.
 	 *
-	 * @param EntryModel $entry
+	 * @param Entry $entry
 	 *
 	 * @return bool
 	 */
-	private function _checkForNewParent(EntryModel $entry)
+	private function _checkForNewParent(Entry $entry)
 	{
 		// Make sure this is a Structure section
 		if ($entry->getSection()->type != SectionType::Structure)

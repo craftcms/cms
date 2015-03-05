@@ -13,7 +13,7 @@ use craft\app\errors\Exception;
 use craft\app\events\EmailEvent;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Email as EmailModel;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use yii\base\Component;
 use yii\helpers\Markdown;
 
@@ -70,7 +70,7 @@ class Email extends Component
 	 * [[\yii\helpers\Markdown::process() Markdown]].
 	 *
 	 * Both the plain text and HTML bodies of the email will be rendered with Twig. A `user` variable will be available
-	 * to them, which will be set to a [[UserModel]] representing the user that the email is getting sent to
+	 * to them, which will be set to a [[User]] representing the user that the email is getting sent to
 	 * (identified by the EmailModel’s [[EmailModel::toEmail toEmail]] attribute). Any variables passed into
 	 * sendEmail()’s $variables argument will alse be made available to the templates.
 	 *
@@ -95,7 +95,7 @@ class Email extends Component
 
 		if (!$user)
 		{
-			$user = new UserModel();
+			$user = new User();
 			$user->email = $emailModel->toEmail;
 			$user->firstName = $emailModel->toFirstName;
 			$user->lastName = $emailModel->toLastName;
@@ -119,14 +119,14 @@ class Email extends Component
 	 * ]);
 	 * ```
 	 *
-	 * @param UserModel $user      The user that should receive the email.
-	 * @param string    $key       The email key.
-	 * @param array     $variables Any variables that should be passed to the email body template.
+	 * @param User   $user      The user that should receive the email.
+	 * @param string $key       The email key.
+	 * @param array  $variables Any variables that should be passed to the email body template.
 	 *
 	 * @throws Exception
 	 * @return bool Whether the email was successfully sent.
 	 */
-	public function sendEmailByKey(UserModel $user, $key, $variables = [])
+	public function sendEmailByKey(User $user, $key, $variables = [])
 	{
 		$emailModel = new EmailModel();
 
@@ -239,14 +239,14 @@ class Email extends Component
 	// =========================================================================
 
 	/**
-	 * @param UserModel  $user
+	 * @param User       $user
 	 * @param EmailModel $emailModel
 	 * @param array      $variables
 	 *
 	 * @throws Exception
 	 * @return bool
 	 */
-	private function _sendEmail(UserModel $user, EmailModel $emailModel, $variables = [])
+	private function _sendEmail(User $user, EmailModel $emailModel, $variables = [])
 	{
 		// Get the saved email settings.
 		$emailSettings = $this->getSettings();

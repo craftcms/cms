@@ -22,7 +22,7 @@ use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
-use craft\app\models\MatrixBlock as MatrixBlockModel;
+use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\app\models\MatrixSettings as MatrixSettingsModel;
 use craft\app\records\MatrixBlock as MatrixBlockRecord;
@@ -706,7 +706,7 @@ class Matrix extends Component
 	 * @param string $localeId The locale ID to return.
 	 *                         Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 *
-	 * @return MatrixBlockModel|null The Matrix block, or `null` if it didn’t exist.
+	 * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
 	 */
 	public function getBlockById($blockId, $localeId = null)
 	{
@@ -718,11 +718,11 @@ class Matrix extends Component
 	 *
 	 * If the block doesn’t validate, any validation errors will be stored on the block.
 	 *
-	 * @param MatrixBlockModel $block The Matrix block to validate.
+	 * @param MatrixBlock $block The Matrix block to validate.
 	 *
 	 * @return bool Whether the block validated.
 	 */
-	public function validateBlock(MatrixBlockModel $block)
+	public function validateBlock(MatrixBlock $block)
 	{
 		$block->clearErrors();
 
@@ -752,14 +752,14 @@ class Matrix extends Component
 	/**
 	 * Saves a block.
 	 *
-	 * @param MatrixBlockModel $block    The Matrix block.
-	 * @param bool             $validate Whether the block should be validated before being saved.
-	 *                                   Defaults to `true`.
+	 * @param MatrixBlock $block    The Matrix block.
+	 * @param bool        $validate Whether the block should be validated before being saved.
+	 *                              Defaults to `true`.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the block was saved successfully.
 	 */
-	public function saveBlock(MatrixBlockModel $block, $validate = true)
+	public function saveBlock(MatrixBlock $block, $validate = true)
 	{
 		if (!$validate || $this->validateBlock($block))
 		{
@@ -1026,12 +1026,12 @@ class Matrix extends Component
 	/**
 	 * Returns a block record by its ID or creates a new one.
 	 *
-	 * @param MatrixBlockModel $block
+	 * @param MatrixBlock $block
 	 *
 	 * @throws Exception
 	 * @return MatrixBlockRecord
 	 */
-	private function _getBlockRecord(MatrixBlockModel $block)
+	private function _getBlockRecord(MatrixBlock $block)
 	{
 		$blockId = $block->id;
 

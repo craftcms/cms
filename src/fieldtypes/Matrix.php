@@ -14,7 +14,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\base\Model;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
-use craft\app\models\MatrixBlock as MatrixBlockModel;
+use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\app\models\MatrixSettings as MatrixSettingsModel;
 
@@ -282,7 +282,7 @@ class Matrix extends BaseFieldType
 	 *
 	 * @param mixed $data
 	 *
-	 * @return MatrixBlockModel[]
+	 * @return MatrixBlock[]
 	 */
 	public function prepValueFromPost($data)
 	{
@@ -350,7 +350,7 @@ class Matrix extends BaseFieldType
 			// Is this new? (Or has it been deleted?)
 			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId]))
 			{
-				$block = new MatrixBlockModel();
+				$block = new MatrixBlock();
 				$block->fieldId = $this->model->id;
 				$block->typeId  = $blockType->id;
 				$block->ownerId = $ownerId;
@@ -593,8 +593,8 @@ class Matrix extends BaseFieldType
 
 		foreach ($this->getSettings()->getBlockTypes() as $blockType)
 		{
-			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
-			$block = new MatrixBlockModel();
+			// Create a fake MatrixBlock so the field types have a way to get at the owner element, if there is one
+			$block = new MatrixBlock();
 			$block->fieldId = $this->model->id;
 			$block->typeId = $blockType->id;
 

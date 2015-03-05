@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\Event;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use craft\app\models\UserGroup as UserGroupModel;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
@@ -182,11 +182,11 @@ class UserGroups extends Component
 	 *
 	 * This method is called toward the end of a public registration request.
 	 *
-	 * @param UserModel $user The user that was just registered.
+	 * @param User $user The user that was just registered.
 	 *
 	 * @return bool Whether the user was assigned to the default group.
 	 */
-	public function assignUserToDefaultGroup(UserModel $user)
+	public function assignUserToDefaultGroup(User $user)
 	{
 		$defaultGroupId = Craft::$app->systemSettings->getSetting('users', 'defaultGroup');
 

@@ -9,11 +9,11 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\FieldLayoutTrait;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\GlobalSet as GlobalSetModel;
 
 /**
  * The GlobalSet class is responsible for implementing and defining globals as a native element type in
@@ -24,18 +24,36 @@ use craft\app\models\GlobalSet as GlobalSetModel;
  */
 class GlobalSet extends Element
 {
-	// Public Methods
+	// Traits
+	// =========================================================================
+
+	use FieldLayoutTrait;
+
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @var string Name
 	 */
-	public static function getName()
-	{
-		return Craft::t('app', 'Global Sets');
-	}
+	public $name;
+
+	/**
+	 * @var string Handle
+	 */
+	public $handle;
+
+	/**
+	 * @var integer Field layout ID
+	 */
+	public $fieldLayoutId;
+
+	/**
+	 * @var The element type that global sets' field layouts should be associated with.
+	 */
+	private $_fieldLayoutElementType = ElementType::GlobalSet;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()
@@ -99,6 +117,43 @@ class GlobalSet extends Element
 	 */
 	public static function populateElementModel($row)
 	{
-		return GlobalSetModel::populateModel($row);
+		return GlobalSet::populateModel($row);
+	}
+
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Use the global set's name as its string representation.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		$rules[] = [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
+		$rules[] = [['fieldLayoutId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['name', 'handle'], 'string', 'max' => 255];
+
+		return $rules;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		return UrlHelper::getCpUrl('globals/'.$this->handle);
 	}
 }

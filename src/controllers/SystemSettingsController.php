@@ -14,7 +14,7 @@ use craft\app\enums\EmailerType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings as EmailSettingsModel;
-use craft\app\models\GlobalSet;
+use craft\app\elements\GlobalSet;
 use craft\app\models\Info;
 use craft\app\variables\Tool as ToolVariable;
 use craft\app\web\Controller;

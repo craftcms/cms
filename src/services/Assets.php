@@ -21,12 +21,12 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\elements\Asset;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\FolderCriteria as FolderCriteriaModel;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use craft\app\records\AssetFile as AssetFileRecord;
 use craft\app\records\AssetFolder as AssetFolderRecord;
 use yii\base\Component;
@@ -123,7 +123,7 @@ class Assets extends Component
 			->orderBy('fi.filename')
 			->all();
 
-		return AssetFileModel::populateModels($files, $indexBy);
+		return Asset::populateModels($files, $indexBy);
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Assets extends Component
 	 * @param             $fileId
 	 * @param string|null $localeId
 	 *
-	 * @return AssetFileModel|null
+	 * @return Asset|null
 	 */
 	public function getFileById($fileId, $localeId = null)
 	{
@@ -144,7 +144,7 @@ class Assets extends Component
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return AssetFileModel|null
+	 * @return Asset|null
 	 */
 	public function findFile($criteria = null)
 	{
@@ -183,13 +183,13 @@ class Assets extends Component
 	/**
 	 * Saves the record for an asset.
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 *
 	 * @throws Exception
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function storeFile(AssetFileModel $file)
+	public function storeFile(Asset $file)
 	{
 		$isNewFile = !$file->id;
 
@@ -362,12 +362,12 @@ class Assets extends Component
 	/**
 	 * Get the users Folder model.
 	 *
-	 * @param UserModel $userModel
+	 * @param User $userModel
 	 *
 	 * @throws Exception
 	 * @return AssetFolderModel|null
 	 */
-	public function getUserFolder(UserModel $userModel = null)
+	public function getUserFolder(User $userModel = null)
 	{
 		$sourceTopFolder = Craft::$app->assets->findFolder(['sourceId' => ':empty:', 'parentId' => ':empty:']);
 
@@ -953,13 +953,13 @@ class Assets extends Component
 
 
 	/**
-	 * @param AssetFileModel $file
-	 * @param string         $filename
-	 * @param string         $action The action to take in case of a conflict.
+	 * @param Asset  $file
+	 * @param string $filename
+	 * @param string $action The action to take in case of a conflict.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function renameFile(AssetFileModel $file, $filename, $action = '')
+	public function renameFile(Asset $file, $filename, $action = '')
 	{
 		$response = $this->moveFiles([$file->id], $file->folderId, $filename, $action);
 
@@ -987,12 +987,12 @@ class Assets extends Component
 	/**
 	 * Get URL for a file.
 	 *
-	 * @param AssetFileModel $file
-	 * @param string         $transform
+	 * @param Asset  $file
+	 * @param string $transform
 	 *
 	 * @return string
 	 */
-	public function getUrlForFile(AssetFileModel $file, $transform = null)
+	public function getUrlForFile(Asset $file, $transform = null)
 	{
 		if (!$transform || !ImageHelper::isImageManipulatable(IOHelper::getExtension($file->filename)))
 		{
@@ -1298,7 +1298,7 @@ class Assets extends Component
 				// quick-index it, so we have a File Model to work with.
 				if (!$targetFile)
 				{
-					$targetFile = new AssetFileModel();
+					$targetFile = new Asset();
 					$targetFile->sourceId = $folder->sourceId;
 					$targetFile->folderId = $folder->id;
 					$targetFile->filename = $fileName;
@@ -1339,13 +1339,13 @@ class Assets extends Component
 	 *
 	 * @param BaseAssetSourceType $originatingSource
 	 * @param BaseAssetSourceType $targetSource
-	 * @param AssetFileModel      $file
+	 * @param Asset               $file
 	 * @param AssetFolderModel    $folder
 	 * @param string              $action
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, AssetFileModel $file, AssetFolderModel $folder, $action = '')
+	private function _moveFileBetweenSources(BaseAssetSourceType $originatingSource, BaseAssetSourceType $targetSource, Asset $file, AssetFolderModel $folder, $action = '')
 	{
 		$localCopy = $originatingSource->getLocalCopy($file);
 

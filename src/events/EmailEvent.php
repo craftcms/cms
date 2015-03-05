@@ -7,6 +7,9 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\User;
+use craft\app\models\Email;
+
 /**
  * Email event class.
  *
@@ -19,12 +22,12 @@ class EmailEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\User The user receiving the email
+	 * @var User The user receiving the email
 	 */
 	public $user;
 
 	/**
-	 * @var \craft\app\models\Email The email getting sent
+	 * @var Email The email getting sent
 	 */
 	public $email;
 

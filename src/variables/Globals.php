@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\GlobalSet as GlobalSetModel;
+use craft\app\elements\GlobalSet;
 
 /**
  * Globals functions.
@@ -71,7 +71,7 @@ class Globals
 	 * @param int         $globalSetId
 	 * @param string|null $localeId
 	 *
-	 * @return GlobalSetModel|null
+	 * @return GlobalSet|null
 	 */
 	public function getSetById($globalSetId, $localeId = null)
 	{
@@ -84,7 +84,7 @@ class Globals
 	 * @param string      $globalSetHandle
 	 * @param string|null $localeId
 	 *
-	 * @return GlobalSetModel|null
+	 * @return GlobalSet|null
 	 */
 	public function getSetByHandle($globalSetHandle, $localeId = null)
 	{

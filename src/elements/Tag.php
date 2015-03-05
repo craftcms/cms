@@ -14,7 +14,6 @@ use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\Tag as TagModel;
 
 /**
  * The Tag class is responsible for implementing and defining tags as a native element type in Craft.
@@ -24,18 +23,16 @@ use craft\app\models\Tag as TagModel;
  */
 class Tag extends Element
 {
-	// Public Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @var integer Group ID
 	 */
-	public static function getName()
-	{
-		return Craft::t('app', 'Tags');
-	}
+	public $groupId;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()
@@ -176,7 +173,7 @@ class Tag extends Element
 	 */
 	public static function populateElementModel($row)
 	{
-		return TagModel::populateModel($row);
+		return Tag::populateModel($row);
 	}
 
 	/**
@@ -218,5 +215,75 @@ class Tag extends Element
 	public static function saveElement(BaseElementModel $element, $params)
 	{
 		return Craft::$app->tags->saveTag($element);
+	}
+
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		$rules[] = [['groupId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+
+		return $rules;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return true;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 *
+	 * @return FieldLayout|null
+	 */
+	public function getFieldLayout()
+	{
+		$tagGroup = $this->getGroup();
+
+		if ($tagGroup)
+		{
+			return $tagGroup->getFieldLayout();
+		}
+	}
+
+	/**
+	 * Returns the tag's group.
+	 *
+	 * @return TagGroupModel|null
+	 */
+	public function getGroup()
+	{
+		if ($this->groupId)
+		{
+			return Craft::$app->tags->getTagGroupById($this->groupId);
+		}
+	}
+
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the tag's title.
+	 *
+	 * @deprecated Deprecated in 2.3. Use [[$title]] instead.
+	 * @return string
+	 *
+	 * @todo Remove this method in Craft 4.
+	 */
+	public function getName()
+	{
+		Craft::$app->deprecator->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+		return $this->getContent()->title;
 	}
 }

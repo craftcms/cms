@@ -24,7 +24,7 @@ use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\io\Image;
 use craft\app\models\Password as PasswordModel;
-use craft\app\models\User as UserModel;
+use craft\app\elements\User;
 use craft\app\records\User as UserRecord;
 use yii\base\Component;
 
@@ -126,7 +126,7 @@ class Users extends Component
 	/**
      * @event UserEvent The event that is triggered before a user's password is set.
      *
-     * The new password will be accessible from [[UserModel::newPassword]].
+     * The new password will be accessible from [[User::newPassword]].
      *
      * You may set [[UserEvent::performAction]] to `false` to prevent the user's password from getting set.
      */
@@ -157,7 +157,7 @@ class Users extends Component
 	 *
 	 * @param int $userId The user’s ID.
 	 *
-	 * @return UserModel|null The user with the given ID, or `null` if a user could not be found.
+	 * @return User|null The user with the given ID, or `null` if a user could not be found.
 	 */
 	public function getUserById($userId)
 	{
@@ -167,7 +167,7 @@ class Users extends Component
 
 			if ($userRecord)
 			{
-				$this->_usersById[$userId] = UserModel::populateModel($userRecord);
+				$this->_usersById[$userId] = User::populateModel($userRecord);
 			}
 			else
 			{
@@ -187,7 +187,7 @@ class Users extends Component
 	 *
 	 * @param string $usernameOrEmail The user’s username or email.
 	 *
-	 * @return UserModel|null The user with the given username/email, or `null` if a user could not be found.
+	 * @return User|null The user with the given username/email, or `null` if a user could not be found.
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
@@ -200,7 +200,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return UserModel::populateModel($userRecord);
+			return User::populateModel($userRecord);
 		}
 
 		return null;
@@ -215,7 +215,7 @@ class Users extends Component
 	 *
 	 * @param string $email The user’s email.
 	 *
-	 * @return UserModel|null The user with the given email, or `null` if a user could not be found.
+	 * @return User|null The user with the given email, or `null` if a user could not be found.
 	 */
 	public function getUserByEmail($email)
 	{
@@ -223,7 +223,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return UserModel::populateModel($userRecord);
+			return User::populateModel($userRecord);
 		}
 
 		return null;
@@ -238,7 +238,7 @@ class Users extends Component
 	 *
 	 * @param int $uid The user’s UID.
 	 *
-	 * @return UserModel|null The user with the given UID, or `null` if a user could not be found.
+	 * @return User|null The user with the given UID, or `null` if a user could not be found.
 	 */
 	public function getUserByUid($uid)
 	{
@@ -248,7 +248,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return UserModel::populateModel($userRecord);
+			return User::populateModel($userRecord);
 		}
 
 		return null;
@@ -261,12 +261,12 @@ class Users extends Component
 	 * [verificationCodeDuration](http://buildwithcraft.com/docs/config-settings#verificationCodeDuration) config
 	 * setting. If it is still valid, then, the checks the validity of the contents of the code.
 	 *
-	 * @param UserModel $user The user to check the code for.
-	 * @param string    $code The verification code to check for.
+	 * @param User   $user The user to check the code for.
+	 * @param string $code The verification code to check for.
 	 *
 	 * @return bool Whether the code is still valid.
 	 */
-	public function isVerificationCodeValidForUser(UserModel $user, $code)
+	public function isVerificationCodeValidForUser(User $user, $code)
 	{
 		$valid = false;
 		$userRecord = $this->_getUserRecordById($user->id);
@@ -321,7 +321,7 @@ class Users extends Component
 	 * }
 	 * ```
 	 *
-	 * @return UserModel|null The “Client” user account, or `null` if it hasn’t been created yet.
+	 * @return User|null The “Client” user account, or `null` if it hasn’t been created yet.
 	 */
 	public function getClient()
 	{
@@ -337,7 +337,7 @@ class Users extends Component
 	 * Saves a new or existing user.
 	 *
 	 * ```php
-	 * $user = new UserModel();
+	 * $user = new User();
 	 * $user->username  = 'tommy';
 	 * $user->firstName = 'Tom';
 	 * $user->lastName  = 'Foolery';
@@ -353,13 +353,13 @@ class Users extends Component
 	 * }
 	 * ```
 	 *
-	 * @param UserModel $user The user to be saved.
+	 * @param User $user The user to be saved.
 	 *
 	 * @return bool
 	 * @throws Exception
 	 * @throws \Exception
 	 */
-	public function saveUser(UserModel $user)
+	public function saveUser(User $user)
 	{
 		$isNewUser = !$user->id;
 
@@ -518,11 +518,11 @@ class Users extends Component
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
 	 *
-	 * @param UserModel $user The user to send the activation email to.
+	 * @param User $user The user to send the activation email to.
 	 *
 	 * @return bool Whether the email was sent successfully.
 	 */
-	public function sendActivationEmail(UserModel $user)
+	public function sendActivationEmail(User $user)
 	{
 		// If the user doesn't have a password yet, use a Password Reset URL
 		if (!$user->password)
@@ -544,11 +544,11 @@ class Users extends Component
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
 	 *
-	 * @param UserModel $user The user to send the activation email to.
+	 * @param User $user The user to send the activation email to.
 	 *
 	 * @return bool Whether the email was sent successfully.
 	 */
-	public function sendNewEmailVerifyEmail(UserModel $user)
+	public function sendNewEmailVerifyEmail(User $user)
 	{
 		$url = $this->getEmailVerifyUrl($user);
 
@@ -562,11 +562,11 @@ class Users extends Component
 	 *
 	 * A new verification code will generated for the user overwriting any existing one.
 	 *
-	 * @param UserModel $user The user to send the forgot password email to.
+	 * @param User $user The user to send the forgot password email to.
 	 *
 	 * @return bool Whether the email was sent successfully.
 	 */
-	public function sendPasswordResetEmail(UserModel $user)
+	public function sendPasswordResetEmail(User $user)
 	{
 		$url = $this->getPasswordResetUrl($user);
 
@@ -578,11 +578,11 @@ class Users extends Component
 	/**
 	 * Sets a new verification code on a user, and returns their new Email Verification URL.
 	 *
-	 * @param UserModel $user The user that should get the new Email Verification URL.
+	 * @param User $user The user that should get the new Email Verification URL.
 	 *
 	 * @return string The new Email Verification URL.
 	 */
-	public function getEmailVerifyUrl(UserModel $user)
+	public function getEmailVerifyUrl(User $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -605,11 +605,11 @@ class Users extends Component
 	/**
 	 * Sets a new verification code on a user, and returns their new Password Reset URL.
 	 *
-	 * @param UserModel $user The user that should get the new Password Reset URL
+	 * @param User $user The user that should get the new Password Reset URL
 	 *
 	 * @return string The new Password Reset URL.
 	 */
-	public function getPasswordResetUrl(UserModel $user)
+	public function getPasswordResetUrl(User $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -632,14 +632,14 @@ class Users extends Component
 	/**
 	 * Crops and saves a user’s photo.
 	 *
-	 * @param string    $fileName The name of the file.
-	 * @param Image     $image    The image.
-	 * @param UserModel $user     The user.
+	 * @param string $fileName The name of the file.
+	 * @param Image  $image    The image.
+	 * @param User   $user     The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the photo was saved successfully.
 	 */
-	public function saveUserPhoto($fileName, Image $image, UserModel $user)
+	public function saveUserPhoto($fileName, Image $image, User $user)
 	{
 		$userName = IOHelper::cleanFilename($user->username);
 		$userPhotoFolder = Craft::$app->path->getUserPhotosPath().'/'.$userName;
@@ -670,11 +670,11 @@ class Users extends Component
 	/**
 	 * Deletes a user's photo.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @return null
 	 */
-	public function deleteUserPhoto(UserModel $user)
+	public function deleteUserPhoto(User $user)
 	{
 		$folder = Craft::$app->path->getUserPhotosPath().'/'.$user->username;
 
@@ -692,12 +692,12 @@ class Users extends Component
 	/**
 	 * Changes a user’s password.
 	 *
-	 * @param UserModel $user           The user.
-	 * @param bool      $forceDifferent Whether to force the new password to be different than any existing password.
+	 * @param User $user           The user.
+	 * @param bool $forceDifferent Whether to force the new password to be different than any existing password.
 	 *
 	 * @return bool Whether the user’s new password was saved successfully.
 	 */
-	public function changePassword(UserModel $user, $forceDifferent = false)
+	public function changePassword(User $user, $forceDifferent = false)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
@@ -715,12 +715,12 @@ class Users extends Component
 	/**
 	 * Updates a user's record for a successful login.
 	 *
-	 * @param UserModel $user
+	 * @param User $user
 	 *
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function updateUserLoginInfo(UserModel $user)
+	public function updateUserLoginInfo(User $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 
@@ -737,11 +737,11 @@ class Users extends Component
 	/**
 	 * Handles an invalid login for a user.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @return bool Whether the user’s record was updated successfully.
 	 */
-	public function handleInvalidLogin(UserModel $user)
+	public function handleInvalidLogin(User $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$currentTime = DateTimeHelper::currentUTCDateTime();
@@ -784,12 +784,12 @@ class Users extends Component
 	/**
 	 * Activates a user, bypassing email verification.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was activated successfully.
 	 */
-	public function activateUser(UserModel $user)
+	public function activateUser(User $user)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
@@ -852,12 +852,12 @@ class Users extends Component
 	}
 
 	/**
-	 * If 'unverifiedEmail' is set on the UserModel, then this method will transfer it to the official email property
+	 * If 'unverifiedEmail' is set on the User, then this method will transfer it to the official email property
 	 * and clear the unverified one.
 	 *
-	 * @param UserModel $user
+	 * @param User $user
 	 */
-	public function verifyEmailForUser(UserModel $user)
+	public function verifyEmailForUser(User $user)
 	{
 		if ($user->unverifiedEmail)
 		{
@@ -883,12 +883,12 @@ class Users extends Component
 	/**
 	 * Unlocks a user, bypassing the cooldown phase.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was unlocked successfully.
 	 */
-	public function unlockUser(UserModel $user)
+	public function unlockUser(User $user)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
@@ -951,12 +951,12 @@ class Users extends Component
 	/**
 	 * Suspends a user.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was suspended successfully.
 	 */
-	public function suspendUser(UserModel $user)
+	public function suspendUser(User $user)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
@@ -1016,12 +1016,12 @@ class Users extends Component
 	/**
 	 * Unsuspends a user.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was unsuspended successfully.
 	 */
-	public function unsuspendUser(UserModel $user)
+	public function unsuspendUser(User $user)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 
@@ -1081,13 +1081,13 @@ class Users extends Component
 	/**
 	 * Deletes a user.
 	 *
-	 * @param UserModel      $user              The user to be deleted.
-	 * @param UserModel|null $transferContentTo The user who should take over the deleted user’s content.
+	 * @param User      $user              The user to be deleted.
+	 * @param User|null $transferContentTo The user who should take over the deleted user’s content.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the user was deleted successfully.
 	 */
-	public function deleteUser(UserModel $user, UserModel $transferContentTo = null)
+	public function deleteUser(User $user, User $transferContentTo = null)
 	{
 		if (!$user->id)
 		{
@@ -1267,11 +1267,11 @@ class Users extends Component
 	/**
 	 * Sets a new verification code on the user's record.
 	 *
-	 * @param UserModel $user The user.
+	 * @param User $user The user.
 	 *
 	 * @return string The user’s brand new verification code.
 	 */
-	public function setVerificationCodeOnUser(UserModel $user)
+	public function setVerificationCodeOnUser(User $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -1378,17 +1378,17 @@ class Users extends Component
 	/**
 	 * Sets a user record up for a new password without saving it.
 	 *
-	 * @param UserModel  $user                        The user who is getting a new password.
+	 * @param User       $user                        The user who is getting a new password.
 	 * @param UserRecord $userRecord                  The user’s record.
 	 * @param bool       $updatePasswordResetRequired Whether the user’s
-	 *                                                [[UserModel::passwordResetRequired passwordResetRequired]]
+	 *                                                [[User::passwordResetRequired passwordResetRequired]]
 	 *                                                attribute should be set `false`. Default is `true`.
 	 * @param bool       $forceDifferentPassword      Whether to force a new password to be different from any existing
 	 *                                                password.
 	 *
 	 * @return bool
 	 */
-	private function _setPasswordOnUserRecord(UserModel $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
+	private function _setPasswordOnUserRecord(User $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
 	{
 		// Validate the password first
 		$passwordModel = new PasswordModel();

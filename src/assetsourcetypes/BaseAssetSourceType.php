@@ -18,7 +18,7 @@ use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\elements\Asset;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
 use craft\app\models\AssetTransformIndex as AssetTransformIndexModel;
@@ -75,31 +75,31 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Get the image source path.
 	 *
-	 * @param AssetFileModel $fileModel The AssetFileModel model for the image source path.
+	 * @param Asset $fileModel The Asset model for the image source path.
 	 *
 	 * @return mixed
 	 */
-	abstract public function getImageSourcePath(AssetFileModel $fileModel);
+	abstract public function getImageSourcePath(Asset $fileModel);
 
 	/**
 	 * Put an image transform for the File and Transform Index using the provided path to the source image.
 	 *
-	 * @param AssetFileModel           $file        The AssetFileModel model that the transform belongs to
+	 * @param Asset                    $file        The Asset model that the transform belongs to
 	 * @param AssetTransformIndexModel $index       The Transform Index data.
 	 * @param string                   $sourceImage The source image.
 	 *
 	 * @return mixed
 	 */
-	abstract public function putImageTransform(AssetFileModel $file, AssetTransformIndexModel $index, $sourceImage);
+	abstract public function putImageTransform(Asset $file, AssetTransformIndexModel $index, $sourceImage);
 
 	/**
 	 * Make a local copy of the file and return the path to it.
 	 *
-	 * @param AssetFileModel $file The AssetFileModel model that has the file to make a copy of.
+	 * @param Asset $file The Asset model that has the file to make a copy of.
 	 *
 	 * @return mixed
 	 */
-	abstract public function getLocalCopy(AssetFileModel $file);
+	abstract public function getLocalCopy(Asset $file);
 
 	/**
 	 * Return true if a physical folder exists.
@@ -224,7 +224,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			{
 				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
 
-				$fileModel = new AssetFileModel();
+				$fileModel = new Asset();
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folder->id;
 				$fileModel->filename = IOHelper::getFileName($filename);
@@ -269,14 +269,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @todo: Refactor this and moveFileInsideSource method - a lot of duplicate code.
 	 *
-	 * @param string      $localCopy          The local copy of the file to transfer.
+	 * @param string           $localCopy          The local copy of the file to transfer.
 	 * @param AssetFolderModel $folder        The AssetFolderModel model that contains the file to transfer.
-	 * @param AssetFileModel   $file          The AssetFileModel model that represents the file to transfer.
-	 * @param string      $conflictResolution The action to perform during the transfer.
+	 * @param Asset            $file          The Asset model that represents the file to transfer.
+	 * @param string           $conflictResolution The action to perform during the transfer.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, AssetFileModel $file, $conflictResolution)
+	public function transferFileIntoSource($localCopy, AssetFolderModel $folder, Asset $file, $conflictResolution)
 	{
 		$filename = AssetsHelper::cleanAssetName($file->filename);
 
@@ -331,14 +331,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 * Move file from one path to another if it's possible. Return false on failure.
 	 *
 	 * @param BaseAssetSourceType $originalSource     The original source of the file being moved.
-	 * @param AssetFileModel      $file               The AssetFileModel model representing the file to move.
+	 * @param Asset               $file               The Asset model representing the file to move.
 	 * @param AssetFolderModel    $targetFolder       The AssetFolderModel model representing the target folder.
 	 * @param string              $filename           The file name of the file to move.
 	 * @param string              $conflictResolution The action to perform during the file move.
 	 *
 	 * @return bool|AssetOperationResponseModel
 	 */
-	public function moveFileInsideSource(BaseAssetSourceType $originalSource, AssetFileModel $file, AssetFolderModel $targetFolder, $filename, $conflictResolution = null)
+	public function moveFileInsideSource(BaseAssetSourceType $originalSource, Asset $file, AssetFolderModel $targetFolder, $filename, $conflictResolution = null)
 	{
 		if (!$this->canMoveFileFrom($originalSource))
 		{
@@ -412,14 +412,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Replace physical file.
 	 *
-	 * @param AssetFileModel $oldFile     The AssetFileModel model representing the original file.
-	 * @param AssetFileModel $replaceWith The AssetFileModel model representing the new file.
-	 * @param string $filenameToUse       The filename to use for the replaced file. If left empty, will use the name of
-	 *                                    the new file.
+	 * @param Asset  $oldFile       The Asset model representing the original file.
+	 * @param Asset  $replaceWith   The Asset model representing the new file.
+	 * @param string $filenameToUse The filename to use for the replaced file. If left empty, will use the name of
+	 *                              the new file.
 	 *
 	 * @return null
 	 */
-	public function replaceFile(AssetFileModel $oldFile, AssetFileModel $replaceWith, $filenameToUse = "")
+	public function replaceFile(Asset $oldFile, Asset $replaceWith, $filenameToUse = "")
 	{
 		if ($oldFile->kind == 'image')
 		{
@@ -475,11 +475,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete a file.
 	 *
-	 * @param AssetFileModel $file The AssetFileModel model representing the file to delete.
+	 * @param Asset $file The Asset model representing the file to delete.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function deleteFile(AssetFileModel $file)
+	public function deleteFile(Asset $file)
 	{
 		Craft::$app->assetTransforms->deleteAllTransformData($file);
 
@@ -496,12 +496,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Merge a file.
 	 *
-	 * @param AssetFileModel $sourceFile The AssetFileModel model representing the file being merged.
-	 * @param AssetFileModel $targetFile The AssetFileModel model representing the file that is being merged into.
+	 * @param Asset $sourceFile The Asset model representing the file being merged.
+	 * @param Asset $targetFile The Asset model representing the file that is being merged into.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function mergeFile(AssetFileModel $sourceFile, AssetFileModel $targetFile)
+	public function mergeFile(Asset $sourceFile, Asset $targetFile)
 	{
 		Craft::$app->assetTransforms->deleteAllTransformData($targetFile);
 
@@ -518,12 +518,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete a generated transform for a file.
 	 *
-	 * @param AssetFileModel $file
+	 * @param Asset $file
 	 * @param AssetTransformIndexModel $index
 	 *
 	 * @return null
 	 */
-	public function deleteTransform(AssetFileModel $file, AssetTransformIndexModel $index)
+	public function deleteTransform(Asset $file, AssetTransformIndexModel $index)
 	{
 		$folder = $file->getFolder();
 
@@ -533,14 +533,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Copy a transform for a file from source location to target location.
 	 *
-	 * @param AssetFileModel           $file         The AssetFileModel model that has the transform to copy.
+	 * @param Asset                    $file         The Asset model that has the transform to copy.
 	 * @param AssetFolderModel         $targetFolder The AssetFolderModel model that contains the target folder.
 	 * @param AssetTransformIndexModel $source       The source transform index data.
 	 * @param AssetTransformIndexModel $target       The destination transform index data.
 	 *
 	 * @return mixed
 	 */
-	public function copyTransform(AssetFileModel $file, AssetFolderModel $targetFolder, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
+	public function copyTransform(Asset $file, AssetFolderModel $targetFolder, AssetTransformIndexModel $source, AssetTransformIndexModel $target)
 	{
 		$folder = $file->getFolder();
 
@@ -762,11 +762,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Finalize a file transfer between sources for the provided file.
 	 *
-	 * @param AssetFileModel $file The AssetFileModel model representing the file we're finalizing the transfer for.
+	 * @param Asset $file The Asset model representing the file we're finalizing the transfer for.
 	 *
 	 * @return null
 	 */
-	public function finalizeTransfer(AssetFileModel $file)
+	public function finalizeTransfer(Asset $file)
 	{
 		$this->deleteSourceFile($file->getFolder()->path.$file->filename);
 	}
@@ -833,14 +833,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Move a file in source.
 	 *
-	 * @param AssetFileModel   $file         The AssetFileModel model of the file to move.
+	 * @param Asset            $file         The Asset model of the file to move.
 	 * @param AssetFolderModel $targetFolder The AssetFolderModel model that is the target destination of the file.
 	 * @param string           $fileName     The name of the file to move.
 	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
+	abstract protected function moveSourceFile(Asset $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
 
 	/**
 	 * Copy a physical file inside the source.
@@ -1021,7 +1021,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param string $uriPath The URI path fo the file to index.
 	 *
-	 * @return AssetFileModel|bool|null
+	 * @return Asset|bool|null
 	 */
 	protected function indexFile($uriPath)
 	{
@@ -1063,7 +1063,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if (is_null($fileModel))
 			{
-				$fileModel = new AssetFileModel();
+				$fileModel = new Asset();
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folderId;
 				$fileModel->filename = $fileName;
@@ -1080,11 +1080,11 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Delete all the generated images for this file.
 	 *
-	 * @param AssetFileModel $file The AssetFileModel model representing the file to delete any generated thumbnails for.
+	 * @param Asset $file The Asset model representing the file to delete any generated thumbnails for.
 	 *
 	 * @return null
 	 */
-	protected function deleteGeneratedThumbnails(AssetFileModel $file)
+	protected function deleteGeneratedThumbnails(Asset $file)
 	{
 		$thumbFolders = IOHelper::getFolderContents(Craft::$app->path->getAssetsThumbsPath());
 

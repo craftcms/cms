@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\GlobalSet;
+
 /**
  * Global Set event class.
  *
@@ -19,7 +21,7 @@ class GlobalSetEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\GlobalSet The global set model associated with the event.
+	 * @var GlobalSet The global set model associated with the event.
 	 */
 	public $globalSet;
 }

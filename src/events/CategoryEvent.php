@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\Category;
+
 /**
  * Category event class.
  *
@@ -19,7 +21,7 @@ class CategoryEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\Category The category model associated with the event.
+	 * @var Category The category model associated with the event.
 	 */
 	public $category;
 }

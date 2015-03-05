@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\TagEvent;
-use craft\app\models\Tag as TagModel;
+use craft\app\elements\Tag;
 use craft\app\models\TagGroup as TagGroupModel;
 use craft\app\records\Tag as TagRecord;
 use craft\app\records\TagGroup as TagGroupRecord;
@@ -344,7 +344,7 @@ class Tags extends Component
 	 * @param int         $tagId
 	 * @param string|null $localeId
 	 *
-	 * @return TagModel|null
+	 * @return Tag|null
 	 */
 	public function getTagById($tagId, $localeId)
 	{
@@ -354,12 +354,12 @@ class Tags extends Component
 	/**
 	 * Saves a tag.
 	 *
-	 * @param TagModel $tag
+	 * @param Tag $tag
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
 	 */
-	public function saveTag(TagModel $tag)
+	public function saveTag(Tag $tag)
 	{
 		$isNewTag = !$tag->id;
 

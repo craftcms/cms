@@ -13,7 +13,6 @@ use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\BaseElementModel;
-use craft\app\models\Category as CategoryModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -25,18 +24,21 @@ use craft\app\models\ElementCriteria as ElementCriteriaModel;
  */
 class Category extends Element
 {
-	// Public Methods
+	// Properties
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @var integer Group ID
 	 */
-	public static function getName()
-	{
-		return Craft::t('app', 'Categories');
-	}
+	public $groupId;
+
+	/**
+	 * @var integer New parent ID
+	 */
+	public $newParentId;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()
@@ -298,7 +300,7 @@ class Category extends Element
 	 */
 	public static function populateElementModel($row)
 	{
-		return CategoryModel::populateModel($row);
+		return Category::populateModel($row);
 	}
 
 	/**
@@ -436,6 +438,102 @@ class Category extends Element
 			{
 				Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}', ['fieldId', 'sourceId', 'sourceLocale', 'targetId'], $newRelationValues)->execute();
 			}
+		}
+	}
+
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+
+		$rules[] = [['groupId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+		$rules[] = [['newParentId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true];
+
+		return $rules;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 *
+	 * @return FieldLayoutModel|null
+	 */
+	public function getFieldLayout()
+	{
+		$group = $this->getGroup();
+
+		if ($group)
+		{
+			return $group->getFieldLayout();
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getUrlFormat()
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat()
+	{
+		$group = $this->getGroup();
+
+		if ($group && $group->hasUrls)
+		{
+			$groupLocales = $group->getLocales();
+
+			if (isset($groupLocales[$this->locale]))
+			{
+				if ($this->level > 1)
+				{
+					return $groupLocales[$this->locale]->nestedUrlFormat;
+				}
+				else
+				{
+					return $groupLocales[$this->locale]->urlFormat;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl()
+	{
+		$group = $this->getGroup();
+
+		if ($group)
+		{
+			return UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+		}
+	}
+
+	/**
+	 * Returns the category's group.
+	 *
+	 * @return CategoryGroupModel|null
+	 */
+	public function getGroup()
+	{
+		if ($this->groupId)
+		{
+			return Craft::$app->categories->getGroupById($this->groupId);
 		}
 	}
 }

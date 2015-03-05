@@ -10,8 +10,8 @@ namespace craft\app\models;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ElementHelper;
-use craft\app\models\Entry as EntryModel;
-use craft\app\models\User as UserModel;
+use craft\app\elements\Entry;
+use craft\app\elements\User;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -21,7 +21,7 @@ Craft::$app->requireEdition(Craft::Client);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class BaseEntryRevisionModel extends EntryModel
+class BaseEntryRevisionModel extends Entry
 {
 	// Public Methods
 	// =========================================================================
@@ -55,7 +55,7 @@ class BaseEntryRevisionModel extends EntryModel
 	/**
 	 * Returns the draft's creator.
 	 *
-	 * @return UserModel|null
+	 * @return User|null
 	 */
 	public function getCreator()
 	{
