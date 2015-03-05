@@ -604,7 +604,7 @@ class UserSessionService extends \CWebUser
 						if ($this->allowAutoLogin)
 						{
 							// Save the necessary info to the identity cookie.
-							$sessionToken = StringHelper::UUID();
+							$sessionToken = craft()->security->generateRandomString(32);
 							$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
 							$uid = $this->storeSessionToken($user, $hashedToken);
 
@@ -1227,7 +1227,7 @@ class UserSessionService extends \CWebUser
 							if ($this->autoRenewCookie)
 							{
 								// Generate a new session token for the database and cookie.
-								$newSessionToken = StringHelper::UUID();
+								$newSessionToken = craft()->security->generateRandomString(32);
 								$hashedNewToken = craft()->security->hashData(base64_encode(serialize($newSessionToken)));
 								$this->_updateSessionToken($loginName, $dbHashedToken, $hashedNewToken);
 
