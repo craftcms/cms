@@ -1530,7 +1530,7 @@ class UsersService extends BaseApplicationComponent
 	 */
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
-		$unhashedCode = StringHelper::UUID();
+		$unhashedCode = craft()->security->generateRandomString(32);
 		$hashedCode = craft()->security->hashPassword($unhashedCode);
 		$userRecord->verificationCode = $hashedCode;
 		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
