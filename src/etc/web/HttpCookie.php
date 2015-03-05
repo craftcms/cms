@@ -31,6 +31,16 @@ class HttpCookie extends \CHttpCookie
 			$this->domain = $defaultCookieDomain;
 		}
 
+		$this->httpOnly = true;
+
+		$secureCookies = craft()->config->get('useSecureCookies');
+
+		// If it's set to auto and a secure connection or it's set to true, set the secure flag.
+		if (($secureCookies === 'auto' && craft()->request->isSecureConnection()) || $secureCookies === true)
+		{
+			$this->secure = true;
+		}
+
 		parent::__construct($name, $value, $options);
 	}
 }

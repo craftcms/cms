@@ -30,6 +30,14 @@ class HttpSessionService extends \CHttpSession
 			$cookieParams['domain'] = $defaultCookieDomain;
 		}
 
+		$secureCookies = craft()->config->get('useSecureCookies');
+
+		// If it's set to auto and a secure connection or it's set to true, set the secure flag.
+		if (($secureCookies === 'auto' && craft()->request->isSecureConnection()) || $secureCookies === true)
+		{
+			$cookieParams['secure'] = true;
+		}
+
 		// Set the PHP session cookie to HTTP only.
 		$this->setCookieParams($cookieParams);
 

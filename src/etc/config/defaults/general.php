@@ -528,6 +528,15 @@ return array(
 	'usePathInfo' => 'auto',
 
 	/**
+	 * Determines whether Craft will set the "secure" flag when saving cookies when calling `craft()->userSession->saveCookie()`.
+	 *
+	 * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page
+	 * you're currently accessing is over `https://`. `true` will always set the flag, regardless of protocol and `false`
+	 * will never automatically set the flag.
+	 */
+	'useSecureCookies' => 'auto',
+
+	/**
 	 * The amount of time a user stays logged in.
 	 *
 	 * Set to false if you want users to stay logged in as long as their browser is open rather than a predetermined
