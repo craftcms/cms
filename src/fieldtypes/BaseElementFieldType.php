@@ -8,7 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
-use craft\app\elements\BaseElementType;
+use craft\app\base\Element;
 use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;
@@ -310,7 +310,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 * Returns the element type.
 	 *
 	 * @throws Exception
-	 * @return BaseElementType
+	 * @return Element
 	 */
 	protected function getElementType()
 	{

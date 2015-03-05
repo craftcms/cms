@@ -8,6 +8,7 @@
 namespace craft\app\elements;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\enums\UserStatus;
@@ -22,7 +23,7 @@ use craft\app\models\User as UserModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class User extends BaseElementType
+class User extends Element
 {
 	// Public Methods
 	// =========================================================================
@@ -520,7 +521,7 @@ class User extends BaseElementType
 	}
 
 	/**
-	 * @inheritdoc BaseElementType::saveElement()
+	 * @inheritdoc Element::saveElement()
 	 *
 	 * @return bool
 	 */

@@ -5,12 +5,13 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\app\base;
 
 use Craft;
 use craft\app\components\BaseComponentType;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
+use craft\app\elements\ElementTypeInterface;
 use craft\app\helpers\HtmlHelper;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -24,7 +25,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseElementType extends Component implements ElementTypeInterface
+abstract class Element extends Component implements ElementTypeInterface
 {
 	// Properties
 	// =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\app\elements;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\db\Query;
 use craft\app\elementactions\SetStatus;
 use craft\app\enums\AttributeType;
@@ -29,7 +30,7 @@ use craft\app\models\Section as SectionModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Entry extends BaseElementType
+class Entry extends Element
 {
 	// Public Methods
 	// =========================================================================
@@ -729,7 +730,7 @@ class Entry extends BaseElementType
 	}
 
 	/**
-	 * @inheritdoc BaseElementType::saveElement()
+	 * @inheritdoc Element::saveElement()
 	 *
 	 * @return bool
 	 */

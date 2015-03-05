@@ -15,7 +15,7 @@ use craft\app\models\Field as FieldModel;
 
 
 /**
- * This interface defines the contract that all element types must implement via [[BaseElementType]].
+ * This interface defines the contract that all element types must implement via [[Element]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -134,7 +134,7 @@ interface ElementTypeInterface
 	 *
 	 * This method should return an array of attribute names that can be accessed on your
 	 * [[BaseElementModel element model]] (for example, the attributes defined by your element model’s
-	 * [[BaseElementType::defineAttributes() defineAttributes()]] method). [[\craft\app\services\Search]] will
+	 * [[Element::defineAttributes() defineAttributes()]] method). [[\craft\app\services\Search]] will
 	 * call this method when it is indexing keywords for one of your elements, and for each attribute it returns, it will
 	 * fetch the corresponding property’s value on the element.
 	 *
@@ -252,7 +252,7 @@ interface ElementTypeInterface
 	 * }
 	 * ```
 	 *
-	 * BaseElementType::getTableAttributeHtml() provides a couple handy attribute checks by default, so it is a good
+	 * Element::getTableAttributeHtml() provides a couple handy attribute checks by default, so it is a good
 	 * idea to let the parent method get called (as shown above). They are:
 	 *
 	 * - If the attribute name is ‘uri’, it will be linked to the front-end URL.

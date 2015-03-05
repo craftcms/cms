@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\elements\BaseElementType;
+use craft\app\base\Element;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
@@ -204,7 +204,7 @@ class ElementCriteria extends Model implements \Countable
 	protected $strictAttributes = false;
 
 	/**
-	 * @var BaseElementType
+	 * @var Element
 	 */
 	private $_elementType;
 
@@ -257,12 +257,12 @@ class ElementCriteria extends Model implements \Countable
 	/**
 	 * Constructor
 	 *
-	 * @param mixed           $attributes
-	 * @param BaseElementType $elementType
+	 * @param mixed   $attributes
+	 * @param Element $elementType
 	 *
 	 * @return ElementCriteriaModel
 	 */
-	public function __construct($attributes, BaseElementType $elementType)
+	public function __construct($attributes, Element $elementType)
 	{
 		$this->_elementType = $elementType;
 
@@ -405,7 +405,7 @@ class ElementCriteria extends Model implements \Countable
 	/**
 	 * @inheritDoc BaseElementModel::getElementType()
 	 *
-	 * @return BaseElementType
+	 * @return Element
 	 */
 	public function getElementType()
 	{

@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\elements\BaseElementType;
+use craft\app\base\Element;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\web\Controller;
@@ -51,7 +51,7 @@ abstract class BaseElementsController extends Controller
 	 * Returns the element type based on the posted element type class.
 	 *
 	 * @throws Exception
-	 * @return BaseElementType
+	 * @return Element
 	 */
 	protected function getElementType()
 	{

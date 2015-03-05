@@ -8,6 +8,7 @@
 namespace craft\app\elements;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
@@ -22,7 +23,7 @@ use craft\app\models\MatrixBlock as MatrixBlockModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class MatrixBlock extends BaseElementType
+class MatrixBlock extends Element
 {
 	// Public Methods
 	// =========================================================================
