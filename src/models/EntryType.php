@@ -8,8 +8,8 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Section as SectionModel;
@@ -103,7 +103,7 @@ class EntryType extends Model
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 * @inheritDoc ElementInterface::getCpEditUrl()
 	 *
 	 * @return string
 	 */

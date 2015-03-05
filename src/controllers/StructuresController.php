@@ -8,9 +8,9 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
-use craft\app\models\BaseElementModel;
 use craft\app\models\Structure as StructureModel;
 use craft\app\web\Controller;
 
@@ -34,7 +34,7 @@ class StructuresController extends Controller
 	private $_structure;
 
 	/**
-	 * @var BaseElementModel
+	 * @var ElementInterface
 	 */
 	private $_element;
 

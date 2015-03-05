@@ -8,12 +8,12 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\ContentEvent;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ModelHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\Content as ContentModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use yii\base\Component;
@@ -60,11 +60,11 @@ class Content extends Component
 	/**
 	 * Returns the content model for a given element.
 	 *
-	 * @param BaseElementModel $element The element whose content we're looking for.
+	 * @param ElementInterface $element The element whose content we're looking for.
 	 *
 	 * @return ContentModel|null The element's content or `null` if no content has been saved for the element.
 	 */
-	public function getContent(BaseElementModel $element)
+	public function getContent(ElementInterface $element)
 	{
 		if (!$element->id || !$element->locale)
 		{
@@ -107,11 +107,11 @@ class Content extends Component
 	/**
 	 * Instantiates a new content model for a given element.
 	 *
-	 * @param BaseElementModel $element The element for which we should create a new content model.
+	 * @param ElementInterface $element The element for which we should create a new content model.
 	 *
 	 * @return ContentModel The new content model.
 	 */
-	public function createContent(BaseElementModel $element)
+	public function createContent(ElementInterface $element)
 	{
 		$originalContentTable      = $this->contentTable;
 		$originalFieldColumnPrefix = $this->fieldColumnPrefix;
@@ -135,7 +135,7 @@ class Content extends Component
 	/**
 	 * Saves an element's content.
 	 *
-	 * @param BaseElementModel $element            The element whose content we're saving.
+	 * @param ElementInterface $element            The element whose content we're saving.
 	 * @param bool             $validate           Whether the element's content should be validated first.
 	 * @param bool             $updateOtherLocales Whether any non-translatable fields' values should be copied to the
 	 *                                             element's other locales.
@@ -144,7 +144,7 @@ class Content extends Component
 	 * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
 	 *              element and its content model.
 	 */
-	public function saveContent(BaseElementModel $element, $validate = true, $updateOtherLocales = true)
+	public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
 	{
 		if (!$element->id)
 		{
@@ -195,11 +195,11 @@ class Content extends Component
 	/**
 	 * Validates some content with a given field layout.
 	 *
-	 * @param BaseElementModel $element The element whose content should be validated.
+	 * @param ElementInterface $element The element whose content should be validated.
 	 *
 	 * @return bool Whether the element's content validates.
 	 */
-	public function validateContent(BaseElementModel $element)
+	public function validateContent(ElementInterface $element)
 	{
 		$elementType = Craft::$app->elements->getElementType($element->getElementType());
 		$fieldLayout = $element->getFieldLayout();
@@ -327,7 +327,7 @@ class Content extends Component
 	 * Copies the new values of any non-translatable fields across the element's
 	 * other locales.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param ContentModel     $content
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param array            &$nonTranslatableFields
@@ -335,7 +335,7 @@ class Content extends Component
 	 *
 	 * @return null
 	 */
-	private function _duplicateNonTranslatableFieldValues(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
+	private function _duplicateNonTranslatableFieldValues(ElementInterface $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields, &$otherContentModels)
 	{
 		// Get all of the non-translatable fields
 		$nonTranslatableFields = [];
@@ -387,7 +387,7 @@ class Content extends Component
 	/**
 	 * Updates the search indexes based on the new content values.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param ContentModel     $content
 	 * @param FieldLayoutModel $fieldLayout
 	 * @param array|null       &$nonTranslatableFields
@@ -395,7 +395,7 @@ class Content extends Component
 	 *
 	 * @return null
 	 */
-	private function _updateSearchIndexes(BaseElementModel $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+	private function _updateSearchIndexes(ElementInterface $element, ContentModel $content, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
 	{
 		$searchKeywordsByLocale = [];
 

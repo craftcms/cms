@@ -8,9 +8,9 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\errors\Exception;
-use craft\app\models\BaseElementModel;
 
 /**
  * Class ElementHelper
@@ -26,11 +26,11 @@ class ElementHelper
 	/**
 	 * Sets a valid slug on a given element.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return null
 	 */
-	public static function setValidSlug(BaseElementModel $element)
+	public static function setValidSlug(ElementInterface $element)
 	{
 		$slug = $element->slug;
 
@@ -83,11 +83,11 @@ class ElementHelper
 	/**
 	 * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @throws Exception
 	 */
-	public static function setUniqueUri(BaseElementModel $element)
+	public static function setUniqueUri(ElementInterface $element)
 	{
 		$urlFormat = $element->getUrlFormat();
 
@@ -205,11 +205,11 @@ class ElementHelper
 	/**
 	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public static function isElementEditable(BaseElementModel $element)
+	public static function isElementEditable(ElementInterface $element)
 	{
 		if ($element->isEditable())
 		{
@@ -240,11 +240,11 @@ class ElementHelper
 	/**
 	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return array
 	 */
-	public static function getEditableLocaleIdsForElement(BaseElementModel $element)
+	public static function getEditableLocaleIdsForElement(ElementInterface $element)
 	{
 		$localeIds = [];
 

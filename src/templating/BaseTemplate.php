@@ -8,7 +8,7 @@
 namespace craft\app\templating;
 
 use Craft;
-use craft\app\models\BaseElementModel;
+use craft\app\base\ElementInterface;
 
 /**
  * Base Twig template class.
@@ -38,7 +38,7 @@ abstract class BaseTemplate extends \yii\twig\Template
 	 */
 	protected function getAttribute($object, $item, array $arguments = [], $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
 	{
-		if (is_object($object) && $object instanceof BaseElementModel)
+		if (is_object($object) && $object instanceof ElementInterface)
 		{
 			$this->_includeElementInTemplateCaches($object);
 		}
@@ -52,11 +52,11 @@ abstract class BaseTemplate extends \yii\twig\Template
 	/**
 	 * Includes this element in any active template caches.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return null
 	 */
-	private function _includeElementInTemplateCaches(BaseElementModel $element)
+	private function _includeElementInTemplateCaches(ElementInterface $element)
 	{
 		$elementId = $element->id;
 

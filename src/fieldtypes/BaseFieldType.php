@@ -8,13 +8,13 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\components\BaseSavableComponentType;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ElementType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseElementModel;
 
 /**
  * Field type base class.
@@ -30,7 +30,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	/**
 	 * The element that the current instance is associated with.
 	 *
-	 * @var BaseElementModel
+	 * @var ElementInterface
 	 */
 	public $element;
 
@@ -54,11 +54,11 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 	/**
 	 * @inheritDoc FieldTypeInterface::setElement()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return null
 	 */
-	public function setElement(BaseElementModel $element)
+	public function setElement(ElementInterface $element)
 	{
 		$this->element = $element;
 	}

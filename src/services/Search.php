@@ -8,12 +8,12 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\SearchHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;
 use craft\app\search\SearchQueryTermGroup;
@@ -53,11 +53,11 @@ class Search extends Component
 	/**
 	 * Indexes the attributes of a given element defined by its element type.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool Whether the indexing was a success.
 	 */
-	public function indexElementAttributes(BaseElementModel $element)
+	public function indexElementAttributes(ElementInterface $element)
 	{
 		// Get the element type
 		$elementTypeClass = $element->getElementType();

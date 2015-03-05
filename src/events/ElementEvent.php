@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\base\ElementInterface;
+
 /**
  * Element event class.
  *
@@ -19,7 +21,7 @@ class ElementEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\BaseElementModel The element model associated with the event.
+	 * @var ElementInterface The element model associated with the event.
 	 */
 	public $element;
 }

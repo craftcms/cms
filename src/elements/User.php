@@ -9,14 +9,22 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
+use craft\app\dates\DateInterval;
+use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
+use craft\app\enums\AuthError;
 use craft\app\enums\UserStatus;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
-use craft\app\models\BaseElementModel;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\UserGroup;
+use craft\app\records\Session as SessionRecord;
 use Exception;
 use yii\base\ErrorHandler;
+use yii\base\NotSupportedException;
 use yii\web\IdentityInterface;
 
 /**
@@ -358,13 +366,14 @@ class User extends Element implements IdentityInterface
 	/**
 	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $attribute
 	 *
 	 * @return string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
+		/** @var User $element */
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
 
@@ -626,12 +635,13 @@ class User extends Element implements IdentityInterface
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
+		/** @var User $element */
 		$html = Craft::$app->templates->render('users/_accountfields', [
 			'account'      => $element,
 			'isNewAccount' => false,
@@ -647,8 +657,9 @@ class User extends Element implements IdentityInterface
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
+		/** @var User $element */
 		if (isset($params['username']))
 		{
 			$element->username = $params['username'];
@@ -961,7 +972,7 @@ class User extends Element implements IdentityInterface
 	{
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
-			if (is_object($group) && $group instanceof UserGroupModel)
+			if (is_object($group) && $group instanceof UserGroup)
 			{
 				$group = $group->id;
 			}
@@ -1034,7 +1045,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getStatus()
+	 * @inheritDoc ElementInterface::getStatus()
 	 *
 	 * @return string|null
 	 */
@@ -1092,7 +1103,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getThumbUrl()
+	 * @inheritDoc ElementInterface::getThumbUrl()
 	 *
 	 * @param int $size
 	 *
@@ -1110,7 +1121,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::isEditable()
+	 * @inheritDoc ElementInterface::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -1224,7 +1235,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 * @inheritDoc ElementInterface::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */
@@ -1257,6 +1268,7 @@ class User extends Element implements IdentityInterface
 	 */
 	public static function populateModel($attributes)
 	{
+		/** @var User $user */
 		$user = parent::populateModel($attributes);
 
 		// Is the user in cooldown mode, and are they past their window?
@@ -1308,7 +1320,7 @@ class User extends Element implements IdentityInterface
 	 */
 	private static function _getUserIdsByGroupIds($groupIds)
 	{
-		return (new Query())
+		($query = new Query())
 			->select('userId')
 			->from('{{%usergroups_users}}')
 			->where(DbHelper::parseParam('groupId', $groupIds, $query->params))

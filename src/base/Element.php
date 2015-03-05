@@ -11,7 +11,7 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\helpers\HtmlHelper;
-use craft\app\models\BaseElementModel;
+use craft\app\models\Content;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
 use Exception;
@@ -21,6 +21,8 @@ use yii\base\UnknownPropertyException;
 
 /**
  * The base class for all Craft element types. Any element type must extend this class.
+ *
+ * @property string $title The element’s title.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -231,8 +233,8 @@ abstract class Element extends Model implements ElementInterface
 	public static function getStatuses()
 	{
 		return [
-			BaseElementModel::ENABLED => Craft::t('app', 'Enabled'),
-			BaseElementModel::DISABLED => Craft::t('app', 'Disabled')
+			static::ENABLED => Craft::t('app', 'Enabled'),
+			static::DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -408,12 +410,12 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
-	 * @param BaseElementModel $element
-	 * @param string           $attribute
+	 * @param static $element
+	 * @param string $attribute
 	 *
 	 * @return mixed|string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
 		switch ($attribute)
 		{
@@ -547,7 +549,7 @@ abstract class Element extends Model implements ElementInterface
 	 *
 	 * @param array $row
 	 *
-	 * @return BaseElementModel|void
+	 * @return ElementInterface|void
 	 */
 	public static function populateElementModel($row)
 	{
@@ -556,11 +558,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
 		$html = '';
 
@@ -592,12 +594,12 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::saveElement()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param array            $params
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
 		return Craft::$app->elements->saveElement($element);
 	}
@@ -605,11 +607,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::getElementRoute()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool|mixed
 	 */
-	public static function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(ElementInterface $element)
 	{
 		return false;
 	}
@@ -617,12 +619,12 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param int              $structureId
 	 *
 	 * @return null|void
 	 */
-	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
 	}
 
@@ -766,7 +768,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's ID.
+	 * Returns the element’s ID.
 	 *
 	 * @return int|null
 	 *
@@ -817,7 +819,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL format used to generate this element's URL.
+	 * Returns the URL format used to generate this element’s URL.
 	 *
 	 * @return string|null
 	 */
@@ -826,7 +828,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's full URL.
+	 * Returns the element’s full URL.
 	 *
 	 * @return string
 	 */
@@ -841,7 +843,7 @@ abstract class Element extends Model implements ElementInterface
 
 			if ($useLocaleSiteUrl)
 			{
-				// Temporarily set Craft to use this element's locale's site URL
+				// Temporarily set Craft to use this element’s locale's site URL
 				$siteUrl = Craft::$app->getSiteUrl();
 				Craft::$app->setSiteUrl($localeSiteUrl);
 			}
@@ -865,7 +867,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns an anchor pre-filled with this element's URL and title.
+	 * Returns an anchor pre-filled with this element’s URL and title.
 	 *
 	 * @return \Twig_Markup
 	 */
@@ -895,7 +897,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's CP edit URL.
+	 * Returns the element’s CP edit URL.
 	 *
 	 * @return string|false
 	 */
@@ -905,7 +907,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL to the element's thumbnail, if there is one.
+	 * Returns the URL to the element’s thumbnail, if there is one.
 	 *
 	 * @param int|null $size
 	 *
@@ -917,7 +919,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL to the element's icon image, if there is one.
+	 * Returns the URL to the element’s icon image, if there is one.
 	 *
 	 * @param int|null $size
 	 *
@@ -929,7 +931,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's status.
+	 * Returns the element’s status.
 	 *
 	 * @return string|null
 	 */
@@ -990,7 +992,7 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Sets the default next element.
 	 *
-	 * @param BaseElementModel|false $element
+	 * @param ElementInterface|false $element
 	 *
 	 * @return null
 	 */
@@ -1002,7 +1004,7 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Sets the default previous element.
 	 *
-	 * @param BaseElementModel|false $element
+	 * @param ElementInterface|false $element
 	 *
 	 * return void
 	 */
@@ -1012,9 +1014,9 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Get the element's parent.
+	 * Get the element’s parent.
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	public function getParent()
 	{
@@ -1039,9 +1041,9 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Sets the element's parent.
+	 * Sets the element’s parent.
 	 *
-	 * @param BaseElementModel|null $parent
+	 * @param ElementInterface|null $parent
 	 *
 	 * @return null
 	 */
@@ -1060,7 +1062,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's ancestors.
+	 * Returns the element’s ancestors.
 	 *
 	 * @param int|null $dist
 	 *
@@ -1086,7 +1088,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's descendants.
+	 * Returns the element’s descendants.
 	 *
 	 * @param int|null $dist
 	 *
@@ -1112,7 +1114,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's children.
+	 * Returns the element’s children.
 	 *
 	 * @return ElementCriteriaModel
 	 */
@@ -1127,7 +1129,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns all of the element's siblings.
+	 * Returns all of the element’s siblings.
 	 *
 	 * @return ElementCriteriaModel
 	 */
@@ -1144,9 +1146,9 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's previous sibling.
+	 * Returns the element’s previous sibling.
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	public function getPrevSibling()
 	{
@@ -1164,9 +1166,9 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the element's next sibling.
+	 * Returns the element’s next sibling.
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	public function getNextSibling()
 	{
@@ -1211,11 +1213,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isAncestorOf(BaseElementModel $element)
+	public function isAncestorOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
 	}
@@ -1223,11 +1225,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is a descendant of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isDescendantOf(BaseElementModel $element)
+	public function isDescendantOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
 	}
@@ -1235,11 +1237,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is a direct parent of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isParentOf(BaseElementModel $element)
+	public function isParentOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
 	}
@@ -1247,11 +1249,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is a direct child of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isChildOf(BaseElementModel $element)
+	public function isChildOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
 	}
@@ -1259,11 +1261,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is a sibling of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isSiblingOf(BaseElementModel $element)
+	public function isSiblingOf(ElementInterface $element)
 	{
 		if ($this->root == $element->root && $this->level && $this->level == $element->level)
 		{
@@ -1288,11 +1290,11 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is the direct previous sibling of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isPrevSiblingOf(BaseElementModel $element)
+	public function isPrevSiblingOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
 	}
@@ -1300,17 +1302,17 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns whether this element is the direct next sibling of another one.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return bool
 	 */
-	public function isNextSiblingOf(BaseElementModel $element)
+	public function isNextSiblingOf(ElementInterface $element)
 	{
 		return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
 	}
 
 	/**
-	 * Returns the element's title.
+	 * Returns the element’s title.
 	 *
 	 * @return string
 	 */
@@ -1355,7 +1357,7 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns the content for the element.
 	 *
-	 * @return ContentModel
+	 * @return Content
 	 */
 	public function getContent()
 	{
@@ -1375,7 +1377,7 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Sets the content for the element.
 	 *
-	 * @param ContentModel|array $content
+	 * @param Content|array $content
 	 *
 	 * @return null
 	 */
@@ -1390,7 +1392,7 @@ abstract class Element extends Model implements ElementInterface
 
 			$this->_content->setAttributes($content);
 		}
-		else if ($content instanceof ContentModel)
+		else if ($content instanceof Content)
 		{
 			$this->_content = $content;
 		}
@@ -1459,7 +1461,7 @@ abstract class Element extends Model implements ElementInterface
 						$value = $fieldType->prepValueFromPost($value);
 					}
 
-					// Now set the prepped value on the ContentModel
+					// Now set the prepped value on the Content
 					$this->_content->$handle = $value;
 				}
 			}
@@ -1551,7 +1553,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the name of the table this element's content is stored in.
+	 * Returns the name of the table this element’s content is stored in.
 	 *
 	 * @return string
 	 */
@@ -1561,7 +1563,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the field column prefix this element's content uses.
+	 * Returns the field column prefix this element’s content uses.
 	 *
 	 * @return string
 	 */
@@ -1571,7 +1573,7 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * Returns the field context this element's content uses.
+	 * Returns the field context this element’s content uses.
 	 *
 	 * @return string
 	 */
@@ -1643,7 +1645,7 @@ abstract class Element extends Model implements ElementInterface
 	 * @param mixed $criteria
 	 * @param int   $dir
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	private function _getRelativeElement($criteria, $dir)
 	{

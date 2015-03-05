@@ -8,8 +8,8 @@
 namespace craft\app\web;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\helpers\ArrayHelper;
-use craft\app\models\BaseElementModel;
 use yii\web\UrlRuleInterface;
 
 /**
@@ -112,7 +112,7 @@ class UrlManager extends \yii\web\UrlManager
 	/**
 	 * Returns the element that was matched by the URI.
 	 *
-	 * @return BaseElementModel|false
+	 * @return ElementInterface|false
 	 */
 	public function getMatchedElement()
 	{

@@ -8,9 +8,9 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\errors\Exception;
 use craft\app\events\MoveElementEvent;
-use craft\app\models\BaseElementModel;
 use craft\app\models\Structure as StructureModel;
 use craft\app\records\Structure as StructureRecord;
 use craft\app\records\StructureElement as StructureElementRecord;
@@ -137,11 +137,11 @@ class Structures extends Component
 	 * Returns the descendant level delta for a given element.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return int
 	 */
-	public function getElementLevelDelta($structureId, BaseElementModel $element)
+	public function getElementLevelDelta($structureId, ElementInterface $element)
 	{
 		$elementRecord = $this->_getElementRecord($structureId, $element);
 		$descendants = $elementRecord->descendants();
@@ -166,13 +166,13 @@ class Structures extends Component
 	 * Prepends an element to another within a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
-	 * @param BaseElementModel $parentElement
+	 * @param ElementInterface $element
+	 * @param ElementInterface $parentElement
 	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function prepend($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
+	public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -183,13 +183,13 @@ class Structures extends Component
 	 * Appends an element to another within a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
-	 * @param BaseElementModel $parentElement
+	 * @param ElementInterface $element
+	 * @param ElementInterface $parentElement
 	 * @param string           $mode          Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function append($structureId, BaseElementModel $element, BaseElementModel $parentElement, $mode = 'auto')
+	public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -200,12 +200,12 @@ class Structures extends Component
 	 * Prepends an element to the root of a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function prependToRoot($structureId, BaseElementModel $element, $mode = 'auto')
+	public function prependToRoot($structureId, ElementInterface $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -216,12 +216,12 @@ class Structures extends Component
 	 * Appends an element to the root of a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function appendToRoot($structureId, BaseElementModel $element, $mode = 'auto')
+	public function appendToRoot($structureId, ElementInterface $element, $mode = 'auto')
 	{
 		$parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -232,13 +232,13 @@ class Structures extends Component
 	 * Moves an element before another within a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
-	 * @param BaseElementModel $nextElement
+	 * @param ElementInterface $element
+	 * @param ElementInterface $nextElement
 	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function moveBefore($structureId, BaseElementModel $element, BaseElementModel $nextElement, $mode = 'auto')
+	public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
 	{
 		$nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
@@ -249,13 +249,13 @@ class Structures extends Component
 	 * Moves an element after another within a given structure.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
-	 * @param BaseElementModel $prevElement
+	 * @param ElementInterface $element
+	 * @param ElementInterface $prevElement
 	 * @param string           $mode        Whether this is an "insert", "update", or "auto".
 	 *
 	 * @return bool
 	 */
-	public function moveAfter($structureId, BaseElementModel $element, BaseElementModel $prevElement, $mode = 'auto')
+	public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
 	{
 		$prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
@@ -269,11 +269,11 @@ class Structures extends Component
 	 * Returns a structure element record from given structure and element IDs.
 	 *
 	 * @param int              $structureId
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return StructureElementRecord|null
 	 */
-	private function _getElementRecord($structureId, BaseElementModel $element)
+	private function _getElementRecord($structureId, ElementInterface $element)
 	{
 		$elementId = $element->id;
 
@@ -317,10 +317,10 @@ class Structures extends Component
 	}
 
 	/**
-	 * Updates a BaseElementModel with the new structure attributes from a StructureElement record.
+	 * Updates a ElementInterface with the new structure attributes from a StructureElement record.
 	 *
 	 * @param  int                    $structureId
-	 * @param  BaseElementModel       $element
+	 * @param  ElementInterface       $element
 	 * @param  StructureElementRecord $targetElementRecord
 	 * @param  string                 $action
 	 * @param  string                 $mode
@@ -328,7 +328,7 @@ class Structures extends Component
 	 * @throws \Exception
 	 * @return bool
 	 */
-	private function _doIt($structureId, BaseElementModel $element, StructureElementRecord $targetElementRecord, $action, $mode)
+	private function _doIt($structureId, ElementInterface $element, StructureElementRecord $targetElementRecord, $action, $mode)
 	{
 		// Figure out what we're doing
 		if ($mode != 'insert')

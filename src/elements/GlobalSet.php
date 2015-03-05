@@ -9,10 +9,13 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\base\FieldLayoutTrait;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
+use craft\app\enums\ElementType;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -48,7 +51,7 @@ class GlobalSet extends Element
 	public $fieldLayoutId;
 
 	/**
-	 * @var The element type that global sets' field layouts should be associated with.
+	 * @var string The element type that global sets' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::GlobalSet;
 
@@ -148,7 +151,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 * @inheritDoc ElementInterface::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */

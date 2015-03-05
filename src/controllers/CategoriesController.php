@@ -8,12 +8,12 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
@@ -337,7 +337,7 @@ class CategoriesController extends Controller
 			if ($variables['category']->id)
 			{
 				// If the category is enabled, use its main URL as its share URL.
-				if ($variables['category']->getStatus() == BaseElementModel::ENABLED)
+				if ($variables['category']->getStatus() == Element::ENABLED)
 				{
 					$variables['shareUrl'] = $variables['category']->getUrl();
 				}

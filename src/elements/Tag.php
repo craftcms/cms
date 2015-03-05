@@ -9,11 +9,13 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\FieldLayout;
+use craft\app\models\TagGroup;
 
 /**
  * The Tag class is responsible for implementing and defining tags as a native element type in Craft.
@@ -179,12 +181,13 @@ class Tag extends Element
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
+		/** @var Tag $element */
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
 				'label'     => Craft::t('app', 'Title'),
@@ -207,13 +210,14 @@ class Tag extends Element
 	/**
 	 * @inheritDoc ElementInterface::saveElement()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param array            $params
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
+		/** @var Tag $element */
 		return Craft::$app->tags->saveTag($element);
 	}
 
@@ -233,7 +237,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::isEditable()
+	 * @inheritDoc ElementInterface::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -243,7 +247,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 * @inheritDoc ElementInterface::getFieldLayout()
 	 *
 	 * @return FieldLayout|null
 	 */
@@ -260,7 +264,7 @@ class Tag extends Element
 	/**
 	 * Returns the tag's group.
 	 *
-	 * @return TagGroupModel|null
+	 * @return TagGroup|null
 	 */
 	public function getGroup()
 	{

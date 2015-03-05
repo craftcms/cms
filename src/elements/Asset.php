@@ -9,12 +9,20 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
+use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\ImageHelper;
+use craft\app\helpers\IOHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetFolder as AssetFolderModel;
-use craft\app\models\BaseElementModel;
+use craft\app\models\AssetFolder;
+use craft\app\models\AssetSource;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\FieldLayout;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -291,13 +299,14 @@ class Asset extends Element
 	/**
 	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $attribute
 	 *
 	 * @return string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
+		/** @var Asset $element */
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', [$element, $attribute], true);
 
@@ -317,7 +326,7 @@ class Asset extends Element
 			{
 				if ($element->size)
 				{
-					return Craft::$app->getFormatter()->formatSize($element->size);
+					return Craft::$app->getFormatter()->asSize($element->size);
 				}
 				else
 				{
@@ -435,12 +444,13 @@ class Asset extends Element
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
+		/** @var Asset $element */
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
 				'label'     => Craft::t('app', 'Filename'),
@@ -473,13 +483,14 @@ class Asset extends Element
 	/**
 	 * @inheritDoc ElementInterface::saveElement()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param array            $params
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
+		/** @var Asset $element */
 		// Is the filename changing?
 		if (!empty($params['filename']) && $params['filename'] != $element->filename)
 		{
@@ -637,9 +648,9 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 * @inheritDoc ElementInterface::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
@@ -681,7 +692,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::isEditable()
+	 * @inheritDoc ElementInterface::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -713,7 +724,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @return AssetSourceModel|null
+	 * @return AssetSource|null
 	 */
 	public function getSource()
 	{
@@ -751,7 +762,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getThumbUrl()
+	 * @inheritDoc ElementInterface::getThumbUrl()
 	 *
 	 * @param int $size
 	 *
@@ -772,7 +783,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getIconUrl()
+	 * @inheritDoc ElementInterface::getIconUrl()
 	 *
 	 * @param int $size
 	 *
@@ -960,15 +971,15 @@ class Asset extends Element
 		if (!$transform->width || !$transform->height)
 		{
 			// Fill in the blank
-			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_getWidth(), $this->_getHeight());
+			list($dimensions['width'], $dimensions['height']) = ImageHelper::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->width, $this->height);
 		}
 
 		// Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
 		if ($transform->mode == 'fit')
 		{
-			$factor = max($this->_getWidth() / $dimensions['width'], $this->_getHeight() / $dimensions['height']);
-			$dimensions['width']  = round($this->_getWidth() / $factor);
-			$dimensions['height'] = round($this->_getHeight() / $factor);
+			$factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
+			$dimensions['width']  = round($this->width / $factor);
+			$dimensions['height'] = round($this->height / $factor);
 		}
 
 		return $dimensions[$dimension];

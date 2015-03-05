@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\Command;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
@@ -16,7 +16,6 @@ use craft\app\events\FieldLayoutEvent;
 use craft\app\fieldtypes\BaseFieldType;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\base\Model;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
@@ -948,7 +947,7 @@ class Fields extends Component
 	 * Populates a fieldtype by a field model.
 	 *
 	 * @param FieldModel            $field
-	 * @param BaseElementModel|null $element
+	 * @param ElementInterface|null $element
 	 *
 	 * @return BaseFieldType|null
 	 */

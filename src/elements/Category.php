@@ -9,11 +9,14 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
-use craft\app\models\BaseElementModel;
+use craft\app\helpers\UrlHelper;
+use craft\app\models\CategoryGroup;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\models\FieldLayout;
 
 /**
  * The Category class is responsible for implementing and defining categories as a native element type in
@@ -231,13 +234,14 @@ class Category extends Element
 	/**
 	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $attribute
 	 *
 	 * @return string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
+		/** @var Category $element */
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', [$element, $attribute], true);
 
@@ -306,12 +310,13 @@ class Category extends Element
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
+		/** @var Category $element */
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
 				'label' => Craft::t('app', 'Title'),
@@ -346,13 +351,14 @@ class Category extends Element
 	/**
 	 * @inheritDoc ElementInterface::saveElement()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param array            $params
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
+		/** @var Category $element */
 		if (isset($params['slug']))
 		{
 			$element->slug = $params['slug'];
@@ -364,13 +370,14 @@ class Category extends Element
 	/**
 	 * @inheritDoc ElementInterface::getElementRoute()
 	 *
-	 * @param BaseElementModel
+	 * @param ElementInterface
 	 *
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public static function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(ElementInterface $element)
 	{
+		/** @var Category $element */
 		$group = $element->getGroup();
 
 		// Make sure the group is set to have URLs
@@ -390,13 +397,14 @@ class Category extends Element
 	/**
 	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param int              $structureId
 	 *
 	 * @return null
 	 */
-	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
+		/** @var Category $element */
 		// Was the category moved within its group's structure?
 		if ($element->getGroup()->structureId == $structureId)
 		{
@@ -458,9 +466,9 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 * @inheritDoc ElementInterface::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
@@ -473,7 +481,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getUrlFormat()
+	 * @inheritDoc ElementInterface::getUrlFormat()
 	 *
 	 * @return string|null
 	 */
@@ -500,7 +508,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::isEditable()
+	 * @inheritDoc ElementInterface::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -510,7 +518,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 * @inheritDoc ElementInterface::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */
@@ -527,7 +535,7 @@ class Category extends Element
 	/**
 	 * Returns the category's group.
 	 *
-	 * @return CategoryGroupModel|null
+	 * @return CategoryGroup|null
 	 */
 	public function getGroup()
 	{

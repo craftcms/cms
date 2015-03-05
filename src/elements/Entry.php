@@ -9,6 +9,7 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elementactions\SetStatus;
 use craft\app\enums\AttributeType;
@@ -17,10 +18,11 @@ use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\base\Model;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\EntryType as EntryTypeModel;
+use craft\app\models\FieldLayout;
 use craft\app\models\Section as SectionModel;
 
 /**
@@ -127,10 +129,10 @@ class Entry extends Element
 	public static function getStatuses()
 	{
 		return [
-			Entry::LIVE => Craft::t('app', 'Live'),
-			Entry::PENDING => Craft::t('app', 'Pending'),
-			Entry::EXPIRED => Craft::t('app', 'Expired'),
-			BaseElementModel::DISABLED => Craft::t('app', 'Disabled')
+			static::LIVE => Craft::t('app', 'Live'),
+			static::PENDING => Craft::t('app', 'Pending'),
+			static::EXPIRED => Craft::t('app', 'Expired'),
+			static::DISABLED => Craft::t('app', 'Disabled')
 		];
 	}
 
@@ -288,10 +290,11 @@ class Entry extends Element
 		// Set Status
 		if ($canSetStatus)
 		{
+			/** @var SetStatus $setStatusAction */
 			$setStatusAction = Craft::$app->elements->getAction('SetStatus');
 			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
 			{
-				if ($event->status == BaseElementModel::ENABLED)
+				if ($event->status == static::ENABLED)
 				{
 					// Set a Post Date as well
 					Craft::$app->getDb()->createCommand()->update(
@@ -429,13 +432,14 @@ class Entry extends Element
 	/**
 	 * @inheritDoc ElementInterface::getTableAttributeHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $attribute
 	 *
 	 * @return mixed|null|string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
+		/** @var Entry $element */
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', [$element, $attribute], true);
 
@@ -604,9 +608,9 @@ class Entry extends Element
 
 					if ($types)
 					{
-						foreach ($types as $type)
+						foreach ($types as $_type)
 						{
-							$typeIds[] = $type->id;
+							$typeIds[] = $_type->id;
 						}
 					}
 					else
@@ -731,7 +735,7 @@ class Entry extends Element
 	 *
 	 * @param array $row
 	 *
-	 * @return BaseElementModel|Model|void
+	 * @return ElementInterface|Model|void
 	 */
 	public static function populateElementModel($row)
 	{
@@ -741,12 +745,13 @@ class Entry extends Element
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return string
 	 */
-	public static function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(ElementInterface $element)
 	{
+		/** @var Entry $element */
 		if ($element->getType()->hasTitleField)
 		{
 			$html = Craft::$app->templates->render('entries/_titlefield', [
@@ -768,8 +773,9 @@ class Entry extends Element
 	 *
 	 * @return bool
 	 */
-	public static function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(ElementInterface $element, $params)
 	{
+		/** @var Entry $element */
 		// Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
 		return Craft::$app->entries->saveEntry($element);
 	}
@@ -777,12 +783,13 @@ class Entry extends Element
 	/**
 	 * Routes the request when the URI matches an element.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return array|bool|mixed
 	 */
-	public static function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(ElementInterface $element)
 	{
+		/** @var Entry $element */
 		// Make sure that the entry is actually live
 		if ($element->getStatus() == Entry::LIVE)
 		{
@@ -806,13 +813,14 @@ class Entry extends Element
 	/**
 	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param int              $structureId
 	 *
 	 * @return null|void
 	 */
-	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
+		/** @var Entry $element */
 		// Was the entry moved within its section's structure?
 		$section = $element->getSection();
 
@@ -843,9 +851,9 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 * @inheritDoc ElementInterface::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
@@ -858,7 +866,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getLocales()
+	 * @inheritDoc ElementInterface::getLocales()
 	 *
 	 * @return array
 	 */
@@ -875,7 +883,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getUrlFormat()
+	 * @inheritDoc ElementInterface::getUrlFormat()
 	 *
 	 * @return string|null
 	 */
@@ -955,7 +963,7 @@ class Entry extends Element
 	/**
 	 * Returns the entry's author.
 	 *
-	 * @return UserModel|null
+	 * @return User|null
 	 */
 	public function getAuthor()
 	{
@@ -966,7 +974,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getStatus()
+	 * @inheritDoc ElementInterface::getStatus()
 	 *
 	 * @return string|null
 	 */
@@ -998,7 +1006,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::isEditable()
+	 * @inheritDoc ElementInterface::isEditable()
 	 *
 	 * @return bool
 	 */
@@ -1014,7 +1022,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 * @inheritDoc ElementInterface::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */

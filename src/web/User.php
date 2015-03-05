@@ -10,7 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\elements\User;
+use craft\app\elements\User as UserElement;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -18,6 +18,10 @@ use yii\web\IdentityInterface;
  * The User service provides APIs for managing the user authentication status.
  *
  * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
+ *
+ * @property UserElement|null $identity The logged-in user.
+ *
+ * @method UserElement|null getIdentity() Returns the logged-in user.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -79,10 +83,10 @@ class User extends \yii\web\User
 	 * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
 	 * so that login forms can remember the initial Username value on login forms.
 	 *
-	 * @param User $user
+	 * @param UserElement $user
 	 * @see afterLogin()
 	 */
-	public function sendUsernameCookie(User $user)
+	public function sendUsernameCookie(UserElement $user)
 	{
 		$rememberUsernameDuration = Craft::$app->config->get('rememberUsernameDuration');
 
@@ -364,7 +368,7 @@ class User extends \yii\web\User
 
 			if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2]))
 			{
-				$authData = User::getAuthData($identityData[1]);
+				$authData = UserElement::getAuthData($identityData[1]);
 
 				if ($authData)
 				{

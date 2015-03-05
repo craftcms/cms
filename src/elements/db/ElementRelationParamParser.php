@@ -8,10 +8,10 @@
 namespace craft\app\elements\db;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -198,7 +198,7 @@ class ElementRelationParamParser
 					{
 						$relElementIds[] = $element;
 					}
-					else if ($element instanceof BaseElementModel)
+					else if ($element instanceof ElementInterface)
 					{
 						$relElementIds[] = $element->id;
 					}

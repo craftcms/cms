@@ -7,12 +7,10 @@
 
 namespace craft\app\base;
 
-use craft\app\components\ComponentTypeInterface;
 use craft\app\db\Query;
-use craft\app\elements\The;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout;
 
 
 /**
@@ -27,38 +25,39 @@ interface ElementInterface
 	// =========================================================================
 
 	/**
-	 * Returns whether this element type will be storing any data in the `content` table (tiles or custom fields).
+	 * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
 	 *
-	 * @return bool Whether the element type has content. Default is `false`.
+	 * @return bool Whether elements of this type will be storing any data in the `content` table.
 	 */
 	public static function hasContent();
 
 	/**
-	 * Returns whether this element type has titles.
+	 * Returns whether elements of this type have traditional titles.
 	 *
-	 * @return bool Whether the element type has titles. Default is `false`.
+	 * @return bool Whether elements of this type have traditional titles.
 	 */
 	public static function hasTitles();
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * Returns whether elements of this type store data on a per-locale basis.
 	 *
-	 * If this returns `true`, the element model’s [[BaseElementModel::getLocales() getLocales()]] method will
+	 * If this returns `true`, the element’s [[getLocales()]] method will
 	 * be responsible for defining which locales its data should be stored in.
 	 *
-	 * @return bool Whether the element type is localized. Default is `false`.
+	 * @return bool Whether elements of this type store data on a per-locale basis.
 	 */
 	public static function isLocalized();
 
 	/**
-	 * Returns whether this element type can have statuses.
+	 * Returns whether elements of this type have statuses.
 	 *
 	 * If this returns `true`, the element index template will show a Status menu by default, and your elements will
 	 * get status indicator icons next to them.
 	 *
 	 * Use [[getStatuses()]] to customize which statuses the elements might have.
 	 *
-	 * @return bool Whether the element type has statuses. Default is `false`.
+	 * @return bool Whether elements of this type have statuses.
+	 * @see getStatuses()
 	 */
 	public static function hasStatuses();
 
@@ -75,11 +74,12 @@ interface ElementInterface
 	 * [[getElementQueryStatusCondition()]].
 	 *
 	 * @return array|null
+	 * @see hasStatuses()
 	 */
 	public static function getStatuses();
 
 	/**
-	 * Returns this element type's sources.
+	 * Returns the keys of the sources that elements of this type may belong to.
 	 *
 	 * This defines what will show up in the source list on element indexes and element selector modals.
 	 *
@@ -92,9 +92,8 @@ interface ElementInterface
 	 * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
 	 *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
 	 *   the attribute. (Optional)
-	 * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element model’s
-	 *   [[BaseElementModel::getThumbUrl() getThumbUrl()]] or [[BaseElementModel::getIconUrl() getIconUrl()]]
-	 *   methods to define your elements’ thumb/icon URLs.) (Optional)
+	 * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element’s
+	 *   [[getThumbUrl()]] or [[getIconUrl()]] methods to define your elements’ thumb/icon URLs.) (Optional)
 	 * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
 	 *   will be available to this source. (Optional)
 	 * - **`newChildUrl`** – The URL that should be loaded when a usel select’s the “New child” menu option on an
@@ -104,7 +103,7 @@ interface ElementInterface
 	 *
 	 * @param string|null $context The context ('index' or 'modal').
 	 *
-	 * @return array|false The element type's sources.
+	 * @return string[]|false The source keys.
 	 */
 	public static function getSources($context = null);
 
@@ -131,13 +130,11 @@ interface ElementInterface
 	public static function getAvailableActions($source = null);
 
 	/**
-	 * Defines which element model attributes should be searchable.
+	 * Defines which element attributes should be searchable.
 	 *
-	 * This method should return an array of attribute names that can be accessed on your
-	 * [[BaseElementModel element model]] (for example, the attributes defined by your element model’s
-	 * [[Element::defineAttributes() defineAttributes()]] method). [[\craft\app\services\Search]] will
-	 * call this method when it is indexing keywords for one of your elements, and for each attribute it returns, it will
-	 * fetch the corresponding property’s value on the element.
+	 * This method should return an array of attribute names that can be accessed on your elements.
+	 * [[\craft\app\services\Search]] will call this method when it is indexing keywords for one of your elements,
+	 * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
 	 *
 	 * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
 	 *
@@ -213,8 +210,7 @@ interface ElementInterface
 	 *
 	 * The *first* item that this array returns will just identify the database column name, and the table column’s
 	 * header, but will **not** have any effect on what shows up in the table’s body. That’s because the first column is
-	 * reserved for displaying whatever your element model’s [[BaseElementModel::__toString() __toString()]] method
-	 * returns (the string representation of the element).
+	 * reserved for displaying whatever your element’s __toString() method returns.
 	 *
 	 * All other items besides the first one will also define which element attribute should be shown within the data
 	 * cells. (The actual HTML to be shown can be customized with [[getTableAttributeHtml()]].)
@@ -260,12 +256,12 @@ interface ElementInterface
 	 * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the active
 	 *   locale.
 	 *
-	 * @param BaseElementModel $element   The element.
+	 * @param ElementInterface $element   The element.
 	 * @param string           $attribute The attribute name.
 	 *
 	 * @return string
 	 */
-	public static function getTableAttributeHtml(BaseElementModel $element, $attribute);
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute);
 
 	/**
 	 * Defines any custom element criteria attributes for this element type.
@@ -305,8 +301,8 @@ interface ElementInterface
 	 * This method will get called from [[\craft\app\services\Elements::buildElementsQuery()]] as it is building out a database
 	 * query to fetch elements with a given criteria. It will only be called if [[hasContent()]] returns `true`.
 	 *
-	 * If this method returns `false`, no content table will be joined in, and it will be up to the elements’
-	 * [[BaseElementModel::getContent() getContent()]] methods to fetch their content rows on demand.
+	 * If this method returns `false`, no content table will be joined in, and it will be up to the element’s
+	 * [[getContent()]] method to fetch content rows on demand.
 	 *
 	 * @param ElementCriteriaModel The element criteria.
 	 *
@@ -398,13 +394,13 @@ interface ElementInterface
 	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria);
 
 	/**
-	 * Populates an element model based on a query result.
+	 * Populates an element based on a query result.
 	 *
 	 * This method is called by [[\craft\app\services\Elements::findElements()]] after it has finished fetching all of the
 	 * matching elements’ rows from the database.
 	 *
 	 * For each row of data returned by the query, it will call this method on the element type, and it is up to this
-	 * method to take that array of raw data from the database, and populate a new element model with it.
+	 * method to take that array of raw data from the database, and populate a new element with it.
 	 *
 	 * You should be able to accomplish this with a single line:
 	 *
@@ -414,18 +410,18 @@ interface ElementInterface
 	 *
 	 * @param array $row The row of data in the database query result.
 	 *
-	 * @return BaseElementModel The element model, populated with the data in $row.
+	 * @return ElementInterface The element, populated with the data in $row.
 	 */
 	public static function populateElementModel($row);
 
 	/**
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
-	 * @param BaseElementModel $element The element being edited.
+	 * @param ElementInterface $element The element being edited.
 	 *
 	 * @return string The HTML for the editor HUD.
 	 */
-	public static function getEditorHtml(BaseElementModel $element);
+	public static function getEditorHtml(ElementInterface $element);
 
 	/**
 	 * Saves a given element.
@@ -433,30 +429,401 @@ interface ElementInterface
 	 * This method will be called when an Element Editor’s Save button is clicked. It should just wrap your service’s
 	 * saveX() method.
 	 *
-	 * @param BaseElementModel $element The element being saved.
-	 * @param array            $params  Any element params found in the POST data.
+	 * @param ElementInterface $element The element being saved.
+	 * @param array  $params  Any element params found in the POST data.
 	 *
 	 * @return bool Whether the element was saved successfully.
 	 */
-	public static function saveElement(BaseElementModel $element, $params);
+	public static function saveElement(ElementInterface $element, $params);
 
 	/**
 	 * Returns the route for a given element.
 	 *
-	 * @param BaseElementModel The matched element.
+	 * @param static The matched element.
 	 *
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public static function getElementRoute(BaseElementModel $element);
+	public static function getElementRoute(ElementInterface $element);
 
 	/**
 	 * Performs actions after an element has been moved within a structure.
 	 *
-	 * @param BaseElementModel $element     The element that was moved.
+	 * @param ElementInterface $element     The element that was moved.
 	 * @param int              $structureId The ID of the structure that it moved within.
 	 *
 	 * @return null
 	 */
-	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId);
+	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId);
+
+	// Instance Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the element’s ID.
+	 *
+	 * @return int|null
+	 */
+	public function getId();
+
+	/**
+	 * Returns the field layout used by this element.
+	 *
+	 * @return FieldLayout|null
+	 */
+	public function getFieldLayout();
+
+	/**
+	 * Returns the locale IDs this element is available in.
+	 *
+	 * @return string[]
+	 */
+	public function getLocales();
+
+	/**
+	 * Returns the URL format used to generate this element’s URL.
+	 *
+	 * @return string|null
+	 */
+	public function getUrlFormat();
+
+	/**
+	 * Returns the element’s full URL.
+	 *
+	 * @return string|null
+	 */
+	public function getUrl();
+
+	/**
+	 * Returns an anchor pre-filled with this element’s URL and title.
+	 *
+	 * @return \Twig_Markup
+	 */
+	public function getLink();
+
+	/**
+	 * Returns the reference string to this element.
+	 *
+	 * @return string|null
+	 */
+	public function getRef();
+
+	/**
+	 * Returns whether the current user can edit the element.
+	 *
+	 * @return bool
+	 */
+	public function isEditable();
+
+	/**
+	 * Returns the element’s CP edit URL.
+	 *
+	 * @return string|false
+	 */
+	public function getCpEditUrl();
+
+	/**
+	 * Returns the URL to the element’s thumbnail, if there is one.
+	 *
+	 * @param int|null $size
+	 *
+	 * @return string|false
+	 */
+	public function getThumbUrl($size = null);
+
+	/**
+	 * Returns the URL to the element’s icon image, if there is one.
+	 *
+	 * @param int|null $size
+	 *
+	 * @return string|false
+	 */
+	public function getIconUrl($size = null);
+
+	/**
+	 * Returns the element’s status.
+	 *
+	 * @return string|null
+	 */
+	public function getStatus();
+
+	/**
+	 * Returns the next element relative to this one, from a given set of criteria.
+	 *
+	 * @param mixed $criteria
+	 *
+	 * @return ElementCriteriaModel|null
+	 */
+	public function getNext($criteria = false);
+
+	/**
+	 * Returns the previous element relative to this one, from a given set of criteria.
+	 *
+	 * @param mixed $criteria
+	 *
+	 * @return ElementCriteriaModel|null
+	 */
+	public function getPrev($criteria = false);
+
+	/**
+	 * Sets the default next element.
+	 *
+	 * @param ElementInterface|false $element
+	 *
+	 * @return null
+	 */
+	public function setNext($element);
+
+	/**
+	 * Sets the default previous element.
+	 *
+	 * @param ElementInterface|false $element
+	 *
+	 * return void
+	 */
+	public function setPrev($element);
+
+	/**
+	 * Get the element’s parent.
+	 *
+	 * @return ElementInterface|null
+	 */
+	public function getParent();
+
+	/**
+	 * Sets the element’s parent.
+	 *
+	 * @param ElementInterface|null $parent
+	 *
+	 * @return null
+	 */
+	public function setParent($parent);
+
+	/**
+	 * Returns the element’s ancestors.
+	 *
+	 * @param int|null $dist
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	public function getAncestors($dist = null);
+
+	/**
+	 * Returns the element’s descendants.
+	 *
+	 * @param int|null $dist
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	public function getDescendants($dist = null);
+
+	/**
+	 * Returns the element’s children.
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	public function getChildren();
+
+	/**
+	 * Returns all of the element’s siblings.
+	 *
+	 * @return ElementCriteriaModel
+	 */
+	public function getSiblings();
+
+	/**
+	 * Returns the element’s previous sibling.
+	 *
+	 * @return ElementInterface|null
+	 */
+	public function getPrevSibling();
+
+	/**
+	 * Returns the element’s next sibling.
+	 *
+	 * @return ElementInterface|null
+	 */
+	public function getNextSibling();
+
+	/**
+	 * Returns whether the element has descendants.
+	 *
+	 * @return bool
+	 */
+	public function hasDescendants();
+
+	/**
+	 * Returns the total number of descendants that the element has.
+	 *
+	 * @return bool
+	 */
+	public function getTotalDescendants();
+
+	/**
+	 * Returns whether this element is an ancestor of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isAncestorOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is a descendant of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isDescendantOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is a direct parent of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isParentOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is a direct child of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isChildOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is a sibling of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isSiblingOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is the direct previous sibling of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isPrevSiblingOf(ElementInterface $element);
+
+	/**
+	 * Returns whether this element is the direct next sibling of another one.
+	 *
+	 * @param ElementInterface $element
+	 *
+	 * @return bool
+	 */
+	public function isNextSiblingOf(ElementInterface $element);
+
+	/**
+	 * Returns the element’s title.
+	 *
+	 * @return string
+	 */
+	public function getTitle();
+
+	/**
+	 * Treats custom fields as array offsets.
+	 *
+	 * @param mixed $offset
+	 *
+	 * @return bool
+	 */
+	public function offsetExists($offset);
+
+	/**
+	 * @inheritDoc Model::getAttribute()
+	 *
+	 * @param string $name
+	 * @param bool   $flattenValue
+	 *
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false);
+
+	/**
+	 * Returns the content for the element.
+	 *
+	 * @return Content
+	 */
+	public function getContent();
+
+	/**
+	 * Sets the content for the element.
+	 *
+	 * @param Content|array $content
+	 *
+	 * @return null
+	 */
+	public function setContent($content);
+
+	/**
+	 * Sets the content from post data, calling prepValueFromPost() on the field types.
+	 *
+	 * @param array|string $content
+	 *
+	 * @return null
+	 */
+	public function setContentFromPost($content);
+
+	/**
+	 * Returns the raw content from the post data, before it was passed through [[prepValueFromPost()]].
+	 *
+	 * @return array
+	 */
+	public function getContentFromPost();
+
+	/**
+	 * Returns the location in POST that the content was pulled from.
+	 *
+	 * @return string|null
+	 */
+	public function getContentPostLocation();
+
+	/**
+	 * Sets the location in POST that the content was pulled from.
+	 *
+	 * @param $contentPostLocation
+	 *
+	 * @return string|null
+	 */
+	public function setContentPostLocation($contentPostLocation);
+
+	/**
+	 * Returns the prepped content for a given field.
+	 *
+	 * @param string $fieldHandle
+	 *
+	 * @throws Exception
+	 * @return mixed
+	 */
+	public function getFieldValue($fieldHandle);
+
+	/**
+	 * Returns the name of the table this element’s content is stored in.
+	 *
+	 * @return string
+	 */
+	public function getContentTable();
+
+	/**
+	 * Returns the field column prefix this element’s content uses.
+	 *
+	 * @return string
+	 */
+	public function getFieldColumnPrefix();
+
+	/**
+	 * Returns the field context this element’s content uses.
+	 *
+	 * @return string
+	 */
+	public function getFieldContext();
 }

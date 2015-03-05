@@ -7,9 +7,9 @@
 
 namespace craft\app\fieldtypes;
 
+use craft\app\base\ElementInterface;
 use craft\app\components\SavableComponentTypeInterface;
 use craft\app\db\Query;
-use craft\app\models\BaseElementModel;
 
 /**
  * Interface FieldTypeInterface
@@ -25,11 +25,11 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	/**
 	 * Sets the element that the field type is associated with.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 *
 	 * @return null
 	 */
-	public function setElement(BaseElementModel $element);
+	public function setElement(ElementInterface $element);
 
 	/**
 	 * Returns the field’s content attribute config.
@@ -157,7 +157,7 @@ interface FieldTypeInterface extends SavableComponentTypeInterface
 	/**
 	 * Returns the input value as it should be stored in the database.
 	 *
-	 * This method is called from [[BaseElementModel::setContentFromPost()]], and is the only chance your plugin has
+	 * This method is called from [[ElementInterface::setContentFromPost()]], and is the only chance your plugin has
 	 * to modify the POST data before it is saved to the craft_content table (assuming [[defineContentAttribute()]]
 	 * doesn’t return `false` and the field actually has a column in the craft_content table).
 	 *

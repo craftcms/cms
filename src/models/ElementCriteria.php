@@ -8,9 +8,9 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\base\Model;
 use craft\app\base\Element;
-use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -329,7 +329,7 @@ class ElementCriteria extends Model implements \Countable
 	 */
 	public function offsetSet($offset, $item)
 	{
-		if (is_numeric($offset) && $item instanceof BaseElementModel)
+		if (is_numeric($offset) && $item instanceof ElementInterface)
 		{
 			$this->_matchedElementsAtOffsets[$offset] = $item;
 		}
@@ -403,7 +403,7 @@ class ElementCriteria extends Model implements \Countable
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getElementType()
+	 * @inheritDoc ElementInterface::getElementType()
 	 *
 	 * @return Element
 	 */
@@ -463,7 +463,7 @@ class ElementCriteria extends Model implements \Countable
 	 *
 	 * @param int $offset The offset.
 	 *
-	 * @return BaseElementModel|null The element, if there is one.
+	 * @return ElementInterface|null The element, if there is one.
 	 */
 	public function nth($offset)
 	{
@@ -492,7 +492,7 @@ class ElementCriteria extends Model implements \Countable
 	 *
 	 * @param array|null $attributes
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	public function first($attributes = null)
 	{
@@ -506,7 +506,7 @@ class ElementCriteria extends Model implements \Countable
 	 *
 	 * @param array|null $attributes
 	 *
-	 * @return BaseElementModel|null
+	 * @return ElementInterface|null
 	 */
 	public function last($attributes = null)
 	{

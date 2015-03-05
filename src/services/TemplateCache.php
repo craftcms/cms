@@ -8,13 +8,13 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use yii\base\Component;
 
@@ -372,7 +372,7 @@ class TemplateCache extends Component
 	/**
 	 * Deletes caches that include a given element(s).
 	 *
-	 * @param BaseElementModel|BaseElementModel[] $elements The element(s) whose caches should be deleted.
+	 * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
 	 *
 	 * @return bool
 	 */

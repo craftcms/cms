@@ -7,8 +7,8 @@
 
 namespace craft\app\variables;
 
+use craft\app\base\ElementInterface;
 use craft\app\fieldtypes\BaseFieldType;
-use craft\app\models\BaseElementModel;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
@@ -165,7 +165,7 @@ class Fields
 	 * Populates a fieldtype.
 	 *
 	 * @param FieldModel            $field
-	 * @param BaseElementModel|null $element
+	 * @param ElementInterface|null $element
 	 *
 	 * @return BaseFieldType|null
 	 */

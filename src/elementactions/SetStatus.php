@@ -8,9 +8,9 @@
 namespace craft\app\elementactions;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\enums\AttributeType;
 use craft\app\events\SetStatusEvent;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
@@ -54,7 +54,7 @@ class SetStatus extends BaseElementAction
 		$status = $this->getParams()->status;
 
 		// Figure out which element IDs we need to update
-		if ($status == BaseElementModel::ENABLED)
+		if ($status == Element::ENABLED)
 		{
 			$sqlNewStatus = '1';
 		}
@@ -72,7 +72,7 @@ class SetStatus extends BaseElementAction
 			['in', 'id', $elementIds]
 		)->execute();
 
-		if ($status == BaseElementModel::ENABLED)
+		if ($status == Element::ENABLED)
 		{
 			// Enable their locale as well
 			Craft::$app->getDb()->createCommand()->update(
@@ -109,7 +109,7 @@ class SetStatus extends BaseElementAction
 	protected function defineParams()
 	{
 		return [
-			'status' => [AttributeType::Enum, 'values' => [BaseElementModel::ENABLED, BaseElementModel::DISABLED], 'required' => true]
+			'status' => [AttributeType::Enum, 'values' => [Element::ENABLED, Element::DISABLED], 'required' => true]
 		];
 	}
 }

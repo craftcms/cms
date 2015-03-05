@@ -7,7 +7,7 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\BaseElementModel;
+use craft\app\models\ElementInterface;
 
 /**
  * Element type template variable.
@@ -85,12 +85,12 @@ class ElementType extends BaseComponentTypeVariable
 	/**
 	 * Returns the table view HTML for a given attribute.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param string           $attribute
 	 *
 	 * @return string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
 		return $this->component->getTableAttributeHtml($element, $attribute);
 	}

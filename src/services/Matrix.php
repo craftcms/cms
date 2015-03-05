@@ -8,7 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\Command;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ElementType;
@@ -17,7 +17,6 @@ use craft\app\fieldtypes\Matrix as MatrixFieldType;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
@@ -1081,7 +1080,7 @@ class Matrix extends Component
 	/**
 	 * Applies the field's translation setting to a set of blocks.
 	 *
-	 * @param BaseElementModel $owner
+	 * @param ElementInterface $owner
 	 * @param FieldModel       $field
 	 * @param array            $blocks
 	 *

@@ -14,6 +14,8 @@ use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout;
+use craft\app\models\MatrixBlockType;
 
 /**
  * The MatrixBlock class is responsible for implementing and defining Matrix blocks as a native element type
@@ -218,9 +220,9 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldLayout()
+	 * @inheritDoc Element::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
@@ -233,7 +235,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getLocales()
+	 * @inheritDoc Element::getLocales()
 	 *
 	 * @return array
 	 */
@@ -279,7 +281,7 @@ class MatrixBlock extends Element
 	/**
 	 * Returns the block type.
 	 *
-	 * @return MatrixBlockTypeModel|null
+	 * @return MatrixBlockType|null
 	 */
 	public function getType()
 	{
@@ -292,7 +294,7 @@ class MatrixBlock extends Element
 	/**
 	 * Returns the owner.
 	 *
-	 * @return BaseElementModel|null
+	 * @return Element|null
 	 */
 	public function getOwner()
 	{
@@ -315,15 +317,15 @@ class MatrixBlock extends Element
 	/**
 	 * Sets the owner
 	 *
-	 * @param BaseElementModel
+	 * @param Element $owner
 	 */
-	public function setOwner(BaseElementModel $owner)
+	public function setOwner(Element $owner)
 	{
 		$this->_owner = $owner;
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getContentTable()
+	 * @inheritDoc Element::getContentTable()
 	 *
 	 * @return string
 	 */
@@ -333,7 +335,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc BaseElementModel::getFieldColumnPrefix()
+	 * @inheritDoc Element::getFieldColumnPrefix()
 	 *
 	 * @return string
 	 */

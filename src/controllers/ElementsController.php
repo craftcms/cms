@@ -8,11 +8,11 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\enums\ElementType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseElementModel;
 
 /**
  * The ElementsController class is a controller that handles various element related actions including retrieving and
@@ -187,13 +187,13 @@ class ElementsController extends BaseElementsController
 	/**
 	 * Returns the editor HTML for a given element.
 	 *
-	 * @param BaseElementModel $element
+	 * @param ElementInterface $element
 	 * @param bool             $includeLocales
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
+	private function _returnEditorHtml(ElementInterface $element, $includeLocales)
 	{
 		$localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
 

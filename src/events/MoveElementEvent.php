@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\base\ElementInterface;
+
 /**
  * Move element event class.
  *
@@ -24,7 +26,7 @@ class MoveElementEvent extends Event
 	public $structureId;
 
 	/**
-	 * @var \craft\app\models\BaseElementModel The element being moved.
+	 * @var ElementInterface The element being moved.
 	 */
 	public $element;
 }

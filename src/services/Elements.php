@@ -24,7 +24,6 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field;
 use craft\app\records\Element as ElementRecord;
@@ -128,7 +127,7 @@ class Elements extends Component
 	 * @param string $localeId    The locale to fetch the element in.
 	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
 	 *
-	 * @return BaseElementModel|null The matching element, or `null`.
+	 * @return ElementInterface|null The matching element, or `null`.
 	 */
 	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
@@ -163,7 +162,7 @@ class Elements extends Component
 	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
-	 * @return BaseElementModel|null The matching element, or `null`.
+	 * @return ElementInterface|null The matching element, or `null`.
 	 */
 	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
 	{
@@ -377,7 +376,7 @@ class Elements extends Component
 							$element = $elementType->populateElementModel($result);
 
 							// Was an element returned?
-							if (!$element || !($element instanceof BaseElementModel))
+							if (!$element || !($element instanceof ElementInterface))
 							{
 								continue;
 							}
@@ -561,11 +560,11 @@ class Elements extends Component
 					// Is this a supported status?
 					if (in_array($status, array_keys($elementType->getStatuses())))
 					{
-						if ($status == BaseElementModel::ENABLED)
+						if ($status == Element::ENABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 1';
 						}
-						else if ($status == BaseElementModel::DISABLED)
+						else if ($status == Element::DISABLED)
 						{
 							$statusConditions[] = 'elements.enabled = 0';
 						}
@@ -744,7 +743,7 @@ class Elements extends Component
 
 			if ($criteria->ancestorOf)
 			{
-				if (!$criteria->ancestorOf instanceof BaseElementModel)
+				if (!$criteria->ancestorOf instanceof ElementInterface)
 				{
 					$criteria->ancestorOf = Craft::$app->elements->getElementById($criteria->ancestorOf, $elementType->getClassHandle(), $criteria->locale);
 
@@ -780,7 +779,7 @@ class Elements extends Component
 
 			if ($criteria->descendantOf)
 			{
-				if (!$criteria->descendantOf instanceof BaseElementModel)
+				if (!$criteria->descendantOf instanceof ElementInterface)
 				{
 					$criteria->descendantOf = Craft::$app->elements->getElementById($criteria->descendantOf, $elementType->getClassHandle(), $criteria->locale);
 
@@ -816,7 +815,7 @@ class Elements extends Component
 
 			if ($criteria->siblingOf)
 			{
-				if (!$criteria->siblingOf instanceof BaseElementModel)
+				if (!$criteria->siblingOf instanceof ElementInterface)
 				{
 					$criteria->siblingOf = Craft::$app->elements->getElementById($criteria->siblingOf, $elementType->getClassHandle(), $criteria->locale);
 
@@ -868,7 +867,7 @@ class Elements extends Component
 
 			if ($criteria->prevSiblingOf)
 			{
-				if (!$criteria->prevSiblingOf instanceof BaseElementModel)
+				if (!$criteria->prevSiblingOf instanceof ElementInterface)
 				{
 					$criteria->prevSiblingOf = Craft::$app->elements->getElementById($criteria->prevSiblingOf, $elementType->getClassHandle(), $criteria->locale);
 
@@ -897,7 +896,7 @@ class Elements extends Component
 
 			if ($criteria->nextSiblingOf)
 			{
-				if (!$criteria->nextSiblingOf instanceof BaseElementModel)
+				if (!$criteria->nextSiblingOf instanceof ElementInterface)
 				{
 					$criteria->nextSiblingOf = Craft::$app->elements->getElementById($criteria->nextSiblingOf, $elementType->getClassHandle(), $criteria->locale);
 
@@ -926,7 +925,7 @@ class Elements extends Component
 
 			if ($criteria->positionedBefore)
 			{
-				if (!$criteria->positionedBefore instanceof BaseElementModel)
+				if (!$criteria->positionedBefore instanceof ElementInterface)
 				{
 					$criteria->positionedBefore = Craft::$app->elements->getElementById($criteria->positionedBefore, $elementType->getClassHandle(), $criteria->locale);
 
@@ -953,7 +952,7 @@ class Elements extends Component
 
 			if ($criteria->positionedAfter)
 			{
-				if (!$criteria->positionedAfter instanceof BaseElementModel)
+				if (!$criteria->positionedAfter instanceof ElementInterface)
 				{
 					$criteria->positionedAfter = Craft::$app->elements->getElementById($criteria->positionedAfter, $elementType->getClassHandle(), $criteria->locale);
 
@@ -1079,14 +1078,14 @@ class Elements extends Component
 	 * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
 	 * ensure that they point to valid section and entry type IDs.
 	 *
-	 * @param BaseElementModel $element         The element that is being saved
+	 * @param ElementInterface $element         The element that is being saved
 	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it
 	 *                                          will depend on whether the element is enabled or not.
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $validateContent = null)
+	public function saveElement(ElementInterface $element, $validateContent = null)
 	{
 		$elementType = $this->getElementType($element->getElementType());
 
@@ -1443,13 +1442,13 @@ class Elements extends Component
 	/**
 	 * Updates an element’s slug and URI, along with any descendants.
 	 *
-	 * @param BaseElementModel $element            The element to update.
+	 * @param ElementInterface $element            The element to update.
 	 * @param bool             $updateOtherLocales Whether the element’s other locales should also be updated.
 	 * @param bool             $updateDescendants  Whether the element’s descendants should also be updated.
 	 *
 	 * @return null
 	 */
-	public function updateElementSlugAndUri(BaseElementModel $element, $updateOtherLocales = true, $updateDescendants = true)
+	public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true)
 	{
 		ElementHelper::setUniqueUri($element);
 
@@ -1478,11 +1477,11 @@ class Elements extends Component
 	/**
 	 * Updates an element’s slug and URI, for any locales besides the given one.
 	 *
-	 * @param BaseElementModel $element The element to update.
+	 * @param ElementInterface $element The element to update.
 	 *
 	 * @return null
 	 */
-	public function updateElementSlugAndUriInOtherLocales(BaseElementModel $element)
+	public function updateElementSlugAndUriInOtherLocales(ElementInterface $element)
 	{
 		foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId)
 		{
@@ -1503,11 +1502,11 @@ class Elements extends Component
 	/**
 	 * Updates an element’s descendants’ slugs and URIs.
 	 *
-	 * @param BaseElementModel $element The element whose descendants should be updated.
+	 * @param ElementInterface $element The element whose descendants should be updated.
 	 *
 	 * @return null
 	 */
-	public function updateDescendantSlugsAndUris(BaseElementModel $element)
+	public function updateDescendantSlugsAndUris(ElementInterface $element)
 	{
 		$criteria = $this->getCriteria($element->getElementType());
 		$criteria->descendantOf = $element;
@@ -1819,7 +1818,7 @@ class Elements extends Component
 	 *
 	 * @param string $class The element action class handle.
 	 *
-	 * @return ElementInterface|null The element action, or `null`.
+	 * @return ElementActionInterface|null The element action, or `null`.
 	 */
 	public function getAction($class)
 	{
@@ -1966,11 +1965,11 @@ class Elements extends Component
 	 *
 	 * This is used by Live Preview and Sharing features.
 	 *
-	 * @param BaseElementModel $element The element currently being edited by Live Preview.
+	 * @param ElementInterface $element The element currently being edited by Live Preview.
 	 *
 	 * @return null
 	 */
-	public function setPlaceholderElement(BaseElementModel $element)
+	public function setPlaceholderElement(ElementInterface $element)
 	{
 		// Won't be able to do anything with this if it doesn't have an ID or locale
 		if (!$element->id || !$element->locale)
