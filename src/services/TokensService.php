@@ -45,7 +45,7 @@ class TokensService extends BaseApplicationComponent
 		}
 
 		$tokenRecord = new TokenRecord();
-		$tokenRecord->token = craft()->security->generateRandomString(32, false);
+		$tokenRecord->token = craft()->security->generateRandomString(32);
 		$tokenRecord->route = $route;
 
 		if ($usageLimit)
