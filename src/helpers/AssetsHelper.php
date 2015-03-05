@@ -110,7 +110,7 @@ class AssetsHelper
 			$separator = null;
 		}
 
-		$baseName = IOHelper::cleanFilename($baseName, false, $separator);
+		$baseName = IOHelper::cleanFilename($baseName, Craft::$app->config->get('convertFilenamesToAscii'), $separator);
 
 		if ($isFilename && empty($baseName))
 		{

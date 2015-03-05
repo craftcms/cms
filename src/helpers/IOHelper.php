@@ -1500,12 +1500,12 @@ class IOHelper
 	 * Cleans a filename.
 	 *
 	 * @param string $filename
-	 * @param bool   $onlyAlphaNumeric
+	 * @param bool   $onlyAscii
 	 * @param string $separator
 	 *
 	 * @return mixed
 	 */
-	public static function cleanFilename($filename, $onlyAlphaNumeric = false, $separator = '-')
+	public static function cleanFilename($filename, $onlyAscii = false, $separator = '-')
 	{
 		$disallowedChars = ['â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}'];
 
@@ -1523,7 +1523,7 @@ class IOHelper
 		// Nuke any trailing or leading .-_
 		$filename = trim($filename, '.-_');
 
-		$filename = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $filename) : $filename;
+		$filename = ($onlyAscii) ? StringHelper::toAscii($filename) : $filename;
 
 		return $filename;
 	}
