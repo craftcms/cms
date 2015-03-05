@@ -49,7 +49,7 @@ class IOHelper
 		{
 			$folder = static::getFolderName($path, true, $suppressErrors);
 			$files = static::getFolderContents($folder, false, null, false, $suppressErrors);
-			$lcaseFileName = StringHelper::toLowerCase($path);
+			$lcaseFilename = StringHelper::toLowerCase($path);
 
 			if (is_array($files) && count($files) > 0)
 			{
@@ -59,7 +59,7 @@ class IOHelper
 
 					if ($suppressErrors ? @is_file($file) : is_file($file))
 					{
-						if (StringHelper::toLowerCase($file) === $lcaseFileName)
+						if (StringHelper::toLowerCase($file) === $lcaseFilename)
 						{
 							return $file;
 						}
@@ -277,7 +277,7 @@ class IOHelper
 	 *
 	 * @return string The file name with or without the extension.
 	 */
-	public static function getFileName($path, $includeExtension = true, $suppressErrors = false)
+	public static function getFilename($path, $includeExtension = true, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 
@@ -1499,54 +1499,54 @@ class IOHelper
 	/**
 	 * Cleans a filename.
 	 *
-	 * @param string $fileName
+	 * @param string $filename
 	 * @param bool   $onlyAlphaNumeric
 	 * @param string $separator
 	 *
 	 * @return mixed
 	 */
-	public static function cleanFilename($fileName, $onlyAlphaNumeric = false, $separator = '-')
+	public static function cleanFilename($filename, $onlyAlphaNumeric = false, $separator = '-')
 	{
 		$disallowedChars = ['â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}'];
 
 		// Replace any control characters in the name with a space.
-		$fileName = preg_replace( "#\x{00a0}#siu", ' ', $fileName );
+		$filename = preg_replace( "#\x{00a0}#siu", ' ', $filename );
 
 		// Strip any characters not allowed.
-		$fileName = str_replace($disallowedChars, '', strip_tags($fileName));
+		$filename = str_replace($disallowedChars, '', strip_tags($filename));
 
 		if (!is_null($separator))
 		{
-			$fileName = preg_replace('/(\s|'.preg_quote($separator, '/').')+/', $separator, $fileName);
+			$filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/', $separator, $filename);
 		}
 
 		// Nuke any trailing or leading .-_
-		$fileName = trim($fileName, '.-_');
+		$filename = trim($filename, '.-_');
 
-		$fileName = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $fileName) : $fileName;
+		$filename = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $filename) : $filename;
 
-		return $fileName;
+		return $filename;
 	}
 
 	/**
 	 * Will set the access and modification times of the given file to the given
 	 * time, or the current time if it is not supplied.
 	 *
-	 * @param string $fileName       The path to the file/folder to touch.
+	 * @param string $filename       The path to the file/folder to touch.
 	 * @param null   $time           The time to set on the file/folder. If none
 	 *                               is provided, will default to the current time.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
 	 * @return bool
 	 */
-	public static function touch($fileName, $time = null, $suppressErrors = false)
+	public static function touch($filename, $time = null, $suppressErrors = false)
 	{
 		if (!$time)
 		{
 			$time = time();
 		}
 
-		if ($suppressErrors ? @touch($fileName, $time) : touch($fileName, $time))
+		if ($suppressErrors ? @touch($filename, $time) : touch($filename, $time))
 		{
 			return true;
 		}

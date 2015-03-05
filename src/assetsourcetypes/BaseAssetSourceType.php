@@ -155,13 +155,13 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			throw new Exception(Craft::t('app', 'Uploaded file was empty'));
 		}
 
-		$fileName = AssetsHelper::cleanAssetName($file['name']);
+		$filename = AssetsHelper::cleanAssetName($file['name']);
 
 		// Save the file to a temp location and pass this on to the source type implementation
-		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
+		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($filename));
 		move_uploaded_file($file['tmp_name'], $filePath);
 
-		$response = $this->insertFileByPath($filePath, $folder, $fileName);
+		$response = $this->insertFileByPath($filePath, $folder, $filename);
 
 		// Make sure the file is removed.
 		IOHelper::deleteFile($filePath, true);
@@ -177,19 +177,19 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param string           $localFilePath    The local file path of the file to insert.
 	 * @param AssetFolderModel $folder           The AssetFolderModel model where the file should be uploaded to.
-	 * @param string           $fileName         The name of the file to insert.
+	 * @param string           $filename         The name of the file to insert.
 	 * @param bool             $preventConflicts If set to true, will ensure that a conflict is not encountered by
 	 *                                           checking the file name prior insertion.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $fileName, $preventConflicts = false)
+	public function insertFileByPath($localFilePath, AssetFolderModel $folder, $filename, $preventConflicts = false)
 	{
 		// Fire a 'beforeUploadAsset' event
 		$event = new AssetEvent([
 			'path'     => $localFilePath,
 			'folder'   => $folder,
-			'filename' => $fileName
+			'filename' => $filename
 		]);
 
 		Craft::$app->assets->trigger(Assets::EVENT_BEFORE_UPLOAD_ASSET, $event);
@@ -204,30 +204,30 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($preventConflicts)
 			{
-				$newFileName = $this->getNameReplacement($folder, $fileName);
-				$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
+				$newFilename = $this->getNameReplacement($folder, $filename);
+				$response = $this->insertFileInFolder($folder, $localFilePath, $newFilename);
 			}
 			else
 			{
-				$response = $this->insertFileInFolder($folder, $localFilePath, $fileName);
+				$response = $this->insertFileInFolder($folder, $localFilePath, $filename);
 
 				// Naming conflict. create a new file and ask the user what to do with it
 				if ($response->isConflict())
 				{
-					$newFileName = $this->getNameReplacement($folder, $fileName);
+					$newFilename = $this->getNameReplacement($folder, $filename);
 					$conflictResponse = $response;
-					$response = $this->insertFileInFolder($folder, $localFilePath, $newFileName);
+					$response = $this->insertFileInFolder($folder, $localFilePath, $newFilename);
 				}
 			}
 
 			if ($response->isSuccess())
 			{
-				$filename = IOHelper::getFileName($response->getDataItem('filePath'));
+				$filename = IOHelper::getFilename($response->getDataItem('filePath'));
 
 				$fileModel = new AssetFileModel();
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folder->id;
-				$fileModel->filename = IOHelper::getFileName($filename);
+				$fileModel->filename = IOHelper::getFilename($filename);
 				$fileModel->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 				$fileModel->size = filesize($localFilePath);
 				$fileModel->dateModified = IOHelper::getLastTimeModified($localFilePath);
@@ -438,15 +438,15 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			}
 		}
 
-		$newFileName = !empty($filenameToUse) ? $filenameToUse : $oldFile->filename;
+		$newFilename = !empty($filenameToUse) ? $filenameToUse : $oldFile->filename;
 		$folder = Craft::$app->assets->getFolderById($oldFile->folderId);
 
-		$filenameChanges = StringHelper::toLowerCase($newFileName) != StringHelper::toLowerCase($replaceWith->filename);
+		$filenameChanges = StringHelper::toLowerCase($newFilename) != StringHelper::toLowerCase($replaceWith->filename);
 
 		// If the filename does not change, this can trigger errors in some source types.
 		if ($filenameChanges)
 		{
-			$this->moveSourceFile($replaceWith, $folder, $newFileName, true);
+			$this->moveSourceFile($replaceWith, $folder, $newFilename, true);
 		}
 
 		// Update file info
@@ -455,7 +455,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$oldFile->size         = $replaceWith->size;
 		$oldFile->kind         = $replaceWith->kind;
 		$oldFile->dateModified = $replaceWith->dateModified;
-		$oldFile->filename     = $newFileName;
+		$oldFile->filename     = $newFilename;
 
 		if (empty($filenameToUse))
 		{
@@ -705,7 +705,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			$transferList[] = [
 				'fileId' => $file->id,
 				'folderId' => $mirroringData['changedFolderIds'][$file->folderId]['newId'],
-				'fileName' => $file->filename
+				'filename' => $file->filename
 			];
 		}
 
@@ -806,22 +806,22 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFolderModel $folder   The AssetFolderModel model that the file will be inserted into.
 	 * @param string           $filePath The filePath of the file to insert.
-	 * @param string           $fileName The fileName of the file to insert.
+	 * @param string           $filename The filename of the file to insert.
 	 *
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
-	abstract protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
+	abstract protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $filename);
 
 	/**
 	 * Get a name replacement for a filename already taken in a folder.
 	 *
 	 * @param AssetFolderModel $folder   The AssetFolderModel model that has the file to get a name replacement for.
-	 * @param string           $fileName The name of the file to get a replacement name for.
+	 * @param string           $filename The name of the file to get a replacement name for.
 	 *
 	 * @return mixed
 	 */
-	abstract protected function getNameReplacement(AssetFolderModel $folder, $fileName);
+	abstract protected function getNameReplacement(AssetFolderModel $folder, $filename);
 
 	/**
 	 * Delete just the file inside of a source for an Assets File.
@@ -835,12 +835,12 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	 *
 	 * @param AssetFileModel   $file         The AssetFileModel model of the file to move.
 	 * @param AssetFolderModel $targetFolder The AssetFolderModel model that is the target destination of the file.
-	 * @param string           $fileName     The name of the file to move.
+	 * @param string           $filename     The name of the file to move.
 	 * @param bool             $overwrite    If true, will overwrite target destination, if necessary.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false);
+	abstract protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $filename = '', $overwrite = false);
 
 	/**
 	 * Copy a physical file inside the source.
@@ -894,14 +894,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
 	 *
-	 * @param string $fileName The file that is the cause of all the trouble.
+	 * @param string $filename The file that is the cause of all the trouble.
 	 *
 	 * @return object
 	 */
-	protected function getUserPromptOptions($fileName)
+	protected function getUserPromptOptions($filename)
 	{
 		return (object) [
-			'message' => Craft::t('app', 'File “{file}” already exists at target location.', ['file' => $fileName]),
+			'message' => Craft::t('app', 'File “{file}” already exists at target location.', ['file' => $filename]),
 			'choices' => [
 				['value' => AssetConflictResolution::KeepBoth, 'title' => Craft::t('app', 'Keep both')],
 				['value' => AssetConflictResolution::Replace, 'title' => Craft::t('app', 'Replace it')],
@@ -1030,7 +1030,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		if (IOHelper::isExtensionAllowed($extension))
 		{
 			$parts = explode('/', $uriPath);
-			$fileName = array_pop($parts);
+			$filename = array_pop($parts);
 
 			$searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
 
@@ -1058,7 +1058,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			$fileModel = Craft::$app->assets->findFile([
 				'folderId' => $folderId,
-				'filename' => $fileName
+				'filename' => $filename
 			]);
 
 			if (is_null($fileModel))
@@ -1066,7 +1066,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 				$fileModel = new AssetFileModel();
 				$fileModel->sourceId = $this->model->id;
 				$fileModel->folderId = $folderId;
-				$fileModel->filename = $fileName;
+				$fileModel->filename = $filename;
 				$fileModel->kind = IOHelper::getFileKind($extension);
 				Craft::$app->assets->storeFile($fileModel);
 			}

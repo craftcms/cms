@@ -57,7 +57,7 @@ class Et
 	/**
 	 * @var string
 	 */
-	private $_destinationFileName;
+	private $_destinationFilename;
 
 	// Public Methods
 	// =========================================================================
@@ -135,13 +135,13 @@ class Et
 	}
 
 	/**
-	 * @param $destinationFileName
+	 * @param $destinationFilename
 	 *
 	 * @return null
 	 */
-	public function setDestinationFileName($destinationFileName)
+	public function setDestinationFilename($destinationFilename)
 	{
-		$this->_destinationFileName = $destinationFileName;
+		$this->_destinationFilename = $destinationFilename;
 	}
 
 	/**
@@ -209,7 +209,7 @@ class Et
 						Craft::$app->getCache()->delete('etConnectFailure');
 					}
 
-					if ($this->_destinationFileName)
+					if ($this->_destinationFilename)
 					{
 						$body = $response->getBody();
 
@@ -217,12 +217,12 @@ class Et
 						$body->rewind();
 
 						// Write it out to the file
-						IOHelper::writeToFile($this->_destinationFileName, $body->getStream(), true);
+						IOHelper::writeToFile($this->_destinationFilename, $body->getStream(), true);
 
 						// Close the stream.
 						$body->close();
 
-						return IOHelper::getFileName($this->_destinationFileName);
+						return IOHelper::getFilename($this->_destinationFilename);
 					}
 
 					$etModel = Craft::$app->et->decodeEtModel($response->getBody());

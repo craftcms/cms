@@ -46,7 +46,7 @@ return [
 
 	'utils/serverinfo'                                                      => 'utils/server-info',
 	'utils/phpinfo'                                                         => 'utils/php-info',
-	'utils/logs(/<currentLogFileName:[A-Za-z0-9\.]+>?'                      => 'utils/logs',
+	'utils/logs(/<currentLogFilename:[A-Za-z0-9\.]+>?'                      => 'utils/logs',
 	'utils/deprecationerrors'                                               => 'utils/deprecation-errors',
 
 	'myaccount'                                                             => ['route' => 'users/edit-user', 'defaults' => ['userId' => 'current']],

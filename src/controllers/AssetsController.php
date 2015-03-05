@@ -65,7 +65,7 @@ class AssetsController extends Controller
 		// Conflict resolution data
 		$userResponse = Craft::$app->getRequest()->getBodyParam('userResponse');
 		$theNewFileId = Craft::$app->getRequest()->getBodyParam('newFileId', 0);
-		$fileName = Craft::$app->getRequest()->getBodyParam('fileName');
+		$filename = Craft::$app->getRequest()->getBodyParam('filename');
 
 		// For a conflict resolution, the folder ID is no longer there and no file is actually being uploaded
 		if (!empty($folderId) && empty($userResponse))
@@ -80,7 +80,7 @@ class AssetsController extends Controller
 			}
 		}
 
-		$response = Craft::$app->assets->uploadFile($folderId, $userResponse, $theNewFileId, $fileName);
+		$response = Craft::$app->assets->uploadFile($folderId, $userResponse, $theNewFileId, $filename);
 
 		$this->returnJson($response->getResponseData());
 	}
@@ -125,11 +125,11 @@ class AssetsController extends Controller
 			$this->returnErrorJson($e->getMessage());
 		}
 
-		$fileName = $_FILES['files']['name'][0];
-		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
+		$filename = $_FILES['files']['name'][0];
+		$fileLocation = AssetsHelper::getTempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
-		$response = Craft::$app->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+		$response = Craft::$app->assets->insertFileByLocalPath($fileLocation, $filename, $targetFolderId, AssetConflictResolution::KeepBoth);
 
 		IOHelper::deleteFile($fileLocation, true);
 
@@ -197,11 +197,11 @@ class AssetsController extends Controller
 				throw new Exception(Craft::t('app', 'The file could not be replaced.'));
 			}
 
-			$fileName = $_FILES['replaceFile']['name'];
-			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
+			$filename = $_FILES['replaceFile']['name'];
+			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
 			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
 
-			$response = Craft::$app->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+			$response = Craft::$app->assets->insertFileByLocalPath($fileLocation, $filename, $targetFolderId, AssetConflictResolution::KeepBoth);
 			$insertedFileId = $response->getDataItem('fileId');
 
 			$newFile = Craft::$app->assets->getFileById($insertedFileId);
@@ -210,7 +210,7 @@ class AssetsController extends Controller
 			{
 				$source = Craft::$app->assetSources->populateSourceType($newFile->getSource());
 
-				if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+				if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($filename))
 				{
 					$filenameToUse = $existingFile->filename;
 				}
@@ -223,7 +223,7 @@ class AssetsController extends Controller
 					}
 					else
 					{
-						$filenameToUse = $fileName;
+						$filenameToUse = $filename;
 					}
 				}
 
@@ -363,7 +363,7 @@ class AssetsController extends Controller
 
 		$fileIds = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
 		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
-		$fileName = Craft::$app->getRequest()->getBodyParam('fileName');
+		$filename = Craft::$app->getRequest()->getBodyParam('filename');
 		$actions = Craft::$app->getRequest()->getBodyParam('action');
 
 		try
@@ -376,7 +376,7 @@ class AssetsController extends Controller
 			$this->returnErrorJson($e->getMessage());
 		}
 
-		$response = Craft::$app->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
+		$response = Craft::$app->assets->moveFiles($fileIds, $folderId, $filename, $actions);
 		$this->returnJson($response->getResponseData());
 	}
 

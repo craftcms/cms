@@ -217,21 +217,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
 				originalFileIds = [],
-				newFileNames = [];
+				newFilenames = [];
 
 			// For each file, prepare array data.
 			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
 			{
 				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id,
-					fileName = Craft.getElementInfo(this._fileDrag.$draggee[i]).url.split('/').pop();
+					filename = Craft.getElementInfo(this._fileDrag.$draggee[i]).url.split('/').pop();
 
-				if (fileName.indexOf('?') !== -1)
+				if (filename.indexOf('?') !== -1)
 				{
-					fileName = fileName.split('?').shift();
+					filename = filename.split('?').shift();
 				}
 
 				originalFileIds.push(originalFileId);
-				newFileNames.push(fileName);
+				newFilenames.push(filename);
 			}
 
 			// Are any files actually getting moved?
@@ -252,7 +252,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					parameterArray.push({
 						fileId: originalFileIds[i],
 						folderId: targetFolderId,
-						fileName: newFileNames[i]
+						filename: newFilenames[i]
 					});
 				}
 
@@ -316,7 +316,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								// Find the matching request parameters for this file and modify them slightly
 								for (var ii = 0; ii < parameterArray.length; ii++)
 								{
-									if (parameterArray[ii].fileName == returnData[i].fileName)
+									if (parameterArray[ii].filename == returnData[i].filename)
 									{
 										parameterArray[ii].action = returnData[i].choice;
 										newParameterArray.push(parameterArray[ii]);
@@ -867,7 +867,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_onUploadComplete: function(event, data)
 	{
 		var response = data.result;
-		var fileName = data.files[0].name;
+		var filename = data.files[0].name;
 
 		var doReload = true;
 
@@ -886,11 +886,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('Upload failed for {filename}. The error message was: ”{error}“', { filename: fileName, error: response.error }));
+				alert(Craft.t('Upload failed for {filename}. The error message was: ”{error}“', { filename: filename, error: response.error }));
 			}
 			else
 			{
-				alert(Craft.t('Upload failed for {filename}.', { filename: fileName }));
+				alert(Craft.t('Upload failed for {filename}.', { filename: filename }));
 			}
 
 			doReload = false;
@@ -942,7 +942,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			var postData = {
 				newFileId:    parameterArray[parameterIndex].fileId,
-				fileName:     parameterArray[parameterIndex].fileName,
+				filename:     parameterArray[parameterIndex].filename,
 				userResponse: parameterArray[parameterIndex].choice
 			};
 
@@ -1213,7 +1213,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					this._prepareParentForChildren($parentFolder);
 
-					var $subFolder = $(
+					var $subfolder = $(
 						'<li>' +
 							'<a data-key="folder:'+data.folderId+'"' +
 								(Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
@@ -1224,8 +1224,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						'</li>'
 					);
 
-					var $a = $subFolder.children('a:first');
-					this._appendSubfolder($parentFolder, $subFolder);
+					var $a = $subfolder.children('a:first');
+					this._appendSubfolder($parentFolder, $subfolder);
 					this.initSource($a);
 				}
 
@@ -1326,14 +1326,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 * Appends a subfolder to the parent folder at the correct spot.
 	 *
 	 * @param $parentFolder
-	 * @param $subFolder
+	 * @param $subfolder
 	 * @private
 	 */
-	_appendSubfolder: function($parentFolder, $subFolder)
+	_appendSubfolder: function($parentFolder, $subfolder)
 	{
 		var $subfolderList = $parentFolder.siblings('ul'),
 			$existingChildren = $subfolderList.children('li'),
-			subfolderLabel = $.trim($subFolder.children('a:first').text()),
+			subfolderLabel = $.trim($subfolder.children('a:first').text()),
 			folderInserted = false;
 
 		for (var i = 0; i < $existingChildren.length; i++)
@@ -1342,7 +1342,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			if ($.trim($existingChild.children('a:first').text()) > subfolderLabel)
 			{
-				$existingChild.before($subFolder);
+				$existingChild.before($subfolder);
 				folderInserted = true;
 				break;
 			}
@@ -1350,7 +1350,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		if (!folderInserted)
 		{
-			$parentFolder.siblings('ul').append($subFolder);
+			$parentFolder.siblings('ul').append($subfolder);
 		}
 
 		this.$sidebar.trigger('resize');

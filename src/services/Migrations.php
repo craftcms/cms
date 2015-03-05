@@ -292,7 +292,7 @@ class Migrations extends Component
 				}
 
 				$path = IOHelper::normalizePathSeparators($migrationPath.$file);
-				$class = IOHelper::getFileName($path, false);
+				$class = IOHelper::getFilename($path, false);
 
 				// Have we already run this migration?
 				if (in_array($class, $applied))

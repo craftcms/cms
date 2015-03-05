@@ -53,21 +53,21 @@ class RebrandController extends Controller
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath, true);
 
-				$fileName = AssetsHelper::cleanAssetName($file['name']);
+				$filename = AssetsHelper::cleanAssetName($file['name']);
 
-				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$fileName);
+				move_uploaded_file($file['tmp_name'], $folderPath.'/'.$filename);
 
 				// Test if we will be able to perform image actions on this image
-				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$fileName))
+				if (!Craft::$app->images->checkMemoryForImage($folderPath.'/'.$filename))
 				{
-					IOHelper::deleteFile($folderPath.'/'.$fileName);
+					IOHelper::deleteFile($folderPath.'/'.$filename);
 					$this->returnErrorJson(Craft::t('app', 'The uploaded image is too large'));
 				}
 
-				Craft::$app->images->cleanImage($folderPath.'/'.$fileName);
+				Craft::$app->images->cleanImage($folderPath.'/'.$filename);
 
 				$constraint = 500;
-				list ($width, $height) = getimagesize($folderPath.'/'.$fileName);
+				list ($width, $height) = getimagesize($folderPath.'/'.$filename);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
@@ -77,7 +77,7 @@ class RebrandController extends Controller
 
 					$html = Craft::$app->templates->render('_components/tools/cropper_modal',
 						[
-							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
+							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$filename),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor,

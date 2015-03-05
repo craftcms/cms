@@ -66,11 +66,11 @@ class ToolsController extends Controller
 	 */
 	public function actionDownloadBackupFile()
 	{
-		$fileName = Craft::$app->getRequest()->getRequiredQueryParam('fileName');
+		$filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
-		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().'/'.$fileName.'.zip')) == true)
+		if (($filePath = IOHelper::fileExists(Craft::$app->path->getTempPath().'/'.$filename.'.zip')) == true)
 		{
-			Craft::$app->getRequest()->sendFile(IOHelper::getFileName($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
+			Craft::$app->getRequest()->sendFile(IOHelper::getFilename($filePath), IOHelper::getFileContents($filePath), ['forceDownload' => true]);
 		}
 	}
 }

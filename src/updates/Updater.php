@@ -89,9 +89,9 @@ class Updater
 
 		// Download the package from ET.
 		Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
-		if (($fileName = Craft::$app->et->downloadUpdate($tempPath, $md5)) !== false)
+		if (($filename = Craft::$app->et->downloadUpdate($tempPath, $md5)) !== false)
 		{
-			$downloadFilePath = $tempPath.'/'.$fileName;
+			$downloadFilePath = $tempPath.'/'.$filename;
 		}
 		else
 		{
@@ -189,7 +189,7 @@ class Updater
 		}
 		else
 		{
-			return IOHelper::getFileName($dbBackupPath, false);
+			return IOHelper::getFilename($dbBackupPath, false);
 		}
 	}
 
@@ -510,16 +510,16 @@ class Updater
 			throw new Exception(Markdown::process(Craft::t('app', 'Craft needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://buildwithcraft.com/docs/updating#one-click-updating'])));
 		}
 
-		$tempFileName = StringHelper::UUID().'.php';
+		$tempFilename = StringHelper::UUID().'.php';
 
 		// Make a dupe of the requirements file and give it a random file name.
-		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFileName);
+		IOHelper::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFilename);
 
-		$newTempFilePath = Craft::$app->path->getAppPath().'/requirements/'.$tempFileName;
+		$newTempFilePath = Craft::$app->path->getAppPath().'/requirements/'.$tempFilename;
 
 		// Copy the random file name requirements to the requirements folder.
 		// We don't want to execute any PHP from the storage folder.
-		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFileName, $newTempFilePath);
+		IOHelper::copyFile($requirementsFolderPath.'/'.$tempFilename, $newTempFilePath);
 
 		require_once($newTempFilePath);
 		require_once(Craft::$app->path->getAppPath().'/requirements/RequirementsChecker.php');

@@ -293,12 +293,12 @@ class Local extends BaseAssetSourceType
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param string           $filePath
-	 * @param string           $fileName
+	 * @param string           $filename
 	 *
 	 * @throws Exception
 	 * @return AssetOperationResponseModel
 	 */
-	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $filename)
 	{
 		// Check if the set file system path exists
 		$basePath = $this->getSourceFileSystemPath();
@@ -327,9 +327,9 @@ class Local extends BaseAssetSourceType
 			throw new Exception(Craft::t('app', 'The folder “{folder}” is not writable.', ['folder' => $targetFolder]));
 		}
 
-		$fileName = AssetsHelper::cleanAssetName($fileName);
-		$targetPath = $targetFolder.$fileName;
-		$extension = IOHelper::getExtension($fileName);
+		$filename = AssetsHelper::cleanAssetName($filename);
+		$targetPath = $targetFolder.$filename;
+		$extension = IOHelper::getExtension($filename);
 
 		if (!IOHelper::isExtensionAllowed($extension))
 		{
@@ -339,7 +339,7 @@ class Local extends BaseAssetSourceType
 		if (IOHelper::fileExists($targetPath))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($filename))->setDataItem('filename', $filename);
 		}
 
 		if (! IOHelper::copyFile($filePath, $targetPath))
@@ -358,35 +358,35 @@ class Local extends BaseAssetSourceType
 	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param string           $fileName
+	 * @param string           $filename
 	 *
 	 * @return string
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $filename)
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
 		$existingFiles = [];
 
 		foreach ($fileList as $file)
 		{
-			$existingFiles[mb_strtolower(IOHelper::getFileName($file))] = true;
+			$existingFiles[mb_strtolower(IOHelper::getFilename($file))] = true;
 		}
 
 		// Double-check
-		if (!isset($existingFiles[mb_strtolower($fileName)]))
+		if (!isset($existingFiles[mb_strtolower($filename)]))
 		{
-			return $fileName;
+			return $filename;
 		}
 
-		$fileParts = explode(".", $fileName);
+		$fileParts = explode(".", $filename);
 		$extension = array_pop($fileParts);
-		$fileName = join(".", $fileParts);
+		$filename = join(".", $fileParts);
 
 		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($existingFiles[mb_strtolower($fileName.'_'.$i.'.'.$extension)]))
+			if (!isset($existingFiles[mb_strtolower($filename.'_'.$i.'.'.$extension)]))
 			{
-				return $fileName.'_'.$i.'.'.$extension;
+				return $filename.'_'.$i.'.'.$extension;
 			}
 		}
 
@@ -438,23 +438,23 @@ class Local extends BaseAssetSourceType
 	 *
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
-	 * @param string           $fileName
+	 * @param string           $filename
 	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $filename = '', $overwrite = false)
 	{
-		if (empty($fileName))
+		if (empty($filename))
 		{
-			$fileName = $file->filename;
+			$filename = $file->filename;
 		}
 
-		$newServerPath = $this->getSourceFileSystemPath().$targetFolder->path.$fileName;
+		$newServerPath = $this->getSourceFileSystemPath().$targetFolder->path.$filename;
 
 		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
-			'filename' => $fileName
+			'filename' => $filename
 		]);
 
 		$conflict = !$overwrite && (IOHelper::fileExists($newServerPath) || (!Craft::$app->assets->isMergeInProgress() && is_object($conflictingRecord)));
@@ -462,13 +462,13 @@ class Local extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($filename))->setDataItem('filename', $filename);
 		}
 
 		if (!IOHelper::move($this->_getFileSystemPath($file), $newServerPath))
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setError(Craft::t('app', 'Could not move the file “{filename}”.', ['filename' => $fileName]));
+			return $response->setError(Craft::t('app', 'Could not move the file “{filename}”.', ['filename' => $filename]));
 		}
 
 		if ($file->kind == 'image')
@@ -478,7 +478,7 @@ class Local extends BaseAssetSourceType
 				$transforms = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($file);
 
 				$destination = clone $file;
-				$destination->filename = $fileName;
+				$destination->filename = $filename;
 
 				// Move transforms
 				foreach ($transforms as $index)
@@ -489,7 +489,7 @@ class Local extends BaseAssetSourceType
 
 					if (!empty($index->filename))
 					{
-						$destinationIndex->filename = $fileName;
+						$destinationIndex->filename = $filename;
 						Craft::$app->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
@@ -510,7 +510,7 @@ class Local extends BaseAssetSourceType
 
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
-				->setDataItem('newFileName', $fileName);
+				->setDataItem('newFilename', $filename);
 	}
 
 	/**

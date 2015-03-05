@@ -227,7 +227,7 @@ class Assets extends Component
 		if ($isNewFile && !$file->getContent()->title)
 		{
 			// Give it a default title based on the file name
-			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFilename($file->filename, false));
 		}
 
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
@@ -718,18 +718,18 @@ class Assets extends Component
 	 * @param int    $folderId     The Id of the folder the file is being uploaded to.
 	 * @param string $userResponse User response regarding filename conflict.
 	 * @param int    $theNewFileId The new file ID that has triggered the conflict.
-	 * @param string $fileName     The filename that is in the conflict.
+	 * @param string $filename     The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function uploadFile($folderId, $userResponse = '', $theNewFileId = 0, $fileName = '')
+	public function uploadFile($folderId, $userResponse = '', $theNewFileId = 0, $filename = '')
 	{
 		try
 		{
 			// handle a user's conflict resolution response
 			if (!empty($userResponse))
 			{
-				return $this->_resolveUploadConflict($userResponse, $theNewFileId, $fileName);
+				return $this->_resolveUploadConflict($userResponse, $theNewFileId, $filename);
 			}
 
 			$folder = $this->getFolderById($folderId);
@@ -770,7 +770,7 @@ class Assets extends Component
 	 * ```
 	 *
 	 * @param string $localPath          The local path to the file.
-	 * @param string $fileName           The name that the file should be given when saved in the asset folder.
+	 * @param string $filename           The name that the file should be given when saved in the asset folder.
 	 * @param int    $folderId           The ID of the folder that the file should be saved into.
 	 * @param string $conflictResolution What action should be taken in the event of a filename conflict, if any
 	 *                                   (`AssetConflictResolution::KeepBoth`, `AssetConflictResolution::Replace`,
@@ -778,7 +778,7 @@ class Assets extends Component
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function insertFileByLocalPath($localPath, $fileName, $folderId, $conflictResolution = null)
+	public function insertFileByLocalPath($localPath, $filename, $folderId, $conflictResolution = null)
 	{
 		$folder = $this->getFolderById($folderId);
 
@@ -787,15 +787,15 @@ class Assets extends Component
 			return false;
 		}
 
-		$fileName = AssetsHelper::cleanAssetName($fileName);
+		$filename = AssetsHelper::cleanAssetName($filename);
 		$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
-		$response = $source->insertFileByPath($localPath, $folder, $fileName);
+		$response = $source->insertFileByPath($localPath, $folder, $filename);
 
 		if ($response->isConflict() && $conflictResolution)
 		{
 			$theNewFileId = $response->getDataItem('fileId');
-			$response = $this->_resolveUploadConflict($conflictResolution, $theNewFileId, $fileName);
+			$response = $this->_resolveUploadConflict($conflictResolution, $theNewFileId, $filename);
 		}
 
 		return $response;
@@ -966,7 +966,7 @@ class Assets extends Component
 		// Set the new filename, if rename was successful
 		if ($response->isSuccess())
 		{
-			$file->filename = $response->getDataItem('newFileName');
+			$file->filename = $response->getDataItem('newFilename');
 		}
 
 		return $response;
@@ -1271,11 +1271,11 @@ class Assets extends Component
 	 *
 	 * @param string $conflictResolution  User response to conflict.
 	 * @param int    $theNewFileId        The id of the new file that is conflicting.
-	 * @param string $fileName            The filename that is in the conflict.
+	 * @param string $filename            The filename that is in the conflict.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	private function _mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName)
+	private function _mergeUploadedFiles($conflictResolution, $theNewFileId, $filename)
 	{
 
 		$theNewFile = $this->getFileById($theNewFileId);
@@ -1291,7 +1291,7 @@ class Assets extends Component
 				// Replace the actual file
 				$targetFile = $this->findFile([
 					'folderId' => $folder->id,
-					'filename' => $fileName
+					'filename' => $filename
 				]);
 
 				// If the file doesn't exist in the index, but just in the source,
@@ -1301,8 +1301,8 @@ class Assets extends Component
 					$targetFile = new AssetFileModel();
 					$targetFile->sourceId = $folder->sourceId;
 					$targetFile->folderId = $folder->id;
-					$targetFile->filename = $fileName;
-					$targetFile->kind = IOHelper::getFileKind(IOHelper::getExtension($fileName));
+					$targetFile->filename = $filename;
+					$targetFile->kind = IOHelper::getFileKind(IOHelper::getExtension($filename));
 					$this->storeFile($targetFile);
 				}
 
@@ -1371,14 +1371,14 @@ class Assets extends Component
 	 *
 	 * @param string $conflictResolution User response to conflict.
 	 * @param int    $theNewFileId       The id of the new file that is conflicting.
-	 * @param string $fileName           Filename of the conflicting file.
+	 * @param string $filename           Filename of the conflicting file.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $fileName)
+	private function _resolveUploadConflict($conflictResolution, $theNewFileId, $filename)
 	{
 		$this->_startMergeProcess();
-		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $fileName);
+		$response =  $this->_mergeUploadedFiles($conflictResolution, $theNewFileId, $filename);
 		$this->_finishMergeProcess();
 
 		return $response;

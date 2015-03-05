@@ -62,7 +62,7 @@ class CpHelper
 			{
 				$licensedDomain = Craft::$app->et->getLicensedDomain();
 				$licenseKeyPath = Craft::$app->path->getLicenseKeyPath();
-				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFileName($licenseKeyPath);
+				$licenseKeyFile = IOHelper::getFolderName($licenseKeyPath, false).'/'.IOHelper::getFilename($licenseKeyPath);
 
 				$message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
 					'file'   => $licenseKeyFile,

@@ -203,7 +203,7 @@ Craft.Tool = Garnish.Base.extend(
 			{
 				if (response && response.backupFile)
 				{
-					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/downloadBackupFile', {'fileName':response.backupFile}) }).hide();
+					var $iframe = $('<iframe/>', {'src' : Craft.getActionUrl('tools/downloadBackupFile', {'filename':response.backupFile}) }).hide();
 					this.$form.append($iframe);
 				}
 

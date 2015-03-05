@@ -69,7 +69,7 @@ class RenameFile extends BaseElementAction
 			var data = {
 				fileId:   fileId,
 				folderId: Craft.elementIndex.\$source.data('key').split(':')[1],
-				fileName: newName
+				filename: newName
 			};
 
 			var handleRename = function(response, textStatus)

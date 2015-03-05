@@ -403,7 +403,7 @@ class Email extends Component
 			{
 				foreach ($emailModel->stringAttachments as $stringAttachment)
 				{
-					$email->addStringAttachment($stringAttachment['string'], $stringAttachment['fileName'], $stringAttachment['encoding'], $stringAttachment['type']);
+					$email->addStringAttachment($stringAttachment['string'], $stringAttachment['filename'], $stringAttachment['encoding'], $stringAttachment['type']);
 				}
 			}
 

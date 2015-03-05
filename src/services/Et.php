@@ -101,11 +101,11 @@ class Et extends Component
 		$path = 'http://download.buildwithcraft.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.$updateModel->app->localBuild.'/'.$md5.'.zip';
 
 		$et = new \craft\app\et\Et($path, 240);
-		$et->setDestinationFileName($downloadPath);
+		$et->setDestinationFilename($downloadPath);
 
-		if (($fileName = $et->phoneHome()) !== null)
+		if (($filename = $et->phoneHome()) !== null)
 		{
-			return $fileName;
+			return $filename;
 		}
 
 		return false;

@@ -249,10 +249,10 @@ class Plugins extends Component
 
 							if (is_array($pluginFilePath) && count($pluginFilePath) > 0)
 							{
-								$pluginFileName = IOHelper::getFileName($pluginFilePath[0], false);
+								$pluginFilename = IOHelper::getFilename($pluginFilePath[0], false);
 
 								// Chop off the "Plugin" suffix
-								$handle = mb_substr($pluginFileName, 0, StringHelper::length($pluginFileName) - 6);
+								$handle = mb_substr($pluginFilename, 0, StringHelper::length($pluginFilename) - 6);
 								$lcHandle = mb_strtolower($handle);
 
 								// Validate that the lowercase plugin class handle is the same as the folder name
@@ -704,7 +704,7 @@ class Plugins extends Component
 					if (IOHelper::fileExists($file))
 					{
 						$migration = new MigrationRecord();
-						$migration->version = IOHelper::getFileName($file, false);
+						$migration->version = IOHelper::getFilename($file, false);
 						$migration->applyTime = DateTimeHelper::currentUTCDateTime();
 						$migration->pluginId = $pluginId;
 
@@ -781,7 +781,7 @@ class Plugins extends Component
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{
-			$file = IOHelper::getFileName($file, false);
+			$file = IOHelper::getFilename($file, false);
 			return mb_substr($file, 0, mb_strlen($file) - strlen('Plugin'));
 		}
 

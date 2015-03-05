@@ -28,7 +28,7 @@ class File extends BaseIO
 	/**
 	 * @var string
 	 */
-	private $_fileName;
+	private $_filename;
 
 	/**
 	 * @var string
@@ -84,22 +84,22 @@ class File extends BaseIO
 	 *
 	 * @return mixed
 	 */
-	public function getFileName($includeExtension = true)
+	public function getFilename($includeExtension = true)
 	{
 		if ($includeExtension)
 		{
-			if (!$this->_fileName)
+			if (!$this->_filename)
 			{
-				$this->_fileName = IOHelper::getFileName($this->getRealPath(), $includeExtension);
+				$this->_filename = IOHelper::getFilename($this->getRealPath(), $includeExtension);
 			}
 
-			return $this->_fileName;
+			return $this->_filename;
 		}
 		else
 		{
 			if (!$this->_baseName)
 			{
-				$this->_baseName = IOHelper::getFileName($this->getRealPath(), $includeExtension);
+				$this->_baseName = IOHelper::getFilename($this->getRealPath(), $includeExtension);
 			}
 
 			return $this->_baseName;

@@ -159,17 +159,17 @@ class HeaderHelper
 	/**
 	 * Forces a file download. Be sure to give the right extension.
 	 *
-	 * @param string  $fileName The name of the file when it's downloaded
+	 * @param string  $filename The name of the file when it's downloaded
 	 * @param int     $fileSize The size in bytes.
 	 *
 	 * @return null
 	 */
-	public static function setDownload($fileName, $fileSize = null)
+	public static function setDownload($filename, $fileSize = null)
 	{
 		static::setHeader(
 			[
 				'Content-Description' => 'File Transfer',
-				'Content-disposition' => 'attachment; filename="'.addslashes($fileName).'"',
+				'Content-disposition' => 'attachment; filename="'.addslashes($filename).'"',
 			]
 		);
 

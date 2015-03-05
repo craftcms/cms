@@ -393,22 +393,22 @@ class GoogleCloud extends BaseAssetSourceType
 	 *
 	 * @param AssetFolderModel $folder
 	 * @param string           $filePath
-	 * @param string           $fileName
+	 * @param string           $filename
 	 *
 	 * @throws Exception
 	 * @return AssetFileModel
 	 */
-	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	protected function insertFileInFolder(AssetFolderModel $folder, $filePath, $filename)
 	{
-		$fileName = AssetsHelper::cleanAssetName($fileName);
-		$extension = IOHelper::getExtension($fileName);
+		$filename = AssetsHelper::cleanAssetName($filename);
+		$extension = IOHelper::getExtension($filename);
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
 			throw new Exception(Craft::t('app', 'This file type is not allowed'));
 		}
 
-		$uriPath = $this->_getPathPrefix().$folder->path.$fileName;
+		$uriPath = $this->_getPathPrefix().$folder->path.$filename;
 
 		$this->_prepareForRequests();
 		$settings = $this->getSettings();
@@ -417,7 +417,7 @@ class GoogleCloud extends BaseAssetSourceType
 		if ($fileInfo)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($filename))->setDataItem('filename', $filename);
 		}
 
 		clearstatcache();
@@ -436,11 +436,11 @@ class GoogleCloud extends BaseAssetSourceType
 	 * @inheritDoc BaseAssetSourceType::getNameReplacement()
 	 *
 	 * @param AssetFolderModel $folder
-	 * @param string           $fileName
+	 * @param string           $filename
 	 *
 	 * @return mixed
 	 */
-	protected function getNameReplacement(AssetFolderModel $folder, $fileName)
+	protected function getNameReplacement(AssetFolderModel $folder, $filename)
 	{
 		$this->_prepareForRequests();
 		$fileList = $this->_googleCloud->getBucket($this->getSettings()->bucket, $this->_getPathPrefix().$folder->path);
@@ -448,23 +448,23 @@ class GoogleCloud extends BaseAssetSourceType
 		$fileList = array_flip(array_map('mb_strtolower', array_keys($fileList)));
 
 		// Double-check
-		if (!isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileName)]))
+		if (!isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$filename)]))
 		{
-			return $fileName;
+			return $filename;
 		}
 
-		$fileNameParts = explode(".", $fileName);
-		$extension = array_pop($fileNameParts);
+		$filenameParts = explode(".", $filename);
+		$extension = array_pop($filenameParts);
 
-		$fileNameStart = join(".", $fileNameParts).'_';
+		$filenameStart = join(".", $filenameParts).'_';
 		$index = 1;
 
-		while (isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$fileNameStart.$index.'.'.$extension)]))
+		while (isset($fileList[mb_strtolower($this->_getPathPrefix().$folder->path.$filenameStart.$index.'.'.$extension)]))
 		{
 			$index++;
 		}
 
-		return $fileNameStart.$index.'.'.$extension;
+		return $filenameStart.$index.'.'.$extension;
 	}
 
 	/**
@@ -485,23 +485,23 @@ class GoogleCloud extends BaseAssetSourceType
 	 *
 	 * @param AssetFileModel   $file
 	 * @param AssetFolderModel $targetFolder
-	 * @param string           $fileName
+	 * @param string           $filename
 	 * @param bool             $overwrite
 	 *
 	 * @return mixed
 	 */
-	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $fileName = '', $overwrite = false)
+	protected function moveSourceFile(AssetFileModel $file, AssetFolderModel $targetFolder, $filename = '', $overwrite = false)
 	{
-		if (empty($fileName))
+		if (empty($filename))
 		{
-			$fileName = $file->filename;
+			$filename = $file->filename;
 		}
 
-		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$fileName;
+		$newServerPath = $this->_getPathPrefix().$targetFolder->path.$filename;
 
 		$conflictingRecord = Craft::$app->assets->findFile([
 			'folderId' => $targetFolder->id,
-			'filename' => $fileName
+			'filename' => $filename
 		]);
 
 		$this->_prepareForRequests();
@@ -513,7 +513,7 @@ class GoogleCloud extends BaseAssetSourceType
 		if ($conflict)
 		{
 			$response = new AssetOperationResponseModel();
-			return $response->setPrompt($this->getUserPromptOptions($fileName))->setDataItem('fileName', $fileName);
+			return $response->setPrompt($this->getUserPromptOptions($filename))->setDataItem('filename', $filename);
 		}
 
 
@@ -541,7 +541,7 @@ class GoogleCloud extends BaseAssetSourceType
 				$transforms = Craft::$app->assetTransforms->getAllCreatedTransformsForFile($file);
 
 				$destination = clone $file;
-				$destination->filename = $fileName;
+				$destination->filename = $filename;
 
 				// Move transforms
 				foreach ($transforms as $index)
@@ -552,7 +552,7 @@ class GoogleCloud extends BaseAssetSourceType
 
 					if (!empty($index->filename))
 					{
-						$destinationIndex->filename = $fileName;
+						$destinationIndex->filename = $filename;
 						Craft::$app->assetTransforms->storeTransformIndexData($destinationIndex);
 					}
 
@@ -572,7 +572,7 @@ class GoogleCloud extends BaseAssetSourceType
 		$response = new AssetOperationResponseModel();
 		return $response->setSuccess()
 				->setDataItem('newId', $file->id)
-				->setDataItem('newFileName', $fileName);
+				->setDataItem('newFilename', $filename);
 	}
 
 	/**

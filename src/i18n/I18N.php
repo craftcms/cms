@@ -121,7 +121,7 @@ class I18N extends \yii\i18n\I18N
 
 				foreach ($localeFiles as $file)
 				{
-					$this->_allLocaleIds[] = IOHelper::getFileName($file, false);
+					$this->_allLocaleIds[] = IOHelper::getFilename($file, false);
 				}
 			}
 
@@ -176,7 +176,7 @@ class I18N extends \yii\i18n\I18N
 			{
 				foreach ($folders as $dir)
 				{
-					$localeId = IOHelper::getFileName($dir, false);
+					$localeId = IOHelper::getFilename($dir, false);
 
 					if ($localeId != 'en-US')
 					{
