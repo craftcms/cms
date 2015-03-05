@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\app\elements\db;
 
 use Craft;
 use craft\app\db\Query;
@@ -55,8 +55,6 @@ class ElementRelationParamParser
 
 	/**
 	 * Constructor
-	 *
-	 * @return ElementRelationParamParser
 	 */
 	public function __construct()
 	{
