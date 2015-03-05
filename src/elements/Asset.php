@@ -92,14 +92,14 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSource()
+	 * @inheritDoc ElementInterface::getSourceByKey()
 	 *
 	 * @param string      $key
 	 * @param string|null $context
 	 *
 	 * @return array|null
 	 */
-	public static function getSource($key, $context = null)
+	public static function getSourceByKey($key, $context = null)
 	{
 		if (preg_match('/folder:(\d+)(:single)?/', $key, $matches))
 		{
@@ -111,7 +111,7 @@ class Asset extends Element
 			}
 		}
 
-		return parent::getSource($key, $context);
+		return parent::getSourceByKey($key, $context);
 	}
 
 	/**

@@ -106,14 +106,14 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSource()
+	 * @inheritDoc ElementInterface::getSourceByKey()
 	 *
 	 * @param string $key
 	 * @param null   $context
 	 *
 	 * @return array|null
 	 */
-	public static function getSource($key, $context = null)
+	public static function getSourceByKey($key, $context = null)
 	{
 		$contextKey = ($context ? $context : '*');
 

@@ -116,7 +116,7 @@ interface ElementInterface
 	 *
 	 * @return array|null
 	 */
-	public static function getSource($key, $context = null);
+	public static function getSourceByKey($key, $context = null);
 
 	/**
 	 * Returns the available element actions for a given source (if one is provided).
