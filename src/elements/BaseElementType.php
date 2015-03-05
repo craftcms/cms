@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\components\BaseComponentType;
@@ -16,6 +16,7 @@ use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
 use craft\app\variables\ElementType;
+use yii\base\Component;
 
 /**
  * The base class for all Craft element types. Any element type must extend this class.
@@ -23,22 +24,15 @@ use craft\app\variables\ElementType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseElementType extends BaseComponentType implements ElementTypeInterface
+abstract class BaseElementType extends Component implements ElementTypeInterface
 {
 	// Properties
 	// =========================================================================
 
 	/**
-	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
-	 *
-	 * @var string
+	 * @var array
 	 */
-	protected $componentType = 'ElementType';
-
-	/**
-	 * @var
-	 */
-	private $_sourcesByContext;
+	private static $_sourcesByContext;
 
 	// Public Methods
 	// =========================================================================
@@ -51,7 +45,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return false;
 	}
@@ -61,7 +55,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool
 	 */
-	public function hasTitles()
+	public static function hasTitles()
 	{
 		return false;
 	}
@@ -71,7 +65,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return false;
 	}
@@ -81,7 +75,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool
 	 */
-	public function hasStatuses()
+	public static function hasStatuses()
 	{
 		return false;
 	}
@@ -91,7 +85,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array|null
 	 */
-	public function getStatuses()
+	public static function getStatuses()
 	{
 		return [
 			BaseElementModel::ENABLED => Craft::t('app', 'Enabled'),
@@ -106,7 +100,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array|bool|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		return false;
 	}
@@ -119,16 +113,16 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array|null
 	 */
-	public function getSource($key, $context = null)
+	public static function getSource($key, $context = null)
 	{
 		$contextKey = ($context ? $context : '*');
 
-		if (!isset($this->_sourcesByContext[$contextKey]))
+		if (!isset(static::$_sourcesByContext[$contextKey]))
 		{
-			$this->_sourcesByContext[$contextKey] = $this->getSources($context);
+			static::$_sourcesByContext[$contextKey] = static::getSources($context);
 		}
 
-		return $this->_findSource($key, $this->_sourcesByContext[$contextKey]);
+		return static::_findSource($key, static::$_sourcesByContext[$contextKey]);
 	}
 
 	/**
@@ -138,7 +132,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array|null
 	 */
-	public function getAvailableActions($source = null)
+	public static function getAvailableActions($source = null)
 	{
 		return [];
 	}
@@ -148,7 +142,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array
 	 */
-	public function defineSearchableAttributes()
+	public static function defineSearchableAttributes()
 	{
 		return [];
 	}
@@ -169,12 +163,12 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+	public static function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
 		$variables = [
 			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
-			'elementType'         => new ElementType($this),
+			'elementType'         => new static(),
 			'disabledElementIds'  => $disabledElementIds,
 			'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
 			'showCheckboxes'      => $showCheckboxes,
@@ -183,7 +177,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 		// Special case for sorting by structure
 		if (isset($viewState['order']) && $viewState['order'] == 'structure')
 		{
-			$source = $this->getSource($sourceKey, $context);
+			$source = static::getSource($sourceKey, $context);
 
 			if (isset($source['structureId']))
 			{
@@ -210,7 +204,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 		}
 		else
 		{
-			$sortableAttributes = $this->defineSortableAttributes();
+			$sortableAttributes = static::defineSortableAttributes();
 
 			if ($sortableAttributes)
 			{
@@ -234,7 +228,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			case 'table':
 			{
 				// Get the table columns
-				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
+				$variables['attributes'] = static::defineTableAttributes($sourceKey);
 
 				break;
 			}
@@ -251,9 +245,9 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @retrun array
 	 */
-	public function defineSortableAttributes()
+	public static function defineSortableAttributes()
 	{
-		return $this->defineTableAttributes();
+		return static::defineTableAttributes();
 	}
 
 	/**
@@ -263,7 +257,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		return [];
 	}
@@ -276,7 +270,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return mixed|string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		switch ($attribute)
 		{
@@ -336,7 +330,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [];
 	}
@@ -351,7 +345,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return false|string
 	 */
-	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
 	{
 		return '{{%content}}';
 	}
@@ -363,7 +357,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return FieldModel[]
 	 */
-	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
 		$contentService = Craft::$app->content;
 		$originalFieldContext = $contentService->fieldContext;
@@ -387,7 +381,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return false|string|void
 	 */
-	public function getElementQueryStatusCondition(Query $query, $status)
+	public static function getElementQueryStatusCondition(Query $query, $status)
 	{
 	}
 
@@ -399,7 +393,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return false|null|void
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 	}
 
@@ -412,7 +406,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return BaseElementModel|void
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 	}
 
@@ -423,7 +417,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		$html = '';
 
@@ -460,7 +454,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		return Craft::$app->elements->saveElement($element);
 	}
@@ -472,7 +466,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return bool|mixed
 	 */
-	public function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(BaseElementModel $element)
 	{
 		return false;
 	}
@@ -485,7 +479,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return null|void
 	 */
-	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
 	}
 
@@ -500,7 +494,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 	 *
 	 * @return array|null
 	 */
-	private function _findSource($key, $sources)
+	private static function _findSource($key, $sources)
 	{
 		if (isset($sources[$key]))
 		{
@@ -511,7 +505,7 @@ abstract class BaseElementType extends BaseComponentType implements ElementTypeI
 			// Look through any nested sources
 			foreach ($sources as $source)
 			{
-				if (!empty($source['nested']) && ($nestedSource = $this->_findSource($key, $source['nested'])))
+				if (!empty($source['nested']) && ($nestedSource = static::_findSource($key, $source['nested'])))
 				{
 					return $nestedSource;
 				}

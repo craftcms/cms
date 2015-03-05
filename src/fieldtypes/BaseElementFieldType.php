@@ -8,7 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
-use craft\app\elementtypes\BaseElementType;
+use craft\app\elements\BaseElementType;
 use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;

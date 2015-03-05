@@ -12,7 +12,7 @@ use craft\app\db\FixedOrderExpression;
 use craft\app\db\Query;
 use craft\app\elementactions\ElementActionInterface;
 use craft\app\elements\db\ElementRelationParamParser;
-use craft\app\elementtypes\ElementTypeInterface;
+use craft\app\elements\ElementTypeInterface;
 use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;

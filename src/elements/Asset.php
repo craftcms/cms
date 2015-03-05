@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -32,7 +32,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Assets');
 	}
@@ -42,7 +42,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -52,7 +52,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasTitles()
+	public static function hasTitles()
 	{
 		return true;
 	}
@@ -62,7 +62,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -74,7 +74,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		if ($context == 'index')
 		{
@@ -87,7 +87,7 @@ class Asset extends BaseElementType
 
 		$tree = Craft::$app->assets->getFolderTreeBySourceIds($sourceIds);
 
-		return $this->_assembleSourceList($tree);
+		return static::_assembleSourceList($tree);
 	}
 
 	/**
@@ -98,7 +98,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getSource($key, $context = null)
+	public static function getSource($key, $context = null)
 	{
 		if (preg_match('/folder:(\d+)(:single)?/', $key, $matches))
 		{
@@ -106,7 +106,7 @@ class Asset extends BaseElementType
 
 			if ($folder)
 			{
-				return $this->_assembleSourceInfoForFolder($folder, empty($matches[2]));
+				return static::_assembleSourceInfoForFolder($folder, empty($matches[2]));
 			}
 		}
 
@@ -120,7 +120,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getAvailableActions($source = null)
+	public static function getAvailableActions($source = null)
 	{
 		if (!preg_match('/^folder:(\d+)$/', $source, $matches))
 		{
@@ -189,7 +189,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineSearchableAttributes()
+	public static function defineSearchableAttributes()
 	{
 		return ['filename', 'extension', 'kind'];
 	}
@@ -199,7 +199,7 @@ class Asset extends BaseElementType
 	 *
 	 * @retrun array
 	 */
-	public function defineSortableAttributes()
+	public static function defineSortableAttributes()
 	{
 		$attributes = [
 			'title'        => Craft::t('app', 'Title'),
@@ -221,7 +221,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		$attributes = [
 			'title'        => Craft::t('app', 'Title'),
@@ -244,7 +244,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getAssetTableAttributeHtml', [$element, $attribute], true);
@@ -285,7 +285,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'sourceId' => AttributeType::Number,
@@ -308,7 +308,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
@@ -375,7 +375,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return AssetFileModel::populateModel($row);
 	}
@@ -387,7 +387,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
@@ -426,7 +426,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		// Is the filename changing?
 		if (!empty($params['filename']) && $params['filename'] != $element->filename)
@@ -483,13 +483,13 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	private function _assembleSourceList($folders, $includeNestedFolders = true)
+	private static function _assembleSourceList($folders, $includeNestedFolders = true)
 	{
 		$sources = [];
 
 		foreach ($folders as $folder)
 		{
-			$sources['folder:'.$folder->id] = $this->_assembleSourceInfoForFolder($folder, $includeNestedFolders);
+			$sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
 		}
 
 		return $sources;
@@ -503,7 +503,7 @@ class Asset extends BaseElementType
 	 *
 	 * @return array
 	 */
-	private function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
+	private static function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
 	{
 		$source = [
 			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
@@ -514,7 +514,7 @@ class Asset extends BaseElementType
 
 		if ($includeNestedFolders)
 		{
-			$source['nested'] = $this->_assembleSourceList($folder->getChildren(), true);
+			$source['nested'] = static::_assembleSourceList($folder->getChildren(), true);
 		}
 
 		return $source;

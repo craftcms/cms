@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -32,7 +32,7 @@ class User extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Users');
 	}
@@ -42,7 +42,7 @@ class User extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -52,7 +52,7 @@ class User extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasStatuses()
+	public static function hasStatuses()
 	{
 		return true;
 	}
@@ -62,7 +62,7 @@ class User extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getStatuses()
+	public static function getStatuses()
 	{
 		return [
 			UserStatus::Active    => Craft::t('app', 'Active'),
@@ -80,7 +80,7 @@ class User extends BaseElementType
 	 *
 	 * @return array|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		$sources = [
 			'*' => [
@@ -113,7 +113,7 @@ class User extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getAvailableActions($source = null)
+	public static function getAvailableActions($source = null)
 	{
 		$actions = [];
 
@@ -155,7 +155,7 @@ class User extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineSearchableAttributes()
+	public static function defineSearchableAttributes()
 	{
 		return ['username', 'firstName', 'lastName', 'fullName', 'email'];
 	}
@@ -165,7 +165,7 @@ class User extends BaseElementType
 	 *
 	 * @retrun array
 	 */
-	public function defineSortableAttributes()
+	public static function defineSortableAttributes()
 	{
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
@@ -202,7 +202,7 @@ class User extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		if (Craft::$app->config->get('useEmailAsUsername'))
 		{
@@ -240,7 +240,7 @@ class User extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
@@ -278,7 +278,7 @@ class User extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'admin'          => AttributeType::Bool,
@@ -305,7 +305,7 @@ class User extends BaseElementType
 	 *
 	 * @return string|false
 	 */
-	public function getElementQueryStatusCondition(Query $query, $status)
+	public static function getElementQueryStatusCondition(Query $query, $status)
 	{
 		switch ($status)
 		{
@@ -344,7 +344,7 @@ class User extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
@@ -392,7 +392,7 @@ class User extends BaseElementType
 
 				if ($permittedGroupIds)
 				{
-					$permittedUserIds = $this->_getUserIdsByGroupIds($permittedGroupIds);
+					$permittedUserIds = static::_getUserIdsByGroupIds($permittedGroupIds);
 				}
 
 				// Get the users that have that permission directly
@@ -420,7 +420,7 @@ class User extends BaseElementType
 
 		if ($criteria->groupId)
 		{
-			$userIds = $this->_getUserIdsByGroupIds($criteria->groupId);
+			$userIds = static::_getUserIdsByGroupIds($criteria->groupId);
 
 			if (!$userIds)
 			{
@@ -446,7 +446,7 @@ class User extends BaseElementType
 				return false;
 			}
 
-			$userIds = $this->_getUserIdsByGroupIds($groupIds);
+			$userIds = static::_getUserIdsByGroupIds($groupIds);
 
 			// In case there are no users in the groups.
 			if (!$userIds)
@@ -495,7 +495,7 @@ class User extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return UserModel::populateModel($row);
 	}
@@ -507,7 +507,7 @@ class User extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		$html = Craft::$app->templates->render('users/_accountfields', [
 			'account'      => $element,
@@ -524,7 +524,7 @@ class User extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		if (isset($params['username']))
 		{
@@ -552,7 +552,7 @@ class User extends BaseElementType
 	 *
 	 * @return array
 	 */
-	private function _getUserIdsByGroupIds($groupIds)
+	private static function _getUserIdsByGroupIds($groupIds)
 	{
 		return (new Query())
 			->select('userId')

@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -32,7 +32,7 @@ class Category extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Categories');
 	}
@@ -42,7 +42,7 @@ class Category extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -52,7 +52,7 @@ class Category extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasTitles()
+	public static function hasTitles()
 	{
 		return true;
 	}
@@ -62,7 +62,7 @@ class Category extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -72,7 +72,7 @@ class Category extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasStatuses()
+	public static function hasStatuses()
 	{
 		return true;
 	}
@@ -84,7 +84,7 @@ class Category extends BaseElementType
 	 *
 	 * @return array|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		$sources = [];
 
@@ -120,7 +120,7 @@ class Category extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getAvailableActions($source = null)
+	public static function getAvailableActions($source = null)
 	{
 		if (preg_match('/^group:(\d+)$/', $source, $matches))
 		{
@@ -192,7 +192,7 @@ class Category extends BaseElementType
 	 *
 	 * @retrun array
 	 */
-	public function defineSortableAttributes()
+	public static function defineSortableAttributes()
 	{
 		$attributes = [
 			'title' => Craft::t('app', 'Title'),
@@ -212,7 +212,7 @@ class Category extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		$attributes = [
 			'title' => Craft::t('app', 'Title'),
@@ -233,7 +233,7 @@ class Category extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getCategoryTableAttributeHtml', [$element, $attribute], true);
@@ -251,7 +251,7 @@ class Category extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'group'   => AttributeType::Mixed,
@@ -268,7 +268,7 @@ class Category extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('categories.groupId')
@@ -295,7 +295,7 @@ class Category extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return CategoryModel::populateModel($row);
 	}
@@ -307,7 +307,7 @@ class Category extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
@@ -348,7 +348,7 @@ class Category extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		if (isset($params['slug']))
 		{
@@ -366,7 +366,7 @@ class Category extends BaseElementType
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(BaseElementModel $element)
 	{
 		$group = $element->getGroup();
 
@@ -392,7 +392,7 @@ class Category extends BaseElementType
 	 *
 	 * @return null
 	 */
-	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
 		// Was the category moved within its group's structure?
 		if ($element->getGroup()->structureId == $structureId)

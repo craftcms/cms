@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -31,7 +31,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Global Sets');
 	}
@@ -41,7 +41,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -51,7 +51,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -61,7 +61,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'handle' => AttributeType::Mixed,
@@ -77,7 +77,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('globalsets.name, globalsets.handle, globalsets.fieldLayoutId')
@@ -96,7 +96,7 @@ class GlobalSet extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return GlobalSetModel::populateModel($row);
 	}

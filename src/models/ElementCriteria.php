@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\elementtypes\BaseElementType;
+use craft\app\elements\BaseElementType;
 use craft\app\enums\AttributeType;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
 

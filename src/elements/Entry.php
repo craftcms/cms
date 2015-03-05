@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -39,7 +39,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Entries');
 	}
@@ -49,7 +49,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -59,7 +59,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasTitles()
+	public static function hasTitles()
 	{
 		return true;
 	}
@@ -69,7 +69,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -79,7 +79,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasStatuses()
+	public static function hasStatuses()
 	{
 		return true;
 	}
@@ -89,7 +89,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getStatuses()
+	public static function getStatuses()
 	{
 		return [
 			EntryModel::LIVE => Craft::t('app', 'Live'),
@@ -106,7 +106,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|bool|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		if ($context == 'index')
 		{
@@ -192,7 +192,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|null
 	 */
-	public function getAvailableActions($source = null)
+	public static function getAvailableActions($source = null)
 	{
 		// Get the section(s) we need to check permissions on
 		switch ($source)
@@ -345,7 +345,7 @@ class Entry extends BaseElementType
 	 *
 	 * @retrun array
 	 */
-	public function defineSortableAttributes()
+	public static function defineSortableAttributes()
 	{
 		$attributes = [
 			'title'      => Craft::t('app', 'Title'),
@@ -367,7 +367,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		$attributes = [
 			'title' => Craft::t('app', 'Title'),
@@ -399,7 +399,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return mixed|null|string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
 		// First give plugins a chance to set this
 		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getEntryTableAttributeHtml', [$element, $attribute], true);
@@ -428,7 +428,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'after'           => AttributeType::Mixed,
@@ -455,7 +455,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|false|string|void
 	 */
-	public function getElementQueryStatusCondition(Query $query, $status)
+	public static function getElementQueryStatusCondition(Query $query, $status)
 	{
 		$currentTimeDb = DateTimeHelper::currentTimeForDb();
 
@@ -500,7 +500,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool|false|null|void
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.postDate, entries.expiryDate')
@@ -698,7 +698,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return BaseElementModel|Model|void
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return EntryModel::populateModel($row);
 	}
@@ -710,7 +710,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		if ($element->getType()->hasTitleField)
 		{
@@ -733,7 +733,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		// Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
 		return Craft::$app->entries->saveEntry($element);
@@ -746,7 +746,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return array|bool|mixed
 	 */
-	public function getElementRoute(BaseElementModel $element)
+	public static function getElementRoute(BaseElementModel $element)
 	{
 		// Make sure that the entry is actually live
 		if ($element->getStatus() == EntryModel::LIVE)
@@ -776,7 +776,7 @@ class Entry extends BaseElementType
 	 *
 	 * @return null|void
 	 */
-	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
+	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{
 		// Was the entry moved within its section's structure?
 		$section = $element->getSection();

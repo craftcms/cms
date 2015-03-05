@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -32,7 +32,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Matrix Blocks');
 	}
@@ -42,7 +42,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -52,7 +52,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -62,7 +62,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'fieldId'     => AttributeType::Number,
@@ -80,7 +80,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
 	{
 		if (!$criteria->fieldId && $criteria->id && is_numeric($criteria->id))
 		{
@@ -109,7 +109,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return FieldModel[]
 	 */
-	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
 		$fields = [];
 
@@ -135,7 +135,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.ownerLocale, matrixblocks.typeId, matrixblocks.sortOrder')
@@ -170,7 +170,7 @@ class MatrixBlock extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return MatrixBlockModel::populateModel($row);
 	}

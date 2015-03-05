@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use craft\app\components\ComponentTypeInterface;
 use craft\app\db\Query;
@@ -20,7 +20,7 @@ use craft\app\models\Field as FieldModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface ElementTypeInterface extends ComponentTypeInterface
+interface ElementTypeInterface
 {
 	// Public Methods
 	// =========================================================================
@@ -30,14 +30,14 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return bool Whether the element type has content. Default is `false`.
 	 */
-	public function hasContent();
+	public static function hasContent();
 
 	/**
 	 * Returns whether this element type has titles.
 	 *
 	 * @return bool Whether the element type has titles. Default is `false`.
 	 */
-	public function hasTitles();
+	public static function hasTitles();
 
 	/**
 	 * Returns whether this element type stores data on a per-locale basis.
@@ -47,7 +47,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return bool Whether the element type is localized. Default is `false`.
 	 */
-	public function isLocalized();
+	public static function isLocalized();
 
 	/**
 	 * Returns whether this element type can have statuses.
@@ -59,7 +59,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return bool Whether the element type has statuses. Default is `false`.
 	 */
-	public function hasStatuses();
+	public static function hasStatuses();
 
 	/**
 	 * Returns all of the possible statuses that elements of this type may have.
@@ -75,7 +75,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array|null
 	 */
-	public function getStatuses();
+	public static function getStatuses();
 
 	/**
 	 * Returns this element type's sources.
@@ -105,7 +105,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array|false The element type's sources.
 	 */
-	public function getSources($context = null);
+	public static function getSources($context = null);
 
 	/**
 	 * Returns a source by its key and context.
@@ -115,7 +115,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array|null
 	 */
-	public function getSource($key, $context = null);
+	public static function getSource($key, $context = null);
 
 	/**
 	 * Returns the available element actions for a given source (if one is provided).
@@ -127,7 +127,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array|null The available element actions.
 	 */
-	public function getAvailableActions($source = null);
+	public static function getAvailableActions($source = null);
 
 	/**
 	 * Defines which element model attributes should be searchable.
@@ -154,7 +154,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array The
 	 */
-	public function defineSearchableAttributes();
+	public static function defineSearchableAttributes();
 
 	/**
 	 * Returns the element index HTML.
@@ -169,7 +169,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
+	public static function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
 	/**
 	 * Defines the attributes that elements can be sorted by.
@@ -202,7 +202,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @retrun array The attributes that elements can be sorted by.
 	 */
-	public function defineSortableAttributes();
+	public static function defineSortableAttributes();
 
 	/**
 	 * Defines the columns that can be shown in table views.
@@ -222,7 +222,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array The table attributes.
 	 */
-	public function defineTableAttributes($source = null);
+	public static function defineTableAttributes($source = null);
 
 	/**
 	 * Returns the HTML that should be shown for a given element’s attribute in Table View.
@@ -264,7 +264,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return string
 	 */
-	public function getTableAttributeHtml(BaseElementModel $element, $attribute);
+	public static function getTableAttributeHtml(BaseElementModel $element, $attribute);
 
 	/**
 	 * Defines any custom element criteria attributes for this element type.
@@ -296,7 +296,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return array Custom criteria attributes.
 	 */
-	public function defineCriteriaAttributes();
+	public static function defineCriteriaAttributes();
 
 	/**
 	 * Returns the content table name that should be joined into an elements query for a given element criteria.
@@ -311,7 +311,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return string|false The content table name, or `false` if it cannot be determined.
 	 */
-	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
+	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
 	 * Returns the fields that should take part in an upcoming elements qurery.
@@ -328,7 +328,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return FieldModel[]
 	 */
-	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
+	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
 	 * Returns the element query condition for a custom status criteria.
@@ -356,7 +356,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return string|false
 	 */
-	public function getElementQueryStatusCondition(Query $query, $status);
+	public static function getElementQueryStatusCondition(Query $query, $status);
 
 	/**
 	 * Modifies an element query targeting elements of this type.
@@ -394,7 +394,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return false|null `false` in the event that the method is sure that no elements are going to be found.
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria);
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria);
 
 	/**
 	 * Populates an element model based on a query result.
@@ -415,7 +415,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return BaseElementModel The element model, populated with the data in $row.
 	 */
-	public function populateElementModel($row);
+	public static function populateElementModel($row);
 
 	/**
 	 * Returns the HTML for an editor HUD for the given element.
@@ -424,7 +424,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return string The HTML for the editor HUD.
 	 */
-	public function getEditorHtml(BaseElementModel $element);
+	public static function getEditorHtml(BaseElementModel $element);
 
 	/**
 	 * Saves a given element.
@@ -437,7 +437,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return bool Whether the element was saved successfully.
 	 */
-	public function saveElement(BaseElementModel $element, $params);
+	public static function saveElement(BaseElementModel $element, $params);
 
 	/**
 	 * Returns the route for a given element.
@@ -447,7 +447,7 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
 	 *               or an array that can specify a controller action path, params, etc.
 	 */
-	public function getElementRoute(BaseElementModel $element);
+	public static function getElementRoute(BaseElementModel $element);
 
 	/**
 	 * Performs actions after an element has been moved within a structure.
@@ -457,5 +457,5 @@ interface ElementTypeInterface extends ComponentTypeInterface
 	 *
 	 * @return null
 	 */
-	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId);
+	public static function onAfterMoveElementInStructure(BaseElementModel $element, $structureId);
 }

@@ -5,7 +5,7 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementtypes;
+namespace craft\app\elements;
 
 use Craft;
 use craft\app\db\Query;
@@ -31,7 +31,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getName()
+	public static function getName()
 	{
 		return Craft::t('app', 'Tags');
 	}
@@ -41,7 +41,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasContent()
+	public static function hasContent()
 	{
 		return true;
 	}
@@ -51,7 +51,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function hasTitles()
+	public static function hasTitles()
 	{
 		return true;
 	}
@@ -61,7 +61,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function isLocalized()
+	public static function isLocalized()
 	{
 		return true;
 	}
@@ -73,7 +73,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return array|false
 	 */
-	public function getSources($context = null)
+	public static function getSources($context = null)
 	{
 		$sources = [];
 
@@ -97,7 +97,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineTableAttributes($source = null)
+	public static function defineTableAttributes($source = null)
 	{
 		return [
 			'title' => Craft::t('app', 'Title'),
@@ -109,7 +109,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function defineCriteriaAttributes()
+	public static function defineCriteriaAttributes()
 	{
 		return [
 			'group'   => AttributeType::Mixed,
@@ -129,7 +129,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return mixed
 	 */
-	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
 			->addSelect('tags.groupId')
@@ -173,7 +173,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return array
 	 */
-	public function populateElementModel($row)
+	public static function populateElementModel($row)
 	{
 		return TagModel::populateModel($row);
 	}
@@ -185,7 +185,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return string
 	 */
-	public function getEditorHtml(BaseElementModel $element)
+	public static function getEditorHtml(BaseElementModel $element)
 	{
 		$html = Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
@@ -214,7 +214,7 @@ class Tag extends BaseElementType
 	 *
 	 * @return bool
 	 */
-	public function saveElement(BaseElementModel $element, $params)
+	public static function saveElement(BaseElementModel $element, $params)
 	{
 		return Craft::$app->tags->saveTag($element);
 	}
