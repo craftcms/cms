@@ -217,7 +217,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 				unlink:
 				{
 					title: Craft.t('Unlink'),
-					exec:  'link.unlink'
+					func:  'link.unlink'
 				}
 			});
 		}
