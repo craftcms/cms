@@ -135,6 +135,9 @@ class WebApp extends \CWebApplication
 			$this->setId($appId);
 		}
 
+		// Set the edition components
+		$this->_setEditionComponents();
+
 		parent::init();
 	}
 
@@ -203,9 +206,6 @@ class WebApp extends \CWebApplication
 				throw new HttpException(503);
 			}
 		}
-
-		// Set the edition components
-		$this->_setEditionComponents();
 
 		// isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
 		// If we're in maintenance mode and it's not a site request, show the manual update template.
