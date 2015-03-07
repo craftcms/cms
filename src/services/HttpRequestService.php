@@ -1212,6 +1212,9 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$value = craft()->httpSession->get($this->csrfTokenName);
 
+			list($nonceFromSession, $hashFromSession, $sessionIdFromSession) = explode('|', $value, 3);
+
+			// Check if there is nothing in session, or the sessionId has changed
 			if (!$value || ($this->_csrfToken = $value) == null)
 			{
 				$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
