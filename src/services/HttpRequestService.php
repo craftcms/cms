@@ -1265,11 +1265,11 @@ class HttpRequestService extends \CHttpRequest
 			if (!empty($tokenFromPost) && $tokenFromSession)
 			{
 				// First check is csrf token matches from post and cookie
-				if (strcmp($tokenFromSession, $tokenFromPost) === 0)
+				if (\CPasswordHelper::same($tokenFromSession, $tokenFromPost))
 				{
 					list($nonceFromPost, $hashFromPost) = explode('|', $tokenFromPost, 2);
 					$expectedToken = craft()->security->hashData($nonceFromPost.'|'.craft()->httpSession->getSessionID());
-					$valid = strcmp($hashFromPost, $expectedToken) === 0;
+					$valid = \CPasswordHelper::same($hashFromPost, $expectedToken);
 				}
 				else
 				{
