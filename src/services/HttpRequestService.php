@@ -88,6 +88,11 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private $_cookies;
 
+	/**
+	 * @var
+	 */
+	private $_csrfToken;
+
 	// Public Methods
 	// =========================================================================
 
@@ -1193,31 +1198,94 @@ class HttpRequestService extends \CHttpRequest
 		}
 	}
 
-	// Protected Methods
-	// =========================================================================
-
 	/**
-	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
-	 * applied to the generated cookie.
+	 * Returns the random token used to perform CSRF validation. The token will be read from session. If not found,
+	 * a new token will be generated.
 	 *
-	 * @return HttpCookie the generated cookie
+	 * @see enableCsrfValidation
+	 *
+	 * @return string The random token for CSRF validation.
 	 */
-	protected function createCsrfCookie()
+	public function getCsrfToken()
 	{
-		$cookie = new HttpCookie($this->csrfTokenName, sha1(uniqid(mt_rand(), true)));
-
-		if (is_array($this->csrfCookie))
+		if ($this->_csrfToken === null)
 		{
-			foreach ($this->csrfCookie as $name => $value)
+			$value = craft()->httpSession->get($this->csrfTokenName);
+
+			if (!$value || ($this->_csrfToken = $value) == null)
 			{
-				$cookie->$name = $value;
+				$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
+				$token = $nonce.'|'.craft()->security->hashData($nonce.'|'.craft()->httpSession->getSessionID());
+
+				$this->_csrfToken = $token;
+				craft()->httpSession->add($this->csrfTokenName, $token);
 			}
 		}
 
-		// Set to HTTP only
-		$cookie->httpOnly = true;
+		return $this->_csrfToken;
+	}
 
-		return $cookie;
+	/**
+	 * Performs the CSRF validation. This is the event handler responding to {@link CApplication::onBeginRequest}.
+	 * The default implementation will compare the CSRF token obtained from session and from a POST field. If they
+	 * are different, a CSRF attack is detected.
+	 *
+	 * @param Event $event event parameter
+	 *
+	 * @throws HttpException If the validation fails
+	 */
+	public function validateCsrfToken($event)
+	{
+		if ($this->getIsPostRequest() || $this->getIsPutRequest() || $this->getIsDeleteRequest())
+		{
+			$method = $this->getRequestType();
+
+			switch($method)
+			{
+				case 'POST':
+				{
+					$tokenFromPost = $this->getPost($this->csrfTokenName);
+					break;
+				}
+
+				case 'PUT':
+				{
+					$tokenFromPost = $this->getPut($this->csrfTokenName);
+					break;
+				}
+
+				case 'DELETE':
+				{
+					$tokenFromPost = $this->getDelete($this->csrfTokenName);
+				}
+			}
+
+			$tokenFromSession = craft()->httpSession->get($this->csrfTokenName);
+
+			if (!empty($tokenFromPost) && $tokenFromSession)
+			{
+				// First check is csrf token matches from post and cookie
+				if (strcmp($tokenFromSession, $tokenFromPost) === 0)
+				{
+					list($nonceFromPost, $hashFromPost) = explode('|', $tokenFromPost, 2);
+					$expectedToken = craft()->security->hashData($nonceFromPost.'|'.craft()->httpSession->getSessionID());
+					$valid = strcmp($hashFromPost, $expectedToken) === 0;
+				}
+				else
+				{
+					$valid = false;
+				}
+			}
+			else
+			{
+				$valid = false;
+			}
+
+			if (!$valid)
+			{
+				throw new HttpException(400, Craft::t('The CSRF token could not be verified.'));
+			}
+		}
 	}
 
 	// Private Methods
