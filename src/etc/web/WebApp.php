@@ -167,6 +167,7 @@ class WebApp extends \CWebApplication
 		if ($this->request->isCpRequest())
 		{
 			HeaderHelper::setHeader(array('X-Robots-Tag' => 'none'));
+			HeaderHelper::setHeader(array('X-Frame-Options' => 'SAMEORIGIN'));
 		}
 
 		// Validate some basics on the database configuration file.
