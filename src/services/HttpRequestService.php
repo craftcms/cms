@@ -1199,36 +1199,6 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the random token used to perform CSRF validation. The token will be read from session. If not found,
-	 * a new token will be generated.
-	 *
-	 * @see enableCsrfValidation
-	 *
-	 * @return string The random token for CSRF validation.
-	 */
-	public function getCsrfToken()
-	{
-		if ($this->_csrfToken === null)
-		{
-			$value = craft()->httpSession->get($this->csrfTokenName);
-
-			list($nonceFromSession, $hashFromSession, $sessionIdFromSession) = explode('|', $value, 3);
-
-			// Check if there is nothing in session, or the sessionId has changed
-			if (!$value || ($this->_csrfToken = $value) == null)
-			{
-				$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
-				$token = $nonce.'|'.craft()->security->hashData($nonce.'|'.craft()->httpSession->getSessionID());
-
-				$this->_csrfToken = $token;
-				craft()->httpSession->add($this->csrfTokenName, $token);
-			}
-		}
-
-		return $this->_csrfToken;
-	}
-
-	/**
 	 * Performs the CSRF validation. This is the event handler responding to {@link CApplication::onBeginRequest}.
 	 * The default implementation will compare the CSRF token obtained from session and from a POST field. If they
 	 * are different, a CSRF attack is detected.
@@ -1263,21 +1233,14 @@ class HttpRequestService extends \CHttpRequest
 				}
 			}
 
-			$tokenFromSession = craft()->httpSession->get($this->csrfTokenName);
+			$cookies = $this->getCookies();
 
-			if (!empty($tokenFromPost) && $tokenFromSession)
+			if (!empty($tokenFromPost) && $cookies->contains($this->csrfTokenName))
 			{
-				// First check is csrf token matches from post and cookie
-				if (\CPasswordHelper::same($tokenFromSession, $tokenFromPost))
-				{
-					list($nonceFromPost, $hashFromPost) = explode('|', $tokenFromPost, 2);
-					$expectedToken = craft()->security->hashData($nonceFromPost.'|'.craft()->httpSession->getSessionID());
-					$valid = \CPasswordHelper::same($hashFromPost, $expectedToken);
-				}
-				else
-				{
-					$valid = false;
-				}
+				$tokenFromCookie = $cookies->itemAt($this->csrfTokenName)->value;
+
+				// See if they match.
+				$valid = \CPasswordHelper::same($tokenFromCookie, $tokenFromPost);
 			}
 			else
 			{
@@ -1289,6 +1252,32 @@ class HttpRequestService extends \CHttpRequest
 				throw new HttpException(400, Craft::t('The CSRF token could not be verified.'));
 			}
 		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
+	 * applied to the generated cookie.
+	 *
+	 * @return HttpCookie the generated cookie
+	 */
+	protected function createCsrfCookie()
+	{
+		$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
+		$token = $nonce.'|'.craft()->httpSession->getSessionID();
+		$cookie = new HttpCookie($this->csrfTokenName, $token);
+
+		if (is_array($this->csrfCookie))
+		{
+			foreach ($this->csrfCookie as $name => $value)
+			{
+				$cookie->$name = $value;
+			}
+		}
+
+		return $cookie;
 	}
 
 	// Private Methods
