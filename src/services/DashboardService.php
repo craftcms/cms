@@ -151,7 +151,7 @@ class DashboardService extends BaseApplicationComponent
 		if ($widget->type == 'Feed')
 		{
 			$urlValidator = new \CUrlValidator();
-			$urlValidator->attributes = array_keys($widget->getSettings());
+			$urlValidator->attributes = array_keys($widget->settings);
 			$urlValidator->validate($widgetType->getSettings(), array('url'));
 
 			if ($widgetType->getSettings()->hasErrors())
