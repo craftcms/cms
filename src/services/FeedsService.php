@@ -65,6 +65,23 @@ class FeedsService extends BaseApplicationComponent
 	 */
 	public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
 	{
+		// Check that it is a valid feed URL. Use Yii's CUrlValidator because Craft's UrlValidator is a bit too leniant.
+		$urlValidator = new \CUrlValidator();
+
+		// Setup a dummy settings model.
+		$settingsModel = new Model(array('url' => AttributeType::String));
+		$settingsModel->url = $url;
+		$urlValidator->attributes = array('url');
+
+		// Validate it.
+		$urlValidator->validate($settingsModel, array('url'));
+
+		if ($settingsModel->hasErrors())
+		{
+			Craft::log('There was a problem parsing the feed url: '.$settingsModel->getError('url'), LogLevel::Warning);
+			return array();
+		}
+
 		$items = array();
 
 		if (!extension_loaded('dom'))

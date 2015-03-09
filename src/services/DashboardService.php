@@ -146,6 +146,20 @@ class DashboardService extends BaseApplicationComponent
 		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widgetType->getSettings()->validate();
 
+		// We want to use CUrlValidator for validating the Feed Widget's URL since Craft's UrlValidator
+		// is a bit too leniant.
+		if ($widget->type == 'Feed')
+		{
+			$urlValidator = new \CUrlValidator();
+			$urlValidator->attributes = array_keys($widget->getSettings());
+			$urlValidator->validate($widgetType->getSettings(), array('url'));
+
+			if ($widgetType->getSettings()->hasErrors())
+			{
+				$settingsValidate = false;
+			}
+		}
+
 		if ($recordValidates && $settingsValidate)
 		{
 			if ($widgetRecord->isNewRecord())
