@@ -253,7 +253,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getStaticHtml($value)
 	{
-		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+		return HtmlHelper::encodeParams('<div class="text">{value}</div>', array('value' => $value ? $value : '&nbsp;'));
 	}
 
 	// Protected Methods

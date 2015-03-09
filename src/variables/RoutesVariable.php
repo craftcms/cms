@@ -44,7 +44,7 @@ class RoutesVariable
 				}
 				else
 				{
-					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'"><span>'.$part[0].'</span></span>';
+					$urlDisplayHtml .= HtmlHelper::encodeParams('<span class="token" data-name="{partZero}" data-value="{partOne}"><span>{partZero}</span></span>', array('partZero' => $part[0], 'partOne' => $part[1]));
 				}
 			}
 

@@ -250,7 +250,7 @@ class UserElementType extends BaseElementType
 
 				if ($email)
 				{
-					return '<a href="mailto:'.$email.'">'.$email.'</a>';
+					return HtmlHelper::encodeParams('<a href="mailto:{email}">{email}</a>', array('email' => $email));
 				}
 				else
 				{

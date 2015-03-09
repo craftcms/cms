@@ -249,7 +249,7 @@ class AssetElementType extends BaseElementType
 		{
 			case 'filename':
 			{
-				return '<span style="word-break: break-word;">'.$element->filename.'</span>';
+				return HtmlHelper::encodeParams('<span style="word-break: break-word;">{fileName}</span>', array('fileName' => $element->filename));
 			}
 
 			case 'size':
