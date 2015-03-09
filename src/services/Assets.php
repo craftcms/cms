@@ -647,7 +647,7 @@ class Assets extends Component
 		$query = (new Query())
 			->select('f.*')
 			->from('{{%assetfolders}} f')
-			->where(['like', 'path', $parentFolder->path.'%'])
+			->where(['like', 'path', $parentFolder->path.'%', false])
 			->andWhere('sourceId = :sourceId', [':sourceId' => $parentFolder->sourceId]);
 
 		$results = $query->all();

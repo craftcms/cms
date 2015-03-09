@@ -441,7 +441,7 @@ class DbHelper
 
 				if ($like)
 				{
-					$conditions[] = [($operator == '=' ? 'like' : 'not like'), $column, $val];
+					$conditions[] = [($operator == '=' ? 'like' : 'not like'), $column, $val, false];
 				}
 				else
 				{
