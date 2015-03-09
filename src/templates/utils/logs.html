@@ -22,8 +22,8 @@
 
 	<div class="field">
 		<select onchange="Craft.redirectTo('utils/logs/'+this.value);">
-			{% for fileName in logFileNames %}
-				<option{% if fileName == currentLogFileName %} selected{% endif %}>{{ fileName }}</option>
+			{% for filename in logFilenames %}
+				<option{% if filename == currentLogFilename %} selected{% endif %}>{{ filename }}</option>
 			{% endfor %}
 		</select>
 	</div>
@@ -34,7 +34,7 @@
 
 		{% for logEntry in logEntries %}
 
-			{% if currentLogFileName == 'phperrors.log' %}
+			{% if currentLogFilename == 'phperrors.log' %}
 
 				<div>
 					{{ logEntry.message|raw }}

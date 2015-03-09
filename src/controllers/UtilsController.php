@@ -167,7 +167,7 @@ class UtilsController extends Controller
 		{
 			$dateTimePattern = '/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/';
 
-			$logFileNames = [];
+			$logFilenames = [];
 
 			// Grab it all.
 			$logFolderContents = IOHelper::getFolderContents(Craft::$app->path->getLogPath());
@@ -177,22 +177,22 @@ class UtilsController extends Controller
 				// Make sure it's a file.`
 				if (IOHelper::fileExists($logFolderContent))
 				{
-					$logFileNames[] = IOHelper::getFileName($logFolderContent);
+					$logFilenames[] = IOHelper::getFilename($logFolderContent);
 				}
 			}
 
 			$logEntriesByRequest = [];
-			$currentLogFileName = isset($variables['currentLogFileName']) ? $variables['currentLogFileName'] : 'craft.log';
+			$currentLogFilename = isset($variables['currentLogFilename']) ? $variables['currentLogFilename'] : 'craft.log';
 
-			$currentFullPath = Craft::$app->path->getLogPath().'/'.$currentLogFileName;
+			$currentFullPath = Craft::$app->path->getLogPath().'/'.$currentLogFilename;
 			if (IOHelper::fileExists($currentFullPath))
 			{
 				// Different parsing logic for phperrors.log
-				if ($currentLogFileName !== 'phperrors.log')
+				if ($currentLogFilename !== 'phperrors.log')
 				{
 					// Split the log file's contents up into arrays of individual logs, where each item is an array of
 					// the lines of that log.
-					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFilename);
 
 					$requests = explode('******************************************************************************************************', $contents);
 
@@ -348,7 +348,7 @@ class UtilsController extends Controller
 				else
 				{
 					$logEntry = new LogEntryModel();
-					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFileName);
+					$contents = IOHelper::getFileContents(Craft::$app->path->getLogPath().'/'.$currentLogFilename);
 					$contents = str_replace("\n", "<br />", $contents);
 					$logEntry->message = $contents;
 
@@ -358,8 +358,8 @@ class UtilsController extends Controller
 
 			$this->renderTemplate('utils/logs', [
 				'logEntriesByRequest' => $logEntriesByRequest,
-				'logFileNames'        => $logFileNames,
-				'currentLogFileName'  => $currentLogFileName
+				'logFilenames'        => $logFilenames,
+				'currentLogFilename'  => $currentLogFilename
 			]);
 		}
 	}

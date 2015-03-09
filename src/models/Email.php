@@ -32,7 +32,7 @@ use craft\app\enums\AttributeType;
  *                                     should be a nested array containing the keys 'name' and 'email'.
  * @property array  $stringAttachments Any strings of text which should be attached to the email as files. Each element
  *                                     of this array should be a nested array containing the keys 'string' (the contents
- *                                     of the file), 'fileName' (the name of the file), 'encoding' (the file encoding),
+ *                                     of the file), 'filename' (the name of the file), 'encoding' (the file encoding),
  *                                     and 'type' (the file’s MIME type).
  * @property array  $attachments       Any files which should be attached to the email. Each element of this array
  *                                     should be a nested array containing the keys 'path' (the path to the file),
@@ -146,16 +146,16 @@ class Email extends Model
 	 * binary data, such as a BLOB record from a database.
 	 *
 	 * @param string $string   String attachment data.
-	 * @param string $fileName Name of the attachment.
+	 * @param string $filename Name of the attachment.
 	 * @param string $encoding File encoding
 	 * @param string $type     File extension MIME type.
 	 *
 	 * @return null
 	 */
-	public function addStringAttachment($string, $fileName, $encoding = 'base64', $type = 'application/octet-stream')
+	public function addStringAttachment($string, $filename, $encoding = 'base64', $type = 'application/octet-stream')
 	{
 		$existingAttachments = $this->stringAttachments;
-		$existingAttachments[] = ['string' => $string, 'fileName' => $fileName, 'encoding' => $encoding, 'type' => $type];
+		$existingAttachments[] = ['string' => $string, 'filename' => $filename, 'encoding' => $encoding, 'type' => $type];
 		$this->stringAttachments = $existingAttachments;
 	}
 

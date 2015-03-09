@@ -222,7 +222,7 @@ class Components extends Component
 		{
 			foreach ($files as $file)
 			{
-				$componentClasses[] = $this->types[$type]['namespace'].'\\'.IOHelper::getFileName($file, false);
+				$componentClasses[] = $this->types[$type]['namespace'].'\\'.IOHelper::getFilename($file, false);
 			}
 		}
 

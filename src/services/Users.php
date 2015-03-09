@@ -632,14 +632,14 @@ class Users extends Component
 	/**
 	 * Crops and saves a user’s photo.
 	 *
-	 * @param string $fileName The name of the file.
+	 * @param string $filename The name of the file.
 	 * @param Image  $image    The image.
 	 * @param User   $user     The user.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the photo was saved successfully.
 	 */
-	public function saveUserPhoto($fileName, Image $image, User $user)
+	public function saveUserPhoto($filename, Image $image, User $user)
 	{
 		$userName = IOHelper::cleanFilename($user->username);
 		$userPhotoFolder = Craft::$app->path->getUserPhotosPath().'/'.$userName;
@@ -648,7 +648,7 @@ class Users extends Component
 		IOHelper::ensureFolderExists($userPhotoFolder);
 		IOHelper::ensureFolderExists($targetFolder);
 
-		$targetPath = $targetFolder.'/'.AssetsHelper::cleanAssetName($fileName);
+		$targetPath = $targetFolder.'/'.AssetsHelper::cleanAssetName($filename);
 
 		$result = $image->saveAs($targetPath);
 
@@ -656,10 +656,10 @@ class Users extends Component
 		{
 			IOHelper::changePermissions($targetPath, Craft::$app->config->get('defaultFilePermissions'));
 			$record = UserRecord::findOne($user->id);
-			$record->photo = $fileName;
+			$record->photo = $filename;
 			$record->save();
 
-			$user->photo = $fileName;
+			$user->photo = $filename;
 
 			return true;
 		}

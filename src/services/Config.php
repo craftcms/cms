@@ -441,9 +441,9 @@ class Config extends Component
 	 */
 	public function maxPowerCaptain()
 	{
-		if (craft()->config->get('phpMaxMemoryLimit') !== '')
+		if ($this->get('phpMaxMemoryLimit') !== '')
 		{
-			@ini_set('memory_limit', craft()->config->get('phpMaxMemoryLimit'));
+			@ini_set('memory_limit', $this->get('phpMaxMemoryLimit'));
 		}
 		else
 		{
@@ -529,49 +529,6 @@ class Config extends Component
 		}
 
 		return $this->getCpLogoutPath();
-	}
-
-	/**
-	 * Returns a user’s Activate Account path with a given activation code and user’s UID.
-	 *
-	 * @param string $code The activation code.
-	 * @param string $uid  The user’s UID.
-	 * @param bool   $full Whether a full URL should be returned. Defauls to `true`.
-	 *
-	 * @return string The Activate Account path.
-	 *
-	 * @internal This is a little awkward in that the method is called getActivateAccount**Path**, but by default it
-	 * returns a full **URL**. And in the event that you do just want the path (as the name of the method implies),
-	 * you have to pass in a $code and $uid just to be able to set the 4th argument to `false`, even though those
-	 * variables will won't be used.
-	 *
-	 * @todo Create a new getActivateAccountUrl() method (probably elsewhere, such as UrlHelper) which handles
-	 * everything that setting $full to `true` currently does here. The function should accept an actual User
-	 * rather than their UID, for consistency with [[getSetPasswordPath()]]. Let this function continue working as a
-	 * wrapper for getActivateAccountUrl() for the time being, with deprecation logs.
-	 */
-	public function getActivateAccountPath($code, $uid, $full = true)
-	{
-		$url = $this->get('actionTrigger').'/users/setPassword';
-
-		if (!$full)
-		{
-			return $url;
-		}
-
-		if (Craft::$app->getRequest()->getIsSecureConnection())
-		{
-			$url = UrlHelper::getUrl($url, [
-				'code' => $code, 'id' => $uid
-			], 'https');
-		}
-
-		$url = UrlHelper::getUrl($url, [
-			'code' => $code, 'id' => $uid
-		]);
-
-		// Special case because we don't want the CP trigger showing in the email.
-		return str_replace($this->get('cpTrigger').'/', '', $url);
 	}
 
 	/**

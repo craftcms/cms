@@ -375,7 +375,7 @@ class Resources extends Component
 			}
 		}
 
-		$fileName = IOHelper::getFileName($realPath);
+		$filename = IOHelper::getFilename($realPath);
 		$mimeType = FileHelper::getMimeTypeByExtension($realPath);
 		$response = Craft::$app->getResponse();
 
@@ -397,11 +397,11 @@ class Resources extends Component
 			$contents = IOHelper::getFileContents($realPath);
 			$contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);
 
-			$response->sendContentAsFile($contents, $fileName, $options);
+			$response->sendContentAsFile($contents, $filename, $options);
 		}
 		else
 		{
-			$response->sendFile($realPath, $fileName, $options);
+			$response->sendFile($realPath, $filename, $options);
 		}
 
 		// You shall not pass.

@@ -200,7 +200,7 @@ class Path extends Component
 	 */
 	public function getUserPhotosPath()
 	{
-		$path = $this->getStoragePath().'userphotos';
+		$path = $this->getStoragePath().'/userphotos';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}

@@ -30,6 +30,6 @@ class Logo extends Image
 	 */
 	public function getUrl()
 	{
-		return UrlHelper::getResourceUrl('logo/'.IOHelper::getFileName($this->path));
+		return UrlHelper::getResourceUrl('logo/'.IOHelper::getFilename($this->path));
 	}
 }

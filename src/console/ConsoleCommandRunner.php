@@ -53,7 +53,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 			{
 				if (StringHelper::containsAny($command, array('/', '\\')))
 				{
-					$className = IOHelper::getFileName($command, false);
+					$className = IOHelper::getFilename($command, false);
 
 					// If it's a default framework command, don't namespace it.
 					if (!StringHelper::contains($command, 'framework'))

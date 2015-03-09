@@ -225,7 +225,6 @@ class Images extends Component
 		}
 
 		$image = new Image();
-
 		return $image->getExifMetadata($filePath);
 	}
 

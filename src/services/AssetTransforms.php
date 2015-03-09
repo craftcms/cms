@@ -376,7 +376,7 @@ class AssetTransforms extends Component
 		$source = Craft::$app->assetSources->populateSourceType($file->getSource());
 		$index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($file);
 
-		$transformFilename = IOHelper::getFileName($file->filename, false).'.'.$index->detectedFormat;
+		$transformFilename = IOHelper::getFilename($file->filename, false).'.'.$index->detectedFormat;
 		$index->filename = $transformFilename;
 
 		$matchFound = false;

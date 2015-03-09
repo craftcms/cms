@@ -4,11 +4,9 @@
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "2.0.2",
-        "yiisoft/yii2-swiftmailer": "2.0.2",
         "yiisoft/yii2-debug": "2.0.2",
         "yiisoft/yii2-authclient": "2.0.2",
         "yiisoft/yii2-twig": "2.0.2",
-        "yiisoft/yii2-imagine": "2.0.2",
         "simplepie/simplepie": "1.3.1",
         "guzzlehttp/guzzle": "5.1.0",
         "phpunit/phpunit": "4.4.1",
@@ -17,7 +15,8 @@
         "phpmailer/phpmailer": "v5.2.9",
         "danielstjules/stringy": "dev-master",
         "fxp/composer-asset-plugin": "1.0.0-beta4",
-        "creocoder/yii2-nested-sets": "0.9.*"
+        "creocoder/yii2-nested-sets": "0.9.*",
+        "imagine/imagine": "v0.6.2"
     },
     "extra": {
         "asset-installer-paths": {

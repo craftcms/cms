@@ -66,7 +66,7 @@ class RichText extends BaseFieldType
 			{
 				foreach ($configFiles as $file)
 				{
-					$configOptions[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+					$configOptions[IOHelper::getFilename($file)] = IOHelper::getFilename($file, false);
 				}
 			}
 		}

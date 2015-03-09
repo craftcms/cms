@@ -179,14 +179,14 @@ class RequirementsChecker
 
 		if (!empty($_SERVER['argv']))
 		{
-			$viewFileName = $baseViewFilePath.DIRECTORY_SEPARATOR.'console'.DIRECTORY_SEPARATOR.'index.php';
+			$viewFilename = $baseViewFilePath.DIRECTORY_SEPARATOR.'console'.DIRECTORY_SEPARATOR.'index.php';
 		}
 		else
 		{
-			$viewFileName = $baseViewFilePath.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'index.php';
+			$viewFilename = $baseViewFilePath.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'index.php';
 		}
 
-		$this->renderViewFile($viewFileName, $this->result);
+		$this->renderViewFile($viewFilename, $this->result);
 	}
 
 	/**

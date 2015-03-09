@@ -110,6 +110,14 @@ return [
 	'cacheMethod' => 'file',
 
 	/**
+	 * When this is set to true, Craft will strip any multi-byte characters (Chinese, Japanese, etc.)
+ 	 * from uploaded file names and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ → n).
+	 *
+	 * Defaults to true.
+	 */
+	'convertFilenamesToAscii' => true,
+
+	/**
 	 * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
 	 * failed login attempts.
 	 *

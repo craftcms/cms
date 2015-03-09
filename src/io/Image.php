@@ -387,7 +387,7 @@ class Image
 	{
 		$extension = IOHelper::getExtension($targetPath);
 		$options = $this->_getSaveOptions(false, $extension);
-		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
+		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFilename($targetPath, false).'.'.$extension;
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
@@ -438,7 +438,6 @@ class Image
 		catch (\Imagine\Exception\NotSupportedException $exception)
 		{
 			Craft::error($exception->getMessage(), __METHOD__);
-
 			return [];
 		}
 	}
@@ -469,7 +468,7 @@ class Image
 	}
 
 	/**
-	 * @param     $tempFileName
+	 * @param     $tempFilename
 	 * @param     $originalSize
 	 * @param     $extension
 	 * @param     $minQuality
@@ -478,14 +477,14 @@ class Image
 	 *
 	 * @return bool
 	 */
-	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
+	private function _autoGuessImageQuality($tempFilename, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
 		// Give ourselves some extra time.
 		@set_time_limit(30);
 
 		if ($step == 0)
 		{
-			$tempFileName = IOHelper::getFolderName($tempFileName).IOHelper::getFileName($tempFileName, false).'-temp.'.$extension;
+			$tempFilename = IOHelper::getFolderName($tempFilename).IOHelper::getFilename($tempFilename, false).'-temp.'.$extension;
 		}
 
 		// Find our target quality by splitting the min and max qualities
@@ -497,8 +496,8 @@ class Image
 		clearstatcache();
 
 		// Generate a new temp image and get it's file size.
-		$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality, $extension));
-		$newFileSize = IOHelper::getFileSize($tempFileName);
+		$this->_image->save($tempFilename, $this->_getSaveOptions($midQuality, $extension));
+		$newFileSize = IOHelper::getFileSize($tempFilename);
 
 		// If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
 		// let's use the current image.
@@ -507,7 +506,7 @@ class Image
 			clearstatcache();
 
 			// Generate one last time.
-			$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
+			$this->_image->save($tempFilename, $this->_getSaveOptions($midQuality));
 			return true;
 		}
 
@@ -515,12 +514,12 @@ class Image
 
 		if ($newFileSize > $originalSize)
 		{
-			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $midQuality, $step);
+			return $this->_autoGuessImageQuality($tempFilename, $originalSize, $extension, $minQuality, $midQuality, $step);
 		}
 		// Too much.
 		else
 		{
-			return $this->_autoGuessImageQuality($tempFileName, $originalSize, $extension, $midQuality, $maxQuality, $step);
+			return $this->_autoGuessImageQuality($tempFilename, $originalSize, $extension, $midQuality, $maxQuality, $step);
 		}
 	}
 

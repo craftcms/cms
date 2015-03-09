@@ -145,8 +145,8 @@ class Install extends Component
 		{
 			if (IOHelper::fileExists($file))
 			{
-				$fileName = IOHelper::getFileName($file, false);
-				$class = __NAMESPACE__.'\\'.$fileName;
+				$filename = IOHelper::getFilename($file, false);
+				$class = __NAMESPACE__.'\\'.$filename;
 
 				// Ignore abstract classes and interfaces
 				$ref = new \ReflectionClass($class);
@@ -523,7 +523,7 @@ class Install extends Component
 				if (IOHelper::fileExists($file))
 				{
 					$migration = new MigrationRecord();
-					$migration->version = IOHelper::getFileName($file, false);
+					$migration->version = IOHelper::getFilename($file, false);
 					$migration->applyTime = DateTimeHelper::currentUTCDateTime();
 
 					$migrations[] = $migration;
