@@ -171,6 +171,7 @@ class WebApp extends \CWebApplication
 		{
 			HeaderHelper::setHeader(array('X-Robots-Tag' => 'none'));
 			HeaderHelper::setHeader(array('X-Frame-Options' => 'SAMEORIGIN'));
+			HeaderHelper::setHeader(array('X-Content-Type-Options' => 'nosniff'));
 		}
 
 		// Validate some basics on the database configuration file.
