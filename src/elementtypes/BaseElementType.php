@@ -297,7 +297,7 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 						$value = str_replace($find, $replace, $value);
 					}
 
-					return HtmlHelper::encodeParams('<a href="{url}" target="_blank" class="go"><span dir="ltr">{value}</span></a>', array('url' => $url, 'value' => $value));
+					return '<a href="'.$url.'" target="_blank" class="go"><span dir="ltr">'.$value.'</span></a>';
 				}
 				else
 				{
