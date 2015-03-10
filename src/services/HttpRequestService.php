@@ -1237,10 +1237,20 @@ class HttpRequestService extends \CHttpRequest
 
 			if (!empty($tokenFromPost) && $cookies->contains($this->csrfTokenName))
 			{
-				$tokenFromCookie = $cookies->itemAt($this->csrfTokenName)->value;
+				$csrfTokenFromCookie = $cookies->itemAt($this->csrfTokenName)->value;
 
-				// See if they match.
-				$valid = \CPasswordHelper::same($tokenFromCookie, $tokenFromPost);
+				if (\CPasswordHelper::same($csrfTokenFromCookie, $tokenFromPost))
+				{
+					$sessionIdFromCookie = $_COOKIE[craft()->httpSession->sessionName];
+
+					list($nonceFromPost, $hashFromPost) = explode('|', $tokenFromPost, 2);
+					$expectedHash = $nonceFromPost.'|'.craft()->security->hashData($nonceFromPost . $sessionIdFromCookie);
+					$valid = \CPasswordHelper::same($csrfTokenFromCookie, $expectedHash);
+				}
+				else
+				{
+					$valid = false;
+				}
 			}
 			else
 			{
@@ -1266,7 +1276,9 @@ class HttpRequestService extends \CHttpRequest
 	protected function createCsrfCookie()
 	{
 		$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
-		$token = $nonce.'|'.craft()->httpSession->getSessionID();
+		$sessionId = craft()->httpSession->getSessionID();
+		$token = $nonce.'|'.craft()->security->hashData($nonce.$sessionId);
+
 		$cookie = new HttpCookie($this->csrfTokenName, $token);
 
 		if (is_array($this->csrfCookie))
