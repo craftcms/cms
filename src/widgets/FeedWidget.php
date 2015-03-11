@@ -88,7 +88,7 @@ class FeedWidget extends BaseWidget
 	protected function defineSettings()
 	{
 		return array(
-			'url'   => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
+			'url'   => array(AttributeType::Url, 'required' => true, 'label' => 'URL'),
 			'title' => array(AttributeType::Name, 'required' => true),
 			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
 		);
