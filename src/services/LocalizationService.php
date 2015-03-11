@@ -489,25 +489,29 @@ class LocalizationService extends BaseApplicationComponent
 					}
 				}
 
-				$oldPrimaryLocaleId = $this->getPrimarySiteLocaleId();
+				$primaryLocaleId = $this->getPrimarySiteLocaleId();
 
-				// Find out what's *about* to be the new primary locale, since we're going to nuke the current one
-				// a few lines down.
-				$allLocales = $this->getSiteLocaleIds();
+				// Did the primary locale ID just get deleted?
+				if ($primaryLocaleId === $localeId)
+				{
+					// Find out what's *about* to be the new primary locale, since we're going to nuke the current one
+					// a few lines down.
+					$allLocales = $this->getSiteLocaleIds();
 
-				if (isset($allLocales[1]))
-				{
-					$newPrimaryLocaleId = $allLocales[1];
-				}
-				else
-				{
-					$newPrimaryLocaleId = false;
-				}
+					if (isset($allLocales[1]))
+					{
+						$newPrimaryLocaleId = $allLocales[1];
+					}
+					else
+					{
+						$newPrimaryLocaleId = false;
+					}
 
-				// Did the primary site locale just change?
-				if ($oldPrimaryLocaleId != $newPrimaryLocaleId)
-				{
-					$this->_processNewPrimaryLocale($oldPrimaryLocaleId, $newPrimaryLocaleId);
+					// Did the primary site locale just change?
+					if ($primaryLocaleId != $newPrimaryLocaleId)
+					{
+						$this->_processNewPrimaryLocale($primaryLocaleId, $newPrimaryLocaleId);
+					}
 				}
 
 				// Delete the locale
