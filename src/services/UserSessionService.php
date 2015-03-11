@@ -1345,6 +1345,10 @@ class UserSessionService extends \CWebUser
 		// Delete the identity cookie, if there is one
 		$this->deleteStateCookie('');
 
+		// Delete the CSRF token cookie, if there is one.
+		// Will force a random one to be generated for the now-unauthenticated user.
+		craft()->request->deleteCookie(craft()->config->get('csrfTokenName'));
+
 		// Fire an 'onLogout' event
 		$this->onLogout(new Event($this));
 	}

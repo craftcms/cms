@@ -1234,18 +1234,14 @@ class HttpRequestService extends \CHttpRequest
 			}
 
 			$cookies = $this->getCookies();
+			$csrfCookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
-			if (!empty($tokenFromPost) && $cookies->contains($this->csrfTokenName))
+			if (!empty($tokenFromPost) && $csrfCookie && $csrfCookie->value)
 			{
-				$csrfTokenFromCookie = $cookies->itemAt($this->csrfTokenName)->value;
-
-				if (\CPasswordHelper::same($csrfTokenFromCookie, $tokenFromPost))
+				// Must at least match the cookie so that tokens from previous sessions won't work
+				if (\CPasswordHelper::same($csrfCookie->value, $tokenFromPost))
 				{
-					$sessionIdFromCookie = $_COOKIE[craft()->httpSession->sessionName];
-
-					list($nonceFromPost, $hashFromPost) = explode('|', $tokenFromPost, 2);
-					$expectedHash = $nonceFromPost.'|'.craft()->security->hashData($nonceFromPost . $sessionIdFromCookie);
-					$valid = \CPasswordHelper::same($csrfTokenFromCookie, $expectedHash);
+					$valid = $this->csrfTokenValidForCurrentUser($tokenFromPost);
 				}
 				else
 				{
@@ -1264,6 +1260,30 @@ class HttpRequestService extends \CHttpRequest
 		}
 	}
 
+	/**
+	 * Gets the current CSRF token from the CSRF token cookie, (re)creating the cookie if it is missing or invalid.
+	 *
+	 * @return string
+	 * @throws \CException
+	 */
+	public function getCsrfToken()
+	{
+		if ($this->_csrfToken === null)
+		{
+			$cookie = $this->getCookies()->itemAt($this->csrfTokenName);
+
+			// Reset the CSRF token cookie if it's not set, or for another user.
+			if(!$cookie || ($this->_csrfToken = $cookie->value) == null || !$this->csrfTokenValidForCurrentUser($cookie->value))
+			{
+				$cookie = $this->createCsrfCookie();
+				$this->_csrfToken = $cookie->value;
+				$this->getCookies()->add($cookie->name, $cookie);
+			}
+		}
+
+		return $this->_csrfToken;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -1271,13 +1291,29 @@ class HttpRequestService extends \CHttpRequest
 	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
 	 * applied to the generated cookie.
 	 *
-	 * @return HttpCookie the generated cookie
+	 * @return HttpCookie The generated cookie
 	 */
 	protected function createCsrfCookie()
 	{
-		$nonce = sha1(uniqid(mt_rand(), true)); // doesn't need to be cryptographically secure.
-		$sessionId = craft()->httpSession->getSessionID();
-		$token = $nonce.'|'.craft()->security->hashData($nonce.$sessionId);
+		$currentUser = craft()->userSession->getUser();
+
+		if ($currentUser)
+		{
+			$nonce = craft()->security->generateRandomString(40);
+
+			// We mix the password into the token so that it will become invalid when the user changes their password.
+			// The salt on the blowfish hash will be different even if they change their password to the same thing.
+			// Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
+			$passwordHash = $currentUser->password;
+			$userId = $currentUser->id;
+			$hashable = implode('|', array($nonce, $userId, $passwordHash));
+			$token = $nonce.'|'.craft()->security->computeHMAC($hashable);
+		}
+		else
+		{
+			// A random string is good enough if we're logged out.
+			$token = craft()->security->generateRandomString(40);
+		}
 
 		$cookie = new HttpCookie($this->csrfTokenName, $token);
 
@@ -1290,6 +1326,44 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return $cookie;
+	}
+
+	/**
+	 * Gets whether the CSRF token is valid for the current user or not
+	 *
+	 * @param $token
+	 *
+	 * @return bool
+	 * @throws \CException
+	 */
+	protected function csrfTokenValidForCurrentUser($token)
+	{
+		$currentUser = craft()->userSession->getUser();
+
+		if ($currentUser)
+		{
+			$splitToken = explode('|', $token, 2);
+
+			if (count($splitToken) !== 2)
+			{
+				return false;
+			}
+
+			list($nonce, $hashFromToken) = $splitToken;
+
+			// Check that this token is for the current user
+			$passwordHash = $currentUser->password;
+			$userId = $currentUser->id;
+			$hashable = implode('|', array($nonce, $userId, $passwordHash));
+			$expectedToken = $nonce.'|'.craft()->security->computeHMAC($hashable);
+
+			return \CPasswordHelper::same($token, $expectedToken);
+		}
+		else
+		{
+			// If they're logged out, any token is fine
+			return true;
+		}
 	}
 
 	// Private Methods
