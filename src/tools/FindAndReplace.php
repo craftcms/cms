@@ -27,7 +27,7 @@ class FindAndReplace extends BaseTool
 	 */
 	public function getName()
 	{
-		return Craft::t('Find and Replace');
+		return Craft::t('app','Find and Replace');
 	}
 
 	/**
@@ -50,13 +50,13 @@ class FindAndReplace extends BaseTool
 		return Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
 				'name'        => 'find',
-				'placeholder' => Craft::t('Find'),
+				'placeholder' => Craft::t('app','Find'),
 			]
 		]) .
 		Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
 				'name'        => 'replace',
-				'placeholder' => Craft::t('Replace'),
+				'placeholder' => Craft::t('app','Replace'),
 			]
 		]);
 	}
