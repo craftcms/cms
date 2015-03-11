@@ -19,18 +19,12 @@
   overflow: visible;
   margin-bottom: 24px;
 }
-.redactor-box iframe,
 .redactor-box textarea {
   display: block;
   position: relative;
   margin: 0;
   padding: 0;
   width: 100%;
-}
-.redactor-box iframe {
-  border: 1px solid #eee;
-}
-.redactor-box textarea {
   overflow: auto;
   outline: none;
   border: none;
@@ -96,7 +90,7 @@ body .redactor-box-fullscreen {
 /*
 	Utils
 */
-.body-hidden {
+.body-redactor-hidden {
   overflow: hidden;
 }
 /*
@@ -116,6 +110,9 @@ body .redactor-box-fullscreen {
 }
 .redactor-editor:focus {
   outline: none;
+}
+.toolbar-fixed-box + .redactor-editor {
+  padding-top: 32px !important;
 }
 /*
 	Placeholder
@@ -826,9 +823,6 @@ body .redactor-box-fullscreen {
 .redactor-editor object,
 .redactor-editor hr {
   margin-bottom: 15px;
-}
-.redactor-editor iframe {
-  width: auto;
 }
 .redactor-editor blockquote {
   margin-left: 1.6em !important;
