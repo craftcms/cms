@@ -1241,7 +1241,16 @@ class HttpRequestService extends \CHttpRequest
 				// Must at least match the cookie so that tokens from previous sessions won't work
 				if (\CPasswordHelper::same($csrfCookie->value, $tokenFromPost))
 				{
-					$valid = $this->csrfTokenValidForCurrentUser($tokenFromPost);
+					// TODO: Remove this nested condition after the next breakpoint and call csrfTokenValidForCurrentUser() directly.
+					// Is this an update request?
+					if ($this->isActionRequest() && isset($this->_actionSegments[0]) && $this->_actionSegments[0] == 'update')
+					{
+						return true;
+					}
+					else
+					{
+						$valid = $this->csrfTokenValidForCurrentUser($tokenFromPost);
+					}
 				}
 				else
 				{
