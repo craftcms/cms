@@ -1347,7 +1347,12 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	protected function csrfTokenValidForCurrentUser($token)
 	{
-		$currentUser = craft()->userSession->getUser();
+		$currentUser = false;
+
+		if (craft()->isInstalled())
+		{
+			$currentUser = craft()->userSession->getUser();
+		}
 
 		if ($currentUser)
 		{
