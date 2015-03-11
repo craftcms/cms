@@ -68,7 +68,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
-			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncode'),
+			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
 			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
 			'literal'            => new \Twig_Filter_Method($this, 'literalFilter'),
 			'markdown'           => $markdownFilter,
@@ -124,7 +124,7 @@ class CraftTwigExtension extends \Twig_Extension
 	 *
 	 * @return mixed The JSON encoded value.
 	 */
-	public function jsonEncode($value, $options = null)
+	public function jsonEncodeFilter($value, $options = null)
 	{
 		if ($options === null && (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))))
 		{
