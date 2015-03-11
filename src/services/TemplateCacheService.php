@@ -329,8 +329,18 @@ class TemplateCacheService extends BaseApplicationComponent
 
 		$this->_deletedCachesByElementType[$elementType] = true;
 
-		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, array('type = :type'), array(':type' => $elementType));
-		return (bool) $affectedRows;
+		$cacheIds = craft()->db->createCommand()
+			->select('cacheId')
+			->from(static::$_templateCacheCriteriaTable)
+			->where(array('type' => $elementType))
+			->queryColumn();
+
+		if ($cacheIds)
+		{
+			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
+		}
+
+		return true;
 	}
 
 	/**
@@ -352,23 +362,25 @@ class TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		if (!is_array($elements))
+		if (is_array($elements))
 		{
+			$firstElement = ArrayHelper::getFirstValue($elements);
+		}
+		else
+		{
+			$firstElement = $elements;
 			$elements = array($elements);
 		}
 
+		$deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement->getElementType()]);
 		$elementIds = array();
 
 		foreach ($elements as $element)
 		{
-			// Make sure we haven't just deleted all of the caches for this element type.
-			if (empty($this->_deletedCachesByElementType[$element->getElementType()]))
-			{
-				$elementIds[] = $element->id;
-			}
+			$elementIds[] = $element->id;
 		}
 
-		return $this->deleteCachesByElementId($elementIds);
+		return $this->deleteCachesByElementId($elementIds, $deleteQueryCaches);
 	}
 
 	/**

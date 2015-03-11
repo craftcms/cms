@@ -604,7 +604,7 @@ class UserSessionService extends \CWebUser
 						if ($this->allowAutoLogin)
 						{
 							// Save the necessary info to the identity cookie.
-							$sessionToken = StringHelper::UUID();
+							$sessionToken = craft()->security->generateRandomString(32);
 							$hashedToken = craft()->security->hashData(base64_encode(serialize($sessionToken)));
 							$uid = $this->storeSessionToken($user, $hashedToken);
 
@@ -823,15 +823,10 @@ class UserSessionService extends \CWebUser
 	{
 		$name = $this->getStateKeyPrefix().$name;
 		$cookie = new HttpCookie($name, '');
-		$cookie->httpOnly = true;
+
 		$cookie->expire = time() + $duration;
-
-		if (craft()->request->isSecureConnection())
-		{
-			$cookie->secure = true;
-		}
-
 		$cookie->value = craft()->security->hashData(base64_encode(serialize($data)));
+
 		craft()->request->getCookies()->add($cookie->name, $cookie);
 
 		return $cookie;
@@ -1166,7 +1161,7 @@ class UserSessionService extends \CWebUser
 				// Extend the expiration time
 				$expiration = time() + $this->authTimeout;
 				$cookie->expire = $expiration;
-				$cookie->httpOnly = true;
+
 				craft()->request->getCookies()->add($cookie->name, $cookie);
 			}
 		}
@@ -1217,7 +1212,7 @@ class UserSessionService extends \CWebUser
 					// Make sure the given session token matches what we have in the db.
 					$checkHashedToken= craft()->security->hashData(base64_encode(serialize($currentSessionToken)));
 
-					if (strcmp($checkHashedToken, $dbHashedToken) === 0)
+					if (\CPasswordHelper::same($checkHashedToken, $dbHashedToken))
 					{
 						// It's all good.
 						if($this->beforeLogin($loginName, $states, true))
@@ -1227,7 +1222,7 @@ class UserSessionService extends \CWebUser
 							if ($this->autoRenewCookie)
 							{
 								// Generate a new session token for the database and cookie.
-								$newSessionToken = StringHelper::UUID();
+								$newSessionToken = craft()->security->generateRandomString(32);
 								$hashedNewToken = craft()->security->hashData(base64_encode(serialize($newSessionToken)));
 								$this->_updateSessionToken($loginName, $dbHashedToken, $hashedNewToken);
 
@@ -1349,6 +1344,10 @@ class UserSessionService extends \CWebUser
 
 		// Delete the identity cookie, if there is one
 		$this->deleteStateCookie('');
+
+		// Delete the CSRF token cookie, if there is one.
+		// Will force a random one to be generated for the now-unauthenticated user.
+		craft()->request->deleteCookie(craft()->config->get('csrfTokenName'));
 
 		// Fire an 'onLogout' event
 		$this->onLogout(new Event($this));

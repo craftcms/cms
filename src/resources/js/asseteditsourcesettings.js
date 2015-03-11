@@ -43,7 +43,7 @@ $s3RefreshBucketsBtn.click(function()
 
                 refreshingS3Buckets = true;
 
-                $s3BucketSelect.prop('disabled', false).empty();
+                $s3BucketSelect.prop('readonly', false).empty();
 
                 for (var i = 0; i < response.length; i++)
                 {
@@ -128,7 +128,7 @@ $rackspaceRefreshRegionBtn.click(function()
 				var currentRegion = $rackspaceRegionSelect.val(),
 					currentRegionStillExists = false;
 
-				$rackspaceRegionSelect.prop('disabled', false).empty();
+				$rackspaceRegionSelect.prop('readonly', false).empty();
 
 				for (var i = 0; i < response.length; i++)
 				{
@@ -188,7 +188,7 @@ $rackspaceRefreshContainersBtn.click(function()
 
                 refreshingRackspaceContainers = true;
 
-                $rackspaceContainerSelect.prop('disabled', false).empty();
+                $rackspaceContainerSelect.prop('readonly', false).empty();
 
                 for (var i = 0; i < response.length; i++)
                 {
@@ -271,7 +271,7 @@ $googleRefreshBucketsBtn.click(function()
 
                 refreshingGoogleBuckets = true;
 
-                $googleBucketSelect.prop('disabled', false).empty();
+                $googleBucketSelect.prop('readonly', false).empty();
 
                 for (var i = 0; i < response.length; i++)
                 {
@@ -280,7 +280,7 @@ $googleRefreshBucketsBtn.click(function()
                         currentBucketStillExists = true;
                     }
 
-                    $googleBucketSelect.append('<option value="'+response[i].bucket+'" data-url-prefix="'+response[i].url_prefix+'">'+response[i].bucket+'</option>');
+                    $googleBucketSelect.append('<option value="'+response[i].bucket+'" data-url-prefix="'+response[i].urlPrefix+'">'+response[i].bucket+'</option>');
                 }
 
                 if (currentBucketStillExists)

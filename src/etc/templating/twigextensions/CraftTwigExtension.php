@@ -68,6 +68,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
+			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
 			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
 			'literal'            => new \Twig_Filter_Method($this, 'literalFilter'),
 			'markdown'           => $markdownFilter,
@@ -110,6 +111,27 @@ class CraftTwigExtension extends \Twig_Extension
 	public function lcfirstFilter($string)
 	{
 		return StringHelper::lowercaseFirst($string);
+	}
+
+	/**
+	 * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
+	 * encoding options on text/html/xml requests.
+	 *
+	 * @param mixed    $value   The value to JSON encode.
+	 * @param null|int $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
+	 *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
+	 *                          JSON_FORCE_OBJECT
+	 *
+	 * @return mixed The JSON encoded value.
+	 */
+	public function jsonEncodeFilter($value, $options = null)
+	{
+		if ($options === null && (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))))
+		{
+			$options = JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_QUOT;
+		}
+
+		return twig_jsonencode_filter($value, $options);
 	}
 
 	/**

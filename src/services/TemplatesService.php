@@ -571,7 +571,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			foreach ($this->_cssFiles as $url)
 			{
-				$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
+				$node = HtmlHelper::encodeParams('<link rel="stylesheet" type="text/css" href="{url}"/>', array('url' => $url));
 				$this->includeHeadHtml($node);
 			}
 
@@ -1454,7 +1454,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
 		{
-			$html .= '<a href="'.$cpEditUrl.'">'.$label.'</a>';
+			$html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>', array('cpEditUrl' => $cpEditUrl, 'label' => $label));
 		}
 		else
 		{
