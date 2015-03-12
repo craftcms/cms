@@ -1458,7 +1458,7 @@ class TemplatesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$html .= $label;
+			$html .= HtmlHelper::encode($label);
 		}
 
 		$html .= '</span></div></div>';
