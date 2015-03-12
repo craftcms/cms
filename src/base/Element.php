@@ -22,7 +22,7 @@ use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
 /**
- * Element base class
+ * Element is the base class for classes representing elements in terms of objects.
  *
  * @property string $title The element’s title.
  *
@@ -34,6 +34,7 @@ abstract class Element extends Component implements ElementInterface
 	// Traits
 	// =========================================================================
 
+	use ElementTrait;
 	use ContentTrait;
 
 	// Constants
@@ -50,71 +51,6 @@ abstract class Element extends Component implements ElementInterface
 	 * @var array
 	 */
 	private static $_sourcesByContext;
-
-	/**
-	 * @var int ID
-	 */
-	public $id;
-
-	/**
-	 * @var boolean Enabled
-	 */
-	public $enabled = true;
-
-	/**
-	 * @var boolean Archived
-	 */
-	public $archived = false;
-
-	/**
-	 * @var string Locale
-	 */
-	public $locale;
-
-	/**
-	 * @var boolean Locale enabled
-	 */
-	public $localeEnabled = true;
-
-	/**
-	 * @var string Slug
-	 */
-	public $slug;
-
-	/**
-	 * @var string URI
-	 */
-	public $uri;
-
-	/**
-	 * @var DateTime Date created
-	 */
-	public $dateCreated;
-
-	/**
-	 * @var DateTime Date updated
-	 */
-	public $dateUpdated;
-
-	/**
-	 * @var int Structure root ID
-	 */
-	public $root;
-
-	/**
-	 * @var int Structure left position
-	 */
-	public $lft;
-
-	/**
-	 * @var int Structure right position
-	 */
-	public $rgt;
-
-	/**
-	 * @var int Structure level
-	 */
-	public $level;
 
 	/**
 	 * @var

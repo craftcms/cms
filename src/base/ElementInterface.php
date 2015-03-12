@@ -16,7 +16,9 @@ use craft\app\models\FieldLayout;
 
 
 /**
- * This interface defines the contract that all Elements must implement.
+ * ElementInterface defines the common interface to be implemented by element classes.
+ *
+ * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
