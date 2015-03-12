@@ -41,7 +41,7 @@ class LocalizeRelationsTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Creating localization relations');
+		return Craft::t('Localizing relations');
 	}
 
 	/**
