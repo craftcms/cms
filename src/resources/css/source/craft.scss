@@ -107,6 +107,7 @@ p { margin: 1em 0; }
 h5 + p { margin-top: 0; }
 
 sup { vertical-align: super; font-size: smaller; }
+sub { vertical-align: sub; font-size: smaller; }
 
 .indent { @include margin-left(14px); }
 
