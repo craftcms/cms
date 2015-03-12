@@ -25,6 +25,12 @@ Craft.LivePreview = Garnish.Base.extend(
 	dragger: null,
 	dragStartEditorWidth: null,
 
+	_handleSuccessProxy: null,
+	_handleErrorProxy: null,
+
+	_scrollX: null,
+	_scrollY: null,
+
 	_editorWidth: null,
 	_editorWidthInPx: null,
 
@@ -60,6 +66,9 @@ Craft.LivePreview = Garnish.Base.extend(
 		{
 			this.basePostData[Craft.csrfTokenName] = Craft.csrfTokenValue;
 		}
+
+		this._handleSuccessProxy = $.proxy(this, 'handleSuccess');
+		this._handleErrorProxy = $.proxy(this, 'handleError');
 
 		// Find the DOM elements
 		this.$extraFields = $(this.settings.extraFields);
@@ -347,38 +356,56 @@ Craft.LivePreview = Garnish.Base.extend(
 			this.loading = true;
 
 			var data = $.extend({}, postData, this.basePostData),
-				$doc = $(this.$iframe[0].contentWindow.document),
-				scrollX = $doc.scrollLeft(),
-				scrollY = $doc.scrollTop();
+				$doc = $(this.$iframe[0].contentWindow.document);
 
-			$.post(this.previewUrl, data, $.proxy(function(response)
-			{
-				var html = response +
-					'<script type="text/javascript">window.scrollTo('+scrollX+', '+scrollY+');</script>';
+			this._scrollX = $doc.scrollLeft();
+			this._scrollY = $doc.scrollTop();
 
-				// Set the iframe to use the same bg as the iframe body,
-				// to reduce the blink when reloading the DOM
-				this.$iframe.css('background', $(this.$iframe[0].contentWindow.document.body).css('background'));
-
-				this.$iframe[0].contentWindow.document.open();
-				this.$iframe[0].contentWindow.document.write(html);
-				this.$iframe[0].contentWindow.document.close();
-
-				this.loading = false;
-
-				if (this.checkAgain)
-				{
-					this.checkAgain = false;
-					this.updateIframe();
-				}
-
-			}, this));
+			$.ajax({
+				url: this.previewUrl,
+				method: 'POST',
+				data: $.extend({}, postData, this.basePostData),
+				success: this._handleSuccessProxy,
+				error: this._handleErrorProxy
+			});
 
 			return true;
 		}
 		else
 		{
 			return false;
+		}
+	},
+
+	handleSuccess: function(data, textStatus, jqXHR)
+	{
+		var html = data +
+			'<script type="text/javascript">window.scrollTo('+this._scrollX+', '+this._scrollY+');</script>';
+
+		// Set the iframe to use the same bg as the iframe body,
+		// to reduce the blink when reloading the DOM
+		this.$iframe.css('background', $(this.$iframe[0].contentWindow.document.body).css('background'));
+
+		this.$iframe[0].contentWindow.document.open();
+		this.$iframe[0].contentWindow.document.write(html);
+		this.$iframe[0].contentWindow.document.close();
+
+		this.onResponse();
+	},
+
+	handleError: function(jqXHR, textStatus, errorThrown)
+	{
+		this.onResponse();
+	},
+
+	onResponse: function()
+	{
+		this.loading = false;
+
+		if (this.checkAgain)
+		{
+			this.checkAgain = false;
+			this.updateIframe();
 		}
 	},
 

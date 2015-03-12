@@ -23,33 +23,33 @@ class CpVariable
 	 */
 	public function nav()
 	{
-		$nav['dashboard'] = array('name' => Craft::t('Dashboard'));
+		$nav['dashboard'] = array('label' => Craft::t('Dashboard'));
 
 		if (craft()->sections->getTotalEditableSections())
 		{
-			$nav['entries'] = array('name' => Craft::t('Entries'));
+			$nav['entries'] = array('label' => Craft::t('Entries'));
 		}
 
 		$globals = craft()->globals->getEditableSets();
 
 		if ($globals)
 		{
-			$nav['globals'] = array('name' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
+			$nav['globals'] = array('label' => Craft::t('Globals'), 'url' => 'globals/'.$globals[0]->handle);
 		}
 
 		if (craft()->categories->getEditableGroupIds())
 		{
-			$nav['categories'] = array('name' => Craft::t('Categories'));
+			$nav['categories'] = array('label' => Craft::t('Categories'));
 		}
 
 		if (craft()->assetSources->getTotalViewableSources())
 		{
-			$nav['assets'] = array('name' => Craft::t('Assets'));
+			$nav['assets'] = array('label' => Craft::t('Assets'));
 		}
 
 		if (craft()->getEdition() == Craft::Pro && craft()->userSession->checkPermission('editUsers'))
 		{
-			$nav['users'] = array('name' => Craft::t('Users'));
+			$nav['users'] = array('label' => Craft::t('Users'));
 		}
 
 		// Add any Plugin nav items
@@ -62,11 +62,15 @@ class CpVariable
 				if (craft()->userSession->checkPermission('accessPlugin-'.$plugin->getClassHandle()))
 				{
 					$lcHandle = StringHelper::toLowerCase($plugin->getClassHandle());
-					$nav[$lcHandle] = array('name' => $plugin->getName());
+					$nav[$lcHandle] = array('label' => $plugin->getName());
 				}
 			}
 		}
 
+		// Allow plugins to modify the nav
+		craft()->plugins->call('modifyCpNav', array(&$nav));
+
+		// Figure out which item is selected, and normalize the items
 		$firstSegment = craft()->request->getSegment(1);
 
 		if ($firstSegment == 'myaccount')
@@ -76,6 +80,11 @@ class CpVariable
 
 		foreach ($nav as $handle => &$item)
 		{
+			if (is_string($item))
+			{
+				$item = array('label' => $item);
+			}
+
 			$item['sel'] = ($handle == $firstSegment);
 
 			if (isset($item['url']))
