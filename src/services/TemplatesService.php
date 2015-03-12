@@ -1401,7 +1401,7 @@ class TemplatesService extends BaseApplicationComponent
 			$html .= ' hasicon';
 		}
 
-		$label = HtmlHelper::encode($context['element']);
+		$label = $context['element'];
 
 		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
 
