@@ -58,6 +58,11 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected $sortable = true;
 
+	/**
+	 * @var bool
+	 */
+	private $_makeExistingRelationsTranslatable = false;
+
 	// Public Methods
 	// =========================================================================
 
@@ -278,6 +283,41 @@ abstract class BaseElementFieldType extends BaseFieldType
 		else
 		{
 			return '<p class="light">'.Craft::t('Nothing selected.').'</p>';
+		}
+	}
+
+	/**
+	 * @inheritDoc IFieldType::onBeforeSave()
+	 *
+	 * @return null
+	 */
+	public function onBeforeSave()
+	{
+		$this->_makeExistingRelationsTranslatable = false;
+
+		if ($this->model->id && $this->model->translatable)
+		{
+			$existingField = craft()->fields->getFieldById($this->model->id);
+
+			if ($existingField->translatable == 0)
+			{
+				$this->_makeExistingRelationsTranslatable = true;
+			}
+		}
+	}
+
+	/**
+	 * @inheritDoc IFieldType::onAfterSave()
+	 *
+	 * @return null
+	 */
+	public function onAfterSave()
+	{
+		if ($this->_makeExistingRelationsTranslatable)
+		{
+			craft()->tasks->createTask('LocalizeRelations', null, array(
+				'fieldId' => $this->model->id,
+			));
 		}
 	}
 
