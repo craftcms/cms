@@ -250,52 +250,6 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Creates an element instance.
-	 *
-	 * This method is called together with [[populateElement()]] by [[ElementQuery]].
-	 * It is not meant to be used for creating new elements directly.
-	 *
-	 * You may override this method if the instance being created
-	 * depends on the row data to be populated into the element.
-	 * For example, by creating an element based on the value of a column,
-	 * you may implement the so-called single-table inheritance mapping.
-	 *
-	 * @param array $row Row data to be populated into the record.
-	 * @return ElementInterface The newly created element
-	 */
-	public static function instantiate($row)
-	{
-		return new static;
-	}
-
-	/**
-	 * Populates an element object using a row of data from the database/storage.
-	 *
-	 * This is an internal method meant to be called to create element objects after
-	 * fetching data from the database. It is mainly used by [[ElementQuery]] to populate
-	 * the query results into elements.
-	 *
-	 * When calling this method manually you should call [[afterFind()]] on the created
-	 * record to trigger the [[EVENT_AFTER_FIND|afterFind Event]].
-	 *
-	 * @param ElementInterface $element The element to be populated. In most cases this will be an instance
-	 * created by [[instantiate()]] beforehand.
-	 * @param array $row Attribute values (name => value)
-	 */
-	public static function populateElement(ElementInterface $element, $row)
-	{
-		$attributes = array_flip($element->attributes());
-
-		foreach ($row as $name => $value)
-		{
-			if (isset($attributes[$name]) || $element->canSetProperty($name))
-			{
-				$element->$name = $value;
-			}
-		}
-	}
-
-	/**
 	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param null $context

@@ -7,6 +7,9 @@
 
 namespace craft\app\base;
 
+use yii\base\Model;
+use yii\base\Object;
+
 /**
  * ComponentTrait implements the common methods and properties for Craft component classes.
  *
@@ -37,5 +40,40 @@ abstract class Component extends Model implements ComponentInterface
 		$classNameParts = implode('\\', static::className());
 		$handle = array_pop($classNameParts);
 		return strtolower($handle);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function instantiate($data)
+	{
+		if ($data['type'])
+		{
+			$class = $data['type'];
+			return new $class;
+		}
+		else
+		{
+			return new static;
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateComponent(ComponentInterface $component, $data)
+	{
+		if ($component instanceof Model)
+		{
+			$attributes = array_flip($component->attributes());
+		}
+
+		foreach ($data as $name => $value)
+		{
+			if (isset($attributes[$name]) || ($component instanceof Object && $component->canSetProperty($name)) || property_exists($component, $name))
+			{
+				$component->$name = $value;
+			}
+		}
 	}
 }
