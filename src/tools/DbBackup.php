@@ -29,7 +29,7 @@ class DbBackup extends BaseTool
 	 */
 	public function getName()
 	{
-		return Craft::t('Backup Database');
+		return Craft::t('app','Backup Database');
 	}
 
 	/**
@@ -51,7 +51,7 @@ class DbBackup extends BaseTool
 	{
 		return Craft::$app->templates->render('_includes/forms/checkbox', [
 			'name'    => 'downloadBackup',
-			'label'   => Craft::t('Download backup?'),
+			'label'   => Craft::t('app','Download backup?'),
 			'checked' => true,
 		]);
 	}

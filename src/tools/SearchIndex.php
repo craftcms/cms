@@ -29,7 +29,7 @@ class SearchIndex extends BaseTool
 	 */
 	public function getName()
 	{
-		return Craft::t('Rebuild Search Indexes');
+		return Craft::t('app','Rebuild Search Indexes');
 	}
 
 	/**

@@ -28,11 +28,6 @@ class MigrationHelper
 	private static $_tables;
 
 	/**
-	 * @var
-	 */
-	private static $_tablePrefixLength;
-
-	/**
 	 * @var array
 	 */
 	private static $_idColumnType = ['column' => ColumnType::Int, 'required' => true];
@@ -66,6 +61,7 @@ class MigrationHelper
 	 */
 	public static function dropForeignKeyIfExists($tableName, $columns)
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 
 		foreach ($table->fks as $i => $fk)
@@ -90,6 +86,7 @@ class MigrationHelper
 	 */
 	public static function dropIndexIfExists($tableName, $columns, $unique = false)
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 
 		foreach ($table->indexes as $i => $index)
@@ -155,6 +152,7 @@ class MigrationHelper
 	 */
 	public static function renameColumn($tableName, $oldName, $newName)
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$table = static::getTable($tableName);
 		$allOtherTableFks = static::findForeignKeysTo($tableName);
 
@@ -231,7 +229,7 @@ class MigrationHelper
 	 * Creates elements for all rows in a given table, swaps its 'id' PK for 'elementId', and updates the names of any
 	 * FK's in other tables.
 	 *
-	 * @param string     $table       The existing table name used to store records of this element.
+	 * @param string     $tableName   The existing table name used to store records of this element.
 	 * @param string     $elementType The element type handle (e.g. "Entry", "Asset", etc.).
 	 * @param bool       $hasContent  Whether this element type has content.
 	 * @param bool       $isLocalized Whether this element type stores data in multiple locales.
@@ -240,10 +238,11 @@ class MigrationHelper
 	 *
 	 * @return null
 	 */
-	public static function makeElemental($table, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
+	public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null)
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$db = Craft::$app->getDb();
-		$fks = static::findForeignKeysTo($table);
+		$fks = static::findForeignKeysTo($tableName);
 
 		foreach ($fks as $fk)
 		{
@@ -257,13 +256,13 @@ class MigrationHelper
 		}
 
 		// Rename the old id column and add the new one
-		$db->createCommand()->renameColumn($table, 'id', 'id_old')->execute();
-		$db->createCommand()->addColumnAfter($table, 'id', static::$_idColumnType, 'id_old')->execute();
+		$db->createCommand()->renameColumn($tableName, 'id', 'id_old')->execute();
+		$db->createCommand()->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')->execute();
 
 		// Get all of the rows
 		$oldRows = (new Query())
 			->select('id_old')
-			->from($table)
+			->from($tableName)
 			->all($db);
 
 		// Figure out which locales we're going to be storing elements_i18n and content rows in.
@@ -295,7 +294,7 @@ class MigrationHelper
 			$elementId = $db->getLastInsertID();
 
 			// Update this table with the new element ID
-			$db->createCommand()->update($table, ['id' => $elementId], ['id_old' => $row['id_old']])->execute();
+			$db->createCommand()->update($tableName, ['id' => $elementId], ['id_old' => $row['id_old']])->execute();
 
 			// Update the other tables' new FK columns
 			foreach ($fks as $fk)
@@ -327,13 +326,13 @@ class MigrationHelper
 		}
 
 		// Drop the old id column
-		$db->createCommand()->dropColumn($table, 'id_old')->execute();
+		$db->createCommand()->dropColumn($tableName, 'id_old')->execute();
 
 		// Set the new PK
-		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName($table, 'id'), $table, 'id')->execute();
+		$db->createCommand()->addPrimaryKey($db->getPrimaryKeyName($tableName, 'id'), $tableName, 'id')->execute();
 
 		// Make 'id' a FK to elements
-		$db->createCommand()->addForeignKey($db->getForeignKeyName($table, 'id'), $table, 'id', 'elements', 'id', 'CASCADE')->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName($tableName, 'id'), $tableName, 'id', 'elements', 'id', 'CASCADE')->execute();
 
 		// Now deal with the rest of the tables
 		foreach ($fks as $fk)
@@ -365,37 +364,43 @@ class MigrationHelper
 	/**
 	 * Returns info about a given table.
 	 *
-	 * @param string $table
+	 * @param string $tableName
 	 *
 	 * @return object|null
 	 */
-	public static function getTable($table)
+	public static function getTable($tableName)
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$tables = static::getTables();
 
-		if (isset($tables[$table]))
+		if (isset($tables[$tableName]))
 		{
-			return $tables[$table];
+			return $tables[$tableName];
+		}
+		else
+		{
+			return null;
 		}
 	}
 
 	/**
 	 * Returns a list of all the foreign keys that point to a given table/column.
 	 *
-	 * @param string $table  The table the foreign keys should point to.
-	 * @param string $column The column the foreign keys should point to. Defaults to 'id'.
+	 * @param string $tableName The table the foreign keys should point to.
+	 * @param string $column    The column the foreign keys should point to. Defaults to 'id'.
 	 *
 	 * @return array A list of the foreign keys pointing to that table/column.
 	 */
-	public static function findForeignKeysTo($table, $column = 'id')
+	public static function findForeignKeysTo($tableName, $column = 'id')
 	{
+		$tableName = Craft::$app->db->getSchema()->getRawTableName($tableName);
 		$fks = [];
 
 		foreach (static::getTables() as $otherTable)
 		{
 			foreach ($otherTable->fks as $fk)
 			{
-				if ($fk->refTable == $table)
+				if ($fk->refTable == $tableName)
 				{
 					// Figure out which column in the FK is pointing to this table's id column (if any)
 					$fkColumnIndex = array_search($column, $fk->refColumns);
@@ -572,7 +577,7 @@ class MigrationHelper
 	public static function restoreForeignKey($fk)
 	{
 		$db = Craft::$app->getDb();
-		$table = $fk->name->name;
+		$table = $fk->table->name;
 		$columns = implode(',', $fk->columns);
 		$db->createCommand()->addForeignKey($db->getForeignKeyName($table, $columns), $table, $columns, $fk->refTable, implode(',', $fk->refColumns), $fk->onDelete, $fk->onUpdate)->execute();
 
@@ -582,21 +587,6 @@ class MigrationHelper
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Returns the length of the table prefix.
-	 *
-	 * @return string
-	 */
-	private static function _getTablePrefixLength()
-	{
-		if (!isset(static::$_tablePrefixLength))
-		{
-			static::$_tablePrefixLength = StringHelper::length(Craft::$app->getDb()->tablePrefix);
-		}
-
-		return static::$_tablePrefixLength;
-	}
 
 	/**
 	 * Records all the foreign keys and indexes for each table.
@@ -611,7 +601,6 @@ class MigrationHelper
 
 		foreach ($tables as $table)
 		{
-			$table = mb_substr($table, static::_getTablePrefixLength());
 			static::_analyzeTable($table);
 		}
 	}
@@ -633,7 +622,7 @@ class MigrationHelper
 		];
 
 		// Get the CREATE TABLE sql
-		$query = Craft::$app->getDb()->createCommand('SHOW CREATE TABLE `{{'.$table.'}}`')->queryOne();
+		$query = Craft::$app->getDb()->createCommand("SHOW CREATE TABLE `$table`")->queryOne();
 
 		// Don't want to include any views.
 		if (isset($query['Create Table']))
@@ -662,7 +651,7 @@ class MigrationHelper
 					static::$_tables[$table]->fks[] = (object)[
 						'name'       => $name,
 						'columns'    => explode('`,`', $match[2]),
-						'refTable'   => mb_substr($match[3], static::_getTablePrefixLength()),
+						'refTable'   => $match[3],
 						'refColumns' => explode('`,`', $match[4]),
 						'onDelete'   => (!empty($match[6]) ? $match[6] : null),
 						'onUpdate'   => (!empty($match[8]) ? $match[8] : null),
