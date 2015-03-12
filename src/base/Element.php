@@ -22,7 +22,7 @@ use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
 /**
- * The base class for all Craft element types. Any element type must extend this class.
+ * Element base class
  *
  * @property string $title The element’s title.
  *
