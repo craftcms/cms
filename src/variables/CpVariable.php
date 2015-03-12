@@ -67,6 +67,9 @@ class CpVariable
 			}
 		}
 
+		// Allow plugins to modify the nav
+		craft()->plugins->call('modifyCpNav', array(&$nav));
+
 		// Figure out which item is selected, and normalize the items
 		$firstSegment = craft()->request->getSegment(1);
 
@@ -77,6 +80,11 @@ class CpVariable
 
 		foreach ($nav as $handle => &$item)
 		{
+			if (is_string($item))
+			{
+				$item = array('label' => $item);
+			}
+
 			$item['sel'] = ($handle == $firstSegment);
 
 			if (isset($item['url']))
