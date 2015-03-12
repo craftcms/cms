@@ -29,7 +29,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class Element extends Model implements ElementInterface
+abstract class Element extends Component implements ElementInterface
 {
 	// Traits
 	// =========================================================================
@@ -166,41 +166,8 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	private $_nextSibling;
 
-	/**
-	 * @var
-	 */
-	private $_ancestorsCriteria;
-
-	/**
-	 * @var
-	 */
-	private $_descendantsCriteria;
-
-	/**
-	 * @var
-	 */
-	private $_childrenCriteria;
-
-	/**
-	 * @var
-	 */
-	private $_siblingsCriteria;
-
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function classHandle()
-	{
-		$classNameParts = implode('\\', static::className());
-		$handle = array_pop($classNameParts);
-		return strtolower($handle);
-	}
-
-	// Basic info methods
-	// -------------------------------------------------------------------------
 
 	/**
 	 * @inheritDoc ElementInterface::hasContent()

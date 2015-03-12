@@ -62,6 +62,14 @@ class MatrixBlock extends Element
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'Matrix Block');
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool

@@ -81,6 +81,14 @@ class Entry extends Element
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'Entry');
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool

@@ -42,6 +42,14 @@ class Category extends Element
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'Category');
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool

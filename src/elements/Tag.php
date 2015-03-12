@@ -34,6 +34,14 @@ class Tag extends Element
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'Tag');
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool

@@ -16,29 +16,15 @@ use craft\app\models\FieldLayout;
 
 
 /**
- * This interface defines the contract that all element types must implement via [[Element]].
+ * This interface defines the contract that all Elements must implement.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface ElementInterface
+interface ElementInterface extends ComponentInterface
 {
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Returns the fully qualified name of this class.
-	 *
-	 * @return static The fully qualified name of this class.
-	 */
-	public static function className();
-
-	/**
-	 * Returns the handle that should be used when referring to this element class, i.e. from reference tags.
-	 *
-	 * @return string The class handle.
-	 */
-	public static function classHandle();
 
 	/**
 	 * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).

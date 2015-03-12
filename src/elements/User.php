@@ -168,6 +168,14 @@ class User extends Element implements IdentityInterface
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'User');
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::hasContent()
 	 *
 	 * @return bool
