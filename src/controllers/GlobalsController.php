@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\elements\GlobalSet;
@@ -47,7 +46,7 @@ class GlobalsController extends Controller
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::GlobalSet;
+		$fieldLayout->type = GlobalSet::className();
 		$globalSet->setFieldLayout($fieldLayout);
 
 		// Save it
@@ -125,9 +124,9 @@ class GlobalsController extends Controller
 		// Get the global sets the user is allowed to edit, in the requested locale
 		$editableGlobalSets = [];
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
-		$criteria->locale = $localeId;
-		$globalSets = $criteria->find();
+		$globalSets = GlobalSet::find()
+			->locale($localeId)
+			->all();
 
 		foreach ($globalSets as $globalSet)
 		{

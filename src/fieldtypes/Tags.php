@@ -8,9 +8,9 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\Tag;
 use craft\app\models\TagGroup as TagGroupModel;
-use craft\app\variables\ElementType;
 
 /**
  * Tags fieldtype
@@ -22,13 +22,6 @@ class Tags extends BaseElementFieldType
 {
 	// Properties
 	// =========================================================================
-
-	/**
-	 * The element type this field deals with.
-	 *
-	 * @var string $elementType
-	 */
-	protected $elementType = 'Tag';
 
 	/**
 	 * Whether the field settings should allow multiple sources to be selected.
@@ -53,32 +46,56 @@ class Tags extends BaseElementFieldType
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public function getName()
+	{
+		return Craft::t('app', 'Tags');
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return Tag
+	 */
+	public function getElementClass()
+	{
+		return Tag::className();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getAddButtonLabel()
+	{
+		return Craft::t('app', 'Add a tag');
+	}
+
+	/**
 	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
-	 * @param string $name
-	 * @param mixed  $criteria
+	 * @param string                     $name
+	 * @param ElementQueryInterface|null $selectedElementsQuery
 	 *
 	 * @return string
 	 */
-	public function getInputHtml($name, $criteria)
+	public function getInputHtml($name, $selectedElementsQuery)
 	{
-		if (!($criteria instanceof ElementCriteriaModel))
+		if (!($selectedElementsQuery instanceof ElementQueryInterface))
 		{
-			$criteria = Craft::$app->elements->getCriteria($this->elementType);
-			$criteria->id = false;
+			$class = $this->getElementClass();
+			$selectedElementsQuery = $class::find()
+				->id(false);
 		}
-
-		$elementVariable = new ElementType($this->getElementType());
 
 		$tagGroup = $this->_getTagGroup();
 
 		if ($tagGroup)
 		{
 			return Craft::$app->templates->render('_components/fieldtypes/Tags/input', [
-				'elementType'     => $elementVariable,
+				'elementClass'    => $this->getElementClass(),
 				'id'              => Craft::$app->templates->formatInputId($name),
 				'name'            => $name,
-				'elements'        => $criteria,
+				'elements'        => $selectedElementsQuery,
 				'tagGroupId'      => $this->_getTagGroupId(),
 				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
 			]);

@@ -7,9 +7,17 @@
 
 namespace craft\app\variables;
 
-use craft\app\enums\ElementType as ElementTypeEnum;
+use craft\app\elements\Asset;
+use craft\app\elements\Category;
+use craft\app\elements\db\AssetQuery;
+use craft\app\elements\db\CategoryQuery;
+use craft\app\elements\db\EntryQuery;
+use craft\app\elements\db\TagQuery;
+use craft\app\elements\db\UserQuery;
+use craft\app\elements\Entry;
+use craft\app\elements\Tag;
+use craft\app\elements\User;
 use craft\app\helpers\StringHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use yii\base\Object;
 
 /**
@@ -106,23 +114,27 @@ class Craft extends Object
 	}
 
 	/**
+	 * Returns a new AssetQuery instance.
+	 *
 	 * @param array|null $criteria
 	 *
-	 * @return ElementCriteriaModel
+	 * @return AssetQuery
 	 */
 	public function assets($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Asset, $criteria);
+		return Asset::find()->configure($criteria);
 	}
 
 	/**
+	 * Returns a new CategoryQuery instance.
+	 *
 	 * @param array|null $criteria
 	 *
-	 * @return ElementCriteriaModel
+	 * @return CategoryQuery
 	 */
 	public function categories($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Category, $criteria);
+		return Category::find()->configure($criteria);
 	}
 
 	/**
@@ -177,13 +189,15 @@ class Craft extends Object
 	}
 
 	/**
+	 * Returns a new EntryQuery instance.
+	 *
 	 * @param array|null $criteria
 	 *
-	 * @return ElementCriteriaModel
+	 * @return EntryQuery
 	 */
 	public function entries($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Entry, $criteria);
+		return Entry::find()->configure($criteria);
 	}
 
 	/**
@@ -278,13 +292,15 @@ class Craft extends Object
 	}
 
 	/**
+	 * Returns a new TagQuery instance.
+	 *
 	 * @param array|null $criteria
 	 *
-	 * @return ElementCriteriaModel
+	 * @return TagQuery
 	 */
 	public function tags($criteria = null)
 	{
-		return \Craft::$app->elements->getCriteria(ElementTypeEnum::Tag, $criteria);
+		return Tag::find()->configure($criteria);
 	}
 
 	/**
@@ -304,16 +320,15 @@ class Craft extends Object
 	}
 
 	/**
+	 * Returns a new UserQuery instance
+	 *
 	 * @param array|null $criteria
 	 *
-	 * @return ElementCriteriaModel|null
+	 * @return UserQuery
 	 */
 	public function users($criteria = null)
 	{
-		if (\Craft::$app->getEdition() == \Craft::Pro)
-		{
-			return \Craft::$app->elements->getCriteria(ElementTypeEnum::User, $criteria);
-		}
+		return User::find()->configure($criteria);
 	}
 
 	/**

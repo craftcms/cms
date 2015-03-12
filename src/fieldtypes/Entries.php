@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
+use craft\app\elements\Entry;
 
 /**
  * Entries fieldtype
@@ -17,25 +18,30 @@ use Craft;
  */
 class Entries extends BaseElementFieldType
 {
-	// Properties
+	// Public Methods
 	// =========================================================================
 
 	/**
-	 * The element type this field deals with.
-	 *
-	 * @var string $elementType
+	 * @inheritdoc
 	 */
-	protected $elementType = 'Entry';
-
-	// Protected Methods
-	// =========================================================================
+	public function getName()
+	{
+		return Craft::t('app', 'Entries');
+	}
 
 	/**
-	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
-	 *
-	 * @return string
+	 * @inheritdoc
+	 * @return Entry
 	 */
-	protected function getAddButtonLabel()
+	public function getElementClass()
+	{
+		return Entry::className();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getAddButtonLabel()
 	{
 		return Craft::t('app', 'Add an entry');
 	}

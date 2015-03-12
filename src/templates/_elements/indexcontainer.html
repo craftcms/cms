@@ -9,10 +9,11 @@
 	"Display as thumbnails"
 %}
 
+{% set elementInstance = craft.elements.getElementInstance(elementClass) %}
 {% set context = context is defined ? context : 'index' %}
-{% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementType.hasStatuses()) %}
-{% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementType.isLocalized()) : false) %}
-{% set sortableAttributes = elementType.defineSortableAttributes() %}
+{% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
+{% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementInstance.isLocalized()) : false) %}
+{% set sortableAttributes = elementInstance.defineSortableAttributes() %}
 
 <div class="main">
 	<div class="toolbar">
@@ -24,7 +25,7 @@
 						<div class="menu">
 							<ul class="padded">
 								<li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t }}</a></li>
-								{% for status, label in elementType.getStatuses() %}
+								{% for status, label in elementInstance.getStatuses() %}
 									<li><a data-status="{{ status }}"><span class="status {{ status }}"></span>{{ label }}</a></li>
 								{% endfor %}
 							</ul>

@@ -8,9 +8,9 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
+use craft\app\elements\Asset;
 use craft\app\enums\AssetConflictResolution;
 use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\IOHelper;
@@ -28,13 +28,6 @@ class Assets extends BaseElementFieldType
 {
 	// Properties
 	// =========================================================================
-
-	/**
-	 * The element type this field deals with.
-	 *
-	 * @var string $elementType
-	 */
-	protected $elementType = 'Asset';
 
 	/**
 	 * The JS class that should be initialized for the input.
@@ -61,6 +54,31 @@ class Assets extends BaseElementFieldType
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public function getName()
+	{
+		return Craft::t('app', 'Assets');
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return Asset
+	 */
+	public function getElementClass()
+	{
+		return Asset::className();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getAddButtonLabel()
+	{
+		return Craft::t('app', 'Add an asset');
+	}
+
+	/**
 	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
 	 *
 	 * @return string|null
@@ -72,7 +90,9 @@ class Assets extends BaseElementFieldType
 		$folderOptions = [];
 		$sourceOptions = [];
 
-		foreach ($this->getElementType()->getSources() as $key => $source)
+		$class = $this->getElementClass();
+
+		foreach ($class::getSources() as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{
@@ -222,7 +242,7 @@ class Assets extends BaseElementFieldType
 					'sourceId' => ':empty:'
 				];
 
-				$filesInTempSource = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria)->find();
+				$filesInTempSource = Asset::find()->configure($criteria)->all();
 				$filesToMove = [];
 
 				foreach ($filesInTempSource as $file)
@@ -311,16 +331,6 @@ class Assets extends BaseElementFieldType
 
 	// Protected Methods
 	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
-	 *
-	 * @return string
-	 */
-	protected function getAddButtonLabel()
-	{
-		return Craft::t('app', 'Add an asset');
-	}
 
 	/**
 	 * @inheritDoc BaseSavableComponentType::defineSettings()

@@ -10,7 +10,6 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Model;
-use craft\app\enums\ElementType;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Section as SectionModel;
 
@@ -74,7 +73,7 @@ class EntryType extends Model
 	/**
 	 * @var The element type that entry types' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::Entry;
+	private $_fieldLayoutElementClass = 'craft\app\elements\Entry';
 
 	// Public Methods
 	// =========================================================================

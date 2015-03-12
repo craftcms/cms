@@ -1,14 +1,13 @@
 {% extends "_layouts/cp" %}
 
-{% set elementTypeClass = elementType %}
-{% set elementType = craft.elements.getElementType(elementTypeClass) %}
+{% set elementInstance = craft.elements.getElementInstance(elementClass) %}
 {% set context = 'index' %}
 
-{% if not elementType %}
+{% if not elementInstance %}
 	{% exit 404 %}
 {% endif %}
 
-{% set sources = elementType.getSources('index') %}
+{% set sources = elementInstance.getSources('index') %}
 
 
 {% block sidebar %}
@@ -28,11 +27,11 @@
 
 
 {% block initJs %}
-	Craft.elementIndex = Craft.createElementIndex('{{ elementTypeClass }}', $('#main'), {
+	Craft.elementIndex = Craft.createElementIndex('{{ elementClass }}', $('#main'), {
 		context:        '{{ context }}',
 		showStatusMenu: {{ showStatusMenu is defined ? showStatusMenu|json_encode|raw : "'auto'" }},
 		showLocaleMenu: {{ showLocaleMenu is defined ? showLocaleMenu|json_encode|raw : "'auto'" }},
-		storageKey:     'elementindex.{{ elementTypeClass }}',
+		storageKey:     'elementindex.{{ elementClass }}',
 		criteria:       { localeEnabled: null }
 	});
 {% endblock %}

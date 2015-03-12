@@ -7,9 +7,11 @@
 
 namespace craft\app\base;
 
-use craft\app\db\Query;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\models\Field as FieldModel;
+use craft\app\base\Element;
+use craft\app\elements\db\ElementQuery;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\models\Content;
+use craft\app\models\Field;
 use craft\app\models\FieldLayout;
 
 
@@ -23,6 +25,20 @@ interface ElementInterface
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * Returns the fully qualified name of this class.
+	 *
+	 * @return static The fully qualified name of this class.
+	 */
+	public static function className();
+
+	/**
+	 * Returns the handle that should be used when referring to this element class, i.e. from reference tags.
+	 *
+	 * @return string The class handle.
+	 */
+	public static function classHandle();
 
 	/**
 	 * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
@@ -62,11 +78,132 @@ interface ElementInterface
 	public static function hasStatuses();
 
 	/**
+	 * Creates an [[ElementQueryInterface|ElementQuery]] instance for query purpose.
+	 *
+	 * The returned [[ElementQueryInterface|ElementQuery]] instance can be further customized by calling
+	 * methods defined in [[ElementQueryInterface]] before `one()` or `all()` is called to return
+	 * populated [[ElementInterface]] instances. For example,
+	 *
+	 * ```php
+	 * // Find the entry whose ID is 5
+	 * $entry = Entry::find()->id(5)->one();
+	 *
+	 * // Find all assets and order them by their filename:
+	 * $assets = Asset::find()
+	 *     ->orderBy('filename')
+	 *     ->all();
+	 * ```
+	 *
+	 * If you want to define custom criteria parameters for your elements, you can do so by overriding
+	 * this method and returning a custom query class. For example,
+	 *
+	 * ```php
+	 * class Product extends Element
+	 * {
+	 *     public static function find()
+	 *     {
+	 *         // use ProductQuery instead of the default ElementQuery
+	 *         return new ProductQuery(get_called_class());
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * You can also set default criteria parameters on the ElementQuery if you don’t have a need for
+	 * a custom query class. For example,
+	 *
+	 * ```php
+	 * class Customer extends ActiveRecord
+	 * {
+	 *     public static function find()
+	 *     {
+	 *         return parent::find()->limit(50);
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * @return ElementQueryInterface The newly created [[ElementQueryInterface|ElementQuery]] instance.
+	 */
+	public static function find();
+
+	/**
+	 * Returns a single element instance by a primary key or a set of element criteria parameters.
+	 *
+	 * The method accepts:
+	 *
+	 *  - an integer: query by a single ID value and return the corresponding element (or null if not found).
+	 *  - an array of name-value pairs: query by a set of parameter values and return the first element
+	 *    matching all of them (or null if not found).
+	 *
+	 * Note that this method will automatically call the `one()` method and return an
+	 * [[ElementInterface|Element]] instance. For example,
+	 *
+	 * ```php
+	 * // find a single entry whose ID is 10
+	 * $entry = Entry::findOne(10);
+	 *
+	 * // the above code is equivalent to:
+	 * $entry = Entry::find->id(10)->one();
+	 *
+	 * // find the first user whose email ends in "example.com"
+	 * $user = User::findOne(['email' => '*example.com']);
+	 *
+	 * // the above code is equivalent to:
+	 * $user = User::find()->email('*example.com')->one();
+	 * ```
+	 *
+	 * @param mixed $criteria The element ID or a set of element criteria parameters
+	 * @return static Element instance matching the condition, or null if nothing matches.
+	 */
+	public static function findOne($criteria = null);
+
+	/**
+	 * Returns a list of elements that match the specified ID(s) or a set of element criteria parameters.
+	 *
+	 * The method accepts:
+	 *
+	 *  - an integer: query by a single ID value and return an array containing the corresponding element
+	 *    (or an empty array if not found).
+	 *  - an array of integers: query by a list of ID values and return the corresponding elements (or an
+	 *    empty array if none was found).
+	 *    Note that an empty array will result in an empty result as it will be interpreted as a search for
+	 *    primary keys and not an empty set of element criteria parameters.
+	 *  - an array of name-value pairs: query by a set of parameter values and return an array of elements
+	 *    matching all of them (or an empty array if none was found).
+	 *
+	 * Note that this method will automatically call the `all()` method and return an array of
+	 * [[ElementInterface|Element]] instances. For example,
+	 *
+	 * ```php
+	 * // find the entries whose ID is 10
+	 * $entries = Entry::findAll(10);
+	 *
+	 * // the above code is equivalent to:
+	 * $entries = Entry::find()->id(10)->all();
+	 *
+	 * // find the entries whose ID is 10, 11 or 12.
+	 * $entries = Entry::findAll([10, 11, 12]);
+	 *
+	 * // the above code is equivalent to:
+	 * $entries = Entry::find()->id([10, 11, 12]])->all();
+	 *
+	 * // find users whose email ends in "example.com"
+	 * $users = User::findAll(['email' => '*example.com']);
+	 *
+	 * // the above code is equivalent to:
+	 * $users = User::find()->email('*example.com')->all();
+	 * ```
+	 *
+	 * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
+	 * @return array an array of Element instances, or an empty array if nothing matches.
+	 */
+	public static function findAll($criteria = null);
+
+	/**
 	 * Returns all of the possible statuses that elements of this type may have.
 	 *
 	 * This method will be called when populating the Status menu on element indexes, for element types whose
-	 * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\app\services\Elements]] is querying for
-	 * elements, to ensure that the [[ElementCriteriaModel]]’s “status” parameter is set to a valid status.
+	 * [[hasStatuses()]] method returns `true`. It will also be called when [[ElementQuery]] is querying for
+	 * elements, to ensure that its “status” parameter is set to a valid status.
 	 *
 	 * It should return an array whose keys are the status values, and values are the human-facing status labels.
 	 *
@@ -87,7 +224,7 @@ interface ElementInterface
 	 * to an array that has the following keys:
 	 *
 	 * - **`label`** – The human-facing label of the source.
-	 * - **`criteria`** – An array of criteria parameters that the source should use when the source is selected.
+	 * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
 	 *   (Optional)
 	 * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
 	 *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
@@ -157,13 +294,13 @@ interface ElementInterface
 	/**
 	 * Returns the element index HTML.
 	 *
-	 * @param ElementCriteriaModel $criteria
-	 * @param array                $disabledElementIds
-	 * @param array                $viewState
-	 * @param string|null          $sourceKey
-	 * @param string|null          $context
-	 * @param bool                 $includeContainer
-	 * @param bool                 $showCheckboxes
+	 * @param ElementQueryInterface $criteria
+	 * @param array                 $disabledElementIds
+	 * @param array                 $viewState
+	 * @param string|null           $sourceKey
+	 * @param string|null           $context
+	 * @param bool                  $includeContainer
+	 * @param bool                  $showCheckboxes
 	 *
 	 * @return string
 	 */
@@ -264,38 +401,6 @@ interface ElementInterface
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute);
 
 	/**
-	 * Defines any custom element criteria attributes for this element type.
-	 *
-	 * This method returns an array which will get merged into the array defined in
-	 * [[ElementCriteriaModel::defineAttributes()]], when new ElementCriteriaModel instances are created targeting
-	 * this element type (generally from [[\craft\app\services\Elements::getCriteria() Craft::$app->elements->getCriteria()]]).
-	 *
-	 * If this method were to return the following:
-	 *
-	 * ```php
-	 * return [
-	 *     'foo' => AttributeType::String,
-	 *     'bar' => AttributeType::String,
-	 * ];
-	 * ```
-	 *
-	 * then when someone creates a new ElementCriteriaModel instance targeting this elmeent type, they will be able to
-	 * do this:
-	 *
-	 * ```php
-	 * $criteria = Craft::$app->elements->getCriteria('ThisElementType');
-	 * $criteria->foo = 'FooParamValue';
-	 * $criteria->bar = 'BarParamValue';
-	 * ```
-	 *
-	 * You can check for these custom criteria attributes, and factor their values into the actual database query,
-	 * from [[modifyElementsQuery()]].
-	 *
-	 * @return array Custom criteria attributes.
-	 */
-	public static function defineCriteriaAttributes();
-
-	/**
 	 * Returns the content table name that should be joined into an elements query for a given element criteria.
 	 *
 	 * This method will get called from [[\craft\app\services\Elements::buildElementsQuery()]] as it is building out a database
@@ -304,33 +409,33 @@ interface ElementInterface
 	 * If this method returns `false`, no content table will be joined in, and it will be up to the element’s
 	 * [[getContent()]] method to fetch content rows on demand.
 	 *
-	 * @param ElementCriteriaModel The element criteria.
+	 * @param ElementQueryInterface $query The element query
 	 *
 	 * @return string|false The content table name, or `false` if it cannot be determined.
 	 */
-	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
+	public static function getContentTableForElementsQuery(ElementQueryInterface $query);
 
 	/**
 	 * Returns the fields that should take part in an upcoming elements qurery.
 	 *
-	 * These fields will get their own parameters in the [[ElementCriteriaModel]] that gets passed in,
+	 * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
 	 * their field types will each have an opportunity to help build the element query, and their columns in the content
 	 * table will be selected by the query (for those that have one).
 	 *
 	 * If a field has its own column in the content table, but the column name is prefixed with something besides
-	 * “field_”, make sure you set the `columnPrefix` attribute on the [[FieldModel]], so
+	 * “field_”, make sure you set the `columnPrefix` attribute on the [[Field]], so
 	 * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
 	 *
-	 * @param ElementCriteriaModel
+	 * @param ElementQueryInterface $query
 	 *
-	 * @return FieldModel[]
+	 * @return Field[]
 	 */
-	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
+	public static function getFieldsForElementsQuery(ElementQueryInterface $query);
 
 	/**
-	 * Returns the element query condition for a custom status criteria.
+	 * Returns the element query condition for a custom status parameter value.
 	 *
-	 * If the ElementCriteriaModel’s [[ElementCriteriaModel::status status]] parameter is set to something besides
+	 * If the ElementQuery’s [[ElementQuery::status status]] parameter is set to something besides
 	 * 'enabled' or 'disabled', and it’s one of the statuses that you’ve defined in [[getStatuses()]], this method
 	 * is where you can turn that custom status into an actual SQL query condition.
 	 *
@@ -348,50 +453,12 @@ interface ElementInterface
 	 * }
 	 * ```
 	 *
-	 * @param Query  $query  The database query.
-	 * @param string $status The custom status.
+	 * @param ElementQueryInterface $query  The database query.
+	 * @param string                $status The custom status.
 	 *
 	 * @return string|false
 	 */
-	public static function getElementQueryStatusCondition(Query $query, $status);
-
-	/**
-	 * Modifies an element query targeting elements of this type.
-	 *
-	 * If your element type is storing additional data in its own table, this method is the place to join that table in.
-	 *
-	 * ```php
-	 * $query
-	 *     ->addSelect('mytable.foo, mytable.bar')
-	 *     ->innerJoin('{{%mytable}} mytable', 'mytable.id = elements.id');
-	 * ```
-	 *
-	 * This is also where you get to check the [[ElementCriteriaModel]] for all the custom attributes that this
-	 * element type supports via {@defineCriteriaAttributes()}, and modify the database query to reflect those
-	 * parameters.
-	 *
-	 * ```php
-	 * if ($criteria->foo)
-	 * {
-	 *     $query->andWhere(DbHelper::parseParam('mytable.foo', $criteria->foo, $query->params));
-	 * }
-	 *
-	 * if ($criteria->bar)
-	 * {
-	 *     $query->andWhere(DbHelper::parseParam('mytable.bar', $criteria->bar, $query->params));
-	 * }
-	 * ```
-	 *
-	 * If you are able to determine from the element criteria’s paramteers that there’s no way that the query is going
-	 * to match any elements, you can have it return `false`. The query will be stopped before it ever gets a chance to
-	 * execute.
-	 *
-	 * @param Query                $query    The database query currently being built to find the elements.
-	 * @param ElementCriteriaModel $criteria The criteria that is being used to find the elements.
-	 *
-	 * @return false|null `false` in the event that the method is sure that no elements are going to be found.
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria);
+	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
 
 	/**
 	 * Populates an element based on a query result.
@@ -552,7 +619,7 @@ interface ElementInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementCriteriaModel|null
+	 * @return ElementQueryInterface|null
 	 */
 	public function getNext($criteria = false);
 
@@ -561,7 +628,7 @@ interface ElementInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementCriteriaModel|null
+	 * @return ElementQueryInterface|null
 	 */
 	public function getPrev($criteria = false);
 
@@ -604,7 +671,7 @@ interface ElementInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getAncestors($dist = null);
 
@@ -613,21 +680,21 @@ interface ElementInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getDescendants($dist = null);
 
 	/**
 	 * Returns the element’s children.
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getChildren();
 
 	/**
 	 * Returns all of the element’s siblings.
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getSiblings();
 
@@ -737,16 +804,6 @@ interface ElementInterface
 	 * @return bool
 	 */
 	public function offsetExists($offset);
-
-	/**
-	 * @inheritDoc Model::getAttribute()
-	 *
-	 * @param string $name
-	 * @param bool   $flattenValue
-	 *
-	 * @return mixed
-	 */
-	public function getAttribute($name, $flattenValue = false);
 
 	/**
 	 * Returns the content for the element.

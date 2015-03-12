@@ -59,16 +59,12 @@ class Search extends Component
 	 */
 	public function indexElementAttributes(ElementInterface $element)
 	{
-		// Get the element type
-		$elementTypeClass = $element->getElementType();
-		$elementType = Craft::$app->elements->getElementType($elementTypeClass);
-
 		// Does it have any searchable attributes?
-		$searchableAttributes = $elementType->defineSearchableAttributes();
+		$searchableAttributes = $element::defineSearchableAttributes();
 
 		$searchableAttributes[] = 'slug';
 
-		if ($elementType->hasTitles())
+		if ($element::hasTitles())
 		{
 			$searchableAttributes[] = 'title';
 		}

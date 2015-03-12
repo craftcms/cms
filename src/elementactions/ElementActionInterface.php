@@ -9,7 +9,7 @@ namespace craft\app\elementactions;
 
 use craft\app\components\ComponentTypeInterface;
 use craft\app\base\Model;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
 
 /**
  * Interface ElementActionInterface
@@ -62,11 +62,11 @@ interface ElementActionInterface extends ComponentTypeInterface
 	/**
 	 * Performs the action on any elements that match the given criteria.
 	 *
-	 * @param ElementCriteriaModel $criteria The criteria defining which elements the action should affect.
+	 * @param ElementQueryInterface $query The element query defining which elements the action should affect.
 	 *
 	 * @return bool Whether the action was performed successfully.
 	 */
-	public function performAction(ElementCriteriaModel $criteria);
+	public function performAction(ElementQueryInterface $query);
 
 	/**
 	 * Returns the message that should be displayed to the user after the action is performed.

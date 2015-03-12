@@ -8,8 +8,6 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 
 /**
  * MatrixBlockType model class.
@@ -61,7 +59,7 @@ class MatrixBlockType extends Model
 	/**
 	 * @var The element type that block types' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::MatrixBlock;
+	private $_fieldLayoutElementClass = 'craft\app\elements\MatrixBlock';
 
 	/**
 	 * @var bool

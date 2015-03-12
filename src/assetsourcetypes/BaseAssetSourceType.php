@@ -10,7 +10,6 @@ namespace craft\app\assetsourcetypes;
 use Craft;
 use craft\app\components\BaseSavableComponentType;
 use craft\app\enums\AssetConflictResolution;
-use craft\app\enums\ElementType;
 use craft\app\enums\PeriodType;
 use craft\app\errors\Exception;
 use craft\app\events\AssetEvent;
@@ -694,7 +693,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 		$response->setDataItem('changedFolderIds', $mirroringData['changedFolderIds']);
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Asset);
+		$criteria = Asset::find();
 		$criteria->folderId = array_keys(Craft::$app->assets->getAllDescendantFolders($folder));
 		$files = $criteria->find();
 
@@ -722,7 +721,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	public function deleteFolder(AssetFolderModel $folder)
 	{
 		// Get rid of children files
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Asset);
+		$criteria = Asset::find();
 		$criteria->folderId = $folder->id;
 		$files = $criteria->find();
 

@@ -8,11 +8,11 @@
 namespace craft\app\elementactions;
 
 use Craft;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\User;
 use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Delete Users Element Action
@@ -92,15 +92,11 @@ EOT;
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
-		$users = $criteria->find();
+		$users = $query->all();
 		$undeletableIds = $this->_getUndeletableUserIds();
 
 		// Are we transfering the user's content to a different user?
@@ -167,9 +163,7 @@ EOT;
 		if (!Craft::$app->getUser()->getIsAdmin())
 		{
 			// Only admins can delete other admins
-			return Craft::$app->elements->getCriteria(ElementType::User, [
-				'admin' => true
-			])->ids();
+			return User::find()->admin()->ids();
 		}
 		else
 		{

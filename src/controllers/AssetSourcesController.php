@@ -10,7 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\assetsourcetypes\GoogleCloud;
 use craft\app\assetsourcetypes\S3;
-use craft\app\enums\ElementType;
+use craft\app\elements\Asset;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
@@ -173,7 +173,7 @@ class AssetSourcesController extends Controller
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::Asset;
+		$fieldLayout->type = Asset::className();
 		$source->setFieldLayout($fieldLayout);
 
 		// Did it save?

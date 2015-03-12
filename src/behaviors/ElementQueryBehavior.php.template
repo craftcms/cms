@@ -1,0 +1,21 @@
+<?php // v{VERSION} */
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
+namespace craft\app\behaviors;
+
+/**
+ * Element Query behavior
+ *
+ * This class provides attributes for all the unique custom field handles.
+ */
+class ElementQueryBehavior extends ContentBehavior
+{
+	// Public Methods
+	// =========================================================================
+
+/* METHODS */
+}

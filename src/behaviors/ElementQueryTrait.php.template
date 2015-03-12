@@ -1,0 +1,18 @@
+<?php // v{VERSION} */
+/**
+ * @link http://buildwithcraft.com/
+ * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
+ * @license http://buildwithcraft.com/license
+ */
+
+namespace craft\app\behaviors;
+
+/**
+ * Element Query trait
+ *
+{METHODS}
+ */
+trait ElementQueryTrait
+{
+	use ContentTrait;
+}

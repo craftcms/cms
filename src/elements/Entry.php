@@ -12,15 +12,14 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elementactions\SetStatus;
-use craft\app\enums\AttributeType;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\db\EntryQuery;
 use craft\app\enums\SectionType;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
 use craft\app\base\Model;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\EntryType as EntryTypeModel;
 use craft\app\models\FieldLayout;
 use craft\app\models\Section as SectionModel;
@@ -134,6 +133,16 @@ class Entry extends Element
 			static::EXPIRED => Craft::t('app', 'Expired'),
 			static::DISABLED => Craft::t('app', 'Disabled')
 		];
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return EntryQuery The newly created [[EntryQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new EntryQuery(get_called_class());
 	}
 
 	/**
@@ -463,38 +472,9 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [
-			'after'           => AttributeType::Mixed,
-			'authorGroup'     => AttributeType::String,
-			'authorGroupId'   => AttributeType::Number,
-			'authorId'        => AttributeType::Number,
-			'before'          => AttributeType::Mixed,
-			'editable'        => AttributeType::Bool,
-			'expiryDate'      => AttributeType::Mixed,
-			'order'           => [AttributeType::String, 'default' => 'lft, postDate desc'],
-			'postDate'        => AttributeType::Mixed,
-			'section'         => AttributeType::Mixed,
-			'sectionId'       => AttributeType::Number,
-			'status'          => [AttributeType::String, 'default' => Entry::LIVE],
-			'type'            => AttributeType::Mixed,
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
-	 *
-	 * @param Query  $query
-	 * @param string $status
-	 *
-	 * @return array|false|string|void
-	 */
-	public static function getElementQueryStatusCondition(Query $query, $status)
+	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
 	{
 		$currentTimeDb = DateTimeHelper::currentTimeForDb();
 
@@ -527,205 +507,6 @@ class Entry extends Element
 					'entries.expiryDate is not null',
 					"entries.expiryDate <= '{$currentTimeDb}'"
 				];
-			}
-		}
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool|false|null|void
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('entries.sectionId, entries.typeId, entries.authorId, entries.postDate, entries.expiryDate')
-			->innerJoin('{{%entries}} entries', 'entries.id = elements.id')
-			->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId')
-			->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
-			->leftJoin('{{%structureelements}} structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = entries.id']);
-
-		if ($criteria->ref)
-		{
-			$refs = ArrayHelper::toArray($criteria->ref);
-			$conditionals = [];
-
-			foreach ($refs as $ref)
-			{
-				$parts = array_filter(explode('/', $ref));
-
-				if ($parts)
-				{
-					if (count($parts) == 1)
-					{
-						$conditionals[] = DbHelper::parseParam('elements_i18n.slug', $parts[0], $query->params);
-					}
-					else
-					{
-						$conditionals[] = ['and',
-							DbHelper::parseParam('sections.handle', $parts[0], $query->params),
-							DbHelper::parseParam('elements_i18n.slug', $parts[1], $query->params)
-						];
-					}
-				}
-			}
-
-			if ($conditionals)
-			{
-				if (count($conditionals) == 1)
-				{
-					$query->andWhere($conditionals[0]);
-				}
-				else
-				{
-					array_unshift($conditionals, 'or');
-					$query->andWhere($conditionals);
-				}
-			}
-		}
-
-		if ($criteria->type)
-		{
-			$typeIds = [];
-
-			if (!is_array($criteria->type))
-			{
-				$criteria->type = [$criteria->type];
-			}
-
-			foreach ($criteria->type as $type)
-			{
-				if (is_numeric($type))
-				{
-					$typeIds[] = $type;
-				}
-				else if (is_string($type))
-				{
-					$types = Craft::$app->sections->getEntryTypesByHandle($type);
-
-					if ($types)
-					{
-						foreach ($types as $_type)
-						{
-							$typeIds[] = $_type->id;
-						}
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if ($type instanceof EntryTypeModel)
-				{
-					$typeIds[] = $type->id;
-				}
-				else
-				{
-					return false;
-				}
-			}
-
-			$query->andWhere(DbHelper::parseParam('entries.typeId', $typeIds, $query->params));
-		}
-
-		if ($criteria->postDate)
-		{
-			$query->andWhere(DbHelper::parseDateParam('entries.postDate', $criteria->postDate, $query->params));
-		}
-		else
-		{
-			if ($criteria->after)
-			{
-				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '>='.$criteria->after, $query->params));
-			}
-
-			if ($criteria->before)
-			{
-				$query->andWhere(DbHelper::parseDateParam('entries.postDate', '<'.$criteria->before, $query->params));
-			}
-		}
-
-		if ($criteria->expiryDate)
-		{
-			$query->andWhere(DbHelper::parseDateParam('entries.expiryDate', $criteria->expiryDate, $query->params));
-		}
-
-		if ($criteria->editable)
-		{
-			$user = Craft::$app->getUser()->getIdentity();
-
-			if (!$user)
-			{
-				return false;
-			}
-
-			// Limit the query to only the sections the user has permission to edit
-			$editableSectionIds = Craft::$app->sections->getEditableSectionIds();
-			$query->andWhere(['in', 'entries.sectionId', $editableSectionIds]);
-
-			// Enforce the editPeerEntries permissions for non-Single sections
-			$noPeerConditions = [];
-
-			foreach (Craft::$app->sections->getEditableSections() as $section)
-			{
-				if (
-					$section->type != SectionType::Single &&
-					!$user->can('editPeerEntries:'.$section->id)
-				)
-				{
-					$noPeerConditions[] = ['or', 'entries.sectionId != '.$section->id, 'entries.authorId = '.$user->id];
-				}
-			}
-
-			if ($noPeerConditions)
-			{
-				array_unshift($noPeerConditions, 'and');
-				$query->andWhere($noPeerConditions);
-			}
-		}
-
-		if ($criteria->section)
-		{
-			if ($criteria->section instanceof SectionModel)
-			{
-				$criteria->sectionId = $criteria->section->id;
-				$criteria->section = null;
-			}
-			else
-			{
-				$query->andWhere(DbHelper::parseParam('sections.handle', $criteria->section, $query->params));
-			}
-		}
-
-		if ($criteria->sectionId)
-		{
-			$query->andWhere(DbHelper::parseParam('entries.sectionId', $criteria->sectionId, $query->params));
-		}
-
-		if (Craft::$app->getEdition() >= Craft::Client)
-		{
-			if ($criteria->authorId)
-			{
-				$query->andWhere(DbHelper::parseParam('entries.authorId', $criteria->authorId, $query->params));
-			}
-
-			if ($criteria->authorGroupId || $criteria->authorGroup)
-			{
-				$query->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = entries.authorId');
-
-				if ($criteria->authorGroupId)
-				{
-					$query->andWhere(DbHelper::parseParam('usergroups_users.groupId', $criteria->authorGroupId, $query->params));
-				}
-
-				if ($criteria->authorGroup)
-				{
-					$query->innerJoin('{{%usergroups}} usergroups', 'usergroups.id = usergroups_users.groupId');
-					$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->authorGroup, $query->params));
-				}
 			}
 		}
 	}

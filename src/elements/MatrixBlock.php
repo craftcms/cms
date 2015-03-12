@@ -10,9 +10,8 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\db\Query;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\DbHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout;
 use craft\app\models\MatrixBlockType;
@@ -83,42 +82,32 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
+	 * @inheritdoc
 	 *
-	 * @return array
+	 * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
 	 */
-	public static function defineCriteriaAttributes()
+	public static function find()
 	{
-		return [
-			'fieldId'     => AttributeType::Number,
-			'order'       => [AttributeType::String, 'default' => 'matrixblocks.sortOrder'],
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'type'        => AttributeType::Mixed,
-		];
+		return new MatrixBlockQuery(get_called_class());
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getContentTableForElementsQuery()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getContentTableForElementsQuery(ElementQueryInterface $query)
 	{
-		if (!$criteria->fieldId && $criteria->id && is_numeric($criteria->id))
+		if (!$query->fieldId && $query->id && is_numeric($query->id))
 		{
-			$criteria->fieldId = (new Query())
+			$query->fieldId = (new Query())
 				->select('fieldId')
 				->from('{{%matrixblocks}}')
-				->where('id = :id', [':id' => $criteria->id])
+				->where('id = :id', [':id' => $query->id])
 				->scalar();
 		}
 
-		if ($criteria->fieldId && is_numeric($criteria->fieldId))
+		if ($query->fieldId && is_numeric($query->fieldId))
 		{
-			$matrixField = Craft::$app->fields->getFieldById($criteria->fieldId);
+			$matrixField = Craft::$app->fields->getFieldById($query->fieldId);
 
 			if ($matrixField)
 			{
@@ -128,17 +117,13 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldsForElementsQuery()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return FieldModel[]
+	 * @inheritdoc
 	 */
-	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
 	{
 		$fields = [];
 
-		foreach (Craft::$app->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
+		foreach (Craft::$app->matrix->getBlockTypesByFieldId($query->fieldId) as $blockType)
 		{
 			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
@@ -150,42 +135,6 @@ class MatrixBlock extends Element
 		}
 
 		return $fields;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('matrixblocks.fieldId, matrixblocks.ownerId, matrixblocks.ownerLocale, matrixblocks.typeId, matrixblocks.sortOrder')
-			->innerJoin('{{%matrixblocks}} matrixblocks', 'matrixblocks.id = elements.id');
-
-		if ($criteria->fieldId)
-		{
-			$query->andWhere(DbHelper::parseParam('matrixblocks.fieldId', $criteria->fieldId, $query->params));
-		}
-
-		if ($criteria->ownerId)
-		{
-			$query->andWhere(DbHelper::parseParam('matrixblocks.ownerId', $criteria->ownerId, $query->params));
-		}
-
-		if ($criteria->ownerLocale)
-		{
-			$query->andWhere(DbHelper::parseParam('matrixblocks.ownerLocale', $criteria->ownerLocale, $query->params));
-		}
-
-		if ($criteria->type)
-		{
-			$query->innerJoin('{{%matrixblocktypes}} matrixblocktypes', 'matrixblocktypes.id = matrixblocks.typeId');
-			$query->andWhere(DbHelper::parseParam('matrixblocktypes.handle', $criteria->type, $query->params));
-		}
 	}
 
 	/**

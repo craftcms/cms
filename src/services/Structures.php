@@ -388,8 +388,7 @@ class Structures extends Component
 				$element->level = $elementRecord->level;
 
 				// Tell the element type about it
-				$elementType = Craft::$app->elements->getElementType($element->getElementType());
-				$elementType->onAfterMoveElementInStructure($element, $structureId);
+				$element::onAfterMoveElementInStructure($element, $structureId);
 			}
 			else
 			{

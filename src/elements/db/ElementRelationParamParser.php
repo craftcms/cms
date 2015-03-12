@@ -12,10 +12,9 @@ use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
- * Parses a relatedTo param on an ElementCriteriaModel.
+ * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -202,7 +201,7 @@ class ElementRelationParamParser
 					{
 						$relElementIds[] = $element->id;
 					}
-					else if ($element instanceof ElementCriteriaModel)
+					else if ($element instanceof ElementQueryInterface)
 					{
 						$relElementIds = array_merge($relElementIds, $element->ids());
 					}

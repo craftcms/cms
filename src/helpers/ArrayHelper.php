@@ -59,6 +59,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 	 */
 	public static function toArray($object, $properties = [], $recursive = true)
 	{
+		if ($object === null)
+		{
+			return [];
+		}
+
 		if (is_string($object))
 		{
 			// Split it on the non-escaped commas

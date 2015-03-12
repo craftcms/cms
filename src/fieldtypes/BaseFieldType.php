@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\components\BaseSavableComponentType;
 use craft\app\db\Query;
+use craft\app\elements\MatrixBlock;
 use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 
@@ -264,7 +264,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements FieldTy
 		if (!isset($this->_isFresh))
 		{
 			// If this is for a Matrix block, we're more interested in its owner
-			if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+			if (isset($this->element) && $this->element instanceof MatrixBlock)
 			{
 				$element = $this->element->getOwner();
 			}

@@ -8,8 +8,8 @@
 namespace craft\app\elementactions;
 
 use Craft;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\enums\AttributeType;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Delete Element Action
@@ -53,15 +53,11 @@ class Delete extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
-		Craft::$app->elements->deleteElementById($criteria->ids());
+		Craft::$app->elements->deleteElementById($query->ids());
 
 		$this->setMessage($this->getParams()->successMessage);
 

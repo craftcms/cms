@@ -9,14 +9,9 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\base\FieldLayoutTrait;
-use craft\app\db\Query;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
-use craft\app\helpers\DbHelper;
+use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * The GlobalSet class is responsible for implementing and defining globals as a native element type in
@@ -53,7 +48,7 @@ class GlobalSet extends Element
 	/**
 	 * @var string The element type that global sets' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::GlobalSet;
+	private $_fieldLayoutElementClass = 'craft\app\elements\GlobalSet';
 
 	// Public Methods
 	// =========================================================================
@@ -79,36 +74,13 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
+	 * @inheritdoc
 	 *
-	 * @return array
+	 * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
 	 */
-	public static function defineCriteriaAttributes()
+	public static function find()
 	{
-		return [
-			'handle' => AttributeType::Mixed,
-			'order' => [AttributeType::String, 'default' => 'name'],
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('globalsets.name, globalsets.handle, globalsets.fieldLayoutId')
-			->innerJoin('{{%globalsets}} globalsets', 'globalsets.id = elements.id');
-
-		if ($criteria->handle)
-		{
-			$query->andWhere(DbHelper::parseParam('globalsets.handle', $criteria->handle, $query->params));
-		}
+		return new GlobalSetQuery(get_called_class());
 	}
 
 	/**

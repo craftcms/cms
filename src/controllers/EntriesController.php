@@ -9,14 +9,13 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\ElementType;
+use craft\app\elements\User;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\elements\Entry;
-use craft\app\variables\ElementType as ElementTypeVariable;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -89,7 +88,7 @@ class EntriesController extends BaseEntriesController
 			// Author selector variables
 			// ---------------------------------------------------------------------
 
-			$variables['userElementType'] = new ElementTypeVariable(Craft::$app->elements->getElementType(ElementType::User));
+			$variables['userElementClass'] = User::className();
 
 			$authorPermission = 'editEntries'.$variables['permissionSuffix'];
 
@@ -115,7 +114,7 @@ class EntriesController extends BaseEntriesController
 			$variables['section']->maxLevels != 1
 		)
 		{
-			$variables['elementType'] = new ElementTypeVariable(Craft::$app->elements->getElementType(ElementType::Entry));
+			$variables['elementClass'] = Entry::className();
 
 			$variables['parentOptionCriteria'] = [
 				'locale'        => $variables['localeId'],
@@ -132,20 +131,14 @@ class EntriesController extends BaseEntriesController
 			if ($variables['entry']->id)
 			{
 				// Prevent the current entry, or any of its descendants, from being options
-				$idParam = ['and', 'not '.$variables['entry']->id];
+				$excludeIds = Entry::find()
+					->descendantOf($variables['entry'])
+					->status(null)
+					->localeEnabled(false)
+					->ids();
 
-				$descendantCriteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-				$descendantCriteria->descendantOf = $variables['entry'];
-				$descendantCriteria->status = null;
-				$descendantCriteria->localeEnabled = null;
-				$descendantIds = $descendantCriteria->ids();
-
-				foreach ($descendantIds as $id)
-				{
-					$idParam[] = 'not '.$id;
-				}
-
-				$variables['parentOptionCriteria']['id'] = $idParam;
+				$excludeIds[] = $variables['entry']->id;
+				$variables['parentOptionCriteria']['where'] = ['not in', 'elements.id', $excludeIds];
 			}
 
 			// Get the initially selected parent

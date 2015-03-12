@@ -425,7 +425,7 @@ class I18N extends \yii\i18n\I18N
 			// Update all of the non-localized elements
 			$nonLocalizedElementTypes = [];
 
-			foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
+			foreach (Craft::$app->elements->getAllElementClasses() as $elementType)
 			{
 				if (!$elementType->isLocalized())
 				{

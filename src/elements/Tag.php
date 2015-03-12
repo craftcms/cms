@@ -10,10 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\db\Query;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\DbHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\TagQuery;
 use craft\app\models\FieldLayout;
 use craft\app\models\TagGroup;
 
@@ -67,6 +64,16 @@ class Tag extends Element
 	}
 
 	/**
+	 * @inheritdoc
+	 *
+	 * @return TagQuery The newly created [[TagQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new TagQuery(get_called_class());
+	}
+
+	/**
 	 * @inheritDoc ElementInterface::getSources()
 	 *
 	 * @param string|null $context
@@ -102,68 +109,6 @@ class Tag extends Element
 		return [
 			'title' => Craft::t('app', 'Title'),
 		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
-	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [
-			'group'   => AttributeType::Mixed,
-			'groupId' => AttributeType::Mixed,
-			'order'   => [AttributeType::String, 'default' => 'content.title asc'],
-
-			// TODO: Deprecated
-			'name'    => AttributeType::String,
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('tags.groupId')
-			->innerJoin('{{%tags}} tags', 'tags.id = elements.id');
-
-		if ($criteria->groupId)
-		{
-			$query->andWhere(DbHelper::parseParam('tags.groupId', $criteria->groupId, $query->params));
-		}
-
-		if ($criteria->group)
-		{
-			$query->innerJoin('{{%taggroups}} taggroups', 'taggroups.id = tags.groupId');
-			$query->andWhere(DbHelper::parseParam('taggroups.handle', $criteria->group, $query->params));
-		}
-
-		// Backwards compatibility with deprecated params
-		// TODO: Remove this code in Craft 4
-
-		if ($criteria->name)
-		{
-			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
-			Craft::$app->deprecator->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-		}
-
-		if (is_string($criteria->order))
-		{
-			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order, -1, $count);
-
-			if ($count)
-			{
-				Craft::$app->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
-			}
-		}
 	}
 
 	/**

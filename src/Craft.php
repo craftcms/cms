@@ -5,6 +5,8 @@
  * @license http://buildwithcraft.com/license
  */
 
+use craft\app\db\Query;
+use craft\app\helpers\IOHelper;
 use yii\helpers\VarDumper;
 
 /**
@@ -120,4 +122,140 @@ class Craft extends Yii
 
 		return array_merge(static::$_baseCookieConfig, $config);
 	}
+
+	/**
+	 * Class autoloader.
+	 */
+	public static function autoload($className)
+	{
+		if (
+			$className === 'craft\\app\\behaviors\\ContentBehavior' ||
+			$className === 'craft\\app\\behaviors\\ContentTrait' ||
+			$className === 'craft\\app\\behaviors\\ElementQueryBehavior' ||
+			$className === 'craft\\app\\behaviors\\ElementQueryTrait'
+		)
+		{
+			$storedFieldVersion = static::$app->getInfo('fieldVersion');
+			$compiledClassesPath = static::$app->path->getRuntimePath().'/compiled_classes';
+
+			$contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';
+			$contentTraitFile = $compiledClassesPath.'/ContentTrait.php';
+			$elementQueryBehaviorFile = $compiledClassesPath.'/ElementQueryBehavior.php';
+			$elementQueryTraitFile = $compiledClassesPath.'/ElementQueryTrait.php';
+
+			if (
+				static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
+				static::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion) &&
+				static::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion) &&
+				static::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion)
+			)
+			{
+				return;
+			}
+
+			// Get the field handles
+			$fieldHandles = (new Query())
+				->select('handle')
+				->distinct(true)
+				->from('{{%fields}}')
+				->column();
+
+			$properties = [];
+			$methods = [];
+			$propertyDocs = [];
+			$methodDocs = [];
+
+			foreach ($fieldHandles as $handle)
+			{
+				$properties[] = <<<EOD
+	/**
+	 * @var mixed Value for field with the handle “{$handle}”.
+	 */
+	public \${$handle};
+EOD;
+
+				$methods[] = <<<EOD
+	/**
+	 * Sets the [[{$handle}]] property.
+	 * @param mixed \$value The property value
+	 * @return \\yii\\base\\Component The behavior’s owner component
+	 */
+	public function {$handle}(\$value)
+	{
+		\$this->{$handle} = \$value;
+		return \$this->owner;
+	}
+EOD;
+
+				$propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
+				$methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
+			}
+
+			static::_writeFieldAttributesFile(
+				static::$app->path->getAppPath().'/behaviors/ContentBehavior.php.template',
+				['{VERSION}', '/* PROPERTIES */'],
+				[$storedFieldVersion, implode("\n\n", $properties)],
+				$contentBehaviorFile
+			);
+
+			static::_writeFieldAttributesFile(
+				static::$app->path->getAppPath().'/behaviors/ContentTrait.php.template',
+				['{VERSION}', '{PROPERTIES}'],
+				[$storedFieldVersion, implode("\n", $propertyDocs)],
+				$contentTraitFile
+			);
+
+			static::_writeFieldAttributesFile(
+				static::$app->path->getAppPath().'/behaviors/ElementQueryBehavior.php.template',
+				['{VERSION}', '/* METHODS */'],
+				[$storedFieldVersion, implode("\n\n", $methods)],
+				$elementQueryBehaviorFile
+			);
+
+			static::_writeFieldAttributesFile(
+				static::$app->path->getAppPath().'/behaviors/ElementQueryTrait.php.template',
+				['{VERSION}', '{METHODS}'],
+				[$storedFieldVersion, implode("\n", $methodDocs)],
+				$elementQueryTraitFile
+			);
+		}
+	}
+
+	/**
+	 * Determines if a field attribute file is valid.
+	 */
+	private static function _isFieldAttributesFileValid($path, $storedFieldVersion)
+	{
+		if (file_exists($path))
+		{
+			// Make sure it's up-to-date
+			$f = fopen($path, 'r');
+			$line = fgets($f);
+			fclose($f);
+
+			if (preg_match('/\/\/ v(\d+)/', $line, $matches))
+			{
+				if ($matches[1] == $storedFieldVersion)
+				{
+					include($path);
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Writes a field attributes file.
+	 */
+	private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
+	{
+		$fileContents = IOHelper::getFileContents($templatePath);
+		$fileContents = str_replace($search, $replace, $fileContents);
+		IOHelper::writeToFile($destinationPath, $fileContents);
+		include($destinationPath);
+	}
 }
+
+spl_autoload_register(['Craft', 'autoload'], true, true);

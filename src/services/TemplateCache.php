@@ -11,11 +11,12 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
+use craft\app\elements\db\ElementQuery;
+use craft\app\events\Event;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use yii\base\Component;
 
 /**
@@ -67,11 +68,11 @@ class TemplateCache extends Component
 	private $_path;
 
 	/**
-	 * A list of queries (and their criteria attributes) that are active within the existing caches.
+	 * A list of element queries that are active within the existing caches.
 	 *
 	 * @var array
 	 */
-	private $_cacheCriteria;
+	private $_cacheQueryParams;
 
 	/**
 	 * A list of element IDs that are active within the existing caches.
@@ -147,9 +148,15 @@ class TemplateCache extends Component
 	 */
 	public function startTemplateCache($key)
 	{
+		// Is this the first time we've started caching?
+		if ($this->_cacheQueryParams === null)
+		{
+			Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [$this, 'includeElementQueryInTemplateCaches']);
+		}
+
 		if (Craft::$app->config->get('cacheElementQueries'))
 		{
-			$this->_cacheCriteria[$key] = [];
+			$this->_cacheQueryParams[$key] = [];
 		}
 
 		$this->_cacheElementIds[$key] = [];
@@ -158,19 +165,22 @@ class TemplateCache extends Component
 	/**
 	 * Includes an element criteria in any active caches.
 	 *
-	 * @param ElementCriteriaModel $criteria The element criteria.
+	 * @param Event $event The 'afterPrepare' element query event
 	 *
 	 * @return null
 	 */
-	public function includeCriteriaInTemplateCaches(ElementCriteriaModel $criteria)
+	public function includeElementQueryInTemplateCaches(Event $event)
 	{
-		if (!empty($this->_cacheCriteria))
+		if (!empty($this->_cacheQueryParams))
 		{
-			$criteriaHash = spl_object_hash($criteria);
+			/** @var ElementQuery $query */
+			$query = $event->sender;
+			$params = $query->toArray();
+			$hash = md5(serialize($params));
 
-			foreach (array_keys($this->_cacheCriteria) as $cacheKey)
+			foreach (array_keys($this->_cacheQueryParams) as $cacheKey)
 			{
-				$this->_cacheCriteria[$cacheKey][$criteriaHash] = $criteria;
+				$this->_cacheQueryParams[$cacheKey][$hash] = $params;
 			}
 		}
 	}
@@ -253,15 +263,13 @@ class TemplateCache extends Component
 			$cacheId = Craft::$app->getDb()->getLastInsertID();
 
 			// Tag it with any element criteria that were output within the cache
-			if (!empty($this->_cacheCriteria[$key]))
+			if (!empty($this->_cacheQueryParams[$key]))
 			{
 				$values = [];
 
-				foreach ($this->_cacheCriteria[$key] as $criteria)
+				foreach ($this->_cacheQueryParams[$key] as $params)
 				{
-					$flattenedCriteria = $criteria->getAttributes(null, true);
-
-					$values[] = [$cacheId, $criteria->getElementType()->getClassHandle(), JsonHelper::encode($flattenedCriteria)];
+					$values[] = [$cacheId, $params['elementClass'], JsonHelper::encode($params)];
 				}
 
 				Craft::$app->getDb()->createCommand()->batchInsert(
@@ -271,7 +279,7 @@ class TemplateCache extends Component
 					false
 				)->execute();
 
-				unset($this->_cacheCriteria[$key]);
+				unset($this->_cacheQueryParams[$key]);
 			}
 
 			// Tag it with any element IDs that were output within the cache
@@ -340,25 +348,25 @@ class TemplateCache extends Component
 	}
 
 	/**
-	 * Deletes caches by a given element type.
+	 * Deletes caches by a given element class.
 	 *
-	 * @param string $elementType The element type handle.
+	 * @param string $elementClass The element class.
 	 *
 	 * @return bool
 	 */
-	public function deleteCachesByElementType($elementType)
+	public function deleteCachesByElementClass($elementClass)
 	{
-		if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]))
+		if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementClass]))
 		{
 			return false;
 		}
 
-		$this->_deletedCachesByElementType[$elementType] = true;
+		$this->_deletedCachesByElementType[$elementClass] = true;
 
 		$cacheIds = (new Query())
 			->select('cacheId')
 			->from(static::$_templateCacheCriteriaTable)
-			->where(['type' => $elementType])
+			->where(['type' => $elementClass])
 			->column();
 
 		if ($cacheIds)
@@ -494,22 +502,24 @@ class TemplateCache extends Component
 	}
 
 	/**
-	 * Deletes caches that include elements that match a given criteria.
+	 * Deletes caches that include elements that match a given element query's parameters.
 	 *
-	 * @param ElementCriteriaModel $criteria The criteria that should be used to find elements whose caches should be
-	 *                                       deleted.
+	 * @param ElementQuery $query The element query that should be used to find elements whose caches
+	 *                            should be deleted.
 	 *
 	 * @return bool
 	 */
-	public function deleteCachesByCriteria(ElementCriteriaModel $criteria)
+	public function deleteCachesByElementQuery(ElementQuery $query)
 	{
 		if ($this->_deletedAllCaches)
 		{
 			return false;
 		}
 
-		$criteria->limit = null;
-		$elementIds = $criteria->ids();
+		$limit = $query->limit;
+		$query->limit(null);
+		$elementIds = $query->ids();
+		$query->limit($limit);
 
 		return $this->deleteCachesByElementId($elementIds);
 	}

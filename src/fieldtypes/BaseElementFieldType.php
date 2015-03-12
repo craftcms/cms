@@ -9,11 +9,10 @@ namespace craft\app\fieldtypes;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\elements\db\ElementQuery;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\enums\AttributeType;
-use craft\app\errors\Exception;
 use craft\app\helpers\StringHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
-use craft\app\variables\ElementType;
 
 /**
  * Base element fieldtype class.
@@ -25,13 +24,6 @@ abstract class BaseElementFieldType extends BaseFieldType
 {
 	// Properties
 	// =========================================================================
-
-	/**
-	 * List of built-in component aliases to be imported.
-	 *
-	 * @var string $elementType
-	 */
-	protected $elementType;
 
 	/**
 	 * The JS class that should be initialized for the input.
@@ -72,14 +64,18 @@ abstract class BaseElementFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
+	 * Returns the element class associated with this field type.
+	 *
+	 * @return Element The Element class name
+	 */
+	abstract public function getElementClass();
+
+	/**
+	 * Returns the label for the "Add" button.
 	 *
 	 * @return string
 	 */
-	public function getName()
-	{
-		return $this->getElementType()->getName();
-	}
+	abstract public function getAddButtonLabel();
 
 	/**
 	 * @inheritDoc FieldTypeInterface::defineContentAttribute()
@@ -100,7 +96,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		$sources = [];
 
-		foreach ($this->getElementType()->getSources() as $key => $source)
+		$class = $this->getElementClass();
+
+		foreach ($class::getSources() as $key => $source)
 		{
 			if (!isset($source['heading']))
 			{
@@ -156,90 +154,89 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 *
 	 * @param mixed $value
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function prepValue($value)
 	{
-		$criteria = Craft::$app->elements->getCriteria($this->elementType);
-		$criteria->locale = $this->getTargetLocale();
+		$class = $this->getElementClass();
+		/** @var ElementQuery $query */
+		$query = $class::find()
+			->locale($this->getTargetLocale());
 
 		// $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
 		if (is_array($value))
 		{
-			$criteria->id = array_values(array_filter($value));
-			$criteria->fixedOrder = true;
+			$query
+				->id(array_values(array_filter($value)))
+				->fixedOrder();
 		}
-		else if ($value === '')
+		else if ($value !== '' && isset($this->element) && $this->element->id)
 		{
-			$criteria->id = false;
-		}
-		else if (isset($this->element) && $this->element->id)
-		{
-			$criteria->relatedTo = [
+			$query->relatedTo([
 				'sourceElement' => $this->element->id,
 				'sourceLocale'  => $this->element->locale,
 				'field'         => $this->model->id
-			];
+			]);
 
 			if ($this->sortable)
 			{
-				$criteria->order = 'sortOrder';
+				$query->orderBy('sortOrder');
 			}
 
 			if (!$this->allowMultipleSources && $this->getSettings()->source)
 			{
-				$source = $this->getElementType()->getSource($this->getSettings()->source);
+				$source = $class::getSourceByKey($this->getSettings()->source);
 
 				// Does the source specify any criteria attributes?
-				if (!empty($source['criteria']))
+				if (isset($source['criteria']))
 				{
-					$criteria->setAttributes($source['criteria']);
+					$query->configure($source['criteria']);
 				}
 			}
 		}
 		else
 		{
-			$criteria->id = false;
+			$query->id(false);
 		}
 
 		if ($this->allowLimit && $this->getSettings()->limit)
 		{
-			$criteria->limit = $this->getSettings()->limit;
+			$query->limit($this->getSettings()->limit);
 		}
 		else
 		{
-			$criteria->limit = null;
+			$query->limit(null);
 		}
 
-		return $criteria;
+		return $query;
 	}
 
 	/**
 	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
-	 * @param mixed  $criteria
+	 * @param ElementQueryInterface|null $value
 	 *
 	 * @return string
 	 */
-	public function getInputHtml($name, $criteria)
+	public function getInputHtml($name, $value)
 	{
-		$variables = $this->getInputTemplateVariables($name, $criteria);
+		$variables = $this->getInputTemplateVariables($name, $value);
 		return Craft::$app->templates->render($this->inputTemplate, $variables);
 	}
 
 	/**
 	 * @inheritDoc FieldTypeInterface::getSearchKeywords()
 	 *
-	 * @param ElementCriteriaModel $criteria
+	 * @param ElementQueryInterface $value
 	 *
 	 * @return string
 	 */
-	public function getSearchKeywords($criteria)
+	public function getSearchKeywords($value)
 	{
 		$titles = [];
 
-		foreach ($criteria->find() as $element)
+		foreach ($value->all() as $element)
 		{
 			$titles[] = (string) $element;
 		}
@@ -295,55 +292,29 @@ abstract class BaseElementFieldType extends BaseFieldType
 	// =========================================================================
 
 	/**
-	 * Returns the label for the "Add" button.
-	 *
-	 * @return string
-	 */
-	protected function getAddButtonLabel()
-	{
-		return Craft::t('app', 'Add {type}', [
-			'type' => StringHelper::toLowerCase($this->getElementType()->getClassHandle())
-		]);
-	}
-
-	/**
-	 * Returns the element type.
-	 *
-	 * @throws Exception
-	 * @return Element
-	 */
-	protected function getElementType()
-	{
-		$elementType = Craft::$app->elements->getElementType($this->elementType);
-
-		if (!$elementType)
-		{
-			throw new Exception(Craft::t('app', 'No element type exists with the class “{class}”', ['class' => $this->elementType]));
-		}
-
-		return $elementType;
-	}
-
-	/**
 	 * Returns an array of variables that should be passed to the input template.
 	 *
-	 * @param string $name
-	 * @param mixed  $criteria
+	 * @param string                     $name
+	 * @param ElementQueryInterface|null $selectedElementsQuery
 	 *
 	 * @return array
 	 */
-	protected function getInputTemplateVariables($name, $criteria)
+	protected function getInputTemplateVariables($name, $selectedElementsQuery)
 	{
 		$settings = $this->getSettings();
 
-		if (!($criteria instanceof ElementCriteriaModel))
+		if (!($selectedElementsQuery instanceof ElementQueryInterface))
 		{
-			$criteria = Craft::$app->elements->getCriteria($this->elementType);
-			$criteria->id = false;
+			$class = $this->getElementClass();
+			$selectedElementsQuery = $class::find()
+				->id(false);
 		}
-
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
+		else
+		{
+			$selectedElementsQuery
+				->status(null)
+				->localeEnabled(null);
+		}
 
 		$selectionCriteria = $this->getInputSelectionCriteria();
 		$selectionCriteria['localeEnabled'] = null;
@@ -351,12 +322,12 @@ abstract class BaseElementFieldType extends BaseFieldType
 
 		return [
 			'jsClass'            => $this->inputJsClass,
-			'elementType'        => new ElementType($this->getElementType()),
+			'elementClass'       => $this->getElementClass(),
 			'id'                 => Craft::$app->templates->formatInputId($name),
 			'fieldId'            => $this->model->id,
 			'storageKey'         => 'field.'.$this->model->id,
 			'name'               => $name,
-			'elements'           => $criteria,
+			'elements'           => $selectedElementsQuery,
 			'sources'            => $this->getInputSources(),
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
@@ -425,7 +396,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	protected function getTargetLocaleFieldHtml()
 	{
-		if (Craft::$app->isLocalized() && $this->getElementType()->isLocalized())
+		$class = $this->getElementClass();
+
+		if (Craft::$app->isLocalized() && $class::isLocalized())
 		{
 			$localeOptions = [
 				['label' => Craft::t('app', 'Same as source'), 'value' => null]

@@ -11,7 +11,6 @@ use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\base\Model;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\db\ActiveRecord;
 
 /**
@@ -528,16 +527,7 @@ class ModelHelper
 		if ($value instanceof Model)
 		{
 			$attributes = $value->getAttributes(null, true);
-
-			if ($value instanceof ElementCriteriaModel)
-			{
-				$attributes['__criteria__'] = $value->getElementType()->getClassHandle();
-			}
-			else
-			{
-				$attributes['__model__'] = get_class($value);
-			}
-
+			$attributes['__model__'] = get_class($value);
 			$value = $attributes;
 		}
 
@@ -582,11 +572,6 @@ class ModelHelper
 			{
 				$arr[$key] = static::expandModelsInArray($val);
 			}
-		}
-
-		if (isset($arr['__criteria__']))
-		{
-			return Craft::$app->elements->getCriteria($arr['__criteria__'], $arr);
 		}
 
 		if (isset($arr['__model__']))

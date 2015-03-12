@@ -46,7 +46,7 @@ trait FieldLayoutTrait
 			if (empty($this->_fieldLayout))
 			{
 				$this->_fieldLayout = new FieldLayoutModel();
-				$this->_fieldLayout->type = $this->_fieldLayoutElementType;
+				$this->_fieldLayout->type = $this->_fieldLayoutElementClass;
 			}
 		}
 

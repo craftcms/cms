@@ -8,8 +8,8 @@
 namespace craft\app\widgets;
 
 use Craft;
+use craft\app\elements\Entry;
 use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\helpers\JsonHelper;
 
@@ -180,16 +180,15 @@ class RecentEntries extends BaseWidget
 			return [];
 		}
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-		$criteria->locale = $targetLocale;
-		$criteria->sectionId = $targetSectionId;
-		$criteria->editable = true;
-		$criteria->limit = $this->getSettings()->limit;
-		$criteria->order = 'elements.dateCreated desc';
-
-		return $criteria->find();
+		return Entry::find()
+			->status(null)
+			->localeEnabled(false)
+			->locale($targetLocale)
+			->sectionId($targetSectionId)
+			->editable(true)
+			->limit($this->getSettings()->limit)
+			->orderBy('elements.dateCreated desc')
+			->all();
 	}
 
 	/**

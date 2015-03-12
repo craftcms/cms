@@ -8,7 +8,6 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\ElementType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryEvent;
@@ -70,7 +69,10 @@ class Entries extends Component
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($entryId, ElementType::Entry, $localeId);
+		return Entry::find()
+			->id($entryId)
+			->locale($localeId)
+			->one();
 	}
 
 	/**
@@ -409,12 +411,12 @@ class Entries extends Component
 			return false;
 		}
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-		$criteria->id = $entryId;
-		$criteria->limit = null;
-		$criteria->status = null;
-		$criteria->localeEnabled = false;
-		$entries = $criteria->find();
+		$entries = Entry::find()
+			->id($entryId)
+			->limit(null)
+			->status(null)
+			->localeEnabled(false)
+			->all();
 
 		if ($entries)
 		{
@@ -469,14 +471,13 @@ class Entries extends Component
 		}
 
 		// Is the parentId set to a different entry ID than its previous parent?
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-		$criteria->ancestorOf = $entry;
-		$criteria->ancestorDist = 1;
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-
-		$oldParent = $criteria->first();
-		$oldParentId = ($oldParent ? $oldParent->id : '');
+		$oldParentId = Entry::find()
+			->ancestorOf($entry)
+			->ancestorDist(1)
+			->status(null)
+			->localeEnabled(false)
+			->select('id')
+			->scalar();
 
 		if ($entry->newParentId != $oldParentId)
 		{

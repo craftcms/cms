@@ -7,6 +7,8 @@
 
 namespace craft\app\variables;
 
+use craft\app\base\ElementInterface;
+
 /**
  * Class Elements variable.
  *
@@ -19,36 +21,14 @@ class Elements
 	// =========================================================================
 
 	/**
-	 * Returns all installed element types.
-	 *
-	 * @return array
-	 */
-	public function getAllElementTypes()
-	{
-		$elementTypes = [];
-
-		foreach (\Craft::$app->elements->getAllElementTypes() as $classHandle => $elementType)
-		{
-			$elementTypes[$classHandle] = new ElementType($elementType);
-		}
-
-		return $elementTypes;
-	}
-
-	/**
 	 * Returns an element type.
 	 *
-	 * @param string $class
+	 * @param ElementInterface $class
 	 *
-	 * @return ElementType|null
+	 * @return ElementInterface|null
 	 */
-	public function getElementType($class)
+	public function getElementInstance($class)
 	{
-		$elementType = \Craft::$app->elements->getElementType($class);
-
-		if ($elementType)
-		{
-			return new ElementType($elementType);
-		}
+		return new $class;
 	}
 }

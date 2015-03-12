@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
+use craft\app\elements\User;
 
 /**
  * Users fieldtype
@@ -17,25 +18,30 @@ use Craft;
  */
 class Users extends BaseElementFieldType
 {
-	// Properties
+	// Public Methods
 	// =========================================================================
 
 	/**
-	 *  The element type this field deals with.
-	 *
-	 * @var string $elementType
+	 * @inheritdoc
 	 */
-	protected $elementType = 'User';
-
-	// Protected Methods
-	// =========================================================================
+	public function getName()
+	{
+		return Craft::t('app', 'Users');
+	}
 
 	/**
-	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
-	 *
-	 * @return string
+	 * @inheritdoc
+	 * @return User
 	 */
-	protected function getAddButtonLabel()
+	public function getElementClass()
+	{
+		return User::className();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getAddButtonLabel()
 	{
 		return Craft::t('app', 'Add a user');
 	}

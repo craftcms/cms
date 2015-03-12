@@ -8,8 +8,9 @@
 namespace craft\app\elementactions;
 
 use Craft;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\User;
 use craft\app\enums\UserStatus;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Unsuspend Users Element Action
@@ -33,17 +34,14 @@ class UnsuspendUsers extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
 		// Get the users that are suspended
-		$criteria->status = UserStatus::Suspended;
-		$users = $criteria->find();
+		$query->status(UserStatus::Suspended);
+		/** @var User[] $users */
+		$users = $query->find();
 
 		foreach ($users as $user)
 		{

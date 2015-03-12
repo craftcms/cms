@@ -23,7 +23,7 @@
 	new {{ jsClass }}(
 		"{{ id   | namespaceInputId   | e('js') }}",
 		"{{ name | namespaceInputName | e('js') }}",
-		"{{ elementType.getClassHandle()|e('js') }}",
+		"{{ elementClass|e('js') }}",
 		{{ sources|json_encode|raw }},
 		{{ criteria|json_encode|raw }},
 		{{ sourceElementId ?: 'null' }},

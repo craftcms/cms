@@ -11,8 +11,8 @@ use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
 use craft\app\assetsourcetypes\Temp;
 use craft\app\db\Query;
+use craft\app\elements\db\AssetQuery;
 use craft\app\enums\AssetConflictResolution;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\AssetEvent;
 use craft\app\helpers\AssetsHelper;
@@ -24,7 +24,6 @@ use craft\app\helpers\UrlHelper;
 use craft\app\elements\Asset;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetOperationResponse as AssetOperationResponseModel;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\FolderCriteria as FolderCriteriaModel;
 use craft\app\elements\User;
 use craft\app\records\AssetFile as AssetFileRecord;
@@ -136,7 +135,10 @@ class Assets extends Component
 	 */
 	public function getFileById($fileId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($fileId, ElementType::Asset, $localeId);
+		return Asset::find()
+			->id($fileId)
+			->locale($localeId)
+			->one();
 	}
 
 	/**
@@ -148,19 +150,22 @@ class Assets extends Component
 	 */
 	public function findFile($criteria = null)
 	{
-		if (!($criteria instanceof ElementCriteriaModel))
+		if ($criteria instanceof AssetQuery)
 		{
-			$criteria = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
+			$query = $criteria;
+		}
+		else
+		{
+			$query = Asset::find()->configure($criteria);
 		}
 
-		if (isset($criteria->filename))
+		if (is_string($query->filename))
 		{
 			// Backslash-escape any commas in a given string.
-			$filename = preg_replace('/(?<!\\\),/', '\,', $criteria->filename);
-			$criteria->filename = StringHelper::escapeCommas($filename);
+			$query->filename = DbHelper::escapeParam($query->filename);
 		}
 
-		return $criteria->first();
+		return $query->one();
 	}
 
 	/**
@@ -172,12 +177,16 @@ class Assets extends Component
 	 */
 	public function getTotalFiles($criteria = null)
 	{
-		if (!($criteria instanceof ElementCriteriaModel))
+		if ($criteria instanceof AssetQuery)
 		{
-			$criteria = Craft::$app->elements->getCriteria(ElementType::Asset, $criteria);
+			$query = $criteria;
+		}
+		else
+		{
+			$query = Asset::find()->configure($criteria);
 		}
 
-		return $criteria->total();
+		return $query->count();
 	}
 
 	/**

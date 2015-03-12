@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
@@ -348,7 +347,10 @@ class Tags extends Component
 	 */
 	public function getTagById($tagId, $localeId)
 	{
-		return Craft::$app->elements->getElementById($tagId, ElementType::Tag, $localeId);
+		return Tag::find()
+			->id($tagId)
+			->locale($localeId)
+			->one();
 	}
 
 	/**

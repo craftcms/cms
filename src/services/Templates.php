@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
@@ -1337,6 +1338,9 @@ class Templates extends Component
 			return;
 		}
 
+		/** @var ElementInterface $element */
+		$element = $context['element'];
+
 		if (!isset($context['context']))
 		{
 			$context['context'] = 'index';
@@ -1347,8 +1351,8 @@ class Templates extends Component
 			$context['viewMode'] = 'table';
 		}
 
-		$thumbClass = 'elementthumb'.$context['element']->id;
-		$iconClass = 'elementicon'.$context['element']->id;
+		$thumbClass = 'elementthumb'.$element->id;
+		$iconClass = 'elementicon'.$element->id;
 
 		if ($context['viewMode'] == 'thumbs')
 		{
@@ -1363,21 +1367,21 @@ class Templates extends Component
 			$thumbSelectorPrefix = '';
 		}
 
-		$thumbUrl = $context['element']->getThumbUrl($thumbSize);
+		$thumbUrl = $element->getThumbUrl($thumbSize);
 
 		if ($thumbUrl)
 		{
 			$this->includeCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
-			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$context['element']->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
+			$this->includeHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$element->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
 		}
 		else
 		{
-			$iconUrl = $context['element']->getIconUrl($iconSize);
+			$iconUrl = $element->getIconUrl($iconSize);
 
 			if ($iconUrl)
 			{
 				$this->includeCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
-				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$context['element']->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
+				$this->includeHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$element->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
 			}
 		}
 
@@ -1397,16 +1401,16 @@ class Templates extends Component
 			$html .= ' hasicon';
 		}
 
-		$label = HtmlHelper::encode($context['element']);
+		$label = HtmlHelper::encode($element);
 
-		$html .= '" data-id="'.$context['element']->id.'" data-locale="'.$context['element']->locale.'" data-status="'.$context['element']->getStatus().'" data-label="'.$label.'" data-url="'.$context['element']->getUrl().'"';
+		$html .= '" data-id="'.$element->id.'" data-locale="'.$element->locale.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
 
-		if ($context['element']->level)
+		if ($element->level)
 		{
-			$html .= ' data-level="'.$context['element']->level.'"';
+			$html .= ' data-level="'.$element->level.'"';
 		}
 
-		$isEditable = ElementHelper::isElementEditable($context['element']);
+		$isEditable = ElementHelper::isElementEditable($element);
 
 		if ($isEditable)
 		{
@@ -1417,7 +1421,7 @@ class Templates extends Component
 
 		if ($context['context'] == 'field' && isset($context['name']))
 		{
-			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$context['element']->id.'">';
+			$html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$element->id.'">';
 			$html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
 		}
 
@@ -1432,23 +1436,14 @@ class Templates extends Component
 
 		$html .= '<div class="label">';
 
-		if (isset($context['elementType']))
+		if ($element::hasStatuses())
 		{
-			$elementType = $context['elementType'];
-		}
-		else
-		{
-			$elementType = Craft::$app->elements->getElementType($context['element']->getElementType());
-		}
-
-		if ($elementType->hasStatuses())
-		{
-			$html .= '<span class="status '.$context['element']->getStatus().'"></span>';
+			$html .= '<span class="status '.$element->getStatus().'"></span>';
 		}
 
 		$html .= '<span class="title">';
 
-		if ($context['context'] == 'index' && ($cpEditUrl = $context['element']->getCpEditUrl()))
+		if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl()))
 		{
 			$html .= '<a href="'.$cpEditUrl.'">'.$label.'</a>';
 		}

@@ -21,5 +21,5 @@ class PopulateElementEvent extends ElementEvent
 	/**
 	 * @var array The element query’s result for this element.
 	 */
-	public $result;
+	public $row;
 }

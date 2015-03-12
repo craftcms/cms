@@ -9,9 +9,10 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\ModelHelper;
-use craft\app\helpers\StringHelper;
+use craft\app\behaviors\ContentBehavior;
+use craft\app\behaviors\ContentTrait;
+use ReflectionClass;
+use ReflectionProperty;
 
 /**
  * Entry content model class.
@@ -21,6 +22,11 @@ use craft\app\helpers\StringHelper;
  */
 class Content extends Model
 {
+	// Traits
+	// =========================================================================
+
+	use ContentTrait;
+
 	// Properties
 	// =========================================================================
 
@@ -45,52 +51,6 @@ class Content extends Model
 	public $title;
 
 	/**
-	 * @var string Body
-	 */
-	public $body;
-
-	/**
-	 * @var string Description
-	 */
-	public $description;
-
-	/**
-	 * @var string Heading
-	 */
-	public $heading;
-
-	/**
-	 * @var array Ingredients
-	 */
-	public $ingredients;
-
-	/**
-	 * @var string Link color
-	 */
-	public $linkColor;
-
-	/**
-	 * @var string Meta description
-	 */
-	public $metaDescription;
-
-	/**
-	 * @var array Photos
-	 */
-	public $photos;
-
-	/**
-	 * @var string Site intro
-	 */
-	public $siteIntro;
-
-	/**
-	 * @var array Tags
-	 */
-	public $tags;
-
-
-	/**
 	 * @var
 	 */
 	private $_requiredFields;
@@ -102,6 +62,33 @@ class Content extends Model
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function behaviors()
+	{
+		return [
+			'customFields' => ContentBehavior::className(),
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function attributes()
+	{
+		$names = parent::attributes();
+		$class = new ReflectionClass($this->getBehavior('customFields'));
+		foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property)
+		{
+			if (!in_array($property->getName(), $names))
+			{
+				$names[] = $property->getName();
+			}
+		}
+		return $names;
+	}
 
 	/**
 	 * @inheritdoc

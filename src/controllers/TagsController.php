@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\ElementType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
@@ -124,7 +123,7 @@ class TagsController extends Controller
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::Tag;
+		$fieldLayout->type = Tag::className();
 		$tagGroup->setFieldLayout($fieldLayout);
 
 		// Save it
@@ -175,18 +174,11 @@ class TagsController extends Controller
 		$tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
 		$excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
 
-		$notIds = ['and'];
-
-		foreach ($excludeIds as $id)
-		{
-			$notIds[] = 'not '.$id;
-		}
-
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Tag);
-		$criteria->groupId = $tagGroupId;
-		$criteria->title   = DbHelper::escapeParam($search).'*';
-		$criteria->id      = $notIds;
-		$tags = $criteria->find();
+		$tags = Tag::find()
+			->groupId($tagGroupId)
+			->title(DbHelper::escapeParam($search).'*')
+			->where(['not in', 'elements.id', $excludeIds])
+			->all();
 
 		$return          = [];
 		$exactMatches    = [];

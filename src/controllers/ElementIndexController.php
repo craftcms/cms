@@ -9,9 +9,9 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\elementactions\ElementActionInterface;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * The ElementIndexController class is a controller that handles various element index related actions.
@@ -29,7 +29,7 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * @var ElementInterface
 	 */
-	private $_elementType;
+	private $_elementClass;
 
 	/**
 	 * @var string
@@ -52,9 +52,9 @@ class ElementIndexController extends BaseElementsController
 	private $_viewState;
 
 	/**
-	 * @var ElementCriteriaModel
+	 * @var ElementQueryInterface
 	 */
-	private $_criteria;
+	private $_elementQuery;
 
 	/**
 	 * @var array|null
@@ -73,12 +73,12 @@ class ElementIndexController extends BaseElementsController
 	{
 		parent::init();
 
-		$this->_elementType = $this->getElementType();
-		$this->_context     = $this->getContext();
-		$this->_sourceKey   = Craft::$app->getRequest()->getParam('source');
-		$this->_source      = $this->_getSource();
-		$this->_viewState   = $this->_getViewState();
-		$this->_criteria    = $this->_getCriteria();
+		$this->_elementClass = $this->getElementClass();
+		$this->_context      = $this->getContext();
+		$this->_sourceKey    = Craft::$app->getRequest()->getParam('source');
+		$this->_source       = $this->_getSource();
+		$this->_viewState    = $this->_getViewState();
+		$this->_elementQuery = $this->_getElementQuery();
 
 		if ($this->_context == 'index')
 		{
@@ -87,19 +87,19 @@ class ElementIndexController extends BaseElementsController
 	}
 
 	/**
-	 * Returns the criteria that’s defining which elements will be returned in the current request.
+	 * Returns the element query that’s defining which elements will be returned in the current request.
 	 *
 	 * Other components can fetch this like so:
 	 *
 	 * ```php
-	 * $criteria = Craft::$app->controller->getElementCriteria();
+	 * $criteria = Craft::$app->controller->getElementQuery();
 	 * ```
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
-	public function getElementCriteria()
+	public function getElementQuery()
 	{
-		return $this->_criteria;
+		return $this->_elementQuery;
 	}
 
 	/**
@@ -188,7 +188,7 @@ class ElementIndexController extends BaseElementsController
 		}
 
 		// Perform the action
-		$actionCriteria = $this->_criteria->copy();
+		$actionCriteria = $this->_elementQuery->copy();
 		$actionCriteria->offset = 0;
 		$actionCriteria->limit = null;
 		$actionCriteria->order = null;
@@ -231,7 +231,8 @@ class ElementIndexController extends BaseElementsController
 	{
 		if ($this->_sourceKey)
 		{
-			$source = $this->_elementType->getSource($this->_sourceKey, $this->_context);
+			$elementClass = $this->_elementClass;
+			$source = $elementClass::getSourceByKey($this->_sourceKey, $this->_context);
 
 			if (!$source)
 			{
@@ -261,83 +262,74 @@ class ElementIndexController extends BaseElementsController
 	}
 
 	/**
-	 * Returns the element criteria based on the current params.
+	 * Returns the element query based on the current params.
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
-	private function _getCriteria()
+	private function _getElementQuery()
 	{
-		$criteria = Craft::$app->elements->getCriteria(
-			$this->_elementType->getClassHandle(),
-			Craft::$app->getRequest()->getBodyParam('criteria')
-		);
+		$elementClass = $this->_elementClass;
 
-		$criteria->limit = 50;
-		$criteria->offset = Craft::$app->getRequest()->getParam('offset');
-		$criteria->search = Craft::$app->getRequest()->getParam('search');
+		$query = $elementClass::find()
+			->configure(Craft::$app->getRequest()->getBodyParam('criteria'))
+			->limit(50)
+			->offset(Craft::$app->getRequest()->getParam('offset'))
+			->search(Craft::$app->getRequest()->getParam('search'));
 
 		// Does the source specify any criteria attributes?
-		if (!empty($this->_source['criteria']))
+		if (isset($this->_source['criteria']))
 		{
-			$criteria->setAttributes($this->_source['criteria']);
+			$query->configure($this->_source['criteria']);
 		}
 
 		// Exclude descendants of the collapsed element IDs
-		if (!$criteria->id)
+		$collapsedElementIds = Craft::$app->getRequest()->getParam('collapsedElementIds');
+
+		if ($collapsedElementIds)
 		{
-			$collapsedElementIds = Craft::$app->getRequest()->getParam('collapsedElementIds');
+			// Get the actual elements
+			$collapsedElementQuery = clone $query;
+			$collapsedElements = $collapsedElementQuery
+				->id($collapsedElementIds)
+				->offset(0)
+				->limit(null)
+				->order('lft asc')
+				->positionedAfter(null)
+				->positionedBefore(null)
+				->all();
 
-			if ($collapsedElementIds)
+			if ($collapsedElements)
 			{
-				// Get the actual elements
-				$collapsedElementCriteria = $criteria->copy();
-				$collapsedElementCriteria->id = $collapsedElementIds;
-				$collapsedElementCriteria->offset = 0;
-				$collapsedElementCriteria->limit = null;
-				$collapsedElementCriteria->order = 'lft asc';
-				$collapsedElementCriteria->positionedAfter = null;
-				$collapsedElementCriteria->positionedBefore = null;
-				$collapsedElements = $collapsedElementCriteria->find();
+				$descendantIds = [];
 
-				if ($collapsedElements)
+				$descendantQuery = clone $query;
+				$descendantQuery
+					->offset(0)
+					->limit(null)
+					->order(null)
+					->positionedAfter(null)
+					->positionedBefore(null);
+
+				foreach ($collapsedElements as $element)
 				{
-					$descendantIds = [];
-
-					$descendantCriteria = $criteria->copy();
-					$descendantCriteria->offset = 0;
-					$descendantCriteria->limit = null;
-					$descendantCriteria->order = null;
-					$descendantCriteria->positionedAfter = null;
-					$descendantCriteria->positionedBefore = null;
-
-					foreach ($collapsedElements as $element)
+					// Make sure we haven't already excluded this one, because its ancestor is collapsed as well
+					if (in_array($element->id, $descendantIds))
 					{
-						// Make sure we haven't already excluded this one, because its ancestor is collapsed as well
-						if (in_array($element->id, $descendantIds))
-						{
-							continue;
-						}
-
-						$descendantCriteria->descendantOf = $element;
-						$descendantIds = array_merge($descendantIds, $descendantCriteria->ids());
+						continue;
 					}
 
-					if ($descendantIds)
-					{
-						$idsParam = ['and'];
+					$descendantQuery->descendantOf($element);
+					$descendantIds = array_merge($descendantIds, $descendantQuery->ids());
+				}
 
-						foreach ($descendantIds as $id)
-						{
-							$idsParam[] = 'not '.$id;
-						}
-
-						$criteria->id = $idsParam;
-					}
+				if ($descendantIds)
+				{
+					$query->andWhere(['not in', 'element.id', $descendantIds]);
 				}
 			}
 		}
 
-		return $criteria;
+		return $query;
 	}
 
 	/**
@@ -351,9 +343,10 @@ class ElementIndexController extends BaseElementsController
 	{
 		$disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
 		$showCheckboxes = !empty($this->_actions);
+		$elementClass = $this->_elementClass;
 
-		return $this->_elementType->getIndexHtml(
-			$this->_criteria,
+		return $elementClass::getIndexHtml(
+			$this->_elementQuery,
 			$disabledElementIds,
 			$this->_viewState,
 			$this->_sourceKey,
@@ -375,7 +368,8 @@ class ElementIndexController extends BaseElementsController
 			return;
 		}
 
-		$actions = $this->_elementType->getAvailableActions($this->_sourceKey);
+		$elementClass = $this->_elementClass;
+		$actions = $elementClass::getAvailableActions($this->_sourceKey);
 
 		if ($actions)
 		{
@@ -434,14 +428,14 @@ class ElementIndexController extends BaseElementsController
 	{
 		if ($includeLoadMoreInfo)
 		{
-			$totalElementsInBatch = count($this->_criteria);
-			$responseData['totalVisible'] = $this->_criteria->offset + $totalElementsInBatch;
+			$totalElementsInBatch = count($this->_elementQuery);
+			$responseData['totalVisible'] = $this->_elementQuery->offset + $totalElementsInBatch;
 
-			if ($this->_criteria->limit)
+			if ($this->_elementQuery->limit)
 			{
 				// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
 				// 50 elements, rather than running two separate element queries
-				$responseData['more'] = ($totalElementsInBatch == $this->_criteria->limit);
+				$responseData['more'] = ($totalElementsInBatch == $this->_elementQuery->limit);
 			}
 			else
 			{

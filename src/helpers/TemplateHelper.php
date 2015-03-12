@@ -8,7 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\variables\Paginate;
 
 /**
@@ -23,17 +23,17 @@ class TemplateHelper
 	// =========================================================================
 
 	/**
-	 * Paginates an ElementCriteriaModel instance.
+	 * Paginates an element query's results
 	 *
-	 * @param ElementCriteriaModel $criteria
+	 * @param ElementQueryInterface $query
 	 *
 	 * @return array
 	 */
-	public static function paginateCriteria(ElementCriteriaModel $criteria)
+	public static function paginateCriteria(ElementQueryInterface $query)
 	{
 		$currentPage = Craft::$app->getRequest()->getPageNum();
-		$limit = $criteria->limit;
-		$total = $criteria->total() - $criteria->offset;
+		$limit = $query->limit;
+		$total = $query->count() - $query->offset;
 		$totalPages = ceil($total / $limit);
 
 		$paginateVariable = new Paginate();
@@ -51,9 +51,9 @@ class TemplateHelper
 		$offset = $limit * ($currentPage - 1);
 
 		// Is there already an offset set?
-		if ($criteria->offset)
+		if ($query->offset)
 		{
-			$offset += $criteria->offset;
+			$offset += $query->offset;
 		}
 
 		$last = $offset + $limit;
@@ -70,9 +70,9 @@ class TemplateHelper
 		$paginateVariable->totalPages = $totalPages;
 
 		// Copy the criteria, set the offset, and get the elements
-		$criteria = $criteria->copy();
-		$criteria->offset = $offset;
-		$elements = $criteria->find();
+		$query = clone $query;
+		$query->offset = $offset;
+		$elements = $query->all();
 
 		return [$paginateVariable, $elements];
 	}

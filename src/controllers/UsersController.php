@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\enums\AuthError;
-use craft\app\enums\ElementType;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
@@ -1362,8 +1361,8 @@ class UsersController extends Controller
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::User;
-		Craft::$app->fields->deleteLayoutsByType(ElementType::User);
+		$fieldLayout->type = User::className();
+		Craft::$app->fields->deleteLayoutsByType(User::className());
 
 		if (Craft::$app->fields->saveLayout($fieldLayout))
 		{

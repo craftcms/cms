@@ -11,11 +11,9 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\DbHelper;
+use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\CategoryGroup;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\FieldLayout;
 
 /**
@@ -81,6 +79,16 @@ class Category extends Element
 	public static function hasStatuses()
 	{
 		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return CategoryQuery The newly created [[CategoryQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new CategoryQuery(get_called_class());
 	}
 
 	/**
@@ -251,48 +259,6 @@ class Category extends Element
 		}
 
 		return parent::getTableAttributeHtml($element, $attribute);
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
-	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [
-			'group'   => AttributeType::Mixed,
-			'groupId' => AttributeType::Mixed,
-			'order'   => [AttributeType::String, 'default' => 'lft'],
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('categories.groupId')
-			->innerJoin('{{%categories}} categories', 'categories.id = elements.id')
-			->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
-			->leftJoin('{{%structures}} structures', 'structures.id = categorygroups.structureId')
-			->leftJoin('{{%structureelements}} structureelements', ['and', 'structureelements.structureId = structures.id', 'structureelements.elementId = categories.id']);
-
-		if ($criteria->groupId)
-		{
-			$query->andWhere(DbHelper::parseParam('categories.groupId', $criteria->groupId, $query->params));
-		}
-
-		if ($criteria->group)
-		{
-			$query->andWhere(DbHelper::parseParam('categorygroups.handle', $criteria->group, $query->params));
-		}
 	}
 
 	/**

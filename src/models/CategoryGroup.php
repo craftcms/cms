@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 
 /**
  * CategoryGroup model.
@@ -72,7 +70,7 @@ class CategoryGroup extends Model
 	/**
 	 * @var The element type that category groups' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::Category;
+	private $_fieldLayoutElementClass = 'craft\app\elements\Category';
 
 	/**
 	 * @var

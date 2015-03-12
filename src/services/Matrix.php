@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\fieldtypes\Matrix as MatrixFieldType;
 use craft\app\helpers\HtmlHelper;
@@ -363,7 +362,7 @@ class Matrix extends Component
 				$fieldLayoutTab->setFields($fieldLayoutFields);
 
 				$fieldLayout = new FieldLayoutModel();
-				$fieldLayout->type = ElementType::MatrixBlock;
+				$fieldLayout->type = MatrixBlock::className();
 				$fieldLayout->setTabs([$fieldLayoutTab]);
 				$fieldLayout->setFields($fieldLayoutFields);
 
@@ -709,7 +708,10 @@ class Matrix extends Component
 	 */
 	public function getBlockById($blockId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($blockId, ElementType::MatrixBlock, $localeId);
+		return MatrixBlock::find()
+			->id($blockId)
+			->locale($localeId)
+			->one();
 	}
 
 	/**
@@ -1109,16 +1111,16 @@ class Matrix extends Component
 			// incorrectly
 			$blocksInOtherLocales = [];
 
-			$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
-			$criteria->fieldId = $field->id;
-			$criteria->ownerId = $owner->id;
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$criteria->limit = null;
+			$query = MatrixBlock::find()
+				->fieldId($field->id)
+				->ownerId($owner->id)
+				->status(null)
+				->localeEnabled(false)
+				->limit(null);
 
 			if ($field->translatable)
 			{
-				$criteria->ownerLocale = ':empty:';
+				$query->ownerLocale(':empty:');
 			}
 
 			foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId)
@@ -1128,14 +1130,14 @@ class Matrix extends Component
 					continue;
 				}
 
-				$criteria->locale = $localeId;
+				$query->locale($localeId);
 
 				if (!$field->translatable)
 				{
-					$criteria->ownerLocale = $localeId;
+					$query->ownerLocale($localeId);
 				}
 
-				$blocksInOtherLocale = $criteria->find();
+				$blocksInOtherLocale = $query->all();
 
 				if ($blocksInOtherLocale)
 				{

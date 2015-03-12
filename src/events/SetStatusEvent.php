@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\db\ElementQueryInterface;
+
 /**
  * Set Status element action event class.
  *
@@ -19,9 +21,9 @@ class SetStatusEvent extends Event
 	// =========================================================================
 
 	/**
-	 * @var \craft\app\models\ElementCriteria The element criteria model representing the elements that just got updated.
+	 * @var ElementQueryInterface The element query representing the elements that just got updated.
 	 */
-	public $criteria;
+	public $elementQuery;
 
 	/**
 	 * @var array The element IDs that are getting updated.

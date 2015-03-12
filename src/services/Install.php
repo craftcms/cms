@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Connection;
 use craft\app\enums\ColumnType;
-use craft\app\enums\ElementType;
 use craft\app\enums\EmailerType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
@@ -737,7 +736,7 @@ class Install extends Component
 			[$bodyField->id]
 		);
 
-		$homepageLayout->type = ElementType::Entry;
+		$homepageLayout->type = Entry::className();
 
 		$homepageSingleSection = new SectionModel();
 		$homepageSingleSection->name = Craft::t('app', 'Homepage');
@@ -787,9 +786,10 @@ class Install extends Component
 
 		Craft::info('Setting the Homepage content.');
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-		$criteria->sectionId = $homepageSingleSection->id;
-		$entryModel = $criteria->first();
+
+		$entryModel = Entry::find()
+			->sectionId($homepageSingleSection->id)
+			->one();
 
 		$entryModel->locale = $inputs['locale'];
 		$entryModel->getContent()->title = Craft::t('app', 'Welcome to {siteName}!', $vars);
@@ -843,7 +843,7 @@ class Install extends Component
 			[$bodyField->id]
 		);
 
-		$newsLayout->type = ElementType::Entry;
+		$newsLayout->type = Entry::className();
 
 		$newsEntryTypes = $newsSection->getEntryTypes();
 		$newsEntryType = $newsEntryTypes[0];

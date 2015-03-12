@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 
 /**
@@ -74,63 +75,59 @@ class SearchIndex extends BaseTool
 		}
 		else
 		{
-			// Get the element type
-			$elementType = Craft::$app->elements->getElementType($params['type']);
+			/** @var ElementInterface $class */
+			$class = $params['type'];
 
-			if ($elementType)
+			if ($class::isLocalized())
 			{
-				if ($elementType->isLocalized())
-				{
-					$localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
-				}
-				else
-				{
-					$localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
-				}
+				$localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
+			}
+			else
+			{
+				$localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+			}
 
-				$criteria = Craft::$app->elements->getCriteria($params['type'], [
-					'id'            => $params['id'],
-					'status'        => null,
-					'localeEnabled' => null,
-				]);
+			$query = $class::find()
+				->id($params['id'])
+				->status(null)
+				->localeEnabled(false);
 
-				foreach ($localeIds as $localeId)
+			foreach ($localeIds as $localeId)
+			{
+				$query->locale($localeId);
+				$element = $query->one();
+
+				if ($element)
 				{
-					$criteria->locale = $localeId;
-					$element = $criteria->first();
+					Craft::$app->search->indexElementAttributes($element);
 
-					if ($element)
+					if ($class::hasContent())
 					{
-						Craft::$app->search->indexElementAttributes($element);
+						$fieldLayout = $element->getFieldLayout();
+						$keywords = [];
 
-						if ($elementType->hasContent())
+						foreach ($fieldLayout->getFields() as $fieldLayoutField)
 						{
-							$fieldLayout = $element->getFieldLayout();
-							$keywords = [];
+							$field = $fieldLayoutField->getField();
 
-							foreach ($fieldLayout->getFields() as $fieldLayoutField)
+							if ($field)
 							{
-								$field = $fieldLayoutField->getField();
+								$fieldType = $field->getFieldType();
 
-								if ($field)
+								if ($fieldType)
 								{
-									$fieldType = $field->getFieldType();
+									$fieldType->element = $element;
 
-									if ($fieldType)
-									{
-										$fieldType->element = $element;
+									$handle = $field->handle;
 
-										$handle = $field->handle;
-
-										// Set the keywords for the content's locale
-										$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
-										$keywords[$field->id] = $fieldSearchKeywords;
-									}
+									// Set the keywords for the content's locale
+									$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
+									$keywords[$field->id] = $fieldSearchKeywords;
 								}
 							}
-
-							Craft::$app->search->indexElementFields($element->id, $localeId, $keywords);
 						}
+
+						Craft::$app->search->indexElementFields($element->id, $localeId, $keywords);
 					}
 				}
 			}

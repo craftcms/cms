@@ -8,9 +8,8 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\db\Command;
 use craft\app\db\Query;
-use craft\app\enums\ElementType;
+use craft\app\elements\Entry;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\events\EntryTypeEvent;
@@ -718,7 +717,7 @@ class Sections extends Component
 								// Create it, baby
 
 								Craft::$app->getDb()->createCommand()->insert('{{%elements}}', [
-									'type' => ElementType::Entry
+									'type' => Entry::className()
 								])->execute();
 
 								$singleEntryId = Craft::$app->getDb()->getLastInsertID();
@@ -758,26 +757,18 @@ class Sections extends Component
 							if (!$isNewSection && $isNewStructure)
 							{
 								// Add all of the entries to the structure
-								$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-								$criteria->locale = ArrayHelper::getFirstValue(array_keys($oldSectionLocales));
-								$criteria->sectionId = $section->id;
-								$criteria->status = null;
-								$criteria->localeEnabled = null;
-								$criteria->order = 'elements.id';
-								$criteria->limit = 25;
+								$query = Entry::find()
+									->locale(ArrayHelper::getFirstValue(array_keys($oldSectionLocales)))
+									->sectionId($section->id)
+									->status(null)
+									->localeEnabled(false)
+									->orderBy('elements.id');
 
-								do
+								/** @var Entry $entry */
+								foreach ($query->each() as $entry)
 								{
-									$batchEntries = $criteria->find();
-
-									foreach ($batchEntries as $entry)
-									{
-										Craft::$app->structures->appendToRoot($section->structureId, $entry, 'insert');
-									}
-
-									$criteria->offset += 25;
-
-								} while ($batchEntries);
+									Craft::$app->structures->appendToRoot($section->structureId, $entry, 'insert');
+								}
 							}
 
 							break;
@@ -788,16 +779,16 @@ class Sections extends Component
 
 					if (!$isNewSection)
 					{
-						$criteria = Craft::$app->elements->getCriteria(ElementType::Entry);
-						$criteria->locale = ArrayHelper::getFirstValue(array_keys($oldSectionLocales));
-						$criteria->sectionId = $section->id;
-						$criteria->status = null;
-						$criteria->localeEnabled = null;
-						$criteria->limit = null;
+						$query = Entry::find()
+						    ->locale(ArrayHelper::getFirstValue(array_keys($oldSectionLocales)))
+						    ->sectionId($section->id)
+						    ->status(null)
+						    ->localeEnabled(false)
+						    ->limit(null);
 
 						Craft::$app->tasks->createTask('ResaveElements', Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]), [
-							'elementType' => ElementType::Entry,
-							'criteria'    => $criteria->getAttributes()
+							'elementClass' => Entry::className(),
+							'criteria'     => $query->asArray()
 						]);
 					}
 

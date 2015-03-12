@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\StringHelper;
 
@@ -23,17 +24,17 @@ class ResaveElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @var
+	 * @var ElementInterface
 	 */
-	private $_elementType;
+	private $_elementClass;
 
 	/**
-	 * @var
+	 * @var string
 	 */
 	private $_localeId;
 
 	/**
-	 * @var
+	 * @var integer[]
 	 */
 	private $_elementIds;
 
@@ -47,10 +48,8 @@ class ResaveElements extends BaseTask
 	 */
 	public function getDescription()
 	{
-		$elementType = Craft::$app->elements->getElementType($this->getSettings()->elementType);
-
-		return Craft::t('app', 'Resaving {type}', [
-			'type' => StringHelper::toLowerCase($elementType->getName())
+		return Craft::t('app', 'Resaving {class} elements', [
+			'class' => StringHelper::toLowerCase($this->getSettings()->elementClass)
 		]);
 	}
 
@@ -62,19 +61,22 @@ class ResaveElements extends BaseTask
 	public function getTotalSteps()
 	{
 		$settings = $this->getSettings();
+		/** @var ElementInterface $class */
+		$class = $settings->elementClass;
 
-		// Let's save ourselves some trouble and just clear all the caches for this element type
-		Craft::$app->templateCache->deleteCachesByElementType($settings->elementType);
+		// Let's save ourselves some trouble and just clear all the caches for this element class
+		Craft::$app->templateCache->deleteCachesByElementClass($class);
 
 		// Now find the affected element IDs
-		$criteria = Craft::$app->elements->getCriteria($settings->elementType, $settings->criteria);
-		$criteria->offset = null;
-		$criteria->limit = null;
-		$criteria->order = null;
+		$query = $class::find()
+			->configure($settings->criteria)
+			->offset(null)
+			->limit(null)
+			->order(null);
 
-		$this->_elementType = $criteria->getElementType()->getClassHandle();
-		$this->_localeId = $criteria->locale;
-		$this->_elementIds = $criteria->ids();
+		$this->_elementClass = $class;
+		$this->_localeId = $query->locale;
+		$this->_elementIds = $query->ids();
 
 		return count($this->_elementIds);
 	}
@@ -90,7 +92,11 @@ class ResaveElements extends BaseTask
 	{
 		try
 		{
-			$element = Craft::$app->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
+			$class = $this->_elementClass;
+			$element = $class::find()
+				->id($this->_elementIds[$step])
+				->locale($this->_localeId)
+				->one();
 
 			if (!$element || Craft::$app->elements->saveElement($element, false))
 			{
@@ -98,7 +104,7 @@ class ResaveElements extends BaseTask
 			}
 			else
 			{
-				$error = 'Encountered the following validation errors when trying to save '.strtolower($element->getElementType()).' element "'.$element.'" with the ID "'.$element->id.'":';
+				$error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
 
 				foreach ($element->getAllErrors() as $attributeError)
 				{
@@ -110,7 +116,7 @@ class ResaveElements extends BaseTask
 		}
 		catch (\Exception $e)
 		{
-			return 'An exception was thrown while trying to save the '.$this->_elementType.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
+			return 'An exception was thrown while trying to save the '.$this->_elementClass.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
 		}
 	}
 
@@ -125,8 +131,8 @@ class ResaveElements extends BaseTask
 	protected function defineSettings()
 	{
 		return [
-			'elementType' => AttributeType::String,
-			'criteria'    => AttributeType::Mixed,
+			'elementClass' => AttributeType::String,
+			'criteria'     => AttributeType::Mixed,
 		];
 	}
 }

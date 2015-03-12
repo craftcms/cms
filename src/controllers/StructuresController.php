@@ -44,7 +44,7 @@ class StructuresController extends Controller
 	/**
 	 * Initializes the application component.
 	 *
-	 * @return null
+	 * @throws HttpException
 	 */
 	public function init()
 	{

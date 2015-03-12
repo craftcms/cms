@@ -9,7 +9,7 @@ namespace craft\app\elementactions;
 
 use craft\app\components\BaseComponentType;
 use craft\app\base\Model;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\models\Params as ParamsModel;
 
 /**
@@ -108,13 +108,9 @@ abstract class BaseElementAction extends BaseComponentType implements ElementAct
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $criteria)
 	{
 		return true;
 	}

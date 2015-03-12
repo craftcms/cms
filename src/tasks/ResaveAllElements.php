@@ -24,7 +24,7 @@ class ResaveAllElements extends BaseTask
 	/**
 	 * @var
 	 */
-	private $_elementTypes;
+	private $_elementClasses;
 
 	// Public Methods
 	// =========================================================================
@@ -53,18 +53,18 @@ class ResaveAllElements extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_elementTypes = [];
+		$this->_elementClasses = [];
 		$localizableOnly = $this->getSettings()->localizableOnly;
 
-		foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
+		foreach (Craft::$app->elements->getAllElementClasses() as $elementClass)
 		{
-			if (!$localizableOnly || $elementType->isLocalized())
+			if (!$localizableOnly || $elementClass::isLocalized())
 			{
-				$this->_elementTypes[] = $elementType->getClassHandle();
+				$this->_elementClasses[] = $elementClass::className();
 			}
 		}
 
-		return count($this->_elementTypes);
+		return count($this->_elementClasses);
 	}
 
 	/**
@@ -77,7 +77,7 @@ class ResaveAllElements extends BaseTask
 	public function runStep($step)
 	{
 		return $this->runSubTask('ResaveElements', null, [
-			'elementType' => $this->_elementTypes[$step],
+			'elementClass' => $this->_elementClasses[$step],
 			'criteria' => [
 				'locale'        => $this->getSettings()->locale,
 				'status'        => null,

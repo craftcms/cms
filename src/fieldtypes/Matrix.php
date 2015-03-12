@@ -8,11 +8,10 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
-use craft\app\enums\ElementType;
+use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\base\Model;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
@@ -180,32 +179,34 @@ class Matrix extends BaseFieldType
 	 *
 	 * @param mixed $value
 	 *
-	 * @return ElementCriteriaModel
+	 * @return MatrixBlockQuery
 	 */
 	public function prepValue($value)
 	{
-		$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
+		$query = MatrixBlock::find();
 
 		// Existing element?
 		if (!empty($this->element->id))
 		{
-			$criteria->ownerId = $this->element->id;
+			$query->ownerId($this->element->id);
 		}
 		else
 		{
-			$criteria->id = false;
+			$query->id(false);
 		}
 
-		$criteria->fieldId = $this->model->id;
-		$criteria->locale = $this->element->locale;
+		$query
+			->fieldId($this->model->id)
+			->locale($this->element->locale);
 
 		// Set the initially matched elements if $value is already set, which is the case if there was a validation
 		// error or we're loading an entry revision.
 		if (is_array($value) || $value === '')
 		{
-			$criteria->status = null;
-			$criteria->localeEnabled = null;
-			$criteria->limit = null;
+			$query
+				->status(null)
+				->localeEnabled(false)
+				->limit(null);
 
 			if (is_array($value))
 			{
@@ -222,16 +223,16 @@ class Matrix extends BaseFieldType
 					$prevElement = $element;
 				}
 
-				$criteria->setMatchedElements($value);
+				$query->setResult($value);
 			}
 			else if ($value === '')
 			{
 				// Means there were no blocks
-				$criteria->setMatchedElements([]);
+				$query->setResult([]);
 			}
 		}
 
-		return $criteria;
+		return $query;
 	}
 
 	/**
@@ -261,11 +262,12 @@ class Matrix extends BaseFieldType
 
 		Craft::$app->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
-		if ($value instanceof ElementCriteriaModel)
+		if ($value instanceof MatrixBlockQuery)
 		{
-			$value->limit = null;
-			$value->status = null;
-			$value->localeEnabled = null;
+			$value
+				->limit(null)
+				->status(null)
+				->localeEnabled(false);
 		}
 
 		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
@@ -313,21 +315,16 @@ class Matrix extends BaseFieldType
 
 			if ($ids)
 			{
-				$criteria = Craft::$app->elements->getCriteria(ElementType::MatrixBlock);
-				$criteria->fieldId = $this->model->id;
-				$criteria->ownerId = $ownerId;
-				$criteria->id = $ids;
-				$criteria->limit = null;
-				$criteria->status = null;
-				$criteria->localeEnabled = null;
-				$criteria->locale = $this->element->locale;
-				$oldBlocks = $criteria->find();
-
-				// Index them by ID
-				foreach ($oldBlocks as $oldBlock)
-				{
-					$oldBlocksById[$oldBlock->id] = $oldBlock;
-				}
+				$oldBlocksById = MatrixBlock::find()
+					->fieldId($this->model->id)
+					->ownerId($ownerId)
+					->id($ids)
+					->limit(null)
+					->status(null)
+					->localeEnabled(false)
+					->locale($this->element->locale)
+					->indexBy('id')
+					->all();
 			}
 		}
 		else

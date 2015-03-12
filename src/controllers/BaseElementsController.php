@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\web\Controller;
@@ -48,22 +49,21 @@ abstract class BaseElementsController extends Controller
 	// =========================================================================
 
 	/**
-	 * Returns the element type based on the posted element type class.
+	 * Returns the posted element type class.
 	 *
 	 * @throws Exception
-	 * @return Element
+	 * @return ElementInterface
 	 */
-	protected function getElementType()
+	protected function getElementClass()
 	{
 		$class = Craft::$app->getRequest()->getRequiredParam('elementType');
-		$elementType = Craft::$app->elements->getElementType($class);
 
-		if (!$elementType)
+		if (!class_exists($class) || !($class instanceof ElementInterface))
 		{
 			throw new Exception(Craft::t('app', 'No element type exists with the class “{class}”', ['class' => $class]));
 		}
 
-		return $elementType;
+		return $class;
 	}
 
 	/**

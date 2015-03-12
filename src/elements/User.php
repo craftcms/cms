@@ -13,13 +13,12 @@ use craft\app\base\ElementInterface;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
-use craft\app\enums\AttributeType;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\db\UserQuery;
 use craft\app\enums\AuthError;
 use craft\app\enums\UserStatus;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\DbHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use Exception;
@@ -202,6 +201,16 @@ class User extends Element implements IdentityInterface
 			UserStatus::Suspended => Craft::t('app', 'Suspended'),
 			UserStatus::Archived  => Craft::t('app', 'Archived')
 		];
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return UserQuery The newly created [[UserQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new UserQuery(get_called_class());
 	}
 
 	/**
@@ -406,38 +415,9 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [
-			'admin'          => AttributeType::Bool,
-			'client'         => AttributeType::Bool,
-			'can'            => AttributeType::String,
-			'email'          => AttributeType::Email,
-			'firstName'      => AttributeType::String,
-			'group'          => AttributeType::Mixed,
-			'groupId'        => AttributeType::Number,
-			'lastName'       => AttributeType::String,
-			'lastLoginDate'  => AttributeType::Mixed,
-			'order'          => [AttributeType::String, 'default' => 'username asc'],
-			'preferredLocale'=> AttributeType::String,
-			'status'         => [AttributeType::Enum, 'values' => [UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived], 'default' => UserStatus::Active],
-			'username'       => AttributeType::String,
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
-	 *
-	 * @param Query  $query
-	 * @param string $status
-	 *
-	 * @return string|false
-	 */
-	public static function getElementQueryStatusCondition(Query $query, $status)
+	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
 	{
 		switch ($status)
 		{
@@ -465,158 +445,6 @@ class User extends Element implements IdentityInterface
 			{
 				return 'users.archived = 1';
 			}
-		}
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('users.username, users.photo, users.firstName, users.lastName, users.email, users.admin, users.client, users.locked, users.pending, users.suspended, users.archived, users.lastLoginDate, users.lockoutDate, users.preferredLocale')
-			->innerJoin('{{%users}} users', 'users.id = elements.id');
-
-		if ($criteria->admin)
-		{
-			$query->andWhere(DbHelper::parseParam('users.admin', $criteria->admin, $query->params));
-		}
-
-		if ($criteria->client && Craft::$app->getEdition() == Craft::Client)
-		{
-			$query->andWhere(DbHelper::parseParam('users.client', $criteria->client, $query->params));
-		}
-
-		if ($criteria->can && Craft::$app->getEdition() == Craft::Pro)
-		{
-			// Get the actual permission ID
-			if (is_numeric($criteria->can))
-			{
-				$permissionId = $criteria->can;
-			}
-			else
-			{
-				$permissionId = (new Query())
-					->select('id')
-					->from('{{%userpermissions}}')
-					->where('name = :name', [':name' => strtolower($criteria->can)])
-					->scalar();
-			}
-
-			// Find the users that have that permission, either directly or through a group
-			$permittedUserIds = [];
-
-			// If the permission hasn't been assigned to any groups/users before, it won't have an ID. Don't bail
-			// though, since we still want to look for admins.
-			if ($permissionId)
-			{
-				// Get the user groups that have that permission
-				$permittedGroupIds = (new Query())
-					->select('groupId')
-					->from('{{%userpermissions_usergroups}}')
-					->where('permissionId = :permissionId', [':permissionId' => $permissionId])
-					->column();
-
-				if ($permittedGroupIds)
-				{
-					$permittedUserIds = static::_getUserIdsByGroupIds($permittedGroupIds);
-				}
-
-				// Get the users that have that permission directly
-				$permittedUserIds = array_merge(
-					$permittedUserIds,
-					(new Query())
-						->select('userId')
-						->from('{{%userpermissions_users}}')
-						->where('permissionId = :permissionId', [':permissionId' => $permissionId])
-						->column()
-				);
-			}
-
-			if ($permittedUserIds)
-			{
-				$permissionConditions = ['or', 'users.admin = 1', ['in', 'elements.id', $permittedUserIds]];
-			}
-			else
-			{
-				$permissionConditions = 'users.admin = 1';
-			}
-
-			$query->andWhere($permissionConditions);
-		}
-
-		if ($criteria->groupId)
-		{
-			$userIds = static::_getUserIdsByGroupIds($criteria->groupId);
-
-			if (!$userIds)
-			{
-				return false;
-			}
-
-			$query->andWhere(['in', 'elements.id', $userIds]);
-		}
-
-		if ($criteria->group)
-		{
-			// Get the actual group ID(s)
-			$groupIdsQuery = (new Query())
-				->select('id')
-				->from('{{%usergroups}}');
-
-			$groupIdsQuery->where(DbHelper::parseParam('handle', $criteria->group, $groupIdsQuery->params));
-			$groupIds = $groupIdsQuery->column();
-
-			// In the case where the group doesn't exist.
-			if (!$groupIds)
-			{
-				return false;
-			}
-
-			$userIds = static::_getUserIdsByGroupIds($groupIds);
-
-			// In case there are no users in the groups.
-			if (!$userIds)
-			{
-				return false;
-			}
-
-			$query->andWhere(['in', 'elements.id', $userIds]);
-		}
-
-		if ($criteria->username)
-		{
-			$query->andWhere(DbHelper::parseParam('users.username', $criteria->username, $query->params));
-		}
-
-		if ($criteria->firstName)
-		{
-			$query->andWhere(DbHelper::parseParam('users.firstName', $criteria->firstName, $query->params));
-		}
-
-		if ($criteria->lastName)
-		{
-			$query->andWhere(DbHelper::parseParam('users.lastName', $criteria->lastName, $query->params));
-		}
-
-		if ($criteria->email)
-		{
-			$query->andWhere(DbHelper::parseParam('users.email', $criteria->email, $query->params));
-		}
-
-		if ($criteria->preferredLocale)
-		{
-			$query->andWhere(DbHelper::parseParam('users.preferredLocale', $criteria->preferredLocale, $query->params));
-		}
-
-		if ($criteria->lastLoginDate)
-		{
-			$query->andWhere(DbHelper::parseDateParam('users.lastLoginDate', $criteria->lastLoginDate, $query->params));
 		}
 	}
 
@@ -1312,20 +1140,6 @@ class User extends Element implements IdentityInterface
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * @param $groupIds
-	 *
-	 * @return array
-	 */
-	private static function _getUserIdsByGroupIds($groupIds)
-	{
-		($query = new Query())
-			->select('userId')
-			->from('{{%usergroups_users}}')
-			->where(DbHelper::parseParam('groupId', $groupIds, $query->params))
-			->column();
-	}
 
 	/**
 	 * Saves a new session record for the user.

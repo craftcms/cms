@@ -8,7 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\ElementType;
+use craft\app\elements\Entry;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
@@ -391,7 +391,7 @@ class SectionsController extends Controller
 
 		// Set the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::Entry;
+		$fieldLayout->type = Entry::className();
 		$entryType->setFieldLayout($fieldLayout);
 
 		// Save it

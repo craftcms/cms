@@ -88,6 +88,11 @@ class Info extends Model
 	public $uid;
 
 	/**
+	 * @var string Field version
+	 */
+	public $fieldVersion;
+
+	/**
 	 * @var \DateTime Date updated
 	 */
 	public $dateUpdated;

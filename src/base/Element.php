@@ -8,11 +8,13 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\behaviors\ContentTrait;
 use craft\app\dates\DateTime;
-use craft\app\db\Query;
+use craft\app\elements\db\ElementQuery;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\models\Content;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\Field as FieldModel;
 use Exception;
 use yii\base\ErrorHandler;
@@ -29,6 +31,11 @@ use yii\base\UnknownPropertyException;
  */
 abstract class Element extends Model implements ElementInterface
 {
+	// Traits
+	// =========================================================================
+
+	use ContentTrait;
+
 	// Constants
 	// =========================================================================
 
@@ -182,6 +189,16 @@ abstract class Element extends Model implements ElementInterface
 	// Public Methods
 	// =========================================================================
 
+	/**
+	 * @inheritdoc
+	 */
+	public static function classHandle()
+	{
+		$classNameParts = implode('\\', static::className());
+		$handle = array_pop($classNameParts);
+		return strtolower($handle);
+	}
+
 	// Basic info methods
 	// -------------------------------------------------------------------------
 
@@ -236,6 +253,79 @@ abstract class Element extends Model implements ElementInterface
 			static::ENABLED => Craft::t('app', 'Enabled'),
 			static::DISABLED => Craft::t('app', 'Disabled')
 		];
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return ElementQuery The newly created [[ElementQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new ElementQuery(get_called_class());
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return static Element instance matching the condition, or `null` if nothing matches.
+	 */
+	public static function findOne($criteria = null)
+	{
+		return static::findByCondition($criteria, true);
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return static[] An array of Element instances, or an empty array if nothing matches.
+	 */
+	public static function findAll($criteria = null)
+	{
+		return static::findByCondition($criteria, false);
+	}
+
+	/**
+	 * Creates an element instance.
+	 *
+	 * This method is called together with [[populateElement()]] by [[ElementQuery]].
+	 * It is not meant to be used for creating new elements directly.
+	 *
+	 * You may override this method if the instance being created
+	 * depends on the row data to be populated into the element.
+	 * For example, by creating an element based on the value of a column,
+	 * you may implement the so-called single-table inheritance mapping.
+	 *
+	 * @param array $row Row data to be populated into the record.
+	 * @return ElementInterface The newly created element
+	 */
+	public static function instantiate($row)
+	{
+		return new static;
+	}
+
+	/**
+	 * Populates an element object using a row of data from the database/storage.
+	 *
+	 * This is an internal method meant to be called to create element objects after
+	 * fetching data from the database. It is mainly used by [[ElementQuery]] to populate
+	 * the query results into elements.
+	 *
+	 * When calling this method manually you should call [[afterFind()]] on the created
+	 * record to trigger the [[EVENT_AFTER_FIND|afterFind Event]].
+	 *
+	 * @param ElementInterface $element The element to be populated. In most cases this will be an instance
+	 * created by [[instantiate()]] beforehand.
+	 * @param array $row Attribute values (name => value)
+	 */
+	public static function populateElement(ElementInterface $element, $row)
+	{
+		$attributes = array_flip($element->attributes());
+
+		foreach ($row as $name => $value)
+		{
+			if (isset($attributes[$name]) || $element->canSetProperty($name))
+			{
+				$element->$name = $value;
+			}
+		}
 	}
 
 	/**
@@ -298,13 +388,13 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * @inheritDoc ElementInterface::getIndexHtml()
 	 *
-	 * @param ElementCriteriaModel $criteria
-	 * @param array                $disabledElementIds
-	 * @param array                $viewState
-	 * @param null|string          $sourceKey
-	 * @param null|string          $context
-	 * @param bool                 $includeContainer
-	 * @param bool                 $showCheckboxes
+	 * @param ElementQueryInterface $criteria
+	 * @param array                 $disabledElementIds
+	 * @param array                 $viewState
+	 * @param null|string           $sourceKey
+	 * @param null|string           $context
+	 * @param bool                  $includeContainer
+	 * @param bool                  $showCheckboxes
 	 *
 	 * @return string
 	 */
@@ -484,76 +574,37 @@ abstract class Element extends Model implements ElementInterface
 	// -----------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementInterface::getContentTableForElementsQuery()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return false|string
+	 * @inheritdoc
 	 */
-	public static function getContentTableForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getContentTableForElementsQuery(ElementQueryInterface $query)
 	{
 		return '{{%content}}';
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldsForElementsQuery()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return FieldModel[]
+	 * @inheritdoc
 	 */
-	public static function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
 	{
 		$contentService = Craft::$app->content;
 		$originalFieldContext = $contentService->fieldContext;
 		$contentService->fieldContext = 'global';
-
 		$fields = Craft::$app->fields->getAllFields();
-
 		$contentService->fieldContext = $originalFieldContext;
-
 		return $fields;
 	}
 
-	// Methods for customizing ElementCriteriaModel's for this element type...
+	// Methods for customizing element queries
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementInterface::getElementQueryStatusCondition()
-	 *
-	 * @param Query  $query
-	 * @param string $status
-	 *
-	 * @return false|string|void
+	 * @inheritdoc
 	 */
-	public static function getElementQueryStatusCondition(Query $query, $status)
-	{
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return false|null|void
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
+	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
 	{
 	}
 
 	// Element methods
-
-	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return ElementInterface|void
-	 */
-	public static function populateElementModel($row)
-	{
-	}
 
 	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
@@ -626,40 +677,6 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
-	}
-
-	/**
-	 * @inheritDoc Model::populateModel()
-	 *
-	 * @param mixed $values
-	 *
-	 * @return Model
-	 */
-	public static function populateModel($values)
-	{
-		// Strip out the element record attributes if this is getting called from a child class based on an Active
-		// Record result eager-loaded with the Element
-		if (isset($values['element']))
-		{
-			$elementAttributes = $values['element'];
-			unset($values['element']);
-		}
-
-		$model = parent::populateModel($values);
-
-		// Now set those Element attributes
-		if (isset($elementAttributes))
-		{
-			if (isset($elementAttributes['i18n']))
-			{
-				$model->setAttributes($elementAttributes['i18n']);
-				unset($elementAttributes['i18n']);
-			}
-
-			$model->setAttributes($elementAttributes);
-		}
-
-		return $model;
 	}
 
 	// Instance Methods
@@ -808,7 +825,7 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	public function getLocales()
 	{
-		if (Craft::$app->elements->getElementType($this->elementType)->isLocalized())
+		if (static::isLocalized())
 		{
 			return Craft::$app->getI18n()->getSiteLocaleIds();
 		}
@@ -956,7 +973,7 @@ abstract class Element extends Model implements ElementInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementCriteriaModel|null
+	 * @return ElementQueryInterface|null
 	 */
 	public function getNext($criteria = false)
 	{
@@ -975,7 +992,7 @@ abstract class Element extends Model implements ElementInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementCriteriaModel|null
+	 * @return ElementQueryInterface|null
 	 */
 	public function getPrev($criteria = false)
 	{
@@ -1020,24 +1037,20 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	public function getParent()
 	{
-		if (!isset($this->_parent))
+		if ($this->_parent === null)
 		{
-			$parent = $this->getAncestors(1)->status(null)->localeEnabled(null)->first();
+			$this->_parent = $this->getAncestors(1)
+				->status(null)
+				->localeEnabled(null)
+				->one();
 
-			if ($parent)
-			{
-				$this->_parent = $parent;
-			}
-			else
+			if ($this->_parent === null)
 			{
 				$this->_parent = false;
 			}
 		}
 
-		if ($this->_parent !== false)
-		{
-			return $this->_parent;
-		}
+		return $this->_parent ?: null;
 	}
 
 	/**
@@ -1066,25 +1079,14 @@ abstract class Element extends Model implements ElementInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getAncestors($dist = null)
 	{
-		if (!isset($this->_ancestorsCriteria))
-		{
-			$this->_ancestorsCriteria = Craft::$app->elements->getCriteria($this->elementType);
-			$this->_ancestorsCriteria->ancestorOf = $this;
-			$this->_ancestorsCriteria->locale     = $this->locale;
-		}
-
-		if ($dist)
-		{
-			return $this->_ancestorsCriteria->ancestorDist($dist);
-		}
-		else
-		{
-			return $this->_ancestorsCriteria;
-		}
+		return static::find()
+			->ancestorOf($this)
+			->locale($this->locale)
+			->ancestorDist($dist);
 	}
 
 	/**
@@ -1092,57 +1094,36 @@ abstract class Element extends Model implements ElementInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getDescendants($dist = null)
 	{
-		if (!isset($this->_descendantsCriteria))
-		{
-			$this->_descendantsCriteria = Craft::$app->elements->getCriteria($this->elementType);
-			$this->_descendantsCriteria->descendantOf = $this;
-			$this->_descendantsCriteria->locale       = $this->locale;
-		}
-
-		if ($dist)
-		{
-			return $this->_descendantsCriteria->descendantDist($dist);
-		}
-		else
-		{
-			return $this->_descendantsCriteria;
-		}
+		return static::find()
+			->descendantOf($this)
+			->locale($this->locale)
+			->descendantDist($dist);
 	}
 
 	/**
 	 * Returns the element’s children.
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getChildren()
 	{
-		if (!isset($this->_childrenCriteria))
-		{
-			$this->_childrenCriteria = $this->getDescendants(1);
-		}
-
-		return $this->_childrenCriteria;
+		return $this->getDescendants(1);
 	}
 
 	/**
 	 * Returns all of the element’s siblings.
 	 *
-	 * @return ElementCriteriaModel
+	 * @return ElementQueryInterface
 	 */
 	public function getSiblings()
 	{
-		if (!isset($this->_siblingsCriteria))
-		{
-			$this->_siblingsCriteria = Craft::$app->elements->getCriteria($this->elementType);
-			$this->_siblingsCriteria->siblingOf = $this;
-			$this->_siblingsCriteria->locale    = $this->locale;
-		}
-
-		return $this->_siblingsCriteria;
+		return static::find()
+			->siblingOf($this)
+			->locale($this->locale);
 	}
 
 	/**
@@ -1152,17 +1133,22 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	public function getPrevSibling()
 	{
-		if (!isset($this->_prevSibling))
+		if ($this->_prevSibling === null)
 		{
-			$criteria = Craft::$app->elements->getCriteria($this->elementType);
-			$criteria->prevSiblingOf = $this;
-			$criteria->locale        = $this->locale;
-			$criteria->status        = null;
-			$criteria->localeEnabled = null;
-			$this->_prevSibling = $criteria->first();
+			$this->_prevSibling = static::find()
+				->prevSiblingOf($this)
+				->locale($this->locale)
+				->status(null)
+				->localeEnabled(false)
+				->one();
+
+			if ($this->_prevSibling === null)
+			{
+				$this->_prevSibling = false;
+			}
 		}
 
-		return $this->_prevSibling;
+		return $this->_prevSibling ?: null;
 	}
 
 	/**
@@ -1172,17 +1158,22 @@ abstract class Element extends Model implements ElementInterface
 	 */
 	public function getNextSibling()
 	{
-		if (!isset($this->_nextSibling))
+		if ($this->_nextSibling === null)
 		{
-			$criteria = Craft::$app->elements->getCriteria($this->elementType);
-			$criteria->nextSiblingOf = $this;
-			$criteria->locale        = $this->locale;
-			$criteria->status        = null;
-			$criteria->localeEnabled = null;
-			$this->_nextSibling = $criteria->first();
+			$this->_nextSibling = static::find()
+				->nextSiblingOf($this)
+				->locale($this->locale)
+				->status(null)
+				->localeEnabled(false)
+				->one();
+
+			if ($this->_nextSibling === null)
+			{
+				$this->_nextSibling = false;
+			}
 		}
 
-		return $this->_nextSibling;
+		return $this->_nextSibling ?: null;
 	}
 
 	/**
@@ -1342,19 +1333,6 @@ abstract class Element extends Model implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc Model::getAttribute()
-	 *
-	 * @param string $name
-	 * @param bool   $flattenValue
-	 *
-	 * @return mixed
-	 */
-	public function getAttribute($name, $flattenValue = false)
-	{
-		return parent::getAttribute($name, $flattenValue);
-	}
-
-	/**
 	 * Returns the content for the element.
 	 *
 	 * @return Content
@@ -1390,7 +1368,7 @@ abstract class Element extends Model implements ElementInterface
 				$this->_content = Craft::$app->content->createContent($this);
 			}
 
-			$this->_content->setAttributes($content);
+			$this->_content->setAttributes($content, false);
 		}
 		else if ($content instanceof Content)
 		{
@@ -1586,6 +1564,26 @@ abstract class Element extends Model implements ElementInterface
 	// =========================================================================
 
 	/**
+	 * Finds Element instance(s) by the given condition.
+	 *
+	 * This method is internally called by [[findOne()]] and [[findAll()]].
+	 *
+	 * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
+	 * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
+	 * @return static|static[]
+	 */
+	protected static function findByCondition($criteria, $one)
+	{
+		if ($criteria !== null && !ArrayHelper::isAssociative($criteria))
+		{
+			$criteria = ['id' => $criteria];
+		}
+
+		$query = static::find()->configure($criteria);
+		return $one ? $query->one() : $query->all();
+	}
+
+	/**
 	 * Returns the field with a given handle.
 	 *
 	 * @param string $handle
@@ -1642,7 +1640,7 @@ abstract class Element extends Model implements ElementInterface
 	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
-	 * @param mixed $criteria
+	 * @param ElementQueryInterface|array|null $criteria
 	 * @param int   $dir
 	 *
 	 * @return ElementInterface|null
@@ -1651,23 +1649,26 @@ abstract class Element extends Model implements ElementInterface
 	{
 		if ($this->id)
 		{
-			if (!$criteria instanceof ElementCriteriaModel)
+			if ($criteria instanceof ElementQueryInterface)
 			{
-				$criteria = Craft::$app->elements->getCriteria($this->elementType, $criteria);
+				$query = $criteria;
+			}
+			else
+			{
+				$query = static::find()
+					->locale($this->locale)
+					->configure($criteria);
 			}
 
-			$elementIds = $criteria->ids();
+			$elementIds = $query->ids();
 			$key = array_search($this->id, $elementIds);
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
 			{
-				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel so that our 'id'
-				// modification doesn't stick
-				$criteria = Craft::$app->elements->getCriteria($this->elementType, $criteria);
-
-				$criteria->id = $elementIds[$key+$dir];
-
-				return $criteria->first();
+				return static::find()
+					->id($elementIds[$key+$dir])
+					->locale($query->locale)
+					->one();
 			}
 		}
 	}

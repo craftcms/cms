@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\GlobalSetEvent;
 use craft\app\elements\GlobalSet;
@@ -120,8 +119,7 @@ class Globals extends Component
 	{
 		if (!isset($this->_allGlobalSets))
 		{
-			$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
-			$this->_allGlobalSets = $criteria->find();
+			$this->_allGlobalSets = GlobalSet::findAll();
 
 			// Index them by ID
 			foreach ($this->_allGlobalSets as $globalSet)
@@ -227,7 +225,10 @@ class Globals extends Component
 		}
 		else
 		{
-			return Craft::$app->elements->getElementById($globalSetId, ElementType::GlobalSet, $localeId);
+			return GlobalSet::find()
+				->id($globalSetId)
+				->locale($localeId)
+				->one();
 		}
 	}
 
@@ -260,10 +261,10 @@ class Globals extends Component
 		}
 		else
 		{
-			$criteria = Craft::$app->elements->getCriteria(ElementType::GlobalSet);
-			$criteria->locale = $localeId;
-			$criteria->handle = $globalSetHandle;
-			return $criteria->first();
+			return GlobalSet::find()
+				->locale($localeId)
+				->handle($globalSetHandle)
+				->one();
 		}
 	}
 

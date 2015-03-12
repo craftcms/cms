@@ -10,9 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
-use craft\app\db\Query;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\DbHelper;
+use craft\app\elements\db\AssetQuery;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
@@ -21,7 +19,6 @@ use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetFolder;
 use craft\app\models\AssetSource;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 use craft\app\models\FieldLayout;
 use Exception;
 use yii\base\ErrorHandler;
@@ -125,6 +122,16 @@ class Asset extends Element
 	public static function isLocalized()
 	{
 		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return AssetQuery The newly created [[AssetQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new AssetQuery(get_called_class());
 	}
 
 	/**
@@ -338,94 +345,6 @@ class Asset extends Element
 			{
 				return parent::getTableAttributeHtml($element, $attribute);
 			}
-		}
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
-	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [
-			'sourceId' => AttributeType::Number,
-			'source'   => AttributeType::Handle,
-			'folderId' => AttributeType::Number,
-			'filename' => AttributeType::String,
-			'kind'     => AttributeType::Mixed,
-			'width'    => AttributeType::Number,
-			'height'   => AttributeType::Number,
-			'size'     => AttributeType::Number,
-			'order'    => [AttributeType::String, 'default' => 'title asc'],
-		];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::modifyElementsQuery()
-	 *
-	 * @param Query                $query
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return mixed
-	 */
-	public static function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
-	{
-		$query
-			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
-			->innerJoin('{{%assetfiles}} assetfiles', 'assetfiles.id = elements.id');
-
-		if (!empty($criteria->source))
-		{
-			$query->innerJoin('{{%assetsources}} assetsources', 'assetfiles.sourceId = assetsources.id');
-		}
-
-		if ($criteria->sourceId)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.sourceId', $criteria->sourceId, $query->params));
-		}
-
-		if ($criteria->source)
-		{
-			$query->andWhere(DbHelper::parseParam('assetsources.handle', $criteria->source, $query->params));
-		}
-
-		if ($criteria->folderId)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.folderId', $criteria->folderId, $query->params));
-		}
-
-		if ($criteria->filename)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.filename', $criteria->filename, $query->params));
-		}
-
-		if ($criteria->kind)
-		{
-			if (is_array($criteria->kind))
-			{
-				$query->andWhere(DbHelper::parseParam('assetfiles.kind', array_merge(['or'], $criteria->kind), $query->params));
-			}
-			else
-			{
-				$query->andWhere(DbHelper::parseParam('assetfiles.kind', $criteria->kind, $query->params));
-			}
-
-		}
-
-		if ($criteria->width)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.width', $criteria->width, $query->params));
-		}
-
-		if ($criteria->height)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.height', $criteria->height, $query->params));
-		}
-
-		if ($criteria->size)
-		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.size', $criteria->size, $query->params));
 		}
 	}
 

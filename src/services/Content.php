@@ -201,7 +201,6 @@ class Content extends Component
 	 */
 	public function validateContent(ElementInterface $element)
 	{
-		$elementType = Craft::$app->elements->getElementType($element->getElementType());
 		$fieldLayout = $element->getFieldLayout();
 		$content     = $element->getContent();
 
@@ -209,7 +208,7 @@ class Content extends Component
 		$attributesToValidate = ['id', 'elementId', 'locale'];
 		$requiredFields = [];
 
-		if ($elementType->hasTitles())
+		if ($element::hasTitles())
 		{
 			$requiredFields[] = 'title';
 			$attributesToValidate[] = 'title';

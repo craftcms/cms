@@ -8,6 +8,7 @@
 namespace craft\app\fieldtypes;
 
 use Craft;
+use craft\app\elements\Category;
 
 /**
  * Categories fieldtype.
@@ -19,13 +20,6 @@ class Categories extends BaseElementFieldType
 {
 	// Properties
 	// =========================================================================
-
-	/**
-	 * The element type this field deals with.
-	 *
-	 * @var string $elementType
-	 */
-	protected $elementType = 'Category';
 
 	/**
 	 * Whether to allow multiple source selection in the settings.
@@ -59,6 +53,31 @@ class Categories extends BaseElementFieldType
 	// =========================================================================
 
 	/**
+	 * @inheritdoc
+	 */
+	public function getName()
+	{
+		return Craft::t('app', 'Categories');
+	}
+
+	/**
+	 * @inheritdoc
+	 * @return Category
+	 */
+	public function getElementClass()
+	{
+		return Category::className();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getAddButtonLabel()
+	{
+		return Craft::t('app', 'Add a category');
+	}
+
+	/**
 	 * @inheritDoc FieldTypeInterface::getInputHtml()
 	 *
 	 * @param string $name
@@ -73,7 +92,8 @@ class Categories extends BaseElementFieldType
 
 		if ($sourceKey)
 		{
-			$source = $this->getElementType()->getSource($sourceKey, 'field');
+			$class = $this->getElementClass();
+			$source = $class::getSourceByKey($sourceKey, 'field');
 		}
 
 		if (empty($source))

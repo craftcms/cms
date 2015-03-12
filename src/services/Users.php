@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
-use craft\app\enums\ElementType;
 use craft\app\enums\UserStatus;
 use craft\app\errors\Exception;
 use craft\app\events\DeleteUserEvent;
@@ -327,10 +326,10 @@ class Users extends Component
 	{
 		Craft::$app->requireEdition(Craft::Client, false);
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::User);
-		$criteria->client = true;
-		$criteria->status = null;
-		return $criteria->first();
+		return User::find()
+			->client(true)
+			->status(null)
+			->one();
 	}
 
 	/**

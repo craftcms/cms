@@ -9,9 +9,9 @@ namespace craft\app\elementactions;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\enums\AttributeType;
 use craft\app\events\SetStatusEvent;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Set Status Element Action
@@ -43,13 +43,9 @@ class SetStatus extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
 		$status = $this->getParams()->status;
 
@@ -63,7 +59,7 @@ class SetStatus extends BaseElementAction
 			$sqlNewStatus = '0';
 		}
 
-		$elementIds = $criteria->ids();
+		$elementIds = $query->ids();
 
 		// Update their statuses
 		Craft::$app->getDb()->createCommand()->update(
@@ -79,7 +75,7 @@ class SetStatus extends BaseElementAction
 				'elements_i18n',
 				['enabled' => $sqlNewStatus],
 				['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
-				[':locale' => $criteria->locale]
+				[':locale' => $query->locale]
 			)->execute();
 		}
 
@@ -88,9 +84,9 @@ class SetStatus extends BaseElementAction
 
 		// Fire an 'afterSetStatus' event
 		$this->trigger(static::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
-			'criteria'   => $criteria,
-			'elementIds' => $elementIds,
-			'status'     => $status,
+			'elementQuery' => $query,
+			'elementIds'   => $elementIds,
+			'status'       => $status,
 		]));
 
 		$this->setMessage(Craft::t('app', 'Statuses updated.'));

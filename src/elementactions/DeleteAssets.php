@@ -8,7 +8,7 @@
 namespace craft\app\elementactions;
 
 use Craft;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
+use craft\app\elements\db\ElementQueryInterface;
 
 /**
  * Delete Assets Element Action
@@ -52,15 +52,11 @@ class DeleteAssets extends BaseElementAction
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
-		Craft::$app->assets->deleteFiles($criteria->ids());
+		Craft::$app->assets->deleteFiles($query->ids());
 
 		$this->setMessage(Craft::t('app', 'Assets deleted.'));
 

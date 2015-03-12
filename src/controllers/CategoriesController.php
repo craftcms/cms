@@ -9,7 +9,6 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
@@ -17,7 +16,6 @@ use craft\app\helpers\UrlHelper;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
-use craft\app\variables\ElementType as ElementTypeVariable;
 use craft\app\web\Controller;
 
 /**
@@ -146,7 +144,7 @@ class CategoriesController extends Controller
 
 		// Group the field layout
 		$fieldLayout = Craft::$app->fields->assembleLayoutFromPost();
-		$fieldLayout->type = ElementType::Category;
+		$fieldLayout->type = Category::className();
 		$group->setFieldLayout($fieldLayout);
 
 		// Save it
@@ -238,7 +236,7 @@ class CategoriesController extends Controller
 
 		if ($variables['group']->maxLevels != 1)
 		{
-			$variables['elementType'] = new ElementTypeVariable(Craft::$app->elements->getElementType(ElementType::Category));
+			$variables['elementClass'] = Category::className();
 
 			// Define the parent options criteria
 			$variables['parentOptionCriteria'] = [
@@ -256,20 +254,14 @@ class CategoriesController extends Controller
 			if ($variables['category']->id)
 			{
 				// Prevent the current category, or any of its descendants, from being options
-				$idParam = ['and', 'not '.$variables['category']->id];
+				$excludeIds = Category::find()
+					->descendantOf($variables['category'])
+					->status(null)
+					->localeEnabled(false)
+					->ids();
 
-				$descendantCriteria = Craft::$app->elements->getCriteria(ElementType::Category);
-				$descendantCriteria->descendantOf = $variables['category'];
-				$descendantCriteria->status = null;
-				$descendantCriteria->localeEnabled = null;
-				$descendantIds = $descendantCriteria->ids();
-
-				foreach ($descendantIds as $id)
-				{
-					$idParam[] = 'not '.$id;
-				}
-
-				$variables['parentOptionCriteria']['id'] = $idParam;
+				$excludeIds[] = $variables['category']->id;
+				$variables['parentOptionCriteria']['where'] = ['not in', 'elements.id', $excludeIds];
 			}
 
 			// Get the initially selected parent

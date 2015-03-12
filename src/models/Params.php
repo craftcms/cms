@@ -41,6 +41,21 @@ class Params extends Model
 		parent::__construct();
 	}
 
+	public function __isset($name)
+	{
+		return true;
+	}
+
+	public function __get($name)
+	{
+		return '';
+	}
+
+	public function getAttribute($name)
+	{
+		return $this->$name;
+	}
+
 	// Protected Methods
 	// =========================================================================
 

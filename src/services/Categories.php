@@ -9,7 +9,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\enums\ElementType;
 use craft\app\errors\Exception;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
@@ -481,11 +480,11 @@ class Categories extends Component
 				if (!$isNewCategoryGroup)
 				{
 					// Get all of the category IDs in this group
-					$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
-					$criteria->groupId = $group->id;
-					$criteria->status = null;
-					$criteria->limit = null;
-					$categoryIds = $criteria->ids();
+					$categoryIds = Category::find()
+						->groupId($group->id)
+						->status(null)
+						->limit(null)
+						->ids();
 
 					// Should we be deleting
 					if ($categoryIds && $droppedLocaleIds)
@@ -515,11 +514,11 @@ class Categories extends Component
 								// URIs
 								foreach ($changedLocaleIds as $localeId)
 								{
-									$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
-									$criteria->id = $categoryId;
-									$criteria->locale = $localeId;
-									$criteria->status = null;
-									$category = $criteria->first();
+									$category = Category::find()
+										->id($categoryId)
+										->locale($localeId)
+										->status(null)
+										->one();
 
 									if ($category)
 									{
@@ -656,7 +655,10 @@ class Categories extends Component
 	 */
 	public function getCategoryById($categoryId, $localeId = null)
 	{
-		return Craft::$app->elements->getElementById($categoryId, ElementType::Category, $localeId);
+		return Category::find()
+			->id($categoryId)
+			->locale($localeId)
+			->one();
 	}
 
 	/**
@@ -873,12 +875,12 @@ class Categories extends Component
 			return false;
 		}
 
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
-		$criteria->id = $categoryId;
-		$criteria->limit = null;
-		$criteria->status = null;
-		$criteria->localeEnabled = false;
-		$categories = $criteria->find();
+		$categories = Category::find()
+			->id($categoryId)
+			->limit(null)
+			->status(null)
+			->localeEnabled(false)
+			->all();
 
 		if ($categories)
 		{
@@ -904,12 +906,12 @@ class Categories extends Component
 		if ($ids)
 		{
 			// Make sure that for each selected category, all of its parents are also selected.
-			$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
-			$criteria->id = $ids;
-			$criteria->status = null;
-			$criteria->localeEnabled = false;
-			$criteria->limit = null;
-			$categories = $criteria->find();
+			$categories = Category::find()
+				->id($ids)
+				->status(null)
+				->localeEnabled(false)
+				->limit(null)
+				->all();
 
 			$prevCategory = null;
 
@@ -995,14 +997,13 @@ class Categories extends Component
 		}
 
 		// Is the newParentId set to a different category ID than its previous parent?
-		$criteria = Craft::$app->elements->getCriteria(ElementType::Category);
-		$criteria->ancestorOf = $category;
-		$criteria->ancestorDist = 1;
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
-
-		$oldParent = $criteria->first();
-		$oldParentId = ($oldParent ? $oldParent->id : '');
+		$oldParentId = Category::find()
+		    ->ancestorOf($category)
+		    ->ancestorDist(1)
+		    ->status(null)
+		    ->localeEnabled(null)
+			->select('id')
+			->scalar();
 
 		if ($category->newParentId != $oldParentId)
 		{

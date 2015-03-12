@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 
 /**
  * The AssetSource model class.
@@ -67,7 +65,7 @@ class AssetSource extends BaseComponentModel
 	/**
 	 * @var The element type that asset sources' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::Asset;
+	private $_fieldLayoutElementClass = 'craft\app\elements\Asset';
 
 	/**
 	 * @var

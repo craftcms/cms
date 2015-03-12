@@ -586,7 +586,7 @@ trait ApplicationTrait
 
 		if ($attribute)
 		{
-			return $this->_info->getAttribute($attribute);
+			return $this->_info->$attribute;
 		}
 		else
 		{

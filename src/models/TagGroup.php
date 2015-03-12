@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\enums\ElementType;
 
 /**
  * TagGroup model.
@@ -52,7 +50,7 @@ class TagGroup extends Model
 	/**
 	 * @var The element type that tag groups' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementType = ElementType::Tag;
+	private $_fieldLayoutElementClass = 'craft\app\elements\Tag';
 
 	// Public Methods
 	// =========================================================================

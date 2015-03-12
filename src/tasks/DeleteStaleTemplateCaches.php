@@ -8,6 +8,7 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\db\Command;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
@@ -32,7 +33,7 @@ class DeleteStaleTemplateCaches extends BaseTask
 	/**
 	 * @var
 	 */
-	private $_elementType;
+	private $_elementClass;
 
 	/**
 	 * @var
@@ -77,9 +78,9 @@ class DeleteStaleTemplateCaches extends BaseTask
 		$elementId = $this->getSettings()->elementId;
 
 		// What type of element(s) are we dealing with?
-		$this->_elementType = Craft::$app->elements->getElementTypeById($elementId);
+		$this->_elementClass = Craft::$app->elements->getElementClassById($elementId);
 
-		if (!$this->_elementType)
+		if (!$this->_elementClass)
 		{
 			return 0;
 		}
@@ -139,19 +140,21 @@ class DeleteStaleTemplateCaches extends BaseTask
 
 		if (!in_array($row['cacheId'], $this->_deletedCacheIds))
 		{
-			$params = JsonHelper::decode($row['criteria']);
-			$criteria = Craft::$app->elements->getCriteria($row['type'], $params);
+			$criteria = JsonHelper::decode($row['criteria']);
+			/** @var ElementInterface $elementClass */
+			$elementClass = $row['type'];
+			$query = $elementClass::find()->configure($criteria);
 
 			// Chance overcorrecting a little for the sake of templates with pending elements,
 			// whose caches should be recreated (see http://craftcms.stackexchange.com/a/2611/9)
-			$criteria->status = null;
+			$query->status(null);
 
-			$criteriaElementIds = $criteria->ids();
+			$elementIds = $query->ids();
 			$cacheIdsToDelete = [];
 
 			foreach ($this->_elementIds as $elementId)
 			{
-				if (in_array($elementId, $criteriaElementIds))
+				if (in_array($elementId, $elementIds))
 				{
 					$cacheIdsToDelete[] = $row['cacheId'];
 					break;
@@ -196,13 +199,13 @@ class DeleteStaleTemplateCaches extends BaseTask
 		$query = (new Query())
 			->from('{{%templatecachecriteria}}');
 
-		if (is_array($this->_elementType))
+		if (is_array($this->_elementClass))
 		{
-			$query->where(['in', 'type', $this->_elementType]);
+			$query->where(['in', 'type', $this->_elementClass]);
 		}
 		else
 		{
-			$query->where('type = :type', [':type' => $this->_elementType]);
+			$query->where('type = :type', [':type' => $this->_elementClass]);
 		}
 
 		return $query;

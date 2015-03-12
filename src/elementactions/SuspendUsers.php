@@ -8,9 +8,10 @@
 namespace craft\app\elementactions;
 
 use Craft;
+use craft\app\elements\db\ElementQueryInterface;
+use craft\app\elements\User;
 use craft\app\enums\UserStatus;
 use craft\app\helpers\JsonHelper;
-use craft\app\models\ElementCriteria as ElementCriteriaModel;
 
 /**
  * Suspend Users Element Action
@@ -68,21 +69,19 @@ EOT;
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::performAction()
-	 *
-	 * @param ElementCriteriaModel $criteria
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function performAction(ElementCriteriaModel $criteria)
+	public function performAction(ElementQueryInterface $query)
 	{
 		// Get the users that aren't already suspended
-		$criteria->status = [
+		$query->status = [
 			UserStatus::Active,
 			UserStatus::Locked,
 			UserStatus::Pending,
 		];
-		$users = $criteria->find();
+
+		/** @var User[] $users */
+		$users = $query->all();
 
 		foreach ($users as $user)
 		{
