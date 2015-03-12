@@ -21,7 +21,6 @@ abstract class ComponentType extends BaseEnum
 	// =========================================================================
 
 	const AssetSource   = 'assetSource';
-	const Element       = 'element';
 	const ElementAction = 'elementAction';
 	const Field         = 'field';
 	const Task          = 'task';

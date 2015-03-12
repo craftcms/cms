@@ -47,7 +47,6 @@ return [
 		'class' => 'craft\app\services\Components',
 		'types' => [
 			'assetSource'   => ['subfolder' => 'assetsourcetypes', 'namespace' => '\craft\app\assetsourcetypes', 'instanceof' => '\craft\app\assetsourcetypes\BaseAssetSourceType',  'enableForPlugins' => false],
-			'element'       => ['subfolder' => 'elementtypes',     'namespace' => '\craft\app\elements',         'instanceof' => '\craft\app\elements\ElementTypeInterface',     'enableForPlugins' => true],
 			'elementAction' => ['subfolder' => 'elementactions',   'namespace' => '\craft\app\elementactions',   'instanceof' => '\craft\app\elementactions\ElementActionInterface', 'enableForPlugins' => true],
 			'field'         => ['subfolder' => 'fieldtypes',       'namespace' => '\craft\app\fieldtypes',       'instanceof' => '\craft\app\fieldtypes\FieldTypeInterface',         'enableForPlugins' => true],
 			'tool'          => ['subfolder' => 'tools',            'namespace' => '\craft\app\tools',            'instanceof' => '\craft\app\tools\ToolInterface',                   'enableForPlugins' => false],
