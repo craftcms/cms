@@ -137,18 +137,6 @@ class MatrixBlock extends Element
 		return $fields;
 	}
 
-	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return array
-	 */
-	public static function populateElementModel($row)
-	{
-		return MatrixBlock::populateModel($row);
-	}
-
 	// Instance Methods
 	// -------------------------------------------------------------------------
 

@@ -461,27 +461,6 @@ interface ElementInterface
 	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
 
 	/**
-	 * Populates an element based on a query result.
-	 *
-	 * This method is called by [[\craft\app\services\Elements::findElements()]] after it has finished fetching all of the
-	 * matching elements’ rows from the database.
-	 *
-	 * For each row of data returned by the query, it will call this method on the element type, and it is up to this
-	 * method to take that array of raw data from the database, and populate a new element with it.
-	 *
-	 * You should be able to accomplish this with a single line:
-	 *
-	 * ```php
-	 * return MyElementTypeModel::populateModel($row);
-	 * ```
-	 *
-	 * @param array $row The row of data in the database query result.
-	 *
-	 * @return ElementInterface The element, populated with the data in $row.
-	 */
-	public static function populateElementModel($row);
-
-	/**
 	 * Returns the HTML for an editor HUD for the given element.
 	 *
 	 * @param ElementInterface $element The element being edited.

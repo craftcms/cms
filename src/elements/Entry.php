@@ -512,18 +512,6 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return ElementInterface|Model|void
-	 */
-	public static function populateElementModel($row)
-	{
-		return Entry::populateModel($row);
-	}
-
-	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param ElementInterface $element

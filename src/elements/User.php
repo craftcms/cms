@@ -449,18 +449,6 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return array
-	 */
-	public static function populateElementModel($row)
-	{
-		return User::populateModel($row);
-	}
-
-	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param ElementInterface $element

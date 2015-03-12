@@ -349,18 +349,6 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return array
-	 */
-	public static function populateElementModel($row)
-	{
-		return Asset::populateModel($row);
-	}
-
-	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param ElementInterface $element

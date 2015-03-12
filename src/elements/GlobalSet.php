@@ -83,18 +83,6 @@ class GlobalSet extends Element
 		return new GlobalSetQuery(get_called_class());
 	}
 
-	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return array
-	 */
-	public static function populateElementModel($row)
-	{
-		return GlobalSet::populateModel($row);
-	}
-
 	// Instance Methods
 	// -------------------------------------------------------------------------
 

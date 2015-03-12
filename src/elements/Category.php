@@ -262,18 +262,6 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::populateElementModel()
-	 *
-	 * @param array $row
-	 *
-	 * @return array
-	 */
-	public static function populateElementModel($row)
-	{
-		return Category::populateModel($row);
-	}
-
-	/**
 	 * @inheritDoc ElementInterface::getEditorHtml()
 	 *
 	 * @param ElementInterface $element
