@@ -481,16 +481,6 @@ abstract class Element extends Component implements ElementInterface
 		}
 	}
 
-	/**
-	 * @inheritDoc ElementInterface::defineCriteriaAttributes()
-	 *
-	 * @return array
-	 */
-	public static function defineCriteriaAttributes()
-	{
-		return [];
-	}
-
 	// Methods for customizing the content table
 	// -----------------------------------------------------------------------------
 
