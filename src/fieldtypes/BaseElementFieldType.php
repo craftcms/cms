@@ -293,6 +293,8 @@ abstract class BaseElementFieldType extends BaseFieldType
 	 */
 	public function onBeforeSave()
 	{
+		$this->_makeExistingRelationsTranslatable = false;
+
 		if ($this->model->id && $this->model->translatable)
 		{
 			$existingField = craft()->fields->getFieldById($this->model->id);
@@ -313,12 +315,9 @@ abstract class BaseElementFieldType extends BaseFieldType
 	{
 		if ($this->_makeExistingRelationsTranslatable)
 		{
-			if (!craft()->tasks->areTasksPending('MakeRelationsTranslatable'))
-			{
-				craft()->tasks->createTask('MakeRelationsTranslatable', null, array(
-					'fieldId' => $this->model->id,
-				));
-			}
+			craft()->tasks->createTask('LocalizeRelations', null, array(
+				'fieldId' => $this->model->id,
+			));
 		}
 	}
 

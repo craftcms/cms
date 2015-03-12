@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * The MakeRelationsTranslatable Task.
+ * The LocalizeRelations Task.
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -11,7 +11,7 @@ namespace Craft;
  * @package   craft.app.tasks
  * @since     2.3
  */
-class MakeRelationsTranslatableTask extends BaseTask
+class LocalizeRelationsTask extends BaseTask
 {
 	// Properties
 	// =========================================================================
@@ -41,7 +41,7 @@ class MakeRelationsTranslatableTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Making field translatable');
+		return Craft::t('Creating localization relations');
 	}
 
 	/**
