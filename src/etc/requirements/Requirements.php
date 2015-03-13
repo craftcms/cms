@@ -503,7 +503,7 @@ class IconvRequirement extends Requirement
 		}
 		else
 		{
-			return RequirementResult::Failed;
+			return RequirementResult::Warning;
 		}
 	}
 }
