@@ -38,6 +38,10 @@ class UploadFailedException extends FileException
 				break;
 			}
 			case UPLOAD_ERR_NO_TMP_DIR:
+			{
+				$message = Craft::t('app', 'Could not write to the temporary upload folder.');
+				break;
+			}
 			case UPLOAD_ERR_CANT_WRITE:
 			{
 				$message = Craft::t('app', 'There was a problem with writing the file to the disk.');
