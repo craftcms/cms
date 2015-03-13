@@ -1,31 +1,27 @@
 <?php
-/**
- * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
- */
-
 namespace craft\app\services;
 
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
-use craft\app\assetsourcetypes\Temp;
 use craft\app\db\Query;
 use craft\app\enums\ComponentType;
-use craft\app\errors\Exception;
+use craft\app\errors\AssetSourceException;
+use craft\app\errors\ModelValidationException;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetSource as AssetSourceModel;
 use craft\app\records\AssetSource as AssetSourceRecord;
 use yii\base\Component;
 
 /**
- * Class AssetSources service.
+ * Class AssetSourcesService
  *
- * An instance of the AssetSources service is globally accessible in Craft via [[Application::assetSources `Craft::$app->assetSources`]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.services
+ * @since      1.0
+ * @deprecated This class will have several breaking changes in Craft 3.0.
  */
 class AssetSources extends Component
 {
@@ -76,7 +72,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			return [Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local')];
+			return array(Craft::$app->components->getComponentByTypeAndClass(ComponentType::AssetSource, 'Local'));
 		}
 	}
 
@@ -154,11 +150,11 @@ class AssetSources extends Component
 	{
 		if (!isset($this->_viewableSourceIds))
 		{
-			$this->_viewableSourceIds = [];
+			$this->_viewableSourceIds = array();
 
 			foreach ($this->getAllSourceIds() as $sourceId)
 			{
-				if (Craft::$app->getUser()->checkPermission('viewAssetSource:'.$sourceId))
+				if (Craft::$app->user->checkPermission('viewAssetSource:'.$sourceId))
 				{
 					$this->_viewableSourceIds[] = $sourceId;
 				}
@@ -179,11 +175,11 @@ class AssetSources extends Component
 	{
 		if (!isset($this->_viewableSources))
 		{
-			$this->_viewableSources = [];
+			$this->_viewableSources = array();
 
 			foreach ($this->getAllSources() as $source)
 			{
-				if (Craft::$app->getUser()->checkPermission('viewAssetSource:'.$source->id))
+				if (Craft::$app->user->checkPermission('viewAssetSource:'.$source->id))
 				{
 					$this->_viewableSources[] = $source;
 				}
@@ -196,7 +192,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			$sources = [];
+			$sources = array();
 
 			foreach ($this->_viewableSources as $source)
 			{
@@ -238,7 +234,7 @@ class AssetSources extends Component
 	{
 		if (!$this->_fetchedAllSources)
 		{
-			$this->_sourcesById = [];
+			$this->_sourcesById = array();
 
 			$results = $this->_createSourceQuery()->all();
 
@@ -261,7 +257,7 @@ class AssetSources extends Component
 		}
 		else
 		{
-			$sources = [];
+			$sources = array();
 
 			foreach ($this->_sourcesById as $source)
 			{
@@ -284,11 +280,12 @@ class AssetSources extends Component
 		// Temporary source?
 		if (is_null($sourceId))
 		{
+			// TODO TEMPORARY SOURCE
 			$source = new AssetSourceModel();
 			$source->id = $sourceId;
-			$source->name = Temp::sourceName;
-			$source->type = Temp::sourceType;
-			$source->settings = ['path' => Craft::$app->path->getAssetsTempSourcePath().'/', 'url' => UrlHelper::getResourceUrl('tempassets').'/'];
+			$source->name = TempAssetSourceType::sourceName;
+			$source->type = TempAssetSourceType::sourceType;
+			$source->settings = array('path' => Craft::$app->path->getAssetsTempSourcePath(), 'url' => UrlHelper::getResourceUrl('tempassets').'/');
 			return $source;
 		}
 		else
@@ -300,7 +297,7 @@ class AssetSources extends Component
 			)
 			{
 				$result = $this->_createSourceQuery()
-					->where('id = :id', [':id' => $sourceId])
+					->where('id = :id', array(':id' => $sourceId))
 					->one();
 
 				if ($result)
@@ -320,6 +317,8 @@ class AssetSources extends Component
 				return $this->_sourcesById[$sourceId];
 			}
 		}
+
+		return null;
 	}
 
 	/**
@@ -344,6 +343,7 @@ class AssetSources extends Component
 		$sourceRecord->name          = $source->name;
 		$sourceRecord->handle        = $source->handle;
 		$sourceRecord->type          = $source->type;
+		$sourceRecord->url           = $source->url;
 		$sourceRecord->fieldLayoutId = $source->fieldLayoutId;
 
 		$sourceType = $this->populateSourceType($source);
@@ -355,7 +355,6 @@ class AssetSources extends Component
 		$settingsValidate = $sourceType->getSettings()->validate();
 		$sourceErrors = $sourceType->getSourceErrors();
 
-
 		if ($recordValidates && $settingsValidate && empty($sourceErrors))
 		{
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
@@ -365,8 +364,9 @@ class AssetSources extends Component
 				{
 					// Set the sort order
 					$maxSortOrder = (new Query())
+						->select('max(sortOrder)')
 						->from('{{%assetsources}}')
-						->max('sortOrder');
+						->scalar();
 
 					$sourceRecord->sortOrder = $maxSortOrder + 1;
 				}
@@ -396,12 +396,12 @@ class AssetSources extends Component
 				else
 				{
 					// Update the top folder's name with the source's new name
-					$topFolder = Craft::$app->assets->findFolder(['sourceId' => $source->id, 'parentId' => ':empty:']);
+					$topFolder = Craft::$app->assets->findFolder(array('sourceId' => $source->id, 'parentId' => ':empty:'));
 
 					if ($topFolder->name != $source->name)
 					{
 						$topFolder->name = $source->name;
-						Craft::$app->assets->storeFolder($topFolder);
+						Craft::$app->assets->storeFolderRecord($topFolder);
 					}
 				}
 
@@ -430,7 +430,11 @@ class AssetSources extends Component
 			$source->addSettingErrors($sourceType->getSettings()->getErrors());
 			$source->addSettingErrors($sourceErrors);
 
-			return false;
+			$exception = new ModelValidationException(Craft::t('app', 'There were errors while svaing the Asset Source.'));
+
+			$exception->setModel($source);
+
+			throw $exception;
 		}
 	}
 
@@ -494,14 +498,14 @@ class AssetSources extends Component
 			// Grab the asset file ids so we can clean the elements table.
 			$assetFileIds = (new Query())
 				->select('id')
-				->from('{{%assetfiles}}')
-				->where(['sourceId' => $sourceId])
+				->from('{{%assets}}')
+				->where(array('sourceId' => $sourceId))
 				->column();
 
 			Craft::$app->elements->deleteElementById($assetFileIds);
 
 			// Nuke the asset source.
-			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%assetsources}}', ['id' => $sourceId])->execute();
+			$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%assetsources}}', array('id' => $sourceId));
 
 			if ($transaction !== null)
 			{
@@ -525,14 +529,14 @@ class AssetSources extends Component
 	// =========================================================================
 
 	/**
-	 * Returns a Query object prepped for retrieving sources.
+	 * Returns a DbCommand object prepped for retrieving sources.
 	 *
 	 * @return Query
 	 */
 	private function _createSourceQuery()
 	{
 		return (new Query())
-			->select('id, fieldLayoutId, name, handle, type, settings, sortOrder')
+			->select('id, fieldLayoutId, name, handle, type, url, settings, sortOrder')
 			->from('{{%assetsources}}')
 			->orderBy('sortOrder');
 	}
@@ -559,18 +563,18 @@ class AssetSources extends Component
 	 *
 	 * @param int $sourceId
 	 *
-	 * @throws Exception
+	 * @throws AssetSourceException
 	 * @return AssetSourceRecord
 	 */
 	private function _getSourceRecordById($sourceId = null)
 	{
 		if ($sourceId)
 		{
-			$sourceRecord = AssetSourceRecord::findOne($sourceId);
+			$sourceRecord = AssetSourceRecord::findOne(['id' => $sourceId]);
 
 			if (!$sourceRecord)
 			{
-				throw new Exception(Craft::t('app', 'No source exists with the ID “{id}”.', ['id' => $sourceId]));
+				throw new AssetSourceException(Craft::t('No source exists with the ID “{id}”.', array('id' => $sourceId)));
 			}
 		}
 		else

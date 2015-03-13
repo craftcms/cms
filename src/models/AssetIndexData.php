@@ -47,6 +47,7 @@ class AssetIndexData extends BaseComponentModel
 			'offset'	=> AttributeType::Number,
 			'uri'     	=> AttributeType::String,
 			'size' 		=> AttributeType::Number,
+			'timestamp' => AttributeType::DateTime,
 			'recordId'	=> AttributeType::Number
 		];
 	}

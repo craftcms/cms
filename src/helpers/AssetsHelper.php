@@ -9,7 +9,7 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\assetsourcetypes\BaseAssetSourceType;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\Asset as AssetModel;
 
 /**
  * Class AssetsHelper
@@ -46,13 +46,13 @@ class AssetsHelper
 	 * Generate a URL for a given Assets file in a Source Type.
 	 *
 	 * @param BaseAssetSourceType $sourceType
-	 * @param AssetFileModel      $file
+	 * @param AssetModel      $file
 	 *
 	 * @return string
 	 */
-	public static function generateUrl(BaseAssetSourceType $sourceType, AssetFileModel $file)
+	public static function generateUrl(BaseAssetSourceType $sourceType, AssetModel $file)
 	{
-		$baseUrl = $sourceType->getBaseUrl();
+		$baseUrl = $sourceType->getRootUrl();
 		$folderPath = $file->getFolder()->path;
 		$filename = $file->filename;
 		$appendix = static::getUrlAppendix($sourceType, $file);
@@ -64,11 +64,11 @@ class AssetsHelper
 	 * Get appendix for an URL based on it's Source caching settings.
 	 *
 	 * @param BaseAssetSourceType $source
-	 * @param AssetFileModel      $file
+	 * @param AssetModel      $file
 	 *
 	 * @return string
 	 */
-	public static function getUrlAppendix(BaseAssetSourceType $source, AssetFileModel $file)
+	public static function getUrlAppendix(BaseAssetSourceType $source, AssetModel $file)
 	{
 		$appendix = '';
 
@@ -89,7 +89,7 @@ class AssetsHelper
 	 *
 	 * @return mixed
 	 */
-	public static function cleanAssetName($name, $isFilename = true)
+	public static function prepareAssetName($name, $isFilename = true)
 	{
 		if ($isFilename)
 		{

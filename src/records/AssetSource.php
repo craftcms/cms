@@ -68,6 +68,7 @@ class AssetSource extends ActiveRecord
 			'name'                => [AttributeType::Name, 'required' => true],
 			'handle'              => [AttributeType::Handle, 'required' => true],
 			'type'                => [AttributeType::ClassName, 'required' => true],
+			'url'                 => [AttributeType::String, 'required' => true],
 			'settings'            => AttributeType::Mixed,
 			'sortOrder'           => AttributeType::SortOrder,
 			'fieldLayoutId'       => AttributeType::Number,

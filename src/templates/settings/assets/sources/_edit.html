@@ -68,6 +68,19 @@
 					{{ sourceType.getSettingsHtml()|raw }}
 				{% endnamespace %}
 			{% endif %}
+
+            {{ forms.textField({
+            label: "URL"|t,
+            instructions: "The URL to your files."|t,
+            id: 'url',
+            class: 'ltr source-url',
+            name: 'url',
+            value: (source is defined ? source.url : null),
+            errors: (source is defined ? source.getErrors('url') : null),
+            required: true,
+            placeholder: "http://example.com/path/to/folder/"|t
+            }) }}
+
 		</div>
 
 		<div id="assetsource-fieldlayout" class="hidden">

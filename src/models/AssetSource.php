@@ -29,7 +29,7 @@ class AssetSource extends BaseComponentModel
 	// =========================================================================
 
 	/**
-	 * @var The element type that asset sources' field layouts should be associated with.
+	 * @var string The element type that asset sources' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = ElementType::Asset;
 
@@ -91,6 +91,7 @@ class AssetSource extends BaseComponentModel
 		$attributes['name']            = AttributeType::String;
 		$attributes['handle']          = AttributeType::Handle;
 		$attributes['type']['default'] = 'Local';
+		$attributes['url']             = AttributeType::String;
 		$attributes['sortOrder']       = AttributeType::String;
 		$attributes['fieldLayoutId']   = AttributeType::Number;
 

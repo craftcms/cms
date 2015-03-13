@@ -235,8 +235,8 @@ $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
 if ($devMode)
 {
-	$config['bootstrap'][] = 'debug';
-	$config['modules']['debug'] = 'yii\debug\Module';
+	//$config['bootstrap'][] = 'debug';
+	//$config['modules']['debug'] = 'yii\debug\Module';
 }
 
 // Initialize the application

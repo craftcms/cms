@@ -1,6 +1,13 @@
 <?php
+namespace craft\app\assetsourcetypes;
+
+use Craft;
+use craft\app\enums\AttributeType;
+use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
+use \Aws\S3\S3Client as S3Client;
+
 /**
- * The Google Cloud source type class. Handles the implementation of the Google Cloud Storage service as an asset source type in
+ * The Amazon S3 source type class. Handles the implementation of the AWS S3 service as an asset source type in
  * Craft.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -10,18 +17,7 @@
  * @package    craft.app.assetsourcetypes
  * @since      1.0
  */
-
-namespace craft\app\assetsourcetypes;
-
-use Craft;
-use craft\app\enums\AttributeType;
-use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
-use \Aws\S3\S3Client as S3Client;
-
-Craft::$app->requireEdition(Craft::Pro);
-
-
-class GoogleCloud extends BaseAssetSourceType
+class AwsS3 extends BaseAssetSourceType
 {
 	// Properties
 	// =========================================================================
@@ -44,7 +40,7 @@ class GoogleCloud extends BaseAssetSourceType
 	 */
 	public function getName()
 	{
-		return Craft::t('app', 'Google Cloud Storage');
+		return Craft::t('app', 'Amazon S3');
 	}
 
 	/**
@@ -59,7 +55,7 @@ class GoogleCloud extends BaseAssetSourceType
 		//@TODO add expires settings
 		$settings->expires = array('amount' => '', 'period' => '');
 
-		return Craft::$app->templates->render('_components/assetsourcetypes/GoogleCloud/settings', array(
+		return Craft::$app->templates->render('_components/assetsourcetypes/S3/settings', array(
 			'settings' => $settings,
 			'periods' => array_merge(array('' => ''))
 		));
@@ -81,7 +77,7 @@ class GoogleCloud extends BaseAssetSourceType
 			throw new \InvalidArgumentException(Craft::t('app', 'You must specify secret key ID and the secret key to get the bucket list.'));
 		}
 
-		$client = static::getClient($keyId, $secret, array('base_url' => 'https://storage.googleapis.com'));
+		$client = static::getClient($keyId, $secret);
 		$objects = $client->listBuckets();
 		if (empty($objects['Buckets']))
 		{
@@ -93,9 +89,12 @@ class GoogleCloud extends BaseAssetSourceType
 
 		foreach ($buckets as $bucket)
 		{
+			$location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+
 			$bucketList[] = array(
 				'bucket'    => $bucket['Name'],
-				'urlPrefix' => 'http://storage.googleapis.com/'.$bucket['Name'].'/'
+				'urlPrefix' => 'http://'.$bucket['Name'].'.s3.amazonaws.com/',
+				'region'    => isset($location['Location']) ? $location['Location'] : ''
 			);
 		}
 
@@ -116,6 +115,7 @@ class GoogleCloud extends BaseAssetSourceType
 			'keyId'      => array(AttributeType::String, 'required' => true),
 			'secret'     => array(AttributeType::String, 'required' => true),
 			'bucket'     => array(AttributeType::String, 'required' => true),
+			'region'     => array(AttributeType::String),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
 			'expires'    => array(AttributeType::String, 'default' => ''),
 		);
@@ -128,13 +128,13 @@ class GoogleCloud extends BaseAssetSourceType
 	 */
 	protected function createAdapter()
 	{
-		$client = static::getClient($this->getSettings()->keyId, $this->getSettings()->secret, array('base_url' => 'https://storage.googleapis.com'));
+		$client = static::getClient($this->getSettings()->keyId, $this->getSettings()->secret, array('region' => $this->getSettings()->region));
 
 		return new AwsS3Adapter($client, $this->getSettings()->bucket, $this->getSettings()->subfolder);
 	}
 
 	/**
-	 * Get the Google Cloud client.
+	 * Get the AWS S3 client.
 	 *
 	 * @param $keyId
 	 * @param $secret

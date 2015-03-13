@@ -15,17 +15,14 @@ use craft\app\helpers\ImageHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
-use craft\app\models\AssetFile as AssetFileModel;
-use craft\app\models\AssetSource as AssetSourceModel;
-use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
- * The AssetFile model class.
+ * The Asset model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFile extends BaseElementModel
+class Asset extends BaseElementModel
 {
 	// Properties
 	// =========================================================================
@@ -109,7 +106,7 @@ class AssetFile extends BaseElementModel
 			if ($transform)
 			{
 				// Duplicate this model and set it to that transform
-				$model = new AssetFileModel();
+				$model = new Asset();
 
 				// Can't just use getAttributes() here because we'll get thrown into an infinite loop.
 				foreach ($this->attributeNames() as $attributeName)
@@ -156,7 +153,7 @@ class AssetFile extends BaseElementModel
 	/**
 	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
@@ -219,6 +216,8 @@ class AssetFile extends BaseElementModel
 			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 			return TemplateHelper::getRaw($img);
 		}
+
+		return null;
 	}
 
 	/**
@@ -230,7 +229,7 @@ class AssetFile extends BaseElementModel
 	}
 
 	/**
-	 * @return AssetSourceModel|null
+	 * @return AssetSource|null
 	 */
 	public function getSource()
 	{
@@ -242,11 +241,12 @@ class AssetFile extends BaseElementModel
 	 *
 	 * @param mixed $transform
 	 *
-	 * @return AssetFileModel
+	 * @return Asset
 	 */
 	public function setTransform($transform)
 	{
 		$this->_transform = Craft::$app->assetTransforms->normalizeTransform($transform);
+
 		return $this;
 	}
 
@@ -371,6 +371,37 @@ class AssetFile extends BaseElementModel
 		return $this->_getDimension('width', $transform);
 	}
 
+	/**
+	 * Get a file's uri path in the source.
+	 *
+	 * @return string
+	 */
+	public function getUri()
+	{
+		$folder = $this->getFolder();
+		return $folder->path . $this->filename;
+	}
+
+	/**
+	 * Return the path where the source for this Asset's transforms should be.
+	 *
+	 * @return string
+	 */
+	public function getImageTransformSourcePath()
+	{
+		$sourceType = Craft::$app->assetSources->getSourceTypeById($this->sourceId);
+
+		$base = rtrim($sourceType->getImageTransformSourceLocation(), '/');
+		if ($sourceType->isLocal())
+		{
+			return $base.'/'.$this->getUri();
+		}
+		else
+		{
+			return $base.'/'.$this->id.'.'.$this->getExtension();
+		}
+	}
+	
 	// Protected Methods
 	// =========================================================================
 
@@ -382,15 +413,17 @@ class AssetFile extends BaseElementModel
 	protected function defineAttributes()
 	{
 		return array_merge(parent::defineAttributes(), [
-			'sourceId'		=> AttributeType::Number,
-			'folderId'		=> AttributeType::Number,
-			'filename'		=> AttributeType::String,
-			'originalName'	=> AttributeType::String,
-			'kind'			=> AttributeType::String,
-			'width'			=> AttributeType::Number,
-			'height'		=> AttributeType::Number,
-			'size'			=> AttributeType::Number,
-			'dateModified'  => AttributeType::DateTime
+			'sourceId'        => AttributeType::Number,
+			'folderId'        => AttributeType::Number,
+			'filename'        => AttributeType::String,
+			'originalName'    => AttributeType::String,
+			'kind'            => AttributeType::String,
+			'width'           => AttributeType::Number,
+			'height'          => AttributeType::Number,
+			'size'            => AttributeType::Number,
+			'dateModified'    => AttributeType::DateTime,
+			'newFilePath'     => AttributeType::String,
+			'indexInProgress' => AttributeType::Bool,
 		]);
 	}
 

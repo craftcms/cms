@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\DbHelper;
-use craft\app\models\AssetFile as AssetFileModel;
+use craft\app\models\Asset as AssetModel;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\BaseElementModel;
 use craft\app\models\ElementCriteria as ElementCriteriaModel;
@@ -265,7 +265,7 @@ class Asset extends BaseElementType
 			{
 				if ($element->size)
 				{
-					return Craft::$app->getFormatter()->formatSize($element->size);
+					return Craft::$app->getFormatter()->asShortSize($element->size);
 				}
 				else
 				{
@@ -311,17 +311,17 @@ class Asset extends BaseElementType
 	public function modifyElementsQuery(Query $query, ElementCriteriaModel $criteria)
 	{
 		$query
-			->addSelect('assetfiles.sourceId, assetfiles.folderId, assetfiles.filename, assetfiles.kind, assetfiles.width, assetfiles.height, assetfiles.size, assetfiles.dateModified')
-			->innerJoin('{{%assetfiles}} assetfiles', 'assetfiles.id = elements.id');
+			->addSelect('assets.sourceId, assets.folderId, assets.filename, assets.kind, assets.width, assets.height, assets.size, assets.dateModified')
+			->innerJoin('{{%assets}} assets', 'assets.id = elements.id');
 
 		if (!empty($criteria->source))
 		{
-			$query->innerJoin('{{%assetsources}} assetsources', 'assetfiles.sourceId = assetsources.id');
+			$query->innerJoin('{{%assetsources}} assetsources', 'assets.sourceId = assetsources.id');
 		}
 
 		if ($criteria->sourceId)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.sourceId', $criteria->sourceId, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.sourceId', $criteria->sourceId, $query->params));
 		}
 
 		if ($criteria->source)
@@ -331,40 +331,40 @@ class Asset extends BaseElementType
 
 		if ($criteria->folderId)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.folderId', $criteria->folderId, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.folderId', $criteria->folderId, $query->params));
 		}
 
 		if ($criteria->filename)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.filename', $criteria->filename, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.filename', $criteria->filename, $query->params));
 		}
 
 		if ($criteria->kind)
 		{
 			if (is_array($criteria->kind))
 			{
-				$query->andWhere(DbHelper::parseParam('assetfiles.kind', array_merge(['or'], $criteria->kind), $query->params));
+				$query->andWhere(DbHelper::parseParam('assets.kind', array_merge(['or'], $criteria->kind), $query->params));
 			}
 			else
 			{
-				$query->andWhere(DbHelper::parseParam('assetfiles.kind', $criteria->kind, $query->params));
+				$query->andWhere(DbHelper::parseParam('assets.kind', $criteria->kind, $query->params));
 			}
 
 		}
 
 		if ($criteria->width)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.width', $criteria->width, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.width', $criteria->width, $query->params));
 		}
 
 		if ($criteria->height)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.height', $criteria->height, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.height', $criteria->height, $query->params));
 		}
 
 		if ($criteria->size)
 		{
-			$query->andWhere(DbHelper::parseParam('assetfiles.size', $criteria->size, $query->params));
+			$query->andWhere(DbHelper::parseParam('assets.size', $criteria->size, $query->params));
 		}
 	}
 
@@ -377,7 +377,7 @@ class Asset extends BaseElementType
 	 */
 	public function populateElementModel($row)
 	{
-		return AssetFileModel::populateModel($row);
+		return AssetModel::populateModel($row);
 	}
 
 	/**

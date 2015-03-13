@@ -7,19 +7,19 @@
 
 namespace craft\app\records;
 
-use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
+use craft\app\db\ActiveRecord;
 
 /**
- * Class AssetFile record.
+ * Class Asset record.
  *
  * @todo Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetFile extends ActiveRecord
+class Asset extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
@@ -31,7 +31,7 @@ class AssetFile extends ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%assetfiles}}';
+		return '{{%assets}}';
 	}
 
 	/**

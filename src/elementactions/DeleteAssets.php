@@ -60,7 +60,8 @@ class DeleteAssets extends BaseElementAction
 	 */
 	public function performAction(ElementCriteriaModel $criteria)
 	{
-		Craft::$app->assets->deleteFiles($criteria->ids());
+		// TODO permission checks
+		Craft::$app->assets->deleteFilesByIds($criteria->ids());
 
 		$this->setMessage(Craft::t('app', 'Assets deleted.'));
 

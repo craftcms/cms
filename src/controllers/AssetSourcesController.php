@@ -8,10 +8,8 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\assetsourcetypes\GoogleCloud;
-use craft\app\assetsourcetypes\S3;
 use craft\app\enums\ElementType;
-use craft\app\errors\Exception;
+use craft\app\errors\ModelException;
 use craft\app\errors\HttpException;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
@@ -97,6 +95,10 @@ class AssetSourcesController extends Controller
 			$sourceTypes = Craft::$app->assetSources->getAllSourceTypes();
 			$sourceTypes = AssetSourceType::populateVariables($sourceTypes);
 		}
+		else
+		{
+			$sourceTypes = null;
+		}
 
 		$isNewSource = !$source->id;
 
@@ -154,6 +156,7 @@ class AssetSourcesController extends Controller
 
 		$source->name   = Craft::$app->getRequest()->getBodyParam('name');
 		$source->handle = Craft::$app->getRequest()->getBodyParam('handle');
+		$source->url    = Craft::$app->getRequest()->getBodyParam('url');
 
 		if (Craft::$app->getEdition() == Craft::Pro)
 		{
@@ -176,13 +179,13 @@ class AssetSourcesController extends Controller
 		$fieldLayout->type = ElementType::Asset;
 		$source->setFieldLayout($fieldLayout);
 
-		// Did it save?
-		if (Craft::$app->assetSources->saveSource($source))
+		try
 		{
+			Craft::$app->assetSources->saveSource($source);
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Source saved.'));
 			$this->redirectToPostedUrl();
 		}
-		else
+		catch (ModelException $exception)
 		{
 			Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save source.'));
 		}
@@ -227,101 +230,33 @@ class AssetSourcesController extends Controller
 	}
 
 	/**
-	 * Get Amazon S3 buckets.
+	 * Load Assets SourceType data.
+	 *
+	 * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
 	 *
 	 * @return null
 	 */
-	public function actionGetS3Buckets()
+	public function actionLoadSourceTypeData()
 	{
-		Craft::$app->requireEdition(Craft::Pro);
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
 
-		$keyId = Craft::$app->getRequest()->getRequiredBodyParam('keyId');
-		$secret = Craft::$app->getRequest()->getRequiredBodyParam('secret');
+		$sourceType = Craft::$app->getRequest()->getRequiredBodyParam('sourceType');
+		$dataType   = Craft::$app->getRequest()->getRequiredBodyParam('dataType');
+		$params     = Craft::$app->getRequest()->getBodyParam('params');
+
+		$sourceType = 'craft\app\assetsourcetypes\\'.$sourceType;
+
+		if (!class_exists($sourceType))
+		{
+			$this->returnErrorJson(Craft::t('app', 'The source type specified does not exist!'));
+		}
 
 		try
 		{
-			$this->returnJson(S3::getBucketList($keyId, $secret));
+			$this->returnJson(call_user_func(array($sourceType, "loadSourceTypeData"), $dataType, $params));
 		}
-		catch (Exception $exception)
-		{
-			$this->returnErrorJson($exception->getMessage());
-		}
-	}
-
-	/**
-	 * Get Rackspace regions.
-	 *
-	 * @return null
-	 */
-	public function actionGetRackspaceRegions()
-	{
-		Craft::$app->requireEdition(Craft::Pro);
-
-		$username = Craft::$app->getRequest()->getRequiredBodyParam('username');
-		$apiKey = Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
-
-		try
-		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
-			// to mock up a SourceType object here.
-			$model = new AssetSource(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey]]);
-
-			/** @var \craft\app\assetsourcetypes\Rackspace $source */
-			$source = Craft::$app->assetSources->populateSourceType($model);
-			$this->returnJson($source->getRegionList());
-		}
-		catch (Exception $exception)
-		{
-			$this->returnErrorJson($exception->getMessage());
-		}
-	}
-
-	/**
-	 * Get Rackspace containers.
-	 *
-	 * @return null
-	 */
-	public function actionGetRackspaceContainers()
-	{
-		Craft::$app->requireEdition(Craft::Pro);
-
-		$username = Craft::$app->getRequest()->getRequiredBodyParam('username');
-		$apiKey = Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
-		$region = Craft::$app->getRequest()->getRequiredBodyParam('region');
-
-		try
-		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
-			// to mock up a SourceType object here.
-			$model = new AssetSource(['type' => 'Rackspace', 'settings' => ['username' => $username, 'apiKey' => $apiKey, 'region' => $region]]);
-
-			/** @var \craft\app\assetsourcetypes\Rackspace $source */
-			$source = Craft::$app->assetSources->populateSourceType($model);
-			$this->returnJson($source->getContainerList());
-		}
-		catch (Exception $exception)
-		{
-			$this->returnErrorJson($exception->getMessage());
-		}
-	}
-
-	/**
-	 * Get Google Cloud Storage buckets.
-	 *
-	 * @return null
-	 */
-	public function actionGetGoogleCloudBuckets()
-	{
-		Craft::$app->requireEdition(Craft::Pro);
-
-		$keyId = Craft::$app->getRequest()->getRequiredBodyParam('keyId');
-		$secret = Craft::$app->getRequest()->getRequiredBodyParam('secret');
-
-		try
-		{
-			$this->returnJson(GoogleCloud::getBucketList($keyId, $secret));
-		}
-		catch (Exception $exception)
+		catch (\Exception $exception)
 		{
 			$this->returnErrorJson($exception->getMessage());
 		}

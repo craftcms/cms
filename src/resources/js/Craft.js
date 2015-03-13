@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-02-24 */
+/*! Craft 3.0.0 - 2015-03-11 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -5280,7 +5280,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.progressBar = new Craft.ProgressBar(this.$main, true);
 
 		var options = {
-			url: Craft.getActionUrl('assets/uploadFile'),
+			url: Craft.getActionUrl('assets/saveAsset'),
 			fileInput: this.$uploadInput,
 			dropZone: this.$main
 		};
@@ -5444,7 +5444,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				userResponse: parameterArray[parameterIndex].choice
 			};
 
-			Craft.postActionRequest('assets/uploadFile', postData, $.proxy(function(data, textStatus)
+			Craft.postActionRequest('assets/saveAsset', postData, $.proxy(function(data, textStatus)
 			{
 				if (textStatus == 'success' && data.fileId)
 				{

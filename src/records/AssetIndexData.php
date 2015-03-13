@@ -65,12 +65,13 @@ class AssetIndexData extends ActiveRecord
 	protected function defineAttributes()
 	{
 		return [
-			'sessionId' 	=> [ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''],
-			'sourceId' 		=> [AttributeType::Number, 'required' => true],
-			'offset'  		=> [AttributeType::Number, 'required' => true],
-			'uri'  			=> [ColumnType::Varchar, 'maxLength' => 255],
-			'size' 			=> [AttributeType::Number],
-			'recordId'		=> [AttributeType::Number],
+			'sessionId' => [ColumnType::Char, 'length' => 36, 'required' => true, 'default' => ''],
+			'sourceId' 	=> [AttributeType::Number, 'required' => true],
+			'offset'    => [AttributeType::Number, 'required' => true],
+			'uri'       => [ColumnType::Varchar, 'maxLength' => 255],
+			'size'      => [AttributeType::Number],
+			'timestamp' => [AttributeType::DateTime],
+			'recordId'	=> [AttributeType::Number],
 		];
 	}
 }

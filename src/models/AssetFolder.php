@@ -10,8 +10,6 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\Model;
 use craft\app\enums\AttributeType;
-use craft\app\models\AssetFolder as AssetFolderModel;
-use craft\app\models\AssetSource as AssetSourceModel;
 
 /**
  * The AssetFolder model class.
@@ -43,7 +41,7 @@ class AssetFolder extends Model
 	}
 
 	/**
-	 * @return AssetSourceModel|null
+	 * @return AssetSource|null
 	 */
 	public function getSource()
 	{
@@ -66,7 +64,7 @@ class AssetFolder extends Model
 	}
 
 	/**
-	 * @return AssetFolderModel|null
+	 * @return AssetFolder|null
 	 */
 	public function getParent()
 	{
@@ -81,11 +79,11 @@ class AssetFolder extends Model
 	/**
 	 * Add a child folder manually.
 	 *
-	 * @param AssetFolderModel $folder
+	 * @param AssetFolder $folder
 	 *
 	 * @return null
 	 */
-	public function addChild(AssetFolderModel $folder)
+	public function addChild(AssetFolder $folder)
 	{
 		if (is_null($this->_children))
 		{
