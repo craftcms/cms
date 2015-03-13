@@ -24,40 +24,7 @@ use craft\app\models\MatrixBlockType;
  */
 class MatrixBlock extends Element
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var integer Field ID
-	 */
-	public $fieldId;
-
-	/**
-	 * @var integer Owner ID
-	 */
-	public $ownerId;
-
-	/**
-	 * @var string Owner locale
-	 */
-	public $ownerLocale;
-
-	/**
-	 * @var integer Type ID
-	 */
-	public $typeId;
-
-	/**
-	 * @var integer Sort order
-	 */
-	public $sortOrder;
-
-	/**
-	 * @var boolean Collapsed
-	 */
-	public $collapsed = false;
-
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -69,9 +36,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -79,9 +44,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -144,8 +107,41 @@ class MatrixBlock extends Element
 		return $fields;
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer Field ID
+	 */
+	public $fieldId;
+
+	/**
+	 * @var integer Owner ID
+	 */
+	public $ownerId;
+
+	/**
+	 * @var string Owner locale
+	 */
+	public $ownerLocale;
+
+	/**
+	 * @var integer Type ID
+	 */
+	public $typeId;
+
+	/**
+	 * @var integer Sort order
+	 */
+	public $sortOrder;
+
+	/**
+	 * @var boolean Collapsed
+	 */
+	public $collapsed = false;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -164,9 +160,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc Element::getFieldLayout()
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
@@ -179,9 +173,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc Element::getLocales()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function getLocales()
 	{
@@ -269,9 +261,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc Element::getContentTable()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getContentTable()
 	{
@@ -279,9 +269,7 @@ class MatrixBlock extends Element
 	}
 
 	/**
-	 * @inheritDoc Element::getFieldColumnPrefix()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getFieldColumnPrefix()
 	{

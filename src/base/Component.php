@@ -11,7 +11,7 @@ use yii\base\Model;
 use yii\base\Object;
 
 /**
- * ComponentTrait implements the common methods and properties for Craft component classes.
+ * Component is the base class for classes representing Craft components in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

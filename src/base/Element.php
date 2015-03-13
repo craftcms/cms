@@ -44,71 +44,11 @@ abstract class Element extends Component implements ElementInterface
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
 
-	// Properties
+	// Static
 	// =========================================================================
 
 	/**
-	 * @var array
-	 */
-	private static $_sourcesByContext;
-
-	/**
-	 * @var
-	 */
-	private $_fieldsByHandle;
-
-	/**
-	 * @var
-	 */
-	private $_contentPostLocation;
-
-	/**
-	 * @var
-	 */
-	private $_rawPostContent;
-
-	/**
-	 * @var
-	 */
-	private $_content;
-
-	/**
-	 * @var
-	 */
-	private $_preppedContent;
-
-	/**
-	 * @var
-	 */
-	private $_nextElement;
-
-	/**
-	 * @var
-	 */
-	private $_prevElement;
-
-	/**
-	 * @var
-	 */
-	private $_parent;
-
-	/**
-	 * @var
-	 */
-	private $_prevSibling;
-
-	/**
-	 * @var
-	 */
-	private $_nextSibling;
-
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -116,9 +56,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasTitles()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasTitles()
 	{
@@ -126,9 +64,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -136,9 +72,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasStatuses()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasStatuses()
 	{
@@ -146,9 +80,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getStatuses()
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getStatuses()
 	{
@@ -186,11 +118,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param null $context
-	 *
-	 * @return array|bool|false
+	 * @inheritdoc
 	 */
 	public static function getSources($context = null)
 	{
@@ -198,12 +126,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSourceByKey()
-	 *
-	 * @param string $key
-	 * @param null   $context
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getSourceByKey($key, $context = null)
 	{
@@ -218,11 +141,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getAvailableActions()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getAvailableActions($source = null)
 	{
@@ -230,9 +149,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSearchableAttributes()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineSearchableAttributes()
 	{
@@ -243,17 +160,7 @@ abstract class Element extends Component implements ElementInterface
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @inheritDoc ElementInterface::getIndexHtml()
-	 *
-	 * @param ElementQueryInterface $criteria
-	 * @param array                 $disabledElementIds
-	 * @param array                 $viewState
-	 * @param null|string           $sourceKey
-	 * @param null|string           $context
-	 * @param bool                  $includeContainer
-	 * @param bool                  $showCheckboxes
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
@@ -333,9 +240,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSortableAttributes()
-	 *
-	 * @retrun array
+	 * @inheritdoc
 	 */
 	public static function defineSortableAttributes()
 	{
@@ -343,11 +248,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineTableAttributes($source = null)
 	{
@@ -355,12 +256,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getTableAttributeHtml()
-	 *
-	 * @param static $element
-	 * @param string $attribute
-	 *
-	 * @return mixed|string
+	 * @inheritdoc
 	 */
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
@@ -454,11 +350,7 @@ abstract class Element extends Component implements ElementInterface
 	// Element methods
 
 	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getEditorHtml(ElementInterface $element)
 	{
@@ -490,12 +382,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::saveElement()
-	 *
-	 * @param ElementInterface $element
-	 * @param array            $params
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function saveElement(ElementInterface $element, $params)
 	{
@@ -503,11 +390,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getElementRoute()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool|mixed
+	 * @inheritdoc
 	 */
 	public static function getElementRoute(ElementInterface $element)
 	{
@@ -515,19 +398,72 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
-	 *
-	 * @param ElementInterface $element
-	 * @param int              $structureId
-	 *
-	 * @return null|void
+	 * @inheritdoc
 	 */
 	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var array
+	 */
+	private static $_sourcesByContext;
+
+	/**
+	 * @var
+	 */
+	private $_fieldsByHandle;
+
+	/**
+	 * @var
+	 */
+	private $_contentPostLocation;
+
+	/**
+	 * @var
+	 */
+	private $_rawPostContent;
+
+	/**
+	 * @var
+	 */
+	private $_content;
+
+	/**
+	 * @var
+	 */
+	private $_preppedContent;
+
+	/**
+	 * @var
+	 */
+	private $_nextElement;
+
+	/**
+	 * @var
+	 */
+	private $_prevElement;
+
+	/**
+	 * @var
+	 */
+	private $_parent;
+
+	/**
+	 * @var
+	 */
+	private $_prevSibling;
+
+	/**
+	 * @var
+	 */
+	private $_nextSibling;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the string representation of the element.

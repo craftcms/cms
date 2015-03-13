@@ -33,65 +33,7 @@ use yii\base\UnknownPropertyException;
  */
 class Asset extends Element
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var integer Source ID
-	 */
-	public $sourceId;
-
-	/**
-	 * @var integer Folder ID
-	 */
-	public $folderId;
-
-	/**
-	 * @var string Filename
-	 */
-	public $filename;
-
-	/**
-	 * @var string Original name
-	 */
-	public $originalName;
-
-	/**
-	 * @var string Kind
-	 */
-	public $kind;
-
-	/**
-	 * @var integer Width
-	 */
-	public $width;
-
-	/**
-	 * @var integer Height
-	 */
-	public $height;
-
-	/**
-	 * @var integer Size
-	 */
-	public $size;
-
-	/**
-	 * @var \DateTime Date modified
-	 */
-	public $dateModified;
-
-	/**
-	 * @var
-	 */
-	private $_transform;
-
-	/**
-	 * @var string
-	 */
-	private $_transformSource = '';
-
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -103,9 +45,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -113,9 +53,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasTitles()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasTitles()
 	{
@@ -123,9 +61,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -143,11 +79,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param string|null $context
-	 *
-	 * @return array|false
+	 * @inheritdoc
 	 */
 	public static function getSources($context = null)
 	{
@@ -166,12 +98,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSourceByKey()
-	 *
-	 * @param string      $key
-	 * @param string|null $context
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getSourceByKey($key, $context = null)
 	{
@@ -189,11 +116,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getAvailableActions()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getAvailableActions($source = null)
 	{
@@ -260,9 +183,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSearchableAttributes()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineSearchableAttributes()
 	{
@@ -270,9 +191,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSortableAttributes()
-	 *
-	 * @retrun array
+	 * @inheritdoc
 	 */
 	public static function defineSortableAttributes()
 	{
@@ -290,11 +209,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineTableAttributes($source = null)
 	{
@@ -312,12 +227,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getTableAttributeHtml()
-	 *
-	 * @param ElementInterface $element
-	 * @param string           $attribute
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
@@ -357,11 +267,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getEditorHtml(ElementInterface $element)
 	{
@@ -396,12 +302,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::saveElement()
-	 *
-	 * @param ElementInterface $element
-	 * @param array            $params
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function saveElement(ElementInterface $element, $params)
 	{
@@ -450,8 +351,111 @@ class Asset extends Element
 		return $success;
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	/**
+	 * Transforms an asset folder tree into a source list.
+	 *
+	 * @param array $folders
+	 * @param bool  $includeNestedFolders
+	 *
+	 * @return array
+	 */
+	private static function _assembleSourceList($folders, $includeNestedFolders = true)
+	{
+		$sources = [];
+
+		foreach ($folders as $folder)
+		{
+			$sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Transforms an AssetFolderModel into a source info array.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param bool             $includeNestedFolders
+	 *
+	 * @return array
+	 */
+	private static function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
+	{
+		$source = [
+			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
+			'hasThumbs' => true,
+			'criteria'  => ['folderId' => $folder->id],
+			'data'      => ['upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
+		];
+
+		if ($includeNestedFolders)
+		{
+			$source['nested'] = static::_assembleSourceList($folder->getChildren(), true);
+		}
+
+		return $source;
+	}
+
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer Source ID
+	 */
+	public $sourceId;
+
+	/**
+	 * @var integer Folder ID
+	 */
+	public $folderId;
+
+	/**
+	 * @var string Filename
+	 */
+	public $filename;
+
+	/**
+	 * @var string Original name
+	 */
+	public $originalName;
+
+	/**
+	 * @var string Kind
+	 */
+	public $kind;
+
+	/**
+	 * @var integer Width
+	 */
+	public $width;
+
+	/**
+	 * @var integer Height
+	 */
+	public $height;
+
+	/**
+	 * @var integer Size
+	 */
+	public $size;
+
+	/**
+	 * @var \DateTime Date modified
+	 */
+	public $dateModified;
+
+	/**
+	 * @var
+	 */
+	private $_transform;
+
+	/**
+	 * @var string
+	 */
+	private $_transformSource = '';
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -563,9 +567,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldLayout()
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
@@ -607,9 +609,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isEditable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -677,11 +677,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getThumbUrl()
-	 *
-	 * @param int $size
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getThumbUrl($size = 125)
 	{
@@ -698,11 +694,7 @@ class Asset extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getIconUrl()
-	 *
-	 * @param int $size
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getIconUrl($size = 125)
 	{
@@ -805,51 +797,6 @@ class Asset extends Element
 
 	// Private Methods
 	// =========================================================================
-
-	/**
-	 * Transforms an asset folder tree into a source list.
-	 *
-	 * @param array $folders
-	 * @param bool  $includeNestedFolders
-	 *
-	 * @return array
-	 */
-	private static function _assembleSourceList($folders, $includeNestedFolders = true)
-	{
-		$sources = [];
-
-		foreach ($folders as $folder)
-		{
-			$sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
-		}
-
-		return $sources;
-	}
-
-	/**
-	 * Transforms an AssetFolderModel into a source info array.
-	 *
-	 * @param AssetFolderModel $folder
-	 * @param bool             $includeNestedFolders
-	 *
-	 * @return array
-	 */
-	private static function _assembleSourceInfoForFolder(AssetFolderModel $folder, $includeNestedFolders = true)
-	{
-		$source = [
-			'label'     => ($folder->parentId ? $folder->name : Craft::t('app', $folder->name)),
-			'hasThumbs' => true,
-			'criteria'  => ['folderId' => $folder->id],
-			'data'      => ['upload' => is_null($folder->sourceId) ? true : Craft::$app->assets->canUserPerformAction($folder->id, 'uploadToAssetSource')]
-		];
-
-		if ($includeNestedFolders)
-		{
-			$source['nested'] = static::_assembleSourceList($folder->getChildren(), true);
-		}
-
-		return $source;
-	}
 
 	/**
 	 * Return a dimension of the image.

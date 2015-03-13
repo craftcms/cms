@@ -10,7 +10,7 @@ namespace craft\app\base;
 use yii\base\Arrayable;
 
 /**
- * This interface defines the contract that all Craft components must implement.
+ * ComponentInterface defines the common interface to be implemented by Craft component classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -39,45 +39,7 @@ class Entry extends Element
 	const PENDING  = 'pending';
 	const EXPIRED  = 'expired';
 
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var integer Section ID
-	 */
-	public $sectionId;
-
-	/**
-	 * @var integer Type ID
-	 */
-	public $typeId;
-
-	/**
-	 * @var integer Author ID
-	 */
-	public $authorId;
-
-	/**
-	 * @var \DateTime Post date
-	 */
-	public $postDate;
-
-	/**
-	 * @var \DateTime Expiry date
-	 */
-	public $expiryDate;
-
-	/**
-	 * @var integer New parent ID
-	 */
-	public $newParentId;
-
-	/**
-	 * @var string Revision notes
-	 */
-	public $revisionNotes;
-
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -89,9 +51,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -99,9 +59,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasTitles()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasTitles()
 	{
@@ -109,9 +67,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -119,9 +75,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasStatuses()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasStatuses()
 	{
@@ -129,9 +83,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getStatuses()
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getStatuses()
 	{
@@ -154,11 +106,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param null $context
-	 *
-	 * @return array|bool|false
+	 * @inheritdoc
 	 */
 	public static function getSources($context = null)
 	{
@@ -240,11 +188,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getAvailableActions()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getAvailableActions($source = null)
 	{
@@ -396,9 +340,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSortableAttributes()
-	 *
-	 * @retrun array
+	 * @inheritdoc
 	 */
 	public static function defineSortableAttributes()
 	{
@@ -416,11 +358,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineTableAttributes($source = null)
 	{
@@ -447,12 +385,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getTableAttributeHtml()
-	 *
-	 * @param ElementInterface $element
-	 * @param string           $attribute
-	 *
-	 * @return mixed|null|string
+	 * @inheritdoc
 	 */
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
@@ -520,11 +453,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getEditorHtml(ElementInterface $element)
 	{
@@ -588,12 +517,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
-	 *
-	 * @param ElementInterface $element
-	 * @param int              $structureId
-	 *
-	 * @return null|void
+	 * @inheritdoc
 	 */
 	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
@@ -607,8 +531,46 @@ class Entry extends Element
 		}
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer Section ID
+	 */
+	public $sectionId;
+
+	/**
+	 * @var integer Type ID
+	 */
+	public $typeId;
+
+	/**
+	 * @var integer Author ID
+	 */
+	public $authorId;
+
+	/**
+	 * @var \DateTime Post date
+	 */
+	public $postDate;
+
+	/**
+	 * @var \DateTime Expiry date
+	 */
+	public $expiryDate;
+
+	/**
+	 * @var integer New parent ID
+	 */
+	public $newParentId;
+
+	/**
+	 * @var string Revision notes
+	 */
+	public $revisionNotes;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -628,9 +590,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldLayout()
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
@@ -643,9 +603,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getLocales()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function getLocales()
 	{
@@ -660,9 +618,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getUrlFormat()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getUrlFormat()
 	{
@@ -751,15 +707,13 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getStatus()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getStatus()
 	{
 		$status = parent::getStatus();
 
-		if ($status == static::ENABLED && $this->postDate)
+		if ($status == self::ENABLED && $this->postDate)
 		{
 			$currentTime = DateTimeHelper::currentTimeStamp();
 			$postDate    = $this->postDate->getTimestamp();
@@ -767,15 +721,15 @@ class Entry extends Element
 
 			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
 			{
-				return static::LIVE;
+				return self::LIVE;
 			}
 			else if ($postDate > $currentTime)
 			{
-				return static::PENDING;
+				return self::PENDING;
 			}
 			else
 			{
-				return static::EXPIRED;
+				return self::EXPIRED;
 			}
 		}
 
@@ -783,9 +737,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isEditable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -799,9 +751,7 @@ class Entry extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getCpEditUrl()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getCpEditUrl()
 	{

@@ -24,20 +24,7 @@ use craft\app\models\FieldLayout;
  */
 class Category extends Element
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var integer Group ID
-	 */
-	public $groupId;
-
-	/**
-	 * @var integer New parent ID
-	 */
-	public $newParentId;
-
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -49,9 +36,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -59,9 +44,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasTitles()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasTitles()
 	{
@@ -69,9 +52,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -79,9 +60,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasStatuses()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasStatuses()
 	{
@@ -99,11 +78,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param string|null $context
-	 *
-	 * @return array|false
+	 * @inheritdoc
 	 */
 	public static function getSources($context = null)
 	{
@@ -135,11 +110,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getAvailableActions()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public static function getAvailableActions($source = null)
 	{
@@ -209,9 +180,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineSortableAttributes()
-	 *
-	 * @retrun array
+	 * @inheritdoc
 	 */
 	public static function defineSortableAttributes()
 	{
@@ -227,11 +196,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineTableAttributes($source = null)
 	{
@@ -247,12 +212,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getTableAttributeHtml()
-	 *
-	 * @param ElementInterface $element
-	 * @param string           $attribute
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
 	{
@@ -269,11 +229,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getEditorHtml(ElementInterface $element)
 	{
@@ -310,12 +266,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::saveElement()
-	 *
-	 * @param ElementInterface $element
-	 * @param array            $params
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function saveElement(ElementInterface $element, $params)
 	{
@@ -329,12 +280,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getElementRoute()
-	 *
-	 * @param ElementInterface
-	 *
-	 * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
+	 * @inheritdoc
 	 */
 	public static function getElementRoute(ElementInterface $element)
 	{
@@ -356,12 +302,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::onAfterMoveElementInStructure()
-	 *
-	 * @param ElementInterface $element
-	 * @param int              $structureId
-	 *
-	 * @return null
+	 * @inheritdoc
 	 */
 	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
 	{
@@ -410,8 +351,21 @@ class Category extends Element
 		}
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer Group ID
+	 */
+	public $groupId;
+
+	/**
+	 * @var integer New parent ID
+	 */
+	public $newParentId;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -427,9 +381,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldLayout()
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
@@ -442,9 +394,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getUrlFormat()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getUrlFormat()
 	{
@@ -469,9 +419,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isEditable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -479,9 +427,7 @@ class Category extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getCpEditUrl()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getCpEditUrl()
 	{

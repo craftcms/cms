@@ -26,6 +26,43 @@ class GlobalSet extends Element
 
 	use FieldLayoutTrait;
 
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'Global Set');
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function hasContent()
+	{
+		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function isLocalized()
+	{
+		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new GlobalSetQuery(get_called_class());
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -53,47 +90,6 @@ class GlobalSet extends Element
 	// =========================================================================
 
 	/**
-	 * @inheritdoc
-	 */
-	public static function classDisplayName()
-	{
-		return Craft::t('app', 'Global Set');
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
-	 */
-	public static function hasContent()
-	{
-		return true;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
-	 */
-	public static function isLocalized()
-	{
-		return true;
-	}
-
-	/**
-	 * @inheritdoc
-	 *
-	 * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
-	 */
-	public static function find()
-	{
-		return new GlobalSetQuery(get_called_class());
-	}
-
-	// Instance Methods
-	// -------------------------------------------------------------------------
-
-	/**
 	 * Use the global set's name as its string representation.
 	 *
 	 * @return string
@@ -118,9 +114,7 @@ class GlobalSet extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getCpEditUrl()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getCpEditUrl()
 	{

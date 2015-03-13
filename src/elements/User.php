@@ -34,6 +34,317 @@ use yii\web\IdentityInterface;
  */
 class User extends Element implements IdentityInterface
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function classDisplayName()
+	{
+		return Craft::t('app', 'User');
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function hasContent()
+	{
+		return true;
+	}
+
+	/**
+	 * Returns whether this element type can have statuses.
+	 *
+	 * @return bool
+	 */
+	public static function hasStatuses()
+	{
+		return true;
+	}
+
+	/**
+	 * Returns all of the possible statuses that elements of this type may have.
+	 *
+	 * @return array|null
+	 */
+	public static function getStatuses()
+	{
+		return [
+			UserStatus::Active    => Craft::t('app', 'Active'),
+			UserStatus::Pending   => Craft::t('app', 'Pending'),
+			UserStatus::Locked    => Craft::t('app', 'Locked'),
+			UserStatus::Suspended => Craft::t('app', 'Suspended'),
+			UserStatus::Archived  => Craft::t('app', 'Archived')
+		];
+	}
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @return UserQuery The newly created [[UserQuery]] instance.
+	 */
+	public static function find()
+	{
+		return new UserQuery(get_called_class());
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getSources($context = null)
+	{
+		$sources = [
+			'*' => [
+				'label' => Craft::t('app', 'All users'),
+				'hasThumbs' => true
+			]
+		];
+
+		if (Craft::$app->getEdition() == Craft::Pro)
+		{
+			foreach (Craft::$app->userGroups->getAllGroups() as $group)
+			{
+				$key = 'group:'.$group->id;
+
+				$sources[$key] = [
+					'label'     => Craft::t('app', $group->name),
+					'criteria'  => ['groupId' => $group->id],
+					'hasThumbs' => true
+				];
+			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getAvailableActions($source = null)
+	{
+		$actions = [];
+
+		// Edit
+		$editAction = Craft::$app->elements->getAction('Edit');
+		$editAction->setParams([
+			'label' => Craft::t('app', 'Edit user'),
+		]);
+		$actions[] = $editAction;
+
+		if (Craft::$app->getUser()->checkPermission('administrateUsers'))
+		{
+			// Suspend
+			$actions[] = 'SuspendUsers';
+
+			// Unsuspend
+			$actions[] = 'UnsuspendUsers';
+		}
+
+		if (Craft::$app->getUser()->checkPermission('deleteUsers'))
+		{
+			// Delete
+			$actions[] = 'DeleteUsers';
+		}
+
+		// Allow plugins to add additional actions
+		$allPluginActions = Craft::$app->plugins->call('addUserActions', [$source], true);
+
+		foreach ($allPluginActions as $pluginActions)
+		{
+			$actions = array_merge($actions, $pluginActions);
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function defineSearchableAttributes()
+	{
+		return ['username', 'firstName', 'lastName', 'fullName', 'email'];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function defineSortableAttributes()
+	{
+		if (Craft::$app->config->get('useEmailAsUsername'))
+		{
+			$attributes = [
+				'email'         => Craft::t('app', 'Email'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
+			];
+		}
+		else
+		{
+			$attributes = [
+				'username'      => Craft::t('app', 'Username'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'email'         => Craft::t('app', 'Email'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
+			];
+		}
+
+		// Allow plugins to modify the attributes
+		Craft::$app->plugins->call('modifyUserSortableAttributes', [&$attributes]);
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function defineTableAttributes($source = null)
+	{
+		if (Craft::$app->config->get('useEmailAsUsername'))
+		{
+			$attributes = [
+				'email'         => Craft::t('app', 'Email'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
+			];
+		}
+		else
+		{
+			$attributes = [
+				'username'      => Craft::t('app', 'Username'),
+				'firstName'     => Craft::t('app', 'First Name'),
+				'lastName'      => Craft::t('app', 'Last Name'),
+				'email'         => Craft::t('app', 'Email'),
+				'dateCreated'   => Craft::t('app', 'Join Date'),
+				'lastLoginDate' => Craft::t('app', 'Last Login'),
+			];
+		}
+
+		// Allow plugins to modify the attributes
+		Craft::$app->plugins->call('modifyUserTableAttributes', [&$attributes, $source]);
+
+		return $attributes;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
+	{
+		/** @var User $element */
+		// First give plugins a chance to set this
+		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
+
+		if ($pluginAttributeHtml !== null)
+		{
+			return $pluginAttributeHtml;
+		}
+
+		switch ($attribute)
+		{
+			case 'email':
+			{
+				$email = $element->email;
+
+				if ($email)
+				{
+					return '<a href="mailto:'.$email.'">'.$email.'</a>';
+				}
+				else
+				{
+					return '';
+				}
+			}
+
+			default:
+			{
+				return parent::getTableAttributeHtml($element, $attribute);
+			}
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
+	{
+		switch ($status)
+		{
+			case UserStatus::Active:
+			{
+				return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
+			}
+
+			case UserStatus::Pending:
+			{
+				return 'users.pending = 1';
+			}
+
+			case UserStatus::Locked:
+			{
+				return 'users.locked = 1';
+			}
+
+			case UserStatus::Suspended:
+			{
+				return 'users.suspended = 1';
+			}
+
+			case UserStatus::Archived:
+			{
+				return 'users.archived = 1';
+			}
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function getEditorHtml(ElementInterface $element)
+	{
+		/** @var User $element */
+		$html = Craft::$app->templates->render('users/_accountfields', [
+			'account'      => $element,
+			'isNewAccount' => false,
+		]);
+
+		$html .= parent::getEditorHtml($element);
+
+		return $html;
+	}
+
+	/**
+	 * @inheritdoc Element::saveElement()
+	 *
+	 * @return bool
+	 */
+	public static function saveElement(ElementInterface $element, $params)
+	{
+		/** @var User $element */
+		if (isset($params['username']))
+		{
+			$element->username = $params['username'];
+		}
+
+		if (isset($params['firstName']))
+		{
+			$element->firstName = $params['firstName'];
+		}
+
+		if (isset($params['lastName']))
+		{
+			$element->lastName = $params['lastName'];
+		}
+
+		return Craft::$app->users->saveUser($element);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -168,344 +479,6 @@ class User extends Element implements IdentityInterface
 	// =========================================================================
 
 	/**
-	 * @inheritdoc
-	 */
-	public static function classDisplayName()
-	{
-		return Craft::t('app', 'User');
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
-	 */
-	public static function hasContent()
-	{
-		return true;
-	}
-
-	/**
-	 * Returns whether this element type can have statuses.
-	 *
-	 * @return bool
-	 */
-	public static function hasStatuses()
-	{
-		return true;
-	}
-
-	/**
-	 * Returns all of the possible statuses that elements of this type may have.
-	 *
-	 * @return array|null
-	 */
-	public static function getStatuses()
-	{
-		return [
-			UserStatus::Active    => Craft::t('app', 'Active'),
-			UserStatus::Pending   => Craft::t('app', 'Pending'),
-			UserStatus::Locked    => Craft::t('app', 'Locked'),
-			UserStatus::Suspended => Craft::t('app', 'Suspended'),
-			UserStatus::Archived  => Craft::t('app', 'Archived')
-		];
-	}
-
-	/**
-	 * @inheritdoc
-	 *
-	 * @return UserQuery The newly created [[UserQuery]] instance.
-	 */
-	public static function find()
-	{
-		return new UserQuery(get_called_class());
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param string|null $context
-	 *
-	 * @return array|false
-	 */
-	public static function getSources($context = null)
-	{
-		$sources = [
-			'*' => [
-				'label' => Craft::t('app', 'All users'),
-				'hasThumbs' => true
-			]
-		];
-
-		if (Craft::$app->getEdition() == Craft::Pro)
-		{
-			foreach (Craft::$app->userGroups->getAllGroups() as $group)
-			{
-				$key = 'group:'.$group->id;
-
-				$sources[$key] = [
-					'label'     => Craft::t('app', $group->name),
-					'criteria'  => ['groupId' => $group->id],
-					'hasThumbs' => true
-				];
-			}
-		}
-
-		return $sources;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getAvailableActions()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array|null
-	 */
-	public static function getAvailableActions($source = null)
-	{
-		$actions = [];
-
-		// Edit
-		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams([
-			'label' => Craft::t('app', 'Edit user'),
-		]);
-		$actions[] = $editAction;
-
-		if (Craft::$app->getUser()->checkPermission('administrateUsers'))
-		{
-			// Suspend
-			$actions[] = 'SuspendUsers';
-
-			// Unsuspend
-			$actions[] = 'UnsuspendUsers';
-		}
-
-		if (Craft::$app->getUser()->checkPermission('deleteUsers'))
-		{
-			// Delete
-			$actions[] = 'DeleteUsers';
-		}
-
-		// Allow plugins to add additional actions
-		$allPluginActions = Craft::$app->plugins->call('addUserActions', [$source], true);
-
-		foreach ($allPluginActions as $pluginActions)
-		{
-			$actions = array_merge($actions, $pluginActions);
-		}
-
-		return $actions;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineSearchableAttributes()
-	 *
-	 * @return array
-	 */
-	public static function defineSearchableAttributes()
-	{
-		return ['username', 'firstName', 'lastName', 'fullName', 'email'];
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineSortableAttributes()
-	 *
-	 * @retrun array
-	 */
-	public static function defineSortableAttributes()
-	{
-		if (Craft::$app->config->get('useEmailAsUsername'))
-		{
-			$attributes = [
-				'email'         => Craft::t('app', 'Email'),
-				'firstName'     => Craft::t('app', 'First Name'),
-				'lastName'      => Craft::t('app', 'Last Name'),
-				'dateCreated'   => Craft::t('app', 'Join Date'),
-				'lastLoginDate' => Craft::t('app', 'Last Login'),
-			];
-		}
-		else
-		{
-			$attributes = [
-				'username'      => Craft::t('app', 'Username'),
-				'firstName'     => Craft::t('app', 'First Name'),
-				'lastName'      => Craft::t('app', 'Last Name'),
-				'email'         => Craft::t('app', 'Email'),
-				'dateCreated'   => Craft::t('app', 'Join Date'),
-				'lastLoginDate' => Craft::t('app', 'Last Login'),
-			];
-		}
-
-		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserSortableAttributes', [&$attributes]);
-
-		return $attributes;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
-	 */
-	public static function defineTableAttributes($source = null)
-	{
-		if (Craft::$app->config->get('useEmailAsUsername'))
-		{
-			$attributes = [
-				'email'         => Craft::t('app', 'Email'),
-				'firstName'     => Craft::t('app', 'First Name'),
-				'lastName'      => Craft::t('app', 'Last Name'),
-				'dateCreated'   => Craft::t('app', 'Join Date'),
-				'lastLoginDate' => Craft::t('app', 'Last Login'),
-			];
-		}
-		else
-		{
-			$attributes = [
-				'username'      => Craft::t('app', 'Username'),
-				'firstName'     => Craft::t('app', 'First Name'),
-				'lastName'      => Craft::t('app', 'Last Name'),
-				'email'         => Craft::t('app', 'Email'),
-				'dateCreated'   => Craft::t('app', 'Join Date'),
-				'lastLoginDate' => Craft::t('app', 'Last Login'),
-			];
-		}
-
-		// Allow plugins to modify the attributes
-		Craft::$app->plugins->call('modifyUserTableAttributes', [&$attributes, $source]);
-
-		return $attributes;
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getTableAttributeHtml()
-	 *
-	 * @param ElementInterface $element
-	 * @param string           $attribute
-	 *
-	 * @return string
-	 */
-	public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-	{
-		/** @var User $element */
-		// First give plugins a chance to set this
-		$pluginAttributeHtml = Craft::$app->plugins->callFirst('getUserTableAttributeHtml', [$element, $attribute], true);
-
-		if ($pluginAttributeHtml !== null)
-		{
-			return $pluginAttributeHtml;
-		}
-
-		switch ($attribute)
-		{
-			case 'email':
-			{
-				$email = $element->email;
-
-				if ($email)
-				{
-					return '<a href="mailto:'.$email.'">'.$email.'</a>';
-				}
-				else
-				{
-					return '';
-				}
-			}
-
-			default:
-			{
-				return parent::getTableAttributeHtml($element, $attribute);
-			}
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-	{
-		switch ($status)
-		{
-			case UserStatus::Active:
-			{
-				return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
-			}
-
-			case UserStatus::Pending:
-			{
-				return 'users.pending = 1';
-			}
-
-			case UserStatus::Locked:
-			{
-				return 'users.locked = 1';
-			}
-
-			case UserStatus::Suspended:
-			{
-				return 'users.suspended = 1';
-			}
-
-			case UserStatus::Archived:
-			{
-				return 'users.archived = 1';
-			}
-		}
-	}
-
-	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
-	 */
-	public static function getEditorHtml(ElementInterface $element)
-	{
-		/** @var User $element */
-		$html = Craft::$app->templates->render('users/_accountfields', [
-			'account'      => $element,
-			'isNewAccount' => false,
-		]);
-
-		$html .= parent::getEditorHtml($element);
-
-		return $html;
-	}
-
-	/**
-	 * @inheritdoc Element::saveElement()
-	 *
-	 * @return bool
-	 */
-	public static function saveElement(ElementInterface $element, $params)
-	{
-		/** @var User $element */
-		if (isset($params['username']))
-		{
-			$element->username = $params['username'];
-		}
-
-		if (isset($params['firstName']))
-		{
-			$element->firstName = $params['firstName'];
-		}
-
-		if (isset($params['lastName']))
-		{
-			$element->lastName = $params['lastName'];
-		}
-
-		return Craft::$app->users->saveUser($element);
-	}
-
-	// Instance Methods
-	// -------------------------------------------------------------------------
-
-	/**
 	 * Use the full name or username as the string representation.
 	 *
 	 * @return string
@@ -553,11 +526,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc IdentityInterface::findIdentity()
-	 *
-	 * @param string|int $id
-	 *
-	 * @return IdentityInterface|null
+	 * @inheritdoc
 	 */
 	public static function findIdentity($id)
 	{
@@ -570,12 +539,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc IdentityInterface::findIdentityByAccessToken()
-	 *
-	 * @param mixed $token
-	 * @param mixed $type
-	 *
-	 * @return IdentityInterface|null
+	 * @inheritdoc
 	 */
 	public static function findIdentityByAccessToken($token, $type = null)
 	{
@@ -600,10 +564,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc IdentityInterface::getAuthKey()
-	 *
-	 * @see validateAuthKey()
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getAuthKey()
 	{
@@ -620,12 +581,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc IdentityInterface::validateAuthKey()
-	 *
-	 * @param string $authKey
-	 *
-	 * @see getAuthKey()
-	 * @return boolean
+	 * @inheritdoc
 	 */
 	public function validateAuthKey($authKey)
 	{
@@ -869,9 +825,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getStatus()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getStatus()
 	{
@@ -927,11 +881,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getThumbUrl()
-	 *
-	 * @param int $size
-	 *
-	 * @return false|null|string
+	 * @inheritdoc
 	 */
 	public function getThumbUrl($size = 100)
 	{
@@ -945,9 +895,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isEditable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -1059,9 +1007,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getCpEditUrl()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getCpEditUrl()
 	{
@@ -1084,11 +1030,7 @@ class User extends Element implements IdentityInterface
 	}
 
 	/**
-	 * @inheritDoc Model::populateModel()
-	 *
-	 * @param mixed $attributes
-	 *
-	 * @return User
+	 * @inheritdoc
 	 */
 	public static function populateModel($attributes)
 	{

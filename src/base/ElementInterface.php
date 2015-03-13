@@ -25,7 +25,7 @@ use craft\app\models\FieldLayout;
  */
 interface ElementInterface extends ComponentInterface
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -490,8 +490,8 @@ interface ElementInterface extends ComponentInterface
 	 */
 	public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId);
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the element’s ID.

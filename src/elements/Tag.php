@@ -22,15 +22,7 @@ use craft\app\models\TagGroup;
  */
 class Tag extends Element
 {
-	// Properties
-	// =========================================================================
-
-	/**
-	 * @var integer Group ID
-	 */
-	public $groupId;
-
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -42,9 +34,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasContent()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasContent()
 	{
@@ -52,9 +42,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::hasTitles()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function hasTitles()
 	{
@@ -62,9 +50,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isLocalized()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function isLocalized()
 	{
@@ -82,11 +68,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getSources()
-	 *
-	 * @param string|null $context
-	 *
-	 * @return array|false
+	 * @inheritdoc
 	 */
 	public static function getSources($context = null)
 	{
@@ -106,11 +88,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::defineTableAttributes()
-	 *
-	 * @param string|null $source
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public static function defineTableAttributes($source = null)
 	{
@@ -120,11 +98,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getEditorHtml()
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public static function getEditorHtml(ElementInterface $element)
 	{
@@ -149,12 +123,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::saveElement()
-	 *
-	 * @param ElementInterface $element
-	 * @param array            $params
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public static function saveElement(ElementInterface $element, $params)
 	{
@@ -162,8 +131,16 @@ class Tag extends Element
 		return Craft::$app->tags->saveTag($element);
 	}
 
-	// Instance Methods
-	// -------------------------------------------------------------------------
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer Group ID
+	 */
+	public $groupId;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -178,9 +155,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::isEditable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -188,9 +163,7 @@ class Tag extends Element
 	}
 
 	/**
-	 * @inheritDoc ElementInterface::getFieldLayout()
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
