@@ -17,8 +17,7 @@ use craft\app\models\CategoryGroup;
 use craft\app\models\FieldLayout;
 
 /**
- * The Category class is responsible for implementing and defining categories as a native element type in
- * Craft.
+ * Category represents a category element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

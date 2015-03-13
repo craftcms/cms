@@ -14,8 +14,7 @@ use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\UrlHelper;
 
 /**
- * The GlobalSet class is responsible for implementing and defining globals as a native element type in
- * Craft.
+ * GlobalSet represents a global set element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

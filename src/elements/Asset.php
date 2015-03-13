@@ -26,7 +26,7 @@ use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
 /**
- * The Asset class is responsible for implementing and defining assets as a native element type in Craft.
+ * Asset represents an asset element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

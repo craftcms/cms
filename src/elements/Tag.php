@@ -15,7 +15,7 @@ use craft\app\models\FieldLayout;
 use craft\app\models\TagGroup;
 
 /**
- * The Tag class is responsible for implementing and defining tags as a native element type in Craft.
+ * Tag represents a tag element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -27,7 +27,7 @@ use yii\base\NotSupportedException;
 use yii\web\IdentityInterface;
 
 /**
- * The User class is responsible for implementing and defining users as a native element type in Craft.
+ * User represents a user element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

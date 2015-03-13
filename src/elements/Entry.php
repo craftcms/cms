@@ -25,7 +25,7 @@ use craft\app\models\FieldLayout;
 use craft\app\models\Section as SectionModel;
 
 /**
- * The Entry class is responsible for implementing and defining entries as a native element type in Craft.
+ * Entry represents an entry element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

@@ -12,7 +12,7 @@ use yii\db\Connection;
 use yii\db\QueryInterface;
 
 /**
- * The ElementQueryInterface defines the minimum set of methods to be implemented by an element query.
+ * ElementQueryInterface defines the common interface to be implemented by element query classes.
  *
  * The default implementation of this interface is provided by [[ElementQuery]].
  *

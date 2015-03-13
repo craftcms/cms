@@ -17,8 +17,7 @@ use craft\app\models\FieldLayout;
 use craft\app\models\MatrixBlockType;
 
 /**
- * The MatrixBlock class is responsible for implementing and defining Matrix blocks as a native element type
- * in Craft.
+ * MatrixBlock represents a matrix block element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
