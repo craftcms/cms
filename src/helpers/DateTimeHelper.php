@@ -23,6 +23,140 @@ class DateTimeHelper
 	// =========================================================================
 
 	/**
+	 * Converts a value into a DateTime object.
+	 *
+	 * Supports the following formats:
+	 *
+	 *  - An array of the date and time in the current locale's short formats
+	 *  - All W3C date and time formats (http://www.w3.org/TR/NOTE-datetime)
+	 *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
+	 *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
+	 *  - Unix timestamps
+	 *
+	 * @param mixed $object
+	 * @return DateTime
+	 */
+	public static function toDateTime($object)
+	{
+		if ($object instanceof \DateTime)
+		{
+			return $object;
+		}
+
+		$timezone = Craft::$app->getTimeZone();
+
+		// Was this a date/time-picker?
+		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
+		{
+			$dt = $date;
+
+			if (empty($dt['date']) && empty($dt['time']))
+			{
+				return null;
+			}
+
+			$locale = Craft::$app->getLocale();
+
+			if (!empty($dt['date']))
+			{
+				$date = $dt['date'];
+				$format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
+
+				// Check for 2 and 4 digit years
+				if (strpos($format, 'y') !== false)
+				{
+					$altFormat = str_replace('y', 'Y', $format);
+				}
+				else
+				{
+					$altFormat = str_replace('Y', 'y', $format);
+				}
+
+				if (static::createFromFormat($altFormat, $date) !== false)
+				{
+					$format = $altFormat;
+				}
+			}
+			else
+			{
+				$date = '';
+				$format = '';
+
+				// Default to the current date
+				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$date .= $current->month().'/'.$current->day().'/'.$current->year();
+				$format .= 'n/j/Y';
+			}
+
+			if (!empty($dt['time']))
+			{
+				// Replace the localized "AM" and "PM"
+				$dt['time'] = str_replace([$locale->getAMName(), $locale->getPMName()], ['AM', 'PM'], $dt['time']);
+
+				$date .= ' '.$dt['time'];
+				$format .= ' '.FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
+			}
+		}
+		else
+		{
+			$date = trim((string) $date);
+
+			if (preg_match('/^
+				(?P<year>\d{4})                                  # YYYY (four digit year)
+				(?:
+					-(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
+					(?:
+						-(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
+						(?:
+							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
+							(?:
+								\:(?P<sec>\d\d)                  # :ss (two digit second)
+								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
+							)?
+							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
+							(?:Z|(?P<tzd>[+\-]\d\d\:\d\d))?      # Z or [+ or -]hh:ss (UTC or a timezone offset)
+						)?
+					)?
+				)?$/x', $date, $m))
+			{
+				$format = 'Y-m-d H:i:s';
+
+				$date = $m['year'] .
+					'-'.(!empty($m['mon'])  ? sprintf('%02d', $m['mon'])  : '01') .
+					'-'.(!empty($m['day'])  ? sprintf('%02d', $m['day'])  : '01') .
+					' '.(!empty($m['hour']) ? sprintf('%02d', $m['hour']) : '00') .
+					':'.(!empty($m['min'])  ? $m['min']                   : '00') .
+					':'.(!empty($m['sec'])  ? $m['sec']                   : '00');
+
+				if (!empty($m['tzd']))
+				{
+					$format .= 'P';
+					$date   .= $m['tzd'];
+				}
+
+				if (!empty($m['ampm']))
+				{
+					$format .= ' A';
+					$date .= ' '.$m['ampm'];
+				}
+			}
+			else if (preg_match('/^\d{10}$/', $date))
+			{
+				$format = 'U';
+			}
+			else
+			{
+				$format = '';
+			}
+		}
+
+		$format .= ' e';
+		$date   .= ' '.$timezone;
+
+		return DateTime::createFromFormat('!'.$format, $date);
+	}
+
+	/**
 	 * @return DateTime
 	 */
 	public static function currentUTCDateTime()

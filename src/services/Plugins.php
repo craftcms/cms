@@ -130,7 +130,7 @@ class Plugins extends Component
 
 						// Clean it up a bit
 						$row['settings'] = JsonHelper::decode($row['settings']);
-						$row['installDate'] = DateTime::createFromString($row['installDate']);
+						$row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
 						$this->_storedPluginInfo[$row['class']] = $row;
 

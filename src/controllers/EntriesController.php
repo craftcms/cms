@@ -13,6 +13,7 @@ use craft\app\elements\User;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\elements\Entry;
@@ -878,8 +879,8 @@ class EntriesController extends BaseEntriesController
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
 		$entry->typeId        = Craft::$app->getRequest()->getBodyParam('typeId', $entry->typeId);
 		$entry->slug          = Craft::$app->getRequest()->getBodyParam('slug', $entry->slug);
-		$entry->postDate      = (($postDate   = Craft::$app->getRequest()->getBodyParam('postDate'))   ? DateTime::createFromString($postDate,   Craft::$app->timezone) : $entry->postDate);
-		$entry->expiryDate    = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTime::createFromString($expiryDate, Craft::$app->timezone) : null);
+		$entry->postDate      = (($postDate   = Craft::$app->getRequest()->getBodyParam('postDate')) ? DateTimeHelper::toDateTime($postDate) : $entry->postDate);
+		$entry->expiryDate    = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) ? DateTimeHelper::toDateTime($expiryDate) : null);
 		$entry->enabled       = (bool) Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
 		$entry->localeEnabled = (bool) Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
 

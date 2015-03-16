@@ -521,10 +521,7 @@ class DbHelper
 				$operator = '=';
 			}
 
-			if (!$val instanceof \DateTime)
-			{
-				$val = DateTime::createFromString($val, Craft::$app->getTimeZone());
-			}
+			$val = DateTimeHelper::toDateTime($val);
 
 			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
 		}
