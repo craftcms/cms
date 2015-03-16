@@ -53,9 +53,13 @@ Craft.AuthManager = Garnish.Base.extend(
 			type: 'GET',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
-				if (textStatus == 'success' && !isNaN(jqXHR.responseText))
+				if (textStatus == 'success')
 				{
-					this.updateAuthTimeout(jqXHR.responseText);
+					this.updateAuthTimeout(jqXHR.responseJSON.timeout);
+					if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
+					{
+						Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
+					}
 				}
 				else
 				{

@@ -1349,6 +1349,10 @@ class UserSessionService extends \CWebUser
 		// Will force a random one to be generated for the now-unauthenticated user.
 		craft()->request->deleteCookie(craft()->config->get('csrfTokenName'));
 
+		// Don't need to do anything with it. Just calling this will create a new token and add it to
+		// the cookies for us.
+		craft()->request->getCsrfToken();
+
 		// Fire an 'onLogout' event
 		$this->onLogout(new Event($this));
 	}

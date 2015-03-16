@@ -1304,9 +1304,9 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	protected function createCsrfCookie()
 	{
-		$currentUser = craft()->userSession->getUser();
+		$currentUser = false;
 
-		if ($currentUser)
+		if (craft()->getComponent('userSession', false) && ($currentUser = craft()->userSession->getUser()))
 		{
 			$nonce = craft()->security->generateRandomString(40);
 
@@ -1349,7 +1349,7 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$currentUser = false;
 
-		if (craft()->isInstalled())
+		if (craft()->isInstalled() && craft()->getComponent('userSession', false))
 		{
 			$currentUser = craft()->userSession->getUser();
 		}
