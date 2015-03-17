@@ -87,7 +87,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 		}
 		else
 		{
-			return parent::toArray($object);
+			return parent::toArray($object, $properties, $recursive);
 		}
 	}
 
