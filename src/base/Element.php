@@ -133,12 +133,12 @@ abstract class Element extends Component implements ElementInterface
 	{
 		$contextKey = ($context ? $context : '*');
 
-		if (!isset(static::$_sourcesByContext[$contextKey]))
+		if (!isset(self::$_sourcesByContext[$contextKey]))
 		{
-			static::$_sourcesByContext[$contextKey] = static::getSources($context);
+			self::$_sourcesByContext[$contextKey] = static::getSources($context);
 		}
 
-		return static::_findSource($key, static::$_sourcesByContext[$contextKey]);
+		return static::_findSource($key, self::$_sourcesByContext[$contextKey]);
 	}
 
 	/**

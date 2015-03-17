@@ -12,6 +12,7 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
+use craft\app\services\Elements;
 use craft\app\web\Controller;
 
 /**
@@ -58,9 +59,9 @@ abstract class BaseElementsController extends Controller
 	{
 		$class = Craft::$app->getRequest()->getRequiredParam('elementType');
 
-		if (!class_exists($class) || !($class instanceof ElementInterface))
+		if (!is_subclass_of($class, Elements::ELEMENT_INTERFACE))
 		{
-			throw new Exception(Craft::t('app', 'No element type exists with the class “{class}”', ['class' => $class]));
+			throw new Exception("Invalid element class: $class");
 		}
 
 		return $class;

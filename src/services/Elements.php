@@ -45,6 +45,11 @@ class Elements extends Component
 	// =========================================================================
 
 	/**
+	 * @var string The element interface name
+	 */
+	const ELEMENT_INTERFACE = 'craft\app\base\ElementInterface';
+
+	/**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
      */
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
