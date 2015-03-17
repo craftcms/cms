@@ -8,6 +8,8 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
 use yii\base\UnknownMethodException;
@@ -20,6 +22,47 @@ use yii\base\UnknownMethodException;
  */
 abstract class Model extends \yii\base\Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * Instantiates and populates a new model instance with the given set of attributes.
+	 *
+	 * @param mixed $config Attribute values to populate the model with (name => value).
+	 * @return static The new model
+	 */
+	public static function create($config)
+	{
+		$model = new static();
+		static::populateModel($model, ArrayHelper::toArray($config, [], false));
+		return $model;
+	}
+
+	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @param static $model  The model to be populated.
+	 * @param array  $config Attribute values to populate the model with (name => value).
+	 */
+	public static function populateModel($model, $config)
+	{
+		$attributes = array_flip($model->attributes());
+		$datetimeAttributes = array_flip($model->datetimeAttributes());
+
+		foreach ($config as $name => $value)
+		{
+			if (isset($attributes[$name]))
+			{
+				if (isset($datetimeAttributes[$name]))
+				{
+					$value = DateTimeHelper::toDateTime($value);
+				}
+
+				$model->$name = $value;
+			}
+		}
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -75,51 +118,6 @@ abstract class Model extends \yii\base\Model
 	}
 
 	/**
-	 * Populates a new model instance with a given set of attributes.
-	 *
-	 * @param mixed $values
-	 *
-	 * @return Model
-	 */
-	public static function populateModel($values)
-	{
-		$class = get_called_class();
-		return new $class($values);
-	}
-
-	/**
-	 * Mass-populates models based on an array of attribute arrays.
-	 *
-	 * @param array       $data
-	 * @param string|null $indexBy
-	 *
-	 * @return array
-	 */
-	public static function populateModels($data, $indexBy = null)
-	{
-		$models = [];
-
-		if (is_array($data))
-		{
-			foreach ($data as $values)
-			{
-				$model = static::populateModel($values);
-
-				if ($indexBy)
-				{
-					$models[$model->$indexBy] = $model;
-				}
-				else
-				{
-					$models[] = $model;
-				}
-			}
-		}
-
-		return $models;
-	}
-
-	/**
 	 * Get the class name, sans namespace and suffix.
 	 *
 	 * @return string
@@ -143,6 +141,16 @@ abstract class Model extends \yii\base\Model
 		}
 
 		return $this->_classHandle;
+	}
+
+	/**
+	 * Returns the names of any attributes that should be converted to DateTime objects from [[populate()]].
+	 *
+	 * @return string[]
+	 */
+	public function datetimeAttributes()
+	{
+		return [];
 	}
 
 	/**

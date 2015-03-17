@@ -155,7 +155,7 @@ class Categories extends Component
 
 			foreach ($groupRecords as $groupRecord)
 			{
-				$this->_categoryGroupsById[$groupRecord->id] = $this->_populateCategoryGroupFromRecord($groupRecord);
+				$this->_categoryGroupsById[$groupRecord->id] = $this->_createCategoryGroupFromRecord($groupRecord);
 			}
 
 			$this->_fetchedAllCategoryGroups = true;
@@ -240,7 +240,7 @@ class Categories extends Component
 
 			if ($groupRecord)
 			{
-				$this->_categoryGroupsById[$groupId] = $this->_populateCategoryGroupFromRecord($groupRecord);
+				$this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
 			}
 			else
 			{
@@ -266,7 +266,7 @@ class Categories extends Component
 
 		if ($groupRecord)
 		{
-			$group = $this->_populateCategoryGroupFromRecord($groupRecord);
+			$group = $this->_createCategoryGroupFromRecord($groupRecord);
 			$this->_categoryGroupsById[$group->id] = $group;
 
 			return $group;
@@ -283,11 +283,17 @@ class Categories extends Component
 	 */
 	public function getGroupLocales($groupId, $indexBy = null)
 	{
-		$records = CategoryGroupLocaleRecord::findAll([
-			'groupId' => $groupId
-		]);
+		$groupLocales = CategoryGroupLocaleRecord::find()
+			->where(['groupId' => $groupId])
+			->indexBy($indexBy)
+			->all();
 
-		return CategoryGroupLocaleModel::populateModels($records, $indexBy);
+		foreach ($groupLocales as $key => $value)
+		{
+			$groupLocales[$key] = CategoryGroupLocaleModel::create($value);
+		}
+
+		return $groupLocales;
 	}
 
 	/**
@@ -310,7 +316,7 @@ class Categories extends Component
 				throw new Exception(Craft::t('app', 'No category group exists with the ID “{id}”.', ['id' => $group->id]));
 			}
 
-			$oldCategoryGroup = CategoryGroupModel::populateModel($groupRecord);
+			$oldCategoryGroup = CategoryGroupModel::create($groupRecord);
 			$isNewCategoryGroup = false;
 		}
 		else
@@ -422,10 +428,15 @@ class Categories extends Component
 				if (!$isNewCategoryGroup)
 				{
 					// Get the old category group locales
-					$oldLocaleRecords = CategoryGroupLocaleRecord::findAll([
-						'groupId' => $group->id
-					]);
-					$oldLocales = CategoryGroupLocaleModel::populateModels($oldLocaleRecords, 'locale');
+					$oldLocales = CategoryGroupLocaleRecord::find()
+						->where(['groupId' => $group->id])
+						->indexBy('locale')
+						->all();
+
+					foreach ($oldLocales as $key => $value)
+					{
+						$oldLocales[$key] = CategoryGroupLocaleModel::create($value);
+					}
 
 					$changedLocaleIds = [];
 				}
@@ -940,20 +951,19 @@ class Categories extends Component
 	// =========================================================================
 
 	/**
-	 * Populates a CategoryGroupModel with attributes from a CategoryGroup.
+	 * Creates a CategoryGroupModel with attributes from a CategoryGroupRecord.
 	 *
-	 * @param CategoryGroup|null
-	 *
+	 * @param CategoryGroupRecord|null $groupRecord
 	 * @return CategoryGroupModel|null
 	 */
-	private function _populateCategoryGroupFromRecord($groupRecord)
+	private function _createCategoryGroupFromRecord($groupRecord)
 	{
 		if (!$groupRecord)
 		{
 			return null;
 		}
 
-		$group = CategoryGroupModel::populateModel($groupRecord);
+		$group = CategoryGroupModel::create($groupRecord);
 
 		if ($groupRecord->structure)
 		{

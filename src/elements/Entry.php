@@ -575,6 +575,17 @@ class Entry extends Element
 	/**
 	 * @inheritdoc
 	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'postDate';
+		$names[] = 'expiryDate';
+		return $names;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();

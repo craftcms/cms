@@ -752,11 +752,16 @@ class Fields extends Component
 	 */
 	public function getLayoutTabsById($layoutId)
 	{
-		$results = $this->_createLayoutTabQuery()
+		$tabs = $this->_createLayoutTabQuery()
 			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
 			->all();
 
-		return FieldLayoutTabModel::populateModels($results);
+		foreach ($tabs as $key => $value)
+		{
+			$tabs[$key] = FieldLayoutTabModel::create($value);
+		}
+
+		return $tabs;
 	}
 
 	/**
@@ -768,11 +773,16 @@ class Fields extends Component
 	 */
 	public function getLayoutFieldsById($layoutId)
 	{
-		$results = $this->_createLayoutFieldQuery()
+		$fields = $this->_createLayoutFieldQuery()
 			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
 			->all();
 
-		return FieldLayoutFieldModel::populateModels($results);
+		foreach ($fields as $key => $value)
+		{
+			$fields[$key] = FieldLayoutFieldModel::create($value);
+		}
+
+		return $fields;
 	}
 
 	/**

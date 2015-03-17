@@ -21,6 +21,40 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class EntryDraft extends BaseEntryRevisionModel
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param static $model
+	 * @param array  $config
+	 */
+	public static function populateModel($model, $config)
+	{
+		// Merge the draft and entry data
+		$entryData = $config['data'];
+		$fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
+		$config['draftId'] = $config['id'];
+		$config['id'] = $config['entryId'];
+		$config['revisionNotes'] = $config['notes'];
+		$title = $entryData['title'];
+		unset($config['data'], $entryData['fields'], $config['entryId'], $config['notes'], $entryData['title']);
+		$config = array_merge($config, $entryData);
+
+		parent::populateModel($model, $config);
+
+		if ($title)
+		{
+			$model->getContent()->title = $title;
+		}
+
+		if ($fieldContent)
+		{
+			$model->setContentFromRevision($fieldContent);
+		}
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -177,46 +211,5 @@ class EntryDraft extends BaseEntryRevisionModel
 			[['draftId'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'sectionId', 'typeId', 'authorId', 'postDate', 'expiryDate', 'newParentId', 'revisionNotes', 'creatorId', 'draftId', 'name'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::populateModel()
-	 *
-	 * @param mixed $attributes
-	 *
-	 * @return EntryDraftModel
-	 */
-	public static function populateModel($attributes)
-	{
-		if ($attributes instanceof \yii\base\Model)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		// Merge the draft and entry data
-		$entryData = $attributes['data'];
-		$fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
-		$attributes['draftId'] = $attributes['id'];
-		$attributes['id'] = $attributes['entryId'];
-		$attributes['revisionNotes'] = $attributes['notes'];
-		$title = $entryData['title'];
-		unset($attributes['data'], $entryData['fields'], $attributes['entryId'], $attributes['notes'], $entryData['title']);
-
-		$attributes = array_merge($attributes, $entryData);
-
-		// Initialize the draft
-		$draft = parent::populateModel($attributes);
-
-		if ($title)
-		{
-			$draft->getContent()->title = $title;
-		}
-
-		if ($fieldContent)
-		{
-			$draft->setContentFromRevision($fieldContent);
-		}
-
-		return $draft;
 	}
 }

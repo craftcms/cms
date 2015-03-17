@@ -819,7 +819,7 @@ class Install extends Component
 		$newsSection->template = 'news/_entry';
 
 		$newsSection->setLocales([
-			$inputs['locale'] => SectionLocaleModel::populateModel([
+			$inputs['locale'] => SectionLocaleModel::create([
 				'locale'    => $inputs['locale'],
 				'urlFormat' => 'news/{postDate.year}/{slug}',
 			])

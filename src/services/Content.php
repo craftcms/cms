@@ -355,7 +355,7 @@ class Content extends Component
 		if ($nonTranslatableFields)
 		{
 			// Get the other locales' content
-			$rows = (new Query())
+			$otherContentModels = (new Query())
 				->from($this->contentTable)
 				->where(
 					['and', 'elementId = :elementId', 'locale != :locale'],
@@ -363,12 +363,10 @@ class Content extends Component
 				->all();
 
 			// Remove the column prefixes
-			foreach ($rows as $i => $row)
+			foreach ($otherContentModels as $key => $value)
 			{
-				$rows[$i] = $this->_removeColumnPrefixesFromRow($row);
+				$otherContentModels[$key] = ContentModel::create($this->_removeColumnPrefixesFromRow($value));
 			}
-
-			$otherContentModels = ContentModel::populateModels($rows);
 
 			foreach ($otherContentModels as $otherContentModel)
 			{

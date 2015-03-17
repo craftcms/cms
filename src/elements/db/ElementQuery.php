@@ -1658,7 +1658,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 		}
 
 		// Populate it
-		$class::populateComponent($element, $row);
+		$class::populateModel($element, $row);
 
 		// Set the content
 		if ($class::hasContent() && $this->contentTable)

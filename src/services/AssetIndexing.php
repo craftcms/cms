@@ -128,7 +128,7 @@ class AssetIndexing extends Component
 
 		if ($record)
 		{
-			return AssetIndexDataModel::populateModel($record);
+			return AssetIndexDataModel::create($record);
 		}
 
 		return false;

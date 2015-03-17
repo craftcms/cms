@@ -338,7 +338,7 @@ class AssetSources extends Component
 
 		if (!$isNewSource)
 		{
-			$oldSource = AssetSourceModel::populateModel($sourceRecord);
+			$oldSource = AssetSourceModel::create($sourceRecord);
 		}
 
 		$sourceRecord->name          = $source->name;

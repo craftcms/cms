@@ -274,7 +274,7 @@ class Matrix extends Component
 				{
 					// Get the old block type fields
 					$oldBlockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
-					$oldBlockType = MatrixBlockTypeModel::populateModel($oldBlockTypeRecord);
+					$oldBlockType = MatrixBlockTypeModel::create($oldBlockTypeRecord);
 
 					$contentService->fieldContext        = 'matrixBlockType:'.$blockType->id;
 					$contentService->fieldColumnPrefix   = 'field_'.$oldBlockType->handle.'_';

@@ -19,6 +19,28 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  */
 class PluginUpdate extends Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['releases']))
+		{
+			foreach ($config['releases'] as $key => $value)
+			{
+				if (!$value instanceof PluginUpdateModel)
+				{
+					$config['releases'][$key] = PluginUpdateModel::create($value);
+				}
+			}
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -74,23 +96,5 @@ class PluginUpdate extends Model
 			[['latestDate'], 'craft\\app\\validators\\DateTime'],
 			[['class', 'localVersion', 'latestVersion', 'latestDate', 'status', 'displayName', 'criticalUpdateAvailable', 'releases'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::setAttribute()
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 *
-	 * @return bool|null
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'releases')
-		{
-			$value = PluginUpdateModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

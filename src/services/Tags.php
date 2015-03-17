@@ -102,11 +102,16 @@ class Tags extends Component
 	{
 		if (!$this->_fetchedAllTagGroups)
 		{
-			$tagGroupRecords = TagGroupRecord::find()
+			$this->_tagGroupsById = TagGroupRecord::find()
 				->orderBy('name')
+				->indexBy('id')
 				->all();
 
-			$this->_tagGroupsById = TagGroupModel::populateModels($tagGroupRecords, 'id');
+			foreach ($this->_tagGroupsById as $key => $value)
+			{
+				$this->_tagGroupsById[$key] = TagGroupModel::create($value);
+			}
+
 			$this->_fetchedAllTagGroups = true;
 		}
 
@@ -156,7 +161,7 @@ class Tags extends Component
 
 			if ($groupRecord)
 			{
-				$this->_tagGroupsById[$groupId] = TagGroupModel::populateModel($groupRecord);
+				$this->_tagGroupsById[$groupId] = TagGroupModel::create($groupRecord);
 			}
 			else
 			{
@@ -182,7 +187,7 @@ class Tags extends Component
 
 		if ($groupRecord)
 		{
-			return TagGroupModel::populateModel($groupRecord);
+			return TagGroupModel::create($groupRecord);
 		}
 	}
 
@@ -206,7 +211,7 @@ class Tags extends Component
 				throw new Exception(Craft::t('app', 'No tag group exists with the ID “{id}”.', ['id' => $tagGroup->id]));
 			}
 
-			$oldTagGroup = TagGroupModel::populateModel($tagGroupRecord);
+			$oldTagGroup = TagGroupModel::create($tagGroupRecord);
 			$isNewTagGroup = false;
 		}
 		else

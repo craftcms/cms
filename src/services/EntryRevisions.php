@@ -79,7 +79,7 @@ class EntryRevisions extends Component
 
 		if ($draftRecord)
 		{
-			$draft = EntryDraftModel::populateModel($draftRecord);
+			$draft = EntryDraftModel::create($draftRecord);
 
 			// This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
 			// inside of a structured section since the selected URL Format depends on the entry's level, and there's no
@@ -126,7 +126,7 @@ class EntryRevisions extends Component
 			// Don't initialize the content
 			unset($result['data']['fields']);
 
-			$drafts[] = EntryDraftModel::populateModel($result);
+			$drafts[] = EntryDraftModel::create($result);
 		}
 
 		return $drafts;
@@ -315,7 +315,7 @@ class EntryRevisions extends Component
 
 		if ($versionRecord)
 		{
-			return EntryVersionModel::populateModel($versionRecord);
+			return EntryVersionModel::create($versionRecord);
 		}
 	}
 
@@ -353,7 +353,7 @@ class EntryRevisions extends Component
 			// Don't initialize the content
 			unset($result['data']['fields']);
 
-			$versions[] = EntryVersionModel::populateModel($result);
+			$versions[] = EntryVersionModel::create($result);
 		}
 
 		return $versions;

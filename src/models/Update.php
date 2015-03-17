@@ -19,6 +19,28 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  */
 class Update extends Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['plugins']))
+		{
+			foreach ($config['plugins'] as $key => $value)
+			{
+				if (!$value instanceof PluginUpdateModel)
+				{
+					$config['plugins'][$key] = PluginUpdateModel::create($value);
+				}
+			}
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -48,23 +70,5 @@ class Update extends Model
 		return [
 			[['app', 'plugins', 'errors'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::setAttribute()
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 *
-	 * @return bool|null
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'plugins')
-		{
-			$value = PluginUpdateModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

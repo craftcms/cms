@@ -72,33 +72,33 @@ class Dashboard extends Component
 	 */
 	public function getUserWidgets($indexBy = null)
 	{
-		$widgetRecords = $this->_getUserWidgetRecords();
+		$widgets = $this->_getUserWidgetRecords($indexBy);
 
 		// If there are no widget records, this is the first time they've hit the dashboard.
-		if (!$widgetRecords)
+		if (!$widgets)
 		{
 			// Add the defaults and try again
 			$this->_addDefaultUserWidgets();
-			$widgetRecords = $this->_getUserWidgetRecords();
+			$widgets = $this->_getUserWidgetRecords($indexBy);
 		}
 		else
 		{
 			// Get only the enabled widgets.
-			foreach ($widgetRecords as $key => $widgetRecord)
+			foreach ($widgets as $key => $widget)
 			{
-				if (!$widgetRecord->enabled)
+				if (!$widget->enabled)
 				{
-					unset($widgetRecords[$key]);
+					unset($widgets[$key]);
 				}
 			}
 		}
 
-		if (count($widgetRecords) > 0)
+		foreach ($widgets as $key => $value)
 		{
-			return WidgetModel::populateModels($widgetRecords, $indexBy);
+			$widgets[$key] = WidgetModel::create($value);
 		}
 
-		return [];
+		return $widgets;
 	}
 
 	/**
@@ -137,7 +137,7 @@ class Dashboard extends Component
 
 		if ($widgetRecord)
 		{
-			return WidgetModel::populateModel($widgetRecord);
+			return WidgetModel::create($widgetRecord);
 		}
 	}
 
@@ -339,13 +339,15 @@ class Dashboard extends Component
 	/**
 	 * Returns the widget records for the current user.
 	 *
+	 * @param string $indexBy
 	 * @return array
 	 */
-	private function _getUserWidgetRecords()
+	private function _getUserWidgetRecords($indexBy = null)
 	{
 		return WidgetRecord::find()
 			->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
 			->orderBy('sortOrder')
+			->indexBy($indexBy)
 			->all();
 	}
 }

@@ -68,7 +68,7 @@ class Structures extends Component
 
 		if ($structureRecord)
 		{
-			return StructureModel::populateModel($structureRecord);
+			return StructureModel::create($structureRecord);
 		}
 	}
 

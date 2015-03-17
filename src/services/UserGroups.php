@@ -53,11 +53,17 @@ class UserGroups extends Component
 	 */
 	public function getAllGroups($indexBy = null)
 	{
-		$groupRecords = UserGroupRecord::find()
+		$groups = UserGroupRecord::find()
 			->orderBy('name')
+			->indexBy($indexBy)
 			->all();
 
-		return UserGroupModel::populateModels($groupRecords, $indexBy);
+		foreach ($groups as $key => $value)
+		{
+			$groups[$key] = UserGroupModel::create($value);
+		}
+
+		return $groups;
 	}
 
 	/**
@@ -73,7 +79,7 @@ class UserGroups extends Component
 
 		if ($groupRecord)
 		{
-			return UserGroupModel::populateModel($groupRecord);
+			return UserGroupModel::create($groupRecord);
 		}
 	}
 
@@ -92,7 +98,7 @@ class UserGroups extends Component
 
 		if ($groupRecord)
 		{
-			return UserGroupModel::populateModel($groupRecord);
+			return UserGroupModel::create($groupRecord);
 		}
 	}
 
@@ -106,14 +112,20 @@ class UserGroups extends Component
 	 */
 	public function getGroupsByUserId($userId, $indexBy = null)
 	{
-		$query = (new Query())
+		$groups = (new Query())
 			->select('g.*')
 			->from('{{%usergroups}} g')
 			->innerJoin('{{%usergroups_users}} gu', 'gu.groupId = g.id')
 			->where(['gu.userId' => $userId])
+			->indexBy($indexBy)
 			->all();
 
-		return UserGroupModel::populateModels($query, $indexBy);
+		foreach ($groups as $key => $value)
+		{
+			$groups[$key] = UserGroupModel::create($value);
+		}
+
+		return $groups;
 	}
 
 	/**

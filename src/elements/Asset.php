@@ -552,6 +552,16 @@ class Asset extends Element
 	/**
 	 * @inheritdoc
 	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'dateModified';
+		return $names;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();

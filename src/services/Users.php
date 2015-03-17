@@ -166,7 +166,7 @@ class Users extends Component
 
 			if ($userRecord)
 			{
-				$this->_usersById[$userId] = User::populateModel($userRecord);
+				$this->_usersById[$userId] = User::create($userRecord);
 			}
 			else
 			{
@@ -199,7 +199,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return User::populateModel($userRecord);
+			return User::create($userRecord);
 		}
 
 		return null;
@@ -222,7 +222,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return User::populateModel($userRecord);
+			return User::create($userRecord);
 		}
 
 		return null;
@@ -247,7 +247,7 @@ class Users extends Component
 
 		if ($userRecord)
 		{
-			return User::populateModel($userRecord);
+			return User::create($userRecord);
 		}
 
 		return null;

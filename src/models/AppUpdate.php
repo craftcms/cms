@@ -19,6 +19,28 @@ use craft\app\models\AppNewRelease as AppNewReleaseModel;
  */
 class AppUpdate extends Model
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['releases']))
+		{
+			foreach ($config['releases'] as $key => $value)
+			{
+				if (!$value instanceof AppNewReleaseModel)
+				{
+					$config['releases'][$key] = AppNewReleaseModel::create($value);
+				}
+			}
+		}
+
+		parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -120,23 +142,5 @@ class AppUpdate extends Model
 			[['realLatestDate'], 'craft\\app\\validators\\DateTime'],
 			[['localBuild', 'localVersion', 'latestVersion', 'latestBuild', 'latestDate', 'targetVersion', 'targetBuild', 'realLatestVersion', 'realLatestBuild', 'realLatestDate', 'criticalUpdateAvailable', 'manualUpdateRequired', 'breakpointRelease', 'licenseUpdated', 'versionUpdateStatus', 'manualDownloadEndpoint', 'releases'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::setAttribute()
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 *
-	 * @return bool|null
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'releases')
-		{
-			$value = AppNewReleaseModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

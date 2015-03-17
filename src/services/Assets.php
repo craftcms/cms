@@ -114,15 +114,10 @@ class Assets extends Component
 	 */
 	public function getFilesBySourceId($sourceId, $indexBy = null)
 	{
-		$files = (new Query())
-			->select('fi.*')
-			->from('{{%assetfiles}} fi')
-			->innerJoin('{{%assetfolders}} fo', 'fo.id = fi.folderId')
-			->where('fo.sourceId = :sourceId', [':sourceId' => $sourceId])
-			->orderBy('fi.filename')
+		return Asset::find()
+			->sourceId($sourceId)
+			->indexBy($indexBy)
 			->all();
-
-		return Asset::populateModels($files, $indexBy);
 	}
 
 	/**
@@ -636,7 +631,7 @@ class Assets extends Component
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($result);
+			$folder = AssetFolderModel::create($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$folders[] = $folder;
 		}
@@ -664,7 +659,7 @@ class Assets extends Component
 
 		foreach ($results as $result)
 		{
-			$folder = AssetFolderModel::populateModel($result);
+			$folder = AssetFolderModel::create($result);
 			$this->_foldersById[$folder->id] = $folder;
 			$descendantFolders[$folder->id] = $folder;
 		}

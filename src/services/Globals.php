@@ -290,7 +290,7 @@ class Globals extends Component
 				throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSet->id]));
 			}
 
-			$oldSet = GlobalSet::populateModel($globalSetRecord);
+			$oldSet = GlobalSet::create($globalSetRecord);
 		}
 		else
 		{

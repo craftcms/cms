@@ -939,13 +939,18 @@ class AssetTransforms extends Component
 	 */
 	public function getAllCreatedTransformsForFile(Asset $file)
 	{
-		$records = Craft::$app->getDb()->createCommand()
+		$transforms = Craft::$app->getDb()->createCommand()
 			->select('*')
 			->from('{{%assettransformindex}}')
 			->where('fileId = :fileId', [':fileId' => $file->id])
 			->queryAll();
 
-		return AssetTransformIndexModel::populateModels($records);
+		foreach ($transforms as $key => $value)
+		{
+			$transforms[$key] = AssetTransformIndexModel::create($value);
+		}
+
+		return $transforms;
 	}
 
 	// Private Methods

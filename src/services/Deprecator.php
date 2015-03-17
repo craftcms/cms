@@ -115,14 +115,17 @@ class Deprecator extends Component
 	{
 		if (!isset($this->_allLogs))
 		{
-			$result = (new Query())
+			$this->_allLogs = (new Query())
 				->select('*')
 				->from(static::$_tableName)
 				->limit($limit)
 				->orderBy('lastOccurrence desc')
 				->all();
 
-			$this->_allLogs = DeprecationErrorModel::populateModels($result);
+			foreach ($this->_allLogs as $key => $value)
+			{
+				$this->_allLogs[$key] = DeprecationErrorModel::create($value);
+			}
 		}
 
 		return $this->_allLogs;

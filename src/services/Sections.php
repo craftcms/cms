@@ -343,15 +343,21 @@ class Sections extends Component
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
-		$records = (new Query())
+		$sectionLocales = (new Query())
 			->select('*')
 			->from('{{%sections_i18n}} sections_i18n')
 			->innerJoin('{{%locales}} locales', 'locales.locale = sections_i18n.locale')
 			->where('sections_i18n.sectionId = :sectionId', [':sectionId' => $sectionId])
 			->orderBy('locales.sortOrder')
+			->indexBy($indexBy)
 			->all();
 
-		return SectionLocaleModel::populateModels($records, $indexBy);
+		foreach ($sectionLocales as $key => $value)
+		{
+			$sectionLocales[$key] = SectionLocaleModel::create($value);
+		}
+
+		return $sectionLocales;
 	}
 
 	/**
@@ -377,7 +383,7 @@ class Sections extends Component
 				throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $section->id]));
 			}
 
-			$oldSection = SectionModel::populateModel($sectionRecord);
+			$oldSection = SectionModel::create($sectionRecord);
 			$isNewSection = false;
 		}
 		else
@@ -556,11 +562,15 @@ class Sections extends Component
 					if (!$isNewSection)
 					{
 						// Get the old section locales
-						$oldSectionLocaleRecords = SectionLocaleRecord::findAll([
-							'sectionId' => $section->id
-						]);
+						$oldSectionLocales = SectionLocaleRecord::find()
+							->where(['sectionId' => $section->id])
+							->indexBy('locale')
+							->all();
 
-						$oldSectionLocales = SectionLocaleModel::populateModels($oldSectionLocaleRecords, 'locale');
+						foreach ($oldSectionLocales as $key => $value)
+						{
+							$oldSectionLocales[$key] = SectionLocaleModel::create($value);
+						}
 					}
 
 					foreach ($sectionLocales as $localeId => $locale)
@@ -934,12 +944,18 @@ class Sections extends Component
 	 */
 	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
 	{
-		$records = EntryTypeRecord::find()
+		$entryTypes = EntryTypeRecord::find()
 			->where(['sectionId' => $sectionId])
 			->orderBy('sortOrder')
+			->indexBy($indexBy)
 			->all();
 
-		return EntryTypeModel::populateModels($records, $indexBy);
+		foreach ($entryTypes as $key => $value)
+		{
+			$entryTypes[$key] = EntryTypeModel::create($value);
+		}
+
+		return $entryTypes;
 	}
 
 	/**
@@ -957,7 +973,7 @@ class Sections extends Component
 
 			if ($entryTypeRecord)
 			{
-				$this->_entryTypesById[$entryTypeId] = EntryTypeModel::populateModel($entryTypeRecord);
+				$this->_entryTypesById[$entryTypeId] = EntryTypeModel::create($entryTypeRecord);
 			}
 			else
 			{
@@ -977,11 +993,16 @@ class Sections extends Component
 	 */
 	public function getEntryTypesByHandle($entryTypeHandle)
 	{
-		$entryTypeRecords = EntryTypeRecord::findAll([
+		$entryTypes = EntryTypeRecord::findAll([
 			'handle' => $entryTypeHandle
 		]);
 
-		return EntryTypeModel::populateModels($entryTypeRecords);
+		foreach ($entryTypes as $key => $value)
+		{
+			$entryTypes[$key] = EntryTypeModel::create($value);
+		}
+
+		$entryTypes;
 	}
 
 	/**
@@ -1004,7 +1025,7 @@ class Sections extends Component
 			}
 
 			$isNewEntryType = false;
-			$oldEntryType = EntryTypeModel::populateModel($entryTypeRecord);
+			$oldEntryType = EntryTypeModel::create($entryTypeRecord);
 		}
 		else
 		{

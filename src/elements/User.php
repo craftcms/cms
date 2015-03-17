@@ -505,6 +505,26 @@ class User extends Element implements IdentityInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function init()
+	{
+		// Is the user in cooldown mode, and are they past their window?
+		if ($this->locked)
+		{
+			$cooldownDuration = Craft::$app->config->get('cooldownDuration');
+
+			if ($cooldownDuration)
+			{
+				if (!$this->getRemainingCooldownTime())
+				{
+					Craft::$app->users->activateUser($user);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function rules()
 	{
 		$rules = parent::rules();
@@ -1027,31 +1047,6 @@ class User extends Element implements IdentityInterface
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function populateModel($attributes)
-	{
-		/** @var User $user */
-		$user = parent::populateModel($attributes);
-
-		// Is the user in cooldown mode, and are they past their window?
-		if ($user->status == UserStatus::Locked)
-		{
-			$cooldownDuration = Craft::$app->config->get('cooldownDuration');
-
-			if ($cooldownDuration)
-			{
-				if (!$user->getRemainingCooldownTime())
-				{
-					Craft::$app->users->activateUser($user);
-				}
-			}
-		}
-
-		return $user;
 	}
 
 	/**

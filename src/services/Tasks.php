@@ -354,7 +354,7 @@ class Tasks extends Component
 
 		if ($result)
 		{
-			return TaskModel::populateModel($result);
+			return TaskModel::create($result);
 		}
 	}
 
@@ -365,13 +365,18 @@ class Tasks extends Component
 	 */
 	public function getAllTasks()
 	{
-		$results = (new Query())
+		$tasks = (new Query())
 			->select('*')
 			->from('{{%tasks}}')
 			->orderBy('root asc, lft asc')
 			->all();
 
-		return TaskModel::populateModels($results);
+		foreach ($tasks as $key => $value)
+		{
+			$tasks[$key] = TaskModel::create($value);
+		}
+
+		return $tasks;
 	}
 
 	/**
@@ -394,7 +399,7 @@ class Tasks extends Component
 
 			if ($result)
 			{
-				$this->_runningTask = TaskModel::populateModel($result);
+				$this->_runningTask = TaskModel::create($result);
 			}
 			else
 			{
@@ -477,8 +482,14 @@ class Tasks extends Component
 			$query->limit($limit);
 		}
 
-		$results = $query->all();
-		return TaskModel::populateModels($results);
+		$tasks = $query->all();
+
+		foreach ($tasks as $key => $value)
+		{
+			$tasks[$key] = TaskModel::create($value);
+		}
+
+		return $tasks;
 	}
 
 	/**
@@ -542,7 +553,7 @@ class Tasks extends Component
 				if ($taskRecord)
 				{
 					$this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-					$this->_nextPendingTask = TaskModel::populateModel($taskRecord);
+					$this->_nextPendingTask = TaskModel::create($taskRecord);
 				}
 				else
 				{
