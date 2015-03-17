@@ -184,7 +184,7 @@ class Et
 			{
 				try
 				{
-					$data = JsonHelper::encode($this->_model->getAttributes(null, true));
+					$data = JsonHelper::encode($this->_model);
 
 					$client = new Client([
 						'headers' => [

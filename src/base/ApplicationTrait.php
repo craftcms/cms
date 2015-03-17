@@ -606,7 +606,7 @@ trait ApplicationTrait
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		if ($info->validate())
 		{
-			$attributes = $info->getAttributes(null, true);
+			$attributes = $info->toArray();
 
 			if ($this->isInstalled())
 			{

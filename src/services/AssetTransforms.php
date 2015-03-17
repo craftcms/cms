@@ -478,7 +478,7 @@ class AssetTransforms extends Component
 	 */
 	public function storeTransformIndexData(AssetTransformIndexModel $index)
 	{
-		$values = $index->getAttributes(null, true);
+		$values = $index->toArray();
 
 		// These do not really belong here.
 		unset($values['detectedFormat']);

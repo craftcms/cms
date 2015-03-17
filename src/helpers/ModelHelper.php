@@ -526,7 +526,7 @@ class ModelHelper
 
 		if ($value instanceof Model)
 		{
-			$attributes = $value->getAttributes(null, true);
+			$attributes = $value->toArray();
 			$attributes['__model__'] = get_class($value);
 			$value = $attributes;
 		}
