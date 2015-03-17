@@ -16,6 +16,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\models\Content;
 use craft\app\models\Field as FieldModel;
+use craft\app\models\FieldLayout;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -594,7 +595,7 @@ abstract class Element extends Component implements ElementInterface
 	/**
 	 * Returns the field layout used by this element.
 	 *
-	 * @return FieldLayoutModel|null
+	 * @return FieldLayout|null
 	 */
 	public function getFieldLayout()
 	{
