@@ -63,8 +63,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 		{
 			return [];
 		}
-
-		if (is_string($object))
+		else if (is_string($object))
 		{
 			// Split it on the non-escaped commas
 			$object = preg_split('/(?<!\\\),/', $object);
@@ -83,10 +82,13 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 
 			// Remove any empty elements and reset the keys
 			$object = array_merge(array_filter($object));
-		}
 
-		// Now run it through the parent.
-		return parent::toArray($object);
+			return $object;
+		}
+		else
+		{
+			return parent::toArray($object);
+		}
 	}
 
 	/**
