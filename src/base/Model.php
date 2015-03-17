@@ -150,7 +150,7 @@ abstract class Model extends \yii\base\Model
 	 */
 	public function datetimeAttributes()
 	{
-		return [];
+		return ['dateCreated', 'dateUpdated'];
 	}
 
 	/**
