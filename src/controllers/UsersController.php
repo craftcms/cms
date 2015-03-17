@@ -144,6 +144,15 @@ class UsersController extends BaseController
 	{
 		craft()->userSession->logout(false);
 
+		if (craft()->config->get('enableCsrfProtection'))
+		{
+			// Manually nuke the CSRF cookie (if there is one).
+			craft()->request->deleteCookie(craft()->request->csrfTokenName);
+
+			// Generate a new one.
+			craft()->request->getCsrfToken();
+		}
+
 		if (craft()->request->isAjaxRequest())
 		{
 			$this->returnJson(array(
