@@ -22,7 +22,7 @@ abstract class Component extends Model implements ComponentInterface
 	 * Returns the display name of this class.
 	 * @return string The display name of this class.
 	 */
-	public static function classDisplayName()
+	public static function displayName()
 	{
 		$classNameParts = implode('\\', static::className());
 		$displayName = array_pop($classNameParts);

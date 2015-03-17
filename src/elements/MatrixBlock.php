@@ -30,7 +30,7 @@ class MatrixBlock extends Element
 	/**
 	 * @inheritdoc
 	 */
-	public static function classDisplayName()
+	public static function displayName()
 	{
 		return Craft::t('app', 'Matrix Block');
 	}

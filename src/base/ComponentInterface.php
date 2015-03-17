@@ -30,7 +30,7 @@ interface ComponentInterface extends Arrayable
 	 * Returns the display name of this class.
 	 * @return string The display name of this class.
 	 */
-	public static function classDisplayName();
+	public static function displayName();
 
 	/**
 	 * Returns a unique handle that can be used to refer to this class.
