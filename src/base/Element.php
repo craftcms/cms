@@ -543,6 +543,19 @@ abstract class Element extends Component implements ElementInterface
 	/**
 	 * @inheritdoc
 	 */
+	public function init()
+	{
+		parent::init();
+
+		if (!$this->locale)
+		{
+			$this->locale = Craft::$app->i18n->getPrimarySiteLocaleId();
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function attributeLabels()
 	{
 		return [
