@@ -7,9 +7,6 @@
 
 namespace craft\app\base;
 
-use yii\base\Model;
-use yii\base\Object;
-
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
@@ -45,35 +42,16 @@ abstract class Component extends Model implements ComponentInterface
 	/**
 	 * @inheritdoc
 	 */
-	public static function instantiate($data)
+	public static function instantiate($config)
 	{
-		if ($data['type'])
+		if ($config['type'])
 		{
-			$class = $data['type'];
+			$class = $config['type'];
 			return new $class;
 		}
 		else
 		{
 			return new static;
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function populateComponent(ComponentInterface $component, $data)
-	{
-		if ($component instanceof Model)
-		{
-			$attributes = array_flip($component->attributes());
-		}
-
-		foreach ($data as $name => $value)
-		{
-			if (isset($attributes[$name]) || ($component instanceof Object && $component->canSetProperty($name)) || property_exists($component, $name))
-			{
-				$component->$name = $value;
-			}
 		}
 	}
 }
