@@ -403,10 +403,11 @@ class TemplateCache extends Component
 
 		$elementIds = [];
 
+		/** @var ElementInterface[] $elements */
 		foreach ($elements as $element)
 		{
 			// Make sure we haven't just deleted all of the caches for this element type.
-			if (empty($this->_deletedCachesByElementType[$element->getElementType()]))
+			if (empty($this->_deletedCachesByElementType[$element::className()]))
 			{
 				$elementIds[] = $element->id;
 			}

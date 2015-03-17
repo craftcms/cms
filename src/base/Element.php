@@ -582,17 +582,6 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the type of element this is.
-	 *
-	 * @return string
-	 * @todo Remove this
-	 */
-	public function getElementType()
-	{
-		return $this->elementType;
-	}
-
-	/**
 	 * Returns the field layout used by this element.
 	 *
 	 * @return FieldLayout|null
