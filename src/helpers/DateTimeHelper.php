@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
+use yii\helpers\FormatConverter;
 
 /**
  * Class DateTimeHelper
@@ -46,9 +47,9 @@ class DateTimeHelper
 		$timezone = Craft::$app->getTimeZone();
 
 		// Was this a date/time-picker?
-		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
+		if (is_array($object) && (isset($object['date']) || isset($object['time'])))
 		{
-			$dt = $date;
+			$dt = $object;
 
 			if (empty($dt['date']) && empty($dt['time']))
 			{
@@ -72,7 +73,7 @@ class DateTimeHelper
 					$altFormat = str_replace('Y', 'y', $format);
 				}
 
-				if (static::createFromFormat($altFormat, $date) !== false)
+				if (DateTime::createFromFormat($altFormat, $date) !== false)
 				{
 					$format = $altFormat;
 				}
@@ -99,7 +100,7 @@ class DateTimeHelper
 		}
 		else
 		{
-			$date = trim((string) $date);
+			$date = trim((string) $object);
 
 			if (preg_match('/^
 				(?P<year>\d{4})                                  # YYYY (four digit year)

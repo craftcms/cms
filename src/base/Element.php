@@ -578,7 +578,7 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getId()
 	{
-		return $this->getAttribute('id');
+		return $this->id;
 	}
 
 	/**
