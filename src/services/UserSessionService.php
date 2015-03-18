@@ -1345,8 +1345,11 @@ class UserSessionService extends \CWebUser
 		// Delete the identity cookie, if there is one
 		$this->deleteStateCookie('');
 
-		// Let's keep the current nonce around.
-		craft()->request->regenCsrfCookie();
+		if (craft()->config->get('enableCsrfProtection'))
+		{
+			// Let's keep the current nonce around.
+			craft()->request->regenCsrfCookie();
+		}
 
 		// Fire an 'onLogout' event
 		$this->onLogout(new Event($this));
