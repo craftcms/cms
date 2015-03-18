@@ -157,6 +157,10 @@ class AssetsFieldType extends BaseElementFieldType
 						$fileIds = array_merge($value, $fileIds);
 					}
 
+					// Make it look like the actual POST data contained these file IDs as well,
+					// so they make it into entry draft/version data
+					$this->element->setRawPostContent($this->model->handle, $fileIds);
+
 					return $fileIds;
 				}
 			}
