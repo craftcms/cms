@@ -8,9 +8,10 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
 use craft\app\enums\ConfigCategory;
+use DateTime;
+use yii\db\Schema;
 
 /**
  * Class DbHelper
@@ -61,6 +62,47 @@ class DbHelper
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * Prepares an object’s values to be sent to the database.
+	 *
+	 * @param mixed $object
+	 * @return array
+	 */
+	public static function prepObjectValues($object)
+	{
+		// Convert the object to an array
+		$object = ArrayHelper::toArray($object, [], false);
+
+		foreach ($object as $key => $value)
+		{
+			$object[$key] = static::prepValue($value);
+		}
+
+		return $object;
+	}
+
+	/**
+	 * Prepares a value to be sent to the database.
+	 *
+	 * @param mixed $value
+	 * @return array
+	 */
+	public static function prepValue($value)
+	{
+		if ($value instanceof DateTime)
+		{
+			return DateTimeHelper::formatTimeForDb($value);
+		}
+		else if (is_object($value) || is_array($value))
+		{
+			return JsonHelper::encode($value);
+		}
+		else
+		{
+			return $value;
+		}
+	}
 
 	/**
 	 * Normalizes a column's config.
@@ -254,6 +296,79 @@ class DbHelper
 		}
 
 		return $def;
+	}
+
+	/**
+	 * Integer column sizes.
+	 *
+	 * @var array
+	 */
+	private static $_intColumnSizes = [
+		ColumnType::TinyInt   => 128,
+		ColumnType::SmallInt  => 32768,
+		ColumnType::MediumInt => 8388608,
+		ColumnType::Int       => 2147483648,
+		ColumnType::BigInt    => 9223372036854775808
+	];
+
+	/**
+	 * Returns a number column type, taking the min, max, and number of decimal points into account.
+	 *
+	 * @param int $min
+	 * @param int $max
+	 * @param int $decimals
+	 *
+	 * @return array
+	 */
+	public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
+	{
+		// Normalize the arguments
+		$min = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
+		$max = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int]-1;
+		$decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+
+		// Unsigned?
+		$unsigned = ($min >= 0);
+
+		// Figure out the max length
+		$maxAbsSize = intval($unsigned ? $max : max(abs($min), abs($max)));
+		$length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
+
+		// Decimal or int?
+		if ($decimals > 0)
+		{
+			$type = Schema::TYPE_DECIMAL."($length,$decimals)";
+		}
+		else
+		{
+			// Figure out the smallest possible int column type that will fit our min/max
+			foreach (static::$_intColumnSizes as $type => $size)
+			{
+				if ($unsigned)
+				{
+					if ($max < $size * 2)
+					{
+						break;
+					}
+				}
+				else
+				{
+					if ($min >= -$size && $max < $size)
+					{
+						break;
+					}
+				}
+			}
+
+			$type .= "($length)";
+		}
+
+		if ($unsigned)
+		{
+			$type .= ' unsigned';
+		}
+
+		return $type;
 	}
 
 	/**

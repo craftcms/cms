@@ -572,6 +572,12 @@ class Fields extends Component
 
 				$fieldType->onAfterSave();
 
+				// Update the field version
+				if ($field->context === 'global')
+				{
+					$this->_updateFieldVersion();
+				}
+
 				if ($transaction !== null)
 				{
 					$transaction->commit();
@@ -653,6 +659,11 @@ class Fields extends Component
 				{
 					$field->getFieldType()->onAfterDelete();
 				}
+			}
+
+			if ($field->context === 'global')
+			{
+				$this->_updateFieldVersion();
 			}
 
 			if ($transaction !== null)
@@ -1113,5 +1124,15 @@ class Fields extends Component
 		{
 			return new FieldRecord();
 		}
+	}
+
+	/**
+	 * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+	 */
+	private function _updateFieldVersion()
+	{
+		$info = Craft::$app->getInfo();
+		$info->fieldVersion = ($info->fieldVersion ?: 0) + 1;
+		Craft::$app->saveInfo($info);
 	}
 }

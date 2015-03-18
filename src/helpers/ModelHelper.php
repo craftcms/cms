@@ -339,7 +339,7 @@ class ModelHelper
 			}
 
 			// Lengths
-			if ($config['type'] != AttributeType::Bool && $config['type'] != AttributeType::Number && $config['type'] != AttributeType::Mixed)
+			if (!in_array($config['type'], [AttributeType::Bool, AttributeType::Number, AttributeType::SortOrder, AttributeType::Mixed]))
 			{
 				if (isset($config['length']) && is_numeric($config['length']))
 				{

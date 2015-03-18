@@ -15,6 +15,7 @@ use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\errors\Exception;
 use craft\app\helpers\AppHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\i18n\Locale;
@@ -576,7 +577,7 @@ trait ApplicationTrait
 					throw new Exception(Craft::t('app', 'Craft appears to be installed but the info table is empty.'));
 				}
 
-				$this->_info = new Info($row);
+				$this->_info = Info::create($row);
 			}
 			else
 			{
@@ -606,7 +607,7 @@ trait ApplicationTrait
 		/* @var $this \craft\app\web\Application|\craft\app\console\Application */
 		if ($info->validate())
 		{
-			$attributes = $info->toArray();
+			$attributes = DbHelper::prepObjectValues($info);
 
 			if ($this->isInstalled())
 			{
@@ -737,7 +738,7 @@ trait ApplicationTrait
 		$dispatcher = $this->getLog();
 
 		// Don't setup a target if it's an enabled session.
-		if ($this->getUser()->enableSession)
+		if (!$this->getRequest()->getIsConsoleRequest() && $this->getUser()->enableSession)
 		{
 			$fileTarget = new FileTarget();
 			$fileTarget->logFile = Craft::getAlias('@storage/logs/craft.log');
