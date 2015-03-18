@@ -102,7 +102,7 @@ class AssetsController extends Controller
 			throw new Exception(Craft::t('app', 'The upload failed.'));
 		}
 
-		$field = Craft::$app->fields->populateFieldType(Craft::$app->fields->getFieldById($fieldId));
+		$field = Craft::$app->fields->getFieldById($fieldId);
 
 		if (!($field instanceof Assets))
 		{
