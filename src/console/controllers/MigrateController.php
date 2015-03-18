@@ -6,30 +6,21 @@
  */
 
 namespace craft\app\console\controllers;
+
 use yii\base\NotSupportedException;
 
 /**
  * Manages Craft and plugin migrations.
  *
- * A migration means a set of persistent changes to the application environment
- * that is shared among different developers. For example, in an application
- * backed by a database, a migration may refer to a set of changes to
+ * A migration means a set of persistent changes to the application environment that is shared among different
+ * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
  *
- * This command provides support for tracking the migration history, upgrading
- * or downloading with migrations, and creating new migration skeletons.
+ * This controllers provides support for tracking the migration history, updating migrations, and creating new
+ * migration skeleton files..
  *
- * The migration history is stored in a database table named
- * as [[migrationTable]]. The table will be automatically created the first time
- * this command is executed, if it does not exist. You may also manually
- * create it as follows:
- *
- * ~~~
- * CREATE TABLE migration (
- *     version varchar(180) PRIMARY KEY,
- *     apply_time integer
- * )
- * ~~~
+ * The migration history is stored in a database table named [[migrationTable]]. The table will be automatically
+ * created the first time this controller is executed, if it does not exist.
  *
  * Below are some common usages of this command:
  *
@@ -39,9 +30,6 @@ use yii\base\NotSupportedException;
  *
  * # applies ALL new migrations
  * yii migrate
- *
- * # reverts the last applied migration
- * yii migrate/down
  * ~~~
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
