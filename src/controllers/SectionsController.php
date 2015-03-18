@@ -262,34 +262,34 @@ class SectionsController extends Controller
 	/**
 	 * Entry types index
 	 *
-	 * @param array $variables
+	 * @param int $sectionId The ID of the section whose entry types we’re listing
 	 *
 	 * @throws HttpException
 	 * @return null
 	 */
-	public function actionEntryTypesIndex(array $variables = [])
+	public function actionEntryTypesIndex($sectionId)
 	{
-		if (empty($variables['sectionId']))
+		$section = Craft::$app->sections->getSectionById($sectionId);
+
+		if ($section === null)
 		{
-			throw new HttpException(400);
+			throw new HttpException(404, "No section exists with the ID '$sectionId'");
 		}
 
-		$variables['section'] = Craft::$app->sections->getSectionById($variables['sectionId']);
-
-		if (!$variables['section'])
-		{
-			throw new HttpException(404);
-		}
-
-		$variables['crumbs'] = [
+		$crumbs = [
 			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('settings')],
 			['label' => Craft::t('app', 'Sections'), 'url' => UrlHelper::getUrl('settings/sections')],
-			['label' => $variables['section']->name, 'url' => UrlHelper::getUrl('settings/sections/'.$variables['section']->id)],
+			['label' => $section->name, 'url' => UrlHelper::getUrl('settings/sections/'.$section->id)],
 		];
 
-		$variables['title'] = Craft::t('app', '{section} Entry Types', ['section' => $variables['section']->name]);
+		$title = Craft::t('app', '{section} Entry Types', ['section' => $section->name]);
 
-		$this->renderTemplate('settings/sections/_entrytypes/index', $variables);
+		$this->renderTemplate('settings/sections/_entrytypes/index', [
+			'sectionId' => $sectionId,
+			'section' => $section,
+			'crumbs' => $crumbs,
+			'title' => $title,
+		]);
 	}
 
 	/**
