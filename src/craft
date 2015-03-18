@@ -8,6 +8,9 @@
  * @license http://buildwithcraft.com/license
  */
 
+// Set this early.
+date_default_timezone_set('UTC');
+
 $appType = 'console';
 $app = require 'bootstrap.php';
 $exitCode = $app->run();
