@@ -345,6 +345,47 @@ class User extends Element implements IdentityInterface
 		return Craft::$app->users->saveUser($element);
 	}
 
+	// IdentityInterface Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function findIdentity($id)
+	{
+		$user = Craft::$app->users->getUserById($id);
+
+		if ($user->status == UserStatus::Active)
+		{
+			return $user;
+		}
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function findIdentityByAccessToken($token, $type = null)
+	{
+		throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+	}
+
+	/**
+	 * Returns the authentication data from a given auth key.
+	 *
+	 * @param string $authKey
+	 *
+	 * @return array|null The authentication data, or `null` if it was invalid.
+	 */
+	public static function getAuthData($authKey)
+	{
+		$data = json_decode($authKey, true);
+
+		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
+		{
+			return $data;
+		}
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -543,44 +584,6 @@ class User extends Element implements IdentityInterface
 		$rules[] = [['email', 'unverifiedEmail'], 'string', 'max' => 255];
 
 		return $rules;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function findIdentity($id)
-	{
-		$user = Craft::$app->users->getUserById($id);
-
-		if ($user->status == UserStatus::Active)
-		{
-			return $user;
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public static function findIdentityByAccessToken($token, $type = null)
-	{
-		throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-	}
-
-	/**
-	 * Returns the authentication data from a given auth key.
-	 *
-	 * @param string $authKey
-	 *
-	 * @return array|null The authentication data, or `null` if it was invalid.
-	 */
-	public static function getAuthData($authKey)
-	{
-		$data = json_decode($authKey, true);
-
-		if (count($data) === 3 && isset($data[0], $data[1], $data[2]))
-		{
-			return $data;
-		}
 	}
 
 	/**
