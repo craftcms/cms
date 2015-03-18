@@ -78,6 +78,7 @@ class CraftTwigExtension extends \Twig_Extension
 			'filesize'           => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asShortSize'),
 			'filter'             => new \Twig_Filter_Function('array_filter'),
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
+			'id'                 => new \Twig_Filter_Function('\Craft::$app->templates->formatInputId'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
 			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
