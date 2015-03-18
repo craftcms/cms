@@ -107,7 +107,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 		}
 		else
 		{
-			return Garnish.getInputPostVal(this.$toggle);
+			return Garnish.getInputPostVal(this.$toggle).replace(/[\[\]\\]+/g, '-');
 		}
 	},
 
