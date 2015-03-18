@@ -557,7 +557,7 @@ class User extends Element implements IdentityInterface
 			{
 				if (!$this->getRemainingCooldownTime())
 				{
-					Craft::$app->users->activateUser($user);
+					Craft::$app->users->activateUser($this);
 				}
 			}
 		}
