@@ -737,7 +737,7 @@ trait ApplicationTrait
 		$dispatcher = $this->getLog();
 
 		// Don't setup a target if it's an enabled session.
-		if (!$this->getRequest()->isConsoleRequest() && $this->getUser()->enableSession)
+		if (!$this->getRequest()->getIsConsoleRequest() && $this->getUser()->enableSession)
 		{
 			$fileTarget = new FileTarget();
 			$fileTarget->logFile = Craft::getAlias('@storage/logs/craft.log');
