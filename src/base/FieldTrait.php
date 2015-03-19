@@ -7,9 +7,6 @@
 
 namespace craft\app\base;
 
-use Craft;
-use craft\app\models\FieldGroup;
-
 /**
  * FieldTrait implements the common methods and properties for field classes.
  *
@@ -70,17 +67,4 @@ trait FieldTrait
 	 * @var ElementInterface|Element The element that the field is currently associated with
 	 */
 	public $element;
-
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * Returns the field’s group.
-	 *
-	 * @return FieldGroup
-	 */
-	public function getGroup()
-	{
-		return Craft::$app->fields->getGroupById($this->groupId);
-	}
 }

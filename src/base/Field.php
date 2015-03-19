@@ -227,6 +227,14 @@ abstract class Field extends SavableComponent implements FieldInterface
 		$this->_isFresh = $isFresh;
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public function getGroup()
+	{
+		return Craft::$app->fields->getGroupById($this->groupId);
+	}
+
 	// Protected Methods
 	// =========================================================================
 
