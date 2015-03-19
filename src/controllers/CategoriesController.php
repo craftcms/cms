@@ -649,7 +649,7 @@ class CategoriesController extends Controller
 			{
 				foreach ($tab->getFields() as $field)
 				{
-					if ($variables['category']->getErrors($field->getField()->handle))
+					if ($variables['category']->getErrors($field->handle))
 					{
 						$hasErrors = true;
 						break;

@@ -106,19 +106,14 @@ class SearchIndex extends BaseTool
 						$fieldLayout = $element->getFieldLayout();
 						$keywords = [];
 
-						foreach ($fieldLayout->getFields() as $fieldLayoutField)
+						foreach ($fieldLayout->getFields() as $field)
 						{
-							$field = $fieldLayoutField->getField();
+							$field->element = $element;
+							$handle = $field->handle;
 
-							if ($field)
-							{
-								$field->element = $element;
-								$handle = $field->handle;
-
-								// Set the keywords for the content's locale
-								$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
-								$keywords[$field->id] = $fieldSearchKeywords;
-							}
+							// Set the keywords for the content's locale
+							$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+							$keywords[$field->id] = $fieldSearchKeywords;
 						}
 
 						Craft::$app->search->indexElementFields($element->id, $localeId, $keywords);

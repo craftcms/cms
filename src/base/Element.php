@@ -358,12 +358,12 @@ abstract class Element extends Component implements ElementInterface
 			$namespace = Craft::$app->templates->namespaceInputName('fields', $originalNamespace);
 			Craft::$app->templates->setNamespace($namespace);
 
-			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			foreach ($fieldLayout->getFields() as $field)
 			{
 				$fieldHtml = Craft::$app->templates->render('_includes/field', [
 					'element'  => $element,
-					'field'    => $fieldLayoutField->getField(),
-					'required' => $fieldLayoutField->required
+					'field'    => $field,
+					'required' => $field->required
 				]);
 
 				$html .= Craft::$app->templates->namespaceInputs($fieldHtml, 'fields');
@@ -1068,37 +1068,32 @@ abstract class Element extends Component implements ElementInterface
 			// Make sure $this->_content is set
 			$this->getContent();
 
-			foreach ($fieldLayout->getFields() as $fieldLayoutField)
-			{
-				$field = $fieldLayoutField->getField();
+			foreach ($fieldLayout->getFields() as $field)
+		{
+				$handle = $field->handle;
 
-				if ($field)
+				// Do we have any post data for this field?
+				if (isset($content[$handle]))
 				{
-					$handle = $field->handle;
-
-					// Do we have any post data for this field?
-					if (isset($content[$handle]))
-					{
-						$value = $this->_rawPostContent[$handle] = $content[$handle];
-					}
-					// Were any files uploaded for this field?
-					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
-					{
-						$value = null;
-					}
-					else
-					{
-						// No data was submitted so just skip this field
-						continue;
-					}
-
-					// Give the field a chance to make changes
-					$field->element = $this;
-					$value = $field->prepValueFromPost($value);
-
-					// Now set the prepped value on the Content
-					$this->_content->$handle = $value;
+					$value = $this->_rawPostContent[$handle] = $content[$handle];
 				}
+				// Were any files uploaded for this field?
+				else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
+				{
+					$value = null;
+				}
+				else
+				{
+					// No data was submitted so just skip this field
+					continue;
+				}
+
+				// Give the field a chance to make changes
+				$field->element = $this;
+				$value = $field->prepValueFromPost($value);
+
+				// Now set the prepped value on the Content
+				$this->_content->$handle = $value;
 			}
 		}
 	}

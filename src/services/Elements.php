@@ -563,15 +563,10 @@ class Elements extends Component
 
 						if ($fieldLayout)
 						{
-							foreach ($fieldLayout->getFields() as $fieldLayoutField)
+							foreach ($fieldLayout->getFields() as $field)
 							{
-								$field = $fieldLayoutField->getField();
-
-								if ($field)
-								{
-									$field->element = $element;
-									$field->afterElementSave();
-								}
+								$field->element = $element;
+								$field->afterElementSave();
 							}
 						}
 

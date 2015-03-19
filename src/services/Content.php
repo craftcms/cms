@@ -216,18 +216,13 @@ class Content extends Component
 
 		if ($fieldLayout)
 		{
-			foreach ($fieldLayout->getFields() as $fieldLayoutField)
+			foreach ($fieldLayout->getFields() as $field)
 			{
-				$field = $fieldLayoutField->getField();
+				$attributesToValidate[] = $field->handle;
 
-				if ($field)
+				if ($field->required)
 				{
-					$attributesToValidate[] = $field->handle;
-
-					if ($fieldLayoutField->required)
-					{
-						$requiredFields[] = $field->id;
-					}
+					$requiredFields[] = $field->id;
 				}
 			}
 		}
@@ -339,16 +334,11 @@ class Content extends Component
 		// Get all of the non-translatable fields
 		$nonTranslatableFields = [];
 
-		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		foreach ($fieldLayout->getFields() as $field)
 		{
-			$field = $fieldLayoutField->getField();
-
-			if ($field && !$field->translatable)
+			if (!$field->translatable && $field->hasContentColumn())
 			{
-				if ($field->hasContentColumn())
-				{
-					$nonTranslatableFields[$field->id] = $field;
-				}
+				$nonTranslatableFields[$field->id] = $field;
 			}
 		}
 
@@ -396,26 +386,21 @@ class Content extends Component
 	{
 		$searchKeywordsByLocale = [];
 
-		foreach ($fieldLayout->getFields() as $fieldLayoutField)
+		foreach ($fieldLayout->getFields() as $field)
 		{
-			$field = $fieldLayoutField->getField();
+			$field->element = $element;
+			$handle = $field->handle;
 
-			if ($field)
+			// Set the keywords for the content's locale
+			$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+			// Should we queue up the other locales' new keywords too?
+			if (isset($nonTranslatableFields[$field->id]))
 			{
-				$field->element = $element;
-				$handle = $field->handle;
-
-				// Set the keywords for the content's locale
-				$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
-				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-				// Should we queue up the other locales' new keywords too?
-				if (isset($nonTranslatableFields[$field->id]))
+				foreach ($otherContentModels as $otherContentModel)
 				{
-					foreach ($otherContentModels as $otherContentModel)
-					{
-						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
-					}
+					$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 				}
 			}
 		}

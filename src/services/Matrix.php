@@ -17,7 +17,6 @@ use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\FieldLayout as FieldLayoutModel;
-use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
@@ -342,12 +341,10 @@ class Matrix extends Component
 						throw new Exception(Craft::t('app', 'An error occurred while saving this Matrix block type.'));
 					}
 
-					$fieldLayoutField = new FieldLayoutFieldModel();
-					$fieldLayoutField->fieldId = $field->id;
-					$fieldLayoutField->required = $field->required;
-					$fieldLayoutField->sortOrder = ++$sortOrder;
+					$field->required = $field->required;
+					$field->sortOrder = ++$sortOrder;
 
-					$fieldLayoutFields[] = $fieldLayoutField;
+					$fieldLayoutFields[] = $field;
 				}
 
 				$contentService->fieldContext        = $originalFieldContext;

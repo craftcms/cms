@@ -8,9 +8,9 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
-use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
-use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 
 /**
  * FieldLayout model class.
@@ -62,7 +62,7 @@ class FieldLayout extends Model
 	/**
 	 * Returns the layout’s tabs.
 	 *
-	 * @return FieldLayoutTabModel[] The layout’s tabs.
+	 * @return FieldLayoutTab[] The layout’s tabs.
 	 */
 	public function getTabs()
 	{
@@ -84,7 +84,7 @@ class FieldLayout extends Model
 	/**
 	 * Returns the layout’s fields.
 	 *
-	 * @return FieldLayoutFieldModel[] The layout’s fields.
+	 * @return FieldInterface[]|Field[] The layout’s fields.
 	 */
 	public function getFields()
 	{
@@ -92,7 +92,7 @@ class FieldLayout extends Model
 		{
 			if ($this->id)
 			{
-				$this->_fields = Craft::$app->fields->getLayoutFieldsById($this->id);
+				$this->_fields = Craft::$app->fields->getFieldsByLayoutId($this->id);
 			}
 			else
 			{
@@ -114,7 +114,7 @@ class FieldLayout extends Model
 
 		foreach ($this->getFields() as $field)
 		{
-			$ids[] = $field->fieldId;
+			$ids[] = $field->id;
 		}
 
 		return $ids;
@@ -123,8 +123,8 @@ class FieldLayout extends Model
 	/**
 	 * Sets the layout’s tabs.
 	 *
-	 * @param array|FieldLayoutTabModel[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTabModel
-	 *                                          objects or arrays defining the tab’s attributes.
+	 * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
+	 *                                     objects or arrays defining the tab’s attributes.
 	 *
 	 * @return null
 	 */
@@ -136,7 +136,7 @@ class FieldLayout extends Model
 		{
 			if (is_array($tab))
 			{
-				$tab = new FieldLayoutTabModel($tab);
+				$tab = new FieldLayoutTab($tab);
 			}
 
 			$tab->setLayout($this);
@@ -147,25 +147,14 @@ class FieldLayout extends Model
 	/**
 	 * Sets the layout']”s fields.
 	 *
-	 * @param array|FieldLayoutFieldModel[] $fields An array of the layout’s tabs, which can either be
-	 *                                              FieldLayoutFieldModel objects or arrays defining the tab’s
-	 *                                              attributes.
+	 * @param FieldInterface[]|Field[] $fields An array of the layout’s fields, which can either be
+	 *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
+	 *                                         attributes.
 	 *
 	 * @return null
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = [];
-
-		foreach ($fields as $field)
-		{
-			if (is_array($field))
-			{
-				$field = new FieldLayoutFieldModel($field);
-			}
-
-			$field->setLayout($this);
-			$this->_fields[] = $field;
-		}
+		$this->_fields = $fields;
 	}
 }

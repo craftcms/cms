@@ -34,11 +34,9 @@ use craft\app\fields\Table as TableField;
 use craft\app\fields\Tags as TagsField;
 use craft\app\fields\Users as UsersField;
 use craft\app\helpers\ComponentHelper;
-use craft\app\helpers\ModelHelper;
 use craft\app\base\Model;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
-use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 use craft\app\records\Field as FieldRecord;
 use craft\app\records\FieldGroup as FieldGroupRecord;
@@ -752,21 +750,25 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a layout's tabs by its ID.
+	 * Returns the fields in a field layout, identified by its ID.
 	 *
-	 * @param int $layoutId
+	 * @param int $layoutId The field layout ID
 	 *
-	 * @return FieldLayoutFieldModel[]
+	 * @return FieldInterface[]|Field[]
 	 */
-	public function getLayoutFieldsById($layoutId)
+	public function getFieldsByLayoutId($layoutId)
 	{
-		$fields = $this->_createLayoutFieldQuery()
-			->where('layoutId = :layoutId', [':layoutId' => $layoutId])
+		$fields = $this->_createFieldQuery()
+			->addSelect(['flf.layoutId', 'flf.tabId', 'flf.required', 'flf.sortOrder'])
+			->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
+			->innerJoin('{{%fieldlayouttabs}} flt', 'flt.id = flf.tabId')
+			->where(['flf.layoutId' => $layoutId])
+			->orderBy('flt.sortOrder, flf.sortOrder')
 			->all();
 
-		foreach ($fields as $key => $value)
+		foreach ($fields as $key => $config)
 		{
-			$fields[$key] = FieldLayoutFieldModel::create($value);
+			$fields[$key] = $this->createField($config);
 		}
 
 		return $fields;
@@ -800,6 +802,27 @@ class Fields extends Component
 
 		$tabSortOrder = 0;
 
+		// Get all the fields
+		$allFieldIds = [];
+
+		foreach ($postedFieldLayout as $fieldIds)
+		{
+			$allFieldIds = array_merge($allFieldIds, $fieldIds);
+		}
+
+		if ($allFieldIds)
+		{
+			$allFieldsById = $this->_createFieldQuery()
+				->where(['in', 'id', $allFieldIds])
+				->indexBy('id')
+				->all();
+
+			foreach ($allFieldsById as $id => $field)
+			{
+				$allFieldsById[$id] = $this->createField($field);
+			}
+		}
+
 		foreach ($postedFieldLayout as $tabName => $fieldIds)
 		{
 			$tabFields = [];
@@ -807,8 +830,12 @@ class Fields extends Component
 
 			foreach ($fieldIds as $fieldSortOrder => $fieldId)
 			{
-				$field = new FieldLayoutFieldModel();
-				$field->fieldId   = $fieldId;
+				if (!isset($allFieldsById[$fieldId]))
+				{
+					continue;
+				}
+
+				$field = $allFieldsById[$fieldId];
 				$field->required  = in_array($fieldId, $requiredFields);
 				$field->sortOrder = ($fieldSortOrder+1);
 
@@ -860,11 +887,10 @@ class Fields extends Component
 				$fieldRecord = new FieldLayoutFieldRecord();
 				$fieldRecord->layoutId  = $layout->id;
 				$fieldRecord->tabId     = $tab->id;
-				$fieldRecord->fieldId   = $field->fieldId;
+				$fieldRecord->fieldId   = $field->id;
 				$fieldRecord->required  = $field->required;
 				$fieldRecord->sortOrder = $field->sortOrder;
 				$fieldRecord->save(false);
-				$field->id = $fieldRecord->id;
 			}
 		}
 
@@ -972,9 +998,19 @@ class Fields extends Component
 	private function _createFieldQuery()
 	{
 		return (new Query())
-			->select(['id', 'groupId', 'name', 'handle', 'context', 'instructions', 'translatable', 'type', 'settings'])
-			->from('{{%fields}}')
-			->orderBy('name');
+			->select([
+				'fields.id',
+				'fields.groupId',
+				'fields.name',
+				'fields.handle',
+				'fields.context',
+				'fields.instructions',
+				'fields.translatable',
+				'fields.type',
+				'fields.settings'
+			])
+			->from('{{%fields}} fields')
+			->orderBy('fields.name');
 	}
 
 	/**

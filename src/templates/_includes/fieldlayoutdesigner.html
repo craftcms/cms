@@ -29,11 +29,11 @@
 		</div>
 		<div class="fld-tabcontent">
 			{% for field in tabFields %}
-				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.fieldId }}">
+				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.id }}">
 					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
-					<span>{{ field.getField().name }}</span>
-					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.fieldId }}">
-					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.fieldId }}">{% endif %}
+					<span>{{ field.name }}</span>
+					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.id }}">
+					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.id }}">{% endif %}
 				</div>
 			{% endfor %}
 		</div>

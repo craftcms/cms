@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\base\Model;
 
@@ -111,36 +112,22 @@ class MatrixBlockType extends Model
 	/**
 	 * Returns the fields associated with this block type.
 	 *
-	 * @return FieldInterface[]
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getFields()
 	{
-		if (!isset($this->_fields))
-		{
-			$this->_fields = [];
-
-			$fieldLayoutFields = $this->getFieldLayout()->getFields();
-
-			foreach ($fieldLayoutFields as $fieldLayoutField)
-			{
-				$field = $fieldLayoutField->getField();
-				$field->required = $fieldLayoutField->required;
-				$this->_fields[] = $field;
-			}
-		}
-
-		return $this->_fields;
+		return $this->getFieldLayout()->getFields();
 	}
 
 	/**
 	 * Sets the fields associated with this block type.
 	 *
-	 * @param array $fields
+	 * @param FieldInterface[]|Field[] $fields
 	 *
 	 * @return null
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = $fields;
+		$this->getFieldLayout()->setFields($fields);
 	}
 }

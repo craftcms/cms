@@ -54,7 +54,7 @@
 						{% for field in entryType.getFieldLayout().getFields() %}
 							<div>
 								{{ forms.checkbox({
-									label: field.getField().name~(field.required ? ' <span class="required"></span>' : ''),
+									label: field.name~(field.required ? ' <span class="required"></span>' : ''),
 									name: 'sections['~section.id~'][fields][]',
 									value: field.fieldId,
 									checked: (field.required or field.fieldId in settings.fields),

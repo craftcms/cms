@@ -44,11 +44,6 @@ trait FieldTrait
 	public $instructions;
 
 	/**
-	 * @var boolean Whether the field is required
-	 */
-	public $required = false;
-
-	/**
 	 * @var boolean Whether the field is translatable
 	 */
 	public $translatable = false;
@@ -67,4 +62,27 @@ trait FieldTrait
 	 * @var ElementInterface|Element The element that the field is currently associated with
 	 */
 	public $element;
+
+	// These properties are only populated if the field was fetched via a Field Layout
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @var integer The ID of the field layout that the field was fetched from
+	 */
+	public $layoutId;
+
+	/**
+	 * @var integer The tab ID of the field layout that the field was fetched from
+	 */
+	public $tabId;
+
+	/**
+	 * @var boolean Whether the field is required in the field layout it was fetched from
+	 */
+	public $required;
+
+	/**
+	 * @var integer The field’s sort position in the field layout it was fetched from
+	 */
+	public $sortOrder;
 }

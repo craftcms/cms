@@ -599,10 +599,8 @@ class Matrix extends Field
 
 			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
 
-			foreach ($fieldLayoutFields as $fieldLayoutField)
+			foreach ($fieldLayoutFields as $field)
 			{
-				/** @var Field $field */
-				$field = $fieldLayoutField->getField();
 				$field->element = $block;
 				$field->setIsFresh(true);
 			}
@@ -615,10 +613,8 @@ class Matrix extends Field
 			]));
 
 			// Reset $_isFresh's
-			foreach ($fieldLayoutFields as $fieldLayoutField)
+			foreach ($fieldLayoutFields as $field)
 			{
-				/** @var Field $field */
-				$field = $fieldLayoutField->getField();
 				$field->setIsFresh(null);
 			}
 

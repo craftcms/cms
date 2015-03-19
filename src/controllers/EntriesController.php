@@ -817,7 +817,7 @@ class EntriesController extends BaseEntriesController
 			{
 				foreach ($tab->getFields() as $field)
 				{
-					if ($variables['entry']->getErrors($field->getField()->handle))
+					if ($variables['entry']->getErrors($field->handle))
 					{
 						$hasErrors = true;
 						break;

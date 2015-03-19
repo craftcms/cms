@@ -8,10 +8,9 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\models\FieldLayout as FieldLayoutModel;
-use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 
 /**
  * FieldLayoutTab model class.
@@ -44,7 +43,6 @@ class FieldLayoutTab extends Model
 	 */
 	public $sortOrder;
 
-
 	/**
 	 * @var
 	 */
@@ -75,7 +73,7 @@ class FieldLayoutTab extends Model
 	/**
 	 * Returns the tab’s layout.
 	 *
-	 * @return FieldLayoutModel|null The tab’s layout.
+	 * @return FieldLayout|null The tab’s layout.
 	 */
 	public function getLayout()
 	{
@@ -100,11 +98,11 @@ class FieldLayoutTab extends Model
 	/**
 	 * Sets the tab’s layout.
 	 *
-	 * @param FieldLayoutModel $layout The tab’s layout.
+	 * @param FieldLayout $layout The tab’s layout.
 	 *
 	 * @return null
 	 */
-	public function setLayout(FieldLayoutModel $layout)
+	public function setLayout(FieldLayout $layout)
 	{
 		$this->_layout = $layout;
 	}
@@ -112,7 +110,7 @@ class FieldLayoutTab extends Model
 	/**
 	 * Returns the tab’s fields.
 	 *
-	 * @return array The tab’s fields.
+	 * @return FieldInterface[]|Field[] The tab’s fields.
 	 */
 	public function getFields()
 	{
@@ -142,22 +140,12 @@ class FieldLayoutTab extends Model
 	/**
 	 * Sets the tab’s fields.
 	 *
-	 * @param array $fields The tab’s fields.
+	 * @param FieldInterface[]|Field[] $fields The tab’s fields.
 	 *
 	 * @return null
 	 */
 	public function setFields($fields)
 	{
-		$this->_fields = [];
-
-		foreach ($fields as $field)
-		{
-			if (is_array($field))
-			{
-				$field = new FieldLayoutFieldModel($field);
-			}
-
-			$this->_fields[] = $field;
-		}
+		$this->_fields = $fields;
 	}
 }
