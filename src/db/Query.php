@@ -19,29 +19,6 @@ class Query extends \yii\db\Query
 	// =========================================================================
 
 	/**
-	 * @inheritDoc \yii\db\Query::prepare()
-	 *
-	 * @param \yii\db\QueryBuilder $builder
-	 * @return Query a prepared query instance which will be used by [[QueryBuilder]] to build the SQL
-	 */
-	public function prepare($builder)
-	{
-		if ($this->orderBy !== null)
-		{
-			// See if we're using a fixed order
-			foreach ($this->orderBy as $orderBy)
-			{
-				if ($orderBy instanceof FixedOrderExpression)
-				{
-					$orderBy->db = $builder->db;
-				}
-			}
-		}
-
-		return parent::prepare($builder);
-	}
-
-	/**
 	 * Returns whether a given table has been joined in this query.
 	 *
 	 * @param string $table
@@ -155,8 +132,8 @@ class Query extends \yii\db\Query
 	/**
 	 * Executes the query and returns a single row of result at a given offset.
 	 *
-	 * @param integer    $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-	 * @param Connection $db The database connection used to generate the SQL statement.
+	 * @param integer $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+	 * @param \yii\db\Connection $db The database connection used to generate the SQL statement.
 	 * If this parameter is not given, the `db` application component will be used.
 	 * @return array|boolean The row (in terms of an array) of the query result. False is returned if the query
 	 * results in nothing.

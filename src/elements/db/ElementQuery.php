@@ -773,7 +773,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 		$this->_applyRelatedToParam();
 		$this->_applyStructureParams($class);
 		$this->_applySearchParam($builder->db);
-		$this->_applyOrderByParams();
+		$this->_applyOrderByParams($builder->db);
 
 		// Give other classes a chance to make changes up front
 		if (!$this->afterPrepare())
@@ -1472,9 +1472,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 			if ($scoredSearchResults)
 			{
 				// Order the elements in the exact order that the Search service returned them in
-				$orderBy = new FixedOrderExpression('elements.id', $filteredElementIds, [
-					'db' => $db
-				]);
+				$orderBy = [new FixedOrderExpression('elements.id', $filteredElementIds, $db)];
 				$this->query->orderBy($orderBy);
 			}
 		}
@@ -1483,9 +1481,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 	/**
 	 * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
 	 *
+	 * @param \yii\db\Connection $db
 	 * @throws QueryAbortedException
 	 */
-	private function _applyOrderByParams()
+	private function _applyOrderByParams($db)
 	{
 		if ($this->orderBy === false)
 		{
@@ -1501,7 +1500,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 				throw new QueryAbortedException;
 			}
 
-			$orderBy = new FixedOrderExpression('elements.id', $ids);
+			$orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
 		}
 		else if ($this->orderBy && $this->orderBy != 'score' && !$this->query->orderBy)
 		{
