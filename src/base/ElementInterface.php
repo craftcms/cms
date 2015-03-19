@@ -480,6 +480,8 @@ interface ElementInterface extends ComponentInterface
 	 * Returns the element’s ID.
 	 *
 	 * @return int|null
+	 * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
+	 * go here rather than only in [[\craft\app\elements\User]].
 	 */
 	public function getId();
 

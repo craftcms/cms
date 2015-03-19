@@ -17,7 +17,6 @@ use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\Content;
-use craft\app\models\FieldLayout;
 use craft\app\web\UploadedFile;
 use Exception;
 use yii\base\ErrorHandler;
@@ -576,12 +575,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s ID.
-	 *
-	 * @return int|null
-	 *
-	 * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
-	 * go here rather than only in [[\craft\app\elements\User]].
+	 * @inheritdoc
 	 */
 	public function getId()
 	{
@@ -589,9 +583,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the field layout used by this element.
-	 *
-	 * @return FieldLayout|null
+	 * @inheritdoc
 	 */
 	public function getFieldLayout()
 	{
@@ -599,9 +591,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the locale IDs this element is available in.
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function getLocales()
 	{
@@ -616,18 +606,14 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL format used to generate this element’s URL.
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getUrlFormat()
 	{
 	}
 
 	/**
-	 * Returns the element’s full URL.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getUrl()
 	{
@@ -664,9 +650,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns an anchor pre-filled with this element’s URL and title.
-	 *
-	 * @return \Twig_Markup
+	 * @inheritdoc
 	 */
 	public function getLink()
 	{
@@ -675,18 +659,14 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the reference string to this element.
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getRef()
 	{
 	}
 
 	/**
-	 * Returns whether the current user can edit the element.
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isEditable()
 	{
@@ -694,9 +674,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s CP edit URL.
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getCpEditUrl()
 	{
@@ -704,11 +682,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL to the element’s thumbnail, if there is one.
-	 *
-	 * @param int|null $size
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getThumbUrl($size = null)
 	{
@@ -716,11 +690,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the URL to the element’s icon image, if there is one.
-	 *
-	 * @param int|null $size
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getIconUrl($size = null)
 	{
@@ -728,9 +698,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s status.
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getStatus()
 	{
@@ -779,11 +747,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the default next element.
-	 *
-	 * @param ElementInterface|false $element
-	 *
-	 * @return null
+	 * @inheritdoc
 	 */
 	public function setNext($element)
 	{
@@ -791,11 +755,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the default previous element.
-	 *
-	 * @param ElementInterface|false $element
-	 *
-	 * return void
+	 * @inheritdoc
 	 */
 	public function setPrev($element)
 	{
@@ -803,9 +763,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Get the element’s parent.
-	 *
-	 * @return ElementInterface|null
+	 * @inheritdoc
 	 */
 	public function getParent()
 	{
@@ -826,11 +784,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the element’s parent.
-	 *
-	 * @param ElementInterface|null $parent
-	 *
-	 * @return null
+	 * @inheritdoc
 	 */
 	public function setParent($parent)
 	{
@@ -847,11 +801,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s ancestors.
-	 *
-	 * @param int|null $dist
-	 *
-	 * @return ElementQueryInterface
+	 * @inheritdoc
 	 */
 	public function getAncestors($dist = null)
 	{
@@ -862,11 +812,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s descendants.
-	 *
-	 * @param int|null $dist
-	 *
-	 * @return ElementQueryInterface
+	 * @inheritdoc
 	 */
 	public function getDescendants($dist = null)
 	{
@@ -877,9 +823,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s children.
-	 *
-	 * @return ElementQueryInterface
+	 * @inheritdoc
 	 */
 	public function getChildren()
 	{
@@ -887,9 +831,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns all of the element’s siblings.
-	 *
-	 * @return ElementQueryInterface
+	 * @inheritdoc
 	 */
 	public function getSiblings()
 	{
@@ -899,9 +841,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s previous sibling.
-	 *
-	 * @return ElementInterface|null
+	 * @inheritdoc
 	 */
 	public function getPrevSibling()
 	{
@@ -924,9 +864,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s next sibling.
-	 *
-	 * @return ElementInterface|null
+	 * @inheritdoc
 	 */
 	public function getNextSibling()
 	{
@@ -949,9 +887,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether the element has descendants.
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function hasDescendants()
 	{
@@ -959,9 +895,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the total number of descendants that the element has.
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function getTotalDescendants()
 	{
@@ -974,11 +908,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is an ancestor of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isAncestorOf(ElementInterface $element)
 	{
@@ -986,11 +916,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is a descendant of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isDescendantOf(ElementInterface $element)
 	{
@@ -998,11 +924,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is a direct parent of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isParentOf(ElementInterface $element)
 	{
@@ -1010,11 +932,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is a direct child of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isChildOf(ElementInterface $element)
 	{
@@ -1022,11 +940,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is a sibling of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isSiblingOf(ElementInterface $element)
 	{
@@ -1051,11 +965,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is the direct previous sibling of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isPrevSiblingOf(ElementInterface $element)
 	{
@@ -1063,11 +973,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns whether this element is the direct next sibling of another one.
-	 *
-	 * @param ElementInterface $element
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function isNextSiblingOf(ElementInterface $element)
 	{
@@ -1075,9 +981,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the element’s title.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getTitle()
 	{
@@ -1086,11 +990,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Treats custom fields as array offsets.
-	 *
-	 * @param mixed $offset
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function offsetExists($offset)
 	{
@@ -1105,9 +1005,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the content for the element.
-	 *
-	 * @return Content
+	 * @inheritdoc
 	 */
 	public function getContent()
 	{
@@ -1125,11 +1023,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the content for the element.
-	 *
-	 * @param Content|array $content
-	 *
-	 * @return null
+	 * @inheritdoc
 	 */
 	public function setContent($content)
 	{
@@ -1149,11 +1043,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the content from post data, calling prepValueFromPost() on the field types.
-	 *
-	 * @param array|string $content
-	 *
-	 * @return null
+	 * @inheritdoc
 	 */
 	public function setContentFromPost($content)
 	{
@@ -1214,9 +1104,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the raw content from the post data, before it was passed through [[prepValueFromPost()]].
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function getContentFromPost()
 	{
@@ -1231,9 +1119,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the location in POST that the content was pulled from.
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getContentPostLocation()
 	{
@@ -1241,11 +1127,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Sets the location in POST that the content was pulled from.
-	 *
-	 * @param $contentPostLocation
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function setContentPostLocation($contentPostLocation)
 	{
@@ -1253,12 +1135,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the prepped content for a given field.
-	 *
-	 * @param string $fieldHandle
-	 *
-	 * @throws Exception
-	 * @return mixed
+	 * @inheritdoc
 	 */
 	public function getFieldValue($fieldHandle)
 	{
@@ -1293,9 +1170,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the name of the table this element’s content is stored in.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getContentTable()
 	{
@@ -1303,9 +1178,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the field column prefix this element’s content uses.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getFieldColumnPrefix()
 	{
@@ -1313,9 +1186,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the field context this element’s content uses.
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getFieldContext()
 	{
