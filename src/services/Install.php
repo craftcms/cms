@@ -13,11 +13,12 @@ use craft\app\enums\ColumnType;
 use craft\app\enums\EmailerType;
 use craft\app\enums\SectionType;
 use craft\app\errors\Exception;
+use craft\app\fields\RichText;
+use craft\app\fields\Tags;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\elements\Entry;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\Info as InfoModel;
 use craft\app\models\Section as SectionModel;
@@ -683,12 +684,11 @@ class Install extends Component
 
 		Craft::info('Creating the Body field.');
 
-		$bodyField = new FieldModel();
+		$bodyField = new RichText();
 		$bodyField->groupId      = $group->id;
 		$bodyField->name         = Craft::t('app', 'Body');
 		$bodyField->handle       = 'body';
 		$bodyField->translatable = true;
-		$bodyField->type         = 'RichText';
 		$bodyField->settings = [
 			'configFile' => 'Standard.json',
 			'columnType' => ColumnType::Text,
@@ -707,11 +707,10 @@ class Install extends Component
 
 		Craft::info('Creating the Tags field.');
 
-		$tagsField = new FieldModel();
+		$tagsField = new Tags();
 		$tagsField->groupId      = $group->id;
 		$tagsField->name         = Craft::t('app', 'Tags');
 		$tagsField->handle       = 'tags';
-		$tagsField->type         = 'Tags';
 		$tagsField->settings = [
 			'source' => 'taggroup:'.$tagGroup->id
 		];

@@ -402,25 +402,19 @@ class Content extends Component
 
 			if ($field)
 			{
-				$fieldType = $field->getFieldType();
+				$field->element = $element;
+				$handle = $field->handle;
 
-				if ($fieldType)
+				// Set the keywords for the content's locale
+				$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+				$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
+
+				// Should we queue up the other locales' new keywords too?
+				if (isset($nonTranslatableFields[$field->id]))
 				{
-					$fieldType->element = $element;
-
-					$handle = $field->handle;
-
-					// Set the keywords for the content's locale
-					$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
-					$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
-
-					// Should we queue up the other locales' new keywords too?
-					if (isset($nonTranslatableFields[$field->id]))
+					foreach ($otherContentModels as $otherContentModel)
 					{
-						foreach ($otherContentModels as $otherContentModel)
-						{
-							$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
-						}
+						$searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
 					}
 				}
 			}

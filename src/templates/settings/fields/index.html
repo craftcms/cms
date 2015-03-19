@@ -88,12 +88,8 @@
 						</th>
 						<td data-title="{{ 'Handle'|t }}"><code>{{ field.handle }}</code></td>
 						<td data-title="{{ 'Type'|t }}">
-							{% set fieldType = field.getFieldType() %}
-							{% if fieldType %}
-								{{ fieldType.name }}
-							{% else %}
-								<span class="error">{{ field.type }}</span>
-							{% endif %}
+							{% set fieldTypeInfo = craft.fields.getFieldTypeInfo(field) %}
+                            {{ fieldTypeInfo.getDisplayName() }}
 						</td>
 						{% if groupId is not defined %}<td data-title="{{ 'Group'|t }}">{{ field.group.name }}</td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>

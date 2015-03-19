@@ -8,8 +8,6 @@
 namespace craft\app\models;
 
 use Craft;
-use craft\app\enums\AttributeType;
-use craft\app\fieldtypes\BaseFieldType;
 use craft\app\models\FieldGroup as FieldGroupModel;
 
 /**
@@ -129,7 +127,7 @@ class Field extends BaseComponentModel
 	/**
 	 * Returns the field type this field is using.
 	 *
-	 * @return BaseFieldType|null
+	 * @return \craft\app\base\Field|null
 	 */
 	public function getFieldType()
 	{

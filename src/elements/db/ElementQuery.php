@@ -7,9 +7,14 @@
 
 namespace craft\app\elements\db;
 
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\behaviors\ElementQueryBehavior;
 use craft\app\behaviors\ElementQueryTrait;
 use craft\app\db\FixedOrderExpression;
@@ -20,9 +25,10 @@ use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DbHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\Field;
+use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
+use yii\base\NotSupportedException;
 use yii\db\Connection;
 
 /**
@@ -31,7 +37,7 @@ use yii\db\Connection;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ElementQuery extends Query implements ElementQueryInterface, Arrayable
+class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
 {
 	// Traits
 	// =========================================================================
@@ -63,7 +69,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 	/**
 	 * @var string The name of the [[ElementInterface]] class.
 	 */
-	public $elementClass;
+	public $elementType;
 
 	/**
 	 * @var Query The query object created by [[prepare()]]
@@ -83,7 +89,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 	public $contentTable = '{{%content}}';
 
 	/**
-	 * @var Field[] The fields that may be involved in this query.
+	 * @var FieldInterface[] The fields that may be involved in this query.
 	 */
 	public $customFields;
 
@@ -92,7 +98,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 
 	/**
 	 * @var boolean Whether to return each element as an array. If false (default), an object
-	 * of [[elementClass]] will be created to represent each element.
+	 * of [[elementType]] will be created to represent each element.
 	 */
 	public $asArray;
 
@@ -292,12 +298,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 	/**
 	 * Constructor
 	 *
-	 * @param string $elementClass The element type class associated with this query
+	 * @param string $elementType The element type class associated with this query
 	 * @param array $config Configurations to be applied to the newly created query object
 	 */
-	public function __construct($elementClass, $config = [])
+	public function __construct($elementType, $config = [])
 	{
-		$this->elementClass = $elementClass;
+		$this->elementType = $elementType;
 		parent::__construct($config);
 	}
 
@@ -372,6 +378,102 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 		else
 		{
 			return parent::__call($name, $params);
+		}
+	}
+
+	/**
+	 * Required by the IteratorAggregate interface.
+	 *
+	 * @return ArrayIterator
+	 */
+	public function getIterator()
+	{
+		return new ArrayIterator($this->all());
+	}
+
+	/**
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param integer|string $name The offset to check
+	 * @return boolean
+	 */
+	public function offsetExists($name)
+	{
+		if (is_numeric($name))
+		{
+			$offset = $this->offset;
+			$limit = $this->limit;
+
+			$this->offset = $name;
+			$this->limit = 1;
+
+			$exists = $this->exists();
+
+			$this->offset = $offset;
+			$this->limit = $limit;
+
+			return $exists;
+		}
+		else
+		{
+			return $this->__isset($name);
+		}
+	}
+
+	/**
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param integer|string $name The offset to get
+	 * @return mixed The element at the given offset
+	 */
+	public function offsetGet($name)
+	{
+		if (is_numeric($name))
+		{
+			return $this->nth($name);
+		}
+		else
+		{
+			return $this->__get($name);
+		}
+	}
+
+	/**
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param string $name The offset to set
+	 * @param mixed $value The value
+	 *
+	 * @return null
+	 * @throws NotSupportedException if $name is numeric
+	 */
+	public function offsetSet($name, $value)
+	{
+		if (is_numeric($name))
+		{
+			throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
+		}
+		else
+		{
+			$this->__set($name, $value);
+		}
+	}
+
+	/**
+	 * Required by the ArrayAccess interface.
+	 *
+	 * @param string $name The offset to unset
+	 * @throws NotSupportedException if $name is numeric
+	 */
+	public function offsetUnset($name)
+	{
+		if (is_numeric($name))
+		{
+			throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
+		}
+		else
+		{
+			return $this->__unset($name);
 		}
 	}
 
@@ -653,7 +755,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 		}
 
 		/** @var Element $class */
-		$class = $this->elementClass;
+		$class = $this->elementType;
 
 		// Make sure the locale param is set to a supported locale
 		if (!$class::isLocalized())
@@ -1059,44 +1161,39 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 
 			foreach ($this->customFields as $field)
 			{
-				/** @var Field $field */
+				/** @var FieldInterface $field */
 				if ($field->hasContentColumn())
 				{
 					$this->query->addSelect('content.'.$this->_getFieldContentColumnName($field));
 				}
 
-				$fieldType = $field->getFieldType();
+				$handle = $field->handle;
 
-				if ($fieldType)
+				// In theory all field handles will be accounted for on the ElementQueryBehavior, but just to be safe...
+				if (isset($fieldAttributes->$handle))
 				{
-					$handle = $field->handle;
+					$fieldAttributeValue = $fieldAttributes->$handle;
+				}
+				else
+				{
+					$fieldAttributeValue = null;
+				}
 
-					// In theory all field handles will be accounted for on the ElementQueryBehavior, but just to be safe...
-					if (isset($fieldAttributes->$handle))
-					{
-						$fieldAttributeValue = $fieldAttributes->$handle;
-					}
-					else
-					{
-						$fieldAttributeValue = null;
-					}
+				// Set the field's column prefix on the Content service.
+				if ($field->columnPrefix)
+				{
+					$contentService->fieldColumnPrefix = $field->columnPrefix;
+				}
 
-					// Set the field's column prefix on the Content service.
-					if ($field->columnPrefix)
-					{
-						$contentService->fieldColumnPrefix = $field->columnPrefix;
-					}
+				$fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
 
-					$fieldTypeResponse = $fieldType->modifyElementsQuery($this->subQuery, $fieldAttributeValue);
+				// Set it back
+				$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
-					// Set it back
-					$contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
-
-					// Need to bail early?
-					if ($fieldTypeResponse === false)
-					{
-						throw new QueryAbortedException();
-					}
+				// Need to bail early?
+				if ($fieldResponse === false)
+				{
+					throw new QueryAbortedException();
 				}
 			}
 		}
@@ -1535,10 +1632,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 	/**
 	 * Returns a field’s corresponding content column name.
 	 *
-	 * @param Field $field
+	 * @param FieldInterface|Field $field
 	 * @return string
 	 */
-	private function _getFieldContentColumnName(Field $field)
+	private function _getFieldContentColumnName(FieldInterface $field)
 	{
 		return ($field->columnPrefix ?: 'field_').$field->handle;
 	}
@@ -1644,7 +1741,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable
 		}
 
 		/** @var Element $class */
-		$class = $this->elementClass;
+		$class = $this->elementType;
 
 		// Instantiate the element
 		$row['locale'] = $this->locale;

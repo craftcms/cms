@@ -26,7 +26,7 @@ class ResaveElements extends BaseTask
 	/**
 	 * @var ElementInterface
 	 */
-	private $_elementClass;
+	private $_elementType;
 
 	/**
 	 * @var string
@@ -49,7 +49,7 @@ class ResaveElements extends BaseTask
 	public function getDescription()
 	{
 		return Craft::t('app', 'Resaving {class} elements', [
-			'class' => StringHelper::toLowerCase($this->getSettings()->elementClass)
+			'class' => StringHelper::toLowerCase($this->getSettings()->elementType)
 		]);
 	}
 
@@ -62,10 +62,10 @@ class ResaveElements extends BaseTask
 	{
 		$settings = $this->getSettings();
 		/** @var ElementInterface $class */
-		$class = $settings->elementClass;
+		$class = $settings->elementType;
 
 		// Let's save ourselves some trouble and just clear all the caches for this element class
-		Craft::$app->templateCache->deleteCachesByElementClass($class);
+		Craft::$app->templateCache->deleteCachesByElementType($class);
 
 		// Now find the affected element IDs
 		$query = $class::find()
@@ -74,7 +74,7 @@ class ResaveElements extends BaseTask
 			->limit(null)
 			->order(null);
 
-		$this->_elementClass = $class;
+		$this->_elementType = $class;
 		$this->_localeId = $query->locale;
 		$this->_elementIds = $query->ids();
 
@@ -92,7 +92,7 @@ class ResaveElements extends BaseTask
 	{
 		try
 		{
-			$class = $this->_elementClass;
+			$class = $this->_elementType;
 			$element = $class::find()
 				->id($this->_elementIds[$step])
 				->locale($this->_localeId)
@@ -116,7 +116,7 @@ class ResaveElements extends BaseTask
 		}
 		catch (\Exception $e)
 		{
-			return 'An exception was thrown while trying to save the '.$this->_elementClass.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
+			return 'An exception was thrown while trying to save the '.$this->_elementType.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
 		}
 	}
 
@@ -124,14 +124,14 @@ class ResaveElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 * @inheritDoc SavableComponent::defineSettings()
 	 *
 	 * @return array
 	 */
 	protected function defineSettings()
 	{
 		return [
-			'elementClass' => AttributeType::String,
+			'elementType' => AttributeType::String,
 			'criteria'     => AttributeType::Mixed,
 		];
 	}

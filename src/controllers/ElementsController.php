@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
 use craft\app\errors\HttpException;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 
@@ -36,7 +37,7 @@ class ElementsController extends BaseElementsController
 	public function actionGetModalBody()
 	{
 		$sourceKeys = Craft::$app->getRequest()->getParam('sources');
-		$elementClass = $this->getElementClass();
+		$elementType = $this->getElementType();
 		$context = $this->getContext();
 
 		if (is_array($sourceKeys))
@@ -45,7 +46,7 @@ class ElementsController extends BaseElementsController
 
 			foreach ($sourceKeys as $key)
 			{
-				$source = $elementClass::getSourceByKey($key, $context);
+				$source = $elementType::getSourceByKey($key, $context);
 
 				if ($source)
 				{
@@ -55,14 +56,24 @@ class ElementsController extends BaseElementsController
 		}
 		else
 		{
-			$sources = $elementClass::getSources($context);
+			$sources = $elementType::getSources($context);
+		}
+
+		if (!empty($sources) && count($sources) === 1)
+		{
+			$firstSource = ArrayHelper::getFirstValue($sources);
+			$showSidebar = !empty($firstSource['nested']);
+		}
+		else
+		{
+			$showSidebar = !empty($sources);
 		}
 
 		$this->renderTemplate('_elements/modalbody', [
 			'context'      => $context,
-			'elementClass' => $elementClass,
+			'elementType'  => $elementType,
 			'sources'      => $sources,
-			'showSidebar'  => (count($sources) > 1 || ($sources && !empty($sources[array_shift(array_keys($sources))]['nested'])))
+			'showSidebar'  => $showSidebar,
 		]);
 	}
 
@@ -76,8 +87,8 @@ class ElementsController extends BaseElementsController
 	{
 		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
 		$localeId = Craft::$app->getRequest()->getBodyParam('locale');
-		$elementClass = Craft::$app->elements->getElementClassById($elementId);
-		$element = Craft::$app->elements->getElementById($elementId, $elementClass, $localeId);
+		$elementType = Craft::$app->elements->getElementTypeById($elementId);
+		$element = Craft::$app->elements->getElementById($elementId, $elementType, $localeId);
 
 		if (!$element || !$element->isEditable())
 		{
@@ -99,8 +110,8 @@ class ElementsController extends BaseElementsController
 	{
 		$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
 		$localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
-		$elementClass = Craft::$app->elements->getElementClassById($elementId);
-		$element = Craft::$app->elements->getElementById($elementId, $elementClass, $localeId);
+		$elementType = Craft::$app->elements->getElementTypeById($elementId);
+		$element = Craft::$app->elements->getElementById($elementId, $elementType, $localeId);
 
 		if (!ElementHelper::isElementEditable($element) || !$element)
 		{

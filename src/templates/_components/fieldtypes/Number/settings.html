@@ -4,25 +4,25 @@
 	label: "Min Value"|t,
 	id: 'min',
 	name: 'min',
-	value: settings.min,
+	value: field.min,
 	size: 5,
-	errors: settings.getErrors('min')
+	errors: field.getErrors('min')
 }) }}
 
 {{ forms.textField({
 	label: "Max Value"|t,
 	id: 'max',
 	name: 'max',
-	value: settings.max,
+	value: field.max,
 	size: 5,
-	errors: settings.getErrors('max')
+	errors: field.getErrors('max')
 }) }}
 
 {{ forms.textField({
 	label: "Decimal Points"|t,
 	id: 'decimals',
 	name: 'decimals',
-	value: settings.decimals,
+	value: field.decimals,
 	size: 1,
-	errors: settings.getErrors('decimals')
+	errors: field.getErrors('decimals')
 }) }}

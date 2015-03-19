@@ -493,7 +493,7 @@ class Templates extends Component
 			$js = $this->_combineJs($js);
 		}
 
-		return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
+		return "<script type=\"text/javascript\">\n/*<![CDATA[*/\n{$js}\n/*]]>*/\n</script>";
 	}
 
 	/**
@@ -1061,7 +1061,7 @@ class Templates extends Component
 	 */
 	public function formatInputId($inputName)
 	{
-		return rtrim(preg_replace('/[\[\]]+/', '-', $inputName), '-');
+		return rtrim(preg_replace('/[\[\]\\\]+/', '-', $inputName), '-');
 	}
 
 	/**

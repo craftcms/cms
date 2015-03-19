@@ -7,7 +7,7 @@
 
 namespace craft\app\tasks;
 
-use craft\app\components\SavableComponentTypeInterface;
+use craft\app\base\SavableComponentInterface;
 
 /**
  * Interface TaskInterface
@@ -15,7 +15,7 @@ use craft\app\components\SavableComponentTypeInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface TaskInterface extends SavableComponentTypeInterface
+interface TaskInterface extends SavableComponentInterface
 {
 	// Public Methods
 	// =========================================================================

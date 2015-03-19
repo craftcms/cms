@@ -109,7 +109,7 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 
 	addBlockType: function()
 	{
-		var blockTypeSettingsModal = this.getBlockTypeSettingsModal();
+		this.getBlockTypeSettingsModal();
 
 		this.blockTypeSettingsModal.show();
 
@@ -126,8 +126,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 						'<a class="move icon" title="'+Craft.t('Reorder')+'"></a>' +
 						'<a class="settings icon" title="'+Craft.t('Settings')+'"></a>' +
 					'</div>' +
-					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][name]">' +
-					'<input class="hidden" name="types[Matrix][blockTypes]['+id+'][handle]">' +
+					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][name]">' +
+					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][handle]">' +
 				'</div>'
 			).appendTo(this.$blockTypeItemsContainer);
 
@@ -551,7 +551,7 @@ Field = Garnish.Base.extend(
 
 		if (isNew)
 		{
-			this.setFieldType('PlainText');
+			this.setFieldType('craft\\app\\fields\\PlainText');
 		}
 		else
 		{
@@ -750,7 +750,7 @@ Field = Garnish.Base.extend(
 		for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++)
 		{
 			var info = this.configurator.fieldTypeInfo[i],
-				selected = (info.type == 'PlainText');
+				selected = (info.type == 'craft\\app\\fields\\PlainText');
 
 			html +=
 								'<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';

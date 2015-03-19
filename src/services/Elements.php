@@ -93,31 +93,31 @@ class Elements extends Component
 	 *
 	 * The element’s status will not be a factor when usisng this method.
 	 *
-	 * @param int    $elementId    The element’s ID.
-	 * @param null   $elementClass The element class.
-	 * @param string $localeId     The locale to fetch the element in.
-	 *                             Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
+	 * @param int    $elementId   The element’s ID.
+	 * @param null   $elementType The element class.
+	 * @param string $localeId    The locale to fetch the element in.
+	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
 	 *
 	 * @return ElementInterface|null The matching element, or `null`.
 	 */
-	public function getElementById($elementId, $elementClass = null, $localeId = null)
+	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
 		if (!$elementId)
 		{
 			return null;
 		}
 
-		if (!$elementClass)
+		if (!$elementType)
 		{
-			$elementClass = $this->getElementClassById($elementId);
+			$elementType = $this->getElementTypeById($elementId);
 
-			if (!$elementClass)
+			if (!$elementType)
 			{
 				return null;
 			}
 		}
 
-		return $elementClass::find()
+		return $elementType::find()
 		    ->id($elementId)
 		    ->locale($localeId)
 		    ->status(null)
@@ -192,7 +192,7 @@ class Elements extends Component
 	 *
 	 * @return ElementInterface|ElementInterface[]|null The element class(es).
 	 */
-	public function getElementClassById($elementId)
+	public function getElementTypeById($elementId)
 	{
 		if (is_array($elementId))
 		{
@@ -265,7 +265,7 @@ class Elements extends Component
 	 * - Setting a unique URI on the element, if it’s supposed to have one.
 	 * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
 	 * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
-	 * - Calling the field types’ [[BaseFieldType::onAfterElementSave() onAfterElementSave()]] methods
+	 * - Calling the field types’ [[Field::onAfterElementSave() onAfterElementSave()]] methods
 	 * - Cleaing any template caches that the element was involved in
 	 *
 	 * This method should be called by a service’s “saveX()” method, _after_ it is done validating any attributes on
@@ -569,13 +569,8 @@ class Elements extends Component
 
 								if ($field)
 								{
-									$fieldType = $field->getFieldType();
-
-									if ($fieldType)
-									{
-										$fieldType->element = $element;
-										$fieldType->onAfterElementSave();
-									}
+									$field->element = $element;
+									$field->afterElementSave();
 								}
 							}
 						}
@@ -796,11 +791,11 @@ class Elements extends Component
 			}
 
 			// Update any reference tags
-			$elementClass = $this->getElementClassById($prevailingElementId);
+			$elementType = $this->getElementTypeById($prevailingElementId);
 
-			if ($elementClass && ($elementClassHandle = $elementClass::classHandle()))
+			if ($elementType && ($elementTypeHandle = $elementType::classHandle()))
 			{
-				$refTagPrefix = "{{$elementClassHandle}:";
+				$refTagPrefix = "{{$elementTypeHandle}:";
 
 				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.':',
@@ -952,9 +947,9 @@ class Elements extends Component
 	/**
 	 * Returns all available element classes.
 	 *
-	 * @return ElementInterface[] The installed element types.
+	 * @return ElementInterface[] The available element classes.
 	 */
-	public function getAllElementClasses()
+	public function getAllElementTypes()
 	{
 		// TODO: Come up with a way for plugins to add more element classes
 		return [
@@ -1002,9 +997,9 @@ class Elements extends Component
 	 * @param string $handle The element class handle
 	 * @return ElementInterface|null The element class, or null if it could not be found
 	 */
-	public function getElementClassByHandle($handle)
+	public function getElementTypeByHandle($handle)
 	{
-		foreach ($this->getAllElementClasses() as $class)
+		foreach ($this->getAllElementTypes() as $class)
 		{
 			if (strcasecmp($class::classHandle(), $handle) === 0)
 			{
@@ -1031,10 +1026,10 @@ class Elements extends Component
 			{
 				global $refTagsByElementHandle;
 
-				$elementClassHandle = ucfirst($matches[1]);
+				$elementTypeHandle = ucfirst($matches[1]);
 				$token = '{'.StringHelper::randomString(9).'}';
 
-				$refTagsByElementHandle[$elementClassHandle][] = ['token' => $token, 'matches' => $matches];
+				$refTagsByElementHandle[$elementTypeHandle][] = ['token' => $token, 'matches' => $matches];
 
 				return $token;
 			}, $str);
@@ -1046,11 +1041,11 @@ class Elements extends Component
 
 				$things = ['id', 'ref'];
 
-				foreach ($refTagsByElementHandle as $elementClassHandle => $refTags)
+				foreach ($refTagsByElementHandle as $elementTypeHandle => $refTags)
 				{
-					$elementClass = $this->getElementClassByHandle($elementClassHandle);
+					$elementType = $this->getElementTypeByHandle($elementTypeHandle);
 
-					if (!$elementClass)
+					if (!$elementType)
 					{
 						// Just put the ref tags back the way they were
 						foreach ($refTags as $refTag)
@@ -1084,7 +1079,7 @@ class Elements extends Component
 
 							if ($refTagsByThing)
 							{
-								$elements = $elementClass::find()
+								$elements = $elementType::find()
 								    ->status(null)
 								    ->$thing(array_keys($refTagsByThing))
 									->all();

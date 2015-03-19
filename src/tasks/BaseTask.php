@@ -8,7 +8,7 @@
 namespace craft\app\tasks;
 
 use Craft;
-use craft\app\components\BaseSavableComponentType;
+use craft\app\base\SavableComponent;
 
 /**
  * Task base class.
@@ -16,7 +16,7 @@ use craft\app\components\BaseSavableComponentType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-abstract class BaseTask extends BaseSavableComponentType implements TaskInterface
+abstract class BaseTask extends SavableComponent implements TaskInterface
 {
 	// Properties
 	// =========================================================================

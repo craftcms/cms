@@ -7,6 +7,7 @@
 
 namespace craft\app\models;
 
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
 
 /**
@@ -59,7 +60,7 @@ class MatrixBlockType extends Model
 	/**
 	 * @var The element type that block types' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\MatrixBlock';
+	private $_fieldLayoutElementType = 'craft\app\elements\MatrixBlock';
 
 	/**
 	 * @var bool
@@ -110,7 +111,7 @@ class MatrixBlockType extends Model
 	/**
 	 * Returns the fields associated with this block type.
 	 *
-	 * @return array
+	 * @return FieldInterface[]
 	 */
 	public function getFields()
 	{

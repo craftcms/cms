@@ -8,9 +8,9 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\FieldInterface;
 use craft\app\enums\AttributeType;
 use craft\app\helpers\ModelHelper;
-use craft\app\models\Field as FieldModel;
 
 /**
  * Find and Replace task.
@@ -164,7 +164,7 @@ class FindAndReplace extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 * @inheritDoc SavableComponent::defineSettings()
 	 *
 	 * @return array
 	 */
@@ -183,33 +183,28 @@ class FindAndReplace extends BaseTask
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly.
 	 *
-	 * @param FieldModel $field
-	 * @param string     $fieldColumnPrefix
+	 * @param FieldInterface $field
+	 * @param string         $fieldColumnPrefix
 	 *
 	 * @return bool
 	 */
-	private function _checkField(FieldModel $field, $fieldColumnPrefix)
+	private function _checkField(FieldInterface $field, $fieldColumnPrefix)
 	{
 		if ($field->type == 'Matrix')
 		{
 			$this->_matrixFieldIds[] = $field->id;
 		}
-		else
+		else if ($field::hasContentColumn())
 		{
-			$fieldType = $field->getFieldType();
+			$columnType = $field->getContentColumnType();
 
-			if ($fieldType)
+			if (preg_match('/^\w+/', $columnType, $matches))
 			{
-				$attributeConfig = $fieldType->defineContentAttribute();
+				$columnType = strtolower($matches[0]);
 
-				if ($attributeConfig && $attributeConfig != AttributeType::Number)
+				if (in_array($columnType, ['tinytext', 'mediumtext', 'longtext', 'text', 'varchar', 'string', 'char']))
 				{
-					$attributeConfig = ModelHelper::normalizeAttributeConfig($attributeConfig);
-
-					if ($attributeConfig['type'] == AttributeType::String)
-					{
-						$this->_textColumns[] = $fieldColumnPrefix.$field->handle;
-					}
+					$this->_textColumns[] = $fieldColumnPrefix.$field->handle;
 				}
 			}
 		}

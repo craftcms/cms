@@ -9,8 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\models\Field as FieldModel;
+use craft\app\fields\Matrix;
 
 /**
  * MatrixSettings model class.
@@ -30,7 +29,7 @@ class MatrixSettings extends Model
 
 
 	/**
-	 * @var FieldModel|null
+	 * @var Matrix|null
 	 */
 	private $_matrixField;
 
@@ -56,11 +55,11 @@ class MatrixSettings extends Model
 	/**
 	 * Constructor
 	 *
-	 * @param FieldModel|null $matrixField
+	 * @param Matrix|null $matrixField
 	 *
 	 * @return MatrixSettings
 	 */
-	public function __construct(FieldModel $matrixField = null)
+	public function __construct(Matrix $matrixField = null)
 	{
 		$this->_matrixField = $matrixField;
 	}
@@ -68,7 +67,7 @@ class MatrixSettings extends Model
 	/**
 	 * Returns the field associated with this.
 	 *
-	 * @return FieldModel
+	 * @return Matrix|null
 	 */
 	public function getField()
 	{

@@ -797,8 +797,8 @@ class Sections extends Component
 						    ->limit(null);
 
 						Craft::$app->tasks->createTask('ResaveElements', Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]), [
-							'elementClass' => Entry::className(),
-							'criteria'     => $query->asArray()
+							'elementType' => Entry::className(),
+							'criteria'    => $query->asArray()
 						]);
 					}
 
@@ -1051,8 +1051,7 @@ class Sections extends Component
 			{
 				// Fire a 'beforeSaveEntryType' event
 				$event = new EntryTypeEvent([
-					'entryType'      => $entryType,
-					'isNewEntryType' => $isNewEntryType
+					'entryType' => $entryType,
 				]);
 
 				$this->trigger(static::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);

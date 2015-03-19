@@ -50,7 +50,7 @@ class TagGroup extends Model
 	/**
 	 * @var The element type that tag groups' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\Tag';
+	private $_fieldLayoutElementType = 'craft\app\elements\Tag';
 
 	// Public Methods
 	// =========================================================================

@@ -89,7 +89,7 @@ class EntriesController extends BaseEntriesController
 			// Author selector variables
 			// ---------------------------------------------------------------------
 
-			$variables['userElementClass'] = User::className();
+			$variables['userElementType'] = User::className();
 
 			$authorPermission = 'editEntries'.$variables['permissionSuffix'];
 
@@ -115,7 +115,7 @@ class EntriesController extends BaseEntriesController
 			$variables['section']->maxLevels != 1
 		)
 		{
-			$variables['elementClass'] = Entry::className();
+			$variables['elementType'] = Entry::className();
 
 			$variables['parentOptionCriteria'] = [
 				'locale'        => $variables['localeId'],

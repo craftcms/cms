@@ -101,7 +101,7 @@ class Task extends BaseComponentModel
 	public function getDescription()
 	{
 		// Was a description explicitly set when creating this task?
-		$description = $this->getAttribute('description');
+		$description = $this->description;
 
 		if (!$description)
 		{

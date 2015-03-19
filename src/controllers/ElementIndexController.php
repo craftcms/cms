@@ -29,7 +29,7 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * @var ElementInterface
 	 */
-	private $_elementClass;
+	private $_elementType;
 
 	/**
 	 * @var string
@@ -73,7 +73,7 @@ class ElementIndexController extends BaseElementsController
 	{
 		parent::init();
 
-		$this->_elementClass = $this->getElementClass();
+		$this->_elementType = $this->getElementType();
 		$this->_context      = $this->getContext();
 		$this->_sourceKey    = Craft::$app->getRequest()->getParam('source');
 		$this->_source       = $this->_getSource();
@@ -231,8 +231,8 @@ class ElementIndexController extends BaseElementsController
 	{
 		if ($this->_sourceKey)
 		{
-			$elementClass = $this->_elementClass;
-			$source = $elementClass::getSourceByKey($this->_sourceKey, $this->_context);
+			$elementType = $this->_elementType;
+			$source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
 
 			if (!$source)
 			{
@@ -268,9 +268,9 @@ class ElementIndexController extends BaseElementsController
 	 */
 	private function _getElementQuery()
 	{
-		$elementClass = $this->_elementClass;
+		$elementType = $this->_elementType;
 
-		$query = $elementClass::find()
+		$query = $elementType::find()
 			->configure(Craft::$app->getRequest()->getBodyParam('criteria'))
 			->limit(50)
 			->offset(Craft::$app->getRequest()->getParam('offset'))
@@ -343,9 +343,9 @@ class ElementIndexController extends BaseElementsController
 	{
 		$disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
 		$showCheckboxes = !empty($this->_actions);
-		$elementClass = $this->_elementClass;
+		$elementType = $this->_elementType;
 
-		return $elementClass::getIndexHtml(
+		return $elementType::getIndexHtml(
 			$this->_elementQuery,
 			$disabledElementIds,
 			$this->_viewState,
@@ -368,8 +368,8 @@ class ElementIndexController extends BaseElementsController
 			return;
 		}
 
-		$elementClass = $this->_elementClass;
-		$actions = $elementClass::getAvailableActions($this->_sourceKey);
+		$elementType = $this->_elementType;
+		$actions = $elementType::getAvailableActions($this->_sourceKey);
 
 		if ($actions)
 		{

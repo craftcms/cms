@@ -55,13 +55,13 @@ abstract class BaseElementsController extends Controller
 	 * @throws Exception
 	 * @return ElementInterface
 	 */
-	protected function getElementClass()
+	protected function getElementType()
 	{
 		$class = Craft::$app->getRequest()->getRequiredParam('elementType');
 
 		if (!is_subclass_of($class, Elements::ELEMENT_INTERFACE))
 		{
-			throw new Exception("Invalid element class: $class");
+			throw new Exception("Invalid element type: $class");
 		}
 
 		return $class;

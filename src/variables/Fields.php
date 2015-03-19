@@ -7,14 +7,13 @@
 
 namespace craft\app\variables;
 
-use craft\app\base\ElementInterface;
-use craft\app\fieldtypes\BaseFieldType;
-use craft\app\models\Field as FieldModel;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
- * Class Fields variable.
+ * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
@@ -32,7 +31,7 @@ class Fields
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return FieldGroupModel[]
 	 */
 	public function getAllGroups($indexBy = null)
 	{
@@ -59,7 +58,7 @@ class Fields
 	 *
 	 * @param int $fieldId
 	 *
-	 * @return FieldModel|null
+	 * @return FieldInterface|Field|null
 	 */
 	public function getFieldById($fieldId)
 	{
@@ -71,7 +70,7 @@ class Fields
 	 *
 	 * @param string $handle
 	 *
-	 * @return FieldModel|null
+	 * @return FieldInterface|Field|null
 	 */
 	public function getFieldByHandle($handle)
 	{
@@ -81,9 +80,9 @@ class Fields
 	/**
 	 * Returns all fields.
 	 *
-	 * @param string|null $indexBy
+	 * @param string$indexBy
 	 *
-	 * @return array
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getAllFields($indexBy = null)
 	{
@@ -96,15 +95,12 @@ class Fields
 	 * @param int         $groupId
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
 		return \Craft::$app->fields->getFieldsByGroupId($groupId, $indexBy);
 	}
-
-	// Layouts
-	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns a field layout by its ID.
@@ -130,53 +126,35 @@ class Fields
 		return \Craft::$app->fields->getLayoutByType($type);
 	}
 
-	// Fieldtypes
-	// -------------------------------------------------------------------------
-
 	/**
-	 * Returns all installed fieldtypes.
+	 * Returns all available field type classes.
 	 *
-	 * @return array
+	 * @return FieldInterface[] The available field type classes.
 	 */
 	public function getAllFieldTypes()
 	{
-		$fieldTypes = \Craft::$app->fields->getAllFieldTypes();
-		return FieldType::populateVariables($fieldTypes);
+		return \Craft::$app->fields->getAllFieldTypes();
 	}
 
 	/**
-	 * Gets a fieldtype.
+	 * Returns info about the field with the given class name.
 	 *
-	 * @param string $class
-	 *
-	 * @return FieldType|null
+	 * @param string|FieldInterface|Field $field
+	 * @return ComponentInfo
 	 */
-	public function getFieldType($class)
+	public function getFieldTypeInfo($field)
 	{
-		$fieldType = \Craft::$app->fields->getFieldType($class);
-
-		if ($fieldType)
-		{
-			return new FieldType($fieldType);
-		}
+		return new ComponentInfo($field);
 	}
 
 	/**
-	 * Populates a fieldtype.
+	 * Creates a field with a given config.
 	 *
-	 * @param FieldModel            $field
-	 * @param ElementInterface|null $element
-	 *
-	 * @return BaseFieldType|null
+	 * @param mixed $config
+	 * @return FieldInterface
 	 */
-	public function populateFieldType(FieldModel $field, $element = null)
+	public function createField($config)
 	{
-		$fieldType = $field->getFieldType();
-
-		if ($fieldType)
-		{
-			$fieldType->element = $element;
-			return new FieldType($fieldType);
-		}
+		return \Craft::$app->fields->createField($config);
 	}
 }

@@ -8,16 +8,34 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\base\ElementInterface;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\db\Query;
-use craft\app\enums\ComponentType;
 use craft\app\errors\Exception;
+use craft\app\errors\InvalidComponentException;
 use craft\app\events\FieldLayoutEvent;
-use craft\app\fieldtypes\BaseFieldType;
-use craft\app\helpers\JsonHelper;
+use craft\app\fields\Assets as AssetsField;
+use craft\app\fields\Categories as CategoriesField;
+use craft\app\fields\Checkboxes as CheckboxesField;
+use craft\app\fields\Color as ColorField;
+use craft\app\fields\Date as DateField;
+use craft\app\fields\Dropdown as DropdownField;
+use craft\app\fields\Entries as EntriesField;
+use craft\app\fields\InvalidField;
+use craft\app\fields\Lightswitch as LightswitchField;
+use craft\app\fields\Matrix as MatrixField;
+use craft\app\fields\MultiSelect as MultiSelectField;
+use craft\app\fields\Number as NumberField;
+use craft\app\fields\PlainText as PlainTextField;
+use craft\app\fields\PositionSelect as PositionSelectField;
+use craft\app\fields\RadioButtons as RadioButtonsField;
+use craft\app\fields\RichText as RichTextField;
+use craft\app\fields\Table as TableField;
+use craft\app\fields\Tags as TagsField;
+use craft\app\fields\Users as UsersField;
+use craft\app\helpers\ComponentHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\base\Model;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
@@ -41,6 +59,11 @@ class Fields extends Component
 {
 	// Constants
 	// =========================================================================
+
+	/**
+	 * @var string The element interface name
+	 */
+	const FIELD_INTERFACE = 'craft\app\base\FieldInterface';
 
 	/**
      * @event FieldLayoutEvent The event that is triggered after a field layout is saved.
@@ -111,7 +134,7 @@ class Fields extends Component
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return FieldGroupModel[]
 	 */
 	public function getAllGroups($indexBy = null)
 	{
@@ -221,6 +244,7 @@ class Fields extends Component
 	 */
 	public function deleteGroupById($groupId)
 	{
+		/** @var FieldGroupRecord $groupRecord */
 		$groupRecord = FieldGroupRecord::find()
 			->where(['id' => $groupId])
 			->with('fields')
@@ -233,9 +257,10 @@ class Fields extends Component
 
 		// Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
 		// content columns
-		foreach ($groupRecord->fields as $fieldRecord)
+		/** @var FieldRecord $fieldRecord */
+		foreach ($groupRecord->getFields() as $fieldRecord)
 		{
-			$field = FieldModel::populateModel($fieldRecord);
+			$field = $this->createField($fieldRecord);
 			$this->deleteField($field);
 		}
 
@@ -247,11 +272,30 @@ class Fields extends Component
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Creates a field with a given config.
+	 *
+	 * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value.
+	 *
+	 * @return FieldInterface|Field
+	 */
+	public function createField($config)
+	{
+		try
+		{
+			return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
+		}
+		catch (InvalidComponentException $e)
+		{
+			return new InvalidField($config, $e->getMessage());
+		}
+	}
+
+	/**
 	 * Returns all fields.
 	 *
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getAllFields($indexBy = null)
 	{
@@ -267,7 +311,7 @@ class Fields extends Component
 
 			foreach ($results as $result)
 			{
-				$field = $this->_populateField($result);
+				$field = $this->createField($result);
 
 				$this->_allFieldsInContext[$context][] = $field;
 				$this->_fieldsById[$field->id] = $field;
@@ -295,7 +339,7 @@ class Fields extends Component
 	/**
 	 * Returns all fields that have a column in the content table.
 	 *
-	 * @return array
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getFieldsWithContent()
 	{
@@ -322,7 +366,7 @@ class Fields extends Component
 	 *
 	 * @param int $fieldId
 	 *
-	 * @return FieldModel|null
+	 * @return FieldInterface|Field|null
 	 */
 	public function getFieldById($fieldId)
 	{
@@ -334,9 +378,9 @@ class Fields extends Component
 
 			if ($result)
 			{
-				$field = $this->_populateField($result);
+				$field = $this->createField($result);
 
-				$this->_fieldsById[$field->id] = $field;
+				$this->_fieldsById[$fieldId] = $field;
 				$this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
 			}
 			else
@@ -353,7 +397,7 @@ class Fields extends Component
 	 *
 	 * @param string $handle
 	 *
-	 * @return FieldModel|null
+	 * @return FieldInterface|Field|null
 	 */
 	public function getFieldByHandle($handle)
 	{
@@ -367,7 +411,7 @@ class Fields extends Component
 
 			if ($result)
 			{
-				$field = $this->_populateField($result);
+				$field = $this->createField($result);
 				$this->_fieldsById[$field->id] = $field;
 				$this->_fieldsByContextAndHandle[$context][$field->handle] = $field;
 			}
@@ -386,7 +430,7 @@ class Fields extends Component
 	 * @param int         $groupId
 	 * @param string|null $indexBy
 	 *
-	 * @return array
+	 * @return FieldInterface[]|Field[]
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
@@ -398,7 +442,7 @@ class Fields extends Component
 
 		foreach ($results as $result)
 		{
-			$field = $this->_populateField($result);
+			$field = $this->createField($result);
 
 			if ($indexBy)
 			{
@@ -414,67 +458,17 @@ class Fields extends Component
 	}
 
 	/**
-	 * Validates a field's settings.
-	 *
-	 * @param FieldModel $field
-	 *
-	 * @return bool
-	 */
-	public function validateField(FieldModel $field)
-	{
-		$fieldRecord = $this->_getFieldRecord($field);
-
-		if (!$field->context)
-		{
-			$field->context = Craft::$app->content->fieldContext;
-		}
-
-		$fieldRecord->groupId      = $field->groupId;
-		$fieldRecord->name         = $field->name;
-		$fieldRecord->handle       = $field->handle;
-		$fieldRecord->context      = $field->context;
-		$fieldRecord->instructions = $field->instructions;
-		$fieldRecord->translatable = $field->translatable;
-		$fieldRecord->type         = $field->type;
-
-		// Get the field type
-		$fieldType = $field->getFieldType();
-
-		// Give the field type a chance to prep the settings from post
-		$preppedSettings = $fieldType->prepSettings($field->settings);
-
-		// Set the prepped settings on the Field and the field type
-		$fieldRecord->settings = $preppedSettings;
-		$fieldType->setSettings($preppedSettings);
-
-		// Run validation
-		$recordValidates = $fieldRecord->validate();
-		$settingsValidate = $fieldType->getSettings()->validate();
-
-		if ($recordValidates && $settingsValidate)
-		{
-			return true;
-		}
-		else
-		{
-			$field->addErrors($fieldRecord->getErrors());
-			$field->addSettingErrors($fieldType->getSettings()->getErrors());
-			return false;
-		}
-	}
-
-	/**
 	 * Saves a field.
 	 *
-	 * @param FieldModel $field
-	 * @param bool       $validate
+	 * @param FieldInterface $field    The Field to be saved
+	 * @param bool           $validate Whether the field should be validated first
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveField(FieldModel $field, $validate = true)
+	public function saveField(FieldInterface $field, $validate = true)
 	{
-		if (!$validate || $this->validateField($field))
+		if (!$validate || $field->validate())
 		{
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
@@ -491,16 +485,7 @@ class Fields extends Component
 				$fieldRecord->instructions = $field->instructions;
 				$fieldRecord->translatable = $field->translatable;
 				$fieldRecord->type         = $field->type;
-
-				// Get the field type
-				$fieldType = $field->getFieldType();
-
-				// Give the field type a chance to prep the settings from post
-				$preppedSettings = $fieldType->prepSettings($field->settings);
-
-				// Set the prepped settings on the Field, FieldModel, and the field type
-				$fieldRecord->settings = $field->settings = $preppedSettings;
-				$fieldType->setSettings($preppedSettings);
+				$fieldRecord->settings     = $field->getSettings();
 
 				if ($fieldRecord->settings instanceof Model)
 				{
@@ -508,7 +493,7 @@ class Fields extends Component
 					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
 				}
 
-				$fieldType->onBeforeSave();
+				$field->beforeSave();
 				$fieldRecord->save(false);
 
 				// Now that we have a field ID, save it on the model
@@ -518,15 +503,13 @@ class Fields extends Component
 				}
 
 				// Create/alter the content table column
-				$columnType = $fieldType->defineContentAttribute();
-
 				$contentTable = Craft::$app->content->contentTable;
 				$oldColumnName = $this->oldFieldColumnPrefix.$fieldRecord->getOldHandle();
 				$newColumnName = Craft::$app->content->fieldColumnPrefix.$field->handle;
 
-				if ($columnType)
+				if ($field::hasContentColumn())
 				{
-					$columnType = ModelHelper::normalizeAttributeConfig($columnType);
+					$columnType = $field->getContentColumnType();
 
 					// Make sure we're working with the latest data in the case of a renamed field.
 					Craft::$app->getDb()->schema->refresh();
@@ -541,7 +524,7 @@ class Fields extends Component
 					}
 					else
 					{
-						Craft::$app->getDb()->createCommand()->addColumn($contentTable, $newColumnName, $columnType)->execute();
+						Craft::$app->getDb()->createCommand()->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')->execute();
 					}
 				}
 				else
@@ -570,7 +553,7 @@ class Fields extends Component
 				unset($this->_allFieldsInContext[$field->context]);
 				unset($this->_fieldsWithContent[$field->context]);
 
-				$fieldType->onAfterSave();
+				$field->afterSave();
 
 				// Update the field version
 				if ($field->context === 'global')
@@ -610,6 +593,7 @@ class Fields extends Component
 	 */
 	public function deleteFieldById($fieldId)
 	{
+		/** @var FieldRecord $fieldRecord */
 		$fieldRecord = FieldRecord::findOne($fieldId);
 
 		if (!$fieldRecord)
@@ -617,29 +601,24 @@ class Fields extends Component
 			return false;
 		}
 
-		$field = FieldModel::populateModel($fieldRecord);
+		$field = $this->createField($fieldRecord);
 		return $this->deleteField($field);
 	}
 
 	/**
 	 * Deletes a field.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldInterface $field
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function deleteField(FieldModel $field)
+	public function deleteField(FieldInterface $field)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$field->getFieldType()->onBeforeDelete();
-			}
+			$field->beforeDelete();
 
 			// De we need to delete the content column?
 			$contentTable = Craft::$app->content->contentTable;
@@ -655,10 +634,7 @@ class Fields extends Component
 
 			if ($affectedRows)
 			{
-				if ($fieldType)
-				{
-					$field->getFieldType()->onAfterDelete();
-				}
+				$field->afterDelete();
 			}
 
 			if ($field->context === 'global')
@@ -759,7 +735,7 @@ class Fields extends Component
 	 *
 	 * @param int $layoutId
 	 *
-	 * @return array
+	 * @return FieldLayoutTabModel[]
 	 */
 	public function getLayoutTabsById($layoutId)
 	{
@@ -780,7 +756,7 @@ class Fields extends Component
 	 *
 	 * @param int $layoutId
 	 *
-	 * @return array
+	 * @return FieldLayoutFieldModel[]
 	 */
 	public function getLayoutFieldsById($layoutId)
 	{
@@ -939,48 +915,37 @@ class Fields extends Component
 		return (bool) $affectedRows;
 	}
 
-	// Fieldtypes
+	// Field Classes
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Returns all installed fieldtypes.
+	 * Returns all available field type classes.
 	 *
-	 * @return array
+	 * @return FieldInterface[] The available field type classes.
 	 */
 	public function getAllFieldTypes()
 	{
-		return Craft::$app->components->getComponentsByType(ComponentType::Field);
-	}
-
-	/**
-	 * Gets a fieldtype.
-	 *
-	 * @param string $class
-	 *
-	 * @return BaseFieldType|null
-	 */
-	public function getFieldType($class)
-	{
-		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::Field, $class);
-	}
-
-	/**
-	 * Populates a fieldtype by a field model.
-	 *
-	 * @param FieldModel            $field
-	 * @param ElementInterface|null $element
-	 *
-	 * @return BaseFieldType|null
-	 */
-	public function populateFieldType(FieldModel $field, $element = null)
-	{
-		$fieldType = Craft::$app->components->populateComponentByTypeAndModel(ComponentType::Field, $field);
-
-		if ($fieldType)
-		{
-			$fieldType->element = $element;
-			return $fieldType;
-		}
+		// TODO: Come up with a way for plugins to add more field classes
+		return [
+			AssetsField::className(),
+			CategoriesField::className(),
+			CheckboxesField::className(),
+			ColorField::className(),
+			DateField::className(),
+			DropdownField::className(),
+			EntriesField::className(),
+			LightswitchField::className(),
+			MatrixField::className(),
+			MultiSelectField::className(),
+			NumberField::className(),
+			PlainTextField::className(),
+			PositionSelectField::className(),
+			RadioButtonsField::className(),
+			RichTextField::className(),
+			TableField::className(),
+			TagsField::className(),
+			UsersField::className(),
+		];
 	}
 
 	// Private Methods
@@ -1051,23 +1016,6 @@ class Fields extends Component
 	}
 
 	/**
-	 * Populates a field from its DB result.
-	 *
-	 * @param array $result
-	 *
-	 * @return FieldModel
-	 */
-	private function _populateField($result)
-	{
-		if ($result['settings'])
-		{
-			$result['settings'] = JsonHelper::decode($result['settings']);
-		}
-
-		return new FieldModel($result);
-	}
-
-	/**
 	 * Gets a field group record or creates a new one.
 	 *
 	 * @param FieldGroupModel $group
@@ -1097,12 +1045,12 @@ class Fields extends Component
 	/**
 	 * Returns a field record for a given model.
 	 *
-	 * @param FieldModel $field
+	 * @param FieldInterface $field
 	 *
 	 * @throws Exception
 	 * @return FieldRecord
 	 */
-	private function _getFieldRecord(FieldModel $field)
+	private function _getFieldRecord(FieldInterface $field)
 	{
 		if (!$field->isNew())
 		{

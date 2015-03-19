@@ -7,17 +7,17 @@
 
 namespace craft\app\base;
 
-use yii\base\Arrayable;
-
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.
+ *
+ * A class implementing this interface should also implement [[\yii\base\Arrayable]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface ComponentInterface extends Arrayable
+interface ComponentInterface
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
@@ -65,4 +65,14 @@ interface ComponentInterface extends Arrayable
 	 * @param array $config Attribute values to populate the component with (name => value).
 	 */
 	public static function populateModel($model, $config);
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Returns the class name that should be used to represent the field.
+	 *
+	 * @return string The class name that should be used to represent the field.
+	 */
+	public function getType();
 }

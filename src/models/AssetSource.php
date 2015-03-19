@@ -65,7 +65,7 @@ class AssetSource extends BaseComponentModel
 	/**
 	 * @var The element type that asset sources' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\Asset';
+	private $_fieldLayoutElementType = 'craft\app\elements\Asset';
 
 	/**
 	 * @var

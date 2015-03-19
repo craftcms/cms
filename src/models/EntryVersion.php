@@ -21,6 +21,39 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class EntryVersion extends BaseEntryRevisionModel
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 *
+	 * @param static $model
+	 * @param array  $config
+	 */
+	public static function populate($model, $config)
+	{
+		// Merge the version and entry data
+		$entryData = $config['data'];
+		$fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
+		$config['versionId'] = $config['id'];
+		$config['id'] = $config['entryId'];
+		$config['revisionNotes'] = $config['notes'];
+		$title = $entryData['title'];
+		unset($config['data'], $entryData['fields'], $config['entryId'], $config['notes'], $entryData['title']);
+		$config = array_merge($config, $entryData);
+
+		parent::populateModel($model, $config);
+
+		$model->getContent()->title = $title;
+
+		if ($fieldContent)
+		{
+			$version->setContentFromRevision($fieldContent);
+		}
+
+		return $version;
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -178,42 +211,5 @@ class EntryVersion extends BaseEntryRevisionModel
 			[['num'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
 			[['id', 'enabled', 'archived', 'locale', 'localeEnabled', 'slug', 'uri', 'dateCreated', 'dateUpdated', 'root', 'lft', 'rgt', 'level', 'sectionId', 'typeId', 'authorId', 'postDate', 'expiryDate', 'newParentId', 'revisionNotes', 'creatorId', 'versionId', 'num'], 'safe', 'on' => 'search'],
 		];
-	}
-
-	/**
-	 * @inheritDoc Model::populateModel()
-	 *
-	 * @param mixed $attributes
-	 *
-	 * @return EntryVersionModel
-	 */
-	public static function populateModel($attributes)
-	{
-		if ($attributes instanceof \yii\base\Model)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		// Merge the version and entry data
-		$entryData = $attributes['data'];
-		$fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
-		$attributes['versionId'] = $attributes['id'];
-		$attributes['id'] = $attributes['entryId'];
-		$attributes['revisionNotes'] = $attributes['notes'];
-		$title = $entryData['title'];
-		unset($attributes['data'], $entryData['fields'], $attributes['entryId'], $attributes['notes'], $entryData['title']);
-
-		$attributes = array_merge($attributes, $entryData);
-
-		// Initialize the version
-		$version = parent::populateModel($attributes);
-		$version->getContent()->title = $title;
-
-		if ($fieldContent)
-		{
-			$version->setContentFromRevision($fieldContent);
-		}
-
-		return $version;
 	}
 }

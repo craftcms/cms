@@ -269,7 +269,7 @@ class TemplateCache extends Component
 
 				foreach ($this->_cacheQueryParams[$key] as $params)
 				{
-					$values[] = [$cacheId, $params['elementClass'], JsonHelper::encode($params)];
+					$values[] = [$cacheId, $params['elementType'], JsonHelper::encode($params)];
 				}
 
 				Craft::$app->getDb()->createCommand()->batchInsert(
@@ -350,23 +350,23 @@ class TemplateCache extends Component
 	/**
 	 * Deletes caches by a given element class.
 	 *
-	 * @param string $elementClass The element class.
+	 * @param string $elementType The element class.
 	 *
 	 * @return bool
 	 */
-	public function deleteCachesByElementClass($elementClass)
+	public function deleteCachesByElementType($elementType)
 	{
-		if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementClass]))
+		if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]))
 		{
 			return false;
 		}
 
-		$this->_deletedCachesByElementType[$elementClass] = true;
+		$this->_deletedCachesByElementType[$elementType] = true;
 
 		$cacheIds = (new Query())
 			->select('cacheId')
 			->from(static::$_templateCacheCriteriaTable)
-			->where(['type' => $elementClass])
+			->where(['type' => $elementType])
 			->column();
 
 		if ($cacheIds)

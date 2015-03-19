@@ -6,7 +6,7 @@
 			id: 'configFle',
 			name: 'configFile',
 			options: configOptions,
-			value: settings.configFile
+			value: field.configFile
 		}) }}
 	{% endset %}
 {% else %}
@@ -20,7 +20,7 @@
 		id: 'columnType',
 		name: 'columnType',
 		options: columns,
-		value: settings.columnType
+		value: field.columnType
 	}) }}
 {% endset %}
 
@@ -35,7 +35,7 @@
 	instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t,
 	id: 'cleanupHtml',
 	name: 'cleanupHtml',
-	checked: settings.cleanupHtml
+	checked: field.cleanupHtml
 }) }}
 
 {{ forms.checkboxField({
@@ -43,7 +43,7 @@
 	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t,
 	id: 'purifyHtml',
 	name: 'purifyHtml',
-	checked: settings.purifyHtml
+	checked: field.purifyHtml
 }) }}
 
 {{ forms.field({

@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% set elementInstance = craft.elements.getElementInstance(elementClass) %}
+{% set elementInstance = craft.elements.getElementInstance(elementType) %}
 {% set context = 'index' %}
 
 {% if not elementInstance %}
@@ -27,11 +27,11 @@
 
 
 {% block initJs %}
-	Craft.elementIndex = Craft.createElementIndex('{{ elementClass }}', $('#main'), {
+	Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
 		context:        '{{ context }}',
 		showStatusMenu: {{ showStatusMenu is defined ? showStatusMenu|json_encode|raw : "'auto'" }},
 		showLocaleMenu: {{ showLocaleMenu is defined ? showLocaleMenu|json_encode|raw : "'auto'" }},
-		storageKey:     'elementindex.{{ elementClass }}',
+		storageKey:     'elementindex.{{ elementType }}',
 		criteria:       { localeEnabled: null }
 	});
 {% endblock %}

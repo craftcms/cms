@@ -1,80 +1,18 @@
-{% requireAdmin %}
-
 {% extends "_layouts/cp" %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/fields#field-layouts' %}
-
 {% import "_includes/forms" as forms %}
-
-{% if field is not defined and fieldId is defined %}
-	{% set field = craft.fields.getFieldById(fieldId) %}
-	{% if not field %}
-		{% exit 404 %}
-	{% endif %}
-{% endif %}
-
-
-{% set groups = craft.fields.getAllGroups('id') %}
-{% if not groups %}
-	{% exit 404 %}
-{% endif %}
-
-{% set groupId = craft.request.getQuery('groupId') %}
-
-{% if not groupId %}
-	{% if field is defined %}
-		{% set groupId = field.groupId %}
-	{% else %}
-		{% set groupId = groups|keys[0] %}
-	{% endif %}
-{% endif %}
-
-{% if groups[groupId] is not defined %}
-	{% exit 404 %}
-{% endif %}
-
-
-{% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') },
-	{ label: "Fields"|t, url: url('settings/fields') },
-	{ label: groups[groupId].name, url: url('settings/fields/'~groupId) }
-] %}
-
-{% if fieldId is defined %}
-	{% set title = field.name %}
-{% else %}
-	{% set title = "Create a new field"|t %}
-{% endif %}
-
-
-{% set fieldTypes = craft.fields.getAllFieldTypes() %}
-
-{% if field is defined %}
-	{% set fieldType = field.getFieldType() %}
-	{% set isFieldTypeMissing = not fieldType %}
-{% else %}
-	{% set isFieldTypeMissing = false %}
-{% endif %}
-
-{% if fieldType is not defined or isFieldTypeMissing %}
-	{% set fieldType = craft.fields.getFieldType('PlainText') %}
-{% endif %}
 
 
 {% set content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="fields/saveField">
 		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
-		{% if fieldId is defined %}
+		{% if fieldId is not empty %}
 			<input type="hidden" name="fieldId" value="{{ fieldId }}">
 		{% endif %}
 
 		{{ getCsrfInput() }}
 
-		{% set groupOptions = [] %}
-		{% for group in groups %}
-			{% set groupOptions = groupOptions|merge([{ label: group.name, value: group.id }]) %}
-		{% endfor %}
 		{{ forms.selectField({
 			first: true,
 			label: "Group"|t,
@@ -90,8 +28,8 @@
 			instructions: "What this field will be called in the CP."|t,
 			id: 'name',
 			name: 'name',
-			value: (field is defined ? field.name : null),
-			errors: (field is defined ? field.getErrors('name') : null),
+			value: (field is not empty ? field.name : null),
+			errors: (field is not empty ? field.getErrors('name') : null),
 			required: true,
 			translatable: true,
 			autofocus: true
@@ -104,8 +42,8 @@
 			class: 'code',
 			name: 'handle',
 			maxlength: 64,
-			value: (field is defined ? field.handle : null),
-			errors: (field is defined ? field.getErrors('handle') : null),
+			value: (field is not empty ? field.handle : null),
+			errors: (field is not empty ? field.getErrors('handle') : null),
 			required: true,
 		}) }}
 
@@ -115,8 +53,8 @@
 			id: 'instructions',
 			class: 'nicetext',
 			name: 'instructions',
-			value: (field is defined ? field.instructions : null),
-			errors: (field is defined ? field.getErrors('instructions') : null),
+			value: (field is not empty ? field.instructions : null),
+			errors: (field is not empty ? field.getErrors('instructions') : null),
 			translatable: true
 		}) }}
 
@@ -124,7 +62,7 @@
 			{{ forms.checkboxField({
 				label: "This field is translatable"|t,
 				name: 'translatable',
-				checked: (field is defined ? field.translatable : false)
+				checked: (field is not empty ? field.translatable : false)
 			}) }}
 		{% endif %}
 
@@ -133,24 +71,21 @@
 		{{ forms.selectField({
 			label: "Field Type"|t,
 			instructions: "What type of field is this?"|t,
-			warning: (fieldId is defined ? "Changing this may result in data loss."|t),
+			warning: (fieldId is not empty ? "Changing this may result in data loss."|t),
 			id: 'type',
 			name: 'type',
-			options: fieldTypes,
-			value: fieldType.getClassHandle(),
-			errors: (isFieldTypeMissing ? ["The fieldtype class “{class}” could not be found."|t({ class: field.type })] : null),
+			options: fieldTypeOptions,
+			value: field.getType(),
+			errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{type}” could not be found."|t({ type: field.getType() })] : null),
 			toggle: true
 		}) }}
 
-		{% for _fieldType in fieldTypes %}
-			{% set isCurrent = (_fieldType.getClassHandle() == fieldType.getClassHandle()) %}
-			<div id="{{ _fieldType.getClassHandle() }}"{% if not isCurrent %} class="hidden"{% endif %}>
-				{% namespace 'types['~_fieldType.getClassHandle()~']' %}
-					{% if isCurrent %}
-						{{ fieldType.getSettingsHtml()|raw }}
-					{% else %}
-						{{ _fieldType.getSettingsHtml()|raw }}
-					{% endif %}
+		{% for type in allFieldTypes %}
+			{% set isCurrent = (type == field.getType()) %}
+			<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+				{% namespace 'types['~type~']' %}
+                    {% set _field = isCurrent ? field : craft.fields.createField(type) %}
+                    {{ _field.getSettingsHtml()|raw }}
 				{% endnamespace %}
 			</div>
 		{% endfor %}
@@ -164,6 +99,6 @@
 {% endset %}
 
 
-{% if field is not defined or not field.handle %}
+{% if field is empty or field.handle is empty %}
 	{% includeJs "new Craft.HandleGenerator('#name', '#handle');" %}
 {% endif %}

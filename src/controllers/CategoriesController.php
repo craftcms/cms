@@ -236,7 +236,7 @@ class CategoriesController extends Controller
 
 		if ($variables['group']->maxLevels != 1)
 		{
-			$variables['elementClass'] = Category::className();
+			$variables['elementType'] = Category::className();
 
 			// Define the parent options criteria
 			$variables['parentOptionCriteria'] = [

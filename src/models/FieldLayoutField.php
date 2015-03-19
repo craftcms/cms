@@ -8,9 +8,9 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Field;
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 
 /**
@@ -118,7 +118,7 @@ class FieldLayoutField extends Model
 	/**
 	 * Returns the associated field.
 	 *
-	 * @return FieldModel|null The associated field.
+	 * @return FieldInterface|Field|null The associated field.
 	 */
 	public function getField()
 	{

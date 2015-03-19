@@ -23,49 +23,30 @@ class Params extends Model
 	/**
 	 * @var array
 	 */
-	private $_attributeDefs;
+	private $_attributes;
 
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Constructor
-	 *
-	 * @param array $attributeDefs
-	 *
-	 * @return Params
-	 */
-	public function __construct($attributeDefs)
-	{
-		$this->_attributeDefs = $attributeDefs;
-		parent::__construct();
-	}
 
 	public function __isset($name)
 	{
 		return true;
 	}
 
+	public function __set($name, $value)
+	{
+		$this->_attributes[$name] = $value;
+	}
+
 	public function __get($name)
 	{
-		return '';
-	}
-
-	public function getAttribute($name)
-	{
-		return $this->$name;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc Model::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return $this->_attributeDefs;
+		if (isset($this->_attributes[$name]))
+		{
+			return $this->_attributes[$name];
+		}
+		else
+		{
+			return null;
+		}
 	}
 }

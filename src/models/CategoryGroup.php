@@ -70,7 +70,7 @@ class CategoryGroup extends Model
 	/**
 	 * @var The element type that category groups' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\Category';
+	private $_fieldLayoutElementType = 'craft\app\elements\Category';
 
 	/**
 	 * @var

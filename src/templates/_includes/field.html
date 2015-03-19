@@ -3,20 +3,15 @@
 
 {% set value = (element ? element.getFieldValue(field.handle) : null) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
-{% set fieldtype = field.getFieldType() %}
 {% if element %}
-	{% do fieldtype.setElement(element) %}
+	{% do field.setElement(element) %}
 {% endif %}
 {% set instructions = (not static ? field.instructions|t : null) %}
 
-{% if fieldtype %}
-	{% if not static %}
-		{% set input = fieldtype.getInputHtml(field.handle, value) %}
-	{% else %}
-		{% set input = fieldtype.getStaticHtml(value) %}
-	{% endif %}
+{% if not static %}
+    {% set input = field.getInputHtml(field.handle, value) %}
 {% else %}
-	{% set input = '<p class="error">' ~ "The fieldtype class “{class}” could not be found."|t({ class: field.type }) ~ '</p>' %}
+    {% set input = field.getStaticHtml(value) %}
 {% endif %}
 
 {% if instructions or input %}

@@ -9,8 +9,6 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\enums\AttributeType;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 
@@ -86,7 +84,7 @@ class FieldLayout extends Model
 	/**
 	 * Returns the layout’s fields.
 	 *
-	 * @return FieldModel[] The layout’s fields.
+	 * @return FieldLayoutFieldModel[] The layout’s fields.
 	 */
 	public function getFields()
 	{

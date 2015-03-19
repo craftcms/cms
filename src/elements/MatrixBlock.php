@@ -9,11 +9,11 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\models\Field as FieldModel;
-use craft\app\models\FieldLayout;
+use craft\app\fields\Matrix;
 use craft\app\models\MatrixBlockType;
 
 /**
@@ -115,6 +115,11 @@ class MatrixBlock extends Element
 	 */
 	public $collapsed = false;
 
+	/**
+	 * @var ElementInterface|Element The owner element
+	 */
+	private $_owner;
+
 	// Public Methods
 	// =========================================================================
 
@@ -205,7 +210,7 @@ class MatrixBlock extends Element
 	/**
 	 * Returns the owner.
 	 *
-	 * @return Element|null
+	 * @return ElementInterface|Element|null
 	 */
 	public function getOwner()
 	{
@@ -267,7 +272,7 @@ class MatrixBlock extends Element
 	/**
 	 * Returns the Matrix field.
 	 *
-	 * @return FieldModel
+	 * @return Matrix
 	 */
 	private function _getField()
 	{

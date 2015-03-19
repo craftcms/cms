@@ -7,11 +7,9 @@
 
 namespace craft\app\base;
 
-use craft\app\base\Element;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\models\Content;
-use craft\app\models\Field;
 use craft\app\models\FieldLayout;
 
 
@@ -109,7 +107,7 @@ interface ElementInterface extends ComponentInterface
 	 * }
 	 * ```
 	 *
-	 * @return ElementQueryInterface The newly created [[ElementQueryInterface|ElementQuery]] instance.
+	 * @return ElementQueryInterface|ElementQuery The newly created [[ElementQueryInterface|ElementQuery]] instance.
 	 */
 	public static function find();
 
@@ -123,7 +121,7 @@ interface ElementInterface extends ComponentInterface
 	 *    matching all of them (or null if not found).
 	 *
 	 * Note that this method will automatically call the `one()` method and return an
-	 * [[ElementInterface|Element]] instance. For example,
+	 * [[ElementInterface|\craft\app\base\Element]] instance. For example,
 	 *
 	 * ```php
 	 * // find a single entry whose ID is 10
@@ -159,7 +157,7 @@ interface ElementInterface extends ComponentInterface
 	 *    matching all of them (or an empty array if none was found).
 	 *
 	 * Note that this method will automatically call the `all()` method and return an array of
-	 * [[ElementInterface|Element]] instances. For example,
+	 * [[ElementInterface|\craft\app\base\Element]] instances. For example,
 	 *
 	 * ```php
 	 * // find the entries whose ID is 10
@@ -190,7 +188,7 @@ interface ElementInterface extends ComponentInterface
 	 * Returns all of the possible statuses that elements of this type may have.
 	 *
 	 * This method will be called when populating the Status menu on element indexes, for element types whose
-	 * [[hasStatuses()]] method returns `true`. It will also be called when [[ElementQuery]] is querying for
+	 * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\app\elements\ElementQuery]] is querying for
 	 * elements, to ensure that its “status” parameter is set to a valid status.
 	 *
 	 * It should return an array whose keys are the status values, and values are the human-facing status labels.
@@ -282,7 +280,7 @@ interface ElementInterface extends ComponentInterface
 	/**
 	 * Returns the element index HTML.
 	 *
-	 * @param ElementQueryInterface $criteria
+	 * @param ElementQueryInterface $elementQuery
 	 * @param array                 $disabledElementIds
 	 * @param array                 $viewState
 	 * @param string|null           $sourceKey
@@ -292,7 +290,7 @@ interface ElementInterface extends ComponentInterface
 	 *
 	 * @return string
 	 */
-	public static function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
+	public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
 	/**
 	 * Defines the attributes that elements can be sorted by.
@@ -396,19 +394,19 @@ interface ElementInterface extends ComponentInterface
 	 * table will be selected by the query (for those that have one).
 	 *
 	 * If a field has its own column in the content table, but the column name is prefixed with something besides
-	 * “field_”, make sure you set the `columnPrefix` attribute on the [[Field]], so
+	 * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
 	 * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
 	 *
-	 * @param ElementQueryInterface $query
+	 * @param ElementQueryInterface|ElementQuery $query
 	 *
-	 * @return Field[]
+	 * @return \craft\app\base\FieldInterface[]
 	 */
 	public static function getFieldsForElementsQuery(ElementQueryInterface $query);
 
 	/**
 	 * Returns the element query condition for a custom status parameter value.
 	 *
-	 * If the ElementQuery’s [[ElementQuery::status status]] parameter is set to something besides
+	 * If the ElementQuery’s [[\craft\app\elements\ElementQuery::status status]] parameter is set to something besides
 	 * 'enabled' or 'disabled', and it’s one of the statuses that you’ve defined in [[getStatuses()]], this method
 	 * is where you can turn that custom status into an actual SQL query condition.
 	 *
@@ -426,8 +424,8 @@ interface ElementInterface extends ComponentInterface
 	 * }
 	 * ```
 	 *
-	 * @param ElementQueryInterface $query  The database query.
-	 * @param string                $status The custom status.
+	 * @param ElementQueryInterface|ElementQuery $query  The database query.
+	 * @param string                             $status The custom status.
 	 *
 	 * @return string|false
 	 */
@@ -571,7 +569,7 @@ interface ElementInterface extends ComponentInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementQueryInterface|null
+	 * @return ElementInterface|Element|null
 	 */
 	public function getNext($criteria = false);
 
@@ -580,14 +578,14 @@ interface ElementInterface extends ComponentInterface
 	 *
 	 * @param mixed $criteria
 	 *
-	 * @return ElementQueryInterface|null
+	 * @return ElementInterface|Element|null
 	 */
 	public function getPrev($criteria = false);
 
 	/**
 	 * Sets the default next element.
 	 *
-	 * @param ElementInterface|false $element
+	 * @param ElementInterface|Element|false $element
 	 *
 	 * @return null
 	 */
@@ -596,7 +594,7 @@ interface ElementInterface extends ComponentInterface
 	/**
 	 * Sets the default previous element.
 	 *
-	 * @param ElementInterface|false $element
+	 * @param ElementInterface|Element|false $element
 	 *
 	 * return void
 	 */
@@ -623,7 +621,7 @@ interface ElementInterface extends ComponentInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementQueryInterface
+	 * @return ElementQueryInterface|ElementQuery
 	 */
 	public function getAncestors($dist = null);
 
@@ -632,21 +630,21 @@ interface ElementInterface extends ComponentInterface
 	 *
 	 * @param int|null $dist
 	 *
-	 * @return ElementQueryInterface
+	 * @return ElementQueryInterface|ElementQuery
 	 */
 	public function getDescendants($dist = null);
 
 	/**
 	 * Returns the element’s children.
 	 *
-	 * @return ElementQueryInterface
+	 * @return ElementQueryInterface|ElementQuery
 	 */
 	public function getChildren();
 
 	/**
 	 * Returns all of the element’s siblings.
 	 *
-	 * @return ElementQueryInterface
+	 * @return ElementQueryInterface|ElementQuery
 	 */
 	public function getSiblings();
 

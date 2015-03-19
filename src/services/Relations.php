@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\ElementInterface;
-use craft\app\models\Field as FieldModel;
+use craft\app\fields\BaseRelationField;
 use yii\base\Component;
 
 /**
@@ -28,14 +28,14 @@ class Relations extends Component
 	/**
 	 * Saves some relations for a field.
 	 *
-	 * @param FieldModel       $field
+	 * @param BaseRelationField     $field
 	 * @param ElementInterface $source
 	 * @param array            $targetIds
 	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveRelations(FieldModel $field, ElementInterface $source, $targetIds)
+	public function saveRelations(BaseRelationField $field, ElementInterface $source, $targetIds)
 	{
 		if (!is_array($targetIds))
 		{

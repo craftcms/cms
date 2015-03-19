@@ -192,33 +192,26 @@ class Content extends Model
 				continue;
 			}
 
-			$value = $this->getAttribute($handle);
-
 			// Don't worry about blank values. Those will already be caught by required field validation.
-			if ($value)
+			if ($this->$handle !== null)
 			{
-				$fieldType = $field->getFieldType();
+				$errors = $field->validateValue($this->$handle);
 
-				if ($fieldType)
+				if ($errors !== true)
 				{
-					$errors = $fieldType->validate($value);
-
-					if ($errors !== true)
+					if (is_string($errors))
 					{
-						if (is_string($errors))
-						{
-							$this->addError($handle, $errors);
-						}
-						else if (is_array($errors))
-						{
-							foreach ($errors as $error)
-							{
-								$this->addError($handle, $error);
-							}
-						}
-
-						$validates = false;
+						$this->addError($handle, $errors);
 					}
+					else if (is_array($errors))
+					{
+						foreach ($errors as $error)
+						{
+							$this->addError($handle, $error);
+						}
+					}
+
+					$validates = false;
 				}
 			}
 		}

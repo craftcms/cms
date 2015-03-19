@@ -5,13 +5,13 @@
 	name: name,
 	value: value,
 	class: 'nicetext',
-	maxlength: settings.maxLength,
+	maxlength: field.maxLength,
 	showCharsLeft: true,
-    placeholder: settings.placeholder,
-	rows: settings.initialRows
+    placeholder: field.placeholder,
+	rows: field.initialRows
 } %}
 
-{% if settings.multiline %}
+{% if field.multiline %}
 	{{ forms.textarea(config) }}
 {% else %}
 	{{ forms.text(config) }}

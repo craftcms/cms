@@ -14,9 +14,11 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\HtmlHelper;
+use craft\app\helpers\TemplateHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\models\Content;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout;
+use craft\app\web\UploadedFile;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -163,7 +165,7 @@ abstract class Element extends Component implements ElementInterface
 	/**
 	 * @inheritdoc
 	 */
-	public static function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+	public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
 		$variables = [
 			'viewMode'            => $viewState['mode'],
@@ -177,11 +179,11 @@ abstract class Element extends Component implements ElementInterface
 		// Special case for sorting by structure
 		if (isset($viewState['order']) && $viewState['order'] == 'structure')
 		{
-			$source = static::getSource($sourceKey, $context);
+			$source = static::getSourceByKey($sourceKey, $context);
 
 			if (isset($source['structureId']))
 			{
-				$criteria->order = 'lft asc';
+				$elementQuery->orderBy('lft asc');
 				$variables['structure'] = Craft::$app->structures->getStructureById($source['structureId']);
 
 				// Are they allowed to make changes to this structure?
@@ -200,7 +202,7 @@ abstract class Element extends Component implements ElementInterface
 		}
 		else if (!empty($viewState['order']) && $viewState['order'] == 'score')
 		{
-			$criteria->order = 'score';
+			$elementQuery->orderBy('score');
 		}
 		else
 		{
@@ -219,7 +221,7 @@ abstract class Element extends Component implements ElementInterface
 				// typeId, title desc => typeId [sort], title desc
 				// typeId desc        => typeId [sort]
 
-				$criteria->order = preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order);
+				$elementQuery->orderBy(preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order));
 			}
 		}
 
@@ -234,7 +236,7 @@ abstract class Element extends Component implements ElementInterface
 			}
 		}
 
-		$variables['elements'] = $criteria->find();
+		$variables['elements'] = $elementQuery->all();
 
 		$template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 		return Craft::$app->templates->render($template, $variables);
@@ -747,11 +749,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the next element relative to this one, from a given set of criteria.
-	 *
-	 * @param mixed $criteria
-	 *
-	 * @return ElementQueryInterface|null
+	 * @inheritdoc
 	 */
 	public function getNext($criteria = false)
 	{
@@ -766,11 +764,7 @@ abstract class Element extends Component implements ElementInterface
 	}
 
 	/**
-	 * Returns the previous element relative to this one, from a given set of criteria.
-	 *
-	 * @param mixed $criteria
-	 *
-	 * @return ElementQueryInterface|null
+	 * @inheritdoc
 	 */
 	public function getPrev($criteria = false)
 	{
@@ -1208,14 +1202,9 @@ abstract class Element extends Component implements ElementInterface
 						continue;
 					}
 
-					// Give the field type a chance to make changes
-					$fieldType = $field->getFieldType();
-
-					if ($fieldType)
-					{
-						$fieldType->element = $this;
-						$value = $fieldType->prepValueFromPost($value);
-					}
+					// Give the field a chance to make changes
+					$field->element = $this;
+					$value = $field->prepValueFromPost($value);
 
 					// Now set the prepped value on the Content
 					$this->_content->$handle = $value;
@@ -1293,14 +1282,9 @@ abstract class Element extends Component implements ElementInterface
 				$value = null;
 			}
 
-			// Give the field type a chance to prep the value for use
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$fieldType->element = $this;
-				$value = $fieldType->prepValue($value);
-			}
+			// Give the field a chance to prep the value for use
+			$field->element = $this;
+			$value = $field->prepValue($value);
 
 			$this->_preppedContent[$fieldHandle] = $value;
 		}
@@ -1357,6 +1341,7 @@ abstract class Element extends Component implements ElementInterface
 			$criteria = ['id' => $criteria];
 		}
 
+		/** @var ElementQueryInterface $query */
 		$query = static::find()->configure($criteria);
 		return $one ? $query->one() : $query->all();
 	}
@@ -1366,7 +1351,7 @@ abstract class Element extends Component implements ElementInterface
 	 *
 	 * @param string $handle
 	 *
-	 * @return FieldModel|null
+	 * @return Field|null
 	 */
 	protected function getFieldByHandle($handle)
 	{

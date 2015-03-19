@@ -112,18 +112,12 @@ class SearchIndex extends BaseTool
 
 							if ($field)
 							{
-								$fieldType = $field->getFieldType();
+								$field->element = $element;
+								$handle = $field->handle;
 
-								if ($fieldType)
-								{
-									$fieldType->element = $element;
-
-									$handle = $field->handle;
-
-									// Set the keywords for the content's locale
-									$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
-									$keywords[$field->id] = $fieldSearchKeywords;
-								}
+								// Set the keywords for the content's locale
+								$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+								$keywords[$field->id] = $fieldSearchKeywords;
 							}
 						}
 

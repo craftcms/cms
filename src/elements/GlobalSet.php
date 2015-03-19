@@ -84,7 +84,7 @@ class GlobalSet extends Element
 	/**
 	 * @var string The element type that global sets' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\GlobalSet';
+	private $_fieldLayoutElementType = 'craft\app\elements\GlobalSet';
 
 	// Public Methods
 	// =========================================================================

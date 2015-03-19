@@ -51,9 +51,9 @@ abstract class Model extends \yii\base\Model
 
 		foreach ($config as $name => $value)
 		{
-			if (isset($attributes[$name]))
+			if (isset($attributes[$name]) || $model->canSetProperty($name))
 			{
-				if (isset($datetimeAttributes[$name]))
+				if ($value !== null && isset($datetimeAttributes[$name]))
 				{
 					$value = DateTimeHelper::toDateTime($value);
 				}

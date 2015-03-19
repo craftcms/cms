@@ -12,17 +12,15 @@ use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\errors\Exception;
-use craft\app\fieldtypes\Matrix as MatrixFieldType;
+use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\Field as FieldModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutField as FieldLayoutFieldModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
-use craft\app\models\MatrixSettings as MatrixSettingsModel;
 use craft\app\records\MatrixBlock as MatrixBlockRecord;
 use craft\app\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
@@ -202,7 +200,7 @@ class Matrix extends Component
 				$field->name = '__blank__';
 			}
 
-			Craft::$app->fields->validateField($field);
+			$field->validate();
 
 			// Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
 			// worrying about content column conflicts like "a" + "b_c" == "a_b" + "c".
@@ -467,11 +465,11 @@ class Matrix extends Component
 	 *
 	 * If the settings don’t validate, any validation errors will be stored on the settings model.
 	 *
-	 * @param MatrixSettingsModel $settings The settings model.
+	 * @param MatrixField $matrixField The Matrix field
 	 *
 	 * @return bool Whether the settings validated.
 	 */
-	public function validateFieldSettings(MatrixSettingsModel $settings)
+	public function validateFieldSettings(MatrixField $matrixField)
 	{
 		$validates = true;
 
@@ -480,7 +478,7 @@ class Matrix extends Component
 		$uniqueAttributes      = ['name', 'handle'];
 		$uniqueAttributeValues = [];
 
-		foreach ($settings->getBlockTypes() as $blockType)
+		foreach ($matrixField->getBlockTypes() as $blockType)
 		{
 			if (!$this->validateBlockType($blockType, false))
 			{
@@ -517,21 +515,19 @@ class Matrix extends Component
 	/**
 	 * Saves a Matrix field's settings.
 	 *
-	 * @param MatrixSettingsModel $settings The settings model.
-	 * @param bool                $validate Whether the settings should be validated before being saved.
+	 * @param MatrixField $matrixField The Matrix field
+	 * @param bool        $validate Whether the settings should be validated before being saved.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the settings saved successfully.
 	 */
-	public function saveSettings(MatrixSettingsModel $settings, $validate = true)
+	public function saveSettings(MatrixField $matrixField, $validate = true)
 	{
-		if (!$validate || $this->validateFieldSettings($settings))
+		if (!$validate || $this->validateFieldSettings($matrixField))
 		{
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				$matrixField = $settings->getField();
-
 				// Create the content table first since the block type fields will need it
 				$oldContentTable = $this->getContentTableName($matrixField, true);
 				$newContentTable = $this->getContentTableName($matrixField);
@@ -558,7 +554,7 @@ class Matrix extends Component
 					$oldBlockTypesById[$blockType->id] = $blockType;
 				}
 
-				foreach ($settings->getBlockTypes() as $blockType)
+				foreach ($matrixField->getBlockTypes() as $blockType)
 				{
 					if (!$blockType->isNew())
 					{
@@ -577,7 +573,7 @@ class Matrix extends Component
 				$originalContentTable = Craft::$app->content->contentTable;
 				Craft::$app->content->contentTable = $newContentTable;
 
-				foreach ($settings->getBlockTypes() as $blockType)
+				foreach ($matrixField->getBlockTypes() as $blockType)
 				{
 					$sortOrder++;
 					$blockType->fieldId = $matrixField->id;
@@ -593,7 +589,7 @@ class Matrix extends Component
 				}
 
 				// Update our cache of this field's block types
-				$this->_blockTypesByFieldId[$settings->getField()->id] = $settings->getBlockTypes();
+				$this->_blockTypesByFieldId[$matrixField->id] = $matrixField->getBlockTypes();
 
 				return true;
 			}
@@ -616,12 +612,12 @@ class Matrix extends Component
 	/**
 	 * Deletes a Matrix field.
 	 *
-	 * @param FieldModel $matrixField The Matrix field.
+	 * @param MatrixField $matrixField The Matrix field.
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the field was deleted successfully.
 	 */
-	public function deleteMatrixField(FieldModel $matrixField)
+	public function deleteMatrixField(MatrixField $matrixField)
 	{
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
@@ -664,13 +660,13 @@ class Matrix extends Component
 	/**
 	 * Returns the content table name for a given Matrix field.
 	 *
-	 * @param FieldModel $matrixField  The Matrix field.
-	 * @param bool       $useOldHandle Whether the method should use the field’s old handle when determining the table
-	 *                                 name (e.g. to get the existing table name, rather than the new one).
+	 * @param MatrixField $matrixField  The Matrix field.
+	 * @param bool        $useOldHandle Whether the method should use the field’s old handle when determining the table
+	 *                                  name (e.g. to get the existing table name, rather than the new one).
 	 *
 	 * @return string|false The table name, or `false` if $useOldHandle was set to `true` and there was no old handle.
 	 */
-	public function getContentTableName(FieldModel $matrixField, $useOldHandle = false)
+	public function getContentTableName(MatrixField $matrixField, $useOldHandle = false)
 	{
 		$name = '';
 
@@ -838,16 +834,16 @@ class Matrix extends Component
 	/**
 	 * Saves a Matrix field.
 	 *
-	 * @param MatrixFieldType $fieldType The Matrix field type.
+	 * @param MatrixField $field The Matrix field
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the field was saved successfully.
 	 */
-	public function saveField(MatrixFieldType $fieldType)
+	public function saveField(MatrixField $field)
 	{
-		$owner = $fieldType->element;
-		$field = $fieldType->model;
-		$blocks = $owner->getContent()->getAttribute($field->handle);
+		$owner = $field->element;
+		$handle = $field->handle;
+		$blocks = $owner->getContent()->$handle;
 
 		if ($blocks === null)
 		{
@@ -943,11 +939,11 @@ class Matrix extends Component
 	/**
 	 * Returns the parent Matrix field, if any.
 	 *
-	 * @param FieldModel $matrixField The Matrix field.
+	 * @param MatrixField $matrixField The Matrix field.
 	 *
-	 * @return FieldModel|null The Matrix field’s parent Matrix field, or `null` if there is none.
+	 * @return MatrixField|null The Matrix field’s parent Matrix field, or `null` if there is none.
 	 */
-	public function getParentMatrixField(FieldModel $matrixField)
+	public function getParentMatrixField(MatrixField $matrixField)
 	{
 		if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields))
 		{
@@ -1072,15 +1068,15 @@ class Matrix extends Component
 		])->execute();
 
 		$db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
-		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', 'elements', 'id', 'CASCADE', null)->execute();
-		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE')->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)->execute();
+		$db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')->execute();
 	}
 
 	/**
 	 * Applies the field's translation setting to a set of blocks.
 	 *
 	 * @param ElementInterface $owner
-	 * @param FieldModel       $field
+	 * @param MatrixField      $field
 	 * @param array            $blocks
 	 *
 	 * @return null

@@ -73,7 +73,7 @@ class EntryType extends Model
 	/**
 	 * @var The element type that entry types' field layouts should be associated with.
 	 */
-	private $_fieldLayoutElementClass = 'craft\app\elements\Entry';
+	private $_fieldLayoutElementType = 'craft\app\elements\Entry';
 
 	// Public Methods
 	// =========================================================================
