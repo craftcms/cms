@@ -20,6 +20,17 @@ abstract class SavableComponent extends Component implements SavableComponentInt
 
 	use SavableComponentTrait;
 
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function isSelectable()
+	{
+		return true;
+	}
+
 	// Public Methods
 	// =========================================================================
 

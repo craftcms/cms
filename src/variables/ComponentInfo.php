@@ -132,4 +132,24 @@ class ComponentInfo
 			return $component::classHandle();
 		}
 	}
+
+	/**
+	 * Returns whether the component should be selectable in component Type selects.
+	 *
+	 * @return boolean whether the component should be selectable in component Type selects.
+	 */
+	public function getIsSelectable()
+	{
+		$component = $this->component;
+
+		if (!is_subclass_of($component, 'craft\app\base\SavableComponentInterface') || $this->getIsInvalid())
+		{
+			return false;
+		}
+		else
+		{
+			/** @var SavableComponentInterface $component */
+			return $component::isSelectable();
+		}
+	}
 }
