@@ -666,10 +666,7 @@ class Categories extends Component
 	 */
 	public function getCategoryById($categoryId, $localeId = null)
 	{
-		return Category::find()
-			->id($categoryId)
-			->locale($localeId)
-			->one();
+		return Craft::$app->elements->getElementById($categoryId, Category::className(), $localeId);
 	}
 
 	/**

@@ -708,10 +708,7 @@ class Matrix extends Component
 	 */
 	public function getBlockById($blockId, $localeId = null)
 	{
-		return MatrixBlock::find()
-			->id($blockId)
-			->locale($localeId)
-			->one();
+		return Craft::$app->elements->getElementById($blockId, MatrixBlock::className(), $localeId);
 	}
 
 	/**

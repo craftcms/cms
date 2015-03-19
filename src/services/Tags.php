@@ -352,10 +352,7 @@ class Tags extends Component
 	 */
 	public function getTagById($tagId, $localeId)
 	{
-		return Tag::find()
-			->id($tagId)
-			->locale($localeId)
-			->one();
+		return Craft::$app->elements->getElementById($tagId, Tag::className(), $localeId);
 	}
 
 	/**

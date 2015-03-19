@@ -69,10 +69,7 @@ class Entries extends Component
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
-		return Entry::find()
-			->id($entryId)
-			->locale($localeId)
-			->one();
+		return Craft::$app->elements->getElementById($entryId, Entry::className(), $localeId);
 	}
 
 	/**

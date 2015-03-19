@@ -130,10 +130,7 @@ class Assets extends Component
 	 */
 	public function getFileById($fileId, $localeId = null)
 	{
-		return Asset::find()
-			->id($fileId)
-			->locale($localeId)
-			->one();
+		return Craft::$app->elements->getElementById($fileId, Asset::className(), $localeId);
 	}
 
 	/**

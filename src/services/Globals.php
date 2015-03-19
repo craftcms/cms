@@ -225,10 +225,7 @@ class Globals extends Component
 		}
 		else
 		{
-			return GlobalSet::find()
-				->id($globalSetId)
-				->locale($localeId)
-				->one();
+			return Craft::$app->elements->getElementById($globalSetId, GlobalSet::className(), $localeId);
 		}
 	}
 
