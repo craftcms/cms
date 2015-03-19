@@ -64,31 +64,6 @@ class MatrixBlock extends Element
 	/**
 	 * @inheritdoc
 	 */
-	public static function getContentTableForElementsQuery(ElementQueryInterface $query)
-	{
-		if (!$query->fieldId && $query->id && is_numeric($query->id))
-		{
-			$query->fieldId = (new Query())
-				->select('fieldId')
-				->from('{{%matrixblocks}}')
-				->where('id = :id', [':id' => $query->id])
-				->scalar();
-		}
-
-		if ($query->fieldId && is_numeric($query->fieldId))
-		{
-			$matrixField = Craft::$app->fields->getFieldById($query->fieldId);
-
-			if ($matrixField)
-			{
-				return Craft::$app->matrix->getContentTableName($matrixField);
-			}
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
 	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
 	{
 		$fields = [];

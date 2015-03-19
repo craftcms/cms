@@ -9,6 +9,7 @@ namespace craft\app\elements\db;
 
 use Craft;
 use craft\app\elements\MatrixBlock;
+use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\DbHelper;
 use craft\app\models\MatrixBlockType;
 
@@ -156,6 +157,29 @@ class MatrixBlockQuery extends ElementQuery
 	protected function beforePrepare()
 	{
 		$this->joinElementTable('matrixblocks');
+
+		// Figure out which content table to use
+		$this->contentTable = null;
+
+		if (!$this->fieldId && $this->id && is_numeric($this->id))
+		{
+			$this->fieldId = (new Query())
+				->select('fieldId')
+				->from('{{%matrixblocks}}')
+				->where('id = :id', [':id' => $this->id])
+				->scalar();
+		}
+
+		if ($this->fieldId && is_numeric($this->fieldId))
+		{
+			/** @var MatrixField $matrixField */
+			$matrixField = Craft::$app->fields->getFieldById($this->fieldId);
+
+			if ($matrixField)
+			{
+				$this->contentTable = Craft::$app->matrix->getContentTableName($matrixField);
+			}
+		}
 
 		$this->query->select([
 			'matrixblocks.fieldId',

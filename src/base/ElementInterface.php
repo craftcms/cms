@@ -389,21 +389,6 @@ interface ElementInterface extends ComponentInterface
 	public static function getTableAttributeHtml(ElementInterface $element, $attribute);
 
 	/**
-	 * Returns the content table name that should be joined into an elements query for a given element criteria.
-	 *
-	 * This method will get called from [[\craft\app\services\Elements::buildElementsQuery()]] as it is building out a database
-	 * query to fetch elements with a given criteria. It will only be called if [[hasContent()]] returns `true`.
-	 *
-	 * If this method returns `false`, no content table will be joined in, and it will be up to the element’s
-	 * [[getContent()]] method to fetch content rows on demand.
-	 *
-	 * @param ElementQueryInterface $query The element query
-	 *
-	 * @return string|false The content table name, or `false` if it cannot be determined.
-	 */
-	public static function getContentTableForElementsQuery(ElementQueryInterface $query);
-
-	/**
 	 * Returns the fields that should take part in an upcoming elements qurery.
 	 *
 	 * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,

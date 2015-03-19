@@ -320,14 +320,6 @@ abstract class Element extends Component implements ElementInterface
 	/**
 	 * @inheritdoc
 	 */
-	public static function getContentTableForElementsQuery(ElementQueryInterface $query)
-	{
-		return '{{%content}}';
-	}
-
-	/**
-	 * @inheritdoc
-	 */
 	public static function getFieldsForElementsQuery(ElementQueryInterface $query)
 	{
 		$contentService = Craft::$app->content;
