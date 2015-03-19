@@ -7,8 +7,6 @@
 
 namespace craft\app\base;
 
-use craft\app\helpers\ArrayHelper;
-
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
@@ -17,6 +15,11 @@ use craft\app\helpers\ArrayHelper;
  */
 abstract class SavableComponent extends Component implements SavableComponentInterface
 {
+	// Traits
+	// =========================================================================
+
+	use SavableComponentTrait;
+
 	// Public Methods
 	// =========================================================================
 

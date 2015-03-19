@@ -22,11 +22,6 @@ trait FieldTrait
 	// =========================================================================
 
 	/**
-	 * @var integer The field’s ID
-	 */
-	public $id;
-
-	/**
 	 * @var integer The field’s group’s ID
 	 */
 	public $groupId;

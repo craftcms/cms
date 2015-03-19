@@ -13,7 +13,7 @@ use craft\app\records\FieldGroup;
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
  *
- * A class implementing this interface should also use [[FieldTrait]].
+ * A class implementing this interface should also use [[SavableComponentTrait]] and [[FieldTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0

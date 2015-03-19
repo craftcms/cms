@@ -10,6 +10,8 @@ namespace craft\app\base;
 /**
  * SavableComponentInterface defines the common interface to be implemented by savable Craft component classes.
  *
+ * A class implementing this interface should also use [[SavableComponentTrait]].
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
