@@ -34,18 +34,18 @@ class Dropdown extends BaseOptionsField
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for a default option
-		if ($this->isFresh())
+		if ($this->isFresh($element))
 		{
 			$value = $this->getDefaultValue();
 		}
 
 		return Craft::$app->templates->render('_includes/forms/select', [
-			'name'    => $name,
+			'name'    => $this->handle,
 			'value'   => $value,
 			'options' => $options
 		]);

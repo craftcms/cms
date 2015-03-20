@@ -8,6 +8,7 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Element;
 use craft\app\elements\db\ElementQuery;
@@ -143,7 +144,7 @@ abstract class BaseRelationField extends Field
 	/**
 	 * @inheritdoc
 	 */
-	function validateValue($value)
+	function validateValue($value, $element)
 	{
 		$errors = [];
 
@@ -172,12 +173,12 @@ abstract class BaseRelationField extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		$class = static::elementType();
 		/** @var ElementQuery $query */
 		$query = $class::find()
-			->locale($this->getTargetLocale());
+			->locale($this->getTargetLocale($element));
 
 		// $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
 		if (is_array($value))
@@ -186,11 +187,11 @@ abstract class BaseRelationField extends Field
 				->id(array_values(array_filter($value)))
 				->fixedOrder();
 		}
-		else if ($value !== '' && isset($this->element) && $this->element->id)
+		else if ($value !== '' && !empty($element->id))
 		{
 			$query->relatedTo([
-				'sourceElement' => $this->element->id,
-				'sourceLocale'  => $this->element->locale,
+				'sourceElement' => $element->id,
+				'sourceLocale'  => $element->locale,
 				'field'         => $this->id
 			]);
 
@@ -230,16 +231,16 @@ abstract class BaseRelationField extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
-		$variables = $this->getInputTemplateVariables($name, $value);
+		$variables = $this->getInputTemplateVariables($value, $element);
 		return Craft::$app->templates->render($this->inputTemplate, $variables);
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function getSearchKeywords($value)
+	public function getSearchKeywords($value, $element)
 	{
 		$titles = [];
 
@@ -248,36 +249,35 @@ abstract class BaseRelationField extends Field
 			$titles[] = (string) $element;
 		}
 
-		return parent::getSearchKeywords($titles);
+		return parent::getSearchKeywords($titles, $element);
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function afterElementSave()
+	public function afterElementSave(ElementInterface $element)
 	{
-		$handle = $this->handle;
-		$targetIds = $this->element->getContent()->$handle;
+		$value = $this->getElementValue($element);
 
-		if ($targetIds !== null)
+		if ($value !== null)
 		{
-			Craft::$app->relations->saveRelations($this, $this->element, $targetIds);
+			Craft::$app->relations->saveRelations($this, $element, $value);
 		}
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function getStaticHtml($value)
+	public function getStaticHtml($value, $element)
 	{
 		if (count($value))
 		{
 			$html = '<div class="elementselect"><div class="elements">';
 
-			foreach ($value as $element)
+			foreach ($value as $relatedElement)
 			{
 				$html .= Craft::$app->templates->render('_elements/element', [
-					'element' => $element
+					'element' => $relatedElement
 				]);
 			}
 
@@ -296,12 +296,12 @@ abstract class BaseRelationField extends Field
 	/**
 	 * Returns an array of variables that should be passed to the input template.
 	 *
-	 * @param string                     $name
 	 * @param ElementQueryInterface|null $selectedElementsQuery
+	 * @param ElementInterface|Element   $element
 	 *
 	 * @return array
 	 */
-	protected function getInputTemplateVariables($name, $selectedElementsQuery)
+	protected function getInputTemplateVariables($selectedElementsQuery, $element)
 	{
 		if (!($selectedElementsQuery instanceof ElementQueryInterface))
 		{
@@ -318,19 +318,19 @@ abstract class BaseRelationField extends Field
 
 		$selectionCriteria = $this->getInputSelectionCriteria();
 		$selectionCriteria['localeEnabled'] = null;
-		$selectionCriteria['locale'] = $this->getTargetLocale();
+		$selectionCriteria['locale'] = $this->getTargetLocale($element);
 
 		return [
 			'jsClass'            => $this->inputJsClass,
 			'elementType'        => static::elementType(),
-			'id'                 => Craft::$app->templates->formatInputId($name),
+			'id'                 => Craft::$app->templates->formatInputId($this->handle),
 			'fieldId'            => $this->id,
 			'storageKey'         => 'field.'.$this->id,
-			'name'               => $name,
+			'name'               => $this->handle,
 			'elements'           => $selectedElementsQuery,
-			'sources'            => $this->getInputSources(),
+			'sources'            => $this->getInputSources($element),
 			'criteria'           => $selectionCriteria,
-			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
+			'sourceElementId'    => (!empty($element->id) ? $element->id : null),
 			'limit'              => ($this->allowLimit ? $this->limit : null),
 			'addButtonLabel'     => $this->getAddButtonLabel(),
 		];
@@ -339,9 +339,10 @@ abstract class BaseRelationField extends Field
 	/**
 	 * Returns an array of the source keys the field should be able to select elements from.
 	 *
+	 * @param ElementInterface|Element|null $element
 	 * @return array
 	 */
-	protected function getInputSources()
+	protected function getInputSources($element)
 	{
 		if ($this->allowMultipleSources)
 		{
@@ -368,9 +369,10 @@ abstract class BaseRelationField extends Field
 	/**
 	 * Returns the locale that target elements should have.
 	 *
+	 * @param ElementInterface|Element|null $element
 	 * @return string
 	 */
-	protected function getTargetLocale()
+	protected function getTargetLocale($element)
 	{
 		if (Craft::$app->isLocalized())
 		{
@@ -378,9 +380,9 @@ abstract class BaseRelationField extends Field
 			{
 				return $this->targetLocale;
 			}
-			else if (isset($this->element))
+			else if (!empty($element))
 			{
-				return $this->element->locale;
+				return $element->locale;
 			}
 		}
 
@@ -404,7 +406,7 @@ abstract class BaseRelationField extends Field
 
 			foreach (Craft::$app->getI18n()->getSiteLocales() as $locale)
 			{
-				$localeOptions[] = ['label' => $locale->getName(), 'value' => $locale->id];
+				$localeOptions[] = ['label' => $locale->getDisplayName(), 'value' => $locale->id];
 			}
 
 			return Craft::$app->templates->renderMacro('_includes/forms', 'selectField', [

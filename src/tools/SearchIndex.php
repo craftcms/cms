@@ -108,11 +108,9 @@ class SearchIndex extends BaseTool
 
 						foreach ($fieldLayout->getFields() as $field)
 						{
-							$field->element = $element;
-							$handle = $field->handle;
-
 							// Set the keywords for the content's locale
-							$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+							$fieldValue = $element->getFieldValue($field->handle);
+							$fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
 							$keywords[$field->id] = $fieldSearchKeywords;
 						}
 

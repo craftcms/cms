@@ -166,7 +166,7 @@ abstract class BaseOptionsField extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		$selectedValues = ArrayHelper::toArray($value);
 

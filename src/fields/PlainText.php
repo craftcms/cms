@@ -95,10 +95,10 @@ class PlainText extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		return Craft::$app->templates->render('_components/fieldtypes/PlainText/input', [
-			'name'  => $name,
+			'name'  => $this->handle,
 			'value' => $value,
 			'field' => $this,
 		]);

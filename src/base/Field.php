@@ -129,49 +129,28 @@ abstract class Field extends SavableComponent implements FieldInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function setElement(ElementInterface $element)
+	public function getInputHtml($value, $element)
 	{
-		$this->element = $element;
+		return '<textarea name="'.$this->handle.'">'.$value.'</textarea>';
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
-	{
-		return '<textarea name="'.$name.'">'.$value.'</textarea>';
-	}
-
-	/**
-	 * Returns static HTML for the field's value.
-	 *
-	 * @param mixed $value
-	 *
-	 * @return string
-	 */
-	public function getStaticHtml($value)
+	public function getStaticHtml($value, $element)
 	{
 		// Just return the input HTML with disabled inputs by default
 		Craft::$app->templates->startJsBuffer();
-		$inputHtml = $this->getInputHtml(StringHelper::randomString(), $value);
+		$inputHtml = $this->getInputHtml($value, $element);
 		$inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
 		Craft::$app->templates->clearJsBuffer();
-
 		return $inputHtml;
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($value)
-	{
-		return $value;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function validateValue($value)
+	public function validateValue($value, $element)
 	{
 		return true;
 	}
@@ -179,14 +158,24 @@ abstract class Field extends SavableComponent implements FieldInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function afterElementSave()
+	public function beforeElementSave(ElementInterface $element)
+	{
+		$value = $this->getElementValue($element);
+		$value = $this->prepareValueBeforeSave($value, $element);
+		$this->setElementValue($element, $value);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function afterElementSave(ElementInterface $element)
 	{
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function getSearchKeywords($value)
+	public function getSearchKeywords($value, $element)
 	{
 		return StringHelper::toString($value, ' ');
 	}
@@ -194,7 +183,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		return $value;
 	}
@@ -241,32 +230,70 @@ abstract class Field extends SavableComponent implements FieldInterface
 	/**
 	 * Returns the location in POST that this field's content was pulled from.
 	 *
+	 * @param ElementInterface|Element $element The element this field is associated with
 	 * @return string|null
 	 */
-	protected function getContentPostLocation()
+	protected function getContentPostLocation($element)
 	{
-		if (isset($this->element))
+		if ($element)
 		{
-			$elementContentPostLocation = $this->element->getContentPostLocation();
+			$elementContentPostLocation = $element->getContentPostLocation();
 
 			if ($elementContentPostLocation)
 			{
 				return $elementContentPostLocation.'.'.$this->handle;
 			}
 		}
+
+		return null;
+	}
+
+	/**
+	 * Returns this field’s value on a given element.
+	 *
+	 * @param ElementInterface|Element $element The element
+	 * @return mixed The field’s value
+	 */
+	protected function getElementValue(ElementInterface $element)
+	{
+		$handle = $this->handle;
+		return $element->getContent()->$handle;
+	}
+
+	/**
+	 * Updates this field’s value on a given element.
+	 *
+	 * @param ElementInterface|Element $element The element
+	 * @param mixed                    $value The field’s new value
+	 */
+	protected function setElementValue(ElementInterface $element, $value)
+	{
+		$handle = $this->handle;
+		$element->getContent()->$handle = $value;
+	}
+
+	/**
+	 * Prepares this field’s value on an element before it is saved.
+	 *
+	 * @param mixed                    $value   The field’s raw POST value
+	 * @param ElementInterface|Element $element The element that is about to be saved
+	 * @return mixed The field’s prepared value
+	 */
+	protected function prepareValueBeforeSave($value, $element)
+	{
+		return $value;
 	}
 
 	/**
 	 * Returns whether this is the first time the element's content has been edited.
 	 *
+	 * @param ElementInterface|Element|null $element
 	 * @return bool
 	 */
-	protected function isFresh()
+	protected function isFresh($element)
 	{
 		if (!isset($this->_isFresh))
 		{
-			$element = $this->element;
-
 			// If this is for a Matrix block, we're more interested in its owner
 			if (isset($element) && $element instanceof MatrixBlock)
 			{

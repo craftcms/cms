@@ -67,16 +67,16 @@ class Lightswitch extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		// If this is a new entry, look for a default option
-		if ($this->isFresh())
+		if ($this->isFresh($element))
 		{
 			$value = $this->default;
 		}
 
 		return Craft::$app->templates->render('_includes/forms/lightswitch', [
-			'name'  => $name,
+			'name'  => $this->handle,
 			'on'    => (bool) $value,
 		]);
 	}
@@ -84,17 +84,20 @@ class Lightswitch extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($value)
+	public function prepareValue($value, $element)
 	{
-		return (bool) $value;
+		// It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
+		return $value == false ? '0' : $value;
 	}
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	protected function prepareValueBeforeSave($value, $element)
 	{
-		// It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
-		return $value == false ? '0' : $value;
+		return (bool) $value;
 	}
 }

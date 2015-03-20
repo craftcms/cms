@@ -76,12 +76,12 @@ class Tags extends BaseRelationField
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $selectedElementsQuery)
+	public function getInputHtml($value, $element)
 	{
-		if (!($selectedElementsQuery instanceof ElementQueryInterface))
+		if (!($value instanceof ElementQueryInterface))
 		{
 			$class = self::elementType();
-			$selectedElementsQuery = $class::find()
+			$value = $class::find()
 				->id(false);
 		}
 
@@ -91,11 +91,11 @@ class Tags extends BaseRelationField
 		{
 			return Craft::$app->templates->render('_components/fieldtypes/Tags/input', [
 				'elementType'     => self::elementType(),
-				'id'              => Craft::$app->templates->formatInputId($name),
-				'name'            => $name,
-				'elements'        => $selectedElementsQuery,
+				'id'              => Craft::$app->templates->formatInputId($this->handle),
+				'name'            => $this->handle,
+				'elements'        => $value,
 				'tagGroupId'      => $this->_getTagGroupId(),
-				'sourceElementId' => (isset($this->element->id) ? $this->element->id : null),
+				'sourceElementId' => (!empty($element) ? $element->id : null),
 			]);
 		}
 		else

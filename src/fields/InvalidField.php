@@ -30,7 +30,7 @@ class InvalidField extends Field implements InvalidComponentInterface
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		return '<p class="error">'.$this->errorMessage.'</p>';
 	}

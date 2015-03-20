@@ -47,13 +47,6 @@ interface FieldInterface extends SavableComponentInterface
 	public function getContentColumnType();
 
 	/**
-	 * Sets the element that the field is currently associated with.
-	 *
-	 * @param ElementInterface|Element $element
-	 */
-	public function setElement(ElementInterface $element);
-
-	/**
 	 * Returns the field’s input HTML.
 	 *
 	 * An extremely simple implementation would be to directly return some HTML:
@@ -63,7 +56,7 @@ interface FieldInterface extends SavableComponentInterface
 	 * ```
 	 *
 	 * For more complex inputs, you might prefer to create a template, and render it via
-	 * [[\craft\app\services\Templates::render()]]. For example, the following code would render a template loacated at
+	 * [[\craft\app\services\Templates::render()]]. For example, the following code would render a template located at
 	 * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
 	 *
 	 * ```php
@@ -113,7 +106,7 @@ interface FieldInterface extends SavableComponentInterface
 	 * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
 	 *
 	 * ```php
-	 * public function getInputHtml($name, $value)
+	 * public function getInputHtml($value, $element)
 	 * {
 	 *     // Come up with an ID value based on $name
 	 *     $id = Craft::$app->templates->formatInputId($name);
@@ -144,47 +137,33 @@ interface FieldInterface extends SavableComponentInterface
 	 * The same principles also apply if you’re including your JavaScript code with
 	 * [[\craft\app\services\Templates::includeJs()]].
 	 *
-	 * @param string $name  The name that the field’s HTML inputs should have.
-	 * @param mixed  $value The field’s value. This will either be the [[prepValue() prepped value]], or the raw
-	 *                      POST value in the event of a validation error, or if the user is editing an entry
-	 *                      draft/version.
+	 * @param mixed                         $value   The field’s value. This will either be the [[prepareValue() prepared value]],
+	 *                                               raw POST data (i.e. if there was a validation error), or null
+	 * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
 	 *
 	 * @return string The input HTML.
 	 */
-	public function getInputHtml($name, $value);
+	public function getInputHtml($value, $element);
 
 	/**
-	 * Returns the input value as it should be stored in the database.
+	 * Returns static HTML for the field's value.
 	 *
-	 * This method is called from [[ElementInterface::setContentFromPost()]], and is the only chance your plugin has
-	 * to modify the POST data before it is saved to the craft_content table (assuming [[defineContentAttribute()]]
-	 * doesn’t return `false` and the field actually has a column in the craft_content table).
-	 *
-	 * @param mixed $value The value that was in the POST data for the field.
-	 *
-	 * @return mixed The value that should be stored in the database.
+	 * @param mixed                    $value   The field’s value
+	 * @param ElementInterface|Element $element The element the field is associated with, if there is one
+	 * @return string
 	 */
-	public function prepValueFromPost($value);
+	public function getStaticHtml($value, $element);
 
 	/**
 	 * Validates the field’s value.
 	 *
-	 * The $value passed into this method will be based on the value that [[prepValueFromPost()]] returned. It may
-	 * have gone through additional modification when it was set on the [[ContentModel]] as well, depending on
-	 * the attribute type [[defineContentAttribute()]] returns.
-	 *
-	 * Some validation may already occur for this field without any help from this method. For example, if the field
-	 * is required by the field layout, but doesn’t have any value, the [[ContentModel]] will take care of that.
-	 * Also, if [[defineContentAttribute()]] defines any validation rules (e.g. `min` or `max` for Number
-	 * attributes), those will also be applied automatically. So this method should only be used for _custom_
-	 * validation rules that aren’t already provided for free.
-	 *
-	 * @param mixed $value The field’s value.
+	 * @param mixed                    $value   The field’s value
+	 * @param ElementInterface|Element $element The element the field is associated with, if there is one
 	 *
 	 * @return true|string|array `true` if everything checks out; otherwise a string for a single validation error, or
 	 *                           an array of strings if there are multiple validation errors.
 	 */
-	public function validateValue($value);
+	public function validateValue($value, $element);
 
 	/**
 	 * Returns the search keywords that should be associated with this field.
@@ -192,11 +171,12 @@ interface FieldInterface extends SavableComponentInterface
 	 * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]
 	 * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
 	 *
-	 * @param mixed $value The field’s value.
+	 * @param mixed                    $value   The field’s value
+	 * @param ElementInterface|Element $element The element the field is associated with, if there is one
 	 *
 	 * @return string A string of search keywords.
 	 */
-	public function getSearchKeywords($value);
+	public function getSearchKeywords($value, $element);
 
 	/**
 	 * Performs any actions before a field is saved.
@@ -227,29 +207,33 @@ interface FieldInterface extends SavableComponentInterface
 	public function afterDelete();
 
 	/**
-	 * Performs any additional actions after the element has been saved.
+	 * Performs any actions before an element is saved.
 	 *
-	 * If your field type is storing data in its own table, this is the best place to do it. That’s because by the time
-	 * this method has been called, you can be sure that the element will have an ID, even if it’s getting saved for
-	 * the first time.
-	 *
-	 * @return null
+	 * @param ElementInterface|Element $element The element that is about to be saved
 	 */
-	public function afterElementSave();
+	public function beforeElementSave(ElementInterface $element);
+
+	/**
+	 * Performs any actions after the element has been saved.
+	 *
+	 * @param ElementInterface|Element $element The element that was just saved
+	 */
+	public function afterElementSave(ElementInterface $element);
 
 	/**
 	 * Prepares the field’s value for use.
 	 *
-	 * This method is called when the field’s value is first acessed from the element. For example, the first time
-	 * `entry.myFieldHandle` is called from a template, or right before [[getFieldHtml()]] is called. Whatever
-	 * this method returns is what `entry.myFieldHandle` will likewise return, and what getFieldHandle()’s $value
+	 * This method is called when the field’s value is first accessed from the element. For example, the first time
+	 * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
+	 * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s $value
 	 * argument will be set to.
 	 *
-	 * @param mixed $value The field’s stored value.
+	 * @param mixed                         $value   The raw field value
+	 * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
 	 *
-	 * @return mixed The prepped value.
+	 * @return mixed The prepared field value
 	 */
-	public function prepValue($value);
+	public function prepareValue($value, $element);
 
 	/**
 	 * Modifies an element query.

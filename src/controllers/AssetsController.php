@@ -12,6 +12,7 @@ use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\events\AssetEvent;
+use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\AssetsHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
@@ -104,17 +105,13 @@ class AssetsController extends Controller
 
 		$field = Craft::$app->fields->getFieldById($fieldId);
 
-		if (!($field instanceof Assets))
+		if (!($field instanceof AssetsField))
 		{
 			throw new Exception(Craft::t('app', 'That is not an Assets field.'));
 		}
 
-		if ($elementId)
-		{
-			$field->element = Craft::$app->elements->getElementById($elementId);
-		}
-
-		$targetFolderId = $field->resolveSourcePath();
+		$element = $elementId ? Craft::$app->elements->getElementById($elementId) : null;
+		$targetFolderId = $field->resolveSourcePath($element);
 
 		try
 		{

@@ -12,6 +12,7 @@ use craft\app\behaviors\ContentTrait;
 use craft\app\dates\DateTime;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\TemplateHelper;
@@ -45,6 +46,18 @@ abstract class Element extends Component implements ElementInterface
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
+
+	/**
+	 * @event Event The event that is triggered before the element is saved
+	 *
+	 * You may set [[Event::performAction]] to `false` to prevent the element from getting saved.
+	 */
+	const EVENT_BEFORE_SAVE = 'beforeSave';
+
+	/**
+	 * @event Event The event that is triggered after the element is saved
+	 */
+	const EVENT_AFTER_SAVE = 'afterSave';
 
 	// Static
 	// =========================================================================
@@ -1075,25 +1088,13 @@ abstract class Element extends Component implements ElementInterface
 				// Do we have any post data for this field?
 				if (isset($content[$handle]))
 				{
-					$value = $this->_rawPostContent[$handle] = $content[$handle];
+					$this->_content->$handle = $this->_rawPostContent[$handle] = $content[$handle];
 				}
 				// Were any files uploaded for this field?
 				else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
 				{
-					$value = null;
+					$this->_content->$handle = null;
 				}
-				else
-				{
-					// No data was submitted so just skip this field
-					continue;
-				}
-
-				// Give the field a chance to make changes
-				$field->element = $this;
-				$value = $field->prepValueFromPost($value);
-
-				// Now set the prepped value on the Content
-				$this->_content->$handle = $value;
 			}
 		}
 	}
@@ -1155,8 +1156,7 @@ abstract class Element extends Component implements ElementInterface
 				$value = null;
 			}
 
-			$field->element = $this;
-			$content->$fieldHandle = $field->prepValue($value);
+			$content->$fieldHandle = $field->prepareValue($value, $this);
 			$this->_preparedFields[$fieldHandle] = true;
 		}
 
@@ -1185,6 +1185,41 @@ abstract class Element extends Component implements ElementInterface
 	public function getFieldContext()
 	{
 		return Craft::$app->content->fieldContext;
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @inheritdoc
+	 */
+	public function beforeSave()
+	{
+		// Tell the fields about it
+		foreach ($this->getFields() as $field)
+		{
+			$field->beforeElementSave($this);
+		}
+
+		// Trigger a 'beforeSave' event
+		$event = new Event();
+		$this->trigger(self::EVENT_BEFORE_SAVE, $event);
+		return $event->performAction;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function afterSave()
+	{
+		// Tell the fields about it
+		foreach ($this->getFields() as $field)
+		{
+			$field->afterElementSave($this);
+		}
+
+		// Trigger an 'afterSave' event
+		$this->trigger(self::EVENT_BEFORE_SAVE, new Event());
 	}
 
 	// Protected Methods
@@ -1233,6 +1268,25 @@ abstract class Element extends Component implements ElementInterface
 		}
 
 		return $this->_fieldsByHandle[$handle];
+	}
+
+	/**
+	 * Returns each of this element’s fields.
+	 *
+	 * @return Field[] This element’s fields
+	 */
+	protected function getFields()
+	{
+		$fieldLayout = $this->getFieldLayout();
+
+		if ($fieldLayout)
+		{
+			return $fieldLayout->getFields();
+		}
+		else
+		{
+			return [];
+		}
 	}
 
 	// Private Methods

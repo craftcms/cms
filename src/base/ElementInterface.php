@@ -774,16 +774,16 @@ interface ElementInterface extends ComponentInterface
 	public function setContent($content);
 
 	/**
-	 * Sets the content from post data, calling prepValueFromPost() on the field types.
+	 * Sets the content from post data.
 	 *
-	 * @param array|string $content
+	 * @param array|string $content The array of field values, or the post location of the content
 	 *
 	 * @return null
 	 */
 	public function setContentFromPost($content);
 
 	/**
-	 * Returns the raw content from the post data, before it was passed through [[prepValueFromPost()]].
+	 * Returns the raw content from the post data, as it was given to [[setContentFromPost]]
 	 *
 	 * @return array
 	 */
@@ -835,4 +835,19 @@ interface ElementInterface extends ComponentInterface
 	 * @return string
 	 */
 	public function getFieldContext();
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * This method is called right before the element is saved, and returns whether the element should be saved.
+	 *
+	 * @return boolean Whether the element should be saved
+	 */
+	public function beforeSave();
+
+	/**
+	 * This method is called right after the element is saved.
+	 */
+	public function afterSave();
 }

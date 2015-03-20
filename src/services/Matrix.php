@@ -8,8 +8,10 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
+use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\enums\ColumnType;
 use craft\app\errors\Exception;
 use craft\app\fields\Matrix as MatrixField;
@@ -832,13 +834,13 @@ class Matrix extends Component
 	 * Saves a Matrix field.
 	 *
 	 * @param MatrixField $field The Matrix field
+	 * @param ElementInterface|Element $owner The element the field is associated with
 	 *
 	 * @throws \Exception
 	 * @return bool Whether the field was saved successfully.
 	 */
-	public function saveField(MatrixField $field)
+	public function saveField(MatrixField $field, ElementInterface $owner)
 	{
-		$owner = $field->element;
 		$handle = $field->handle;
 		$blocks = $owner->getContent()->$handle;
 
@@ -847,7 +849,11 @@ class Matrix extends Component
 			return true;
 		}
 
-		if (!is_array($blocks))
+		if ($blocks instanceof MatrixBlockQuery)
+		{
+			$blocks = $blocks->getResult();
+		}
+		else
 		{
 			$blocks = [];
 		}

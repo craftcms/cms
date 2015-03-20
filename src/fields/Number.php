@@ -86,9 +86,9 @@ class Number extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
-		if ($this->isFresh() && ($value < $this->min || $value > $this->max))
+		if ($this->isFresh($element) && ($value < $this->min || $value > $this->max))
 		{
 			$value = $this->min;
 		}
@@ -98,24 +98,27 @@ class Number extends Field
 		$value = number_format($value, $decimals, $decimalSeparator, '');
 
 		return Craft::$app->templates->render('_includes/forms/text', [
-			'name'  => $name,
+			'name'  => $this->handle,
 			'value' => $value,
 			'size'  => 5
 		]);
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($data)
+	protected function prepareValueBeforeSave($value, $element)
 	{
-		if ($data === '')
+		if ($value === '')
 		{
 			return 0;
 		}
 		else
 		{
-			return LocalizationHelper::normalizeNumber($data);
+			return LocalizationHelper::normalizeNumber($value);
 		}
 	}
 }

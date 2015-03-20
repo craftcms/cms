@@ -130,11 +130,11 @@ class Date extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		$variables = [
-			'id'              => Craft::$app->templates->formatInputId($name),
-			'name'            => $name,
+			'id'              => Craft::$app->templates->formatInputId($this->handle),
+			'name'            => $this->handle,
 			'value'           => $value,
 			'minuteIncrement' => $this->minuteIncrement
 		];
@@ -157,7 +157,7 @@ class Date extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		if ($value)
 		{

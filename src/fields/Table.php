@@ -8,9 +8,10 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\helpers\JsonHelper;
-use craft\app\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
@@ -147,11 +148,11 @@ class Table extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
-		$input = '<input type="hidden" name="'.$name.'" value="">';
+		$input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
-		$tableHtml = $this->_getInputHtml($name, $value, false);
+		$tableHtml = $this->_getInputHtml($value, $element, false);
 
 		if ($tableHtml)
 		{
@@ -164,19 +165,7 @@ class Table extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($value)
-	{
-		if (is_array($value))
-		{
-			// Drop the string row keys
-			return array_values($value);
-		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		if (is_array($value) && ($columns = $this->columns))
 		{
@@ -199,13 +188,10 @@ class Table extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getStaticHtml($value)
+	public function getStaticHtml($value, $element)
 	{
-		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
+		return $this->_getInputHtml($value, $element, true);
 	}
-
-	// Protected Methods
-	// =========================================================================
 
 	/**
 	 * @inheritdoc
@@ -220,19 +206,34 @@ class Table extends Field
 		return $settings;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function prepareValueBeforeSave($value, $element)
+	{
+		if (is_array($value))
+		{
+			// Drop the string row keys
+			return array_values($value);
+		}
+	}
+
 	// Private Methods
 	// =========================================================================
 
 	/**
 	 * Returns the field's input HTML.
 	 *
-	 * @param string $name
 	 * @param mixed  $value
+	 * @param ElementInterface|Element|null $element
 	 * @param bool  $static
 	 *
 	 * @return string
 	 */
-	private function _getInputHtml($name, $value, $static)
+	private function _getInputHtml($value, $element, $static)
 	{
 		$columns = $this->columns;
 
@@ -247,7 +248,7 @@ class Table extends Field
 				}
 			}
 
-			if ($this->isFresh())
+			if ($this->isFresh($element))
 			{
 				$defaults = $this->defaults;
 
@@ -257,11 +258,11 @@ class Table extends Field
 				}
 			}
 
-			$id = Craft::$app->templates->formatInputId($name);
+			$id = Craft::$app->templates->formatInputId($this->handle);
 
 			return Craft::$app->templates->render('_includes/forms/editableTable', [
 				'id'     => $id,
-				'name'   => $name,
+				'name'   => $this->handle,
 				'cols'   => $columns,
 				'rows'   => $value,
 				'static' => $static

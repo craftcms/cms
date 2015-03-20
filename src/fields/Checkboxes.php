@@ -42,19 +42,19 @@ class Checkboxes extends BaseOptionsField
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $values)
+	public function getInputHtml($value, $element)
 	{
 		$options = $this->getTranslatedOptions();
 
 		// If this is a new entry, look for any default options
-		if ($this->isFresh())
+		if ($this->isFresh($element))
 		{
-			$values = $this->getDefaultValue();
+			$value = $this->getDefaultValue();
 		}
 
 		return Craft::$app->templates->render('_includes/forms/checkboxGroup', [
-			'name'    => $name,
-			'values'  => $values,
+			'name'    => $this->handle,
+			'values'  => $value,
 			'options' => $options
 		]);
 	}

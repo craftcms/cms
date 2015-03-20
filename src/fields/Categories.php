@@ -8,6 +8,7 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
 
 /**
@@ -83,7 +84,7 @@ class Categories extends BaseRelationField
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $criteria)
+	public function getInputHtml($value, $element)
 	{
 		// Make sure the field is set to a valid category group
 		if ($this->source)
@@ -97,24 +98,23 @@ class Categories extends BaseRelationField
 			return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
 		}
 
-		return parent::getInputHtml($name, $criteria);
+		return parent::getInputHtml($value, $element);
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function afterElementSave()
+	public function afterElementSave(ElementInterface $element)
 	{
-		$handle = $this->handle;
-		$categoryIds = $this->element->getContent()->$handle;
+		$value = $this->getElementValue($element);
 
 		// Make sure something was actually posted
-		if ($categoryIds !== null)
+		if ($value !== null)
 		{
 			// Fill in any gaps
-			$categoryIds = Craft::$app->categories->fillGapsInCategoryIds($categoryIds);
+			$value = Craft::$app->categories->fillGapsInCategoryIds($value);
 
-			Craft::$app->relations->saveRelations($this, $this->element, $categoryIds);
+			Craft::$app->relations->saveRelations($this, $element, $value);
 		}
 	}
 }

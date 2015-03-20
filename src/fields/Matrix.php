@@ -8,6 +8,8 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\elements\db\MatrixBlockQuery;
@@ -220,14 +222,14 @@ class Matrix extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		$query = MatrixBlock::find();
 
 		// Existing element?
-		if (!empty($this->element->id))
+		if (!empty($element->id))
 		{
-			$query->ownerId($this->element->id);
+			$query->ownerId($element->id);
 		}
 		else
 		{
@@ -236,7 +238,7 @@ class Matrix extends Field
 
 		$query
 			->fieldId($this->id)
-			->locale($this->element->locale);
+			->locale($element->locale);
 
 		// Set the initially matched elements if $value is already set, which is the case if there was a validation
 		// error or we're loading an entry revision.
@@ -255,7 +257,9 @@ class Matrix extends Field
 				{
 					if ($prevElement)
 					{
+						/** @var ElementInterface $prevElement */
 						$prevElement->setNext($element);
+						/** @var ElementInterface $element */
 						$element->setPrev($prevElement);
 					}
 
@@ -277,19 +281,19 @@ class Matrix extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
-		$id = Craft::$app->templates->formatInputId($name);
+		$id = Craft::$app->templates->formatInputId($this->handle);
 
 		// Get the block types data
-		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
+		$blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
 		Craft::$app->templates->includeJsResource('js/MatrixInput.js');
 
 		Craft::$app->templates->includeJs('new Craft.MatrixInput(' .
 			'"'.Craft::$app->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', ' .
-			'"'.Craft::$app->templates->namespaceInputName($name).'", ' .
+			'"'.Craft::$app->templates->namespaceInputName($this->handle).'", ' .
 			($this->maxBlocks ? $this->maxBlocks : 'null') .
 		');');
 
@@ -305,7 +309,7 @@ class Matrix extends Field
 
 		return Craft::$app->templates->render('_components/fieldtypes/Matrix/input', [
 			'id' => $id,
-			'name' => $name,
+			'name' => $this->handle,
 			'blockTypes' => $this->getBlockTypes(),
 			'blocks' => $value,
 			'static' => false
@@ -315,115 +319,12 @@ class Matrix extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($data)
-	{
-		// Get the possible block types for this field
-		$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->id, 'handle');
-
-		if (!is_array($data))
-		{
-			return [];
-		}
-
-		$oldBlocksById = [];
-
-		// Get the old blocks that are still around
-		if (!empty($this->element->id))
-		{
-			$ownerId = $this->element->id;
-
-			$ids = [];
-
-			foreach (array_keys($data) as $blockId)
-			{
-				if (is_numeric($blockId) && $blockId != 0)
-				{
-					$ids[] = $blockId;
-				}
-			}
-
-			if ($ids)
-			{
-				$oldBlocksById = MatrixBlock::find()
-					->fieldId($this->id)
-					->ownerId($ownerId)
-					->id($ids)
-					->limit(null)
-					->status(null)
-					->localeEnabled(false)
-					->locale($this->element->locale)
-					->indexBy('id')
-					->all();
-			}
-		}
-		else
-		{
-			$ownerId = null;
-		}
-
-		$blocks = [];
-		$sortOrder = 0;
-
-		foreach ($data as $blockId => $blockData)
-		{
-			if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']]))
-			{
-				continue;
-			}
-
-			$blockType = $blockTypes[$blockData['type']];
-
-			// Is this new? (Or has it been deleted?)
-			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId]))
-			{
-				$block = new MatrixBlock();
-				$block->fieldId = $this->id;
-				$block->typeId  = $blockType->id;
-				$block->ownerId = $ownerId;
-				$block->locale  = $this->element->locale;
-
-				// Preserve the collapsed state, which the browser can't remember on its own for new blocks
-				$block->collapsed = !empty($blockData['collapsed']);
-			}
-			else
-			{
-				$block = $oldBlocksById[$blockId];
-			}
-
-			$block->setOwner($this->element);
-			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
-
-			// Set the content post location on the block if we can
-			$ownerContentPostLocation = $this->element->getContentPostLocation();
-
-			if ($ownerContentPostLocation)
-			{
-				$block->setContentPostLocation("{$ownerContentPostLocation}.{$this->handle}.{$blockId}.fields");
-			}
-
-			if (isset($blockData['fields']))
-			{
-				$block->setContentFromPost($blockData['fields']);
-			}
-
-			$sortOrder++;
-			$block->sortOrder = $sortOrder;
-
-			$blocks[] = $block;
-		}
-
-		return $blocks;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function validateValue($blocks)
+	public function validateValue($value, $element)
 	{
 		$errors = [];
 		$blocksValidate = true;
 
-		foreach ($blocks as $block)
+		foreach ($value as $block)
 		{
 			if (!Craft::$app->matrix->validateBlock($block))
 			{
@@ -436,7 +337,7 @@ class Matrix extends Field
 			$errors[] = Craft::t('app', 'Correct the errors listed above.');
 		}
 
-		if ($this->maxBlocks && count($blocks) > $this->maxBlocks)
+		if ($this->maxBlocks && count($value) > $this->maxBlocks)
 		{
 			if ($this->maxBlocks == 1)
 			{
@@ -464,7 +365,7 @@ class Matrix extends Field
 	 * @param MatrixBlockQuery $value
 	 * @return string
 	 */
-	public function getSearchKeywords($value)
+	public function getSearchKeywords($value, $element)
 	{
 		$keywords = [];
 		$contentService = Craft::$app->content;
@@ -481,9 +382,8 @@ class Matrix extends Field
 
 			foreach (Craft::$app->fields->getAllFields() as $field)
 			{
-				$field->element = $block;
-				$handle = $field->handle;
-				$keywords[] = $field->getSearchKeywords($block->getFieldValue($handle));
+				$fieldValue = $block->getFieldValue($field->handle);
+				$keywords[] = $field->getSearchKeywords($fieldValue, $element);
 			}
 
 			$contentService->contentTable      = $originalContentTable;
@@ -491,21 +391,21 @@ class Matrix extends Field
 			$contentService->fieldContext      = $originalFieldContext;
 		}
 
-		return parent::getSearchKeywords($keywords);
+		return parent::getSearchKeywords($keywords, $element);
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function afterElementSave()
+	public function afterElementSave(ElementInterface $element)
 	{
-		Craft::$app->matrix->saveField($this);
+		Craft::$app->matrix->saveField($this, $element);
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function getStaticHtml($value)
+	public function getStaticHtml($value, $element)
 	{
 		if ($value)
 		{
@@ -523,6 +423,112 @@ class Matrix extends Field
 		{
 			return '<p class="light">'.Craft::t('app', 'No blocks.').'</p>';
 		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function prepareValueBeforeSave($value, $element)
+	{
+		// Get the possible block types for this field
+		$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->id, 'handle');
+
+		if (!is_array($value))
+		{
+			return [];
+		}
+
+		$oldBlocksById = [];
+
+		// Get the old blocks that are still around
+		if (!empty($element->id))
+		{
+			$ownerId = $element->id;
+
+			$ids = [];
+
+			foreach (array_keys($value) as $blockId)
+			{
+				if (is_numeric($blockId) && $blockId != 0)
+				{
+					$ids[] = $blockId;
+				}
+			}
+
+			if ($ids)
+			{
+				$oldBlocksById = MatrixBlock::find()
+					->fieldId($this->id)
+					->ownerId($ownerId)
+					->id($ids)
+					->limit(null)
+					->status(null)
+					->localeEnabled(false)
+					->locale($element->locale)
+					->indexBy('id')
+					->all();
+			}
+		}
+		else
+		{
+			$ownerId = null;
+		}
+
+		$blocks = [];
+		$sortOrder = 0;
+
+		foreach ($value as $blockId => $blockData)
+		{
+			if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']]))
+			{
+				continue;
+			}
+
+			$blockType = $blockTypes[$blockData['type']];
+
+			// Is this new? (Or has it been deleted?)
+			if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId]))
+			{
+				$block = new MatrixBlock();
+				$block->fieldId = $this->id;
+				$block->typeId  = $blockType->id;
+				$block->ownerId = $ownerId;
+				$block->locale  = $element->locale;
+
+				// Preserve the collapsed state, which the browser can't remember on its own for new blocks
+				$block->collapsed = !empty($blockData['collapsed']);
+			}
+			else
+			{
+				$block = $oldBlocksById[$blockId];
+			}
+
+			$block->setOwner($element);
+			$block->enabled = (isset($blockData['enabled']) ? (bool) $blockData['enabled'] : true);
+
+			// Set the content post location on the block if we can
+			$ownerContentPostLocation = $element->getContentPostLocation();
+
+			if ($ownerContentPostLocation)
+			{
+				$block->setContentPostLocation("{$ownerContentPostLocation}.{$this->handle}.{$blockId}.fields");
+			}
+
+			if (isset($blockData['fields']))
+			{
+				$block->setContentFromPost($blockData['fields']);
+			}
+
+			$sortOrder++;
+			$block->sortOrder = $sortOrder;
+
+			$blocks[] = $block;
+		}
+
+		return $blocks;
 	}
 
 	// Private Methods
@@ -572,17 +578,17 @@ class Matrix extends Field
 	/**
 	 * Returns info about each field type for the configurator.
 	 *
-	 * @param string $name
+	 * @param ElementInterface|Element $element
 	 *
 	 * @return array
 	 */
-	private function _getBlockTypeInfoForInput($name)
+	private function _getBlockTypeInfoForInput($element)
 	{
 		$blockTypes = [];
 
 		// Set a temporary namespace for these
 		$originalNamespace = Craft::$app->templates->getNamespace();
-		$namespace = Craft::$app->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
+		$namespace = Craft::$app->templates->namespaceInputName($this->handle.'[__BLOCK__][fields]', $originalNamespace);
 		Craft::$app->templates->setNamespace($namespace);
 
 		foreach ($this->getBlockTypes() as $blockType)
@@ -592,16 +598,15 @@ class Matrix extends Field
 			$block->fieldId = $this->id;
 			$block->typeId = $blockType->id;
 
-			if ($this->element)
+			if ($element)
 			{
-				$block->setOwner($this->element);
+				$block->setOwner($element);
 			}
 
 			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
 
 			foreach ($fieldLayoutFields as $field)
 			{
-				$field->element = $block;
 				$field->setIsFresh(true);
 			}
 

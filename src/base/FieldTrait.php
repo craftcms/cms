@@ -58,11 +58,6 @@ trait FieldTrait
 	 */
 	public $columnPrefix;
 
-	/**
-	 * @var ElementInterface|Element The element that the field is currently associated with
-	 */
-	public $element;
-
 	// These properties are only populated if the field was fetched via a Field Layout
 	// -------------------------------------------------------------------------
 

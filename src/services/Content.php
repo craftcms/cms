@@ -91,6 +91,7 @@ class Content extends Component
 		{
 			$row = $this->_removeColumnPrefixesFromRow($row);
 			$content = new ContentModel($row);
+			$content->element = $element;
 		}
 		else
 		{
@@ -122,6 +123,7 @@ class Content extends Component
 		$this->fieldContext        = $element->getFieldContext();
 
 		$content = new ContentModel();
+		$content->element = $element;
 		$content->elementId = $element->id;
 		$content->locale = $element->locale;
 
@@ -388,11 +390,9 @@ class Content extends Component
 
 		foreach ($fieldLayout->getFields() as $field)
 		{
-			$field->element = $element;
-			$handle = $field->handle;
-
 			// Set the keywords for the content's locale
-			$fieldSearchKeywords = $field->getSearchKeywords($element->getFieldValue($handle));
+			$fieldValue = $element->getFieldValue($field->handle);
+			$fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
 			$searchKeywordsByLocale[$content->locale][$field->id] = $fieldSearchKeywords;
 
 			// Should we queue up the other locales' new keywords too?

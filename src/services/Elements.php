@@ -282,6 +282,13 @@ class Elements extends Component
 	 */
 	public function saveElement(ElementInterface $element, $validateContent = null)
 	{
+		// Make sure the element is cool with this
+		// (Needs to happen before validation, so field types have a chance to prepare their POST values)
+		if (!$element->beforeSave())
+		{
+			return false;
+		}
+
 		$isNewElement = !$element->id;
 
 		// Validate the content first
@@ -558,17 +565,8 @@ class Elements extends Component
 							}
 						}
 
-						// Call the field types' onAfterElementSave() methods
-						$fieldLayout = $element->getFieldLayout();
-
-						if ($fieldLayout)
-						{
-							foreach ($fieldLayout->getFields() as $field)
-							{
-								$field->element = $element;
-								$field->afterElementSave();
-							}
-						}
+						// Tell the element it was just saved
+						$element->afterSave();
 
 						// Finally, delete any caches involving this element. (Even do this for new elements, since they
 						// might pop up in a cached criteria.)

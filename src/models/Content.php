@@ -8,6 +8,8 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\base\Model;
 use craft\app\behaviors\ContentBehavior;
 use craft\app\behaviors\ContentTrait;
@@ -29,6 +31,11 @@ class Content extends Model
 
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var ElementInterface|Element The element associated with this content
+	 */
+	public $element;
 
 	/**
 	 * @var integer ID
@@ -195,7 +202,7 @@ class Content extends Model
 			// Don't worry about blank values. Those will already be caught by required field validation.
 			if ($this->$handle !== null)
 			{
-				$errors = $field->validateValue($this->$handle);
+				$errors = $field->validateValue($this->$handle, $this->element);
 
 				if ($errors !== true)
 				{

@@ -114,7 +114,7 @@ class RichText extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValue($value)
+	public function prepareValue($value, $element)
 	{
 		if ($value)
 		{
@@ -131,17 +131,17 @@ class RichText extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		$configJs = $this->_getConfigJs();
 		$this->_includeFieldResources($configJs);
 
-		$id = Craft::$app->templates->formatInputId($name);
+		$id = Craft::$app->templates->formatInputId($this->handle);
 
 		Craft::$app->templates->includeJs('new Craft.RichTextInput(' .
 			'"'.Craft::$app->templates->namespaceInputId($id).'", ' .
 			JsonHelper::encode($this->_getSectionSources()).', ' .
-			'"'.(isset($this->element) ? $this->element->locale : Craft::$app->language).'", ' .
+			'"'.(!empty($element) ? $element->locale : Craft::$app->language).'", ' .
 			$configJs.', ' .
 			'"'.static::$_redactorLang.'"' .
 		');');
@@ -166,13 +166,49 @@ class RichText extends Field
 		// Swap any <!--pagebreak-->'s with <hr>'s
 		$value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
-		return '<textarea id="'.$id.'" name="'.$name.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
+		return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function prepValueFromPost($value)
+	public function validateValue($value, $element)
+	{
+		$postContentSize = strlen($value);
+		$maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
+
+		// Give ourselves 10% wiggle room.
+		$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+
+		if ($postContentSize > $maxDbColumnSize)
+		{
+			// Give ourselves 10% wiggle room.
+			$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+
+			if ($postContentSize > $maxDbColumnSize)
+			{
+				return Craft::t('app', '{attribute} is too long.', ['attribute' => Craft::t('app', $this->name)]);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getStaticHtml($value, $element)
+	{
+		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function prepareValueBeforeSave($value, $element)
 	{
 		// Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
 		// if any text was typed into the field, and then deleted
@@ -212,39 +248,6 @@ class RichText extends Field
 		}, $value);
 
 		return $value;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	function validateValue($value)
-	{
-		$postContentSize = strlen($value);
-		$maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity($this->columnType);
-
-		// Give ourselves 10% wiggle room.
-		$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-		if ($postContentSize > $maxDbColumnSize)
-		{
-			// Give ourselves 10% wiggle room.
-			$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-			if ($postContentSize > $maxDbColumnSize)
-			{
-				return Craft::t('app', '{attribute} is too long.', ['attribute' => Craft::t('app', $this->name)]);
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function getStaticHtml($value)
-	{
-		return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
 	}
 
 	// Private Methods

@@ -44,7 +44,7 @@ class Color extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		// Default to black, so the JS-based color picker is consistent with Chrome
 		if (!$value)
@@ -53,8 +53,8 @@ class Color extends Field
 		}
 
 		return Craft::$app->templates->render('_includes/forms/color', [
-			'id'    => Craft::$app->templates->formatInputId($name),
-			'name'  => $name,
+			'id'    => Craft::$app->templates->formatInputId($this->handle),
+			'name'  => $this->handle,
 			'value' => $value,
 		]);
 	}
@@ -62,7 +62,7 @@ class Color extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getStaticHtml($value)
+	public function getStaticHtml($value, $element)
 	{
 		if ($value)
 		{

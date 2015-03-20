@@ -84,11 +84,11 @@ class PositionSelect extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($value, $element)
 	{
 		Craft::$app->templates->includeJsResource('js/PositionSelectInput.js');
 
-		$id = Craft::$app->templates->formatInputId($name);
+		$id = Craft::$app->templates->formatInputId($this->handle);
 		Craft::$app->templates->includeJs('new PositionSelectInput("'.Craft::$app->templates->namespaceInputId($id).'");');
 
 		if (!$value && $this->options)
@@ -98,7 +98,7 @@ class PositionSelect extends Field
 
 		return Craft::$app->templates->render('_components/fieldtypes/PositionSelect/input', [
 			'id'         => $id,
-			'name'       => $name,
+			'name'       => $this->handle,
 			'value'      => $value,
 			'options'    => $this->options,
 			'allOptions' => $this->_getOptions(),
