@@ -964,12 +964,24 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 	}
 
 	/**
+	 * Returns the resulting elements set by [[setResult()]].
+	 *
+	 * @return ElementInterface[] $elements The resulting elements.
+	 * @see setResult()
+	 */
+	public function getResult()
+	{
+		return $this->_result ?: [];
+	}
+
+	/**
 	 * Sets the resulting elements.
 	 *
 	 * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
 	 * as long as none of the parameters have changed since setResult() was called.
 	 *
 	 * @param ElementInterface[] $elements The resulting elements.
+	 * @see getResult()
 	 */
 	public function setResult($elements)
 	{
