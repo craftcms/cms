@@ -427,9 +427,9 @@ abstract class Element extends Component implements ElementInterface
 	private $_content;
 
 	/**
-	 * @var
+	 * @var array Stores a record of the fields that have already prepared their values
 	 */
-	private $_preppedContent;
+	private $_preparedFields;
 
 	/**
 	 * @var
@@ -1134,7 +1134,10 @@ abstract class Element extends Component implements ElementInterface
 	 */
 	public function getFieldValue($fieldHandle)
 	{
-		if (!isset($this->_preppedContent) || !array_key_exists($fieldHandle, $this->_preppedContent))
+		$content = $this->getContent();
+
+		// Is this the first time this field value has been accessed?
+		if (!isset($this->_preparedFields[$fieldHandle]))
 		{
 			$field = $this->getFieldByHandle($fieldHandle);
 
@@ -1142,8 +1145,6 @@ abstract class Element extends Component implements ElementInterface
 			{
 				throw new Exception(Craft::t('app', 'No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
 			}
-
-			$content = $this->getContent();
 
 			if (isset($content->$fieldHandle))
 			{
@@ -1154,14 +1155,12 @@ abstract class Element extends Component implements ElementInterface
 				$value = null;
 			}
 
-			// Give the field a chance to prep the value for use
 			$field->element = $this;
-			$value = $field->prepValue($value);
-
-			$this->_preppedContent[$fieldHandle] = $value;
+			$content->$fieldHandle = $field->prepValue($value);
+			$this->_preparedFields[$fieldHandle] = true;
 		}
 
-		return $this->_preppedContent[$fieldHandle];
+		return $content->$fieldHandle;
 	}
 
 	/**
