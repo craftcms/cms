@@ -1613,7 +1613,7 @@ class UsersController extends Controller
 		if ($userPhoto = UploadedFile::getInstanceByName('userPhoto'))
 		{
 			Craft::$app->users->deleteUserPhoto($user);
-			$image = Craft::$app->images->loadImage($userPhoto->getTempName());
+			$image = Craft::$app->images->loadImage($userPhoto->tempName);
 			$imageWidth = $image->getWidth();
 			$imageHeight = $image->getHeight();
 
@@ -1622,9 +1622,9 @@ class UsersController extends Controller
 			$verticalMargin = ($imageHeight - $dimension) / 2;
 			$image->crop($horizontalMargin, $imageWidth - $horizontalMargin, $verticalMargin, $imageHeight - $verticalMargin);
 
-			Craft::$app->users->saveUserPhoto($userPhoto->getName(), $image, $user);
+			Craft::$app->users->saveUserPhoto($userPhoto->name, $image, $user);
 
-			IOHelper::deleteFile($userPhoto->getTempName());
+			IOHelper::deleteFile($userPhoto->tempName);
 		}
 	}
 

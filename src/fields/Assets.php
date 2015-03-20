@@ -96,7 +96,7 @@ class Assets extends BaseRelationField
 	/**
 	 * Uploaded files that failed validation.
 	 *
-	 * @var array
+	 * @var UploadedFile[]
 	 */
 	private $_failedFiles = [];
 
@@ -321,7 +321,7 @@ class Assets extends BaseRelationField
 
 		foreach ($this->_failedFiles as $file)
 		{
-			$errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->getName()]);
+			$errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->name]);
 		}
 
 		if ($errors)

@@ -241,7 +241,7 @@ class DashboardController extends Controller
 						IOHelper::createFolder($tempFolder);
 					}
 
-					$tempFile = $tempFolder.'/'.$getHelpModel->attachment->getName();
+					$tempFile = $tempFolder.'/'.$getHelpModel->attachment->name;
 					$getHelpModel->attachment->saveAs($tempFile);
 
 					// Make sure it actually saved.
