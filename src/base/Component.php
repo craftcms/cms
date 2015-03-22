@@ -41,22 +41,6 @@ abstract class Component extends Model implements ComponentInterface, Arrayable
 		return strtolower($handle);
 	}
 
-	/**
-	 * @inheritdoc
-	 */
-	public static function instantiate($config)
-	{
-		if ($config['type'])
-		{
-			$class = $config['type'];
-			return new $class;
-		}
-		else
-		{
-			return new static;
-		}
-	}
-
 	// Public Methods
 	// =========================================================================
 

@@ -7,12 +7,11 @@
 
 namespace craft\app\helpers;
 
+use Craft;
 use craft\app\base\Component;
 use craft\app\base\ComponentInterface;
-use craft\app\base\SavableComponentInterface;
 use craft\app\errors\InvalidComponentException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownClassException;
 
 /**
  * Class ElementHelper
@@ -40,7 +39,6 @@ class ComponentHelper
 		if (is_string($config))
 		{
 			$class = $config;
-			$config = ['type' => $class];
 		}
 		else
 		{
@@ -52,8 +50,10 @@ class ComponentHelper
 			}
 
 			$class = $config['type'];
+			unset($config['type']);
 		}
 
+		// Validate the class
 		if (!class_exists($class))
 		{
 			throw new InvalidComponentException("Unable to find component class '$class'.");
@@ -64,19 +64,14 @@ class ComponentHelper
 			throw new InvalidComponentException("Component class '$class' does not implement ComponentInterface.");
 		}
 
-		// Instantiate
-		/** @var Component $class */
-		$component = $class::instantiate($config);
-
-		if ($instanceOf && !$component instanceof $instanceOf)
+		if ($instanceOf && !is_subclass_of($class, $instanceOf))
 		{
 			throw new InvalidComponentException("Component class '$class' is not an instance of '$instanceOf'.");
 		}
 
-		// Populate and return
-		if ($component instanceof SavableComponentInterface && !empty($config['settings']))
+		// Expand the settings and merge with the rest of the config
+		if (is_subclass_of($class, 'craft\app\base\SavableComponentInterface') && !empty($config['settings']))
 		{
-			// Merge the settings with the rest of the config
 			$settings = $config['settings'];
 			unset($config['settings']);
 
@@ -88,7 +83,8 @@ class ComponentHelper
 			$config = array_merge($config, $settings);
 		}
 
-		$class::populateModel($component, $config);
-		return $component;
+		// Instantiate and return
+		/** @var ComponentInterface $class */
+		return $class::create($config);
 	}
 }

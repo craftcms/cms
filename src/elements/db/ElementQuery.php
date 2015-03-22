@@ -1757,16 +1757,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
 		// Instantiate the element
 		$row['locale'] = $this->locale;
-		$element = $class::instantiate($row);
+		$element = $class::create($row);
 
 		// Verify that an element was returned
 		if (!$element || !($element instanceof ElementInterface))
 		{
 			return false;
 		}
-
-		// Populate it
-		$class::populateModel($element, $row);
 
 		// Set the content
 		if ($class::hasContent() && $this->contentTable)

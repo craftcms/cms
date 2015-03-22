@@ -39,32 +39,12 @@ interface ComponentInterface
 	public static function classHandle();
 
 	/**
-	 * Instantiates a new component instance.
+	 * Instantiates and returns a new component object.
 	 *
-	 * This method is generally called together with [[populate()]].
-	 * It is not meant to be used for creating new elements directly.
-	 *
-	 * You may override this method if the instance being created
-	 * depends on the data to be populated into the element.
-	 * For example, by creating an element based on the value of a column,
-	 * you may implement the so-called single-table inheritance mapping.
-	 *
-	 * @param array $config Data to be populated into the record via [[populate()]] afterward.
-	 * @return static The newly created component.
+	 * @param array $config The config settings to populate the component with
+	 * @return static The new component object
 	 */
-	public static function instantiate($config);
-
-	/**
-	 * Populates a component with a given set of attributes.
-	 *
-	 * This is an internal method meant to be called to create component objects after
-	 * fetching data from the database or another source.
-	 *
-	 * @param ComponentInterface $model The component to be populated. In most cases this will be an instance
-	 * created by [[instantiate()]] beforehand.
-	 * @param array $config Attribute values to populate the component with (name => value).
-	 */
-	public static function populateModel($model, $config);
+	public static function create($config);
 
 	// Public Methods
 	// =========================================================================
