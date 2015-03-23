@@ -5,13 +5,12 @@
 
 {% set content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
+		{{ getCsrfInput() }}
 		<input type="hidden" name="action" value="fields/saveField">
 		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
 		{% if fieldId is not empty %}
 			<input type="hidden" name="fieldId" value="{{ fieldId }}">
 		{% endif %}
-
-		{{ getCsrfInput() }}
 
 		{{ forms.selectField({
 			first: true,
