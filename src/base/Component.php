@@ -12,6 +12,8 @@ use yii\base\Arrayable;
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
+ * @property string $type The class name that should be used to represent the field
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -26,7 +28,7 @@ abstract class Component extends Model implements ComponentInterface, Arrayable
 	 */
 	public static function displayName()
 	{
-		$classNameParts = implode('\\', static::className());
+		$classNameParts = explode('\\', static::className());
 		$displayName = array_pop($classNameParts);
 		return $displayName;
 	}
@@ -36,7 +38,7 @@ abstract class Component extends Model implements ComponentInterface, Arrayable
 	 */
 	public static function classHandle()
 	{
-		$classNameParts = implode('\\', static::className());
+		$classNameParts = explode('\\', static::className());
 		$handle = array_pop($classNameParts);
 		return strtolower($handle);
 	}
