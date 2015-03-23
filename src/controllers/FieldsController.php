@@ -146,10 +146,13 @@ class FieldsController extends Controller
 
 		foreach ($allFieldTypes as $class)
 		{
-			$fieldTypeOptions[] = [
-				'value' => $class,
-				'label' => $class::displayName()
-			];
+			if ($class === $field->getType() || $class::isSelectable())
+			{
+				$fieldTypeOptions[] = [
+					'value' => $class,
+					'label' => $class::displayName()
+				];
+			}
 		}
 
 		// Groups
