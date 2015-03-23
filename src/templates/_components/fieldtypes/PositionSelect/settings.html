@@ -6,9 +6,10 @@
 			<tr>
 				<td>
 					{{ forms.lightswitch({
-						 on: (option in field.options),
-						 small: true,
-						 name: 'options['~option~']'
+						on: (option in field.options),
+						small: true,
+						name: 'options[]',
+						value: option
 					}) }}
 				</td>
 				<td>

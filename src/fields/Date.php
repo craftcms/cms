@@ -33,6 +33,45 @@ class Date extends Field
 		return Craft::t('app', 'Date/Time');
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['dateTime']))
+		{
+			switch ($config['dateTime'])
+			{
+				case 'showBoth':
+				{
+					unset($config['dateTime']);
+					$config['showTime'] = true;
+					$config['showDate'] = true;
+
+					break;
+				}
+				case 'showDate':
+				{
+					unset($config['dateTime']);
+					$config['showDate'] = true;
+					$config['showTime'] = false;
+
+					break;
+				}
+				case 'showTime':
+				{
+					unset($config['dateTime']);
+					$config['showTime'] = true;
+					$config['showDate'] = false;
+
+					break;
+				}
+			}
+		}
+
+		return parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -180,44 +219,5 @@ class Date extends Field
 			/** @var ElementQuery $query */
 			$query->subQuery->andWhere(DbHelper::parseDateParam('content.'.Craft::$app->content->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
 		}
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function prepSettings($settings)
-	{
-		if (isset($settings['dateTime']))
-		{
-			switch ($settings['dateTime'])
-			{
-				case 'showBoth':
-				{
-					unset($settings['dateTime']);
-					$settings['showTime'] = true;
-					$settings['showDate'] = true;
-
-					break;
-				}
-				case 'showDate':
-				{
-					unset($settings['dateTime']);
-					$settings['showDate'] = true;
-					$settings['showTime'] = false;
-
-					break;
-				}
-				case 'showTime':
-				{
-					unset($settings['dateTime']);
-					$settings['showTime'] = true;
-					$settings['showDate'] = false;
-
-					break;
-				}
-			}
-		}
-
-		return $settings;
 	}
 }

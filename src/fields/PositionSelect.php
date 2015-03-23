@@ -29,6 +29,36 @@ class PositionSelect extends Field
 		return 'Position Select';
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (isset($config['options']))
+		{
+			$config['options'] = array_filter($config['options']);
+		}
+
+		parent::populateModel($model, $config);
+	}
+
+	/**
+	 * Returns the position options.
+	 *
+	 * @return array
+	 */
+	private static function _getOptions()
+	{
+		return [
+			'left'       => Craft::t('app', 'Left'),
+			'center'     => Craft::t('app', 'Center'),
+			'right'      => Craft::t('app', 'Right'),
+			'full'       => Craft::t('app', 'Full'),
+			'drop-left'  => Craft::t('app', 'Drop-left'),
+			'drop-right' => Craft::t('app', 'Drop-right'),
+		];
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -75,17 +105,13 @@ class PositionSelect extends Field
 	/**
 	 * @inheritdoc
 	 */
-	public function prepSettings($settings)
-	{
-		$settings['options'] = array_keys(array_filter($settings['options']));
-		return $settings;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
 	public function getInputHtml($value, $element)
 	{
+		if (empty($this->options))
+		{
+			return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
+		}
+
 		Craft::$app->templates->includeJsResource('js/PositionSelectInput.js');
 
 		$id = Craft::$app->templates->formatInputId($this->handle);
@@ -103,25 +129,5 @@ class PositionSelect extends Field
 			'options'    => $this->options,
 			'allOptions' => $this->_getOptions(),
 		]);
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Returns the position options.
-	 *
-	 * @return array
-	 */
-	private static function _getOptions()
-	{
-		return [
-			'left'       => Craft::t('app', 'Left'),
-			'center'     => Craft::t('app', 'Center'),
-			'right'      => Craft::t('app', 'Right'),
-			'full'       => Craft::t('app', 'Full'),
-			'drop-left'  => Craft::t('app', 'Drop-left'),
-			'drop-right' => Craft::t('app', 'Drop-right'),
-		];
 	}
 }

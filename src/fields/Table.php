@@ -44,7 +44,7 @@ class Table extends Field
 	/**
 	 * @var array The default row values that new elements should have
 	 */
-	public $defaults;
+	public $defaults = [];
 
 	// Public Methods
 	// =========================================================================
@@ -191,19 +191,6 @@ class Table extends Field
 	public function getStaticHtml($value, $element)
 	{
 		return $this->_getInputHtml($value, $element, true);
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function prepSettings($settings)
-	{
-		if (!isset($settings['defaults']))
-		{
-			$settings['defaults'] = [];
-		}
-
-		return $settings;
 	}
 
 	// Protected Methods

@@ -24,6 +24,23 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function populateModel($model, $config)
+	{
+		if (!empty($config['options']))
+		{
+			// Drop the string row keys
+			$config['options'] = array_values($config['options']);
+		}
+
+		return parent::populateModel($model, $config);
+	}
+
 	// Properties
 	// =========================================================================
 
@@ -147,20 +164,6 @@ abstract class BaseOptionsField extends Field
 				'rows' => $this->options
 			]
 		]);
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function prepSettings($settings)
-	{
-		if (!empty($settings['options']))
-		{
-			// Drop the string row keys
-			$settings['options'] = array_values($settings['options']);
-		}
-
-		return $settings;
 	}
 
 	/**
