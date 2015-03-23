@@ -12,12 +12,12 @@
 			id: 'section',
 			name: 'section',
 			options: sectionOptions,
-			value: settings.section,
+			value: widget.section,
 			toggle: true,
 			targetPrefix: 'section'
 		}) }}
 
-		{% set selectedSectionId = settings.section %}
+		{% set selectedSectionId = widget.section %}
 	{% else %}
 		{% set selectedSectionId = sections[0].id %}
 		<input type="hidden" name="section" value="{{ selectedSectionId }}">
@@ -33,7 +33,7 @@
 			{% endfor %}
 
 			{% if entryTypeOptions|length == 1 %}
-				<input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ settings.entryType }}" />
+				<input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ widget.entryType }}" />
 			{% else %}
 				{{ forms.selectField({
 					label: "Entry Type"|t,
@@ -41,7 +41,7 @@
 					id: 'entryType',
 					name: 'sections['~section.id~'][entryType]',
 					options: entryTypeOptions,
-					value: settings.entryType,
+					value: widget.entryType,
 					toggle: true,
 					targetPrefix: 'section'~section.id~'-type'
 				}) }}
@@ -49,15 +49,15 @@
 
 			{% set fieldsInput %}
 				{% for entryType in section.getEntryTypes() %}
-					{% set showEntryType = (((not showSection or not settings.entryType) and loop.first) or settings.entryType == entryType.id) %}
+					{% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id) %}
 					<div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
 						{% for field in entryType.getFieldLayout().getFields() %}
 							<div>
 								{{ forms.checkbox({
 									label: field.name~(field.required ? ' <span class="required"></span>' : ''),
 									name: 'sections['~section.id~'][fields][]',
-									value: field.fieldId,
-									checked: (field.required or field.fieldId in settings.fields),
+									value: field.id,
+									checked: (field.required or field.id in widget.fields),
 									disabled: field.required
 								}) }}
 							</div>

@@ -18,7 +18,7 @@
 
 	{% namespace fieldNamespace %}
 		{% for field in entryType.getFieldLayout().getFields() %}
-			{% if field.required or field.id in settings.fields %}
+			{% if field.required or field.id in widget.fields %}
 				{% include "_includes/field" with {
 					field: field,
 					required: field.required,

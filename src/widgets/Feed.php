@@ -8,95 +8,93 @@
 namespace craft\app\widgets;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\Widget;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Class Feed widget.
+ * Feed represents a Feed dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Feed extends BaseWidget
+class Feed extends Widget
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Feed');
+	}
+
 	// Properties
 	// =========================================================================
 
 	/**
-	 * @var bool
+	 * @var string The feed URL
 	 */
-	public $multipleInstances = true;
+	public $url;
+
+	/**
+	 * @var string The feed title
+	 */
+	public $title;
+
+	/**
+	 * @var integer The maximum number of feed items to display
+	 */
+	public $limit;
 
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function rules()
 	{
-		return Craft::t('app', 'Feed');
+		$rules = parent::rules();
+		$rules[] = [['url', 'title'], 'required'];
+		$rules[] = [['url'], 'url'];
+		$rules[] = [['limit'], 'integer', 'min' => 1];
+		return $rules;
 	}
 
 	/**
-	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{
 		return Craft::$app->templates->render('_components/widgets/Feed/settings', [
-			'settings' => $this->getSettings()
+			'widget' => $this
 		]);
 	}
 
 	/**
-	 * @inheritDoc WidgetInterface::getTitle()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getTitle()
 	{
-		return $this->settings->title;
+		return $this->title;
 	}
 
 	/**
-	 * @inheritDoc WidgetInterface::getBodyHtml()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getBodyHtml()
 	{
-		$id = $this->model->id;
-		$url = JsonHelper::encode($this->getSettings()->url);
-		$limit = $this->getSettings()->limit;
-
-		$js = "new Craft.FeedWidget({$id}, {$url}, {$limit});";
-
 		Craft::$app->templates->includeJsResource('js/FeedWidget.js');
-		Craft::$app->templates->includeJs($js);
+		Craft::$app->templates->includeJs(
+			"new Craft.FeedWidget({$this->id}, " .
+			JsonHelper::encode($this->url).', ' .
+			JsonHelper::encode($this->limit).');'
+		);
 
 		return Craft::$app->templates->render('_components/widgets/Feed/body', [
-			'limit' => $limit
+			'limit' => $this->limit
 		]);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return [
-			'url'   => [AttributeType::Url, 'required' => true, 'label' => 'URL'],
-			'title' => [AttributeType::Name, 'required' => true],
-			'limit' => [AttributeType::Number, 'min' => 0, 'default' => 5],
-		];
 	}
 }

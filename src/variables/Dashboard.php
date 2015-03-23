@@ -7,7 +7,8 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\Widget as WidgetModel;
+use craft\app\base\Widget;
+use craft\app\base\WidgetInterface;
 
 /**
  * Dashboard functions.
@@ -21,86 +22,45 @@ class Dashboard
 	// =========================================================================
 
 	/**
-	 * Returns all installed widget types.
+	 * Creates a widget with a given config.
 	 *
-	 * @return array
+	 * @param mixed $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value
+	 * @return WidgetInterface|Widget The widget
+	 */
+	public function createWidget($config)
+	{
+		return \Craft::$app->dashboard->createWidget($config);
+	}
+
+	/**
+	 * Returns the dashboard widgets for the current user.
+	 *
+	 * @param string|null $indexBy The attribute to index the widgets by
+	 * @return WidgetInterface[]|Widget[] The widgets
+	 */
+	public function getAllWidgets($indexBy = null)
+	{
+		return \Craft::$app->dashboard->getAllWidgets($indexBy);
+	}
+
+	/**
+	 * Returns all available widget type classes.
+	 *
+	 * @return WidgetInterface[] The available widget type classes.
 	 */
 	public function getAllWidgetTypes()
 	{
-		$widgetTypes = \Craft::$app->dashboard->getAllWidgetTypes();
-		return WidgetType::populateVariables($widgetTypes);
+		return \Craft::$app->dashboard->getAllWidgetTypes();
 	}
 
 	/**
-	 * Returns a widget type.
+	 * Returns info about a widget type.
 	 *
-	 * @param string $class
-	 *
-	 * @return WidgetType|null
+	 * @param string|WidgetInterface|Widget $widget A widget or widget type
+	 * @return ComponentInfo Info about the widget type
 	 */
-	public function getWidgetType($class)
+	public function getWidgetTypeInfo($widget)
 	{
-		$widgetType = \Craft::$app->dashboard->getWidgetType($class);
-
-		if ($widgetType)
-		{
-			return new WidgetType($widgetType);
-		}
-	}
-
-	/**
-	 * Populates a widget type.
-	 *
-	 * @param WidgetModel $widget
-	 *
-	 * @return WidgetType|null
-	 */
-	public function populateWidgetType(WidgetModel $widget)
-	{
-		$widgetType = \Craft::$app->dashboard->populateWidgetType($widget);
-		if ($widgetType)
-		{
-			return new WidgetType($widgetType);
-		}
-	}
-
-	/**
-	 * Returns the user's widgets.
-	 *
-	 * @return array
-	 */
-	public function getUserWidgets()
-	{
-		return \Craft::$app->dashboard->getUserWidgets();
-	}
-
-	/**
-	 * Returns a widget by its ID.
-	 *
-	 * @param int $id
-	 *
-	 * @return WidgetModel|null
-	 */
-	public function getUserWidgetById($id)
-	{
-		return \Craft::$app->dashboard->getUserWidgetById($id);
-	}
-
-	/**
-	 * Returns the user's widget IDs.
-	 *
-	 * @return array
-	 */
-	public function userWidgetIds()
-	{
-		$widgetIds = [];
-		$widgets = \Craft::$app->dashboard->getUserWidgets();
-
-		foreach ($widgets as $widget)
-		{
-			$widgetIds[] = $widget->id;
-		}
-
-		return $widgetIds;
+		return new ComponentInfo($widget);
 	}
 }

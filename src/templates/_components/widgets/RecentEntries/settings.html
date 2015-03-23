@@ -8,7 +8,7 @@
 				<option value="*">{{ "All"|t }}</option>
 				{% for section in craft.sections.getAllSections() %}
 					{% if section.type != 'single' %}
-						<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
+						<option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t }}</option>
 					{% endif %}
 				{% endfor %}
 			</select>
@@ -29,7 +29,7 @@
 				<div class="select">
 					<select id="locale" name="locale">
 						{% for locale in editableLocales %}
-							<option value="{{ locale.id }}"{% if locale.id == settings.locale %} selected{% endif %}>{{ locale.getName() }}</option>
+							<option value="{{ locale.id }}"{% if locale.id == widget.locale %} selected{% endif %}>{{ locale.getName() }}</option>
 						{% endfor %}
 					</select>
 				</div>
@@ -48,7 +48,7 @@
 	label: "Limit"|t,
 	id: 'limit',
 	name: 'limit',
-	value: settings.limit,
+	value: widget.limit,
 	size: 2,
-	errors: settings.getErrors('limit')
+	errors: widget.getErrors('limit')
 }) }}

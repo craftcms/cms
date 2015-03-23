@@ -5,33 +5,24 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\models;
+namespace craft\app\widgets;
+
+use craft\app\base\Widget;
+use craft\app\base\InvalidComponentInterface;
+use craft\app\base\InvalidComponentTrait;
 
 /**
- * Widget model class
+ * InvalidWidget represents a widget with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Widget extends BaseComponentModel
+class InvalidWidget extends Widget implements InvalidComponentInterface
 {
-	// Properties
+	// Traits
 	// =========================================================================
 
-	/**
-	 * @var integer ID
-	 */
-	public $id;
-
-	/**
-	 * @var string Type
-	 */
-	public $type;
-
-	/**
-	 * @var array Settings
-	 */
-	public $settings;
+	use InvalidComponentTrait;
 
 	// Public Methods
 	// =========================================================================
@@ -39,12 +30,8 @@ class Widget extends BaseComponentModel
 	/**
 	 * @inheritdoc
 	 */
-	public function rules()
+	public function getBodyHtml()
 	{
-		return [
-			[['id'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
-			[['id', 'type', 'settings'], 'safe', 'on' => 'search'],
-		];
+		return false;
 	}
-
 }

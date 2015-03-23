@@ -8,12 +8,17 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Widget;
+use craft\app\base\WidgetInterface;
+use craft\app\dates\DateTime;
+use craft\app\errors\HttpException;
 use craft\app\helpers\IOHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
+use craft\app\helpers\UrlHelper;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp as GetHelpModel;
-use craft\app\models\Widget as WidgetModel;
+use craft\app\variables\ComponentInfo;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
@@ -32,21 +37,102 @@ class DashboardController extends Controller
 	// =========================================================================
 
 	/**
+	 * Edits a widget.
+	 *
+	 * @param integer                $widgetId The widget’s ID, if editing an existing widget
+	 * @param WidgetInterface|Widget $widget   The widget being edited, if there were any validation errors
+	 * @throws HttpException if the requested widget doesn’t exist
+	 */
+	public function actionEditWidget($widgetId = null, WidgetInterface $widget = null)
+	{
+		// The widget
+		// ---------------------------------------------------------------------
+
+		if ($widget === null && $widgetId !== null)
+		{
+			$widget = Craft::$app->dashboard->getWidgetById($widgetId);
+
+			if ($widget === null)
+			{
+				throw new HttpException(404, "No widget exists with the ID '$widgetId'.");
+			}
+		}
+
+		if ($widget === null)
+		{
+			$widget = Craft::$app->dashboard->createWidget('craft\app\widgets\Feed');
+		}
+
+		$widgetTypeInfo = new ComponentInfo($widget);
+
+		// Widget types
+		// ---------------------------------------------------------------------
+
+		$allWidgetTypes = Craft::$app->dashboard->getAllWidgetTypes();
+		$widgetTypeOptions = [];
+
+		foreach ($allWidgetTypes as $class)
+		{
+			if ($class === $widget->getType() || $class::isSelectable())
+			{
+				$widgetTypeOptions[] = [
+					'value' => $class,
+					'label' => $class::displayName()
+				];
+			}
+		}
+
+		// Page setup + render
+		// ---------------------------------------------------------------------
+
+		$crumbs = [
+			['label' => Craft::t('app', 'Dashboard'), 'url' => UrlHelper::getUrl('dashboard')],
+			['label' => Craft::t('app', 'Settings'), 'url' => UrlHelper::getUrl('dashboard/settings')],
+		];
+
+		if ($widgetId !== null)
+		{
+			$title = $widget->getTitle();
+		}
+		else
+		{
+			$title = Craft::t('app', 'Create a new widget');
+		}
+
+		$this->renderTemplate('dashboard/settings/_widgetsettings', [
+			'widgetId' => $widgetId,
+			'widget' => $widget,
+			'widgetTypeInfo' => $widgetTypeInfo,
+			'widgetTypeOptions' => $widgetTypeOptions,
+			'allWidgetTypes' => $allWidgetTypes,
+			'crumbs' => $crumbs,
+			'title' => $title,
+			'docsUrl' => 'http://buildwithcraft.com/docs/widgets#widget-layouts',
+		]);
+	}
+
+	/**
 	 * Saves a widget.
 	 *
 	 * @return null
 	 */
-	public function actionSaveUserWidget()
+	public function actionSaveWidget()
 	{
 		$this->requirePostRequest();
 
-		$widget = new WidgetModel();
-		$widget->id = Craft::$app->getRequest()->getBodyParam('widgetId');
-		$widget->type = Craft::$app->getRequest()->getRequiredBodyParam('type');
-		$widget->settings = Craft::$app->getRequest()->getBodyParam('types.'.$widget->type);
+		$dashboardService = Craft::$app->dashboard;
+		$request = Craft::$app->getRequest();
+		$type = $request->getRequiredBodyParam('type');
+
+		$widget = $dashboardService->createWidget([
+			'type'         => $type,
+			'id'           => $request->getBodyParam('widgetId'),
+			'userId'       => Craft::$app->getUser()->getIdentity()->id,
+			'settings'     => $request->getBodyParam('types.'.$type),
+		]);
 
 		// Did it save?
-		if (Craft::$app->dashboard->saveUserWidget($widget))
+		if (Craft::$app->dashboard->saveWidget($widget))
 		{
 			Craft::$app->getSession()->setNotice(Craft::t('app', 'Widget saved.'));
 			$this->redirectToPostedUrl();
@@ -67,13 +153,13 @@ class DashboardController extends Controller
 	 *
 	 * @return null
 	 */
-	public function actionDeleteUserWidget()
+	public function actionDeleteWidget()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
 		$widgetId = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
-		Craft::$app->dashboard->deleteUserWidgetById($widgetId);
+		Craft::$app->dashboard->deleteWidgetById($widgetId);
 
 		$this->returnJson(['success' => true]);
 	}
@@ -83,13 +169,13 @@ class DashboardController extends Controller
 	 *
 	 * @return null
 	 */
-	public function actionReorderUserWidgets()
+	public function actionReorderWidgets()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
 		$widgetIds = JsonHelper::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
-		Craft::$app->dashboard->reorderUserWidgets($widgetIds);
+		Craft::$app->dashboard->reorderWidgets($widgetIds);
 
 		$this->returnJson(['success' => true]);
 	}
@@ -112,7 +198,9 @@ class DashboardController extends Controller
 		{
 			if (isset($item['date']))
 			{
-				$item['date'] = $item['date']->uiTimestamp();
+				/** @var DateTime $date */
+				$date = $item['date'];
+				$item['date'] = $date->uiTimestamp();
 			}
 			else
 			{

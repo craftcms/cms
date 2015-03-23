@@ -8,58 +8,49 @@
 namespace craft\app\widgets;
 
 use Craft;
+use craft\app\base\Widget;
 
 /**
- * Class Updates widget.
+ * Updates represents an Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Updates extends BaseWidget
+class Updates extends Widget
 {
-	// Properties
+	// Static
 	// =========================================================================
 
 	/**
-	 * Whether users should be able to select more than one of this widget type.
-	 *
-	 * @var bool
+	 * @inheritdoc
 	 */
-	protected $multi = false;
-
-	// Public Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
-	 */
-	public function getName()
+	public static function displayName()
 	{
 		return Craft::t('app', 'Updates');
 	}
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::isSelectable()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function isSelectable()
+	public static function isSelectable()
 	{
 		// Gotta have update permission to get this widget
-		if (parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates'))
-		{
-			return true;
-		}
-
-		return false;
+		return (parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates'));
 	}
 
 	/**
-	 * @inheritDoc WidgetInterface::getBodyHtml()
-	 *
-	 * @return string|false
+	 * @inheritdoc
+	 */
+	protected static function allowMultipleInstances()
+	{
+		return false;
+	}
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getBodyHtml()
 	{
@@ -74,7 +65,7 @@ class Updates extends BaseWidget
 		if (!$cached || !Craft::$app->updates->getTotalAvailableUpdates())
 		{
 			Craft::$app->templates->includeJsResource('js/UpdatesWidget.js');
-			Craft::$app->templates->includeJs('new Craft.UpdatesWidget('.$this->model->id.', '.($cached ? 'true' : 'false').');');
+			Craft::$app->templates->includeJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
 
 			Craft::$app->templates->includeTranslations(
 				'One update available!',

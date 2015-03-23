@@ -8,62 +8,82 @@
 namespace craft\app\widgets;
 
 use Craft;
+use craft\app\base\Widget;
 use craft\app\elements\Entry;
-use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Class RecentEntries widget.
+ * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RecentEntries extends BaseWidget
+class RecentEntries extends Widget
 {
+	// Static
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public static function displayName()
+	{
+		return Craft::t('app', 'Recent Entries');
+	}
+
 	// Properties
 	// =========================================================================
 
 	/**
-	 * @var bool
+	 * @var string|integer[] The section IDs that the widget should pull entries from
 	 */
-	public $multipleInstances = true;
+	public $section = '*';
+
+	/**
+	 * string The locale that the widget should pull entries from
+	 */
+	public $locale;
+
+	/**
+	 * integer The total number of entries that the widget should show
+	 */
+	public $limit = 10;
 
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function init()
 	{
-		return Craft::t('app', 'Recent Entries');
+		parent::init();
+
+		if ($this->locale === null)
+		{
+			$this->locale = Craft::$app->getLanguage();
+		}
 	}
 
 	/**
-	 * @inheritDoc SavableComponentTypeInterface::getSettingsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getSettingsHtml()
 	{
 		return Craft::$app->templates->render('_components/widgets/RecentEntries/settings', [
-			'settings' => $this->getSettings()
+			'widget' => $this
 		]);
 	}
 
 	/**
-	 * @inheritDoc WidgetInterface::getTitle()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
 	public function getTitle()
 	{
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$sectionId = $this->getSettings()->section;
+			$sectionId = $this->section;
 
 			if (is_numeric($sectionId))
 			{
@@ -92,7 +112,7 @@ class RecentEntries extends BaseWidget
 
 			$title = Craft::t('app', '{title} ({locale})', [
 				'title'  => $title,
-				'locale' => $locale->getName()
+				'locale' => $locale->getDisplayName()
 			]);
 		}
 
@@ -100,9 +120,7 @@ class RecentEntries extends BaseWidget
 	}
 
 	/**
-	 * @inheritDoc WidgetInterface::getBodyHtml()
-	 *
-	 * @return string|false
+	 * @inheritdoc
 	 */
 	public function getBodyHtml()
 	{
@@ -110,7 +128,7 @@ class RecentEntries extends BaseWidget
 
 		if (Craft::$app->getEdition() >= Craft::Client)
 		{
-			$sectionId = $this->getSettings()->section;
+			$sectionId = $this->section;
 
 			if (is_numeric($sectionId))
 			{
@@ -118,7 +136,7 @@ class RecentEntries extends BaseWidget
 			}
 		}
 
-		$js = 'new Craft.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
+		$js = 'new Craft.RecentEntriesWidget('.$this->id.', '.JsonHelper::encode($params).');';
 
 		Craft::$app->templates->includeJsResource('js/RecentEntriesWidget.js');
 		Craft::$app->templates->includeJs($js);
@@ -129,23 +147,6 @@ class RecentEntries extends BaseWidget
 		return Craft::$app->templates->render('_components/widgets/RecentEntries/body', [
 			'entries' => $entries
 		]);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return [
-			'section' => [AttributeType::Mixed, 'default' => '*'],
-			'locale'  => [AttributeType::Locale, 'default' => Craft::$app->language],
-			'limit'   => [AttributeType::Number, 'default' => 10],
-		];
 	}
 
 	// Private Methods
@@ -168,7 +169,7 @@ class RecentEntries extends BaseWidget
 
 		// Normalize the target section ID value.
 		$editableSectionIds = $this->_getEditableSectionIds();
-		$targetSectionId = $this->getSettings()->section;
+		$targetSectionId = $this->section;
 
 		if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds))
 		{
@@ -186,7 +187,7 @@ class RecentEntries extends BaseWidget
 			->locale($targetLocale)
 			->sectionId($targetSectionId)
 			->editable(true)
-			->limit($this->getSettings()->limit)
+			->limit($this->limit)
 			->orderBy('elements.dateCreated desc')
 			->all();
 	}
@@ -231,7 +232,7 @@ class RecentEntries extends BaseWidget
 		}
 
 		// Figure out which locale was selected in the settings
-		$targetLocale = $this->getSettings()->locale;
+		$targetLocale = $this->locale;
 
 		// Only use that locale if it still exists and they're allowed to edit it.
 		// Otherwise go with the first locale that they are allowed to edit.

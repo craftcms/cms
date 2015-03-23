@@ -18,15 +18,15 @@
 			</div>
 		{% endif %}
 
-		{% for widget in craft.dashboard.getUserWidgets %}
-			{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
-			{% if widgetType %}
-				{% set body = widgetType.getBodyHtml() %}
+		{% for widget in craft.dashboard.getAllWidgets() %}
+			{% set widgetTypeInfo = craft.dashboard.getWidgetTypeInfo(widget) %}
+			{% if not widgetTypeInfo.getIsInvalid() %}
+				{% set body = widget.getBodyHtml() %}
 				{% if body is not sameas(false) %}
-					<div class="item" data-colspan="{{ widgetType.getColspan() }}">
-						<div id="widget{{ widget.id }}" class="pane widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
+					<div class="item" data-colspan="{{ widget.getColspan() }}">
+						<div id="widget{{ widget.id }}" class="pane widget {{ widgetTypeInfo.getClassHandle()|lower }}" data-id="{{ widget.id }}">
 							<div class="spinner body-loading"></div>
-							<h2>{{ widgetType.title }}</h2>
+							<h2>{{ widget.title }}</h2>
 							<div class="body">{{ body|raw }}</div>
 						</div>
 					</div>

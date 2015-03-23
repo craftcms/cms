@@ -6,8 +6,8 @@ return [
 	'categories/<groupHandle:{handle}>/new'                                 => 'categories/edit-category',
 	'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-{slug})?>' => 'categories/edit-category',
 
-	'dashboard/settings/new'                                                => ['template' => 'dashboard/settings/_widgetsettings'],
-	'dashboard/settings/<widgetId:\d+>'                                     => ['template' => 'dashboard/settings/_widgetsettings'],
+	'dashboard/settings/new'                                                => 'dashboard/editWidget',
+	'dashboard/settings/<widgetId:\d+>'                                     => 'dashboard/editWidget',
 
 	'entries/<sectionHandle:{handle}>'                                      => ['template' => 'entries'],
 	'entries/<sectionHandle:{handle}>/new'                                  => 'entries/edit-entry',

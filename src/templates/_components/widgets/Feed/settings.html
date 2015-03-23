@@ -5,9 +5,9 @@
 	label: "URL"|t,
 	id: 'url',
 	name: 'url',
-	value: settings.url,
+	value: widget.url,
 	required: true,
-	errors: settings.getErrors('url')
+	errors: widget.getErrors('url')
 }) }}
 
 
@@ -15,9 +15,9 @@
 	label: "Title"|t,
 	id: 'title',
 	name: 'title',
-	value: settings.title,
+	value: widget.title,
 	required: true,
-	errors: settings.getErrors('title')
+	errors: widget.getErrors('title')
 }) }}
 
 
@@ -25,7 +25,7 @@
 	label: "Limit"|t,
 	id: 'limit',
 	name: 'limit',
-	value: settings.limit,
+	value: widget.limit,
 	size: 2,
-	errors: settings.getErrors('limit')
+	errors: widget.getErrors('limit')
 }) }}

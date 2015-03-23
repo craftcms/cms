@@ -6,7 +6,7 @@
 ] %}
 
 
-{% set widgets = craft.dashboard.getUserWidgets %}
+{% set widgets = craft.dashboard.getAllWidgets() %}
 {% set sortable  = (widgets|length > 1) %}
 
 
@@ -21,14 +21,15 @@
 		<table id="widgets" class="data fullwidth collapsible">
 			<tbody>
 				{% for widget in widgets %}
-					{% if widget.type != 'GetHelp' or currentUser.admin %}
-						{% set widgetType = craft.dashboard.populateWidgetType(widget) %}
+					{% if widget.getType() != 'craft\\app\\widgets\\GetHelp' or currentUser.admin %}
+						{% set widgetTitle = widget.getTitle() %}
+						{% set widgetTypeInfo = craft.dashboard.getWidgetTypeInfo(widget) %}
 
-						<tr data-id="{{ widget.id }}" data-name="{{ widgetType ? widgetType.title : widget.type }}">
+						<tr data-id="{{ widget.id }}" data-name="{{ widgetTitle }}">
 							<th scope="row" data-title="{{ 'Name'|t }}">
-								<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetType ? widgetType.title : "Unknown"|t }}</a>
-								{% if widgetType %}
-									{% if widgetType.name != widgetType.title %}<span class="light">({{ widgetType.name }})</span>{% endif %}
+								<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetTitle }}</a>
+								{% if not widgetTypeInfo.getIsInvalid() %}
+									{% if widgetTypeInfo.getDisplayName() != widgetTitle %}<span class="light">({{ widgetTypeInfo.getDisplayName() }})</span>{% endif %}
 								{% else %}
 									<span class="light error">({{ widget.type }})</span>
 								{% endif %}
@@ -53,8 +54,8 @@
 		tableSelector: '#widgets',
 		noItemsSelector: '#nowidgets',
 		sortable: true,
-		reorderAction: 'dashboard/reorderUserWidgets',
-		deleteAction: 'dashboard/deleteUserWidget'
+		reorderAction: 'dashboard/reorderWidgets',
+		deleteAction: 'dashboard/deleteWidget'
 	});
 {% endset %}
 {% includeJs js %}
