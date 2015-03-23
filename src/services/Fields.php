@@ -34,7 +34,6 @@ use craft\app\fields\Table as TableField;
 use craft\app\fields\Tags as TagsField;
 use craft\app\fields\Users as UsersField;
 use craft\app\helpers\ComponentHelper;
-use craft\app\base\Model;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
@@ -59,7 +58,7 @@ class Fields extends Component
 	// =========================================================================
 
 	/**
-	 * @var string The element interface name
+	 * @var string The field interface name
 	 */
 	const FIELD_INTERFACE = 'craft\app\base\FieldInterface';
 
@@ -130,9 +129,8 @@ class Fields extends Component
 	/**
 	 * Returns all field groups.
 	 *
-	 * @param string|null $indexBy
-	 *
-	 * @return FieldGroupModel[]
+	 * @param string|null $indexBy The attribute to index the field groups by
+	 * @return FieldGroupModel[] The field groups
 	 */
 	public function getAllGroups($indexBy = null)
 	{
@@ -175,9 +173,8 @@ class Fields extends Component
 	/**
 	 * Returns a field group by its ID.
 	 *
-	 * @param int $groupId
-	 *
-	 * @return FieldGroupModel|null
+	 * @param integer $groupId The field group’s ID
+	 * @return FieldGroupModel|null The field group, or null if it doesn’t exist
 	 */
 	public function getGroupById($groupId)
 	{
@@ -205,9 +202,8 @@ class Fields extends Component
 	/**
 	 * Saves a field group.
 	 *
-	 * @param FieldGroupModel $group
-	 *
-	 * @return bool
+	 * @param FieldGroupModel $group The field group to be saved
+	 * @return boolean Whether the field group was saved successfully
 	 */
 	public function saveGroup(FieldGroupModel $group)
 	{
@@ -234,11 +230,10 @@ class Fields extends Component
 	}
 
 	/**
-	 * Deletes a field group.
+	 * Deletes a field group by its ID.
 	 *
-	 * @param int $groupId
-	 *
-	 * @return bool
+	 * @param integer $groupId The field group’s ID
+	 * @return boolean Whether the field group was deleted successfully
 	 */
 	public function deleteGroupById($groupId)
 	{
@@ -270,11 +265,40 @@ class Fields extends Component
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Returns all available field type classes.
+	 *
+	 * @return FieldInterface[] The available field type classes
+	 */
+	public function getAllFieldTypes()
+	{
+		// TODO: Come up with a way for plugins to add more field classes
+		return [
+			AssetsField::className(),
+			CategoriesField::className(),
+			CheckboxesField::className(),
+			ColorField::className(),
+			DateField::className(),
+			DropdownField::className(),
+			EntriesField::className(),
+			LightswitchField::className(),
+			MatrixField::className(),
+			MultiSelectField::className(),
+			NumberField::className(),
+			PlainTextField::className(),
+			PositionSelectField::className(),
+			RadioButtonsField::className(),
+			RichTextField::className(),
+			TableField::className(),
+			TagsField::className(),
+			UsersField::className(),
+		];
+	}
+
+	/**
 	 * Creates a field with a given config.
 	 *
-	 * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value.
-	 *
-	 * @return FieldInterface|Field
+	 * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+	 * @return FieldInterface|Field The field
 	 */
 	public function createField($config)
 	{
@@ -291,9 +315,8 @@ class Fields extends Component
 	/**
 	 * Returns all fields.
 	 *
-	 * @param string|null $indexBy
-	 *
-	 * @return FieldInterface[]|Field[]
+	 * @param string|null $indexBy The attribute to index the fields by
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getAllFields($indexBy = null)
 	{
@@ -337,7 +360,7 @@ class Fields extends Component
 	/**
 	 * Returns all fields that have a column in the content table.
 	 *
-	 * @return FieldInterface[]|Field[]
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getFieldsWithContent()
 	{
@@ -362,9 +385,8 @@ class Fields extends Component
 	/**
 	 * Returns a field by its ID.
 	 *
-	 * @param int $fieldId
-	 *
-	 * @return FieldInterface|Field|null
+	 * @param integer $fieldId The field’s ID
+	 * @return FieldInterface|Field|null The field, or null if it doesn’t exist
 	 */
 	public function getFieldById($fieldId)
 	{
@@ -393,9 +415,8 @@ class Fields extends Component
 	/**
 	 * Returns a field by its handle.
 	 *
-	 * @param string $handle
-	 *
-	 * @return FieldInterface|Field|null
+	 * @param string $handle The field’s handle
+	 * @return FieldInterface|Field|null The field, or null if it doesn’t exist
 	 */
 	public function getFieldByHandle($handle)
 	{
@@ -425,10 +446,9 @@ class Fields extends Component
 	/**
 	 * Returns all the fields in a given group.
 	 *
-	 * @param int         $groupId
-	 * @param string|null $indexBy
-	 *
-	 * @return FieldInterface[]|Field[]
+	 * @param integer     $groupId The field group’s ID
+	 * @param string|null $indexBy The attribute to index the fields by
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
@@ -458,11 +478,10 @@ class Fields extends Component
 	/**
 	 * Saves a field.
 	 *
-	 * @param FieldInterface $field    The Field to be saved
-	 * @param bool           $validate Whether the field should be validated first
-	 *
+	 * @param FieldInterface|Field $field    The Field to be saved
+	 * @param boolean              $validate Whether the field should be validated first
+	 * @return boolean Whether the field was saved successfully
 	 * @throws \Exception
-	 * @return bool
 	 */
 	public function saveField(FieldInterface $field, $validate = true)
 	{
@@ -471,6 +490,8 @@ class Fields extends Component
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
+				$field->beforeSave();
+
 				$field->context = Craft::$app->content->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
@@ -482,16 +503,9 @@ class Fields extends Component
 				$fieldRecord->context      = $field->context;
 				$fieldRecord->instructions = $field->instructions;
 				$fieldRecord->translatable = $field->translatable;
-				$fieldRecord->type         = $field->type;
+				$fieldRecord->type         = $field->getType();
 				$fieldRecord->settings     = $field->getSettings();
 
-				if ($fieldRecord->settings instanceof Model)
-				{
-					// Call getAttributes() without passing 'true' so the __model__ isn't saved
-					$fieldRecord->settings = $fieldRecord->settings->getAttributes();
-				}
-
-				$field->beforeSave();
 				$fieldRecord->save(false);
 
 				// Now that we have a field ID, save it on the model
@@ -563,6 +577,8 @@ class Fields extends Component
 				{
 					$transaction->commit();
 				}
+
+				return true;
 			}
 			catch (\Exception $e)
 			{
@@ -573,8 +589,6 @@ class Fields extends Component
 
 				throw $e;
 			}
-
-			return true;
 		}
 		else
 		{
@@ -585,9 +599,8 @@ class Fields extends Component
 	/**
 	 * Deletes a field by its ID.
 	 *
-	 * @param int $fieldId
-	 *
-	 * @return bool
+	 * @param integer $fieldId The field’s ID
+	 * @return boolean Whether the field was deleted successfully
 	 */
 	public function deleteFieldById($fieldId)
 	{
@@ -606,10 +619,9 @@ class Fields extends Component
 	/**
 	 * Deletes a field.
 	 *
-	 * @param FieldInterface $field
-	 *
+	 * @param FieldInterface $field The field
+	 * @return boolean Whether the field was deleted successfully
 	 * @throws \Exception
-	 * @return bool
 	 */
 	public function deleteField(FieldInterface $field)
 	{
@@ -664,9 +676,8 @@ class Fields extends Component
 	/**
 	 * Returns a field layout by its ID.
 	 *
-	 * @param int $layoutId
-	 *
-	 * @return FieldLayoutModel|null
+	 * @param integer $layoutId The field layout’s ID
+	 * @return FieldLayoutModel|null The field layout, or null if it doesn’t exist
 	 */
 	public function getLayoutById($layoutId)
 	{
@@ -692,11 +703,10 @@ class Fields extends Component
 	}
 
 	/**
-	 * Returns a field layout by its type.
+	 * Returns a field layout by its associated element type.
 	 *
-	 * @param string $type
-	 *
-	 * @return FieldLayoutModel
+	 * @param string $type The associated element type
+	 * @return FieldLayoutModel The field layout
 	 */
 	public function getLayoutByType($type)
 	{
@@ -731,9 +741,8 @@ class Fields extends Component
 	/**
 	 * Returns a layout's tabs by its ID.
 	 *
-	 * @param int $layoutId
-	 *
-	 * @return FieldLayoutTabModel[]
+	 * @param integer $layoutId The field layout’s ID
+	 * @return FieldLayoutTabModel[] The field layout’s tabs
 	 */
 	public function getLayoutTabsById($layoutId)
 	{
@@ -752,9 +761,8 @@ class Fields extends Component
 	/**
 	 * Returns the fields in a field layout, identified by its ID.
 	 *
-	 * @param int $layoutId The field layout ID
-	 *
-	 * @return FieldInterface[]|Field[]
+	 * @param integer $layoutId The field layout’s ID
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getFieldsByLayoutId($layoutId)
 	{
@@ -777,7 +785,7 @@ class Fields extends Component
 	/**
 	 * Assembles a field layout from post data.
 	 *
-	 * @return FieldLayoutModel
+	 * @return FieldLayoutModel The field layout
 	 */
 	public function assembleLayoutFromPost()
 	{
@@ -790,10 +798,9 @@ class Fields extends Component
 	/**
 	 * Assembles a field layout.
 	 *
-	 * @param array      $postedFieldLayout
-	 * @param array|null $requiredFields
-	 *
-	 * @return FieldLayoutModel
+	 * @param array      $postedFieldLayout The post data for the field layout
+	 * @param array|null $requiredFields    The field IDs that should be marked as required in the field layout
+	 * @return FieldLayoutModel The field layout
 	 */
 	public function assembleLayout($postedFieldLayout, $requiredFields)
 	{
@@ -861,9 +868,8 @@ class Fields extends Component
 	/**
 	 * Saves a field layout.
 	 *
-	 * @param FieldLayoutModel $layout
-	 *
-	 * @return bool
+	 * @param FieldLayoutModel $layout The field layout
+	 * @return boolean Whether the field layout was saved successfully
 	 */
 	public function saveLayout(FieldLayoutModel $layout)
 	{
@@ -905,9 +911,8 @@ class Fields extends Component
 	/**
 	 * Deletes a field layout(s) by its ID.
 	 *
-	 * @param int|array $layoutId
-	 *
-	 * @return bool
+	 * @param int|array $layoutId The field layout’s ID
+	 * @return boolean Whether the field layout was deleted successfully
 	 */
 	public function deleteLayoutById($layoutId)
 	{
@@ -929,49 +934,15 @@ class Fields extends Component
 	}
 
 	/**
-	 * Deletes field layouts of a given type.
+	 * Deletes field layouts associated with a given element type.
 	 *
-	 * @param string $type
-	 *
-	 * @return bool
+	 * @param string $type The element type
+	 * @return boolean Whether the field layouts were deleted successfully
 	 */
 	public function deleteLayoutsByType($type)
 	{
 		$affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%fieldlayouts}}', ['type' => $type])->execute();
 		return (bool) $affectedRows;
-	}
-
-	// Field Classes
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Returns all available field type classes.
-	 *
-	 * @return FieldInterface[] The available field type classes.
-	 */
-	public function getAllFieldTypes()
-	{
-		// TODO: Come up with a way for plugins to add more field classes
-		return [
-			AssetsField::className(),
-			CategoriesField::className(),
-			CheckboxesField::className(),
-			ColorField::className(),
-			DateField::className(),
-			DropdownField::className(),
-			EntriesField::className(),
-			LightswitchField::className(),
-			MatrixField::className(),
-			MultiSelectField::className(),
-			NumberField::className(),
-			PlainTextField::className(),
-			PositionSelectField::className(),
-			RadioButtonsField::className(),
-			RichTextField::className(),
-			TableField::className(),
-			TagsField::className(),
-			UsersField::className(),
-		];
 	}
 
 	// Private Methods
@@ -1055,9 +1026,8 @@ class Fields extends Component
 	 * Gets a field group record or creates a new one.
 	 *
 	 * @param FieldGroupModel $group
-	 *
-	 * @throws Exception
 	 * @return FieldGroupRecord
+	 * @throws Exception
 	 */
 	private function _getGroupRecord(FieldGroupModel $group)
 	{
@@ -1082,9 +1052,8 @@ class Fields extends Component
 	 * Returns a field record for a given model.
 	 *
 	 * @param FieldInterface $field
-	 *
-	 * @throws Exception
 	 * @return FieldRecord
+	 * @throws Exception
 	 */
 	private function _getFieldRecord(FieldInterface $field)
 	{

@@ -29,9 +29,8 @@ class Fields
 	/**
 	 * Returns all field groups.
 	 *
-	 * @param string|null $indexBy
-	 *
-	 * @return FieldGroupModel[]
+	 * @param string|null $indexBy The attribute to index the field groups by
+	 * @return FieldGroupModel[] The field groups
 	 */
 	public function getAllGroups($indexBy = null)
 	{
@@ -41,9 +40,8 @@ class Fields
 	/**
 	 * Returns a field group by its ID.
 	 *
-	 * @param int $groupId
-	 *
-	 * @return FieldGroupModel|null
+	 * @param integer $groupId The field group’s ID
+	 * @return FieldGroupModel|null The field group, or null if it doesn’t exist
 	 */
 	public function getGroupById($groupId)
 	{
@@ -54,11 +52,21 @@ class Fields
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Creates a field with a given config.
+	 *
+	 * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+	 * @return FieldInterface|Field The field
+	 */
+	public function createField($config)
+	{
+		return \Craft::$app->fields->createField($config);
+	}
+
+	/**
 	 * Returns a field by its ID.
 	 *
-	 * @param int $fieldId
-	 *
-	 * @return FieldInterface|Field|null
+	 * @param integer $fieldId The field’s ID
+	 * @return FieldInterface|Field|null The field, or null if it doesn’t exist
 	 */
 	public function getFieldById($fieldId)
 	{
@@ -68,9 +76,8 @@ class Fields
 	/**
 	 * Returns a field by its handle.
 	 *
-	 * @param string $handle
-	 *
-	 * @return FieldInterface|Field|null
+	 * @param string $handle The field’s handle
+	 * @return FieldInterface|Field|null The field, or null if it doesn’t exist
 	 */
 	public function getFieldByHandle($handle)
 	{
@@ -80,9 +87,8 @@ class Fields
 	/**
 	 * Returns all fields.
 	 *
-	 * @param string$indexBy
-	 *
-	 * @return FieldInterface[]|Field[]
+	 * @param string|null $indexBy The attribute to index the fields by
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getAllFields($indexBy = null)
 	{
@@ -92,10 +98,9 @@ class Fields
 	/**
 	 * Returns all the fields in a given group.
 	 *
-	 * @param int         $groupId
-	 * @param string|null $indexBy
-	 *
-	 * @return FieldInterface[]|Field[]
+	 * @param integer     $groupId The field group’s ID
+	 * @param string|null $indexBy The attribute to index the fields by
+	 * @return FieldInterface[]|Field[] The fields
 	 */
 	public function getFieldsByGroupId($groupId, $indexBy = null)
 	{
@@ -105,9 +110,8 @@ class Fields
 	/**
 	 * Returns a field layout by its ID.
 	 *
-	 * @param int $layoutId
-	 *
-	 * @return FieldLayoutModel|null
+	 * @param integer $layoutId The field layout’s ID
+	 * @return FieldLayoutModel|null The field layout, or null if it doesn’t exist
 	 */
 	public function getLayoutById($layoutId)
 	{
@@ -115,11 +119,10 @@ class Fields
 	}
 
 	/**
-	 * Returns a field layout by its type.
+	 * Returns a field layout by its associated element type.
 	 *
-	 * @param int $type
-	 *
-	 * @return FieldLayoutModel|null
+	 * @param string $type The associated element type
+	 * @return FieldLayoutModel The field layout
 	 */
 	public function getLayoutByType($type)
 	{
@@ -129,7 +132,7 @@ class Fields
 	/**
 	 * Returns all available field type classes.
 	 *
-	 * @return FieldInterface[] The available field type classes.
+	 * @return FieldInterface[] The available field type classes
 	 */
 	public function getAllFieldTypes()
 	{
@@ -137,24 +140,13 @@ class Fields
 	}
 
 	/**
-	 * Returns info about the field with the given class name.
+	 * Returns info about a field type.
 	 *
-	 * @param string|FieldInterface|Field $field
-	 * @return ComponentInfo
+	 * @param string|FieldInterface|Field $field A field or field type
+	 * @return ComponentInfo Info about the field type
 	 */
 	public function getFieldTypeInfo($field)
 	{
 		return new ComponentInfo($field);
-	}
-
-	/**
-	 * Creates a field with a given config.
-	 *
-	 * @param mixed $config
-	 * @return FieldInterface
-	 */
-	public function createField($config)
-	{
-		return \Craft::$app->fields->createField($config);
 	}
 }

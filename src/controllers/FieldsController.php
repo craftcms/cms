@@ -10,7 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
-use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\FieldGroup as FieldGroupModel;
 use craft\app\variables\ComponentInfo;
@@ -115,7 +114,7 @@ class FieldsController extends Controller
 	 * @throws HttpException if there are no field groups, or the requested field doesn’t exist
 	 * @throws Exception if the field’s group doesn’t exist
 	 */
-	public function actionEditField($fieldId = null, Field $field = null, $groupId = null)
+	public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
 	{
 		$this->requireAdmin();
 
