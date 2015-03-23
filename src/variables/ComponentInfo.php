@@ -101,7 +101,7 @@ class ComponentInfo
 		if ($this->getIsInvalid())
 		{
 			/** @var InvalidComponentInterface $component */
-			$classNameParts = implode('\\', $component->getType());
+			$classNameParts = explode('\\', $component->getType());
 			$displayName = array_pop($classNameParts);
 			return $displayName;
 		}
@@ -123,7 +123,7 @@ class ComponentInfo
 		if ($this->getIsInvalid())
 		{
 			/** @var InvalidComponentInterface $component */
-			$classNameParts = implode('\\', $component->getType());
+			$classNameParts = explode('\\', $component->getType());
 			$handle = array_pop($classNameParts);
 			return strtolower($handle);
 		}
