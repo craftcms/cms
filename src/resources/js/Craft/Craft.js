@@ -1325,14 +1325,28 @@ $.extend($.fn,
 				}
 			});
 		}
-
-		return this.each(function()
+		else
 		{
-			if (!$.data(this, 'lightswitch'))
+			if (!$.isPlainObject(settings))
 			{
-				new Craft.LightSwitch(this, settings);
+				settings = {};
 			}
-		});
+
+			return this.each(function()
+			{
+				var thisSettings = $.extend({}, settings);
+
+				if (Garnish.hasAttr(this, 'data-value'))
+				{
+					thisSettings.value = $(this).attr('data-value');
+				}
+
+				if (!$.data(this, 'lightswitch'))
+				{
+					new Craft.LightSwitch(this, thisSettings);
+				}
+			});
+		}
 	},
 
 	nicetext: function()

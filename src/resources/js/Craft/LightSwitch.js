@@ -61,7 +61,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 		animateCss['margin-'+Craft.left] = 0;
 		this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 
-		this.$input.val('1');
+		this.$input.val(this.settings.value);
 		this.$outerContainer.addClass('on');
 		this.on = true;
 		this.onChange();
@@ -226,6 +226,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 }, {
 	animationDuration: 100,
 	defaults: {
+        value: '1',
 		onChange: $.noop
 	}
 });

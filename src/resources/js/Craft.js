@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-03-18 */
+/*! Craft 3.0.0 - 2015-03-23 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -1328,14 +1328,28 @@ $.extend($.fn,
 				}
 			});
 		}
-
-		return this.each(function()
+		else
 		{
-			if (!$.data(this, 'lightswitch'))
+			if (!$.isPlainObject(settings))
 			{
-				new Craft.LightSwitch(this, settings);
+				settings = {};
 			}
-		});
+
+			return this.each(function()
+			{
+				var thisSettings = $.extend({}, settings);
+
+				if (Garnish.hasAttr(this, 'data-value'))
+				{
+					thisSettings.value = $(this).attr('data-value');
+				}
+
+				if (!$.data(this, 'lightswitch'))
+				{
+					new Craft.LightSwitch(this, thisSettings);
+				}
+			});
+		}
 	},
 
 	nicetext: function()
@@ -9993,7 +10007,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 		animateCss['margin-'+Craft.left] = 0;
 		this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 
-		this.$input.val('1');
+		this.$input.val(this.settings.value);
 		this.$outerContainer.addClass('on');
 		this.on = true;
 		this.onChange();
@@ -10158,6 +10172,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 }, {
 	animationDuration: 100,
 	defaults: {
+        value: '1',
 		onChange: $.noop
 	}
 });
