@@ -11,6 +11,11 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
+use craft\app\elements\actions\Delete;
+use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\NewChild;
+use craft\app\elements\actions\SetStatus;
+use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\CategoryGroup;
@@ -127,46 +132,42 @@ class Category extends Element
 		$actions = [];
 
 		// Set Status
-		$actions[] = 'SetStatus';
+		$actions[] = SetStatus::className();
 
 		if ($group->hasUrls)
 		{
 			// View
-			$viewAction = Craft::$app->elements->getAction('View');
-			$viewAction->setParams([
+			$actions[] = Craft::$app->elements->createAction([
+				'type'  => View::className(),
 				'label' => Craft::t('app', 'View category'),
 			]);
-			$actions[] = $viewAction;
 		}
 
 		// Edit
-		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams([
+		$actions[] = Craft::$app->elements->createAction([
+			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit category'),
 		]);
-		$actions[] = $editAction;
 
 		// New Child
 		$structure = Craft::$app->structures->getStructureById($group->structureId);
 
 		if ($structure)
 		{
-			$newChildAction = Craft::$app->elements->getAction('NewChild');
-			$newChildAction->setParams([
+			$actions[] = Craft::$app->elements->createAction([
+				'type'        => NewChild::className(),
 				'label'       => Craft::t('app', 'Create a new child category'),
 				'maxLevels'   => $structure->maxLevels,
 				'newChildUrl' => 'categories/'.$group->handle.'/new',
 			]);
-			$actions[] = $newChildAction;
 		}
 
 		// Delete
-		$deleteAction = Craft::$app->elements->getAction('Delete');
-		$deleteAction->setParams([
+		$actions[] = Craft::$app->elements->createAction([
+			'type'                => Delete::className(),
 			'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
 			'successMessage'      => Craft::t('app', 'Categories deleted.'),
 		]);
-		$actions[] = $deleteAction;
 
 		// Allow plugins to add additional actions
 		$allPluginActions = Craft::$app->plugins->call('addCategoryActions', [$source], true);

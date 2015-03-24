@@ -13,6 +13,10 @@ use craft\app\base\ElementInterface;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
+use craft\app\elements\actions\DeleteUsers;
+use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\SuspendUsers;
+use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
 use craft\app\enums\AuthError;
@@ -126,25 +130,24 @@ class User extends Element implements IdentityInterface
 		$actions = [];
 
 		// Edit
-		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams([
+		$actions[] = Craft::$app->elements->createAction([
+			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit user'),
 		]);
-		$actions[] = $editAction;
 
 		if (Craft::$app->getUser()->checkPermission('administrateUsers'))
 		{
 			// Suspend
-			$actions[] = 'SuspendUsers';
+			$actions[] = SuspendUsers::className();
 
 			// Unsuspend
-			$actions[] = 'UnsuspendUsers';
+			$actions[] = UnsuspendUsers::className();
 		}
 
 		if (Craft::$app->getUser()->checkPermission('deleteUsers'))
 		{
 			// Delete
-			$actions[] = 'DeleteUsers';
+			$actions[] = DeleteUsers::className();
 		}
 
 		// Allow plugins to add additional actions

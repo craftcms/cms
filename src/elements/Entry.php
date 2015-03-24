@@ -11,7 +11,11 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
-use craft\app\elementactions\SetStatus;
+use craft\app\elements\actions\Delete;
+use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\NewChild;
+use craft\app\elements\actions\SetStatus;
+use craft\app\elements\actions\View;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\enums\SectionType;
@@ -252,14 +256,14 @@ class Entry extends Element
 		if ($canSetStatus)
 		{
 			/** @var SetStatus $setStatusAction */
-			$setStatusAction = Craft::$app->elements->getAction('SetStatus');
+			$setStatusAction = Craft::$app->elements->createAction(SetStatus::className());
 			$setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS, function(SetStatusEvent $event)
 			{
 				if ($event->status == static::ENABLED)
 				{
 					// Set a Post Date as well
 					Craft::$app->getDb()->createCommand()->update(
-						'entries',
+						'{{%entries}}',
 						['postDate' => DateTimeHelper::currentTimeForDb()],
 						['and', ['in', 'id', $event->elementIds], 'postDate is null']
 					)->execute();
@@ -271,21 +275,19 @@ class Entry extends Element
 		// Edit
 		if ($canEdit)
 		{
-			$editAction = Craft::$app->elements->getAction('Edit');
-			$editAction->setParams([
+			$actions[] = Craft::$app->elements->createAction([
+				'type'  => Edit::className(),
 				'label' => Craft::t('app', 'Edit entry'),
 			]);
-			$actions[] = $editAction;
 		}
 
 		if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls)
 		{
 			// View
-			$viewAction = Craft::$app->elements->getAction('View');
-			$viewAction->setParams([
+			$actions[] = Craft::$app->elements->createAction([
+				'type'  => View::className(),
 				'label' => Craft::t('app', 'View entry'),
 			]);
-			$actions[] = $viewAction;
 		}
 
 		// Channel/Structure-only actions
@@ -303,13 +305,12 @@ class Entry extends Element
 
 				if ($structure)
 				{
-					$newChildAction = Craft::$app->elements->getAction('NewChild');
-					$newChildAction->setParams([
+					$actions[] = Craft::$app->elements->createAction([
+						'type'        => NewChild::className(),
 						'label'       => Craft::t('app', 'Create a new child entry'),
 						'maxLevels'   => $structure->maxLevels,
 						'newChildUrl' => 'entries/'.$section->handle.'/new',
 					]);
-					$actions[] = $newChildAction;
 				}
 			}
 
@@ -319,12 +320,11 @@ class Entry extends Element
 				$userSessionService->checkPermission('deletePeerEntries:'.$section->id)
 			)
 			{
-				$deleteAction = Craft::$app->elements->getAction('Delete');
-				$deleteAction->setParams([
+				$actions[] = Craft::$app->elements->createAction([
+					'type'                => Delete::className(),
 					'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
 					'successMessage'      => Craft::t('app', 'Entries deleted.'),
 				]);
-				$actions[] = $deleteAction;
 			}
 		}
 

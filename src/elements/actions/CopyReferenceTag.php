@@ -5,48 +5,55 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\ElementAction;
+use craft\app\base\ElementInterface;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Copy Reference Tag Element Action
+ * CopyReferenceTag represents a Copy Reference Tag element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class CopyReferenceTag extends BaseElementAction
+class CopyReferenceTag extends ElementAction
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var ElementInterface|string The element type associated with this action
+	 */
+	public $elementType;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Copy reference tag');
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
+		$type = JsonHelper::encode(static::className());
 		$prompt = JsonHelper::encode(Craft::t('app', '{ctrl}C to copy.'));
-		$elementType = lcfirst($this->getParams()->elementType);
+		$elementType = $this->elementType;
+		$elementTypeHandle = JsonHelper::encode($elementType::classHandle());
 
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'CopyReferenceTag',
+		type: {$type},
 		batch: false,
 		activate: function(\$selectedItems)
 		{
@@ -54,27 +61,12 @@ class CopyReferenceTag extends BaseElementAction
 				ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
 			});
 
-			prompt(message, '{{$elementType}:'+\$selectedItems.find('.element').data('id')+'}');
+			prompt(message, '{'+{$elementTypeHandle}+':'+\$selectedItems.find('.element').data('id')+'}');
 		}
 	});
 })();
 EOT;
 
 		Craft::$app->templates->includeJs($js);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementAction::defineParams()
-	 *
-	 * @return array
-	 */
-	protected function defineParams()
-	{
-		return [
-			'elementType' => AttributeType::String,
-		];
 	}
 }

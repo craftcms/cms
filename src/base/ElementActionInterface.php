@@ -5,45 +5,38 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\base;
 
-use craft\app\components\ComponentTypeInterface;
-use craft\app\base\Model;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 
 /**
- * Interface ElementActionInterface
+ * ElementActionInterface defines the common interface to be implemented by element action classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-interface ElementActionInterface extends ComponentTypeInterface
+interface ElementActionInterface extends SavableComponentInterface
 {
+	// Static
+	// =========================================================================
+
 	/**
 	 * Returns whether this action is destructive in nature.
 	 *
-	 * @return bool Whether this action is destructive in nature.
+	 * @return boolean Whether this action is destructive in nature.
 	 */
-	public function isDestructive();
+	public static function isDestructive();
+
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the action’s params model.
+	 * Returns the action’s trigger label.
 	 *
-	 * @return Model The action’s params model.
+	 * @return string The action’s trigger label
 	 */
-	public function getParams();
-
-	/**
-	 * Sets the param values.
-	 *
-	 * The values may come as a key/value array, or a [[Model]] object. Either way, this method should store the
-	 * values on the model that is returned by [[getParams()]].
-	 *
-	 * @param array|Model $values The new param values.
-	 *
-	 * @return null
-	 */
-	public function setParams($values);
+	public function getTriggerLabel();
 
 	/**
 	 * Returns the action’s trigger HTML.
@@ -62,9 +55,8 @@ interface ElementActionInterface extends ComponentTypeInterface
 	/**
 	 * Performs the action on any elements that match the given criteria.
 	 *
-	 * @param ElementQueryInterface $query The element query defining which elements the action should affect.
-	 *
-	 * @return bool Whether the action was performed successfully.
+	 * @param ElementQueryInterface|ElementQuery $query The element query defining which elements the action should affect.
+	 * @return boolean Whether the action was performed successfully.
 	 */
 	public function performAction(ElementQueryInterface $query);
 

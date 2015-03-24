@@ -5,48 +5,74 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\ElementAction;
 use craft\app\helpers\JsonHelper;
 
 /**
- * New Child Element Action
+ * NewChild represents a New Child element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class NewChild extends BaseElementAction
+class NewChild extends ElementAction
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string The trigger label
+	 */
+	public $label;
+
+	/**
+	 * @var integer The maximum number of levels that the structure is allowed to have
+	 */
+	public $maxLevels;
+
+	/**
+	 * @var string The URL that the user should be taken to after clicking on this element action
+	 */
+	public $newChildUrl;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function init()
 	{
-		return $this->getParams()->label;
+		if ($this->label === null)
+		{
+			$this->label = Craft::t('app', 'New Child');
+		}
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
+	 */
+	public function getTriggerLabel()
+	{
+		return $this->label;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
-		$maxLevels = JsonHelper::encode($this->getParams()->maxLevels);
-		$newChildUrl = JsonHelper::encode($this->getParams()->newChildUrl);
+		$type = JsonHelper::encode(static::className());
+		$maxLevels = JsonHelper::encode($this->maxLevels);
+		$newChildUrl = JsonHelper::encode($this->newChildUrl);
 
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'NewChild',
+		type: {$type},
 		batch: false,
 		validateSelection: function(\$selectedItems)
 		{
@@ -66,22 +92,5 @@ class NewChild extends BaseElementAction
 EOT;
 
 		Craft::$app->templates->includeJs($js);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementAction::defineParams()
-	 *
-	 * @return array
-	 */
-	protected function defineParams()
-	{
-		return [
-			'label'       => [AttributeType::String, 'default' => Craft::t('app', 'New Child')],
-			'maxLevels'   => AttributeType::Number,
-			'newChildUrl' => AttributeType::String,
-		];
 	}
 }

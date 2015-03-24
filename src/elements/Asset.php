@@ -10,6 +10,12 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\elements\actions\CopyReferenceTag;
+use craft\app\elements\actions\DeleteAssets;
+use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\RenameFile;
+use craft\app\elements\actions\ReplaceFile;
+use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
 use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\ImageHelper;
@@ -130,18 +136,16 @@ class Asset extends Element
 		$actions = [];
 
 		// View
-		$viewAction = Craft::$app->elements->getAction('View');
-		$viewAction->setParams([
+		$actions[] = Craft::$app->elements->createAction([
+			'type'  => View::className(),
 			'label' => Craft::t('app', 'View asset'),
 		]);
-		$actions[] = $viewAction;
 
 		// Edit
-		$editAction = Craft::$app->elements->getAction('Edit');
-		$editAction->setParams([
+		$actions[] = Craft::$app->elements->createAction([
+			'type'  => Edit::className(),
 			'label' => Craft::t('app', 'Edit asset'),
 		]);
-		$actions[] = $editAction;
 
 		// Rename File
 		if (
@@ -149,26 +153,25 @@ class Asset extends Element
 			Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource')
 		)
 		{
-			$actions[] = 'RenameFile';
+			$actions[] = RenameFile::className();
 		}
 
 		// Replace File
 		if (Craft::$app->assets->canUserPerformAction($folderId, 'uploadToAssetSource'))
 		{
-			$actions[] = 'ReplaceFile';
+			$actions[] = ReplaceFile::className();
 		}
 
 		// Copy Reference Tag
-		$copyRefTagAction = Craft::$app->elements->getAction('CopyReferenceTag');
-		$copyRefTagAction->setParams([
-			'elementType' => 'asset',
+		$actions[] = Craft::$app->elements->createAction([
+			'type'        => CopyReferenceTag::className(),
+			'elementType' => Asset::className(),
 		]);
-		$actions[] = $copyRefTagAction;
 
 		// Delete
 		if (Craft::$app->assets->canUserPerformAction($folderId, 'removeFromAssetSource'))
 		{
-			$actions[] = 'DeleteAssets';
+			$actions[] = DeleteAssets::className();
 		}
 
 		// Allow plugins to add additional actions

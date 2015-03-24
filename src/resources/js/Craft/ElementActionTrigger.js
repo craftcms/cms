@@ -10,7 +10,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 	{
 		this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
-		this.$trigger = $('#'+settings.handle+'-actiontrigger');
+		this.$trigger = $('#'+settings.type.replace(/[\[\]\\]+/g, '-')+'-actiontrigger');
 
 		// Do we have a custom handler?
 		if (this.settings.activate)
@@ -108,7 +108,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 },
 {
 	defaults: {
-		handle: null,
+		type: null,
 		batch: true,
 		validateSelection: null,
 		activate: null

@@ -5,44 +5,62 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\ElementAction;
+use craft\app\helpers\JsonHelper;
 
 /**
- * Edit Element Action
+ * Edit represents an Edit element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Edit extends BaseElementAction
+class Edit extends ElementAction
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string The trigger label
+	 */
+	public $label;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function init()
 	{
-		return $this->getParams()->label;
+		if ($this->label === null)
+		{
+			$this->label = Craft::t('app', 'Edit');
+		}
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
+	 */
+	public function getTriggerLabel()
+	{
+		return $this->label;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
+		$type = JsonHelper::encode(static::className());
+
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'Edit',
+		type: {$type},
 		batch: false,
 		validateSelection: function(\$selectedItems)
 		{
@@ -57,20 +75,5 @@ class Edit extends BaseElementAction
 EOT;
 
 		Craft::$app->templates->includeJs($js);
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementAction::defineParams()
-	 *
-	 * @return array
-	 */
-	protected function defineParams()
-	{
-		return [
-			'label' => [AttributeType::String, 'default' => Craft::t('app', 'Edit')],
-		];
 	}
 }

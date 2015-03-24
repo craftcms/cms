@@ -5,46 +5,44 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Rename File Element Action
+ * RenameFile represents a Rename File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class RenameFile extends BaseElementAction
+class RenameFile extends ElementAction
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Rename file');
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
+		$type = JsonHelper::encode(static::className());
 		$prompt = JsonHelper::encode(Craft::t('app', 'Enter the new filename'));
 
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'RenameFile',
+		type: {$type},
 		batch: false,
 		activate: function(\$selectedItems)
 		{
@@ -57,7 +55,7 @@ class RenameFile extends BaseElementAction
 				oldName = oldName.split('?').shift();
 			}
 
-			var newName = prompt($prompt, oldName);
+			var newName = prompt({$prompt}, oldName);
 
 			if (!newName || newName == oldName)
 			{

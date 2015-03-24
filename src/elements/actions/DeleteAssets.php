@@ -5,46 +5,41 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQueryInterface;
 
 /**
- * Delete Assets Element Action
+ * DeleteAssets represents a Delete Assets element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DeleteAssets extends BaseElementAction
+class DeleteAssets extends ElementAction
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Delete…');
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::isDestructive()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function isDestructive()
+	public static function isDestructive()
 	{
 		return true;
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getConfirmationMessage()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getConfirmationMessage()
 	{

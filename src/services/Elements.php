@@ -10,7 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\db\Query;
-use craft\app\elementactions\ElementActionInterface;
+use craft\app\base\ElementActionInterface;
 use craft\app\elements\Asset;
 use craft\app\elements\Category;
 use craft\app\base\ElementInterface;
@@ -24,6 +24,7 @@ use craft\app\errors\Exception;
 use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\helpers\ComponentHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
@@ -49,6 +50,11 @@ class Elements extends Component
 	 * @var string The element interface name
 	 */
 	const ELEMENT_INTERFACE = 'craft\app\base\ElementInterface';
+
+	/**
+	 * @var string The element action interface name
+	 */
+	const ACTION_INTERFACE = 'craft\app\base\ElementActionInterface';
 
 	/**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
@@ -965,25 +971,14 @@ class Elements extends Component
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Returns all installed element actions.
+	 * Creates an element action with a given config.
 	 *
-	 * @return ElementActionInterface[] The installed element actions.
+	 * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+	 * @return ElementActionInterface|ElementAction The element action
 	 */
-	public function getAllActions()
+	public function createAction($config)
 	{
-		return Craft::$app->components->getComponentsByType(ComponentType::ElementAction);
-	}
-
-	/**
-	 * Returns an element action by its class handle.
-	 *
-	 * @param string $class The element action class handle.
-	 *
-	 * @return ElementActionInterface|null The element action, or `null`.
-	 */
-	public function getAction($class)
-	{
-		return Craft::$app->components->getComponentByTypeAndClass(ComponentType::ElementAction, $class);
+		return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
 	}
 
 	// Misc

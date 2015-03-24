@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2015-03-23 */
+/*! Craft 3.0.0 - 2015-03-24 */
 (function($){
 
 if (typeof window.Craft == 'undefined')
@@ -2210,7 +2210,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		for (var i = 0; i < this.actions.length; i++)
 		{
-			if (this.actions[i].handle == actionHandle)
+			if (this.actions[i].type == actionHandle)
 			{
 				action = this.actions[i];
 				break;
@@ -3320,8 +3320,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			if (action.trigger)
 			{
-				var $form = $('<form id="'+action.handle+'-actiontrigger"/>')
-					.data('action', action.handle)
+				var $form = $('<form id="'+action.type+'-actiontrigger"/>')
+					.data('action', action.type)
 					.append(action.trigger);
 
 				this.addListener($form, 'submit', 'handleActionTriggerSubmit');
@@ -3401,8 +3401,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			for (var i = 0; i < actions.length; i++)
 			{
-				var handle = actions[i].handle;
-				$('<li><a id="'+handle+'-actiontrigger" data-action="'+handle+'">'+actions[i].name+'</a></li>').appendTo($ul);
+				var type = actions[i].type;
+				$('<li><a id="'+type.replace(/[\[\]\\]+/g, '-')+'-actiontrigger" data-action="'+type+'">'+actions[i].name+'</a></li>').appendTo($ul);
 			}
 
 			return $ul;
@@ -7517,7 +7517,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 	{
 		this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
-		this.$trigger = $('#'+settings.handle+'-actiontrigger');
+		this.$trigger = $('#'+settings.type.replace(/[\[\]\\]+/g, '-')+'-actiontrigger');
 
 		// Do we have a custom handler?
 		if (this.settings.activate)
@@ -7615,7 +7615,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 },
 {
 	defaults: {
-		handle: null,
+		type: null,
 		batch: true,
 		validateSelection: null,
 		activate: null

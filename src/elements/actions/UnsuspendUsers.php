@@ -5,30 +5,29 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\User;
 use craft\app\enums\UserStatus;
 
 /**
- * Unsuspend Users Element Action
+ * UnsuspendUsers represents an Unsuspend Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class UnsuspendUsers extends BaseElementAction
+class UnsuspendUsers extends ElementAction
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Unsuspend');
 	}
@@ -41,7 +40,7 @@ class UnsuspendUsers extends BaseElementAction
 		// Get the users that are suspended
 		$query->status(UserStatus::Suspended);
 		/** @var User[] $users */
-		$users = $query->find();
+		$users = $query->all();
 
 		foreach ($users as $user)
 		{

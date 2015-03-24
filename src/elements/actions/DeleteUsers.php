@@ -5,60 +5,63 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\User;
-use craft\app\enums\AttributeType;
 use craft\app\errors\Exception;
 use craft\app\helpers\JsonHelper;
 
 /**
- * Delete Users Element Action
+ * DeleteUsers represents a Delete Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DeleteUsers extends BaseElementAction
+class DeleteUsers extends ElementAction
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer The user ID that the deleted user’s content should be transferred to
+	 */
+	public $transferContentTo;
+
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Delete…');
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::isDestructive()
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
-	public function isDestructive()
+	public static function isDestructive()
 	{
 		return true;
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
+		$type = JsonHelper::encode(static::className());
 		$undeletableIds = JsonHelper::encode($this->_getUndeletableUserIds());
 
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'DeleteUsers',
+		type: {$type},
 		batch: true,
 		validateSelection: function(\$selectedItems)
 		{
@@ -96,20 +99,19 @@ EOT;
 	 */
 	public function performAction(ElementQueryInterface $query)
 	{
+		/** @var User[] $users */
 		$users = $query->all();
 		$undeletableIds = $this->_getUndeletableUserIds();
 
-		// Are we transfering the user's content to a different user?
-		$transferContentToId = $this->getParams()->transferContentTo;
-
-		if (is_array($transferContentToId) && isset($transferContentToId[0]))
+		// Are we transferring the user's content to a different user?
+		if (is_array($this->transferContentTo) && isset($this->transferContentTo[0]))
 		{
-			$transferContentToId = $transferContentToId[0];
+			$this->transferContentTo = $this->transferContentTo[0];
 		}
 
-		if ($transferContentToId)
+		if (!empty($this->transferContentTo))
 		{
-			$transferContentTo = Craft::$app->users->getUserById($transferContentToId);
+			$transferContentTo = Craft::$app->users->getUserById($this->transferContentTo);
 
 			if (!$transferContentTo)
 			{
@@ -133,21 +135,6 @@ EOT;
 		$this->setMessage(Craft::t('app', 'Users deleted.'));
 
 		return true;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementAction::defineParams()
-	 *
-	 * @return array
-	 */
-	protected function defineParams()
-	{
-		return [
-			'transferContentTo' => AttributeType::Mixed,
-		];
 	}
 
 	// Private Methods

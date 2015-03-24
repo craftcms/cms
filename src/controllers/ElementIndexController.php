@@ -8,7 +8,8 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\elementactions\ElementActionInterface;
+use craft\app\base\ElementAction;
+use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\errors\HttpException;
@@ -57,7 +58,7 @@ class ElementIndexController extends BaseElementsController
 	private $_elementQuery;
 
 	/**
-	 * @var array|null
+	 * @var ElementActionInterface[]|ElementAction[]
 	 */
 	private $_actions;
 
@@ -147,15 +148,16 @@ class ElementIndexController extends BaseElementsController
 
 		$requestService = Craft::$app->getRequest();
 
-		$actionHandle = $requestService->getRequiredBodyParam('elementAction');
+		$actionClass = $requestService->getRequiredBodyParam('elementAction');
 		$elementIds = $requestService->getRequiredBodyParam('elementIds');
 
 		// Find that action from the list of available actions for the source
 		if ($this->_actions)
 		{
+			/** @var ElementActionInterface|ElementAction $availableAction */
 			foreach ($this->_actions as $availableAction)
 			{
-				if ($actionHandle == $availableAction->getClassHandle())
+				if ($actionClass == $availableAction::className())
 				{
 					$action = $availableAction;
 					break;
@@ -169,26 +171,24 @@ class ElementIndexController extends BaseElementsController
 		}
 
 		// Check for any params in the post data
-		$params = $action->getParams();
-
-		foreach ($params->attributes() as $paramName)
+		foreach ($action->settingsAttributes() as $paramName)
 		{
 			$paramValue = $requestService->getBodyParam($paramName);
 
 			if ($paramValue !== null)
 			{
-				$params->setAttribute($paramName, $paramValue);
+				$action->$paramName = $paramValue;
 			}
 		}
 
-		// Make sure they validate
-		if (!$params->validate())
+		// Make sure the action validates
+		if (!$action->validate())
 		{
 			throw new HttpException(400);
 		}
 
 		// Perform the action
-		$actionCriteria = $this->_elementQuery->copy();
+		$actionCriteria = clone $this->_elementQuery;
 		$actionCriteria->offset = 0;
 		$actionCriteria->limit = null;
 		$actionCriteria->order = null;
@@ -359,7 +359,7 @@ class ElementIndexController extends BaseElementsController
 	/**
 	 * Returns the available actions for the current source.
 	 *
-	 * @return array|null
+	 * @return ElementActionInterface[]|ElementAction[]|null
 	 */
 	private function _getAvailableActions()
 	{
@@ -375,18 +375,23 @@ class ElementIndexController extends BaseElementsController
 		{
 			foreach ($actions as $i => $action)
 			{
-				if (is_string($action))
+				// $action could be a string or config array
+				if (!$action instanceof ElementActionInterface)
 				{
-					$actions[$i] = $action = Craft::$app->elements->getAction($action);
-				}
+					$actions[$i] = $action = Craft::$app->elements->createAction($action);
 
-				if (!($action instanceof ElementActionInterface))
-				{
-					unset($actions[$i]);
+					if ($actions[$i] === null)
+					{
+						unset($actions[$i]);
+					}
 				}
 			}
 
 			return array_values($actions);
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -401,12 +406,13 @@ class ElementIndexController extends BaseElementsController
 		{
 			$actionData = [];
 
+			/** @var ElementActionInterface|ElementAction $action */
 			foreach ($this->_actions as $action)
 			{
 				$actionData[] = [
-					'handle'      => $action->getClassHandle(),
-					'name'        => $action->getName(),
+					'type'        => $action::className(),
 					'destructive' => $action->isDestructive(),
+					'name'        => $action->getTriggerLabel(),
 					'trigger'     => $action->getTriggerHtml(),
 					'confirm'     => $action->getConfirmationMessage(),
 				];

@@ -5,43 +5,43 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
+use craft\app\helpers\JsonHelper;
 
 /**
- * Replace File Element Action
+ * ReplaceFile represents a Replace File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ReplaceFile extends BaseElementAction
+class ReplaceFile extends ElementAction
 {
 	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public function getTriggerLabel()
 	{
 		return Craft::t('app', 'Replace file');
 	}
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
+		$type = JsonHelper::encode(static::className());
+
 		$js = <<<EOT
 (function()
 {
 	var trigger = new Craft.ElementActionTrigger({
-		handle: 'ReplaceFile',
+		type: {$type},
 		batch: false,
 		activate: function(\$selectedItems)
 		{

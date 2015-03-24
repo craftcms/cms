@@ -5,22 +5,31 @@
  * @license http://buildwithcraft.com/license
  */
 
-namespace craft\app\elementactions;
+namespace craft\app\elements\actions;
 
 use Craft;
+use craft\app\base\ElementAction;
 use craft\app\base\Element;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\enums\AttributeType;
 use craft\app\events\SetStatusEvent;
 
 /**
- * Set Status Element Action
+ * SetStatus represents a Set Status element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SetStatus extends BaseElementAction
+class SetStatus extends ElementAction
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string The status elements should be set to
+	 */
+	public $status;
+
 	// Constants
 	// =========================================================================
 
@@ -33,9 +42,28 @@ class SetStatus extends BaseElementAction
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ElementActionInterface::getTriggerHtml()
-	 *
-	 * @return string|null
+	 * @inheritdoc
+	 */
+	public function getTriggerLabel()
+	{
+		return Craft::t('app', 'Set Status');
+	}
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = [['status'], 'required'];
+		$rules[] = [['status'], 'in', 'range' => [Element::ENABLED, Element::DISABLED]];
+		return $rules;
+	}
+
+	/**
+	 * @inheritdoc
 	 */
 	public function getTriggerHtml()
 	{
@@ -47,10 +75,9 @@ class SetStatus extends BaseElementAction
 	 */
 	public function performAction(ElementQueryInterface $query)
 	{
-		$status = $this->getParams()->status;
-
+		/** @var ElementQueryInterface|ElementQuery $query */
 		// Figure out which element IDs we need to update
-		if ($status == Element::ENABLED)
+		if ($this->status == Element::ENABLED)
 		{
 			$sqlNewStatus = '1';
 		}
@@ -63,16 +90,16 @@ class SetStatus extends BaseElementAction
 
 		// Update their statuses
 		Craft::$app->getDb()->createCommand()->update(
-			'elements',
+			'{{%elements}}',
 			['enabled' => $sqlNewStatus],
 			['in', 'id', $elementIds]
 		)->execute();
 
-		if ($status == Element::ENABLED)
+		if ($this->status == Element::ENABLED)
 		{
 			// Enable their locale as well
 			Craft::$app->getDb()->createCommand()->update(
-				'elements_i18n',
+				'{{%elements_i18n}}',
 				['enabled' => $sqlNewStatus],
 				['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
 				[':locale' => $query->locale]
@@ -86,26 +113,11 @@ class SetStatus extends BaseElementAction
 		$this->trigger(static::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
 			'elementQuery' => $query,
 			'elementIds'   => $elementIds,
-			'status'       => $status,
+			'status'       => $this->status,
 		]));
 
 		$this->setMessage(Craft::t('app', 'Statuses updated.'));
 
 		return true;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseElementAction::defineParams()
-	 *
-	 * @return array
-	 */
-	protected function defineParams()
-	{
-		return [
-			'status' => [AttributeType::Enum, 'values' => [Element::ENABLED, Element::DISABLED], 'required' => true]
-		];
 	}
 }
