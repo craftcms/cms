@@ -302,13 +302,19 @@ class Fields extends Component
 	 */
 	public function createField($config)
 	{
+		if (is_string($config))
+		{
+			$config = ['type' => $config];
+		}
+
 		try
 		{
 			return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
 		}
 		catch (InvalidComponentException $e)
 		{
-			return new InvalidField($config, $e->getMessage());
+			$config['errorMessage'] = $e->getMessage();
+			return InvalidField::create($config);
 		}
 	}
 

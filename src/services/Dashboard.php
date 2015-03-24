@@ -68,13 +68,19 @@ class Dashboard extends Component
 	 */
 	public function createWidget($config)
 	{
+		if (is_string($config))
+		{
+			$config = ['type' => $config];
+		}
+
 		try
 		{
 			return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
 		}
 		catch (InvalidComponentException $e)
 		{
-			return new InvalidWidget($config, $e->getMessage());
+			$config['errorMessage'] = $e->getMessage();
+			return InvalidWidget::create($config);
 		}
 	}
 

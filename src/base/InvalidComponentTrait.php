@@ -22,6 +22,11 @@ trait InvalidComponentTrait
 	// =========================================================================
 
 	/**
+	 * @var string|Component The expected component class name.
+	 */
+	public $type;
+
+	/**
 	 * @var string The exception message that explains why the component class was invalid
 	 */
 	public $errorMessage;
@@ -31,36 +36,8 @@ trait InvalidComponentTrait
 	 */
 	public $settings;
 
-	/**
-	 * @var string|Component The expected component class name.
-	 */
-	private $_type;
-
 	// Public Methods
 	// =========================================================================
-
-	/**
-	 * Constructor
-	 *
-	 * @param string|array $config       The component’s class name, or its config, with a `type` value and optionally a `settings` value
-	 * @param string       $errorMessage The message explaining why an InvalidField object is getting created rather than the expected component type
-	 */
-	public function __construct($config = [], $errorMessage = null)
-	{
-		if (is_string($config))
-		{
-			$this->_type = $config;
-			$config = [];
-		}
-		else
-		{
-			$this->_type = $config['type'];
-		}
-
-		$config['errorMessage'] = $errorMessage;
-
-		parent::__construct($config);
-	}
 
 	/**
 	 * Returns the expected component class name.
@@ -69,6 +46,6 @@ trait InvalidComponentTrait
 	 */
 	public function getType()
 	{
-		return $this->_type;
+		return $this->type;
 	}
 }
