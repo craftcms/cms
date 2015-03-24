@@ -98,7 +98,7 @@ class Elements extends Component
 	 * @param string $localeId    The locale to fetch the element in.
 	 *                            Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage`]].
 	 *
-	 * @return ElementInterface|null The matching element, or `null`.
+	 * @return ElementInterface|Element|null The matching element, or `null`.
 	 */
 	public function getElementById($elementId, $elementType = null, $localeId = null)
 	{
@@ -133,7 +133,7 @@ class Elements extends Component
 	 *                                 Defaults to [[\craft\app\web\Application::getLanguage() `Craft::$app->getLanguage()`]].
 	 * @param bool        $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
 	 *
-	 * @return ElementInterface|null The matching element, or `null`.
+	 * @return ElementInterface|Element|null The matching element, or `null`.
 	 */
 	public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
 	{
@@ -190,7 +190,7 @@ class Elements extends Component
 	 *
 	 * @param int|array $elementId An element’s ID, or an array of elements’ IDs.
 	 *
-	 * @return ElementInterface|ElementInterface[]|null The element class(es).
+	 * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
 	 */
 	public function getElementTypeById($elementId)
 	{
@@ -273,9 +273,9 @@ class Elements extends Component
 	 * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
 	 * ensure that they point to valid section and entry type IDs.
 	 *
-	 * @param ElementInterface $element         The element that is being saved
-	 * @param bool|null        $validateContent Whether the element's content should be validated. If left 'null', it
-	 *                                          will depend on whether the element is enabled or not.
+	 * @param ElementInterface|ElementInterface $element         The element that is being saved
+	 * @param bool|null                         $validateContent Whether the element's content should be validated. If left 'null', it
+	 *                                                           will depend on whether the element is enabled or not.
 	 *
 	 * @throws Exception|\Exception
 	 * @return bool
@@ -623,9 +623,9 @@ class Elements extends Component
 	/**
 	 * Updates an element’s slug and URI, along with any descendants.
 	 *
-	 * @param ElementInterface $element            The element to update.
-	 * @param bool             $updateOtherLocales Whether the element’s other locales should also be updated.
-	 * @param bool             $updateDescendants  Whether the element’s descendants should also be updated.
+	 * @param ElementInterface|Element $element            The element to update.
+	 * @param bool                     $|Elementu|ElementpdateO|Elementt|ElementherLocales Whether the element’s other locales should also be updated.
+	 * @param bool                     $updateDescendants  Whether the element’s descendants should also be updated.
 	 *
 	 * @return null
 	 */
@@ -658,7 +658,7 @@ class Elements extends Component
 	/**
 	 * Updates an element’s slug and URI, for any locales besides the given one.
 	 *
-	 * @param ElementInterface $element The element to update.
+	 * @param ElementInterface|Element $element The element to update.
 	 *
 	 * @return null
 	 */
@@ -686,7 +686,7 @@ class Elements extends Component
 	/**
 	 * Updates an element’s descendants’ slugs and URIs.
 	 *
-	 * @param ElementInterface $element The element whose descendants should be updated.
+	 * @param ElementInterface|Element $element The element whose descendants should be updated.
 	 *
 	 * @return null
 	 */
@@ -790,12 +790,12 @@ class Elements extends Component
 			{
 				$refTagPrefix = "{{$elementTypeHandle}:";
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
+				Craft::$app->tasks->queueTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.':',
 					'replace' => $refTagPrefix.$prevailingElementId.':',
 				]);
 
-				Craft::$app->tasks->createTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
+				Craft::$app->tasks->queueTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
 					'find'    => $refTagPrefix.$mergedElementId.'}',
 					'replace' => $refTagPrefix.$prevailingElementId.'}',
 				]);
@@ -1138,7 +1138,7 @@ class Elements extends Component
 	 *
 	 * This is used by Live Preview and Sharing features.
 	 *
-	 * @param ElementInterface $element The element currently being edited by Live Preview.
+	 * @param ElementInterface|Element $element The element currently being edited by Live Preview.
 	 * @see getPlaceholderElement()
 	 */
 	public function setPlaceholderElement(ElementInterface $element)
@@ -1157,7 +1157,7 @@ class Elements extends Component
 	 *
 	 * @param integer $id The element’s ID
 	 * @param string  $locale The element’s locale
-	 * @return ElementInterface|null The placeholder element if one exists, or null.
+	 * @return ElementInterface|Element|null The placeholder element if one exists, or null.
 	 * @see setPlaceholderElement()
 	 */
 	public function getPlaceholderElement($id, $locale)
