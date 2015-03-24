@@ -218,19 +218,19 @@ interface ElementQueryInterface extends QueryInterface
 	 * Executes the query and returns all results as an array.
 	 * @param Connection $db The database connection used to generate the SQL statement.
 	 * If this parameter is not given, the `db` application component will be used.
-	 * @return ElementInterface[]|array The resulting elements.
+	 * @return ElementInterface[]|Element[] The resulting elements.
 	 */
 	public function all($db = null);
 
 	/**
 	 * @inheritdoc
-	 * @return ElementInterface|array|null The resulting element.
+	 * @return ElementInterface|Element|null The resulting element.
 	 */
 	public function one($db = null);
 
 	/**
 	 * @inheritdoc
-	 * @return ElementInterface|array|null The resulting element.
+	 * @return ElementInterface|Element|null The resulting element.
 	 */
 	public function nth($n, $db = null);
 
@@ -238,7 +238,7 @@ interface ElementQueryInterface extends QueryInterface
 	 * Executes the query and returns the IDs of the resulting elements.
 	 * @param Connection $db The database connection used to generate the SQL statement.
 	 * If this parameter is not given, the `db` application component will be used.
-	 * @return array The resulting element IDs. An empty array is returned if no elements are found.
+	 * @return integer[] The resulting element IDs. An empty array is returned if no elements are found.
 	 */
 	public function ids($db = null);
 }
