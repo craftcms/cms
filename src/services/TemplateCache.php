@@ -17,6 +17,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\UrlHelper;
+use craft\app\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
 
 /**
@@ -441,36 +442,35 @@ class TemplateCache extends Component
 		if ($deleteQueryCaches && Craft::$app->config->get('cacheElementQueries'))
 		{
 			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
-			$task = Craft::$app->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
+			/** @var DeleteStaleTemplateCaches $task */
+			$task = Craft::$app->tasks->getNextPendingTask(DeleteStaleTemplateCaches::className());
 
-			if ($task && is_array($task->settings))
+			if ($task)
 			{
-				$settings = $task->settings;
-
-				if (!is_array($settings['elementId']))
+				if (!is_array($task->elementId))
 				{
-					$settings['elementId'] = [$settings['elementId']];
+					$task->elementId = [$task->elementId];
 				}
 
 				if (is_array($elementId))
 				{
-					$settings['elementId'] = array_merge($settings['elementId'], $elementId);
+					$task->elementId = array_merge($task->elementId, $elementId);
 				}
 				else
 				{
-					$settings['elementId'][] = $elementId;
+					$task->elementId[] = $elementId;
 				}
 
 				// Make sure there aren't any duplicate element IDs
-				$settings['elementId'] = array_unique($settings['elementId']);
+				$task->elementId = array_unique($task->elementId);
 
-				// Set the new settings and save the task
-				$task->settings = $settings;
+				// Save the task
 				Craft::$app->tasks->saveTask($task, false);
 			}
 			else
 			{
-				Craft::$app->tasks->createTask('DeleteStaleTemplateCaches', null, [
+				Craft::$app->tasks->queueTask([
+					'type'      => DeleteStaleTemplateCaches::className(),
 					'elementId' => $elementId
 				]);
 			}

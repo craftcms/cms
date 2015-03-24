@@ -11,6 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\events\DeleteLocaleEvent;
 use craft\app\helpers\IOHelper;
+use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
 
 /**
@@ -383,9 +384,10 @@ class I18N extends \yii\i18n\I18N
 			}
 
 			// Re-save all of the localizable elements
-			if (!Craft::$app->tasks->areTasksPending('ResaveAllElements'))
+			if (!Craft::$app->tasks->areTasksPending(ResaveAllElements::className()))
 			{
-				Craft::$app->tasks->createTask('ResaveAllElements', null, [
+				Craft::$app->tasks->queueTask([
+					'type'            => ResaveAllElements::className(),
 					'localizableOnly' => true,
 				]);
 			}

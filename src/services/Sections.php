@@ -23,6 +23,7 @@ use craft\app\models\Structure as StructureModel;
 use craft\app\records\EntryType as EntryTypeRecord;
 use craft\app\records\Section as SectionRecord;
 use craft\app\records\SectionLocale as SectionLocaleRecord;
+use craft\app\tasks\ResaveElements;
 use yii\base\Component;
 
 /**
@@ -796,7 +797,9 @@ class Sections extends Component
 						    ->localeEnabled(false)
 						    ->limit(null);
 
-						Craft::$app->tasks->createTask('ResaveElements', Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]), [
+						Craft::$app->tasks->queueTask([
+							'type'        => ResaveElements::className(),
+							'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
 							'elementType' => Entry::className(),
 							'criteria'    => $query->asArray()
 						]);

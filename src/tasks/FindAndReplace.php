@@ -8,20 +8,36 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\Field;
+use craft\app\base\Task;
 use craft\app\base\FieldInterface;
-use craft\app\enums\AttributeType;
-use craft\app\helpers\ModelHelper;
+use craft\app\fields\Matrix;
 
 /**
- * Find and Replace task.
+ * FindAndReplace represents a Find and Replace background task.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FindAndReplace extends BaseTask
+class FindAndReplace extends Task
 {
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var string The search text
+	 */
+	public $find;
+
+	/**
+	 * @var string The replacement text
+	 */
+	public $replace;
+
+	/**
+	 * @var integer The Matrix field ID, if searching against a Matrix field’s content
+	 */
+	public $matrixFieldId;
 
 	/**
 	 * @var
@@ -42,24 +58,7 @@ class FindAndReplace extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc TaskInterface::getDescription()
-	 *
-	 * @return string
-	 */
-	public function getDescription()
-	{
-		$settings = $this->getSettings();
-
-		return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
-			'find'    => $settings->find,
-			'replace' => $settings->replace
-		]);
-	}
-
-	/**
-	 * @inheritDoc TaskInterface::getTotalSteps()
-	 *
-	 * @return int
+	 * @inheritdoc
 	 */
 	public function getTotalSteps()
 	{
@@ -67,11 +66,10 @@ class FindAndReplace extends BaseTask
 		$this->_matrixFieldIds = [];
 
 		// Is this for a Matrix field?
-		$matrixFieldId = $this->getSettings()->matrixFieldId;
-
-		if ($matrixFieldId)
+		if ($this->matrixFieldId)
 		{
-			$matrixField = Craft::$app->fields->getFieldById($matrixFieldId);
+			/** @var Matrix $matrixField */
+			$matrixField = Craft::$app->fields->getFieldById($this->matrixFieldId);
 
 			if (!$matrixField || $matrixField->type != 'Matrix')
 			{
@@ -80,7 +78,7 @@ class FindAndReplace extends BaseTask
 
 			$this->_table = Craft::$app->matrix->getContentTableName($matrixField);
 
-			$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($matrixFieldId);
+			$blockTypes = Craft::$app->matrix->getBlockTypesByFieldId($this->matrixFieldId);
 
 			foreach ($blockTypes as $blockType)
 			{
@@ -106,23 +104,17 @@ class FindAndReplace extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc TaskInterface::runStep()
-	 *
-	 * @param int $step
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function runStep($step)
 	{
-		$settings = $this->getSettings();
-
 		// If replace is null, there is invalid settings JSON in the database. Guard against it so we don't
 		// inadvertently nuke textual content in the database.
-		if ($settings->replace !== null)
+		if ($this->replace !== null)
 		{
 			if (isset($this->_textColumns[$step]))
 			{
-				Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace)->execute();
+				Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)->execute();
 				return true;
 			}
 			else
@@ -135,9 +127,11 @@ class FindAndReplace extends BaseTask
 
 					if ($field)
 					{
-						return $this->runSubTask('FindAndReplace', Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]), [
-							'find'          => $settings->find,
-							'replace'       => $settings->replace,
+						return $this->runSubTask([
+							'type'          => FindAndReplace::className(),
+							'description'   => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
+							'find'          => $this->find,
+							'replace'       => $this->replace,
 							'matrixFieldId' => $field->id
 						]);
 					}
@@ -164,17 +158,14 @@ class FindAndReplace extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc SavableComponent::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	protected function getDefaultDescription()
 	{
-		return [
-			'find'          => AttributeType::String,
-			'replace'       => AttributeType::String,
-			'matrixFieldId' => AttributeType::String,
-		];
+		return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
+			'find'    => $this->find,
+			'replace' => $this->replace
+		]);
 	}
 
 	// Private Methods
@@ -183,14 +174,14 @@ class FindAndReplace extends BaseTask
 	/**
 	 * Checks whether the given field is saving data into a textual column, and saves it accordingly.
 	 *
-	 * @param FieldInterface $field
-	 * @param string         $fieldColumnPrefix
+	 * @param FieldInterface|Field $field
+	 * @param string               $fieldColumnPrefix
 	 *
 	 * @return bool
 	 */
 	private function _checkField(FieldInterface $field, $fieldColumnPrefix)
 	{
-		if ($field->type == 'Matrix')
+		if ($field instanceof Matrix)
 		{
 			$this->_matrixFieldIds[] = $field->id;
 		}

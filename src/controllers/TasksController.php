@@ -46,7 +46,7 @@ class TasksController extends Controller
 			// Return info about the next pending task without stopping PHP execution
 			JsonHelper::sendJsonHeaders();
 			$response = Craft::$app->getResponse();
-			$response->content = JsonHelper::encode($task->getInfo());
+			$response->content = JsonHelper::encode($task);
 			$response->sendAndClose();
 
 			// Start running tasks
@@ -95,14 +95,14 @@ class TasksController extends Controller
 		{
 			JsonHelper::sendJsonHeaders();
 			$response = Craft::$app->getResponse();
-			$response->content = JsonHelper::encode($task->getInfo());
+			$response->content = JsonHelper::encode($task);
 			$response->sendAndClose();
 
 			Craft::$app->tasks->runPendingTasks();
 		}
 		else
 		{
-			$this->returnJson($task->getInfo());
+			$this->returnJson($task);
 		}
 
 		Craft::$app->end();
@@ -120,7 +120,7 @@ class TasksController extends Controller
 		$this->requirePermission('accessCp');
 
 		$taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
-		$task = Craft::$app->tasks->deleteTaskById($taskId);
+		Craft::$app->tasks->deleteTaskById($taskId);
 
 		Craft::$app->end();
 	}
@@ -134,16 +134,7 @@ class TasksController extends Controller
 	{
 		$this->requireAjaxRequest();
 		$this->requirePermission('accessCp');
-
-		$tasks = Craft::$app->tasks->getAllTasks();
-		$taskInfo = [];
-
-		foreach ($tasks as $task)
-		{
-			$taskInfo[] = $task->getInfo();
-		}
-
-		$this->returnJson($taskInfo);
+		$this->returnJson(Craft::$app->tasks->getAllTasks());
 	}
 
 	// Private Methods
@@ -158,7 +149,7 @@ class TasksController extends Controller
 	{
 		if ($task = Craft::$app->tasks->getRunningTask())
 		{
-			$this->returnJson($task->getInfo());
+			$this->returnJson($task);
 		}
 	}
 }

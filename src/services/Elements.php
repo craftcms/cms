@@ -29,6 +29,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
 use craft\app\records\StructureElement as StructureElementRecord;
+use craft\app\tasks\FindAndReplace;
 use yii\base\Component;
 
 /**
@@ -790,14 +791,18 @@ class Elements extends Component
 			{
 				$refTagPrefix = "{{$elementTypeHandle}:";
 
-				Craft::$app->tasks->queueTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
-					'find'    => $refTagPrefix.$mergedElementId.':',
-					'replace' => $refTagPrefix.$prevailingElementId.':',
+				Craft::$app->tasks->queueTask([
+					'type'        => FindAndReplace::className(),
+					'description' => Craft::t('app', 'Updating element references'),
+					'find'        => $refTagPrefix.$mergedElementId.':',
+					'replace'     => $refTagPrefix.$prevailingElementId.':',
 				]);
 
-				Craft::$app->tasks->queueTask('FindAndReplace', Craft::t('app', 'Updating element references'), [
-					'find'    => $refTagPrefix.$mergedElementId.'}',
-					'replace' => $refTagPrefix.$prevailingElementId.'}',
+				Craft::$app->tasks->queueTask([
+					'type'        => FindAndReplace::className(),
+					'description' => Craft::t('app', 'Updating element references'),
+					'find'        => $refTagPrefix.$mergedElementId.'}',
+					'replace'     => $refTagPrefix.$prevailingElementId.'}',
 				]);
 			}
 

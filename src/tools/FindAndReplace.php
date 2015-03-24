@@ -8,6 +8,7 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\tasks\FindAndReplace as FindAndReplaceTask;
 
 /**
  * Find and Replace tool
@@ -72,7 +73,8 @@ class FindAndReplace extends BaseTool
 	{
 		if (!empty($params['find']) && !empty($params['replace']))
 		{
-			Craft::$app->tasks->createTask('FindAndReplace', null, [
+			Craft::$app->tasks->queueTask([
+				'type'    => FindAndReplaceTask::className(),
 				'find'    => $params['find'],
 				'replace' => $params['replace']
 			]);

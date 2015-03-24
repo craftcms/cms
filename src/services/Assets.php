@@ -28,6 +28,7 @@ use craft\app\models\FolderCriteria as FolderCriteriaModel;
 use craft\app\elements\User;
 use craft\app\records\AssetFile as AssetFileRecord;
 use craft\app\records\AssetFolder as AssetFolderRecord;
+use craft\app\tasks\GeneratePendingTransforms;
 use yii\base\Component;
 
 
@@ -1031,9 +1032,9 @@ class Assets extends Component
 			else
 			{
 				// Queue up a new Generate Pending Transforms task, if there isn't one already
-				if (!Craft::$app->tasks->areTasksPending('GeneratePendingTransforms'))
+				if (!Craft::$app->tasks->areTasksPending(GeneratePendingTransforms::className()))
 				{
-					Craft::$app->tasks->createTask('GeneratePendingTransforms');
+					Craft::$app->tasks->queueTask(GeneratePendingTransforms::className());
 				}
 
 				// Return the temporary transform URL

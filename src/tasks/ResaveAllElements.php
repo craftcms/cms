@@ -8,18 +8,28 @@
 namespace craft\app\tasks;
 
 use Craft;
-use craft\app\enums\AttributeType;
+use craft\app\base\Task;
 
 /**
- * The resave all elements task.
+ * ResaveAllElements represents a Resave All Elements background task.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ResaveAllElements extends BaseTask
+class ResaveAllElements extends Task
 {
 	// Properties
 	// =========================================================================
+
+	/**
+	 * @var string The locale ID to fetch the elements in
+	 */
+	public $locale;
+
+	/**
+	 * @var string Whether only localizable elements should be resaved
+	 */
+	public $localizableOnly;
 
 	/**
 	 * @var
@@ -30,31 +40,25 @@ class ResaveAllElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc TaskInterface::getDescription()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getDescription()
+	public function init()
 	{
-		if ($this->getSettings()->localizableOnly)
+		parent::init();
+
+		if ($this->locale === null)
 		{
-			return Craft::t('app', 'Resaving all localizable elements');
-		}
-		else
-		{
-			return Craft::t('app', 'Resaving all elements');
+			$this->locale = Craft::$app->getLanguage();
 		}
 	}
 
 	/**
-	 * @inheritDoc TaskInterface::getTotalSteps()
-	 *
-	 * @return int
+	 * @inheritdoc
 	 */
 	public function getTotalSteps()
 	{
 		$this->_elementType = [];
-		$localizableOnly = $this->getSettings()->localizableOnly;
+		$localizableOnly = $this->localizableOnly;
 
 		foreach (Craft::$app->elements->getAllElementTypes() as $elementType)
 		{
@@ -68,21 +72,14 @@ class ResaveAllElements extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc TaskInterface::runStep()
-	 *
-	 * @param int $step
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function runStep($step)
 	{
-		return $this->runSubTask('ResaveElements', null, [
+		return $this->runSubTask([
+			'type'        => ResaveElements::className(),
 			'elementType' => $this->_elementType[$step],
-			'criteria' => [
-				'locale'        => $this->getSettings()->locale,
-				'status'        => null,
-				'localeEnabled' => null,
-			]
+			'criteria'    => ['locale' => $this->locale, 'status' => null, 'localeEnabled' => null]
 		]);
 	}
 
@@ -90,15 +87,17 @@ class ResaveAllElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc SavableComponent::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	protected function getDefaultDescription()
 	{
-		return [
-			'locale'          => [AttributeType::Locale, 'default' => Craft::$app->language],
-			'localizableOnly' => AttributeType::Bool
-		];
+		if ($this->localizableOnly)
+		{
+			return Craft::t('app', 'Resaving all localizable elements');
+		}
+		else
+		{
+			return Craft::t('app', 'Resaving all elements');
+		}
 	}
 }

@@ -7,7 +7,8 @@
 
 namespace craft\app\variables;
 
-use craft\app\models\Task as TaskModel;
+use craft\app\base\Task;
+use craft\app\base\TaskInterface;
 
 /**
  * Task functions.
@@ -23,7 +24,7 @@ class Tasks
 	/**
 	 * Returns the currently running task.
 	 *
-	 * @return TaskModel|null
+	 * @return TaskInterface|Task|null The currently running task, or null if there isn’t one
 	 */
 	public function getRunningTask()
 	{
@@ -33,7 +34,7 @@ class Tasks
 	/**
 	 * Returns whether there is a task that is currently running.
 	 *
-	 * @return bool
+	 * @return boolean Whether there is a task that is currently running
 	 */
 	public function isTaskRunning()
 	{
@@ -41,19 +42,20 @@ class Tasks
 	}
 
 	/**
-	 * Returns whether there are any pending tasks.
+	 * Returns whether there are any pending tasks, optionally by a given type.
 	 *
-	 * @return bool
+	 * @param string|null $type The task type to check for, if any
+	 * @return boolean Whether there are any pending tasks
 	 */
-	public function areTasksPending()
+	public function areTasksPending($type = null)
 	{
-		return \Craft::$app->tasks->areTasksPending();
+		return \Craft::$app->tasks->areTasksPending($type);
 	}
 
 	/**
 	 * Returns whether any tasks that have failed.
 	 *
-	 * @return bool
+	 * @return boolean Whether any tasks have failed
 	 */
 	public function haveTasksFailed()
 	{
@@ -63,7 +65,7 @@ class Tasks
 	/**
 	 * Returns the total number of active tasks.
 	 *
-	 * @return bool
+	 * @return integer The total number of active tasks
 	 */
 	public function getTotalTasks()
 	{

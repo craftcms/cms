@@ -8,31 +8,29 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\Task;
 
 /**
- * The generate pending transforms task.
+ * GeneratePendingTransforms represents a Generate Pending Transforms background task.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class GeneratePendingTransforms extends BaseTask
+class GeneratePendingTransforms extends Task
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var integer[] The pending transform index IDs
+	 */
 	private $_indexIds;
 
-	/**
-	 * @inheritDoc TaskInterface::getDescription()
-	 *
-	 * @return string
-	 */
-	public function getDescription()
-	{
-		return Craft::t('app', 'Generating pending image transforms');
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * @inheritDoc TaskInterface::getTotalSteps()
-	 *
-	 * @return int
+	 * @inheritdoc
 	 */
 	public function getTotalSteps()
 	{
@@ -43,11 +41,7 @@ class GeneratePendingTransforms extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc TaskInterface::runStep()
-	 *
-	 * @param int $step
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function runStep($step)
 	{
@@ -60,5 +54,16 @@ class GeneratePendingTransforms extends BaseTask
 		catch (\Exception $e) { }
 
 		return true;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function getDefaultDescription()
+	{
+		return Craft::t('app', 'Generating pending image transforms');
 	}
 }

@@ -8,25 +8,31 @@
 namespace craft\app\tasks;
 
 use Craft;
+use craft\app\base\Element;
+use craft\app\base\Task;
 use craft\app\base\ElementInterface;
-use craft\app\enums\AttributeType;
 use craft\app\helpers\StringHelper;
 
 /**
- * The resave elements task.
+ * ResaveElements represents a Resave Elements background task.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ResaveElements extends BaseTask
+class ResaveElements extends Task
 {
 	// Properties
 	// =========================================================================
 
 	/**
-	 * @var ElementInterface
+	 * @var string|ElementInterface The element type that should be resaved
 	 */
-	private $_elementType;
+	public $elementType;
+
+	/**
+	 * @var array The element criteria that determines which elements should be resaved
+	 */
+	public $criteria;
 
 	/**
 	 * @var string
@@ -42,39 +48,22 @@ class ResaveElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc TaskInterface::getDescription()
-	 *
-	 * @return string
-	 */
-	public function getDescription()
-	{
-		return Craft::t('app', 'Resaving {class} elements', [
-			'class' => StringHelper::toLowerCase($this->getSettings()->elementType)
-		]);
-	}
-
-	/**
-	 * @inheritDoc TaskInterface::getTotalSteps()
-	 *
-	 * @return int
+	 * @inheritdoc
 	 */
 	public function getTotalSteps()
 	{
-		$settings = $this->getSettings();
-		/** @var ElementInterface $class */
-		$class = $settings->elementType;
+		$class = $this->elementType;
 
 		// Let's save ourselves some trouble and just clear all the caches for this element class
 		Craft::$app->templateCache->deleteCachesByElementType($class);
 
 		// Now find the affected element IDs
 		$query = $class::find()
-			->configure($settings->criteria)
+			->configure($this->criteria)
 			->offset(null)
 			->limit(null)
-			->order(null);
+			->orderBy(null);
 
-		$this->_elementType = $class;
 		$this->_localeId = $query->locale;
 		$this->_elementIds = $query->ids();
 
@@ -82,17 +71,15 @@ class ResaveElements extends BaseTask
 	}
 
 	/**
-	 * @inheritDoc TaskInterface::runStep()
-	 *
-	 * @param int $step
-	 *
-	 * @return bool
+	 * @inheritdoc
 	 */
 	public function runStep($step)
 	{
+		$class = $this->elementType;
+
 		try
 		{
-			$class = $this->_elementType;
+			/** @var Element $element */
 			$element = $class::find()
 				->id($this->_elementIds[$step])
 				->locale($this->_localeId)
@@ -116,7 +103,7 @@ class ResaveElements extends BaseTask
 		}
 		catch (\Exception $e)
 		{
-			return 'An exception was thrown while trying to save the '.$this->_elementType.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
+			return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
 		}
 	}
 
@@ -124,15 +111,12 @@ class ResaveElements extends BaseTask
 	// =========================================================================
 
 	/**
-	 * @inheritDoc SavableComponent::defineSettings()
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
-	protected function defineSettings()
+	protected function getDefaultDescription()
 	{
-		return [
-			'elementType' => AttributeType::String,
-			'criteria'     => AttributeType::Mixed,
-		];
+		return Craft::t('app', 'Resaving {class} elements', [
+			'class' => StringHelper::toLowerCase($this->elementType)
+		]);
 	}
 }
