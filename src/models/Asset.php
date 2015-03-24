@@ -374,12 +374,14 @@ class Asset extends BaseElementModel
 	/**
 	 * Get a file's uri path in the source.
 	 *
+	 * @param string $filename Filename to use. If not specified, the file's filename will be used.
+	 *
 	 * @return string
 	 */
-	public function getUri()
+	public function getUri($filename = null)
 	{
 		$folder = $this->getFolder();
-		return $folder->path . $this->filename;
+		return $folder->path.($filename ?: $this->filename);
 	}
 
 	/**

@@ -5,16 +5,27 @@
 {% else %}
 	{% set items = "files"|t %}
 {% endif %}
+{% if skippedFiles %}
+    <h2>{{ "Skipped files"|t({ items: items }) }}</h2>
+    <p>{{ 'The following items were not indexed.'|t }}</p>
+     <ul>
+         {% for item in skippedFiles %}
+            <li><label>{{ item }}</label></li>
+         {% endfor %}
+     </ul>
+{% endif %}
 
-<h2>{{ "Missing {items}"|t({ items: items }) }}</h2>
-<p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t({ items: items }) }}</p>
+{% if missingFiles or missingFolders %}
+    <h2>{{ "Missing {items}"|t({ items: items }) }}</h2>
+    <p>{{ 'The following {items} could not be found. Should they be deleted from the index?'|t({ items: items }) }}</p>
 
-<ul>
-    {% for folderId, folderName in missingFolders %}
-        <li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}"> {{ folderName }}</label></li>
-    {% endfor %}
+    <ul>
+        {% for folderId, folderName in missingFolders %}
+            <li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}"> {{ folderName }}</label></li>
+        {% endfor %}
 
-    {% for fileId, filename in missingFiles %}
-        <li><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}"> {{ filename }}</label></li>
-    {% endfor %}
-</ul>
+        {% for fileId, filename in missingFiles %}
+            <li><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}"> {{ filename }}</label></li>
+        {% endfor %}
+    </ul>
+{% endif %}

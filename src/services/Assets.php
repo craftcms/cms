@@ -8,7 +8,9 @@ use craft\app\enums\ElementType;
 use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
+use craft\app\errors\AssetMissingException;
 use craft\app\errors\AssetSourceException;
+use craft\app\errors\AssetSourceFileExistsException;
 use craft\app\errors\AssetSourceFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
@@ -168,9 +170,11 @@ class Assets extends Component
 	 *
 	 * @param AssetModel $asset
 	 *
-	 * @throws FileException
-	 * @throws AssetConflictException
-	 * @throws AssetLogicException
+	 * @throws FileException                  If there was a problem with the actual file.
+	 * @throws AssetConflictException         If a file with such name already exists.
+	 * @throws AssetLogicException            If something violates Asset's logic (e.g. Asset outside of a folder).
+	 * @throws AssetSourceFileExistsException If the file actually exists on the Source, but on in the index.
+	 *
 	 * @return void
 	 */
 	public function saveAsset(AssetModel $asset)
@@ -218,8 +222,15 @@ class Assets extends Component
 			
 			$this->trigger(static::EVENT_BEFORE_UPLOAD_ASSET, $event);
 
-			// If an exception is thrown, let it bubble up.
-			$sourceType->createFile($uriPath, $stream);
+			// Explicitly re-throw AssetSourceFileExistsException
+			try
+			{
+				$sourceType->createFile($uriPath, $stream);
+			}
+			catch (AssetSourceFileExistsException $exception)
+			{
+				throw $exception;
+			}
 
 			// Don't leave it hangin'
 			if (is_resource($stream))
@@ -292,13 +303,48 @@ class Assets extends Component
 	}
 
 	/**
+	 * Rename an Asset.
+	 *
+	 * @param AssetModel $asset
+	 * @param string     $newFilename
+	 *
+	 * @throws AssetConflictException If a file with such a name already exists/
+	 * @throws AssetLogicException    If something violates Asset's logic (e.g. Asset outside of a folder).
+	 * @return null
+	 */
+	public function renameFile(AssetModel $asset, $newFilename)
+	{
+		$newFilename = AssetsHelper::prepareAssetName($newFilename);
+
+		$existingAsset = $this->findFile(array('filename' => $newFilename, 'folderId' => $asset->folderId));
+
+		if ($existingAsset && $existingAsset->id != $asset->id)
+		{
+			throw new AssetConflictException(Craft::t('app', 'A file with the name “{filename}” already exists in the folder.', array('filename' => $newFilename)));
+		}
+
+		$sourceType = Craft::$app->assetSources->populateSourceType($asset->getSource());
+
+		if (!$sourceType)
+		{
+			throw new AssetLogicException(Craft::t('app', 'Source does not exist with the id of {id}.', array('id' => $asset->sourceId)));
+		}
+
+		if ($sourceType->renameFile($asset->getUri(), $asset->getUri($newFilename)))
+		{
+			$asset->filename = $newFilename;
+			$this->_storeAssetRecord($asset);
+		}
+	}
+
+	/**
 	 * Save an Asset folder.
 	 *
 	 * @param AssetFolderModel $folder
 	 *
-	 * @throws AssetConflictException
-	 * @throws AssetLogicException
-	 * @throws AssetSourceFolderExistsException
+	 * @throws AssetConflictException           If a folder already exists with such a name.
+	 * @throws AssetLogicException              If something violates Asset's logic (e.g. Asset outside of a folder).
+	 * @throws AssetSourceFolderExistsException If the file actually exists on the Source, but on in the index.
 	 * @return void
 	 */
 	public function createFolder(AssetFolderModel $folder)
@@ -319,8 +365,15 @@ class Assets extends Component
 
 		$source = Craft::$app->assetSources->populateSourceType($parent->getSource());
 
-		$source->createDir(rtrim($folder->path, '/'));
-
+		// Explicitly re-throw AssetSourceFolderExistsException
+		try
+		{
+			$source->createDir(rtrim($folder->path, '/'));
+		}
+		catch (AssetSourceFolderExistsException $exception)
+		{
+			throw $exception;
+		}
 		$this->storeFolderRecord($folder);
 	}
 
@@ -330,7 +383,7 @@ class Assets extends Component
 	 * @param array|int $folderIds
  	 * @param bool      $deleteFolder Should the file be deleted along the record. Defaults to true.
 	 *
-	 * @throws AssetSourceException
+	 * @throws AssetSourceException If deleting a single folder and it cannot be deleted.
 	 * @return null
 	 */
 	public function deleteFoldersByIds($folderIds, $deleteFolder = true)
@@ -351,7 +404,7 @@ class Assets extends Component
 					$source = Craft::$app->assetSources->getSourceTypeById($folder->sourceId);
 
 					// If this is a batch operation, don't stop the show
-					if (!$source->deleteDir($folder->path) && count($folderIds) > 1)
+					if (!$source->deleteDir($folder->path) && count($folderIds) == 1)
 					{
 						throw new AssetSourceException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', array('folder' => $folder->path)));
 					}
@@ -925,7 +978,7 @@ class Assets extends Component
 
 			if (!$fileRecord)
 			{
-				throw new Exception(Craft::t('app', 'No asset exists with the ID “{id}”.', array('id' => $asset->id)));
+				throw new AssetMissingException(Craft::t('app', 'No asset exists with the ID “{id}”.', array('id' => $asset->id)));
 			}
 		}
 		else

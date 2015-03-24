@@ -1,6 +1,7 @@
 <?php
 namespace craft\app\assetsourcetypes;
 
+use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\enums\AttributeType;
 use craft\app\io\flysystemadapters\AwsS3 as AwsS3Adapter;
@@ -74,11 +75,20 @@ class AwsS3 extends BaseAssetSourceType
 	{
 		if (empty($keyId) || empty($secret))
 		{
-			throw new \InvalidArgumentException(Craft::t('app', 'You must specify secret key ID and the secret key to get the bucket list.'));
+			$config = array();
+		}
+		else
+		{
+			$config = array(
+				'key' => $keyId,
+				'secret' => $secret
+			);
 		}
 
-		$client = static::getClient($keyId, $secret);
+		$client = static::getClient($config);
+
 		$objects = $client->listBuckets();
+
 		if (empty($objects['Buckets']))
 		{
 			return array();
@@ -89,7 +99,14 @@ class AwsS3 extends BaseAssetSourceType
 
 		foreach ($buckets as $bucket)
 		{
-			$location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+			try
+			{
+				$location = $client->getBucketLocation(array('Bucket' => $bucket['Name']));
+			}
+			catch (AccessDeniedException $exception)
+			{
+				continue;
+			}
 
 			$bucketList[] = array(
 				'bucket'    => $bucket['Name'],
@@ -112,8 +129,8 @@ class AwsS3 extends BaseAssetSourceType
 	protected function defineSettings()
 	{
 		return array(
-			'keyId'      => array(AttributeType::String, 'required' => true),
-			'secret'     => array(AttributeType::String, 'required' => true),
+			'keyId'      => array(AttributeType::String),
+			'secret'     => array(AttributeType::String),
 			'bucket'     => array(AttributeType::String, 'required' => true),
 			'region'     => array(AttributeType::String),
 			'subfolder'  => array(AttributeType::String, 'default' => ''),
@@ -128,7 +145,24 @@ class AwsS3 extends BaseAssetSourceType
 	 */
 	protected function createAdapter()
 	{
-		$client = static::getClient($this->getSettings()->keyId, $this->getSettings()->secret, array('region' => $this->getSettings()->region));
+		$keyId = $this->getSettings()->keyId;
+		$secret = $this->getSettings()->secret;
+
+		if (empty($keyId) || empty($secret))
+		{
+			$config = array();
+		}
+		else
+		{
+			$config = array(
+				'key' => $keyId,
+				'secret' => $secret
+			);
+		}
+
+		$config['region'] = $this->getSettings()->region;
+
+		$client = static::getClient($config);
 
 		return new AwsS3Adapter($client, $this->getSettings()->bucket, $this->getSettings()->subfolder);
 	}
@@ -136,16 +170,12 @@ class AwsS3 extends BaseAssetSourceType
 	/**
 	 * Get the AWS S3 client.
 	 *
-	 * @param $keyId
-	 * @param $secret
-	 * @param $options
+	 * @param $config
 	 *
 	 * @return S3Client
 	 */
-	protected static function getClient($keyId, $secret, $options = array())
+	protected static function getClient($config = array())
 	{
-		$config = array_merge(array('key' => $keyId, 'secret' => $secret), $options);
-
 		return S3Client::factory($config);
 	}
 }

@@ -92,7 +92,7 @@ class AssetSource extends BaseComponentModel
 		$attributes['handle']          = AttributeType::Handle;
 		$attributes['type']['default'] = 'Local';
 		$attributes['url']             = AttributeType::String;
-		$attributes['sortOrder']       = AttributeType::String;
+		$attributes['sortOrder']       = AttributeType::Number;
 		$attributes['fieldLayoutId']   = AttributeType::Number;
 
 		return $attributes;

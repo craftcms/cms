@@ -8,23 +8,19 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\AssetConflictResolution;
 use craft\app\errors\Exception;
 use craft\app\errors\HttpException;
 use craft\app\errors\FileException;
 use craft\app\errors\AssetException;
+use craft\app\errors\AssetMissingException;
 use craft\app\errors\ModelException;
 use craft\app\errors\ElementException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fieldtypes\Assets as AssetsFieldType;
-use craft\app\events\AssetEvent;
 use craft\app\helpers\AssetsHelper;
-use craft\app\helpers\HtmlHelper;
 use craft\app\helpers\IOHelper;
-use craft\app\helpers\StringHelper;
 use craft\app\models\Asset;
 use craft\app\models\AssetFolder;
-use craft\app\services\Assets as AssetsService;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 
@@ -293,23 +289,38 @@ class AssetsController extends Controller
 	{
 		$this->requireLogin();
 
-		$fileIds = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
-		$folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
-		$fileName = Craft::$app->getRequest()->getBodyParam('fileName');
-		$actions = Craft::$app->getRequest()->getBodyParam('action');
+		$fileIds            = Craft::$app->getRequest()->getRequiredBodyParam('fileId');
+		$folderId           = Craft::$app->getRequest()->getBodyParam('folderId');
+		$filename           = Craft::$app->getRequest()->getBodyParam('filename');
+		$conflictResolution = Craft::$app->getRequest()->getBodyParam('conflictResolution');
 
+		// TODO permission checks
 		try
 		{
-			Craft::$app->assets->checkPermissionByFileIds($fileIds, 'removeFromAssetSource');
-			Craft::$app->assets->checkPermissionByFolderIds($folderId, 'uploadToAssetSource');
+			if (!empty($filename))
+			{
+				$file = Craft::$app->assets->getFileById($fileIds);
+
+				if (empty($file))
+				{
+					throw new AssetMissingException(Craft::t('app', 'The Asset cannot is missing.'));
+				}
+
+				Craft::$app->assets->renameFile($file, $filename);
+
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				// Move files.
+			}
 		}
-		catch (Exception $e)
+		catch (AssetException $exception)
 		{
-			$this->returnErrorJson($e->getMessage());
+			$this->returnErrorJson($exception->getMessage());
 		}
 
-		$response = Craft::$app->assets->moveFiles($fileIds, $folderId, $fileName, $actions);
-		$this->returnJson($response->getResponseData());
+		$this->returnJson(array('success' => true));
 	}
 
 	/**

@@ -89,7 +89,10 @@ class AssetIndexing extends Component
 
 			foreach ($fileList as $file)
 			{
-				if (!preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['basename']) || $file['basename'] != AssetsHelper::prepareAssetName($file['basename']))
+				$allowedByFilter = !preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $file['basename']);
+				$allowedByName = $file['basename'] == AssetsHelper::prepareAssetName($file['basename'], $file['type'] != 'dir');
+
+				if ($allowedByFilter && $allowedByName)
 				{
 					if ($file['type'] == 'dir')
 					{
@@ -112,7 +115,7 @@ class AssetIndexing extends Component
 				}
 				else
 				{
-					$skippedFiles[] = $file['path'];
+					$skippedFiles[] = $sourceType->model->name.'/'.$file['path'];
 				}
 			}
 

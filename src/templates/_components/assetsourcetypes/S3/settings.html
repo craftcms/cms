@@ -9,7 +9,7 @@
     value: settings.keyId,
     errors: settings.getErrors('keyId'),
     class: 's3-key-id',
-    required: true
+    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
 }) }}
 
 {{ forms.textField({
@@ -19,7 +19,7 @@
     value: settings.secret,
     errors: settings.getErrors('secret'),
     class: 's3-secret-key',
-    required: true
+    instructions: 'You can leave this field empty if you are using an EC2 instance with an applicable IAM role assigne.'|t
 }) }}
 
 {% set bucketInput %}

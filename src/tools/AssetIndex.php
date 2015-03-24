@@ -167,12 +167,13 @@ class AssetIndex extends BaseTool
 					$sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
 					$missingFiles = Craft::$app->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
 					$missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
+					$skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
 
 					$responseArray = [];
 
-					if (!empty($missingFiles) || !empty($missingFolders))
+					if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles))
 					{
-						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders]);
+						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles]);
 						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)
