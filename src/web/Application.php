@@ -100,7 +100,7 @@ class Application extends \yii\web\Application
 	/**
 	 * The language that the application is written in. This mainly refers to the language that the messages and view
 	 * files are in.
-     *
+	 *
 	 * Setting it here even though CApplication already defaults to 'en_us', so it's clear and in case they change it
 	 * down the road.
 	 *

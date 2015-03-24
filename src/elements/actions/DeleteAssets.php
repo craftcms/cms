@@ -51,7 +51,8 @@ class DeleteAssets extends ElementAction
 	 */
 	public function performAction(ElementQueryInterface $query)
 	{
-		Craft::$app->assets->deleteFiles($query->ids());
+		// TODO permission checks
+		Craft::$app->assets->deleteFilesByIds($query->ids());
 
 		$this->setMessage(Craft::t('app', 'Assets deleted.'));
 

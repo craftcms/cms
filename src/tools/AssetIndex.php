@@ -85,6 +85,7 @@ class AssetIndex extends Tool
 			}
 
 			$missingFolders = [];
+			$skippedFiles = [];
 
 			$grandTotal = 0;
 
@@ -103,28 +104,34 @@ class AssetIndex extends Tool
 					$missingFolders += $indexList['missingFolders'];
 				}
 
+				if (isset($indexList['skippedFiles']))
+				{
+					$skippedFiles = $indexList['skippedFiles'];
+				}
+
 				$batch = [];
 
 				for ($i = 0; $i < $indexList['total']; $i++)
 				{
 					$batch[] = [
-									'params' => [
-										'sessionId' => $sessionId,
-										'sourceId' => $sourceId,
-										'total' => $indexList['total'],
-										'offset' => $i,
-										'process' => 1
-									]
+								'params' => [
+									'sessionId' => $sessionId,
+									'sourceId' => $sourceId,
+									'total' => $indexList['total'],
+									'offset' => $i,
+									'process' => 1
+								]
 					];
 				}
 
 				$batches[] = $batch;
 			}
 
-			Craft::$app->getSession()->add('assetsSourcesBeingIndexed', $sourceIds);
-			Craft::$app->getSession()->add('assetsMissingFolders', $missingFolders);
-			Craft::$app->getSession()->add('assetsTotalSourcesToIndex', count($sourceIds));
-			Craft::$app->getSession()->add('assetsTotalSourcesIndexed', 0);
+			Craft::$app->getSession()->set('assetsSourcesBeingIndexed', $sourceIds);
+			Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
+			Craft::$app->getSession()->set('assetsTotalSourcesToIndex', count($sourceIds));
+			Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
+			Craft::$app->getSession()->set('assetsTotalSourcesIndexed', 0);
 
 			return [
 				'batches' => $batches,
@@ -146,7 +153,7 @@ class AssetIndex extends Tool
 			else
 			{
 				// Increment the amount of sources indexed
-				Craft::$app->getSession()->add('assetsTotalSourcesIndexed', Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0) + 1);
+				Craft::$app->getSession()->set('assetsTotalSourcesIndexed', Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0) + 1);
 
 				// Is this the last source to finish up?
 				if (Craft::$app->getSession()->get('assetsTotalSourcesToIndex', 0) <= Craft::$app->getSession()->get('assetsTotalSourcesIndexed', 0))
@@ -154,12 +161,13 @@ class AssetIndex extends Tool
 					$sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
 					$missingFiles = Craft::$app->assetIndexing->getMissingFiles($sourceIds, $params['sessionId']);
 					$missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
+					$skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
 
 					$responseArray = [];
 
-					if (!empty($missingFiles) || !empty($missingFolders))
+					if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles))
 					{
-						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders]);
+						$responseArray['confirm'] = Craft::$app->templates->render('assets/_missing_items', ['missingFiles' => $missingFiles, 'missingFolders' => $missingFolders, 'skippedFiles' => $skippedFiles]);
 						$responseArray['params'] = ['finish' => 1];
 					}
 					// Clean up stale indexing data (all sessions that have all recordIds set)
@@ -194,12 +202,13 @@ class AssetIndex extends Tool
 		{
 			if (!empty($params['deleteFile']) && is_array($params['deleteFile']))
 			{
-				Craft::$app->assetIndexing->removeObsoleteFileRecords($params['deleteFile']);
+				Craft::$app->db->createCommand()->delete('assettransformindex', array('in', 'fileId', $params['deleteFile']));
+				Craft::$app->assets->deleteFilesByIds($params['deleteFile'], false);
 			}
 
 			if (!empty($params['deleteFolder']) && is_array($params['deleteFolder']))
 			{
-				Craft::$app->assetIndexing->removeObsoleteFolderRecords($params['deleteFolder']);
+				Craft::$app->assets->deleteFoldersByIds($params['deleteFolder'], false);
 			}
 
 			return [

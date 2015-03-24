@@ -131,7 +131,7 @@ class Images extends Component
 
 		$memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
 
-		if (memory_get_usage() + $memoryNeeded < $memoryLimit)
+		if ($memoryLimit == -1 || memory_get_usage() + $memoryNeeded < $memoryLimit)
 		{
 			return true;
 		}

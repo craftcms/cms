@@ -96,7 +96,7 @@ class RenameFile extends ElementAction
 					{
 						Craft.elementIndex.updateElements();
 
-						// If assets were just merged we should get the referece tags updated right away
+						// If assets were just merged we should get the reference tags updated right away
 						Craft.cp.runPendingTasks();
 					}
 

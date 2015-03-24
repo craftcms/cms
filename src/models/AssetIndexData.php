@@ -55,8 +55,23 @@ class AssetIndexData extends BaseComponentModel
 	 */
 	public $recordId;
 
+	/**
+	 * @var DateTime The index timestamp
+	 */
+	public $timestamp;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function datetimeAttributes()
+	{
+		$names = parent::datetimeAttributes();
+		$names[] = 'timestamp';
+		return $names;
+	}
 
 	/**
 	 * @inheritdoc

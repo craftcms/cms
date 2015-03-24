@@ -109,19 +109,22 @@ $translationsPath = realpath(defined('CRAFT_TRANSLATIONS_PATH') ? CRAFT_TRANSLAT
 // Validate permissions on craft/config/ and craft/storage/
 $ensureFolderIsReadable($configPath);
 
-// If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
-if (!file_exists($configPath.'/license.key'))
+if ($appType === 'web')
 {
-	// Make sure config is at least readable.
-	$ensureFolderIsReadable($configPath);
-
-	// Try and write out a temp license.key file.
-	@file_put_contents($configPath.'/license.key', 'temp');
-
-	// See if it worked.
-	if (!file_exists($configPath.'/license.key') || (file_exists($configPath.'/license.key') && file_get_contents($configPath) !== 'temp'))
+	// If license.key doesn't exist yet, make sure the config folder is readable and we can write a temp one.
+	if (!file_exists($configPath.'/license.key'))
 	{
-		exit($configPath.'/license.key isn\'t writable by PHP. Please fix that.');
+		// Make sure config is at least readable.
+		$ensureFolderIsReadable($configPath);
+
+		// Try and write out a temp license.key file.
+		@file_put_contents($configPath.'/license.key', 'temp');
+
+		// See if it worked.
+		if (!file_exists($configPath.'/license.key') || (file_exists($configPath.'/license.key') && file_get_contents($configPath) !== 'temp'))
+		{
+			exit($configPath.'/license.key isn\'t writable by PHP. Please fix that.');
+		}
 	}
 }
 
@@ -235,8 +238,8 @@ $config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
 
 if ($devMode)
 {
-	$config['bootstrap'][] = 'debug';
-	$config['modules']['debug'] = 'yii\debug\Module';
+	//$config['bootstrap'][] = 'debug';
+	//$config['modules']['debug'] = 'yii\debug\Module';
 }
 
 // Initialize the application

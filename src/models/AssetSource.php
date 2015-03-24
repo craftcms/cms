@@ -52,7 +52,12 @@ class AssetSource extends BaseComponentModel
 	public $handle;
 
 	/**
-	 * @var string Sort order
+	 * @var string The source’s URL
+	 */
+	public $url;
+
+	/**
+	 * @var integer Sort order
 	 */
 	public $sortOrder;
 
@@ -63,7 +68,7 @@ class AssetSource extends BaseComponentModel
 
 
 	/**
-	 * @var The element type that asset sources' field layouts should be associated with.
+	 * @var string The element type that asset sources' field layouts should be associated with.
 	 */
 	private $_fieldLayoutElementType = 'craft\app\elements\Asset';
 

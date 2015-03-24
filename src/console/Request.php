@@ -7,7 +7,6 @@
 
 namespace craft\app\console;
 
-use Craft;
 use craft\app\base\RequestTrait;
 
 /**
@@ -25,13 +24,4 @@ class Request extends \yii\console\Request
 
 	// Public Methods
 	// =========================================================================
-
-    /**
-     * @inheritDoc \yii\base\Object::init()
-     */
-    public function init()
-    {
-    	parent::init();
-    	$this->_init();
-    }
 }

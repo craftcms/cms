@@ -52,7 +52,7 @@ class AssetsHelper
 	 */
 	public static function generateUrl(BaseAssetSourceType $sourceType, Asset $file)
 	{
-		$baseUrl = $sourceType->getBaseUrl();
+		$baseUrl = $sourceType->getRootUrl();
 		$folderPath = $file->getFolder()->path;
 		$filename = $file->filename;
 		$appendix = static::getUrlAppendix($sourceType, $file);
@@ -89,7 +89,7 @@ class AssetsHelper
 	 *
 	 * @return mixed
 	 */
-	public static function cleanAssetName($name, $isFilename = true)
+	public static function prepareAssetName($name, $isFilename = true)
 	{
 		if ($isFilename)
 		{

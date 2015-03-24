@@ -91,7 +91,6 @@ class Install extends Component
 			$this->_createAndPopulateInfoTable($inputs, $db);
 
 			$this->_createAssetTransformIndexTable($db);
-			$this->_createRackspaceAccessTable($db);
 			$this->_createDeprecationErrorsTable($db);
 
 			$this->_populateMigrationTable();
@@ -421,27 +420,6 @@ class Install extends Component
 			Craft::error('Could not populate the info table.', __METHOD__);
 			throw new Exception(Craft::t('app', 'There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
-	}
-
-	/**
-	 * Creates the Rackspace access table.
-	 *
-	 * @param Connection $db
-	 * @return null
-	 */
-	private function _createRackspaceAccessTable($db)
-	{
-		Craft::info('Creating the Rackspace access table.');
-
-		$db->createCommand()->createTable('{{%rackspaceaccess}}', [
-			'connectionKey'  => ['column' => ColumnType::Varchar, 'required' => true],
-			'token'          => ['column' => ColumnType::Varchar, 'required' => true],
-			'storageUrl'     => ['column' => ColumnType::Varchar, 'required' => true],
-			'cdnUrl'         => ['column' => ColumnType::Varchar, 'required' => true],
-		])->execute();
-
-		$db->createCommand()->createIndex($db->getIndexName('rackspaceaccess', 'connectionKey'), '{{%rackspaceaccess}}', 'connectionKey', true)->execute();
-		Craft::info('Finished creating the Rackspace access table.');
 	}
 
 	/**

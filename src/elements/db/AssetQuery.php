@@ -221,7 +221,7 @@ class AssetQuery extends ElementQuery
 			return false;
 		}
 
-		$this->joinElementTable('assetfiles');
+		$this->joinElementTable('assets');
 
 		$this->query->select([
 			'assets.sourceId',

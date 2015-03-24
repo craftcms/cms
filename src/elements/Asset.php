@@ -25,7 +25,6 @@ use craft\app\helpers\UrlHelper;
 use craft\app\models\AssetFolder as AssetFolderModel;
 use craft\app\models\AssetFolder;
 use craft\app\models\AssetSource;
-use craft\app\models\FieldLayout;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -254,7 +253,7 @@ class Asset extends Element
 			{
 				if ($element->size)
 				{
-					return Craft::$app->getFormatter()->asSize($element->size);
+					return Craft::$app->getFormatter()->asShortSize($element->size);
 				}
 				else
 				{
@@ -446,6 +445,16 @@ class Asset extends Element
 	 * @var \DateTime Date modified
 	 */
 	public $dateModified;
+
+	/**
+	 * @var string The new file path
+	 */
+	public $newFilePath;
+
+	/**
+	 * @var boolean Whether the file is currently being indexed
+	 */
+	public $indexInProgress;
 
 	/**
 	 * @var
@@ -806,6 +815,38 @@ class Asset extends Element
 	public function setTransformSource($uri)
 	{
 		$this->_transformSource = $uri;
+	}
+
+	/**
+	 * Get a file's uri path in the source.
+	 *
+	 * @param string $filename Filename to use. If not specified, the file's filename will be used.
+	 * @return string
+	 */
+	public function getUri($filename = null)
+	{
+		$folder = $this->getFolder();
+		return $folder->path.($filename ?: $this->filename);
+	}
+
+	/**
+	 * Return the path where the source for this Asset's transforms should be.
+	 *
+	 * @return string
+	 */
+	public function getImageTransformSourcePath()
+	{
+		$sourceType = Craft::$app->assetSources->getSourceTypeById($this->sourceId);
+		$base = rtrim($sourceType->getImageTransformSourceLocation(), '/');
+
+		if ($sourceType->isLocal())
+		{
+			return $base.'/'.$this->getUri();
+		}
+		else
+		{
+			return $base.'/'.$this->id.'.'.$this->getExtension();
+		}
 	}
 
 	// Private Methods

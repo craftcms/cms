@@ -1638,6 +1638,21 @@ class IOHelper
 		throw new ErrorException($message, 0);
 	}
 
+	/**
+	 * Get a temporary file path.
+	 *
+	 * @param string $extension extension to use. "tmp" by default.
+	 *
+	 * @return mixed
+	 */
+	public static function getTempFilePath($extension = "tmp")
+	{
+		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
+		$fileName = uniqid('craft', true).'.'.$extension;
+
+		return static::createFile(Craft::$app->path->getTempPath().$fileName)->getRealPath();
+	}
+
 	// Private Methods
 	// =========================================================================
 
