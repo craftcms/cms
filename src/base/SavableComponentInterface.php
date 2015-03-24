@@ -49,6 +49,17 @@ interface SavableComponentInterface extends ComponentInterface
 	public function validate($attributeNames = null, $clearErrors = true);
 
 	/**
+	 * Returns the list of settings attribute names.
+	 *
+	 * By default, this method returns all public non-static properties that were defined on the called class.
+	 * You may override this method to change the default behavior.
+	 *
+	 * @return array The list of settings attribute names
+	 * @see getSettings()
+	 */
+	public function settingsAttributes();
+
+	/**
 	 * Returns an array of the component’s settings.
 	 *
 	 * @return array The component’s settings.

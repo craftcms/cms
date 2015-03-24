@@ -67,17 +67,8 @@ abstract class SavableComponent extends Component implements SavableComponentInt
 		return null;
 	}
 
-	// Protected Methods
-	// =========================================================================
-
 	/**
-	 * Returns the list of settings attribute names.
-	 *
-	 * By default, this method returns all public non-static properties that were defined on the called class.
-	 * You may override this method to change the default behavior.
-	 *
-	 * @return array The list of settings attribute names
-	 * @see getSettings()
+	 * @inheritdoc
 	 */
 	public function settingsAttributes()
 	{
