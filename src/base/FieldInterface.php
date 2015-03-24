@@ -181,7 +181,7 @@ interface FieldInterface extends SavableComponentInterface
 	/**
 	 * Performs any actions before a field is saved.
 	 *
-	 * @return null
+	 * @return boolean Whether the field should be saved
 	 */
 	public function beforeSave();
 
@@ -195,7 +195,7 @@ interface FieldInterface extends SavableComponentInterface
 	/**
 	 * Performs any actions before a field is deleted.
 	 *
-	 * @return null
+	 * @return boolean Whether the field should be deleted
 	 */
 	public function beforeDelete();
 

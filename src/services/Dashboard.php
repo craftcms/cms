@@ -165,13 +165,11 @@ class Dashboard extends Component
 	 */
 	public function saveWidget(WidgetInterface $widget, $validate = true)
 	{
-		if (!$validate || $widget->validate())
+		if ((!$validate || $widget->validate()) && $widget->beforeSave())
 		{
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				$widget->beforeSave();
-
 				$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 				$isNewWidget = $widgetRecord->getIsNewRecord();
 

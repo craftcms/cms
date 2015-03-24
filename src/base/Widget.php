@@ -8,6 +8,7 @@
 namespace craft\app\base;
 
 use Craft;
+use craft\app\events\Event;
 use craft\app\helpers\UrlHelper;
 
 /**
@@ -22,6 +23,21 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 	// =========================================================================
 
 	use WidgetTrait;
+
+	// Constants
+	// =========================================================================
+
+	/**
+	 * @event Event The event that is triggered before the widget is saved
+	 *
+	 * You may set [[Event::performAction]] to `false` to prevent the widget from getting saved.
+	 */
+	const EVENT_BEFORE_SAVE = 'beforeSave';
+
+	/**
+	 * @event Event The event that is triggered after the widget is saved
+	 */
+	const EVENT_AFTER_SAVE = 'afterSave';
 
 	// Static
 	// =========================================================================
@@ -71,6 +87,10 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 	 */
 	public function beforeSave()
 	{
+		// Trigger a 'beforeSave' event
+		$event = new Event();
+		$this->trigger(self::EVENT_BEFORE_SAVE, $event);
+		return $event->performAction;
 	}
 
 	/**
@@ -78,20 +98,8 @@ abstract class Widget extends SavableComponent implements WidgetInterface
 	 */
 	public function afterSave()
 	{
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function beforeDelete()
-	{
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function afterDelete()
-	{
+		// Trigger an 'afterSave' event
+		$this->trigger(self::EVENT_AFTER_SAVE, new Event());
 	}
 
 	/**

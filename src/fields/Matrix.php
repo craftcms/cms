@@ -209,6 +209,7 @@ class Matrix extends Field
 	public function afterSave()
 	{
 		Craft::$app->matrix->saveSettings($this, false);
+		parent::afterSave();
 	}
 
 	/**
@@ -217,6 +218,7 @@ class Matrix extends Field
 	public function beforeDelete()
 	{
 		Craft::$app->matrix->deleteMatrixField($this);
+		return parent::beforeDelete();
 	}
 
 	/**

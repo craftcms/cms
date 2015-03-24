@@ -1219,7 +1219,7 @@ abstract class Element extends Component implements ElementInterface
 		}
 
 		// Trigger an 'afterSave' event
-		$this->trigger(self::EVENT_BEFORE_SAVE, new Event());
+		$this->trigger(self::EVENT_AFTER_SAVE, new Event());
 	}
 
 	// Protected Methods

@@ -485,13 +485,11 @@ class Fields extends Component
 	 */
 	public function saveField(FieldInterface $field, $validate = true)
 	{
-		if (!$validate || $field->validate())
+		if ((!$validate || $field->validate()) && $field->beforeSave())
 		{
 			$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 			try
 			{
-				$field->beforeSave();
-
 				$field->context = Craft::$app->content->fieldContext;
 
 				$fieldRecord = $this->_getFieldRecord($field);
@@ -625,11 +623,14 @@ class Fields extends Component
 	 */
 	public function deleteField(FieldInterface $field)
 	{
+		if (!$field->beforeDelete())
+		{
+			return false;
+		}
+
 		$transaction = Craft::$app->getDb()->getTransaction() === null ? Craft::$app->getDb()->beginTransaction() : null;
 		try
 		{
-			$field->beforeDelete();
-
 			// De we need to delete the content column?
 			$contentTable = Craft::$app->content->contentTable;
 			$fieldColumnPrefix = Craft::$app->content->fieldColumnPrefix;
