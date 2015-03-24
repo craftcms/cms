@@ -8,12 +8,12 @@
 namespace craft\app\variables;
 
 /**
- * Tool template variable.
+ * ToolInfo represents a tool class, making information about it available to the templates.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Tool extends BaseComponentTypeVariable
+class ToolInfo extends ComponentInfo
 {
 	// Public Methods
 	// =========================================================================
@@ -25,7 +25,9 @@ class Tool extends BaseComponentTypeVariable
 	 */
 	public function getIconValue()
 	{
-		return $this->component->getIconValue();
+		/** @var ToolInterface $component */
+		$component = $this->component;
+		return $component::iconValue();
 	}
 
 	/**
@@ -35,7 +37,9 @@ class Tool extends BaseComponentTypeVariable
 	 */
 	public function getOptionsHtml()
 	{
-		return $this->component->getOptionsHtml();
+		/** @var ToolInterface $component */
+		$component = $this->component;
+		return $component::optionsHtml();
 	}
 
 	/**
@@ -45,6 +49,8 @@ class Tool extends BaseComponentTypeVariable
 	 */
 	public function getButtonLabel()
 	{
-		return $this->component->getButtonLabel();
+		/** @var ToolInterface $component */
+		$component = $this->component;
+		return $component::buttonLabel();
 	}
 }

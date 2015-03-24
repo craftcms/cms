@@ -8,46 +8,41 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Tool;
 use craft\app\helpers\IOHelper;
 use craft\app\io\Zip;
 
 /**
- * Backup Database tool
+ * DbBackup represents a Backup Database tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class DbBackup extends BaseTool
+class DbBackup extends Tool
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public static function displayName()
 	{
 		return Craft::t('app','Backup Database');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getIconValue()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getIconValue()
+	public static function iconValue()
 	{
 		return 'database';
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getOptionsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getOptionsHtml()
+	public static function optionsHtml()
 	{
 		return Craft::$app->templates->render('_includes/forms/checkbox', [
 			'name'    => 'downloadBackup',
@@ -56,12 +51,11 @@ class DbBackup extends BaseTool
 		]);
 	}
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @inheritDoc ToolInterface::performAction()
-	 *
-	 * @param array $params
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function performAction($params = [])
 	{

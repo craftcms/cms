@@ -8,47 +8,42 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Tool;
 use craft\app\helpers\IOHelper;
 
 /**
- * Clear Caches tool.
+ * ClearCaches represents a Clear Caches tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class ClearCaches extends BaseTool
+class ClearCaches extends Tool
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public static function displayName()
 	{
 		return Craft::t('app', 'Clear Caches');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getIconValue()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getIconValue()
+	public static function iconValue()
 	{
 		return 'trash';
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getOptionsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getOptionsHtml()
+	public static function optionsHtml()
 	{
-		$caches = $this->_getFolders();
+		$caches = self::_getFolders();
 		$caches['assetTransformIndex'] = Craft::t('app', 'Asset transform index');
 		$caches['assetIndexingData'] = Craft::t('app', 'Asset indexing data');
 		$caches['templateCaches'] = Craft::t('app', 'Template caches');
@@ -60,21 +55,54 @@ class ClearCaches extends BaseTool
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getButtonLabel()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getButtonLabel()
+	public static function buttonLabel()
 	{
 		return Craft::t('app', 'Clear!');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::performAction()
+	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the
+	 * 'registerCachePaths' hook.
 	 *
-	 * @param array $params
+	 * @param bool $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
 	 *
-	 * @return null
+	 * @return array
+	 */
+	private static function _getFolders($obfuscate = true)
+	{
+		$runtimePath = Craft::$app->path->getRuntimePath();
+
+		$folders = [
+			$obfuscate ? md5('dataCache') : 'dataCache'                                               => Craft::t('app', 'Data caches'),
+			$obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache'                           => Craft::t('app', 'RSS caches'),
+			$obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets'                         => Craft::t('app', 'Asset caches'),
+			$obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app', 'Compiled templates'),
+			$obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp'                             => Craft::t('app', 'Temp files'),
+		];
+
+		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');
+
+		if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0)
+		{
+			foreach ($pluginCachePaths as $paths)
+			{
+				foreach ($paths as $path => $label)
+				{
+					$folders[$obfuscate ? md5($path) : $path] = $label;
+				}
+			}
+		}
+
+		return $folders;
+	}
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritdoc
 	 */
 	public function performAction($params = [])
 	{
@@ -83,7 +111,7 @@ class ClearCaches extends BaseTool
 			return;
 		}
 
-		$allFolderKeys = array_keys($this->_getFolders());
+		$allFolderKeys = array_keys(self::_getFolders());
 
 		if ($params['caches'] == '*')
 		{
@@ -102,7 +130,7 @@ class ClearCaches extends BaseTool
 			}
 		}
 
-		$allFolders = array_keys($this->_getFolders(false));
+		$allFolders = array_keys(self::_getFolders(false));
 
 		foreach ($folders as $folder)
 		{
@@ -137,44 +165,5 @@ class ClearCaches extends BaseTool
 		{
 			Craft::$app->getDb()->createCommand()->truncateTable('{{%assetindexdata}}')->execute();
 		}
-	}
-
-	// Private Methods
-	// =========================================================================
-
-	/**
-	 * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the
-	 * 'registerCachePaths' hook.
-	 *
-	 * @param bool $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
-	 *
-	 * @return array
-	 */
-	private function _getFolders($obfuscate = true)
-	{
-		$runtimePath = Craft::$app->path->getRuntimePath();
-
-		$folders = [
-			$obfuscate ? md5('dataCache') : 'dataCache'                                               => Craft::t('app', 'Data caches'),
-			$obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache'                           => Craft::t('app', 'RSS caches'),
-			$obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets'                         => Craft::t('app', 'Asset caches'),
-			$obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app', 'Compiled templates'),
-			$obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp'                             => Craft::t('app', 'Temp files'),
-		];
-
-		$pluginCachePaths = Craft::$app->plugins->call('registerCachePaths');
-
-		if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0)
-		{
-			foreach ($pluginCachePaths as $paths)
-			{
-				foreach ($paths as $path => $label)
-				{
-					$folders[$obfuscate ? md5($path) : $path] = $label;
-				}
-			}
-		}
-
-		return $folders;
 	}
 }

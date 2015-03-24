@@ -9,14 +9,18 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\enums\ComponentType;
 use craft\app\enums\EmailerType;
 use craft\app\errors\HttpException;
 use craft\app\helpers\UrlHelper;
 use craft\app\models\EmailSettings as EmailSettingsModel;
 use craft\app\elements\GlobalSet;
 use craft\app\models\Info;
-use craft\app\variables\Tool as ToolVariable;
+use craft\app\tools\AssetIndex;
+use craft\app\tools\ClearCaches;
+use craft\app\tools\DbBackup;
+use craft\app\tools\FindAndReplace;
+use craft\app\tools\SearchIndex;
+use craft\app\variables\ToolInfo;
 use craft\app\web\Controller;
 
 /**
@@ -52,19 +56,22 @@ class SystemSettingsController extends Controller
 	 */
 	public function actionSettingsIndex()
 	{
-		// Get all the tools
-		$tools = Craft::$app->components->getComponentsByType(ComponentType::Tool);
-		ksort($tools);
+		$tools = [];
 
-		// If there are no Asset sources, don't display the update Asset indexes tool.
-		if (count(Craft::$app->assetSources->getAllSources()) == 0)
+		// Only include the Update Asset Indexes tool if there are any asset sources
+		if (count(Craft::$app->assetSources->getAllSources()) !== 0)
 		{
-			unset($tools['AssetIndex']);
+			$tools[] = new ToolInfo(AssetIndex::className());
 		}
 
-		$variables['tools'] = ToolVariable::populateVariables($tools);
+		$tools[] = new ToolInfo(ClearCaches::className());
+		$tools[] = new ToolInfo(DbBackup::className());
+		$tools[] = new ToolInfo(FindAndReplace::className());
+		$tools[] = new ToolInfo(SearchIndex::className());
 
-		$this->renderTemplate('settings/_index', $variables);
+		$this->renderTemplate('settings/_index', [
+			'tools' => $tools
+		]);
 	}
 
 	/**

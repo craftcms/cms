@@ -8,45 +8,40 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Tool;
 use craft\app\tasks\FindAndReplace as FindAndReplaceTask;
 
 /**
- * Find and Replace tool
+ * FindAndReplace represents a Find and Replace tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class FindAndReplace extends BaseTool
+class FindAndReplace extends Tool
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public static function displayName()
 	{
 		return Craft::t('app','Find and Replace');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getIconValue()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getIconValue()
+	public static function iconValue()
 	{
 		return 'wand';
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getOptionsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getOptionsHtml()
+	public static function optionsHtml()
 	{
 		return Craft::$app->templates->renderMacro('_includes/forms', 'textField', [
 			[
@@ -62,12 +57,11 @@ class FindAndReplace extends BaseTool
 		]);
 	}
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @inheritDoc ToolInterface::performAction()
-	 *
-	 * @param array $params
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function performAction($params = [])
 	{

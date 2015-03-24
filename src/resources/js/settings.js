@@ -16,13 +16,13 @@ Craft.Tool = Garnish.Base.extend(
 	loadingActions: null,
 	queue: null,
 
-	init: function(toolClass, optionsHtml, buttonLabel)
+	init: function(triggerId, toolClass, optionsHtml, buttonLabel)
 	{
 		this.toolClass = toolClass;
 		this.optionsHtml = optionsHtml;
 		this.buttonLabel = buttonLabel;
 
-		this.$trigger = $('#tool-'+toolClass);
+		this.$trigger = $('#'+triggerId);
 
 		this.addListener(this.$trigger, 'click', 'showHUD');
 	},

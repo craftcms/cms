@@ -8,8 +8,9 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\enums\ComponentType;
+use craft\app\base\ToolInterface;
 use craft\app\errors\HttpException;
+use craft\app\helpers\ComponentHelper;
 use craft\app\helpers\IOHelper;
 use craft\app\web\Controller;
 
@@ -53,8 +54,8 @@ class ToolsController extends Controller
 		$class = Craft::$app->getRequest()->getRequiredBodyParam('tool');
 		$params = Craft::$app->getRequest()->getBodyParam('params', []);
 
-		$tool = Craft::$app->components->getComponentByTypeAndClass(ComponentType::Tool, $class);
-
+		/** @var ToolInterface $tool */
+		$tool = ComponentHelper::createComponent($class, 'craft\app\base\ToolInterface');
 		$response = $tool->performAction($params);
 		$this->returnJson($response);
 	}

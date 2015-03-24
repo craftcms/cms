@@ -8,45 +8,40 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Tool;
 use craft\app\db\Query;
 
 /**
- * Asset Index tool.
+ * AssetIndex represents an Update Asset Indexes tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class AssetIndex extends BaseTool
+class AssetIndex extends Tool
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public static function displayName()
 	{
 		return Craft::t('app', 'Update Asset Indexes');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getIconValue()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getIconValue()
+	public static function iconValue()
 	{
 		return 'assets';
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getOptionsHtml()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getOptionsHtml()
+	public static function optionsHtml()
 	{
 		$sources = Craft::$app->assetSources->getAllSources();
 		$sourceOptions = [];
@@ -65,12 +60,11 @@ class AssetIndex extends BaseTool
 		]);
 	}
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @inheritDoc ToolInterface::performAction()
-	 *
-	 * @param array $params
-	 *
-	 * @return array|null
+	 * @inheritdoc
 	 */
 	public function performAction($params = [])
 	{

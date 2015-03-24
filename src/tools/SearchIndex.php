@@ -8,46 +8,42 @@
 namespace craft\app\tools;
 
 use Craft;
+use craft\app\base\Tool;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 
 /**
- * Search Index tool.
+ * SearchIndex represents a Rebuild Search Indexes tool.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class SearchIndex extends BaseTool
+class SearchIndex extends Tool
 {
-	// Public Methods
+	// Static
 	// =========================================================================
 
 	/**
-	 * @inheritDoc ComponentTypeInterface::getName()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getName()
+	public static function displayName()
 	{
-		return Craft::t('app','Rebuild Search Indexes');
+		return Craft::t('app', 'Rebuild Search Indexes');
 	}
 
 	/**
-	 * @inheritDoc ToolInterface::getIconValue()
-	 *
-	 * @return string
+	 * @inheritdoc
 	 */
-	public function getIconValue()
+	public static function iconValue()
 	{
 		return 'search';
 	}
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @inheritDoc ToolInterface::performAction()
-	 *
-	 * @param array $params
-	 *
-	 * @return array
+	 * @inheritdoc
 	 */
 	public function performAction($params = [])
 	{

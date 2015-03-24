@@ -22,8 +22,9 @@
 
 	<ul class="icons">
 		{% for tool in tools %}
-			<li><a id="tool-{{ tool.getClassHandle() }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getName() }}</a></li>
-			{% includeJs 'new Craft.Tool("'~tool.getClassHandle()~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()~'");' %}
+			{% set triggerId = 'tool-'~tool.getClassName()|id %}
+			<li><a id="{{ triggerId }}" data-icon="{{ tool.getIconValue() }}">{{ tool.getDisplayName() }}</a></li>
+			{% includeJs 'new Craft.Tool("'~triggerId|e('js')~'", "'~tool.getClassName()|e('js')~'", '~tool.getOptionsHtml()|json_encode~', "'~tool.getButtonLabel()|e('js')~'");' %}
 		{% endfor %}
 	</ul>
 {% endset %}

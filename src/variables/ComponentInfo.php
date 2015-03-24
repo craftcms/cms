@@ -37,7 +37,7 @@ class ComponentInfo
 	 *
 	 * @param string|ComponentInterface $component The component, or its class name, that this object should provide info about
 	 */
-	public function __construct(ComponentInterface $component)
+	public function __construct($component)
 	{
 		$this->component = $component;
 	}
