@@ -140,7 +140,7 @@ class Command extends \yii\db\Command
 	public function replace($table, $column, $find, $replace)
 	{
 		$params = [];
-		$sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace);
+		$sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
 
 		return $this->setSql($sql)->bindValues($params);
 	}
