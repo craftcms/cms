@@ -50,14 +50,14 @@ class RequirementsChecker
 	var $iniSetMessage;
 	var $memoryMessage;
 
-	var $requiredMySqlVersion = '5.1.0';
+	var $requiredMySqlVersion = '5.5.0';
 
 	/**
 	 * Check the given requirements, collecting results into internal field.
 	 * This method can be invoked several times checking different requirement sets.
 	 * Use [[getResult()]] or [[render()]] to get the results.
 	 *
-	 * @param array|string $requirements The rquirements to be checked. If an array, it is treated as the set of
+	 * @param array|string $requirements The requirements to be checked. If an array, it is treated as the set of
 	 *                                   requirements. If a string, it is treated as the path of the file, which
 	 *                                   contains the requirements;
 	 *
