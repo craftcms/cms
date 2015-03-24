@@ -12,6 +12,7 @@ use craft\app\dates\DateTime;
 use craft\app\enums\AttributeType;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\DbHelper;
 use craft\app\helpers\JsonHelper;
 use craft\app\helpers\ModelHelper;
 use craft\app\helpers\StringHelper;
@@ -145,7 +146,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 				}
 			}
 
-			$this->setAttribute($name, ModelHelper::packageAttributeValue($value, true));
+			$this->setAttribute($name, DbHelper::prepValue($value));
 		}
 
 		// Populate dateCreated and uid if this is a new record

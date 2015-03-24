@@ -13,7 +13,6 @@ use craft\app\db\Query;
 use craft\app\errors\Exception;
 use craft\app\events\ContentEvent;
 use craft\app\helpers\DbHelper;
-use craft\app\helpers\ModelHelper;
 use craft\app\models\Content as ContentModel;
 use craft\app\models\FieldLayout as FieldLayoutModel;
 use yii\base\Component;
@@ -284,7 +283,7 @@ class Content extends Component
 		{
 			$handle = $field->handle;
 			$value = $content->$handle;
-			$values[$this->fieldColumnPrefix.$field->handle] = ModelHelper::packageAttributeValue($value, true);
+			$values[$this->fieldColumnPrefix.$field->handle] = DbHelper::prepValue($value);
 		}
 
 		$isNewContent = !$content->id;
