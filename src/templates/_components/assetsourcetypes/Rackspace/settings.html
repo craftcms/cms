@@ -8,7 +8,7 @@
 	name: 'username',
 	value: settings.username,
 	errors: settings.getErrors('username'),
-    class: 'rackspace-username',
+	class: 'rackspace-username',
 	required: true
 }) }}
 
@@ -18,7 +18,7 @@
 	name: 'apiKey',
 	value: settings.apiKey,
 	errors: settings.getErrors('apiKey'),
-    class: 'racskspace-api-key',
+	class: 'racskspace-api-key',
 	required: true
 }) }}
 
@@ -31,7 +31,7 @@
 			name: 'region',
 			options: { (settings.region): settings.region },
 			value: settings.region,
-			disabled: true,
+			readonly: true,
 			class: 'rackspace-region-select'
 			}) }}
 		</td>
@@ -51,53 +51,53 @@
 }, regionInput) }}
 
 {% set containerInput %}
-    <table class="inputs">
-        <tr>
-            <td>
-                {{ forms.select({
-                    id: 'container',
-                    name: 'container',
-                    options: { (settings.container): settings.container },
-                    value: settings.container,
-                    disabled: true,
-                    class: 'rackspace-container-select'
-                }) }}
-            </td>
-            <td>
-                <div class="btn rackspace-refresh-containers">{{ "Refresh"|t }}</div>
-            </td>
-            <td>
-                <div class="spinner hidden"></div>
-            </td>
-        </tr>
-    </table>
+	<table class="inputs">
+		<tr>
+			<td>
+				{{ forms.select({
+					id: 'container',
+					name: 'container',
+					options: { (settings.container): settings.container },
+					value: settings.container,
+					readonly: true,
+					class: 'rackspace-container-select'
+				}) }}
+			</td>
+			<td>
+				<div class="btn rackspace-refresh-containers">{{ "Refresh"|t }}</div>
+			</td>
+			<td>
+				<div class="spinner hidden"></div>
+			</td>
+		</tr>
+	</table>
 {% endset %}
 
 {{ forms.field({
-    label: "Container"|t,
-    id: 'container'
+	label: "Container"|t,
+	id: 'container'
 }, containerInput) }}
 
 {{ forms.textField({
-    label: "Subfolder"|t,
-    instructions: "If you want to use a container’s subfolder as a Source, specify the path to use here."|t,
-    id: 'subfolder',
-    class: 'ltr',
-    name: 'subfolder',
-    value: settings.subfolder,
-    errors: settings.getErrors('subfolder'),
-    required: false,
-    placeholder: "path/to/subfolder"|t
+	label: "Subfolder"|t,
+	instructions: "If you want to use a container’s subfolder as a Source, specify the path to use here."|t,
+	id: 'subfolder',
+	class: 'ltr',
+	name: 'subfolder',
+	value: settings.subfolder,
+	errors: settings.getErrors('subfolder'),
+	required: false,
+	placeholder: "path/to/subfolder"|t
 }) }}
 
 {{ forms.textField({
-    label: "URL Prefix "|t,
-    instructions: "If you have set up a CNAME record pointing to this container, you can enter it here. Otherwise leave this setting alone."|t,
-    id: 'urlPrefix',
-    class: 'ltr',
-    name: 'urlPrefix',
-    value: settings.urlPrefix,
-    errors: settings.getErrors('url_prefix'),
-    required: true,
-    class: 'rackspace-url-prefix'
+	label: "URL Prefix "|t,
+	instructions: "If you have set up a CNAME record pointing to this container, you can enter it here. Otherwise leave this setting alone."|t,
+	id: 'urlPrefix',
+	class: 'ltr',
+	name: 'urlPrefix',
+	value: settings.urlPrefix,
+	errors: settings.getErrors('url_prefix'),
+	required: true,
+	class: 'rackspace-url-prefix'
 }) }}
