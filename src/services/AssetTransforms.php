@@ -18,8 +18,8 @@ use craft\app\models\AssetTransformIndex;
 use craft\app\models\AssetTransform as AssetTransformModel;
 use craft\app\records\AssetTransform as AssetTransformRecord;
 use craft\app\errors\AssetTransformException;
-use craft\app\errors\AssetVolumeFileNotFoundException;
-use craft\app\errors\AssetVolumeException;
+use craft\app\errors\VolumeFileNotFoundException;
+use craft\app\errors\VolumeException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\ModelValidationException;
 use Exception;
@@ -664,7 +664,7 @@ class AssetTransforms extends Component
 	 *
 	 * @param Asset $file
 	 *
-	 * @throws AssetVolumeException
+	 * @throws VolumeException
 	 * @return mixed
 	 */
 	public function getLocalImageSource(Asset $file)
@@ -679,7 +679,7 @@ class AssetTransforms extends Component
 			{
 				if ($volume->isLocal())
 				{
-					throw new AssetVolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
+					throw new VolumeFileNotFoundException(Craft::t('Image “{file}” cannot be found.', array('file' => $file->filename)));
 				}
 
 				// Delete it just in case it's a 0-byter
@@ -692,7 +692,7 @@ class AssetTransforms extends Component
 				if (!IOHelper::fileExists($localCopy) || IOHelper::getFileSize($localCopy) == 0)
 				{
 					IOHelper::deleteFile($localCopy, true);
-					throw new AssetVolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
+					throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', array('file' => $file->filename)));
 				}
 
 				$this->storeLocalSource($localCopy, $imageSourcePath);

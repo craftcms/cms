@@ -2,8 +2,8 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\errors\AssetVolumeFileExistsException;
-use craft\app\errors\AssetVolumeFolderExistsException;
+use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeFolderExistsException;
 use \League\Flysystem\AdapterInterface;
 use \League\Flysystem\Filesystem;
 use \League\Flysystem\FileExistsException;
@@ -68,7 +68,7 @@ abstract class FileSource  extends SavableComponent implements FileSourceInterfa
 		}
 		catch (FileExistsException $exception)
 		{
-			throw new AssetVolumeFileExistsException($exception->getMessage());
+			throw new VolumeFileExistsException($exception->getMessage());
 		}
 	}
 
@@ -177,7 +177,7 @@ abstract class FileSource  extends SavableComponent implements FileSourceInterfa
 	{
 		if ($this->getAdapter()->has(rtrim($path, '/') . ($this->foldersHaveTrailingSlashes ? '/' : '')))
 		{
-			throw new AssetVolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
+			throw new VolumeFolderExistsException(Craft::t("Folder “{folder}” already exists on the source!", array('folder' => $path)));
 		}
 
 		return $this->getFilesystem()->createDir($path);

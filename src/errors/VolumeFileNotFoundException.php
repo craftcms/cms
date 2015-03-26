@@ -8,7 +8,7 @@
 namespace craft\app\errors;
 
 /**
- * Class AssetVolumeFolderExistsException
+ * Class VolumeFileNotFoundException
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
@@ -17,7 +17,7 @@ namespace craft\app\errors;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-class AssetVolumeFolderExistsException extends AssetVolumeException
+class VolumeFileNotFoundException extends VolumeException
 {
 
 }

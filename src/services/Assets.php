@@ -16,9 +16,9 @@ use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
-use craft\app\errors\AssetVolumeException;
-use craft\app\errors\AssetVolumeFileExistsException;
-use craft\app\errors\AssetVolumeFolderExistsException;
+use craft\app\errors\VolumeException;
+use craft\app\errors\VolumeFileExistsException;
+use craft\app\errors\VolumeFolderExistsException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\Exception;
 use craft\app\errors\FileException;
@@ -179,7 +179,7 @@ class Assets extends Component
 	 * @throws FileException                  If there was a problem with the actual file.
 	 * @throws AssetConflictException         If a file with such name already exists.
 	 * @throws AssetLogicException            If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws AssetVolumeFileExistsException If the file actually exists on the volume, but on in the index.
+	 * @throws VolumeFileExistsException If the file actually exists on the volume, but on in the index.
 	 *
 	 * @return void
 	 */
@@ -228,12 +228,12 @@ class Assets extends Component
 
 			$this->trigger(static::EVENT_BEFORE_UPLOAD_ASSET, $event);
 
-			// Explicitly re-throw AssetVolumeFileExistsException
+			// Explicitly re-throw VolumeFileExistsException
 			try
 			{
 				$volume->createFile($uriPath, $stream);
 			}
-			catch (AssetVolumeFileExistsException $exception)
+			catch (VolumeFileExistsException $exception)
 			{
 				throw $exception;
 			}
@@ -349,7 +349,7 @@ class Assets extends Component
 	 *
 	 * @throws AssetConflictException           If a folder already exists with such a name.
 	 * @throws AssetLogicException              If something violates Asset's logic (e.g. Asset outside of a folder).
-	 * @throws AssetVolumeFolderExistsException If the file actually exists on the volume, but on in the index.
+	 * @throws VolumeFolderExistsException If the file actually exists on the volume, but on in the index.
 	 * @return void
 	 */
 	public function createFolder(AssetFolderModel $folder)
@@ -370,12 +370,12 @@ class Assets extends Component
 
 		$volume = $parent->getVolume();
 
-		// Explicitly re-throw AssetVolumeFolderExistsException
+		// Explicitly re-throw VolumeFolderExistsException
 		try
 		{
 			$volume->createDir(rtrim($folder->path, '/'));
 		}
-		catch (AssetVolumeFolderExistsException $exception)
+		catch (VolumeFolderExistsException $exception)
 		{
 			throw $exception;
 		}
@@ -388,7 +388,7 @@ class Assets extends Component
 	 * @param array|int $folderIds
  	 * @param bool      $deleteFolder Should the file be deleted along the record. Defaults to true.
 	 *
-	 * @throws AssetVolumeException If deleting a single folder and it cannot be deleted.
+	 * @throws VolumeException If deleting a single folder and it cannot be deleted.
 	 * @return null
 	 */
 	public function deleteFoldersByIds($folderIds, $deleteFolder = true)
@@ -411,7 +411,7 @@ class Assets extends Component
 					// If this is a batch operation, don't stop the show
 					if (!$volume->deleteDir($folder->path) && count($folderIds) == 1)
 					{
-						throw new AssetVolumeException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', array('folder' => $folder->path)));
+						throw new VolumeException(Craft::t('app', 'Folder “{folder}” cannot be deleted!', array('folder' => $folder->path)));
 					}
 				}
 

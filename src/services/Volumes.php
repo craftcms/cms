@@ -5,7 +5,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
-use craft\app\errors\AssetVolumeException;
+use craft\app\errors\VolumeException;
 use craft\app\errors\InvalidComponentException;
 use craft\app\helpers\ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
@@ -534,7 +534,7 @@ class Volumes extends Component
 	 *
 	 * @param int $volumeId
 	 *
-	 * @throws AssetVolumeException
+	 * @throws VolumeException
 	 * @return AssetVolumeRecord
 	 */
 	private function _getVolumeRecordById($volumeId = null)
@@ -545,7 +545,7 @@ class Volumes extends Component
 
 			if (!$volumeRecord)
 			{
-				throw new AssetVolumeException(Craft::t('No volume exists with the ID “{id}”.', array('id' => $volumeId)));
+				throw new VolumeException(Craft::t('No volume exists with the ID “{id}”.', array('id' => $volumeId)));
 			}
 		}
 		else
