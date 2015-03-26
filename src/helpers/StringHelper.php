@@ -310,7 +310,7 @@ class StringHelper extends \yii\helpers\StringHelper
 	/**
 	 * Returns is the given string matches a v4 UUID pattern.
 	 *
-	 * @param $uuid The string to check.
+	 * @param string $uuid The string to check.
 	 *
 	 * @return bool Whether the string matches a v4 UUID pattern.
 	 */
