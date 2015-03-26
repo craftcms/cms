@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 
@@ -15,6 +16,12 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserGroup_User record.
  *
+ * @var integer $id ID
+ * @var integer $groupId Group ID
+ * @var integer $userId User ID
+ * @var ActiveQueryInterface $group Group
+ * @var ActiveQueryInterface $user User
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -22,6 +29,16 @@ class UserGroup_User extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['groupId'], 'unique', 'targetAttribute' => ['groupId', 'userId']],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -53,15 +70,4 @@ class UserGroup_User extends ActiveRecord
 		return $this->hasOne(User::className(), ['id' => 'userId']);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['groupId', 'userId'], 'unique' => true],
-		];
-	}
 }

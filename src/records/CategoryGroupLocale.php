@@ -7,12 +7,20 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class CategoryGroupLocale record.
  *
+ * @var integer $id ID
+ * @var integer $groupId Group ID
+ * @var ActiveQueryInterface $locale Locale
+ * @var string $urlFormat URL format
+ * @var string $nestedUrlFormat Nested URL format
+ * @var ActiveQueryInterface $group Group
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +28,19 @@ class CategoryGroupLocale extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['groupId'], 'unique', 'targetAttribute' => ['groupId', 'locale']],
+			[['locale'], 'required'],
+			[['urlFormat', 'nestedUrlFormat'], 'craft\\app\\validators\\UrlFormat'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,34 +70,5 @@ class CategoryGroupLocale extends ActiveRecord
 	public function getLocale()
 	{
 		return $this->hasOne(Locale::className(), ['id' => 'locale']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['groupId', 'locale'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'locale'          => [AttributeType::Locale, 'required' => true],
-			'urlFormat'       => AttributeType::UrlFormat,
-			'nestedUrlFormat' => AttributeType::UrlFormat,
-		];
 	}
 }

@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
@@ -15,6 +16,35 @@ use craft\app\enums\ColumnType;
 /**
  * Class User record.
  *
+ * @var integer $id ID
+ * @var ActiveQueryInterface $preferredLocale Preferred locale
+ * @var string $username Username
+ * @var string $photo Photo
+ * @var string $firstName First name
+ * @var string $lastName Last name
+ * @var string $email Email
+ * @var string $password Password
+ * @var integer $weekStartDay Week start day
+ * @var boolean $admin Admin
+ * @var boolean $client Client
+ * @var boolean $locked Locked
+ * @var boolean $suspended Suspended
+ * @var boolean $pending Pending
+ * @var boolean $archived Archived
+ * @var \DateTime $lastLoginDate Last login date
+ * @var string $lastLoginAttemptIPAddress Last login attempt ipaddress
+ * @var \DateTime $invalidLoginWindowStart Invalid login window start
+ * @var integer $invalidLoginCount Invalid login count
+ * @var \DateTime $lastInvalidLoginDate Last invalid login date
+ * @var \DateTime $lockoutDate Lockout date
+ * @var string $verificationCode Verification code
+ * @var \DateTime $verificationCodeIssuedDate Verification code issued date
+ * @var string $unverifiedEmail Unverified email
+ * @var boolean $passwordResetRequired Password reset required
+ * @var \DateTime $lastPasswordChangeDate Last password change date
+ * @var ActiveQueryInterface $element Element
+ * @var ActiveQueryInterface $sessions Sessions
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -22,6 +52,32 @@ class User extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['preferredLocale'], 'craft\\app\\validators\\Locale'],
+			[['weekStartDay'], 'number', 'min' => 0, 'max' => 6, 'integerOnly' => true],
+			[['lastLoginDate'], 'craft\\app\\validators\\DateTime'],
+			[['invalidLoginWindowStart'], 'craft\\app\\validators\\DateTime'],
+			[['invalidLoginCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
+			[['lastInvalidLoginDate'], 'craft\\app\\validators\\DateTime'],
+			[['lockoutDate'], 'craft\\app\\validators\\DateTime'],
+			[['verificationCodeIssuedDate'], 'craft\\app\\validators\\DateTime'],
+			[['lastPasswordChangeDate'], 'craft\\app\\validators\\DateTime'],
+			[['username', 'email'], 'unique'],
+			[['username', 'email', 'weekStartDay'], 'required'],
+			[['email', 'unverifiedEmail'], 'email'],
+			[['email', 'unverifiedEmail'], 'string', 'min' => 5],
+			[['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100],
+			[['photo'], 'string', 'max' => 50],
+			[['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255],
+			[['lastLoginAttemptIPAddress'], 'string', 'max' => 45],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -74,20 +130,6 @@ class User extends ActiveRecord
 			->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['username'], 'unique' => true],
-			['columns' => ['email'], 'unique' => true],
-			['columns' => ['verificationCode']],
-			['columns' => ['uid']],
-		];
-	}
 
 	/**
 	 * @inheritDoc ActiveRecord::validate()
@@ -117,44 +159,5 @@ class User extends ActiveRecord
 		$this->locked = false;
 		$this->suspended = false;
 		$this->archived = false;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'username'                   => [AttributeType::String, 'maxLength' => 100, 'required' => true],
-			'photo'                      => [AttributeType::String, 'maxLength' => 50],
-			'firstName'                  => [AttributeType::String, 'maxLength' => 100],
-			'lastName'                   => [AttributeType::String, 'maxLength' => 100],
-			'email'                      => [AttributeType::Email, 'required' => true],
-			'password'                   => [AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char],
-			'preferredLocale'            => [AttributeType::Locale],
-			'weekStartDay'               => [AttributeType::Number, 'min' => 0, 'max' => 6, 'required' => true, 'default' => '0'],
-			'admin'                      => [AttributeType::Bool],
-			'client'                     => [AttributeType::Bool],
-			'locked'                     => [AttributeType::Bool],
-			'suspended'                  => [AttributeType::Bool],
-			'pending'                    => [AttributeType::Bool],
-			'archived'                   => [AttributeType::Bool],
-			'lastLoginDate'              => [AttributeType::DateTime],
-			'lastLoginAttemptIPAddress'  => [AttributeType::String, 'maxLength' => 45],
-			'invalidLoginWindowStart'    => [AttributeType::DateTime],
-			'invalidLoginCount'          => [AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true],
-			'lastInvalidLoginDate'       => [AttributeType::DateTime],
-			'lockoutDate'                => [AttributeType::DateTime],
-			'verificationCode'           => [AttributeType::String, 'maxLength' => 100, 'column' => ColumnType::Char],
-			'verificationCodeIssuedDate' => [AttributeType::DateTime],
-			'unverifiedEmail'            => [AttributeType::Email],
-			'passwordResetRequired'      => [AttributeType::Bool],
-			'lastPasswordChangeDate'     => [AttributeType::DateTime],
-		];
 	}
 }

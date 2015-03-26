@@ -7,12 +7,21 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Element locale data record class.
  *
+ * @var integer $id ID
+ * @var integer $elementId Element ID
+ * @var ActiveQueryInterface $locale Locale
+ * @var string $slug Slug
+ * @var string $uri URI
+ * @var boolean $enabled Enabled
+ * @var ActiveQueryInterface $element Element
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +29,20 @@ class ElementLocale extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['elementId'], 'unique', 'targetAttribute' => ['elementId', 'locale']],
+			[['uri'], 'unique', 'targetAttribute' => ['uri', 'locale']],
+			[['locale'], 'required'],
+			[['uri'], 'craft\\app\\validators\\Uri'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,38 +72,5 @@ class ElementLocale extends ActiveRecord
 	public function getLocale()
 	{
 		return $this->hasOne(Locale::className(), ['id' => 'locale']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['elementId', 'locale'], 'unique' => true],
-			['columns' => ['slug', 'locale']],
-			['columns' => ['uri', 'locale'], 'unique' => true],
-			['columns' => ['enabled']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'locale'  => [AttributeType::Locale, 'required' => true],
-			'slug'    => [AttributeType::String],
-			'uri'     => [AttributeType::Uri, 'label' => 'URI'],
-			'enabled' => [AttributeType::Bool, 'default' => true],
-		];
 	}
 }

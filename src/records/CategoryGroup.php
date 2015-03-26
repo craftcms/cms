@@ -7,12 +7,25 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class CategoryGroup record.
  *
+ * @var integer $id ID
+ * @var integer $structureId Structure ID
+ * @var integer $fieldLayoutId Field layout ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var boolean $hasUrls Has URLs
+ * @var string $template Template
+ * @var ActiveQueryInterface $structure Structure
+ * @var ActiveQueryInterface $fieldLayout Field layout
+ * @var ActiveQueryInterface $locales Locales
+ * @var ActiveQueryInterface $categories Categories
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +33,20 @@ class CategoryGroup extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['name', 'handle'], 'unique'],
+			[['name', 'handle'], 'required'],
+			[['name', 'handle'], 'string', 'max' => 255],
+			[['template'], 'string', 'max' => 500],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -69,36 +96,5 @@ class CategoryGroup extends ActiveRecord
 	public function getCategories()
 	{
 		return $this->hasMany(Category::className(), ['groupId' => 'id']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name'], 'unique' => true],
-			['columns' => ['handle'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'      => [AttributeType::Name, 'required' => true],
-			'handle'    => [AttributeType::Handle, 'required' => true],
-			'hasUrls'   => [AttributeType::Bool, 'default' => true],
-			'template'  => AttributeType::Template,
-		];
 	}
 }

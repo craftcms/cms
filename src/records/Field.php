@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
@@ -15,6 +16,17 @@ use craft\app\enums\ColumnType;
 /**
  * Class Field record.
  *
+ * @var integer $id ID
+ * @var integer $groupId Group ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var string $context Context
+ * @var string $instructions Instructions
+ * @var boolean $translatable Translatable
+ * @var string $type Type
+ * @var array $settings Settings
+ * @var ActiveQueryInterface $group Group
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -52,6 +64,21 @@ class Field extends ActiveRecord
 
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['archived', 'children', 'dateCreated', 'dateUpdated', 'enabled', 'id', 'link', 'locale', 'parents', 'siblings', 'uid', 'uri', 'url', 'ref', 'status', 'title']],
+			[['handle'], 'unique', 'targetAttribute' => ['handle', 'context']],
+			[['name', 'handle', 'context', 'type'], 'required'],
+			[['name'], 'string', 'max' => 255],
+			[['handle'], 'string', 'max' => 58],
+			[['type'], 'string', 'max' => 150],
+		];
+	}
 
 	/**
 	 * Initializes the application component.
@@ -106,18 +133,6 @@ class Field extends ActiveRecord
 		return $this->hasOne(FieldGroup::className(), ['id' => 'groupId']);
 	}
 
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['handle', 'context'], 'unique' => true],
-			['columns' => ['context']],
-		];
-	}
 
 	/**
 	 * Set the max field handle length based on the current field column prefix length.
@@ -134,26 +149,5 @@ class Field extends ActiveRecord
 		$attributeConfigs['handle']['maxLength'] = 64 - strlen(Craft::$app->content->fieldColumnPrefix);
 
 		return $attributeConfigs;
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'         => [AttributeType::Name, 'required' => true],
-			'handle'       => [AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords],
-			'context'      => [AttributeType::String, 'default' => 'global', 'required' => true],
-			'instructions' => [AttributeType::String, 'column' => ColumnType::Text],
-			'translatable' => AttributeType::Bool,
-			'type'         => [AttributeType::ClassName, 'required' => true],
-			'settings'     => AttributeType::Mixed,
-		];
 	}
 }

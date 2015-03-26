@@ -7,12 +7,23 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class FieldLayoutField record.
  *
+ * @var integer $id ID
+ * @var integer $layoutId Layout ID
+ * @var integer $tabId Tab ID
+ * @var integer $fieldId Field ID
+ * @var boolean $required Required
+ * @var string $sortOrder Sort order
+ * @var ActiveQueryInterface $layout Layout
+ * @var ActiveQueryInterface $tab Tab
+ * @var ActiveQueryInterface $field Field
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +31,16 @@ class FieldLayoutField extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['layoutId'], 'unique', 'targetAttribute' => ['layoutId', 'fieldId']],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -59,34 +80,5 @@ class FieldLayoutField extends ActiveRecord
 	public function getField()
 	{
 		return $this->hasOne(Field::className(), ['id' => 'fieldId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['layoutId', 'fieldId'], 'unique' => true],
-			['columns' => ['sortOrder']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'required'  => AttributeType::Bool,
-			'sortOrder' => AttributeType::SortOrder,
-		];
 	}
 }

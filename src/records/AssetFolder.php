@@ -7,12 +7,21 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Class AssetFolder record.
  *
+ * @var integer $id ID
+ * @var integer $parentId Parent ID
+ * @var integer $volumeId Volume ID
+ * @var string $name Name
+ * @var string $path Path
+ * @var ActiveQueryInterface $parent Parent
+ * @var ActiveQueryInterface $volume Volume
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +29,17 @@ class AssetFolder extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['name'], 'unique', 'targetAttribute' => ['name', 'parentId', 'volumeId']],
+			[['name'], 'required'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,33 +69,5 @@ class AssetFolder extends ActiveRecord
 	public function getVolume()
 	{
 		return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name', 'parentId', 'volumeId'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'     => [AttributeType::String, 'required' => true],
-			'path'     => [AttributeType::String],
-		];
 	}
 }

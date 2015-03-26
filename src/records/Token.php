@@ -14,6 +14,13 @@ use craft\app\enums\ColumnType;
 /**
  * Token record.
  *
+ * @var integer $id ID
+ * @var string $token Token
+ * @var array $route Route
+ * @var integer $usageLimit Usage limit
+ * @var integer $usageCount Usage count
+ * @var \DateTime $expiryDate Expiry date
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -24,43 +31,26 @@ class Token extends ActiveRecord
 
 	/**
 	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['usageLimit'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
+			[['usageCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
+			[['expiryDate'], 'craft\\app\\validators\\DateTime'],
+			[['token'], 'unique'],
+			[['token', 'expiryDate'], 'required'],
+			[['token'], 'string', 'length' => 32],
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
 	public static function tableName()
 	{
 		return '{{%tokens}}';
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['token'], 'unique' => true],
-			['columns' => ['expiryDate']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'token'      => [AttributeType::String, 'column' => ColumnType::Char, 'length' => 32, 'required' => true],
-			'route'      => [AttributeType::Mixed],
-			'usageLimit' => [AttributeType::Number, 'min' => 0, 'max' => 255],
-			'usageCount' => [AttributeType::Number, 'min' => 0, 'max' => 255],
-			'expiryDate' => [AttributeType::DateTime, 'required' => true],
-		];
 	}
 }

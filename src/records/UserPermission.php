@@ -16,6 +16,9 @@ Craft::$app->requireEdition(Craft::Pro);
 /**
  * Class UserPermission record.
  *
+ * @var integer $id ID
+ * @var string $name Name
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -26,38 +29,23 @@ class UserPermission extends ActiveRecord
 
 	/**
 	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['name'], 'unique'],
+			[['name'], 'required'],
+			[['name'], 'string', 'max' => 255],
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
 	public static function tableName()
 	{
 		return '{{%userpermissions}}';
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name' => [AttributeType::Name, 'required' => true],
-		];
 	}
 }

@@ -13,6 +13,17 @@ use craft\app\enums\AttributeType;
 /**
  * Class AssetTransform record.
  *
+ * @var integer $id ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var string $mode Mode
+ * @var string $position Position
+ * @var integer $height Height
+ * @var integer $width Width
+ * @var string $format Format
+ * @var integer $quality Quality
+ * @var \DateTime $dimensionChangeTime Dimension change time
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -23,47 +34,30 @@ class AssetTransform extends ActiveRecord
 
 	/**
 	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['mode'], 'in', 'range' => ['stretch', 'fit', 'crop']],
+			[['position'], 'in', 'range' => ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right']],
+			[['height'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['width'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['quality'], 'number', 'min' => -2147483648, 'max' => 2147483647, 'integerOnly' => true],
+			[['dimensionChangeTime'], 'craft\\app\\validators\\DateTime'],
+			[['name', 'handle'], 'unique'],
+			[['name', 'handle', 'mode', 'position'], 'required'],
+			[['handle'], 'string', 'max' => 255],
+		];
+	}
+
+	/**
+	 * @inheritdoc
 	 *
 	 * @return string
 	 */
 	public static function tableName()
 	{
 		return '{{%assettransforms}}';
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name'], 'unique' => true],
-			['columns' => ['handle'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'                => [AttributeType::String, 'required' => true],
-			'handle'              => [AttributeType::Handle, 'required' => true],
-			'mode'                => [AttributeType::Enum, 'required' => true, 'values' => ['stretch', 'fit', 'crop'], 'default' => 'crop'],
-			'position'            => [AttributeType::Enum, 'values' => ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'], 'required' => true, 'default' => 'center-center'],
-			'height'              => AttributeType::Number,
-			'width'               => AttributeType::Number,
-			'format'              => AttributeType::String,
-			'quality'             => [AttributeType::Number, 'required' => false],
-			'dimensionChangeTime' => AttributeType::DateTime
-		];
 	}
 }

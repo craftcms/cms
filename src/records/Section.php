@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 use craft\app\enums\SectionType;
@@ -14,6 +15,17 @@ use craft\app\enums\SectionType;
 /**
  * Class Section record.
  *
+ * @var integer $id ID
+ * @var integer $structureId Structure ID
+ * @var string $name Name
+ * @var string $handle Handle
+ * @var string $type Type
+ * @var boolean $hasUrls Has URLs
+ * @var string $template Template
+ * @var boolean $enableVersioning Enable versioning
+ * @var ActiveQueryInterface $locales Locales
+ * @var ActiveQueryInterface $structure Structure
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -21,6 +33,21 @@ class Section extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+			[['type'], 'in', 'range' => ['single', 'channel', 'structure']],
+			[['name', 'handle'], 'unique'],
+			[['name', 'handle', 'type'], 'required'],
+			[['name', 'handle'], 'string', 'max' => 255],
+			[['template'], 'string', 'max' => 500],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -50,38 +77,5 @@ class Section extends ActiveRecord
 	public function getStructure()
 	{
 		return $this->hasOne(Structure::className(), ['id' => 'structureId']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['name'], 'unique' => true],
-			['columns' => ['handle'], 'unique' => true],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'             => [AttributeType::Name, 'required' => true],
-			'handle'           => [AttributeType::Handle, 'required' => true],
-			'type'             => [AttributeType::Enum, 'values' => [SectionType::Single, SectionType::Channel, SectionType::Structure], 'default' => SectionType::Channel, 'required' => true],
-			'hasUrls'          => [AttributeType::Bool, 'default' => true],
-			'template'         => AttributeType::Template,
-			'enableVersioning' => AttributeType::Bool,
-		];
 	}
 }

@@ -7,12 +7,20 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
 
 /**
  * Field record class.
  *
+ * @var integer $id ID
+ * @var integer $layoutId Layout ID
+ * @var string $name Name
+ * @var string $sortOrder Sort order
+ * @var ActiveQueryInterface $layout Layout
+ * @var ActiveQueryInterface $fields Fields
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +28,17 @@ class FieldLayoutTab extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['name'], 'required'],
+			[['name'], 'string', 'max' => 255],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -49,33 +68,5 @@ class FieldLayoutTab extends ActiveRecord
 	public function getFields()
 	{
 		return $this->hasMany(FieldLayoutField::className(), ['tabId' => 'id']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['sortOrder']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'name'      => [AttributeType::Name, 'required' => true],
-			'sortOrder' => AttributeType::SortOrder,
-		];
 	}
 }

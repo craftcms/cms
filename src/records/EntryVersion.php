@@ -7,6 +7,7 @@
 
 namespace craft\app\records;
 
+use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
 use craft\app\enums\AttributeType;
@@ -17,6 +18,18 @@ Craft::$app->requireEdition(Craft::Client);
 /**
  * Class EntryVersion record.
  *
+ * @var integer $id ID
+ * @var integer $entryId Entry ID
+ * @var integer $sectionId Section ID
+ * @var integer $creatorId Creator ID
+ * @var ActiveQueryInterface $locale Locale
+ * @var integer $num Num
+ * @var string $notes Notes
+ * @var array $data Data
+ * @var ActiveQueryInterface $entry Entry
+ * @var ActiveQueryInterface $section Section
+ * @var ActiveQueryInterface $creator Creator
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -24,6 +37,18 @@ class EntryVersion extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['num'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+			[['locale', 'num', 'data'], 'required'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -73,35 +98,5 @@ class EntryVersion extends ActiveRecord
 	public function getLocale()
 	{
 		return $this->hasOne(Locale::className(), ['id' => 'locale']);
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['entryId', 'locale']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'locale' => [AttributeType::Locale, 'required' => true],
-			'num'    => [AttributeType::Number, 'column' => ColumnType::SmallInt, 'unsigned' => true, 'required' => true],
-			'notes'  => [AttributeType::String, 'column' => ColumnType::TinyText],
-			'data'   => [AttributeType::Mixed, 'required' => true, 'column' => ColumnType::MediumText],
-		];
 	}
 }

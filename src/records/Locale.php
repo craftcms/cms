@@ -13,6 +13,9 @@ use craft\app\enums\AttributeType;
 /**
  * Stores the locales.
  *
+ * @var string $locale Locale
+ * @var string $sortOrder Sort order
+
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
@@ -20,6 +23,17 @@ class Locale extends ActiveRecord
 {
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritdoc
+	 */
+	public function rules()
+	{
+		return [
+			[['locale'], 'craft\\app\\validators\\Locale'],
+			[['locale'], 'required'],
+		];
+	}
 
 	/**
 	 * @inheritdoc
@@ -37,33 +51,5 @@ class Locale extends ActiveRecord
 	public static function primaryKey()
 	{
 		return ['locale'];
-	}
-
-	/**
-	 * @inheritDoc ActiveRecord::defineIndexes()
-	 *
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return [
-			['columns' => ['sortOrder']],
-		];
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc ActiveRecord::defineAttributes()
-	 *
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return [
-			'locale'    => [AttributeType::Locale, 'required' => true, 'primaryKey' => true],
-			'sortOrder' => AttributeType::SortOrder,
-		];
 	}
 }
