@@ -28,6 +28,13 @@ class TemplateHelper
 		$currentPage = craft()->request->getPageNum();
 		$limit = $criteria->limit;
 		$total = $criteria->total() - $criteria->offset;
+
+		// If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
+		if (!$limit)
+		{
+			$limit = $total;
+		}
+
 		$totalPages = ceil($total / $limit);
 
 		$paginateVariable = new PaginateVariable();

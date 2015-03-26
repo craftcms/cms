@@ -42,7 +42,9 @@ Craft.Grid = Garnish.Base.extend(
 		this.addListener(this.$container, 'resize', 'refreshCols');
 
 		// Trigger a window resize event in case anything needs to adjust itself, now that the items are layed out.
-		Garnish.$win.trigger('resize');
+		Garnish.requestAnimationFrame(function() {
+			Garnish.$win.trigger('resize');
+		});
 	},
 
 	addItems: function(items)

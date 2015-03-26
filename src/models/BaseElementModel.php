@@ -900,7 +900,8 @@ abstract class BaseElementModel extends BaseModel
 					// Do we have any post data for this field?
 					if (isset($content[$handle]))
 					{
-						$value = $this->_rawPostContent[$handle] = $content[$handle];
+						$value = $content[$handle];
+						$this->setRawPostContent($handle, $value);
 					}
 					// Were any files uploaded for this field?
 					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
@@ -927,6 +928,17 @@ abstract class BaseElementModel extends BaseModel
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets a field’s raw post content.
+	 *
+	 * @param string $handle The field handle.
+	 * @param string|array   The posted field value.
+	 */
+	public function setRawPostContent($handle, $value)
+	{
+		$this->_rawPostContent[$handle] = $value;
 	}
 
 	/**

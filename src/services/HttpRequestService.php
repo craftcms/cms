@@ -1282,7 +1282,7 @@ class HttpRequestService extends \CHttpRequest
 			$cookie = $this->getCookies()->itemAt($this->csrfTokenName);
 
 			// Reset the CSRF token cookie if it's not set, or for another user.
-			if(!$cookie || ($this->_csrfToken = $cookie->value) == null || !$this->csrfTokenValidForCurrentUser($cookie->value))
+			if (!$cookie || ($this->_csrfToken = $cookie->value) == null || !$this->csrfTokenValidForCurrentUser($cookie->value))
 			{
 				$cookie = $this->createCsrfCookie();
 				$this->_csrfToken = $cookie->value;
@@ -1291,6 +1291,18 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return $this->_csrfToken;
+	}
+
+	/**
+	 *
+	 *
+	 * @throws \CException
+	 */
+	public function regenCsrfCookie()
+	{
+		$cookie = $this->createCsrfCookie();
+		$this->_csrfToken = $cookie->value;
+		$this->getCookies()->add($cookie->name, $cookie);
 	}
 
 	// Protected Methods
@@ -1304,12 +1316,37 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	protected function createCsrfCookie()
 	{
-		$currentUser = craft()->userSession->getUser();
+		$currentUser = false;
 
-		if ($currentUser)
+		$cookie = $this->getCookies()->itemAt($this->csrfTokenName);
+
+		if ($cookie)
 		{
-			$nonce = craft()->security->generateRandomString(40);
+			// They have an existing CSRF cookie.
+			$value = $cookie->value;
 
+			// It's a CSRF cookie that came from an authenitcated request.
+			if (strpos($value, '|') !== false)
+			{
+				// Grab the existing nonce.
+				$parts = explode('|', $value);
+				$nonce = $parts[0];
+			}
+			else
+			{
+				// It's a CSRF cookie from an unauthenticated request.
+				$nonce = $value;
+			}
+		}
+		else
+		{
+			// No previous CSRF cookie, generate a new nonce.
+			$nonce = craft()->security->generateRandomString(40);
+		}
+
+		// Authenticated users
+		if (craft()->getComponent('userSession', false) && ($currentUser = craft()->userSession->getUser()))
+		{
 			// We mix the password into the token so that it will become invalid when the user changes their password.
 			// The salt on the blowfish hash will be different even if they change their password to the same thing.
 			// Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
@@ -1320,8 +1357,8 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			// A random string is good enough if we're logged out.
-			$token = craft()->security->generateRandomString(40);
+			// Unauthenticated users.
+			$token = $nonce;
 		}
 
 		$cookie = new HttpCookie($this->csrfTokenName, $token);
@@ -1349,7 +1386,7 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$currentUser = false;
 
-		if (craft()->isInstalled())
+		if (craft()->isInstalled() && craft()->getComponent('userSession', false))
 		{
 			$currentUser = craft()->userSession->getUser();
 		}

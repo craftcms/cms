@@ -452,7 +452,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$extension = IOHelper::getExtension($fileName);
 
-		if (! IOHelper::isExtensionAllowed($extension))
+		if (!IOHelper::isExtensionAllowed($extension))
 		{
 			throw new Exception(Craft::t('This file type is not allowed'));
 		}

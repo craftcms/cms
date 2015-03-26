@@ -156,9 +156,21 @@ Craft.MatrixInput = Garnish.Base.extend(
 			{
 				if (this.showingAddBlockMenu)
 				{
-					this.$addBlockBtnGroup.removeClass('hidden');
 					this.$addBlockMenuBtn.addClass('hidden');
+					this.$addBlockBtnGroup.removeClass('hidden');
 					this.showingAddBlockMenu = false;
+
+					// Because Safari is awesome
+					if (navigator.userAgent.indexOf('Safari') !== -1)
+					{
+						Garnish.requestAnimationFrame($.proxy(function() {
+							this.$addBlockBtnGroup.css('opacity', 0.99);
+
+							Garnish.requestAnimationFrame($.proxy(function() {
+								this.$addBlockBtnGroup.css('opacity', '');
+							}, this));
+						}, this));
+					}
 				}
 			}
 		}

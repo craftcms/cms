@@ -224,8 +224,8 @@ class StringHelper
 				257 => 'aa', 269 => 'ch', 275 => 'ee', 291 => 'gj', 299 => 'ii',
 				311 => 'kj', 316 => 'lj', 326 => 'nj', 353 => 'sh', 363 => 'uu',
 				382 => 'zh', 256 => 'aa', 268 => 'ch', 274 => 'ee', 290 => 'gj',
-				298 => 'ii', 310 => 'kj', 315 => 'lj', 325 => 'nj', 352 => 'sh',
-				362 => 'uu', 381 => 'zh'
+				298 => 'ii', 310 => 'kj', 315 => 'lj', 325 => 'nj', 337 => 'o',
+				352 => 'sh', 362 => 'uu', 369 => 'u',  381 => 'zh'
 			);
 
 			foreach (craft()->config->get('customAsciiCharMappings') as $ascii => $char)

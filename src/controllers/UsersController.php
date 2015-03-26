@@ -127,8 +127,14 @@ class UsersController extends BaseController
 	 */
 	public function actionGetAuthTimeout()
 	{
-		echo craft()->userSession->getAuthTimeout();
-		craft()->end();
+		$return = array('timeout' => craft()->userSession->getAuthTimeout());
+
+		if (craft()->config->get('enableCsrfProtection'))
+		{
+			$return['csrfTokenValue'] = craft()->request->getCsrfToken();
+		}
+
+		$this->returnJson($return);
 	}
 
 	/**
@@ -137,6 +143,15 @@ class UsersController extends BaseController
 	public function actionLogout()
 	{
 		craft()->userSession->logout(false);
+
+		if (craft()->config->get('enableCsrfProtection'))
+		{
+			// Manually nuke the CSRF cookie (if there is one).
+			craft()->request->deleteCookie(craft()->request->csrfTokenName);
+
+			// Generate a new one.
+			craft()->request->getCsrfToken();
+		}
 
 		if (craft()->request->isAjaxRequest())
 		{

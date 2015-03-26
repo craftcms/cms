@@ -299,7 +299,7 @@ abstract class BaseElementFieldType extends BaseFieldType
 		{
 			$existingField = craft()->fields->getFieldById($this->model->id);
 
-			if ($existingField->translatable == 0)
+			if ($existingField && $existingField->translatable == 0)
 			{
 				$this->_makeExistingRelationsTranslatable = true;
 			}

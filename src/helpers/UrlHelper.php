@@ -58,7 +58,7 @@ class UrlHelper
 	}
 
 	/**
-	 * Returns whether a given string appears to be a "full" URL (absolute or root-relative).
+	 * Returns whether a given string appears to be a "full" URL (absolute, root-relative or protocol-relative).
 	 *
 	 * @param string $url
 	 *
@@ -66,7 +66,7 @@ class UrlHelper
 	 */
 	public static function isFullUrl($url)
 	{
-		return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url));
+		return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url) || static::isProtocolRelativeUrl($url));
 	}
 
 	/**
