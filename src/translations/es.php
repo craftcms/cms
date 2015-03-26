@@ -1252,4 +1252,7 @@ Si no estabas esperando este correo electrónico, ignóralo.',
 	'“{plugin}” is already installed.' => '“{plugin}” ya está instalado.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” ya está desinstalado.',
 	'…Or use one of your field groups as a starting point:' => '…O utiliza uno de los grupos de campos como punto de partida:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

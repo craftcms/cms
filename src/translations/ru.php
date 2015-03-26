@@ -1253,4 +1253,7 @@ return array(
 	'“{plugin}” is already installed.' => 'Плагин “{plugin}” уже установлен.',
 	'“{plugin}” is already uninstalled.' => 'Плагин “{plugin}” уже удален.',
 	'…Or use one of your field groups as a starting point:' => '... или используйте одну из ваших групп полей в качестве отправной точки:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

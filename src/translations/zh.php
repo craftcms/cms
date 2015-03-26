@@ -1251,4 +1251,7 @@ return array(
 	'“{plugin}” is already installed.' => '“{plugin}”现已安装。',
 	'“{plugin}” is already uninstalled.' => '“{plugin}”现已安装。',
 	'…Or use one of your field groups as a starting point:' => '…也可以使用您的一个字段组作为起点：',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

@@ -1252,4 +1252,7 @@ return array(
 	'“{plugin}” is already installed.' => '“{plugin}”(은)는 이미 설치되어 있습니다.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}”(은)는 이미 제거되었습니다.',
 	'…Or use one of your field groups as a starting point:' => '... 또는 시작점으로 자신의 필드 그룹 중의 하나를 사용하세요:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

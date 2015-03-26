@@ -1252,4 +1252,7 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
 	'“{plugin}” is already installed.' => '“{plugin}” har redan installerats.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” är redan installerad.',
 	'…Or use one of your field groups as a starting point:' => '...Eller använd en av dina fältgrupper som startpunkt:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

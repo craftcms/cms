@@ -1252,4 +1252,7 @@ return array(
 	'“{plugin}” is already installed.' => '“{plugin}” כבר מותקן',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” כבר הוסר.',
 	'…Or use one of your field groups as a starting point:' => '...או שתשתמש באחד משדות הקבוצה כנקודת התחלה:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );

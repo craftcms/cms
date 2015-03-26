@@ -1252,4 +1252,7 @@ Ti preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link
 	'“{plugin}” is already installed.' => '“{plugin}” è già installato.',
 	'“{plugin}” is already uninstalled.' => '“{plugin}” è già disinstallato.',
 	'…Or use one of your field groups as a starting point:' => '...oppure utilizza uno dei tuoi gruppi sul campo come punto di partenza:',
+	'Localizing relations' => 'Localizing relations',
+	'The CSRF token could not be verified.' => 'The CSRF token could not be verified.',
+	'What do you want to do with the their content?' => 'What do you want to do with the their content?',
 );
